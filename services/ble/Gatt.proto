@@ -94,13 +94,8 @@ service GattClient
     rpc MtuSizeExchangeRequest(Nothing) returns (Nothing) { option (method_id) = 1; }
 
     rpc StartServiceDiscovery(Nothing) returns (Nothing) { option (method_id) = 2; }
-    rpc StopServiceDiscovery(Nothing) returns (Nothing) { option (method_id) = 3; }
-    
     rpc StartCharacteristicDiscovery(HandleRange) returns (Nothing) { option (method_id) = 4; }
-    rpc StopCharacteristicDiscovery(Nothing) returns (Nothing) { option (method_id) = 5; }
-    
     rpc StartDescriptorDiscovery(HandleRange) returns (Nothing) { option (method_id) = 6; }
-    rpc StopDescriptorDiscovery(Nothing) returns (Nothing) { option (method_id) = 7; }
 
     rpc Read(Handle) returns (Nothing) { option (method_id) = 8; }
     rpc Write(CharacteristicData) returns (Nothing) { option (method_id) = 9; }

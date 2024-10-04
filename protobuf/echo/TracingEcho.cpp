@@ -173,7 +173,7 @@ namespace services
 
                 if (contents.Is<infra::PartialProtoLengthDelimited>() && contents.Get<infra::PartialProtoLengthDelimited>().length > stream.Available())
                 {
-                    tracer.Trace() << "< message too big";
+                    tracer.Trace() << "< message too big for service " << serviceId << " method " << methodId << " length " << contents.Get<infra::PartialProtoLengthDelimited>().length << " available " << stream.Available();
                     skipping = contents.Get<infra::PartialProtoLengthDelimited>().length;
                     writerBuffer.erase(writerBuffer.begin(), writerBuffer.begin() + stream.Reader().Processed());
                     auto skippingNow = std::min<std::size_t>(skipping, writerBuffer.size());

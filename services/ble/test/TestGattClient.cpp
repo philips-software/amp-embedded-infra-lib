@@ -243,14 +243,12 @@ TEST_F(GattClientDiscoveryDecoratorTest, forward_descriptors_discovered_event_to
 
 TEST_F(GattClientDiscoveryDecoratorTest, forward_all_calls_to_subject)
 {
-    services::GattService service{ uuid16, 0x1, 0x9 };
-
     EXPECT_CALL(gattDiscovery, StartServiceDiscovery());
     decorator.StartServiceDiscovery();
 
-    EXPECT_CALL(gattDiscovery, StartCharacteristicDiscovery(::testing::Ref(service)));
-    decorator.StartCharacteristicDiscovery(service);
+    EXPECT_CALL(gattDiscovery, StartCharacteristicDiscovery(1, 9));
+    decorator.StartCharacteristicDiscovery(1, 9);
 
-    EXPECT_CALL(gattDiscovery, StartDescriptorDiscovery(::testing::Ref(service)));
-    decorator.StartDescriptorDiscovery(service);
+    EXPECT_CALL(gattDiscovery, StartDescriptorDiscovery(1, 9));
+    decorator.StartDescriptorDiscovery(1, 9);
 }

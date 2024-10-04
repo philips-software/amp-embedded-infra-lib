@@ -65,6 +65,10 @@ namespace infra
         {
             struct ExceptionSafePop
             {
+                ExceptionSafePop(EventDispatcherWorkerImpl& worker)
+                    : worker(worker)
+                {}
+
                 ExceptionSafePop(const ExceptionSafePop&) = delete;
                 ExceptionSafePop& operator=(const ExceptionSafePop&) = delete;
 

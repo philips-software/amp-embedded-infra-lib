@@ -86,7 +86,7 @@ GIVEN("nothing happens for %d seconds")
         infra::StringInputStream secondsStream(secondsString);
         uint32_t seconds;
         secondsStream >> seconds;
-        Context().TimeoutTimer().Start(std::chrono::seconds(seconds), [=]()
+        Context().TimeoutTimer().Start(std::chrono::seconds(seconds), [this]()
             {
                 Success();
             });
