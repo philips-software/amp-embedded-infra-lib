@@ -6,8 +6,8 @@
 #include "infra/util/test_helper/MemoryRangeMatcher.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "protobuf/meta_services/PeerServiceDiscoverer.hpp"
 #include "protobuf/echo/test_doubles/EchoSingleLoopback.hpp"
+#include "protobuf/meta_services/PeerServiceDiscoverer.hpp"
 #include <array>
 #include <cstdint>
 #include <limits>
@@ -25,7 +25,7 @@ namespace
             FindFirstServiceInRangeMock(startServiceId, endServiceId);
             MethodDone();
         }
-        
+
         void NotifyServiceChanges(bool value) override
         {
             NotifyServiceChangesMock(value);
@@ -42,7 +42,7 @@ namespace
     public:
         using application::PeerServiceDiscoveryObserver::PeerServiceDiscoveryObserver;
 
-        MOCK_METHOD(void, ServiceDiscoveryComplete, (infra::MemoryRange<uint32_t>), (override));
+        MOCK_METHOD(void, ServicesDiscovered, (infra::MemoryRange<uint32_t>), (override));
     };
 }
 
@@ -51,17 +51,17 @@ class PeerServiceDiscovererTest
     , public infra::EventDispatcherFixture
 {
 public:
-    services::MethodSerializerFactory::ForServices<service_discovery::ServiceDiscovery, 
-        service_discovery::ServiceDiscoveryResponse>::AndProxies<service_discovery::ServiceDiscoveryProxy, 
+    services::MethodSerializerFactory::ForServices<service_discovery::ServiceDiscovery,
+        service_discovery::ServiceDiscoveryResponse>::AndProxies<service_discovery::ServiceDiscoveryProxy,
         service_discovery::ServiceDiscoveryResponseProxy> serializerFactory;
-    
+
     application::EchoSingleLoopback echo{ serializerFactory };
-    
+
     service_discovery::ServiceDiscoveryResponseProxy serviceDiscoveryResponse{ echo };
     testing::StrictMock<ServiceDiscoveryMock> serviceDiscovery{ echo };
 
-    application::PeerServiceDiscovererEcho discoverer{echo};
-    testing::StrictMock<PeerServiceDiscoveryObserverMock> observer{discoverer};
+    application::PeerServiceDiscovererEcho discoverer{ echo };
+    testing::StrictMock<PeerServiceDiscoveryObserverMock> observer{ discoverer };
 
     void NoServiceSupported()
     {
@@ -71,9 +71,9 @@ public:
             });
     }
 
-    void ServiceDiscoveryComplete(infra::MemoryRange<uint32_t> services)
+    void ServicesDiscovered(infra::MemoryRange<uint32_t> services)
     {
-        EXPECT_CALL(observer, ServiceDiscoveryComplete(infra::ByteRangeContentsEqual(services)));
+        EXPECT_CALL(observer, ServicesDiscovered(infra::ByteRangeContentsEqual(services)));
         NoServiceSupported();
     }
 
@@ -96,7 +96,7 @@ public:
     void QueryServices(infra::MemoryRange<uint32_t> services)
     {
         for (auto service : services)
-        {    
+        {
             EXPECT_CALL(serviceDiscovery, FindFirstServiceInRangeMock(service, std::numeric_limits<uint32_t>::max()));
             ServiceSupported(service);
         }
@@ -108,7 +108,7 @@ public:
 
         QueryServices(services);
 
-        ServiceDiscoveryComplete(services);
+        ServicesDiscovered(services);
     }
 };
 
@@ -143,13 +143,12 @@ TEST_F(PeerServiceDiscovererTest, ServicesChanged_triggers_rediscovery)
     StartInitialServiceDiscovery();
 
     serviceDiscoveryResponse.RequestSend([this]
-    {
-        serviceDiscoveryResponse.ServicesChanged(0, 0);
-    });
+        {
+            serviceDiscoveryResponse.ServicesChanged(0, 0);
+        });
 
     std::array<uint32_t, 2> servicesUpdated{ 5, 20 };
     QueryServices(servicesUpdated);
 
-    ServiceDiscoveryComplete(servicesUpdated);
+    ServicesDiscovered(servicesUpdated);
 }
-

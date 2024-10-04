@@ -1,7 +1,6 @@
+#include "protobuf/meta_services/PeerServiceDiscoverer.hpp"
 #include "infra/event/EventDispatcher.hpp"
 #include "infra/util/Function.hpp"
-#include "protobuf/meta_services/PeerServiceDiscoverer.hpp"
-
 #include <cstdint>
 #include <limits>
 
@@ -21,9 +20,9 @@ namespace application
     {
         NotifyObservers([this](auto& observer)
             {
-                observer.ServiceDiscoveryComplete(services.range());
+                observer.ServicesDiscovered(services.range());
             });
-        
+
         MethodDone();
     }
 
@@ -34,14 +33,14 @@ namespace application
             {
                 FindFirstServiceInRange(services.back(), std::numeric_limits<uint32_t>::max());
             });
-        
+
         MethodDone();
     }
 
     void PeerServiceDiscovererEcho::ServicesChanged(uint32_t startServiceId, uint32_t endServiceId)
     {
         Initialize();
-        
+
         MethodDone();
     }
 
