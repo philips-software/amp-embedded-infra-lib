@@ -4,10 +4,10 @@
 #include "infra/util/MemoryRange.hpp"
 #include "infra/util/Observer.hpp"
 #include "infra/util/test_helper/MemoryRangeMatcher.hpp"
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
 #include "protobuf/echo/test_doubles/EchoSingleLoopback.hpp"
 #include "protobuf/meta_services/PeerServiceDiscoverer.hpp"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include <array>
 #include <cstdint>
 #include <limits>
@@ -53,13 +53,18 @@ class PeerServiceDiscovererTest
 public:
     services::MethodSerializerFactory::ForServices<service_discovery::ServiceDiscovery,
         service_discovery::ServiceDiscoveryResponse>::AndProxies<service_discovery::ServiceDiscoveryProxy,
-        service_discovery::ServiceDiscoveryResponseProxy> serializerFactory;
+        service_discovery::ServiceDiscoveryResponseProxy>
+        serializerFactory;
 
     application::EchoSingleLoopback echo{ serializerFactory };
 
     service_discovery::ServiceDiscoveryResponseProxy serviceDiscoveryResponse{ echo };
     testing::StrictMock<ServiceDiscoveryMock> serviceDiscovery{ echo };
 
+    infra::Execute execute{ [this]()
+        {
+            StartInitialServiceDiscovery();
+        } };
     application::PeerServiceDiscovererEcho discoverer{ echo };
     testing::StrictMock<PeerServiceDiscoveryObserverMock> observer{ discoverer };
 
@@ -89,8 +94,6 @@ public:
     {
         EXPECT_CALL(serviceDiscovery, NotifyServiceChangesMock(true));
         EXPECT_CALL(serviceDiscovery, FindFirstServiceInRangeMock(0, std::numeric_limits<uint32_t>::max()));
-
-        ExecuteAllActions();
     }
 
     void QueryServices(infra::MemoryRange<uint32_t> services)
@@ -104,18 +107,10 @@ public:
 
     void OneCompleteRoundOfServiceDiscovery(infra::MemoryRange<uint32_t> services)
     {
-        StartInitialServiceDiscovery();
-
         QueryServices(services);
-
         ServicesDiscovered(services);
     }
 };
-
-TEST_F(PeerServiceDiscovererTest, construct_schedules_discovery_start)
-{
-    StartInitialServiceDiscovery();
-}
 
 TEST_F(PeerServiceDiscovererTest, immediate_NoServiceSupported_ends_discovery_with_no_services)
 {

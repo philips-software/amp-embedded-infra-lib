@@ -10,10 +10,7 @@ namespace application
         : service_discovery::ServiceDiscoveryProxy(echo)
         , service_discovery::ServiceDiscoveryResponse(echo)
     {
-        infra::EventDispatcher::Instance().Schedule([this]()
-            {
-                Initialize();
-            });
+        Initialize();
     }
 
     void PeerServiceDiscovererEcho::NoServiceSupported()
