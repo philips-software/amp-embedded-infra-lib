@@ -1,4 +1,5 @@
 #include "hal/interfaces/Gpio.hpp"
+#include "infra/util/Function.hpp"
 
 namespace hal
 {
@@ -20,9 +21,9 @@ namespace hal
         return pin.Get();
     }
 
-    void InputPin::EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger)
+    void InputPin::EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type)
     {
-        pin.EnableInterrupt(action, trigger);
+        pin.EnableInterrupt(action, trigger, type);
     }
 
     void InputPin::DisableInterrupt()
@@ -133,7 +134,7 @@ namespace hal
     void DummyPin::ResetConfig()
     {}
 
-    void DummyPin::EnableInterrupt(const infra::Function<void()>& actionOnInterrupt, InterruptTrigger trigger)
+    void DummyPin::EnableInterrupt(const infra::Function<void()>& actionOnInterrupt, InterruptTrigger trigger, InterruptType type)
     {}
 
     void DummyPin::DisableInterrupt()
