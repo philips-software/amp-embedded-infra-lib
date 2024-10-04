@@ -2,11 +2,13 @@
 #define PROTOBUF_ECHO_PEER_SERVICE_DISCOVERER_HPP
 
 #include "echo/ServiceDiscovery.pb.hpp"
+#include "infra/syntax/CppFormatter.hpp"
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/MemoryRange.hpp"
 #include "infra/util/Observer.hpp"
 #include "protobuf/echo/Echo.hpp"
 #include <cstdint>
+#include <tuple>
 
 namespace application
 {
@@ -34,8 +36,12 @@ namespace application
         void ServicesChanged(uint32_t startServiceId, uint32_t endServiceId) override;
 
     private:
-        void Initialize();
-        void StartDiscovery();
+        using ServiceRange = std::tuple<uint32_t, uint32_t>;
+        static constexpr ServiceRange serviceRangeMax = std::make_tuple(0, std::numeric_limits<uint32_t>::max());
+
+    private:
+        void DiscoverPeerServices();
+        void StartDiscovery(ServiceRange range = serviceRangeMax);
 
     private:
         infra::BoundedVector<uint32_t>::WithMaxSize<2> services;

@@ -10,7 +10,7 @@ namespace application
         : service_discovery::ServiceDiscoveryProxy(echo)
         , service_discovery::ServiceDiscoveryResponse(echo)
     {
-        Initialize();
+        DiscoverPeerServices();
     }
 
     void PeerServiceDiscovererEcho::NoServiceSupported()
@@ -36,15 +36,13 @@ namespace application
 
     void PeerServiceDiscovererEcho::ServicesChanged(uint32_t startServiceId, uint32_t endServiceId)
     {
-        Initialize();
+        StartDiscovery(ServiceRange{ startServiceId, endServiceId });
 
         MethodDone();
     }
 
-    void PeerServiceDiscovererEcho::Initialize()
+    void PeerServiceDiscovererEcho::DiscoverPeerServices()
     {
-        services.clear();
-
         RequestSend([this]
             {
                 NotifyServiceChanges(true);
@@ -52,11 +50,17 @@ namespace application
             });
     }
 
-    void PeerServiceDiscovererEcho::StartDiscovery()
+    void PeerServiceDiscovererEcho::StartDiscovery(ServiceRange range)
     {
-        RequestSend([this]
+        services.erase(std::remove_if(services.begin(), services.end(), [range](uint32_t serviceId)
+                           {
+                               return serviceId >= std::get<0>(range) && serviceId <= std::get<1>(range);
+                           }),
+            services.end());
+
+        RequestSend([this, range]
             {
-                FindFirstServiceInRange(0, std::numeric_limits<uint32_t>::max());
+                FindFirstServiceInRange(std::get<0>(range), std::get<1>(range));
             });
     }
 }

@@ -11,6 +11,7 @@
 #include <array>
 #include <cstdint>
 #include <limits>
+#include <tuple>
 
 namespace
 {
@@ -110,6 +111,13 @@ public:
         QueryServices(services);
         ServicesDiscovered(services);
     }
+
+    using ServicesList = infra::MemoryRange<uint32_t>;
+
+    void UpdateServices(ServicesList oldServiceList, ServicesList newServiceList)
+    {
+        //
+    }
 };
 
 TEST_F(PeerServiceDiscovererTest, immediate_NoServiceSupported_ends_discovery_with_no_services)
@@ -135,15 +143,24 @@ TEST_F(PeerServiceDiscovererTest, ServicesChanged_triggers_rediscovery)
     std::array<uint32_t, 2> services{ 5, 10 };
     OneCompleteRoundOfServiceDiscovery(services);
 
-    StartInitialServiceDiscovery();
+    EXPECT_CALL(serviceDiscovery, FindFirstServiceInRangeMock(0, 0));
 
     serviceDiscoveryResponse.RequestSend([this]
         {
             serviceDiscoveryResponse.ServicesChanged(0, 0);
         });
 
-    std::array<uint32_t, 2> servicesUpdated{ 5, 20 };
-    QueryServices(servicesUpdated);
+    EXPECT_CALL(observer, ServicesDiscovered(infra::ByteRangeContentsEqual(infra::MakeRange(services))));
+    NoServiceSupported();
 
-    ServicesDiscovered(servicesUpdated);
+    EXPECT_CALL(serviceDiscovery, FindFirstServiceInRangeMock(5, 5));
+
+    serviceDiscoveryResponse.RequestSend([this]
+        {
+            serviceDiscoveryResponse.ServicesChanged(5, 5);
+        });
+
+    std::array<uint32_t, 1> servicesUpdated{ 10 };
+    EXPECT_CALL(observer, ServicesDiscovered(infra::ByteRangeContentsEqual(infra::MakeRange(servicesUpdated))));
+    NoServiceSupported();
 }
