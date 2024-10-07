@@ -247,8 +247,8 @@ TEST_F(GattClientDiscoveryDecoratorTest, forward_all_calls_to_subject)
     decorator.StartServiceDiscovery();
 
     EXPECT_CALL(gattDiscovery, StartCharacteristicDiscovery(1, 9));
-    decorator.StartCharacteristicDiscovery(1, 9);
+    static_cast<services::GattClientDiscovery&>(decorator).StartCharacteristicDiscovery(services::GattService{ services::AttAttribute::Uuid(uuid16), 1, 9 });
 
     EXPECT_CALL(gattDiscovery, StartDescriptorDiscovery(1, 9));
-    decorator.StartDescriptorDiscovery(1, 9);
+    static_cast<services::GattClientDiscovery&>(decorator).StartDescriptorDiscovery(services::GattService{ services::AttAttribute::Uuid(uuid16), 1, 9 });
 }
