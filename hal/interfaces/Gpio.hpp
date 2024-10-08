@@ -98,7 +98,7 @@ namespace hal
         void SetAsInput();
         bool IsInput() const;
 
-        void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger);
+        void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type = InterruptType::dispatched);
         void DisableInterrupt();
 
     private:
