@@ -137,7 +137,7 @@ namespace infra
             EXPECT_CALL(*this, callback());
         }
 
-        MOCK_CONST_METHOD0_T(callback, Result());
+        MOCK_METHOD(Result, callback, (), (const override));
 
         operator infra::Function<Result(Args...)>()
         {
