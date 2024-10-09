@@ -19,7 +19,7 @@ public:
 
 TEST_F(BaseTimerServiceTest, set_resolution)
 {
-    infra::VerifyingFunctionMock<void()> verify;
+    infra::VerifyingFunction<void()> verify;
     infra::TimerSingleShot timer(std::chrono::seconds(1), verify);
 
     timerService.SetResolution(std::chrono::seconds(2));

@@ -93,7 +93,7 @@ TEST_F(FlashReadingWritableConfigurationTest, write_data_in_empty_flash)
             formatter.PutVarInt(15);
         }));
 
-    infra::VerifyingFunctionMock<void()> callback;
+    infra::VerifyingFunction<void()> callback;
     configuration->Write(newValue, [&callback]()
         {
             callback.callback();
@@ -140,7 +140,7 @@ TEST_F(MemoryMappedWritableConfigurationTest, write_data_in_empty_flash)
             formatter.PutVarInt(15);
         }));
 
-    infra::VerifyingFunctionMock<void()> callback;
+    infra::VerifyingFunction<void()> callback;
     configuration->Write(newValue, [&callback]()
         {
             callback.callback();

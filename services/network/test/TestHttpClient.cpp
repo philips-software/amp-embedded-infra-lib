@@ -870,7 +870,7 @@ TEST_F(HttpClientTest, Stop_while_closed)
     EXPECT_CALL(client, Detaching());
     client.Subject().CloseConnection();
 
-    infra::VerifyingFunctionMock<void()> onDone;
+    infra::VerifyingFunction<void()> onDone;
     connector.Stop([&]()
         {
             onDone.callback();
@@ -881,7 +881,7 @@ TEST_F(HttpClientTest, Stop_while_connection_open)
 {
     Connect();
 
-    infra::VerifyingFunctionMock<void()> onDone;
+    infra::VerifyingFunction<void()> onDone;
     EXPECT_CALL(connection, CloseAndDestroyMock());
     EXPECT_CALL(client, Detaching());
     connector.Stop([&]()
