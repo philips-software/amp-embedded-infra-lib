@@ -259,6 +259,8 @@ namespace infra
             stream << "Scanning";
         else if (state == services::GapState::advertising)
             stream << "Advertising";
+        else if (state == services::GapState::initiating)
+            stream << "Initiating";
         else
             stream << "Connected";
 
