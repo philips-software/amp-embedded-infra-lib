@@ -10,7 +10,7 @@ class AtomicTriggerSchedulerTest
 
 TEST_F(AtomicTriggerSchedulerTest, scheduled_once)
 {
-    infra::VerifyingFunctionMock<void()> mock;
+    infra::VerifyingFunction<void()> mock;
     infra::AtomicTriggerScheduler scheduler;
 
     scheduler.Schedule([&]()
