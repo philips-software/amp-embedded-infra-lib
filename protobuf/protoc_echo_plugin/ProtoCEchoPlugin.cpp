@@ -373,16 +373,6 @@ namespace application
                 result = field.name;
             }
 
-            void VisitRepeated(const EchoFieldRepeated& field) override
-            {
-                result = field.name;
-            }
-
-            void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
-            {
-                result = field.name;
-            }
-
         protected:
             std::string& result;
         };

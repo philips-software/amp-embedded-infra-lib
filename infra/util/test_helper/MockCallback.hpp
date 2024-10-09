@@ -46,14 +46,14 @@ namespace infra
     };
 
     template<class T, std::size_t ExtraSize = INFRA_DEFAULT_FUNCTION_EXTRA_SIZE>
-    class VerifyingFunctionMock;
+    class VerifyingFunction;
 
     template<class T, std::size_t ExtraSize>
-    class VerifyingFunctionMock<T(), ExtraSize>
+    class VerifyingFunction<T(), ExtraSize>
         : public MockCallback<T()>
     {
     public:
-        VerifyingFunctionMock()
+        VerifyingFunction()
         {
             EXPECT_CALL(*this, callback());
         }
@@ -68,11 +68,11 @@ namespace infra
     };
 
     template<class T, class P1, std::size_t ExtraSize>
-    class VerifyingFunctionMock<T(P1), ExtraSize>
+    class VerifyingFunction<T(P1), ExtraSize>
         : public MockCallback<T(P1)>
     {
     public:
-        VerifyingFunctionMock(P1 p1)
+        VerifyingFunction(P1 p1)
         {
             EXPECT_CALL(*this, callback(p1));
         }
@@ -87,11 +87,11 @@ namespace infra
     };
 
     template<class T, class P1, class P2, std::size_t ExtraSize>
-    class VerifyingFunctionMock<T(P1, P2), ExtraSize>
+    class VerifyingFunction<T(P1, P2), ExtraSize>
         : public MockCallback<T(P1, P2)>
     {
     public:
-        VerifyingFunctionMock(P1 p1, P2 p2)
+        VerifyingFunction(P1 p1, P2 p2)
         {
             EXPECT_CALL(*this, callback(p1, p2));
         }
@@ -106,11 +106,11 @@ namespace infra
     };
 
     template<class T, class P1, class P2, class P3, std::size_t ExtraSize>
-    class VerifyingFunctionMock<T(P1, P2, P3), ExtraSize>
+    class VerifyingFunction<T(P1, P2, P3), ExtraSize>
         : public MockCallback<T(P1, P2, P3)>
     {
     public:
-        VerifyingFunctionMock(P1 p1, P2 p2, P3 p3)
+        VerifyingFunction(P1 p1, P2 p2, P3 p3)
         {
             EXPECT_CALL(*this, callback(p1, p2, p3));
         }
@@ -122,6 +122,34 @@ namespace infra
                 return MockCallback<T(P1, P2, P3)>::callback(p1, p2, p3);
             };
         }
+    };
+
+    template<class Result>
+    class VerifyingInvoker;
+
+    template<class Result, class... Args>
+    class VerifyingInvoker<Result(Args...)>
+    {
+    public:
+        explicit VerifyingInvoker(infra::Function<Result(Args...)> onCalled)
+            : onCalled(onCalled)
+        {
+            EXPECT_CALL(*this, callback());
+        }
+
+        MOCK_METHOD(Result, callback, (), (const override));
+
+        operator infra::Function<Result(Args...)>()
+        {
+            return [this](Args&&... args)
+            {
+                onCalled(args...);
+                return callback();
+            };
+        }
+
+    private:
+        infra::Function<Result(Args...)> onCalled;
     };
 
     template<class R, std::size_t ExtraSize = INFRA_DEFAULT_FUNCTION_EXTRA_SIZE>

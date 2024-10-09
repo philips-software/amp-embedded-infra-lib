@@ -94,9 +94,9 @@ namespace hal
         return pin.IsInput();
     }
 
-    void TriStatePin::EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger)
+    void TriStatePin::EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type)
     {
-        pin.EnableInterrupt(action, trigger);
+        pin.EnableInterrupt(action, trigger, type);
     }
 
     void TriStatePin::DisableInterrupt()
