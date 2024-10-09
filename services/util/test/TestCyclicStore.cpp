@@ -55,7 +55,7 @@ public:
 
 TEST_F(CyclicStoreTest, AddFirstItem)
 {
-    infra::VerifyingFunctionMock<void()> done;
+    infra::VerifyingFunction<void()> done;
 
     AddItem(KeepBytesAlive({ 11, 12 }), [&done]()
         {
