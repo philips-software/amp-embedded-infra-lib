@@ -45,7 +45,7 @@ namespace services
               {
                   this->tracer.Trace() << "CucumberWireProtocolServer connection accepted from: " << address;
                   this->receiveBuffer.clear();
-                  value.Emplace(this->receiveBuffer, this->scenarioRequestHandler, this->tracer);
+                  value.emplace(this->receiveBuffer, this->scenarioRequestHandler, this->tracer);
               })
     {}
 }

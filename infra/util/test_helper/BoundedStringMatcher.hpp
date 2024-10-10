@@ -3,6 +3,7 @@
 
 #include "infra/util/BoundedString.hpp"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 namespace testing
 {

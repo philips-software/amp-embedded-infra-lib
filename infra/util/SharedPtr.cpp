@@ -1,5 +1,4 @@
 #include "infra/util/SharedPtr.hpp"
-#include "infra/util/SharedObjectAllocator.hpp"
 #include <cassert>
 
 namespace infra

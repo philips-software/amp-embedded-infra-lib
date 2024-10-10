@@ -12,118 +12,32 @@
 //      opt->MyFunc();              // Use * and -> to access the value
 //  opt = nullptr;                  // Reset the optional by assigning nullptr
 //  if (!opt)
-//      opt.Emplace(2, 3, 4);       // Late construction by explicitly calling Emplace
+//      opt.emplace(2, 3, 4);       // Late construction by explicitly calling emplace
 //  opt = MyClass(2, 3, 4);         // Use the copy constructor for construction
 
 #include "infra/util/StaticStorage.hpp"
-#include <cassert>
-#include <memory>
-#include <type_traits>
+#include <optional>
+#include <utility>
 
 namespace infra
 {
     // clang-format off
-    extern const struct None {} none;
-    extern const struct InPlace {} inPlace;
-    template<class T> struct InPlaceType {};
+    using None = std::nullopt_t;
+    inline const None none = std::nullopt;
+
+    using InPlace = std::in_place_t;
+    inline const InPlace inPlace = std::in_place;
+
+    template<class T>
+    using InPlaceType = std::in_place_type_t<T>;
 
     // clang-format on
 
     template<class T>
-    class Optional
-    {
-    public:
-        constexpr Optional() = default;
-
-        Optional(const Optional& other);
-        Optional(Optional&& other) noexcept;
-        Optional(None);
-        template<class U>
-        explicit Optional(const Optional<U>& other);
-        template<class... Args>
-        explicit Optional(InPlace, Args&&... args);
-
-        ~Optional();
-
-        Optional& operator=(const Optional& other);
-        Optional& operator=(Optional&& other) noexcept;
-        Optional& operator=(const None&);
-        Optional& operator=(const T& value);
-        Optional& operator=(T&& value);
-
-        template<class... Args>
-        void Emplace(Args&&... args);
-        template<class U, class... Args>
-        void Emplace(std::initializer_list<U> list, Args&&... args);
-
-        const T& operator*() const;
-        T& operator*();
-        const T* operator->() const;
-        T* operator->();
-
-        explicit operator bool() const;
-
-        bool operator!() const;
-        bool operator==(const Optional& other) const;
-        bool operator!=(const Optional& other) const;
-
-        friend bool operator==(const Optional& x, const None&)
-        {
-            return !x;
-        }
-
-        friend bool operator!=(const Optional& x, const None& y)
-        {
-            return !(x == y);
-        }
-
-        friend bool operator==(const None& x, const Optional& y)
-        {
-            return y == x;
-        }
-
-        friend bool operator!=(const None& x, const Optional& y)
-        {
-            return y != x;
-        }
-
-        friend bool operator==(const Optional& x, const T& y)
-        {
-            return x && *x == y;
-        }
-
-        friend bool operator!=(const Optional& x, const T& y)
-        {
-            return !(x == y);
-        }
-
-        friend bool operator==(const T& x, const Optional& y)
-        {
-            return y == x;
-        }
-
-        friend bool operator!=(const T& x, const Optional& y)
-        {
-            return y != x;
-        }
-
-        T ValueOr(T&& value) const;
-        const T& ValueOr(const T& value) const;
-        T ValueOrDefault() const;
-
-    private:
-        void Reset();
-
-    private:
-        bool initialized = false;
-        StaticStorage<T> data;
-    };
-
-    template<class T>
-    Optional<typename std::decay<T>::type> MakeOptional(T&& value);
+    using Optional = std::optional<T>;
 
     template<class T, class F>
-    auto TransformOptional(const infra::Optional<T>& value, F transformation) -> infra::Optional<decltype(transformation(*value))>;
+    auto TransformOptional(const std::optional<T>& value, F transformation) -> std::optional<decltype(transformation(*value))>;
 
     template<class T, std::size_t ExtraSize>
     class OptionalForPolymorphicObjects
@@ -149,7 +63,7 @@ namespace infra
         OptionalForPolymorphicObjects& operator=(T&& value);
 
         template<class Derived, class... Args>
-        void Emplace(Args&&... args);
+        void emplace(Args&&... args);
 
         const T& operator*() const;
         T& operator*();
@@ -212,218 +126,11 @@ namespace infra
 
     ////    Implementation    ////
 
-    template<class T>
-    Optional<T>::Optional(const Optional& other)
-    {
-        if (other)
-            Emplace(*other);
-    }
-
-    template<class T>
-    Optional<T>::Optional(Optional&& other) noexcept
-    {
-        if (other)
-        {
-            Emplace(std::move(*other));
-            other.Reset();
-        }
-    }
-
-    template<class T>
-    Optional<T>::Optional(None)
-    {}
-
-    template<class T>
-    template<class U>
-    Optional<T>::Optional(const Optional<U>& other)
-    {
-        if (other)
-            Emplace(*other);
-    }
-
-    template<class T>
-    template<class... Args>
-    Optional<T>::Optional(InPlace, Args&&... args)
-    {
-        Emplace(std::forward<Args>(args)...);
-    }
-
-    template<class T>
-    Optional<T>::~Optional()
-    {
-        Reset();
-    }
-
-    template<class T>
-    Optional<T>& Optional<T>::operator=(const Optional& other)
-    {
-        if (this != &other)
-        {
-            Reset();
-            if (other)
-                Emplace(*other);
-        }
-
-        return *this;
-    }
-
-    template<class T>
-    Optional<T>& Optional<T>::operator=(Optional&& other) noexcept
-    {
-        Reset();
-        if (other)
-        {
-            Emplace(std::move(*other));
-            other.Reset();
-        }
-
-        return *this;
-    }
-
-    template<class T>
-    Optional<T>& Optional<T>::operator=(const None&)
-    {
-        Reset();
-        return *this;
-    }
-
-    template<class T>
-    Optional<T>& Optional<T>::operator=(const T& value)
-    {
-        Reset();
-        Emplace(value);
-        return *this;
-    }
-
-    template<class T>
-    Optional<T>& Optional<T>::operator=(T&& value)
-    {
-        Reset();
-        Emplace(std::forward<T>(value));
-        return *this;
-    }
-
-    template<class T>
-    const T& Optional<T>::operator*() const
-    {
-        assert(initialized);
-        return *data;
-    }
-
-    template<class T>
-    T& Optional<T>::operator*()
-    {
-        assert(initialized);
-        return *data;
-    }
-
-    template<class T>
-    const T* Optional<T>::operator->() const
-    {
-        assert(initialized);
-        return &*data;
-    }
-
-    template<class T>
-    T* Optional<T>::operator->()
-    {
-        assert(initialized);
-        return &*data;
-    }
-
-    template<class T>
-    Optional<T>::operator bool() const
-    {
-        return initialized;
-    }
-
-    template<class T>
-    bool Optional<T>::operator!() const
-    {
-        return !initialized;
-    }
-
-    template<class T>
-    bool Optional<T>::operator==(const Optional& other) const
-    {
-        if (initialized && other.initialized)
-            return **this == *other;
-        else
-            return initialized == other.initialized;
-    }
-
-    template<class T>
-    bool Optional<T>::operator!=(const Optional& other) const
-    {
-        return !(*this == other);
-    }
-
-    template<class T>
-    T Optional<T>::ValueOr(T&& value) const
-    {
-        if (initialized)
-            return **this;
-        else
-            return std::move(value);
-    }
-
-    template<class T>
-    const T& Optional<T>::ValueOr(const T& value) const
-    {
-        if (initialized)
-            return **this;
-        else
-            return value;
-    }
-
-    template<class T>
-    T Optional<T>::ValueOrDefault() const
-    {
-        if (initialized)
-            return **this;
-        else
-            return T();
-    }
-
-    template<class T>
-    template<class... Args>
-    void Optional<T>::Emplace(Args&&... args)
-    {
-        Reset();
-        data.Construct(std::forward<Args>(args)...);
-        initialized = true;
-    }
-
-    template<class T>
-    template<class U, class... Args>
-    void Optional<T>::Emplace(std::initializer_list<U> list, Args&&... args)
-    {
-        Reset();
-        data.Construct(list, std::forward<Args>(args)...);
-        initialized = true;
-    }
-
-    template<class T>
-    void Optional<T>::Reset()
-    {
-        if (initialized)
-        {
-            data.Destruct();
-            initialized = false;
-        }
-    }
-
-    template<class T>
-    Optional<typename std::decay<T>::type> MakeOptional(T&& value)
-    {
-        return Optional<typename std::decay<T>::type>(inPlace, std::forward<T>(value));
-    }
-
     template<class T, class F>
     auto TransformOptional(const infra::Optional<T>& value, F transformation) -> infra::Optional<decltype(transformation(*value))>
     {
         if (value != infra::none)
-            return infra::MakeOptional(transformation(*value));
+            return std::make_optional(transformation(*value));
         else
             return infra::none;
     }
@@ -433,7 +140,7 @@ namespace infra
     OptionalForPolymorphicObjects<T, ExtraSize>::OptionalForPolymorphicObjects(const OptionalForPolymorphicObjects<Derived, OtherExtraSize>& other, typename std::enable_if<std::is_base_of<T, Derived>::value>::type*)
     {
         if (other)
-            Emplace<Derived>(*other);
+            emplace<Derived>(*other);
     }
 
     template<class T, std::size_t ExtraSize>
@@ -444,7 +151,7 @@ namespace infra
     template<class Derived, class... Args>
     OptionalForPolymorphicObjects<T, ExtraSize>::OptionalForPolymorphicObjects(InPlaceType<Derived>, Args&&... args)
     {
-        Emplace<T>(std::forward<Args>(args)...);
+        emplace<T>(std::forward<Args>(args)...);
     }
 
     template<class T, std::size_t ExtraSize>
@@ -460,7 +167,7 @@ namespace infra
     {
         Reset();
         if (other)
-            Emplace<Derived>(*other);
+            emplace<Derived>(*other);
         return *this;
     }
 
@@ -475,7 +182,7 @@ namespace infra
     OptionalForPolymorphicObjects<T, ExtraSize>& OptionalForPolymorphicObjects<T, ExtraSize>::operator=(const T& value)
     {
         Reset();
-        Emplace<T>(value);
+        emplace<T>(value);
         return *this;
     }
 
@@ -483,7 +190,7 @@ namespace infra
     OptionalForPolymorphicObjects<T, ExtraSize>& OptionalForPolymorphicObjects<T, ExtraSize>::operator=(T&& value)
     {
         Reset();
-        Emplace<T>(std::forward<T>(value));
+        emplace<T>(std::forward<T>(value));
         return *this;
     }
 
@@ -540,7 +247,7 @@ namespace infra
 
     template<class T, std::size_t ExtraSize>
     template<class Derived, class... Args>
-    void OptionalForPolymorphicObjects<T, ExtraSize>::Emplace(Args&&... args)
+    void OptionalForPolymorphicObjects<T, ExtraSize>::emplace(Args&&... args)
     {
         Reset();
         initialized = true;

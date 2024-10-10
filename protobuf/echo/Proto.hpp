@@ -424,7 +424,7 @@ namespace services
     template<class T, class U>
     void DeserializeField(ProtoOptional<T>, infra::ProtoParser& parser, infra::ProtoParser::FieldVariant& field, infra::Optional<U>& value)
     {
-        value.Emplace();
+        value.emplace();
         DeserializeField(T(), parser, field, *value);
     }
 

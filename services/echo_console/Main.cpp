@@ -2,8 +2,6 @@
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "hal/generic/UartGeneric.hpp"
 #include "infra/stream/IoOutputStream.hpp"
-#include "infra/syntax/Json.hpp"
-#include "infra/util/Tokenizer.hpp"
 #include "services/echo_console/Console.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 #include "services/network/HttpClientImpl.hpp"
@@ -244,7 +242,7 @@ ConsoleClientWebSocket::ConsoleClientWebSocket(services::ConnectionFactoryWithNa
           [this](infra::Optional<services::HttpClientWebSocketInitiation>& value, services::WebSocketClientObserverFactory& clientObserverFactory,
               services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)
           {
-              value.Emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
+              value.emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
           })
     , webSocketFactory(randomDataGenerator, { httpClientInitiationCreator })
     , tracer(tracer)
@@ -329,14 +327,14 @@ int main(int argc, char* argv[], const char* env[])
 
         if (serialConnectionRequested)
         {
-            uart.Emplace(get(target));
-            bufferedUart.Emplace(*uart);
-            consoleClientUart.Emplace(console, *bufferedUart);
+            uart.emplace(get(target));
+            bufferedUart.emplace(*uart);
+            consoleClientUart.emplace(console, *bufferedUart);
         }
         else if (services::SchemeFromUrl(infra::BoundedConstString(get(target))) == "ws")
-            consoleClientWebSocket.Emplace(connectionFactory, console, get(target), randomDataGenerator, tracer);
+            consoleClientWebSocket.emplace(connectionFactory, console, get(target), randomDataGenerator, tracer);
         else
-            consoleClientTcp.Emplace(connectionFactory, console, get(target), tracer);
+            consoleClientTcp.emplace(connectionFactory, console, get(target), tracer);
 
         console.Run();
     }

@@ -3,12 +3,11 @@
 
 #include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"
 #include "infra/stream/LimitedOutputStream.hpp"
+#include "infra/util/BoundedVector.hpp"
 #include "infra/util/ProxyCreator.hpp"
-#include "infra/util/Variant.hpp"
+#include "infra/util/SharedOptional.hpp"
 #include "services/network/Connection.hpp"
-#include "services/network/ConnectionFactoryWithNameResolver.hpp"
 #include "services/network/HttpClientBasic.hpp"
-#include "services/network/WebSocket.hpp"
 #include "services/util/Stoppable.hpp"
 
 namespace services

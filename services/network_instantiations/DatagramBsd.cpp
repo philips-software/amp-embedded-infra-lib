@@ -1,6 +1,5 @@
 #include "services/network_instantiations/DatagramBsd.hpp"
 #include "infra/stream/StdVectorInputStream.hpp"
-#include "services/network_instantiations/EventDispatcherWithNetworkBsd.hpp"
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/socket.h>
@@ -211,7 +210,7 @@ namespace services
         assert(streamWriter.Allocatable());
         if (!sendBuffer && requestedSendSize != 0)
         {
-            sendBuffer.Emplace(requestedSendSize, 0);
+            sendBuffer.emplace(requestedSendSize, 0);
             requestedSendSize = 0;
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<DatagramBsd>& object)
                 {

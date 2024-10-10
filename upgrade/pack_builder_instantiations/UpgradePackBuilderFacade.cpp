@@ -82,7 +82,7 @@ namespace main_
         {
             const auto targetPos = std::find(targets.second.begin(), targets.second.end(), targetName);
             if (targetPos != targets.second.end())
-                return infra::MakeOptional(targets.first);
+                return std::make_optional(targets.first);
         }
         return infra::none;
     }

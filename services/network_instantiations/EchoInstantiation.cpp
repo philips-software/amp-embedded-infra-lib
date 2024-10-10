@@ -21,7 +21,7 @@ namespace application
                     {
                         static hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
 
-                        auto echoClient = std::make_shared<EchoClientWebSocket>(connectionFactory, randomDataGenerator, services::HostFromUrl(target), services::PortFromUrl(target).ValueOr(80));
+                        auto echoClient = std::make_shared<EchoClientWebSocket>(connectionFactory, randomDataGenerator, services::HostFromUrl(target), services::PortFromUrl(target).value_or(80));
                         echoClient->OnDone([&, echoClient](services::Echo& echo)
                             {
                                 result = std::shared_ptr<services::Echo>(echoClient, &echo);
@@ -36,7 +36,7 @@ namespace application
             if (!infra::host::WaitUntilDone(
                     [&](const std::function<void()>& done)
                     {
-                        auto echoClient = std::make_shared<EchoClientTcp>(connectionFactory, services::HostFromUrl(target), services::PortFromUrl(target).ValueOr(1234));
+                        auto echoClient = std::make_shared<EchoClientTcp>(connectionFactory, services::HostFromUrl(target), services::PortFromUrl(target).value_or(1234));
                         echoClient->OnDone([&, echoClient](services::Echo& echo)
                             {
                                 result = std::shared_ptr<services::Echo>(echoClient, &echo);
@@ -70,7 +70,7 @@ namespace application
                     {
                         static hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
 
-                        auto echoClient = std::make_shared<TracingEchoClientWebSocket>(connectionFactory, randomDataGenerator, services::HostFromUrl(target), services::PortFromUrl(target).ValueOr(80), tracer);
+                        auto echoClient = std::make_shared<TracingEchoClientWebSocket>(connectionFactory, randomDataGenerator, services::HostFromUrl(target), services::PortFromUrl(target).value_or(80), tracer);
                         echoClient->OnDone([&, echoClient](services::Echo& echo, services::TracingEchoOnStreams& echoTracer)
                             {
                                 resultEcho = std::shared_ptr<services::Echo>(echoClient, &echo);
@@ -86,7 +86,7 @@ namespace application
             if (!infra::host::WaitUntilDone(
                     [&](const std::function<void()>& done)
                     {
-                        auto echoClient = std::make_shared<TracingEchoClientTcp>(connectionFactory, services::HostFromUrl(target), services::PortFromUrl(target).ValueOr(1234), tracer);
+                        auto echoClient = std::make_shared<TracingEchoClientTcp>(connectionFactory, services::HostFromUrl(target), services::PortFromUrl(target).value_or(1234), tracer);
                         echoClient->OnDone([&, echoClient](services::Echo& echo, services::TracingEchoOnStreams& echoTracer)
                             {
                                 resultEcho = std::shared_ptr<services::Echo>(echoClient, &echo);
@@ -112,7 +112,7 @@ namespace application
               [this](infra::Optional<services::HttpClientWebSocketInitiation>& value, services::WebSocketClientObserverFactory& clientObserverFactory,
                   services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)
               {
-                  value.Emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
+                  value.emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
               })
         , webSocketFactory(randomDataGenerator, { httpClientInitiationCreator })
     {

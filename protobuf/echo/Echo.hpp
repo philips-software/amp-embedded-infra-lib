@@ -2,13 +2,12 @@
 #define PROTOBUF_ECHO_HPP
 
 #include "infra/stream/BufferingStreamReader.hpp"
+#include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/BoundedDeque.hpp"
-#include "infra/util/Compatibility.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/Observer.hpp"
 #include "infra/util/Optional.hpp"
 #include "protobuf/echo/EchoErrorPolicy.hpp"
-#include "protobuf/echo/Proto.hpp"
 #include "protobuf/echo/Serialization.hpp"
 
 namespace services
