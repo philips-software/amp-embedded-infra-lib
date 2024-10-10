@@ -58,7 +58,7 @@ namespace services
         , serialCommunication(serialCommunication)
         , connectionCreator([this](infra::Optional<SerialServerConnectionObserver>& value, services::IPAddress address)
               {
-                  value.Emplace(this->receiveBuffer, this->serialCommunication);
+                  value.emplace(this->receiveBuffer, this->serialCommunication);
               })
     {}
 }

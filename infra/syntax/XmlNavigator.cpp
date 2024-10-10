@@ -37,7 +37,7 @@ namespace infra
     {
         for (auto attribute = node.attributes_begin(); attribute != node.attributes_end(); attribute = ++attribute)
             if (attribute->name() == token.name)
-                return infra::MakeOptional(std::string(attribute->value()));
+                return std::make_optional(std::string(attribute->value()));
 
         return infra::none;
     }
@@ -55,7 +55,7 @@ namespace infra
     {
         for (auto attribute : node.attributes())
             if (attribute.name() == token.name)
-                return infra::MakeOptional(attribute.as_int());
+                return std::make_optional(attribute.as_int());
 
         return infra::none;
     }

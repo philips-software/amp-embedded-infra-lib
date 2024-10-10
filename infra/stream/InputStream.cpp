@@ -1,6 +1,5 @@
 #include "infra/stream/InputStream.hpp"
 #include "infra/util/Base64.hpp"
-#include <cassert>
 
 namespace infra
 {
@@ -288,7 +287,7 @@ namespace infra
         SkipSpaces();
 
         v = 0;
-        for (std::size_t i = 0; (i != width.ValueOr(std::numeric_limits<std::size_t>::max()) && !Reader().Empty()) || i == 0; ++i)
+        for (std::size_t i = 0; (i != width.value_or(std::numeric_limits<std::size_t>::max()) && !Reader().Empty()) || i == 0; ++i)
         {
             char c = static_cast<char>(Reader().Peek(ErrorPolicy()));
 
@@ -309,7 +308,7 @@ namespace infra
         SkipSpaces();
 
         v = 0;
-        for (std::size_t i = 0; (i != width.ValueOr(std::numeric_limits<std::size_t>::max()) && !Reader().Empty()) || i == 0; ++i)
+        for (std::size_t i = 0; (i != width.value_or(std::numeric_limits<std::size_t>::max()) && !Reader().Empty()) || i == 0; ++i)
         {
             char c = static_cast<char>(Reader().Peek(ErrorPolicy()));
 
@@ -365,7 +364,7 @@ namespace infra
 
         v = 0;
 
-        for (std::size_t i = 0; (i != width.ValueOr(std::numeric_limits<std::size_t>::max()) && !Reader().Empty()) || i == 0; ++i)
+        for (std::size_t i = 0; (i != width.value_or(std::numeric_limits<std::size_t>::max()) && !Reader().Empty()) || i == 0; ++i)
         {
             char c = static_cast<char>(Reader().Peek(ErrorPolicy()));
 
@@ -391,7 +390,7 @@ namespace infra
 
         v = 0;
 
-        for (std::size_t i = 0; (i != width.ValueOr(std::numeric_limits<std::size_t>::max()) && !Reader().Empty()) || i == 0; ++i)
+        for (std::size_t i = 0; (i != width.value_or(std::numeric_limits<std::size_t>::max()) && !Reader().Empty()) || i == 0; ++i)
         {
             char c = static_cast<char>(Reader().Peek(ErrorPolicy()));
 

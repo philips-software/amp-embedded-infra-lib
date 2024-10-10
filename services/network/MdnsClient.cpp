@@ -1,5 +1,4 @@
 #include "services/network/MdnsClient.hpp"
-#include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 
 namespace services
@@ -231,7 +230,7 @@ namespace services
     void MdnsClient::SendQuery(MdnsQuery& query)
     {
         assert(activeMdnsQuery == infra::none);
-        activeMdnsQuery.Emplace(*this, datagramFactory, multicast, query);
+        activeMdnsQuery.emplace(*this, datagramFactory, multicast, query);
     }
 
     void MdnsClient::ActiveQueryDone()

@@ -49,7 +49,7 @@ class FlashReadingWritableConfigurationTest
 public:
     void ConstructConfiguration()
     {
-        configuration.Emplace(flash, sha256);
+        configuration.emplace(flash, sha256);
     }
 
     hal::FlashStub flash{ 1, 16 };
@@ -119,7 +119,7 @@ public:
 
     void ConstructConfiguration(infra::ConstByteRange flashRegion)
     {
-        configuration.Emplace(flash, sha256, flashRegion);
+        configuration.emplace(flash, sha256, flashRegion);
     }
 
     hal::FlashStub flash{ 1, 16 };

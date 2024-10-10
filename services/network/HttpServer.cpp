@@ -1,7 +1,5 @@
 #include "services/network/HttpServer.hpp"
-#include "infra/stream/LimitedOutputStream.hpp"
 #include "infra/stream/SavedMarkerStream.hpp"
-#include "infra/stream/StringInputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "services/network/HttpErrors.hpp"
 #include <limits>
@@ -295,14 +293,14 @@ namespace services
         stream >> justReceived;
 
         // First eat up any leftover of previous requests
-        auto reducedContentLength = std::min<uint32_t>(contentLength.ValueOr(0), buffer.size());
+        auto reducedContentLength = std::min<uint32_t>(contentLength.value_or(0), buffer.size());
         buffer.erase(buffer.begin(), buffer.begin() + reducedContentLength);
         if (contentLength != infra::none)
             *contentLength -= reducedContentLength;
 
         if (!buffer.empty())
         {
-            parser.Emplace(buffer);
+            parser.emplace(buffer);
             if (parser->HeadersComplete())
             {
                 reader->Rewind(start + buffer.size());
@@ -360,8 +358,8 @@ namespace services
         {
             keepSelfAlive = Subject().ObserverPtr();
             pageReader = std::move(reader);
-            pageCountingReader.Emplace(*pageReader);
-            pageServer->DataReceived(pageLimitedReader.Emplace(*pageCountingReader, contentLength.ValueOr(std::numeric_limits<uint32_t>::max())));
+            pageCountingReader.emplace(*pageReader);
+            pageServer->DataReceived(pageLimitedReader.Emplace(*pageCountingReader, contentLength.value_or(std::numeric_limits<uint32_t>::max())));
         }
     }
 
@@ -439,7 +437,7 @@ namespace services
         infra::TextInputStream::WithErrorPolicy stream(*reader);
         auto& buffer = parser->BodyBuffer();
         auto available = stream.Available();
-        if (available > buffer.max_size() - buffer.size() || buffer.size() + available > parser->ContentLength().ValueOr(std::numeric_limits<uint32_t>::max()))
+        if (available > buffer.max_size() - buffer.size() || buffer.size() + available > parser->ContentLength().value_or(std::numeric_limits<uint32_t>::max()))
         {
             while (!stream.Empty())
                 stream.ContiguousRange();
@@ -491,7 +489,7 @@ namespace services
         , buffer(buffer)
         , connectionCreator([this](infra::Optional<HttpServerConnectionObserver>& value, IPAddress address)
               {
-                  value.Emplace(this->buffer, *this);
+                  value.emplace(this->buffer, *this);
               })
     {}
 }

@@ -1,10 +1,8 @@
 #include "services/network/WebSocketClientConnectionObserver.hpp"
-#include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "infra/stream/SavedMarkerStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/util/Endian.hpp"
-#include "mbedtls/sha1.h"
-#include "services/network/HttpServer.hpp"
+#include "services/network/WebSocket.hpp"
 #include <cassert>
 
 namespace services
@@ -534,7 +532,7 @@ namespace services
 
     void WebSocketClientFactorySingleConnection::Connect(WebSocketClientObserverFactory& factory)
     {
-        initiation.Emplace(factory, static_cast<WebSocketClientInitiationResult&>(*this), randomDataGenerator, creators);
+        initiation.emplace(factory, static_cast<WebSocketClientInitiationResult&>(*this), randomDataGenerator, creators);
     }
 
     void WebSocketClientFactorySingleConnection::CancelConnect(WebSocketClientObserverFactory& factory, const infra::Function<void()>& onDone)

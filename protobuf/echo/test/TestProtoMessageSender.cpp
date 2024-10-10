@@ -1,5 +1,4 @@
 #include "generated/echo/TestMessages.pb.hpp"
-#include "infra/stream/BoundedVectorOutputStream.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/util/ConstructBin.hpp"
@@ -255,8 +254,8 @@ TEST_F(ProtoMessageSenderTest, format_optionals_all_filled)
     message.v10 = "a";
     message.v11 = "b";
     message.v12 = test_messages::TestUInt32(10);
-    message.v13.Emplace(static_cast<std::size_t>(2), 11);
-    message.v14.Emplace(2, 12);
+    message.v13.emplace(static_cast<std::size_t>(2), 11);
+    message.v14.emplace(2, 12);
     services::ProtoMessageSender sender{ message };
 
     infra::StdVectorOutputStream::WithStorage stream;

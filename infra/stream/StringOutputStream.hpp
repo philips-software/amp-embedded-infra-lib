@@ -2,9 +2,7 @@
 #define INFRA_STRING_OUTPUT_STREAM_HPP
 
 #include "infra/stream/OutputStream.hpp"
-#include "infra/stream/StreamManipulators.hpp"
 #include "infra/util/BoundedString.hpp"
-#include <cstdint>
 
 namespace infra
 {

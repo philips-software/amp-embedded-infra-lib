@@ -53,7 +53,7 @@ namespace services
 
         for (auto& entry : cache)
             if (entry.nameHash == nameHash)
-                return infra::MakeOptional(entry);
+                return std::make_optional(entry);
 
         return infra::none;
     }
@@ -73,7 +73,7 @@ namespace services
     {
         if (activeLookup == infra::none && !waiting.empty())
         {
-            activeLookup.Emplace(*this, waiting.front());
+            activeLookup.emplace(*this, waiting.front());
             waiting.pop_front();
         }
     }

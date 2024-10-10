@@ -5,7 +5,6 @@
 #include "infra/util/StaticStorage.hpp"
 #include <cassert>
 #include <cstdint>
-#include <memory>
 #include <type_traits>
 
 namespace infra

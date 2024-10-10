@@ -156,7 +156,7 @@ namespace services
     template<class ProtoType, class Type>
     void ProtoMessageReceiverBase::DeserializeField(ProtoOptional<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, infra::Optional<Type>& value)
     {
-        value.Emplace();
+        value.emplace();
         DeserializeField(ProtoType(), parser, field, *value);
     }
 

@@ -2,8 +2,6 @@
 #define INFRA_MOCK_HELPERS_HPP
 
 #include "gmock/gmock.h"
-#include <functional>
-#include <type_traits>
 #include <vector>
 
 namespace infra

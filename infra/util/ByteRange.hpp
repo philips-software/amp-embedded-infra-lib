@@ -6,7 +6,6 @@
 #include <cstring>
 #include <ostream>
 #include <string>
-#include <vector>
 
 namespace infra
 {
