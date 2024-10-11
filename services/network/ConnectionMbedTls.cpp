@@ -262,7 +262,7 @@ namespace services
         if (!sending && requestedSendSize != 0)
         {
             assert(streamWriter.Allocatable());
-            auto requestedSize = requestedSendSize;
+            auto requestedSize = static_cast<uint32_t>(requestedSendSize);
 
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([requestedSize](const infra::SharedPtr<ConnectionMbedTls>& object)
                 {
