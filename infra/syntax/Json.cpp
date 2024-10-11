@@ -898,7 +898,7 @@ namespace infra
             return infra::none;
     }
 
-    infra::Optional<JsonValue> JsonIterator::ReadInteger(const JsonToken::Token& token)
+    infra::Optional<JsonValue> JsonIterator::ReadInteger(const JsonToken::Token& token) const
     {
         if ((!token.Get<JsonBiggerInt>().Negative() && token.Get<JsonBiggerInt>().Value() <= std::numeric_limits<int32_t>::max()) || (token.Get<JsonBiggerInt>().Negative() && token.Get<JsonBiggerInt>().Value() <= static_cast<uint64_t>(-static_cast<int64_t>(std::numeric_limits<int32_t>::min()))))
             return std::make_optional(JsonValue(static_cast<int32_t>(token.Get<JsonBiggerInt>().Value() * (token.Get<JsonBiggerInt>().Negative() ? -1 : 1))));

@@ -358,7 +358,7 @@ namespace infra
         infra::Optional<JsonValue> ConvertValue(JsonToken::Token token);
 
     private:
-        infra::Optional<JsonValue> ReadInteger(const JsonToken::Token& token);
+        infra::Optional<JsonValue> ReadInteger(const JsonToken::Token& token) const;
         infra::Optional<JsonValue> ReadObjectValue(const JsonToken::Token& token);
         infra::Optional<JsonValue> ReadArrayValue(const JsonToken::Token& token);
         infra::Optional<JsonToken::RightBrace> SearchObjectEnd();
