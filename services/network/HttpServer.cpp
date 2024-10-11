@@ -293,7 +293,7 @@ namespace services
         stream >> justReceived;
 
         // First eat up any leftover of previous requests
-        auto reducedContentLength = std::min<uint32_t>(contentLength.value_or(0), buffer.size());
+        auto reducedContentLength = std::min(contentLength.value_or(0), static_cast<uint32_t>(buffer.size()));
         buffer.erase(buffer.begin(), buffer.begin() + reducedContentLength);
         if (contentLength != infra::none)
             *contentLength -= reducedContentLength;
