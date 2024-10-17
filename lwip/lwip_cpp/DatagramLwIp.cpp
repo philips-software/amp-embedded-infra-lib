@@ -317,7 +317,7 @@ namespace services
 
     void DatagramExchangeLwIP::StateIdle::RequestSendStream(std::size_t sendSize, UdpSocket remote)
     {
-        StateWaitingForBuffer& state = datagramExchange.state.Emplace<StateWaitingForBuffer>(datagramExchange, sendSize, infra::MakeOptional(remote));
+        StateWaitingForBuffer& state = datagramExchange.state.Emplace<StateWaitingForBuffer>(datagramExchange, sendSize, std::make_optional(remote));
         state.TryAllocateBuffer();
     }
 

@@ -31,7 +31,7 @@ namespace services
         if (question)
             return;
 
-        question.Emplace(*reader);
+        question.emplace(*reader);
         if (question->IsValid() && question->RequestIncludesOneQuestion())
         {
             answer = FindAnswer(question->Hostname());
@@ -156,7 +156,7 @@ namespace services
 
         for (auto& entry : Entries())
             if (infra::CaseInsensitiveCompare(entry.first, hostnameWithoutWww))
-                return infra::MakeOptional(entry);
+                return std::make_optional(entry);
 
         return infra::none;
     }

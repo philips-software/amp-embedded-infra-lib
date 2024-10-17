@@ -28,7 +28,7 @@ namespace services
     {
         really_assert(GattServerCharacteristicOperationsObserver::Attached());
 
-        updateContext.Emplace(UpdateContext{ onDone, data });
+        updateContext.emplace(UpdateContext{ onDone, data });
         UpdateValue();
     }
 

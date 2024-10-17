@@ -1,6 +1,4 @@
 #include "services/network/DnsResolver.hpp"
-#include "infra/event/EventDispatcher.hpp"
-#include "infra/stream/StringInputStream.hpp"
 #include "infra/util/EnumCast.hpp"
 #include <cctype>
 
@@ -45,7 +43,7 @@ namespace services
 
     void DnsResolver::Resolve(NameResolverResult& nameLookup)
     {
-        activeLookup.Emplace(*this, nameLookup);
+        activeLookup.emplace(*this, nameLookup);
         ++currentNameServer;
         if (currentNameServer == nameServers.size())
             currentNameServer = 0;
@@ -126,7 +124,7 @@ namespace services
             auto answer = ReadAnswer();
 
             if (answer.Is<Answer>())
-                return infra::MakeOptional(std::make_pair(answer.Get<Answer>().address, answer.Get<Answer>().validUntil));
+                return std::make_optional(std::make_pair(answer.Get<Answer>().address, answer.Get<Answer>().validUntil));
             else if (answer.Is<CName>())
                 recurse = true;
         }
@@ -209,7 +207,7 @@ namespace services
             auto address = stream.Extract<IPv4Address>();
 
             if (!stream.Failed())
-                return infra::MakeOptional(IPAddress(address));
+                return std::make_optional(IPAddress(address));
             else
                 return infra::none;
         }

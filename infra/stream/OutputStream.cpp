@@ -1,4 +1,5 @@
 #include "infra/stream/OutputStream.hpp"
+#include "infra/util/Base64.hpp"
 #include <cmath>
 #include <limits>
 

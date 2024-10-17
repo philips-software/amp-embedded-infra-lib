@@ -3,7 +3,6 @@
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
-#include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/util/ConfigurationStore.hpp"
 #include "services/util/Sha256MbedTls.hpp"
 #include "gmock/gmock.h"
@@ -725,7 +724,7 @@ class FactoryDefaultConfigurationStoreIntegrationTest
 public:
     void ConstructConfigurationStore()
     {
-        configurationStore.Emplace(
+        configurationStore.emplace(
             flashFactoryDefault, flashBlob1, flashBlob2, sha256, [this]()
             {
                 OnLoadFactoryDefault();
@@ -1003,7 +1002,7 @@ public:
 
     void ConstructConfigurationStore()
     {
-        configurationStore.Emplace(factoryDefault, flashBlob1, flashBlob2, sha256, [this](bool isFactoryDefault)
+        configurationStore.emplace(factoryDefault, flashBlob1, flashBlob2, sha256, [this](bool isFactoryDefault)
             {
                 OnRecovered(isFactoryDefault);
             });

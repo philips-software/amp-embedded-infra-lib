@@ -1,11 +1,8 @@
 #include "lwip/lwip_cpp/LightweightIpOverEthernet.hpp"
-#include "infra/event/EventDispatcher.hpp"
 #include "lwip/dhcp.h"
 #include "lwip/ethip6.h"
 #include "lwip/igmp.h"
 #include "netif/etharp.h"
-#include <cstdlib>
-#include <cstring>
 
 namespace services
 {
@@ -207,7 +204,7 @@ namespace services
 
     void LightweightIpOverEthernetFactory::Create(hal::EthernetMac& ethernet)
     {
-        ethernetStack.Emplace(ethernet, netInterface);
+        ethernetStack.emplace(ethernet, netInterface);
     }
 
     void LightweightIpOverEthernetFactory::Destroy()

@@ -1,9 +1,6 @@
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
-#include "infra/util/test_helper/MockCallback.hpp"
-#include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/network/MqttClientImpl.hpp"
-#include "services/network/test_doubles/AddressMock.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/network/test_doubles/ConnectionStub.hpp"
 #include "services/network/test_doubles/MqttMock.hpp"
@@ -20,7 +17,7 @@ public:
             services::ConnectionStub::RequestSendStream(sendSize);
         else
         {
-            this->sendSize.Emplace(sendSize);
+            this->sendSize.emplace(sendSize);
             RequestSendStreamMock(sendSize);
         }
     }
