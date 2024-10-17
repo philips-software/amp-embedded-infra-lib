@@ -24,7 +24,8 @@ namespace services
         standby,
         scanning,
         advertising,
-        connected
+        connected,
+        initiating
     };
 
     enum class GapAdvertisingEventType : uint8_t
