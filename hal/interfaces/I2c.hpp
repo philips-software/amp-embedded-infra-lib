@@ -29,7 +29,9 @@ namespace hal
     class I2cAddress
     {
     public:
-        explicit I2cAddress(uint16_t address);
+        explicit constexpr I2cAddress(uint16_t address)
+            : address(address)
+        {}
 
         bool operator==(const I2cAddress& other) const;
         bool operator!=(const I2cAddress& other) const;
