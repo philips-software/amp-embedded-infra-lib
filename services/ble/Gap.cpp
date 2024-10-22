@@ -148,9 +148,9 @@ namespace services
             });
     }
 
-    void GapCentralDecorator::Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType)
+    void GapCentralDecorator::Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType, infra::Duration initiatingTimeout)
     {
-        GapCentralObserver::Subject().Connect(macAddress, addressType);
+        GapCentralObserver::Subject().Connect(macAddress, addressType, initiatingTimeout);
     }
 
     void GapCentralDecorator::Disconnect()

@@ -4,6 +4,7 @@
 #include "hal/interfaces/MacAddress.hpp"
 #include "infra/util/EnumCast.hpp"
 #include "infra/util/Observer.hpp"
+#include "infra/timer/Timer.hpp"
 
 namespace services
 {
@@ -310,7 +311,7 @@ namespace services
         : public infra::Subject<GapCentralObserver>
     {
     public:
-        virtual void Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType) = 0;
+        virtual void Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType, infra::Duration initiatingTimeout) = 0;
         virtual void Disconnect() = 0;
         virtual void SetAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) = 0;
         virtual void StartDeviceDiscovery() = 0;
@@ -329,7 +330,7 @@ namespace services
         void StateChanged(GapState state) override;
 
         // Implementation of GapCentral
-        void Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType) override;
+        void Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType, infra::Duration initiatingTimeout) override;
         void Disconnect() override;
         void SetAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) override;
         void StartDeviceDiscovery() override;

@@ -3,9 +3,8 @@
 #include "infra/util/test_helper/MemoryRangeMatcher.hpp"
 #include "services/ble/test_doubles/GapCentralMock.hpp"
 #include "services/ble/test_doubles/GapCentralObserverMock.hpp"
-#include "services/ble/test_doubles/GapPeripheralMock.hpp"
-#include "services/ble/test_doubles/GapPeripheralObserverMock.hpp"
 #include "gmock/gmock.h"
+#include <chrono>
 
 namespace services
 {
@@ -63,8 +62,8 @@ namespace services
     {
         hal::MacAddress macAddress{ 0, 1, 2, 3, 4, 5 };
 
-        EXPECT_CALL(gap, Connect(MacAddressContentsEqual(macAddress), services::GapDeviceAddressType::publicAddress));
-        decorator.Connect(macAddress, services::GapDeviceAddressType::publicAddress);
+        EXPECT_CALL(gap, Connect(MacAddressContentsEqual(macAddress), services::GapDeviceAddressType::publicAddress, infra::Duration{ 0 }));
+        decorator.Connect(macAddress, services::GapDeviceAddressType::publicAddress, std::chrono::seconds(0));
 
         EXPECT_CALL(gap, Disconnect());
         decorator.Disconnect();

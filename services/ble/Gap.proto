@@ -108,6 +108,7 @@ message ConnectionParameters
 {
     Address address = 1;
     AddressType addressType = 2;
+    uint32 initiatingTimeout = 3;
 }
 
 message Passkey
