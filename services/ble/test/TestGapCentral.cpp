@@ -176,13 +176,7 @@ namespace services
     {
         infra::StringOutputStream::WithStorage<128> stream;
 
-        services::GapState stateStandby = services::GapState::standby;
-        services::GapState stateScanning = services::GapState::scanning;
-        services::GapState stateAdvertising = services::GapState::advertising;
-        services::GapState stateConnected = services::GapState::connected;
-        services::GapState stateInitiating = services::GapState::initiating;
-
-        stream << stateStandby << " " << stateScanning << " " << stateAdvertising << " " << stateConnected << " " << stateInitiating;
+        stream << services::GapState::standby << " " << services::GapState::scanning << " " << services::GapState::advertising << " " << services::GapState::connected << " " << services::GapState::initiating;
 
         EXPECT_EQ("Standby Scanning Advertising Connected Initiating", stream.Storage());
     }
