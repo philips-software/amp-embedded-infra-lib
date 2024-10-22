@@ -20,6 +20,7 @@ namespace infra
 
         Variant();
         Variant(const Variant& other);
+        Variant(Variant&& other) noexcept((std::is_nothrow_move_constructible_v<T> && ...)) = default;
         template<class... T2>
         Variant(const Variant<T2...>& other);
         template<class U>
@@ -30,6 +31,7 @@ namespace infra
         Variant(AtIndex, std::size_t index, Args&&... args);
 
         Variant& operator=(const Variant& other);
+        Variant& operator=(Variant&& other) noexcept((std::is_nothrow_move_assignable_v<T> && ...) && (std::is_nothrow_move_constructible_v<T> && ...)) = default;
         template<class... T2>
         Variant& operator=(const Variant<T2...>& other);
         template<class U>

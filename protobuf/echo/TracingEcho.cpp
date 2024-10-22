@@ -47,7 +47,7 @@ namespace services
     {
         tracer.Continue() << "[";
         for (auto v : value)
-            tracer.Continue() << infra::hex << infra::Width(2, 0) << v;
+            tracer.Continue() << infra::hex << infra::Width(2, '0') << v;
         tracer.Continue() << "]";
     }
 
@@ -168,12 +168,12 @@ namespace services
                 auto save = stream.Reader().ConstructSaveMarker();
                 auto [contents, methodId] = parser.GetPartialField();
 
-                if (stream.Failed() || (contents.Is<infra::PartialProtoLengthDelimited>() && contents.Get<infra::PartialProtoLengthDelimited>().length <= writerBuffer.max_size() - writerBuffer.size()))
+                if (stream.Failed() || !contents.Is<infra::PartialProtoLengthDelimited>() || contents.Get<infra::PartialProtoLengthDelimited>().length > writerBuffer.max_size() - writerBuffer.size())
                     break;
 
                 if (contents.Is<infra::PartialProtoLengthDelimited>() && contents.Get<infra::PartialProtoLengthDelimited>().length > stream.Available())
                 {
-                    tracer.Trace() << "< message too big";
+                    tracer.Trace() << "< message too big for service " << serviceId << " method " << methodId << " length " << contents.Get<infra::PartialProtoLengthDelimited>().length << " available " << stream.Available();
                     skipping = contents.Get<infra::PartialProtoLengthDelimited>().length;
                     writerBuffer.erase(writerBuffer.begin(), writerBuffer.begin() + stream.Reader().Processed());
                     auto skippingNow = std::min<std::size_t>(skipping, writerBuffer.size());

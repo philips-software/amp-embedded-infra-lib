@@ -34,12 +34,14 @@ namespace services
     TEST_F(GapCentralDecoratorTest, forward_all_state_changed_events_to_observers)
     {
         EXPECT_CALL(gapObserver, StateChanged(GapState::connected));
+        EXPECT_CALL(gapObserver, StateChanged(GapState::initiating));
         EXPECT_CALL(gapObserver, StateChanged(GapState::scanning));
         EXPECT_CALL(gapObserver, StateChanged(GapState::standby));
 
         gap.NotifyObservers([](GapCentralObserver& obs)
             {
                 obs.StateChanged(GapState::connected);
+                obs.StateChanged(GapState::initiating);
                 obs.StateChanged(GapState::scanning);
                 obs.StateChanged(GapState::standby);
             });

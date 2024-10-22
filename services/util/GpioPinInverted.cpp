@@ -1,4 +1,9 @@
 #include "services/util/GpioPinInverted.hpp"
+#include "hal/interfaces/Gpio.hpp"
+#include "infra/util/Function.hpp"
+#include <array>
+#include <cassert>
+#include <cstdint>
 
 namespace services
 {
@@ -46,12 +51,12 @@ namespace services
         pin.ResetConfig();
     }
 
-    void GpioPinInverted::EnableInterrupt(const infra::Function<void()>& action, hal::InterruptTrigger trigger)
+    void GpioPinInverted::EnableInterrupt(const infra::Function<void()>& action, hal::InterruptTrigger trigger, hal::InterruptType type)
     {
         static const std::array<hal::InterruptTrigger, 3> inverse = { hal::InterruptTrigger::fallingEdge, hal::InterruptTrigger::risingEdge,
             hal::InterruptTrigger::bothEdges };
         assert(static_cast<uint8_t>(trigger) < inverse.size());
-        pin.EnableInterrupt(action, inverse[static_cast<uint8_t>(trigger)]);
+        pin.EnableInterrupt(action, inverse[static_cast<uint8_t>(trigger)], type);
     }
 
     void GpioPinInverted::DisableInterrupt()

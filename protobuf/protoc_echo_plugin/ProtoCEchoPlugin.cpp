@@ -373,16 +373,6 @@ namespace application
                 result = field.name;
             }
 
-            void VisitRepeated(const EchoFieldRepeated& field) override
-            {
-                result = field.name;
-            }
-
-            void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
-            {
-                result = field.name;
-            }
-
         protected:
             std::string& result;
         };
@@ -1584,7 +1574,7 @@ switch (methodId)
                 printer.Print("}\n");
             }
             else
-                printer.Print(R"(tracer.Continue() << "$servicename$ method " << methodId << " not found";\n)", "servicename", service->name);
+                printer.Print(R"(tracer.Continue() << "$servicename$ method " << methodId << " not found";\ncontents.SkipEverything();\n)", "servicename", service->name);
         }
 
         return result.str();

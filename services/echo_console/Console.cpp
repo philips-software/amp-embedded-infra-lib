@@ -1,5 +1,5 @@
 #include "services/echo_console/Console.hpp"
-#include "infra/stream/ByteOutputStream.hpp"
+#include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/stream/StringInputStream.hpp"
 #include "services/tracer/GlobalTracer.hpp"
 #include <cctype>
@@ -299,14 +299,34 @@ namespace application
             ++parseIndex;
         }
 
-        while (parseIndex != line.size() && std::isdigit(line[parseIndex]))
-            ++parseIndex;
-
-        std::string integer = line.substr(tokenStart, parseIndex - tokenStart);
-
         int32_t value = 0;
-        for (std::size_t index = sign ? 1 : 0; index < integer.size(); ++index)
-            value = value * 10 + integer[index] - '0';
+        if (parseIndex != line.size() && line.substr(parseIndex, 2) == "0x")
+        {
+            tokenStart += 2;
+            parseIndex += 2;
+            while (parseIndex != line.size() && std::isxdigit(line[parseIndex]))
+                ++parseIndex;
+
+            std::string integer = line.substr(tokenStart, parseIndex - tokenStart);
+
+            for (std::size_t index = sign ? 1 : 0; index < integer.size(); ++index)
+            {
+                if (std::isdigit(integer[index]))
+                    value = value * 16 + integer[index] - '0';
+                else
+                    value = value * 16 + std::tolower(integer[index]) - 'a' + 10;
+            }
+        }
+        else
+        {
+            while (parseIndex != line.size() && std::isdigit(line[parseIndex]))
+                ++parseIndex;
+
+            std::string integer = line.substr(tokenStart, parseIndex - tokenStart);
+
+            for (std::size_t index = sign ? 1 : 0; index < integer.size(); ++index)
+                value = value * 10 + integer[index] - '0';
+        }
 
         if (sign)
             value *= -1;
@@ -330,17 +350,22 @@ namespace application
             return ConsoleToken::String(tokenStart, identifier);
     }
 
-    Console::Console(EchoRoot& root)
+    Console::Console(EchoRoot& root, bool stopOnNetworkClose)
         : root(root)
-        , eventDispatcherThread([this]()
+        , eventDispatcherThread([this, stopOnNetworkClose]()
               {
-                  RunEventDispatcher();
+                  RunEventDispatcher(stopOnNetworkClose);
               })
     {}
 
     void Console::Run()
     {
-        while (!quit)
+        {
+            std::unique_lock<std::mutex> lock(mutex);
+            started = true;
+        }
+
+        while (!quit && !stoppedEventDispatcher)
         {
             std::string line;
             std::getline(std::cin, line);
@@ -364,7 +389,7 @@ namespace application
                         condition.notify_all();
                     });
 
-                while (!processDone)
+                while (!processDone && !stoppedEventDispatcher)
                     condition.wait(lock);
             }
         }
@@ -592,14 +617,21 @@ namespace application
         std::cout << "Received method call " << methodId << " for unknown service " << serviceId << std::endl;
     }
 
-    void Console::RunEventDispatcher()
+    void Console::RunEventDispatcher(bool stopOnNetworkClose)
     {
         try
         {
-            network.Run();
+            network.ExecuteUntil([this, stopOnNetworkClose]()
+                {
+                    std::unique_lock<std::mutex> lock(mutex);
+                    return !network.NetworkActivity() && stopOnNetworkClose && started;
+                });
         }
         catch (Quit&)
         {}
+
+        std::unique_lock<std::mutex> lock(mutex);
+        stoppedEventDispatcher = true;
     }
 
     void Console::ListInterfaces()
@@ -745,7 +777,7 @@ namespace application
             MethodInvocation methodInvocation(line);
 
             auto [service, method] = SearchMethod(methodInvocation);
-            infra::ByteOutputStream::WithStorage<4096> stream;
+            infra::StdVectorOutputStream::WithStorage stream;
             infra::ProtoFormatter formatter(stream);
 
             formatter.PutVarInt(service->serviceId);
@@ -754,8 +786,7 @@ namespace application
                 methodInvocation.EncodeParameters(method.parameter, line.size(), formatter);
             }
 
-            auto range = infra::ReinterpretCastMemoryRange<char>(stream.Writer().Processed());
-            GetObserver().Send(std::string(range.begin(), range.end()));
+            GetObserver().Send(infra::ByteRangeAsStdString(infra::MakeRange(stream.Storage())));
         }
         catch (ConsoleExceptions::SyntaxError& error)
         {
@@ -767,11 +798,11 @@ namespace application
         }
         catch (ConsoleExceptions::MissingParameter& error)
         {
-            services::GlobalTracer().Trace() << "Missing parameter at index " << error.index << " (contents after that position is " << line.substr(error.index) << ")\n";
+            services::GlobalTracer().Trace() << "Missing parameter at index " << error.index << " of type " << error.missingType << " (contents after that position is " << line.substr(error.index) << ")\n";
         }
         catch (ConsoleExceptions::IncorrectType& error)
         {
-            services::GlobalTracer().Trace() << "Incorrect type at index " << error.index << " (contents after that position is " << line.substr(error.index) << ")\n";
+            services::GlobalTracer().Trace() << "Incorrect type at index " << error.index << " expected type " << error.correctType << " (contents after that position is " << line.substr(error.index) << ")\n";
         }
         catch (ConsoleExceptions::MethodNotFound& error)
         {
@@ -942,25 +973,22 @@ namespace application
 
         if (!currentToken.Is<ConsoleToken::RightBrace>())
             throw ConsoleExceptions::SyntaxError{ IndexOf(currentToken) };
-        currentToken = tokenizer.Token();
 
         return result;
     }
 
-    std::vector<Console::MessageTokens> Console::MethodInvocation::ProcessArray()
+    Console::MessageTokens Console::MethodInvocation::ProcessArray()
     {
-        std::vector<Console::MessageTokens> result;
+        Console::MessageTokens result;
 
         while (true)
         {
-            Console::MessageTokens message;
             while (!currentToken.Is<ConsoleToken::End>() && !currentToken.Is<ConsoleToken::RightBracket>() && !currentToken.Is<ConsoleToken::Comma>())
             {
-                message.tokens.push_back(CreateMessageTokenValue());
+                result.tokens.push_back(CreateMessageTokenValue());
                 currentToken = tokenizer.Token();
             }
 
-            result.push_back(message);
             if (!currentToken.Is<ConsoleToken::Comma>())
                 break;
 
@@ -969,7 +997,6 @@ namespace application
 
         if (!currentToken.Is<ConsoleToken::RightBracket>())
             throw ConsoleExceptions::SyntaxError{ IndexOf(currentToken) };
-        currentToken = tokenizer.Token();
 
         return result;
     }
@@ -981,7 +1008,7 @@ namespace application
         for (auto field : message.fields)
         {
             if (tokens.empty())
-                throw ConsoleExceptions::MissingParameter{ valueIndex };
+                throw ConsoleExceptions::MissingParameter{ valueIndex, field->protoType };
             EncodeField(*field, tokens.front().first, tokens.front().second, formatter);
             tokens.erase(tokens.begin());
         }
@@ -1002,7 +1029,7 @@ namespace application
             void VisitInt64(const EchoFieldInt64& field) override
             {
                 if (!value.Is<int64_t>())
-                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+                    throw ConsoleExceptions::IncorrectType{ valueIndex, "integer" };
 
                 formatter.PutVarIntField(value.Get<int64_t>(), field.number);
             }
@@ -1010,7 +1037,7 @@ namespace application
             void VisitUint64(const EchoFieldUint64& field) override
             {
                 if (!value.Is<int64_t>())
-                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+                    throw ConsoleExceptions::IncorrectType{ valueIndex, "integer" };
 
                 formatter.PutVarIntField(value.Get<int64_t>(), field.number);
             }
@@ -1018,7 +1045,7 @@ namespace application
             void VisitInt32(const EchoFieldInt32& field) override
             {
                 if (!value.Is<int64_t>())
-                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+                    throw ConsoleExceptions::IncorrectType{ valueIndex, "integer" };
 
                 formatter.PutVarIntField(value.Get<int64_t>(), field.number);
             }
@@ -1026,7 +1053,7 @@ namespace application
             void VisitFixed32(const EchoFieldFixed32& field) override
             {
                 if (!value.Is<int64_t>())
-                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+                    throw ConsoleExceptions::IncorrectType{ valueIndex, "integer" };
 
                 formatter.PutFixed32Field(static_cast<uint32_t>(value.Get<int64_t>()), field.number);
             }
@@ -1034,7 +1061,7 @@ namespace application
             void VisitFixed64(const EchoFieldFixed64& field) override
             {
                 if (!value.Is<int64_t>())
-                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+                    throw ConsoleExceptions::IncorrectType{ valueIndex, "integer" };
 
                 formatter.PutFixed64Field(static_cast<uint64_t>(value.Get<int64_t>()), field.number);
             }
@@ -1042,7 +1069,7 @@ namespace application
             void VisitBool(const EchoFieldBool& field) override
             {
                 if (!value.Is<bool>())
-                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+                    throw ConsoleExceptions::IncorrectType{ valueIndex, "bool" };
 
                 formatter.PutVarIntField(value.Get<bool>(), field.number);
             }
@@ -1050,7 +1077,7 @@ namespace application
             void VisitString(const EchoFieldString& field) override
             {
                 if (!value.Is<std::string>())
-                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+                    throw ConsoleExceptions::IncorrectType{ valueIndex, "string" };
 
                 formatter.PutStringField(infra::BoundedConstString(value.Get<std::string>().data(), value.Get<std::string>().size()), field.number);
             }
@@ -1058,7 +1085,7 @@ namespace application
             void VisitUnboundedString(const EchoFieldUnboundedString& field) override
             {
                 if (!value.Is<std::string>())
-                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+                    throw ConsoleExceptions::IncorrectType{ valueIndex, "string" };
 
                 formatter.PutStringField(infra::BoundedConstString(value.Get<std::string>().data(), value.Get<std::string>().size()), field.number);
             }
@@ -1066,7 +1093,7 @@ namespace application
             void VisitEnum(const EchoFieldEnum& field) override
             {
                 if (!value.Is<int64_t>())
-                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+                    throw ConsoleExceptions::IncorrectType{ valueIndex, "integer" };
 
                 formatter.PutVarIntField(value.Get<int64_t>(), field.number);
             }
@@ -1074,7 +1101,7 @@ namespace application
             void VisitSFixed32(const EchoFieldSFixed32& field) override
             {
                 if (!value.Is<int64_t>())
-                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+                    throw ConsoleExceptions::IncorrectType{ valueIndex, "integer" };
 
                 formatter.PutFixed32Field(static_cast<uint32_t>(value.Get<int64_t>()), field.number);
             }
@@ -1082,7 +1109,7 @@ namespace application
             void VisitSFixed64(const EchoFieldSFixed64& field) override
             {
                 if (!value.Is<int64_t>())
-                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+                    throw ConsoleExceptions::IncorrectType{ valueIndex, "integer" };
 
                 formatter.PutFixed64Field(static_cast<uint64_t>(value.Get<int64_t>()), field.number);
             }
@@ -1090,55 +1117,28 @@ namespace application
             void VisitMessage(const EchoFieldMessage& field) override
             {
                 if (!value.Is<MessageTokens>())
-                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+                    throw ConsoleExceptions::IncorrectType{ valueIndex, field.protoType };
 
-                methodInvocation.EncodeMessage(*field.message, value.Get<MessageTokens>(), valueIndex, formatter);
+                infra::StdVectorOutputStream::WithStorage stream;
+                infra::ProtoFormatter messageFormatter(stream);
+                methodInvocation.EncodeMessage(*field.message, value.Get<MessageTokens>(), valueIndex, messageFormatter);
+                formatter.PutLengthDelimitedField(infra::MakeRange(stream.Storage()), field.number);
             }
 
             void VisitBytes(const EchoFieldBytes& field) override
             {
-                if (!value.Is<std::vector<MessageTokens>>())
-                    throw ConsoleExceptions::IncorrectType{ valueIndex };
-                std::vector<uint8_t> bytes;
-                for (auto& messageTokens : value.Get<std::vector<MessageTokens>>())
-                {
-                    if (messageTokens.tokens.size() < 1)
-                        throw ConsoleExceptions::MissingParameter{ valueIndex };
-                    if (messageTokens.tokens.size() > 1)
-                        throw ConsoleExceptions::TooManyParameters{ messageTokens.tokens[1].second };
-                    if (!messageTokens.tokens.front().first.Is<int64_t>())
-                        throw ConsoleExceptions::IncorrectType{ messageTokens.tokens[0].second };
-
-                    bytes.push_back(static_cast<uint8_t>(messageTokens.tokens.front().first.Get<int64_t>()));
-                }
-
-                formatter.PutBytesField(infra::MakeRange(bytes), field.number);
+                PutVector(field.number);
             }
 
             void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
             {
-                if (!value.Is<std::vector<MessageTokens>>())
-                    throw ConsoleExceptions::IncorrectType{ valueIndex };
-                std::vector<uint8_t> bytes;
-                for (auto& messageTokens : value.Get<std::vector<MessageTokens>>())
-                {
-                    if (messageTokens.tokens.size() < 1)
-                        throw ConsoleExceptions::MissingParameter{ valueIndex };
-                    if (messageTokens.tokens.size() > 1)
-                        throw ConsoleExceptions::TooManyParameters{ messageTokens.tokens[1].second };
-                    if (!messageTokens.tokens.front().first.Is<int64_t>())
-                        throw ConsoleExceptions::IncorrectType{ messageTokens.tokens[0].second };
-
-                    bytes.push_back(static_cast<uint8_t>(messageTokens.tokens.front().first.Get<int64_t>()));
-                }
-
-                formatter.PutBytesField(infra::MakeRange(bytes), field.number);
+                PutVector(field.number);
             }
 
             void VisitUint32(const EchoFieldUint32& field) override
             {
                 if (!value.Is<int64_t>())
-                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+                    throw ConsoleExceptions::IncorrectType{ valueIndex, "integer" };
 
                 formatter.PutVarIntField(value.Get<int64_t>(), field.number);
             }
@@ -1154,39 +1154,40 @@ namespace application
 
             void VisitRepeated(const EchoFieldRepeated& field) override
             {
-                if (!value.Is<std::vector<MessageTokens>>())
-                    throw ConsoleExceptions::IncorrectType{ valueIndex };
-
-                for (auto& messageTokens : value.Get<std::vector<MessageTokens>>())
-                {
-                    if (messageTokens.tokens.size() < 1)
-                        throw ConsoleExceptions::MissingParameter{ valueIndex };
-                    if (messageTokens.tokens.size() > 1)
-                        throw ConsoleExceptions::TooManyParameters{ messageTokens.tokens[1].second };
-                    if (!messageTokens.tokens.front().first.Is<int64_t>())
-                        throw ConsoleExceptions::IncorrectType{ messageTokens.tokens.front().second };
-
-                    EncodeFieldVisitor visitor(messageTokens, valueIndex, formatter, methodInvocation);
-                    field.type->Accept(visitor);
-                }
+                PutRepeated(field.protoType, field.type);
             }
 
             void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
             {
+                PutRepeated(field.protoType, field.type);
+            }
+
+        private:
+            void PutVector(int fieldNumber)
+            {
+                if (!value.Is<MessageTokens>())
+                    throw ConsoleExceptions::IncorrectType{ valueIndex, "vector of integers" };
+                std::vector<uint8_t> bytes;
+                for (auto& messageToken : value.Get<MessageTokens>().tokens)
+                {
+                    if (!messageToken.first.Is<int64_t>())
+                        throw ConsoleExceptions::IncorrectType{ messageToken.second, "integer" };
+
+                    bytes.push_back(static_cast<uint8_t>(messageToken.first.Get<int64_t>()));
+                }
+
+                formatter.PutBytesField(infra::MakeRange(bytes), fieldNumber);
+            }
+
+            void PutRepeated(const std::string& fieldProtoType, std::shared_ptr<EchoField> fieldType)
+            {
                 if (!value.Is<std::vector<MessageTokens>>())
-                    throw ConsoleExceptions::IncorrectType{ valueIndex };
+                    throw ConsoleExceptions::IncorrectType{ valueIndex, fieldProtoType };
 
                 for (auto& messageTokens : value.Get<std::vector<MessageTokens>>())
                 {
-                    if (messageTokens.tokens.size() < 1)
-                        throw ConsoleExceptions::MissingParameter{ valueIndex };
-                    if (messageTokens.tokens.size() > 1)
-                        throw ConsoleExceptions::TooManyParameters{ messageTokens.tokens[1].second };
-                    if (!messageTokens.tokens.front().first.Is<int64_t>())
-                        throw ConsoleExceptions::IncorrectType{ messageTokens.tokens.front().second };
-
                     EncodeFieldVisitor visitor(messageTokens, valueIndex, formatter, methodInvocation);
-                    field.type->Accept(visitor);
+                    fieldType->Accept(visitor);
                 }
             }
 

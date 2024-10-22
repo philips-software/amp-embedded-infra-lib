@@ -158,7 +158,7 @@ TEST_F(ConfigurationBlobTest, Write_writes_to_flash)
 
     infra::ConstByteRange writeBuffer;
     EXPECT_CALL(flash, WriteBuffer(testing::_, 0, testing::_)).WillOnce(testing::DoAll(testing::SaveArg<0>(&writeBuffer), testing::SaveArg<2>(&onWriteDone)));
-    infra::VerifyingFunctionMock<void()> writeDone;
+    infra::VerifyingFunction<void()> writeDone;
     configurationBlob.Write(8, writeDone);
 
     std::array<uint8_t, 20> blobData = { 0x21, 0xf1, 0xfb, 0x20, 0xaf, 0x91, 0x92, 0x86, 8, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 0 };
@@ -190,7 +190,7 @@ TEST_F(ConfigurationBlobTest, Write_writes_to_flash)
 TEST_F(ConfigurationBlobTest, Erase_erases_flash)
 {
     EXPECT_CALL(flash, EraseSectors(0, 1, testing::_)).WillOnce(testing::SaveArg<2>(&onEraseDone));
-    infra::VerifyingFunctionMock<void()> eraseDone;
+    infra::VerifyingFunction<void()> eraseDone;
     configurationBlob.Erase(eraseDone);
 
     onEraseDone();
