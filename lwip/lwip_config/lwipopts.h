@@ -20,7 +20,7 @@ extern "C"
 #define LWIP_DNS 1
 #define LWIP_RAW 0
 #define LWIP_IGMP 1
-uint32_t StaticLwIpRand();
+    uint32_t StaticLwIpRand();
 #define LWIP_RAND() StaticLwIpRand()
 #define MEM_ALIGNMENT 4
 #define LWIP_STATS 0
@@ -43,7 +43,7 @@ uint32_t StaticLwIpRand();
 
 #define LWIP_TCP_PCB_NUM_EXT_ARGS 1
 
-#define LWIP_DHCP_AUTOIP_COOP_TRIES 1
+#define LWIP_DHCP_AUTOIP_COOP_TRIES 5
 
 #ifdef __cplusplus
 }
