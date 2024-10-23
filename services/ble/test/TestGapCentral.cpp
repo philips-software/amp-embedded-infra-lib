@@ -65,6 +65,9 @@ namespace services
         EXPECT_CALL(gap, Connect(MacAddressContentsEqual(macAddress), services::GapDeviceAddressType::publicAddress, infra::Duration{ 0 }));
         decorator.Connect(macAddress, services::GapDeviceAddressType::publicAddress, std::chrono::seconds(0));
 
+        EXPECT_CALL(gap, CancelConnect());
+        decorator.CancelConnect();
+
         EXPECT_CALL(gap, Disconnect());
         decorator.Disconnect();
 

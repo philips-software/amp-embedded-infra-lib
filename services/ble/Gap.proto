@@ -108,7 +108,7 @@ message ConnectionParameters
 {
     Address address = 1;
     AddressType addressType = 2;
-    uint32 initiatingTimeout = 3;
+    uint32 initiatingTimeoutInMs = 3;
 }
 
 message Passkey
@@ -185,14 +185,15 @@ service GapCentral
     rpc StartDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 1; }
     rpc StopDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 2; }
     rpc Connect(ConnectionParameters) returns (Nothing) { option (method_id) = 3; }
-    rpc Disconnect(Nothing) returns (Nothing) { option (method_id) = 4; }
-    rpc Pair(Nothing) returns (Nothing) { option (method_id) = 5; }
-    rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 6; }
-    rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 7; }
-    rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 8; }
-    rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 9; }
-    rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 10; }
-    rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 11; }
+    rpc CancelConnect(Nothing) returns (Nothing) { option (method_id) = 4; }
+    rpc Disconnect(Nothing) returns (Nothing) { option (method_id) = 5; }
+    rpc Pair(Nothing) returns (Nothing) { option (method_id) = 6; }
+    rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 7; }
+    rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 8; }
+    rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 9; }
+    rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 10; }
+    rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 11; }
+    rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 12; }
 }
 
 service GapPeripheralResponse
