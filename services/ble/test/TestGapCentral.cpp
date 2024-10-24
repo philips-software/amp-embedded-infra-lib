@@ -3,9 +3,8 @@
 #include "infra/util/test_helper/MemoryRangeMatcher.hpp"
 #include "services/ble/test_doubles/GapCentralMock.hpp"
 #include "services/ble/test_doubles/GapCentralObserverMock.hpp"
-#include "services/ble/test_doubles/GapPeripheralMock.hpp"
-#include "services/ble/test_doubles/GapPeripheralObserverMock.hpp"
 #include "gmock/gmock.h"
+#include <chrono>
 
 namespace services
 {
@@ -34,12 +33,14 @@ namespace services
     TEST_F(GapCentralDecoratorTest, forward_all_state_changed_events_to_observers)
     {
         EXPECT_CALL(gapObserver, StateChanged(GapState::connected));
+        EXPECT_CALL(gapObserver, StateChanged(GapState::initiating));
         EXPECT_CALL(gapObserver, StateChanged(GapState::scanning));
         EXPECT_CALL(gapObserver, StateChanged(GapState::standby));
 
         gap.NotifyObservers([](GapCentralObserver& obs)
             {
                 obs.StateChanged(GapState::connected);
+                obs.StateChanged(GapState::initiating);
                 obs.StateChanged(GapState::scanning);
                 obs.StateChanged(GapState::standby);
             });
@@ -61,8 +62,11 @@ namespace services
     {
         hal::MacAddress macAddress{ 0, 1, 2, 3, 4, 5 };
 
-        EXPECT_CALL(gap, Connect(MacAddressContentsEqual(macAddress), services::GapDeviceAddressType::publicAddress));
-        decorator.Connect(macAddress, services::GapDeviceAddressType::publicAddress);
+        EXPECT_CALL(gap, Connect(MacAddressContentsEqual(macAddress), services::GapDeviceAddressType::publicAddress, infra::Duration{ 0 }));
+        decorator.Connect(macAddress, services::GapDeviceAddressType::publicAddress, std::chrono::seconds(0));
+
+        EXPECT_CALL(gap, CancelConnect());
+        decorator.CancelConnect();
 
         EXPECT_CALL(gap, Disconnect());
         decorator.Disconnect();
@@ -176,13 +180,8 @@ namespace services
     {
         infra::StringOutputStream::WithStorage<128> stream;
 
-        services::GapState stateStandby = services::GapState::standby;
-        services::GapState stateScanning = services::GapState::scanning;
-        services::GapState stateAdvertising = services::GapState::advertising;
-        services::GapState stateConnected = services::GapState::connected;
+        stream << services::GapState::standby << " " << services::GapState::scanning << " " << services::GapState::advertising << " " << services::GapState::connected << " " << services::GapState::initiating;
 
-        stream << stateStandby << " " << stateScanning << " " << stateAdvertising << " " << stateConnected;
-
-        EXPECT_EQ("Standby Scanning Advertising Connected", stream.Storage());
+        EXPECT_EQ("Standby Scanning Advertising Connected Initiating", stream.Storage());
     }
 }
