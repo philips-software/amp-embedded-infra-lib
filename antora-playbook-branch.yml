@@ -12,7 +12,7 @@ ui:
   bundle:
     url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable
     snapshot: true
-  supplemental_files: ./supplemental-ui
+  supplemental_files: documents/supplemental-ui
 antora:
   extensions:
     - require: "@antora/lunr-extension"
