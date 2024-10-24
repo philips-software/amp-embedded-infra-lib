@@ -6,13 +6,13 @@ site:
 content:
   sources:
     - url: .
-      start_path: documents
-      branches: [.]
+      start_path: .
+      branches: [main]
 ui:
   bundle:
     url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable
     snapshot: true
-  supplemental_files: ./documents/supplemental-ui
+  supplemental_files: ./supplemental-ui
 asciidoc:
   attributes:
     kroki-fetch-diagram: true
