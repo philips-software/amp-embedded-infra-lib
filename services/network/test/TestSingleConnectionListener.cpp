@@ -20,7 +20,7 @@ public:
         : public services::NewConnectionStrategy
     {
     public:
-        MOCK_METHOD(void, StopCurrentConnection, (services::SingleConnectionListener& listener), (override));
+        MOCK_METHOD(void, StopCurrentConnection, (services::SingleConnectionListener & listener), (override));
         MOCK_METHOD(void, StartNewConnection, (), (override));
     };
 
