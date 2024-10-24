@@ -62,7 +62,7 @@ message Characteristic
     uint32 properties = 4;
 }
 
-message Descriptr 
+message Descriptr
 //'Descriptor' keyword is not allowed by Echo code generator 
 {
     bytes uuid = 1 [(bytes_size) = 16];
@@ -100,6 +100,11 @@ service GattClient
     rpc Read(Handle) returns (Nothing) { option (method_id) = 8; }
     rpc Write(CharacteristicData) returns (Nothing) { option (method_id) = 9; }
     rpc WriteWithoutResponse(CharacteristicData) returns (Nothing) { option (method_id) = 10; }
+
+    rpc EnableNotification(Handle) returns (Nothing) { option (method_id) = 11; };
+    rpc DisableNotification(Handle) returns (Nothing) { option (method_id) = 12; };
+    rpc EnableIndication(Handle) returns (Nothing) { option (method_id) = 13; };
+    rpc DisableIndication(Handle) returns (Nothing) { option (method_id) = 14; };
 }
 
 service GattClientResponse
@@ -119,8 +124,9 @@ service GattClientResponse
 
     rpc ReadComplete(ReadResult) returns (Nothing) { option (method_id) = 8; }
     rpc WriteComplete(GattResult) returns (Nothing) { option (method_id) = 9; }
+    rpc SubscriptionChangeDone(Nothing) returns (Nothing) { option (method_id) = 10; }
 
-    rpc IndicationReceived(CharacteristicData) returns (Nothing) { option (method_id) = 10; }
-    rpc NotificationReceived(CharacteristicData) returns (Nothing) { option (method_id) = 11; }
+    rpc IndicationReceived(CharacteristicData) returns (Nothing) { option (method_id) = 11; }
+    rpc NotificationReceived(CharacteristicData) returns (Nothing) { option (method_id) = 12; }
 }
 
