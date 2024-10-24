@@ -212,5 +212,5 @@ COBS -> Windowed : ReleaseWindow\n03 07 00
 
 [source,protobuf]
 ----
-include::SesameSecurity.proto[]
+include::example$SesameSecurity.proto[]
 ----

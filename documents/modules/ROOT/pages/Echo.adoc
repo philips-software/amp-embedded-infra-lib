@@ -164,9 +164,9 @@ decoding the individual message.
 All files should be ordered in the following manner:
 
 1.  Syntax
-1.  Imports (sorted)
-1.  Package
-1.  Everything else
+2.  Imports (sorted)
+3.  Package
+4.  Everything else
 
 === Naming
 
