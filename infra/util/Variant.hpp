@@ -123,7 +123,7 @@ namespace infra
     Variant<T...>::Variant(Variant&& other) noexcept((std::is_nothrow_move_constructible_v<T> && ...))
     {
         detail::MoveConstructVisitor<T...> visitor(*this);
-        ApplyVisitor(visitor, std::move(other));
+        ApplyVisitor(visitor, other);
     }
 
     template<class... T>

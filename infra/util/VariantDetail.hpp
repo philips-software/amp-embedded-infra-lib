@@ -575,7 +575,7 @@ namespace infra
         void MoveAssignVisitor<T...>::operator()(T2& v)
         {
             variant.Destruct();
-            variant.ConstructInEmptyVariant<T2>(std::move(v));
+            variant.template ConstructInEmptyVariant<T2>(std::move(v));
         }
 
         template<class T>
