@@ -430,7 +430,7 @@ TEST_F(HttpClientCachedConnectionTest, Stop_while_closed)
     CreateConnection(factory);
     CloseConnection();
 
-    infra::VerifyingFunctionMock<void()> onDone;
+    infra::VerifyingFunction<void()> onDone;
     connector.Stop([&]()
         {
             onDone.callback();
@@ -441,7 +441,7 @@ TEST_F(HttpClientCachedConnectionTest, Stop_while_connection_open)
 {
     CreateConnection(factory);
 
-    infra::VerifyingFunctionMock<void()> onDone;
+    infra::VerifyingFunction<void()> onDone;
     EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]()
         {
             clientSubject.Detach();

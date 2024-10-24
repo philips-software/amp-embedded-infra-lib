@@ -22,7 +22,7 @@ TEST(MultiFunctionTest, construct_empty_with_nullptr)
 
 TEST(MultiFunctionTest, construct_with_function)
 {
-    infra::VerifyingFunctionMock<void()> m;
+    infra::VerifyingFunction<void()> m;
 
     infra::MultiFunction<void()> f([&]()
         {
@@ -33,7 +33,7 @@ TEST(MultiFunctionTest, construct_with_function)
 
 TEST(MultiFunctionTest, multi_function_construct_with_first)
 {
-    infra::VerifyingFunctionMock<void()> m;
+    infra::VerifyingFunction<void()> m;
 
     infra::MultiFunction<void()>::And<void(bool)>::And<void(int)> f([&]()
         {
@@ -44,7 +44,7 @@ TEST(MultiFunctionTest, multi_function_construct_with_first)
 
 TEST(MultiFunctionTest, multi_function_construct_with_second)
 {
-    infra::VerifyingFunctionMock<void(bool)> m(true);
+    infra::VerifyingFunction<void(bool)> m(true);
 
     infra::MultiFunction<void()>::And<void(bool)> f([&](bool v)
         {
@@ -55,7 +55,7 @@ TEST(MultiFunctionTest, multi_function_construct_with_second)
 
 TEST(MultiFunctionTest, reassign_multi_function)
 {
-    infra::VerifyingFunctionMock<void(bool)> m(true);
+    infra::VerifyingFunction<void(bool)> m(true);
 
     infra::MultiFunction<void()>::And<void(bool)> f([]() {});
     f = [&](bool v)

@@ -2,6 +2,7 @@
 #define HAL_GPIO_HPP
 
 #include "infra/util/Function.hpp"
+#include <cstdint>
 
 namespace hal
 {
@@ -10,6 +11,12 @@ namespace hal
         risingEdge,
         fallingEdge,
         bothEdges
+    };
+
+    enum class InterruptType : uint8_t
+    {
+        dispatched,
+        immediate
     };
 
     enum class PinConfigType : uint8_t
@@ -40,7 +47,7 @@ namespace hal
         virtual void Config(PinConfigType config, bool startOutputState) = 0;
         virtual void ResetConfig() = 0;
 
-        virtual void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger) = 0;
+        virtual void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type = InterruptType::dispatched) = 0;
         virtual void DisableInterrupt() = 0;
     };
 
@@ -54,7 +61,7 @@ namespace hal
 
         bool Get() const;
 
-        void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger);
+        void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type = InterruptType::dispatched);
         void DisableInterrupt();
 
     private:
@@ -91,7 +98,7 @@ namespace hal
         void SetAsInput();
         bool IsInput() const;
 
-        void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger);
+        void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type = InterruptType::dispatched);
         void DisableInterrupt();
 
     private:
@@ -110,7 +117,7 @@ namespace hal
         void Config(PinConfigType config) override;
         void Config(PinConfigType config, bool startOutputState) override;
         void ResetConfig() override;
-        void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger) override;
+        void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type = InterruptType::dispatched) override;
         void DisableInterrupt() override;
     };
 

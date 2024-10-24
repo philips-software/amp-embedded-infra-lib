@@ -1,5 +1,11 @@
 #include "hal/interfaces/test_doubles/GpioStub.hpp"
+#include "hal/interfaces/Gpio.hpp"
+#include "infra/timer/Timer.hpp"
 #include "infra/util/CompareMembers.hpp"
+#include "infra/util/Function.hpp"
+#include "infra/util/Optional.hpp"
+#include <utility>
+#include <vector>
 
 namespace hal
 {
@@ -50,7 +56,7 @@ namespace hal
     void GpioPinStub::ResetConfig()
     {}
 
-    void GpioPinStub::EnableInterrupt(const infra::Function<void()>& actionOnInterrupt, InterruptTrigger trigger)
+    void GpioPinStub::EnableInterrupt(const infra::Function<void()>& actionOnInterrupt, InterruptTrigger trigger, InterruptType type)
     {
         triggerOnChange = std::make_pair(actionOnInterrupt, trigger);
     }

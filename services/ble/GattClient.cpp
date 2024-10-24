@@ -148,13 +148,13 @@ namespace services
         GattClientDiscoveryObserver::Subject().StartServiceDiscovery();
     }
 
-    void GattClientDiscoveryDecorator::StartCharacteristicDiscovery(const GattService& service)
+    void GattClientDiscoveryDecorator::StartCharacteristicDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle)
     {
-        GattClientDiscoveryObserver::Subject().StartCharacteristicDiscovery(service);
+        GattClientDiscoveryObserver::Subject().StartCharacteristicDiscovery(handle, endHandle);
     }
 
-    void GattClientDiscoveryDecorator::StartDescriptorDiscovery(const GattService& service)
+    void GattClientDiscoveryDecorator::StartDescriptorDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle)
     {
-        GattClientDiscoveryObserver::Subject().StartDescriptorDiscovery(service);
+        GattClientDiscoveryObserver::Subject().StartDescriptorDiscovery(handle, endHandle);
     }
 }
