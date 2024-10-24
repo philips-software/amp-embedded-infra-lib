@@ -18,7 +18,7 @@ class DebugLedTest
 public:
     DebugLedTest()
     {
-        debugLed.Emplace(led);
+        debugLed.emplace(led);
     }
 };
 
@@ -35,7 +35,7 @@ TEST_F(DebugLedTest, DebugLedContinuouslyToggles)
 
 TEST_F(DebugLedTestBase, NonStandardDurations)
 {
-    debugLed.Emplace(led, std::chrono::milliseconds(20), std::chrono::milliseconds(80));
+    debugLed.emplace(led, std::chrono::milliseconds(20), std::chrono::milliseconds(80));
 
     ForwardTime(std::chrono::milliseconds(200));
     EXPECT_EQ((std::vector<hal::PinChange>{

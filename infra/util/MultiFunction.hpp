@@ -4,6 +4,7 @@
 #include "infra/util/Compatibility.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/Variant.hpp"
+#include <variant>
 
 namespace infra
 {
@@ -119,7 +120,7 @@ namespace infra
         }
 
     private:
-        infra::Variant<infra::None, F...> functions;
+        infra::Variant<std::monostate, F...> functions;
     };
 
     template<class F>

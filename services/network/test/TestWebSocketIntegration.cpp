@@ -1,6 +1,5 @@
 #include "hal/synchronous_interfaces/test_doubles/SynchronousFixedRandomDataGenerator.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
-#include "infra/util/test_helper/ProxyCreatorMock.hpp"
 #include "services/network/HttpClientImpl.hpp"
 #include "services/network/HttpPageWebSocket.hpp"
 #include "services/network/HttpServer.hpp"
@@ -9,8 +8,6 @@
 #include "services/network/test_doubles/ConnectionFactoryWithNameResolverStub.hpp"
 #include "services/network/test_doubles/ConnectionLoopBack.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
-#include "services/network/test_doubles/HttpClientMock.hpp"
-#include "services/util/test_doubles/StoppableMock.hpp"
 #include "gmock/gmock.h"
 
 namespace
@@ -58,7 +55,7 @@ TEST_F(WebSocketIntegrationTest, create_connection)
         [&clientConnector](infra::Optional<services::HttpClientWebSocketInitiation>& value, services::WebSocketClientObserverFactory& clientObserverFactory,
             services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)
         {
-            value.Emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
+            value.emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
         });
     services::WebSocketClientFactorySingleConnection webSocketClientFactory(randomDataGenerator, { httpClientInitiationCreator });
 
@@ -146,7 +143,7 @@ TEST_F(WebSocketIntegrationTest, create_connection_failed)
         [&clientConnector](infra::Optional<services::HttpClientWebSocketInitiation>& value, services::WebSocketClientObserverFactory& clientObserverFactory,
             services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)
         {
-            value.Emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
+            value.emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
         });
     services::WebSocketClientFactorySingleConnection webSocketClientFactory(randomDataGenerator, { httpClientInitiationCreator });
 

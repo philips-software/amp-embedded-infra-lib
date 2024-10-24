@@ -67,7 +67,7 @@ namespace services
                     infra::JsonArrayIterator collumnIterator = rowIterator->Get<infra::JsonArray>().begin();
                     ++collumnIterator;
                     if (collumnIterator != rowIterator->Get<infra::JsonArray>().end())
-                        return infra::MakeOptional(collumnIterator->Get<infra::JsonString>());
+                        return std::make_optional(collumnIterator->Get<infra::JsonString>());
                 }
         return infra::none;
     }
@@ -133,7 +133,7 @@ namespace services
                 ++argumentCount;
             }
             if (argumentCount == argumentNumber)
-                return infra::MakeOptional(argumentIterator->Get<infra::JsonString>());
+                return std::make_optional(argumentIterator->Get<infra::JsonString>());
         }
         return infra::none;
     }
@@ -149,7 +149,7 @@ namespace services
             infra::StringInputStream stream(stringArgument);
             uint32_t argument;
             stream >> argument;
-            return infra::MakeOptional(argument);
+            return std::make_optional(argument);
         }
 
         return infra::none;
@@ -163,7 +163,7 @@ namespace services
         {
             infra::BoundedString::WithStorage<5> stringArgument;
             optionalStringArgument->ToString(stringArgument);
-            return infra::MakeOptional(stringArgument == "true");
+            return std::make_optional(stringArgument == "true");
         }
 
         return infra::none;

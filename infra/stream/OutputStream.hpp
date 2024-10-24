@@ -3,12 +3,10 @@
 
 #include "infra/stream/StreamErrorPolicy.hpp"
 #include "infra/stream/StreamManipulators.hpp"
-#include "infra/util/Base64.hpp"
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/IntegerNormalization.hpp"
-#include "infra/util/Optional.hpp"
 #include <type_traits>
 
 namespace infra

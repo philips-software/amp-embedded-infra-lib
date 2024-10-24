@@ -198,7 +198,7 @@ namespace infra
         if (subObject == infra::none)
             return {};
 
-        return infra::MakeOptional(token.transformation(*subObject));
+        return std::make_optional(token.transformation(*subObject));
     }
 
     template<class Result>
@@ -218,7 +218,7 @@ namespace infra
         if (subArray == infra::none)
             return {};
 
-        return infra::MakeOptional(token.transformation(*subArray));
+        return std::make_optional(token.transformation(*subArray));
     }
 
     template<class Result>
@@ -238,14 +238,14 @@ namespace infra
         if (member == infra::none)
             return {};
 
-        return infra::MakeOptional(token.transformation(member->ToStdString()));
+        return std::make_optional(token.transformation(member->ToStdString()));
     }
 
     template<class Result>
     infra::Optional<Result> JsonOptionalObjectNavigator::operator/(JsonTransformObjectNavigatorToken<Result> token) const
     {
         if (navigator != infra::none)
-            return infra::MakeOptional(*navigator / token);
+            return std::make_optional(*navigator / token);
         else
             return {};
     }
@@ -263,7 +263,7 @@ namespace infra
     infra::Optional<Result> JsonOptionalObjectNavigator::operator/(JsonTransformArrayNavigatorToken<Result> token) const
     {
         if (navigator != infra::none)
-            return infra::MakeOptional(*navigator / token);
+            return std::make_optional(*navigator / token);
         else
             return {};
     }
@@ -272,7 +272,7 @@ namespace infra
     infra::Optional<Result> JsonOptionalObjectNavigator::operator/(JsonTransformOptionalArrayNavigatorToken<Result> token) const
     {
         if (navigator != infra::none)
-            return infra::MakeOptional(*navigator / token);
+            return std::make_optional(*navigator / token);
         else
             return {};
     }
@@ -281,7 +281,7 @@ namespace infra
     infra::Optional<Result> JsonOptionalObjectNavigator::operator/(JsonTransformStringNavigatorToken<Result> token) const
     {
         if (navigator != infra::none)
-            return infra::MakeOptional(*navigator / token);
+            return std::make_optional(*navigator / token);
         else
             return {};
     }
@@ -290,7 +290,7 @@ namespace infra
     infra::Optional<Result> JsonOptionalObjectNavigator::operator/(JsonTransformOptionalStringNavigatorToken<Result> token) const
     {
         if (navigator != infra::none)
-            return infra::MakeOptional(*navigator / token);
+            return std::make_optional(*navigator / token);
         else
             return {};
     }

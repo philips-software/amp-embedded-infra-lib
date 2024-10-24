@@ -3,8 +3,6 @@
 
 #include "infra/stream/BoundedDequeInputStream.hpp"
 #include "infra/stream/BoundedVectorOutputStream.hpp"
-#include "infra/stream/ByteInputStream.hpp"
-#include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/LimitedInputStream.hpp"
 #include "infra/stream/LimitedOutputStream.hpp"
 #include "infra/util/BoundedDeque.hpp"

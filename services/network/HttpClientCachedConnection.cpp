@@ -223,7 +223,7 @@ namespace services
         assert(clientObserverFactory != nullptr);
         // createdObserver is stored temporarily (until it is invoked) inside the client, so that if the lambda passed to ConnectionEstablished
         // is discarded instead of used, then createdObserver is discarded automatically as well.
-        client.Emplace(*this, std::move(createdObserver));
+        client.emplace(*this, std::move(createdObserver));
 
         clientObserverFactory->ConnectionEstablished([httpClientPtr = clientPtr.MakeShared(*client)](infra::SharedPtr<HttpClientObserver> observer)
             {

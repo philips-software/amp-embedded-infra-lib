@@ -341,7 +341,7 @@ namespace infra
     {
         emplaceFunction = [](infra::Optional<U>& object, ConstructionArgs... args)
         {
-            object.Emplace(args...);
+            object.emplace(args...);
         };
     }
 
@@ -416,7 +416,7 @@ namespace infra
     {
         emplaceFunction = [](infra::Optional<U>& object, ConstructionArgs... args)
         {
-            object.Emplace(args...);
+            object.emplace(args...);
         };
     }
 
@@ -517,7 +517,7 @@ namespace infra
     void CreatorExternal<std::tuple<T...>, void(ConstructionArgs...)>::Emplace(ConstructionArgs... args)
     {
         assert(object == infra::none);
-        object.Emplace(emplaceFunction(args...));
+        object.emplace(emplaceFunction(args...));
     }
 
     template<class... T, class... ConstructionArgs>

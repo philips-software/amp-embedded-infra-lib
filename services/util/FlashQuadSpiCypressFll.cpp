@@ -44,19 +44,19 @@ namespace services
 
     void FlashQuadSpiCypressFll::ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
-        const hal::QuadSpi::Header header{ infra::MakeOptional(commandReadData), hal::QuadSpi::AddressToVector(address << 8, 4), {}, 8 };
+        const hal::QuadSpi::Header header{ std::make_optional(commandReadData), hal::QuadSpi::AddressToVector(address << 8, 4), {}, 8 };
         spi.ReceiveData(header, buffer, hal::QuadSpi::Lines::QuadSpeed(), onDone);
     }
 
     void FlashQuadSpiCypressFll::SwitchToSingleSpeed(infra::Function<void()> onDone)
     {
-        static const hal::QuadSpi::Header exitQpiHeader{ infra::MakeOptional(commandExitQpi), {}, {}, 0 };
+        static const hal::QuadSpi::Header exitQpiHeader{ std::make_optional(commandExitQpi), {}, {}, 0 };
         spi.SendData(exitQpiHeader, {}, hal::QuadSpi::Lines::QuadSpeed(), onDone);
     }
 
     void FlashQuadSpiCypressFll::SwitchToQuadSpeed()
     {
-        static const hal::QuadSpi::Header enterQpiHeader{ infra::MakeOptional(commandEnterQpi), {}, {}, 0 };
+        static const hal::QuadSpi::Header enterQpiHeader{ std::make_optional(commandEnterQpi), {}, {}, 0 };
         spi.SendData(enterQpiHeader, {}, hal::QuadSpi::Lines::SingleSpeed(), [this]()
             {
                 sequencer.Continue();
@@ -65,7 +65,7 @@ namespace services
 
     void FlashQuadSpiCypressFll::WriteEnable()
     {
-        static const hal::QuadSpi::Header writeEnableHeader{ infra::MakeOptional(commandWriteEnable), {}, {}, 0 };
+        static const hal::QuadSpi::Header writeEnableHeader{ std::make_optional(commandWriteEnable), {}, {}, 0 };
         spi.SendData(writeEnableHeader, {}, hal::QuadSpi::Lines::QuadSpeed(), [this]()
             {
                 sequencer.Continue();
@@ -98,7 +98,7 @@ namespace services
 
     void FlashQuadSpiCypressFll::SendEraseSector(uint32_t sectorIndex)
     {
-        hal::QuadSpi::Header eraseSectorHeader{ infra::MakeOptional(commandEraseSector), ConvertAddress(AddressOfSector(sectorIndex)), {}, 0 };
+        hal::QuadSpi::Header eraseSectorHeader{ std::make_optional(commandEraseSector), ConvertAddress(AddressOfSector(sectorIndex)), {}, 0 };
         spi.SendData(eraseSectorHeader, {}, hal::QuadSpi::Lines::QuadSpeed(), [this]()
             {
                 sequencer.Continue();
@@ -107,7 +107,7 @@ namespace services
 
     void FlashQuadSpiCypressFll::SendEraseHalfBlock(uint32_t sectorIndex)
     {
-        hal::QuadSpi::Header eraseHalfBlockHeader{ infra::MakeOptional(commandEraseHalfBlock), ConvertAddress(AddressOfSector(sectorIndex)), {}, 0 };
+        hal::QuadSpi::Header eraseHalfBlockHeader{ std::make_optional(commandEraseHalfBlock), ConvertAddress(AddressOfSector(sectorIndex)), {}, 0 };
         spi.SendData(eraseHalfBlockHeader, {}, hal::QuadSpi::Lines::QuadSpeed(), [this]()
             {
                 sequencer.Continue();
@@ -116,7 +116,7 @@ namespace services
 
     void FlashQuadSpiCypressFll::SendEraseBlock(uint32_t sectorIndex)
     {
-        hal::QuadSpi::Header eraseBlockHeader{ infra::MakeOptional(commandEraseBlock), ConvertAddress(AddressOfSector(sectorIndex)), {}, 0 };
+        hal::QuadSpi::Header eraseBlockHeader{ std::make_optional(commandEraseBlock), ConvertAddress(AddressOfSector(sectorIndex)), {}, 0 };
         spi.SendData(eraseBlockHeader, {}, hal::QuadSpi::Lines::QuadSpeed(), [this]()
             {
                 sequencer.Continue();
@@ -125,7 +125,7 @@ namespace services
 
     void FlashQuadSpiCypressFll::SendEraseChip()
     {
-        static const hal::QuadSpi::Header eraseChipHeader{ infra::MakeOptional(commandEraseChip), {}, {}, 0 };
+        static const hal::QuadSpi::Header eraseChipHeader{ std::make_optional(commandEraseChip), {}, {}, 0 };
         spi.SendData(eraseChipHeader, {}, hal::QuadSpi::Lines::QuadSpeed(), [this]()
             {
                 sequencer.Continue();
@@ -134,7 +134,7 @@ namespace services
 
     void FlashQuadSpiCypressFll::HoldWhileWriteInProgress()
     {
-        static const hal::QuadSpi::Header pollWriteInProgressHeader{ infra::MakeOptional(commandReadStatusRegister), {}, {}, 0 };
+        static const hal::QuadSpi::Header pollWriteInProgressHeader{ std::make_optional(commandReadStatusRegister), {}, {}, 0 };
         spi.PollStatus(pollWriteInProgressHeader, 1, 0, statusFlagWriteInProgress, hal::QuadSpi::Lines::QuadSpeed(), [this]()
             {
                 sequencer.Continue();
@@ -143,7 +143,7 @@ namespace services
 
     void FlashQuadSpiCypressFll::ReadFlashId(infra::ByteRange buffer, infra::Function<void()> onDone)
     {
-        static const hal::QuadSpi::Header readUniqueIdHeader{ infra::MakeOptional(commandReadUniqueId), {}, {}, 16 };
+        static const hal::QuadSpi::Header readUniqueIdHeader{ std::make_optional(commandReadUniqueId), {}, {}, 16 };
         spi.ReceiveData(readUniqueIdHeader, buffer, hal::QuadSpi::Lines::QuadSpeed(), onDone);
     }
 }
