@@ -20,7 +20,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: philips-software/antora-site-action@9e865d1bb06e6dda1ccc1984bcb1f68914d506a0
+      - uses: philips-software/antora-site-action@3540c48165a9ac1620a2cb57f52cafb06f779aa8 # 1.1.0
         with:
           antora_playbook: antora-playbook-site.yml
       - name: Store Antora Site
@@ -44,7 +44,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: philips-software/antora-site-action@9e865d1bb06e6dda1ccc1984bcb1f68914d506a0
+      - uses: philips-software/antora-site-action@3540c48165a9ac1620a2cb57f52cafb06f779aa8 # 1.1.0
         with:
           antora_playbook: antora-playbook-branch.yml
       - name: Store Antora Site
