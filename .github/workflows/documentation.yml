@@ -20,13 +20,10 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - run: npm i asciidoctor-kroki
       - name: Build Antora Site
-        uses: philips-forks/antora-site-action@ef15f74e055960099ec1bf58f4f8148d1f07a0c2
+        uses: philips-software/antora-site-action@9e865d1bb06e6dda1ccc1984bcb1f68914d506a0
         with:
           antora_playbook: antora-playbook-site.yml
-          antora_generator: "antora-site-generator-lunr"
-          antora_docsearch_enabled: "true"
       - name: Store Antora Site
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
@@ -48,13 +45,10 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - run: npm i asciidoctor-kroki
       - name: Build Antora Site
-        uses: philips-forks/antora-site-action@ef15f74e055960099ec1bf58f4f8148d1f07a0c2
+        uses: philips-software/antora-site-action@9e865d1bb06e6dda1ccc1984bcb1f68914d506a0
         with:
-          antora_playbook: antora-playbook-branch.yml
-          antora_generator: "antora-site-generator-lunr"
-          antora_docsearch_enabled: "true"
+          antora_playbook: antora-playbook-site.yml
       - name: Store Antora Site
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
