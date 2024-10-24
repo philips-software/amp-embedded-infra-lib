@@ -177,7 +177,7 @@ ConsoleClientTcp::ConsoleClientTcp(services::ConnectionFactoryWithNameResolver& 
     , hostname(hostname)
     , tracer(tracer)
 {
-    tracer.Trace() << "Connecting to " << hostname;
+    tracer.Trace() << "Connecting to " << Hostname() << " port " << Port();
     tracer.Trace();
 
     connectionFactory.Connect(*this);
@@ -191,12 +191,12 @@ ConsoleClientTcp::~ConsoleClientTcp()
 
 infra::BoundedConstString ConsoleClientTcp::Hostname() const
 {
-    return infra::BoundedConstString(hostname.data(), hostname.size());
+    return services::HostFromUrl(infra::BoundedConstString(hostname));
 }
 
 uint16_t ConsoleClientTcp::Port() const
 {
-    return 1234;
+    return services::PortFromUrl(hostname).ValueOr(1234);
 }
 
 void ConsoleClientTcp::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
