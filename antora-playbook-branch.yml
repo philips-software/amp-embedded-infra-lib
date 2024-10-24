@@ -6,7 +6,7 @@ site:
 content:
   sources:
     - url: .
-      start_path: .
+      start_path: documents
       branches: [.]
 ui:
   bundle:

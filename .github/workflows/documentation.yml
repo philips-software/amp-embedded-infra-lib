@@ -23,7 +23,6 @@ jobs:
       - uses: philips-software/antora-site-action@9e865d1bb06e6dda1ccc1984bcb1f68914d506a0
         with:
           antora_playbook: antora-playbook-site.yml
-          site_sources_path: documents
       - name: Store Antora Site
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
@@ -48,7 +47,6 @@ jobs:
       - uses: philips-software/antora-site-action@9e865d1bb06e6dda1ccc1984bcb1f68914d506a0
         with:
           antora_playbook: antora-playbook-branch.yml
-          site_sources_path: documents
       - name: Store Antora Site
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
