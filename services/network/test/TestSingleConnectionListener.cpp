@@ -12,8 +12,16 @@ public:
         : public services::ConnectionObserverMock
     {
     public:
-        MOCK_METHOD1(Constructed, void(services::IPAddress address));
-        MOCK_METHOD0(Destructed, void());
+        MOCK_METHOD(void, Constructed, (services::IPAddress address), ());
+        MOCK_METHOD(void, Destructed, (), ());
+    };
+
+    class NewConnectionStrategyMock
+        : public services::NewConnectionStrategy
+    {
+    public:
+        MOCK_METHOD(void, StopCurrentConnection, (services::SingleConnectionListener& listener), (override));
+        MOCK_METHOD(void, StartNewConnection, (), (override));
     };
 
     testing::StrictMock<ConnectionObserverMock> connectionObserverMock;
@@ -47,6 +55,24 @@ public:
         ConnectionObserverMock& base;
     };
 
+    void ConnectionAccepted()
+    {
+        serverConnectionObserverFactory->ConnectionAccepted(
+            [this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
+            {
+                connection.Attach(connectionObserver);
+                connectionAccepted.callback(connectionObserver);
+            },
+            services::IPAddress{ services::IPv4Address{ 1, 2, 3, 4 } });
+    }
+
+    void AcceptConnection()
+    {
+        EXPECT_CALL(connectionObserverMock, Constructed(services::IPAddress{ services::IPv4Address{ 1, 2, 3, 4 } }));
+        EXPECT_CALL(connectionAccepted, callback(testing::_)).WillOnce(testing::SaveArg<0>(&connectionObserver));
+        ConnectionAccepted();
+    }
+
     infra::Creator<services::ConnectionObserver, ConnectionObserverStorage, void(services::IPAddress address)> connectionObserverCreator{ [this](infra::Optional<ConnectionObserverStorage>& connectionObserver, services::IPAddress address)
         {
             connectionObserver.Emplace(connectionObserverMock, address);
@@ -62,19 +88,12 @@ public:
     infra::MockCallback<void(infra::SharedPtr<services::ConnectionObserver>)> connectionAccepted;
     infra::SharedPtr<services::ConnectionObserver> connectionObserver;
     testing::StrictMock<services::ConnectionMock> connection;
+    testing::StrictMock<NewConnectionStrategyMock> newConnectionStrategy;
 };
 
 TEST_F(SingleConnectionListenerTest, create_connection)
 {
-    EXPECT_CALL(connectionObserverMock, Constructed(services::IPAddress{ services::IPv4Address{ 1, 2, 3, 4 } }));
-    EXPECT_CALL(connectionAccepted, callback(testing::_)).WillOnce(testing::SaveArg<0>(&connectionObserver));
-    serverConnectionObserverFactory->ConnectionAccepted(
-        [this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-        {
-            connection.Attach(connectionObserver);
-            connectionAccepted.callback(connectionObserver);
-        },
-        services::IPAddress{ services::IPv4Address{ 1, 2, 3, 4 } });
+    AcceptConnection();
 
     EXPECT_CALL(connectionObserverMock, Destructed());
     connectionObserver = nullptr;
@@ -82,24 +101,13 @@ TEST_F(SingleConnectionListenerTest, create_connection)
 
 TEST_F(SingleConnectionListenerTest, second_connection_cancels_first)
 {
-    EXPECT_CALL(connectionObserverMock, Constructed(services::IPAddress{ services::IPv4Address{ 1, 2, 3, 4 } }));
-    EXPECT_CALL(connectionAccepted, callback(testing::_));
-    serverConnectionObserverFactory->ConnectionAccepted(
-        [this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-        {
-            connection.Attach(connectionObserver);
-            connectionAccepted.callback(connectionObserver);
-        },
-        services::IPAddress{ services::IPv4Address{ 1, 2, 3, 4 } });
+    AcceptConnection();
 
-    EXPECT_CALL(connection, CloseAndDestroy());
-    serverConnectionObserverFactory->ConnectionAccepted(
-        [this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
+    EXPECT_CALL(connection, CloseAndDestroy()).WillOnce(testing::Invoke([this]()
         {
-            connection.Attach(connectionObserver);
-            connectionAccepted.callback(connectionObserver);
-        },
-        services::IPAddress{ services::IPv4Address{ 1, 2, 3, 4 } });
+            connectionObserver = nullptr;
+        }));
+    ConnectionAccepted();
 
     EXPECT_CALL(connectionObserverMock, Destructed());
     EXPECT_CALL(connectionObserverMock, Constructed(services::IPAddress{ services::IPv4Address{ 1, 2, 3, 4 } }));
@@ -111,28 +119,14 @@ TEST_F(SingleConnectionListenerTest, second_connection_cancels_first)
 
 TEST_F(SingleConnectionListenerTest, second_connection_while_first_is_destroyed_but_not_allocatable)
 {
-    EXPECT_CALL(connectionObserverMock, Constructed(services::IPAddress{ services::IPv4Address{ 1, 2, 3, 4 } }));
-    EXPECT_CALL(connectionAccepted, callback(testing::_)).WillOnce(testing::SaveArg<0>(&connectionObserver));
-    serverConnectionObserverFactory->ConnectionAccepted(
-        [this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-        {
-            connection.Attach(connectionObserver);
-            connectionAccepted.callback(connectionObserver);
-        },
-        services::IPAddress{ services::IPv4Address{ 1, 2, 3, 4 } });
+    AcceptConnection();
 
     infra::WeakPtr<services::ConnectionObserver> weakObserver = connectionObserver;
     EXPECT_CALL(connectionObserverMock, Destructed());
     connection.Detach();
     connectionObserver = nullptr;
 
-    serverConnectionObserverFactory->ConnectionAccepted(
-        [this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-        {
-            connection.Attach(connectionObserver);
-            connectionAccepted.callback(connectionObserver);
-        },
-        services::IPAddress{ services::IPv4Address{ 1, 2, 3, 4 } });
+    ConnectionAccepted();
 
     EXPECT_CALL(connectionObserverMock, Constructed(services::IPAddress{ services::IPv4Address{ 1, 2, 3, 4 } }));
     EXPECT_CALL(connectionAccepted, callback(testing::_));
@@ -143,15 +137,7 @@ TEST_F(SingleConnectionListenerTest, second_connection_while_first_is_destroyed_
 
 TEST_F(SingleConnectionListenerTest, third_connection_while_second_has_not_yet_been_made)
 {
-    EXPECT_CALL(connectionObserverMock, Constructed(services::IPAddress{ services::IPv4Address{ 1, 2, 3, 4 } }));
-    EXPECT_CALL(connectionAccepted, callback(testing::_)).WillOnce(testing::SaveArg<0>(&connectionObserver));
-    serverConnectionObserverFactory->ConnectionAccepted(
-        [this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-        {
-            connection.Attach(connectionObserver);
-            connectionAccepted.callback(connectionObserver);
-        },
-        services::IPAddress{ services::IPv4Address{ 1, 2, 3, 4 } });
+    AcceptConnection();
 
     infra::WeakPtr<services::ConnectionObserver> weakObserver = connectionObserver;
     EXPECT_CALL(connectionObserverMock, Destructed());
@@ -165,13 +151,7 @@ TEST_F(SingleConnectionListenerTest, third_connection_while_second_has_not_yet_b
         },
         services::IPAddress{ services::IPv4Address{ 1, 2, 3, 4 } });
 
-    serverConnectionObserverFactory->ConnectionAccepted(
-        [this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-        {
-            connection.Attach(connectionObserver);
-            connectionAccepted.callback(connectionObserver);
-        },
-        services::IPAddress{ services::IPv4Address{ 1, 2, 3, 4 } });
+    ConnectionAccepted();
 
     EXPECT_CALL(connectionObserverMock, Constructed(services::IPAddress{ services::IPv4Address{ 1, 2, 3, 4 } }));
     EXPECT_CALL(connectionAccepted, callback(testing::_)).WillOnce(testing::SaveArg<0>(&connectionObserver));
@@ -183,15 +163,8 @@ TEST_F(SingleConnectionListenerTest, third_connection_while_second_has_not_yet_b
 
 TEST_F(SingleConnectionListenerTest, Stop_aborts_connection)
 {
-    EXPECT_CALL(connectionObserverMock, Constructed(services::IPAddress{ services::IPv4Address{ 1, 2, 3, 4 } }));
-    EXPECT_CALL(connectionAccepted, callback(testing::_));
-    serverConnectionObserverFactory->ConnectionAccepted(
-        [this](infra::SharedPtr<services::ConnectionObserver> connectionObserver)
-        {
-            connection.Attach(connectionObserver);
-            connectionAccepted.callback(connectionObserver);
-        },
-        services::IPAddress{ services::IPv4Address{ 1, 2, 3, 4 } });
+    AcceptConnection();
+    connectionObserver = nullptr;
 
     infra::MockCallback<void()> onDone;
     EXPECT_CALL(connection, AbortAndDestroy());
@@ -203,4 +176,32 @@ TEST_F(SingleConnectionListenerTest, Stop_aborts_connection)
     EXPECT_CALL(connectionObserverMock, Destructed());
     EXPECT_CALL(onDone, callback());
     connection.Detach();
+}
+
+TEST_F(SingleConnectionListenerTest, NewConnectionStrategy)
+{
+    listener.SetNewConnectionStrategy(newConnectionStrategy);
+
+    EXPECT_CALL(newConnectionStrategy, StopCurrentConnection(testing::Ref(listener)));
+    AcceptConnection();
+    EXPECT_CALL(newConnectionStrategy, StartNewConnection());
+    listener.StopCurrentConnection(listener);
+    listener.StartNewConnection();
+    connectionObserver = nullptr;
+
+    EXPECT_CALL(newConnectionStrategy, StopCurrentConnection(testing::Ref(listener)));
+    ConnectionAccepted();
+
+    EXPECT_CALL(connection, CloseAndDestroy());
+    listener.StopCurrentConnection(listener);
+
+    EXPECT_CALL(connectionObserverMock, Destructed());
+    EXPECT_CALL(newConnectionStrategy, StartNewConnection());
+    connection.Detach();
+
+    EXPECT_CALL(connectionObserverMock, Constructed(services::IPAddress{ services::IPv4Address{ 1, 2, 3, 4 } }));
+    EXPECT_CALL(connectionAccepted, callback(testing::_));
+    listener.StartNewConnection();
+
+    EXPECT_CALL(connectionObserverMock, Destructed());
 }
