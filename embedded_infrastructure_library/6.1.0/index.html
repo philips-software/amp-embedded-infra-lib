@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>amp-embedded-infra-lib :: Embedded Infrastructure Library</title>
     <link rel="canonical" href="https://philips-software.github.io/amp-embedded-infra-lib/embedded_infrastructure_library/6.1.0/index.html">
-    <meta name="generator" content="Antora 2.3.4">
+    <meta name="generator" content="Antora 3.1.9">
     <link rel="stylesheet" href="../../_/css/centralesans.css">
     <link rel="stylesheet" href="../../_/css/site.css">
     <link rel="stylesheet" href="../../_/css/site-extra.css">
@@ -111,7 +111,7 @@
 <h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>amp-embedded-infra-lib is a set of C++ libraries and headers that provide heap-less, <a href="https://en.wikipedia.org/wiki/Standard_Template_Library">STL</a> like, infrastructure for embedded software development. It includes, amongst others; a hardware abstraction layer (HAL), a <a href="Echo.html" class="page">remote procedure call</a> (RPC) implementation for TCP/IP and <a href="Sesame.html" class="page">Serial communication</a>, a <a href="NetworkConnections.html" class="page">networking layer</a>, a secure upgrade mechanism and several other re-usable utility classes.</p>
+<p>amp-embedded-infra-lib is a set of C++ libraries and headers that provide heap-less, <a href="https://en.wikipedia.org/wiki/Standard_Template_Library">STL</a> like, infrastructure for embedded software development. It includes, amongst others; a hardware abstraction layer (HAL), a <a href="Echo.html" class="xref page">remote procedure call</a> (RPC) implementation for TCP/IP and <a href="Sesame.html" class="xref page">Serial communication</a>, a <a href="NetworkConnections.html" class="xref page">networking layer</a>, a secure upgrade mechanism and several other re-usable utility classes.</p>
 </div>
 <div class="paragraph">
 <p>amp-embedded-infra-lib is available as <a href="https://philips-software.github.io/">Philips Open Source</a> under a <a href="https://choosealicense.com/licenses/mit/">MIT</a> license.</p>
@@ -135,7 +135,7 @@
 <h2 id="_infra"><a class="anchor" href="#_infra"></a>infra</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>The <code>infra</code> package contains the building blocks that all further code is built upon. There are basics concept like <a href="MemoryRange.html" class="page"><code>infra::MemoryRange</code></a> that provides an abstraction for a block of memory and several <a href="Containers.html" class="page">Containers</a> that provide fixed-size alternatives for the well-known standard library containers like: <code>std::vector</code>, <code>std::list</code>, <code>std::queue</code>, etc.</p>
+<p>The <code>infra</code> package contains the building blocks that all further code is built upon. There are basics concept like <a href="MemoryRange.html" class="xref page"><code>infra::MemoryRange</code></a> that provides an abstraction for a block of memory and several <a href="Containers.html" class="xref page">Containers</a> that provide fixed-size alternatives for the well-known standard library containers like: <code>std::vector</code>, <code>std::list</code>, <code>std::queue</code>, etc.</p>
 </div>
 <div class="paragraph">
 <p>In the next few chapters the contents of the components within <code>infra</code> will be described.</p>
@@ -223,5 +223,8 @@ mediumZoom('.data-zoomable img', {
 </script>
 <script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
 <script async src="../../_/js/vendor/highlight.js"></script>
+<script src="../../_/js/vendor/lunr.js"></script>
+<script src="../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../.." data-snippet-length="100" data-stylesheet="../../_/css/search.css"></script>
+<script async src="../../search-index.js"></script>
   </body>
 </html>

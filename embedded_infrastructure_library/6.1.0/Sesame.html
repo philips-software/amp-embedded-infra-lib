@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>SESAME (SErial Secure Adaptable Message Exchange) :: Embedded Infrastructure Library</title>
     <link rel="canonical" href="https://philips-software.github.io/amp-embedded-infra-lib/embedded_infrastructure_library/6.1.0/Sesame.html">
-    <meta name="generator" content="Antora 2.3.4">
+    <meta name="generator" content="Antora 3.1.9">
     <link rel="stylesheet" href="../../_/css/centralesans.css">
     <link rel="stylesheet" href="../../_/css/site.css">
     <link rel="stylesheet" href="../../_/css/site-extra.css">
@@ -112,7 +112,7 @@
 <div class="sectionbody">
 <div class="paragraph">
 <p>Microcontrollers often communicate with each other using a UART connection.
-Before such a serial connection can be used by the <a href="Echo.html" class="page">ECHO</a> protocol,
+Before such a serial connection can be used by the <a href="Echo.html" class="xref page">ECHO</a> protocol,
 a mechanism is needed to initialize communication and prevent overflowing buffers
 on the peer. Furthermore, a means to secure the communication is required.
 For these purposes the SESAME protocol stack is developed.</p>
@@ -327,7 +327,24 @@ being sent.</p>
 <div class="sectionbody">
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-protobuf hljs" data-lang="protobuf">Unresolved include directive in modules/ROOT/pages/Sesame.adoc - include::SesameSecurity.proto[]</code></pre>
+<pre class="highlightjs highlight"><code class="language-protobuf hljs" data-lang="protobuf">syntax = "proto3";
+
+import "EchoAttributes.proto";
+
+package sesame_security;
+
+message SymmetricKeyMaterial
+{
+    bytes key = 1 [(bytes_size) = 16];
+    bytes iv = 2 [(bytes_size) = 16];
+}
+
+service SymmetricKeyEstablishment
+{
+    option (service_id) = 3;
+
+    rpc ActivateNewKeyMaterial(SymmetricKeyMaterial) returns (Nothing) { option (method_id) = 1; }
+}</code></pre>
 </div>
 </div>
 </div>
@@ -349,5 +366,8 @@ mediumZoom('.data-zoomable img', {
 </script>
 <script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
 <script async src="../../_/js/vendor/highlight.js"></script>
+<script src="../../_/js/vendor/lunr.js"></script>
+<script src="../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../.." data-snippet-length="100" data-stylesheet="../../_/css/search.css"></script>
+<script async src="../../search-index.js"></script>
   </body>
 </html>
