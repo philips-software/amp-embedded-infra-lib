@@ -6,7 +6,7 @@
 #include <type_traits>
 
 #ifdef _MSC_VER
-#define NOEXCEPT_SPECIFICATION(x)   // VS2022 does not handle nothrow specifications well in c++20 mode
+#define NOEXCEPT_SPECIFICATION(x) // VS2022 does not handle nothrow specifications well in c++20 mode
 #else
 #define NOEXCEPT_SPECIFICATION(x) noexcept(x)
 #endif
