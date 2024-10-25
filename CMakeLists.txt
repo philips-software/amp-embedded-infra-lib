@@ -99,6 +99,9 @@ else()
     set(EMIL_DEFAULTOPT_BUILD_ECHO_COMPILERS Off)
 endif()
 option(EMIL_BUILD_ECHO_COMPILERS "Build and install the Protobuf ECHO compilers" ${EMIL_DEFAULTOPT_BUILD_ECHO_COMPILERS})
+if (EMIL_FETCH_ECHO_COMPILERS AND EMIL_BUILD_ECHO_COMPILERS)
+    message(FATAL_ERROR "Invalid combination: EMIL_FETCH_ECHO_COMPILERS AND EMIL_BUILD_ECHO_COMPILERS. Please select only one of these.")
+endif()
 
 # Enable or disable optional features.
 option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of EmIL" On)
