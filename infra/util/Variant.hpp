@@ -5,6 +5,12 @@
 #include "infra/util/VariantDetail.hpp"
 #include <type_traits>
 
+#ifdef _MSC_VER
+#define NOEXCEPT_SPECIFICATION(x)   // VS2022 does not handle nothrow specifications well in c++20 mode
+#else
+#define NOEXCEPT_SPECIFICATION(x) noexcept(x)
+#endif
+
 namespace infra
 {
     struct AtIndex
@@ -20,7 +26,7 @@ namespace infra
 
         Variant();
         Variant(const Variant& other);
-        Variant(Variant&& other) noexcept((std::is_nothrow_move_constructible_v<T> && ...));
+        Variant(Variant&& other) NOEXCEPT_SPECIFICATION((std::is_nothrow_move_constructible_v<T> && ...));
         template<class... T2>
         Variant(const Variant<T2...>& other);
         template<class U>
@@ -31,7 +37,7 @@ namespace infra
         Variant(AtIndex, std::size_t index, Args&&... args);
 
         Variant& operator=(const Variant& other);
-        Variant& operator=(Variant&& other) noexcept((std::is_nothrow_move_assignable_v<T> && ...) && (std::is_nothrow_move_constructible_v<T> && ...));
+        Variant& operator=(Variant&& other) NOEXCEPT_SPECIFICATION((std::is_nothrow_move_assignable_v<T> && ...) && (std::is_nothrow_move_constructible_v<T> && ...));
         template<class... T2>
         Variant& operator=(const Variant<T2...>& other);
         template<class U>
@@ -120,7 +126,7 @@ namespace infra
     }
 
     template<class... T>
-    Variant<T...>::Variant(Variant&& other) noexcept((std::is_nothrow_move_constructible_v<T> && ...))
+    Variant<T...>::Variant(Variant&& other) NOEXCEPT_SPECIFICATION((std::is_nothrow_move_constructible_v<T> && ...))
     {
         detail::MoveConstructVisitor<T...> visitor(*this);
         ApplyVisitor(visitor, other);
@@ -168,7 +174,7 @@ namespace infra
     }
 
     template<class... T>
-    Variant<T...>& Variant<T...>::operator=(Variant&& other) noexcept((std::is_nothrow_move_assignable_v<T> && ...) && (std::is_nothrow_move_constructible_v<T> && ...))
+    Variant<T...>& Variant<T...>::operator=(Variant&& other) NOEXCEPT_SPECIFICATION((std::is_nothrow_move_assignable_v<T> && ...) && (std::is_nothrow_move_constructible_v<T> && ...))
     {
         if (this != &other)
         {
