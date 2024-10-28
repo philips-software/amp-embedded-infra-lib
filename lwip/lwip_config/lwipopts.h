@@ -43,7 +43,7 @@ uint32_t StaticLwIpRand();
 
 #define LWIP_TCP_PCB_NUM_EXT_ARGS 1
 
-#define LWIP_DHCP_AUTOIP_COOP_TRIES 1
+#define LWIP_DHCP_AUTOIP_COOP_TRIES 5
 
 #ifdef __cplusplus
 }
