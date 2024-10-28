@@ -41,10 +41,12 @@ namespace application
 
     private:
         void DiscoverPeerServices();
-        void StartDiscovery(ServiceRange range = serviceRangeMax);
+        void StartDiscovery();
+        void ClearUpdatedServices();
 
     private:
-        infra::BoundedVector<uint32_t>::WithMaxSize<2> services;
+        infra::BoundedVector<uint32_t>::WithMaxSize<10> services;
+        ServiceRange searchRange;
     };
 }
 

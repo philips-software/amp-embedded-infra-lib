@@ -105,11 +105,11 @@ public:
         EXPECT_CALL(serviceDiscovery, FindFirstServiceInRangeMock(0, std::numeric_limits<uint32_t>::max()));
     }
 
-    void QueryServices(infra::MemoryRange<uint32_t> services)
+    void QueryServices(infra::MemoryRange<uint32_t> services, uint32_t searchEnd = std::numeric_limits<uint32_t>::max())
     {
         for (auto service : services)
         {
-            EXPECT_CALL(serviceDiscovery, FindFirstServiceInRangeMock(service, std::numeric_limits<uint32_t>::max()));
+            EXPECT_CALL(serviceDiscovery, FindFirstServiceInRangeMock(service + 1, searchEnd));
             ServiceSupported(service);
         }
     }
@@ -122,7 +122,7 @@ public:
 
     using ServicesList = infra::MemoryRange<uint32_t>;
 
-    std::tuple<std::set<uint32_t>, std::set<uint32_t>> FindUpdatedSet(ServicesList oldServiceList, ServicesList newServiceList)
+    auto FindAddedAndRemovedServices(ServicesList oldServiceList, ServicesList newServiceList)
     {
         std::set<uint32_t> oldSet(oldServiceList.begin(), oldServiceList.end());
         std::set<uint32_t> newSet(newServiceList.begin(), newServiceList.end());
@@ -133,10 +133,13 @@ public:
         std::set_difference(newSet.begin(), newSet.end(), oldSet.begin(), oldSet.end(), std::inserter(addedServices, addedServices.end()));
         std::set_difference(oldSet.begin(), oldSet.end(), newSet.begin(), newSet.end(), std::inserter(removedServices, removedServices.end()));
 
-        return std::make_tuple(addedServices, removedServices);
+        std::vector<uint32_t> addedServicesVector(addedServices.begin(), addedServices.end());
+        std::vector<uint32_t> removedServicesVector(removedServices.begin(), removedServices.end());
+
+        return std::make_tuple(addedServicesVector, removedServicesVector);
     }
 
-    auto FindUpdatedRange(std::set<uint32_t> range1, std::set<uint32_t> range2)
+    auto FindMaximalRange(std::vector<uint32_t> range1, std::vector<uint32_t> range2)
     {
         if (range1.empty())
             return std::make_tuple(*range2.begin(), *range2.rbegin());
@@ -148,10 +151,17 @@ public:
 
     void UpdateServices(ServicesList oldServiceList, ServicesList newServiceList)
     {
-        auto [addedServices, removedServices] = FindUpdatedSet(oldServiceList, newServiceList);
-        
-        auto updatedRange = FindUpdatedRange(addedServices, removedServices);
+        auto [addedServices, removedServices] = FindAddedAndRemovedServices(oldServiceList, newServiceList);
 
+        auto updatedRange = FindMaximalRange(addedServices, removedServices);
+        auto searchBegin = std::get<0>(updatedRange);
+        auto searchEnd = std::get<1>(updatedRange);
+
+        EXPECT_CALL(serviceDiscovery, FindFirstServiceInRangeMock(searchBegin, searchEnd));
+        ServicesChanged(searchBegin, searchEnd);
+
+        QueryServices(addedServices, searchEnd);
+        // ServicesDiscovered(newServiceList);
     }
 };
 

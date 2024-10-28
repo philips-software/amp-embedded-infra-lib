@@ -1,5 +1,4 @@
 #include "protobuf/meta_services/PeerServiceDiscoverer.hpp"
-#include "infra/event/EventDispatcher.hpp"
 #include "infra/util/Function.hpp"
 #include <cstdint>
 #include <limits>
@@ -28,7 +27,7 @@ namespace application
         services.push_back(id);
         RequestSend([this]
             {
-                FindFirstServiceInRange(services.back(), std::numeric_limits<uint32_t>::max());
+                FindFirstServiceInRange(services.back() + 1, std::get<1>(searchRange));
             });
 
         MethodDone();
@@ -36,13 +35,17 @@ namespace application
 
     void PeerServiceDiscovererEcho::ServicesChanged(uint32_t startServiceId, uint32_t endServiceId)
     {
-        StartDiscovery(ServiceRange{ startServiceId, endServiceId });
+        searchRange = ServiceRange{ startServiceId, endServiceId };
+
+        StartDiscovery();
 
         MethodDone();
     }
 
     void PeerServiceDiscovererEcho::DiscoverPeerServices()
     {
+        searchRange = serviceRangeMax;
+
         RequestSend([this]
             {
                 NotifyServiceChanges(true);
@@ -50,17 +53,22 @@ namespace application
             });
     }
 
-    void PeerServiceDiscovererEcho::StartDiscovery(ServiceRange range)
+    void PeerServiceDiscovererEcho::ClearUpdatedServices()
     {
-        services.erase(std::remove_if(services.begin(), services.end(), [range](uint32_t serviceId)
+        services.erase(std::remove_if(services.begin(), services.end(), [this](uint32_t serviceId)
                            {
-                               return serviceId >= std::get<0>(range) && serviceId <= std::get<1>(range);
+                               return serviceId >= std::get<0>(searchRange) && serviceId <= std::get<1>(searchRange);
                            }),
             services.end());
+    }
 
-        RequestSend([this, range]
+    void PeerServiceDiscovererEcho::StartDiscovery()
+    {
+        ClearUpdatedServices();
+
+        RequestSend([this]
             {
-                FindFirstServiceInRange(std::get<0>(range), std::get<1>(range));
+                FindFirstServiceInRange(std::get<0>(searchRange), std::get<1>(searchRange));
             });
     }
 }
