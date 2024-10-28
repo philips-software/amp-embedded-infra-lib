@@ -2,6 +2,32 @@
 #include "gtest/gtest.h"
 #include <cstdint>
 
+struct MoveableStruct
+{
+    MoveableStruct(int x)
+        : x(x)
+    {}
+
+    MoveableStruct(const MoveableStruct& other) = delete;
+    MoveableStruct& operator=(const MoveableStruct& other) = delete;
+
+    MoveableStruct(MoveableStruct&& other)
+        : x(other.x)
+    {
+        other.x = 0;
+    }
+
+    MoveableStruct& operator=(MoveableStruct&& other)
+    {
+        x = other.x;
+        other.x = 0;
+
+        return *this;
+    }
+
+    int x;
+};
+
 TEST(VariantTest, TestEmptyConstruction)
 {
     infra::Variant<bool> v;
@@ -109,6 +135,25 @@ TEST(VariantTest, TestAssignmentFromNarrowVariant)
     infra::Variant<bool, int> v(true);
     v = infra::Variant<int>(5);
     EXPECT_EQ(5, v.Get<int>());
+}
+
+TEST(VariantTest, TestMoveConstruct)
+{
+    infra::Variant<MoveableStruct> v(infra::InPlaceType<MoveableStruct>(), 2);
+    auto v2(std::move(v));
+    EXPECT_EQ(0, v2.Which());
+    EXPECT_EQ(0, v.Get<MoveableStruct>().x);
+    EXPECT_EQ(2, v2.Get<MoveableStruct>().x);
+}
+
+TEST(VariantTest, TestMoveAssign)
+{
+    infra::Variant<MoveableStruct> v(infra::InPlaceType<MoveableStruct>(), 2);
+    infra::Variant<MoveableStruct> v2(infra::InPlaceType<MoveableStruct>(), 3);
+    v2 = std::move(v);
+    EXPECT_EQ(0, v2.Which());
+    EXPECT_EQ(0, v.Get<MoveableStruct>().x);
+    EXPECT_EQ(2, v2.Get<MoveableStruct>().x);
 }
 
 TEST(VariantTest, TestVariantWithTwoTypes)
