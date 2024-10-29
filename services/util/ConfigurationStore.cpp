@@ -252,10 +252,7 @@ namespace services
             {
                 if (success)
                 {
-                    inactiveBlob->Erase([this]()
-                        {
-                            OnBlobLoaded(true);
-                        });
+                    OnBlobLoaded(true);
                 }
                 else
                 {
