@@ -1,14 +1,7 @@
 #ifndef PROTOBUF_ECHO_ERROR_POLICY_HPP
 #define PROTOBUF_ECHO_ERROR_POLICY_HPP
 
-#include "infra/stream/BufferingStreamReader.hpp"
-#include "infra/util/BoundedDeque.hpp"
-#include "infra/util/Compatibility.hpp"
-#include "infra/util/Function.hpp"
-#include "infra/util/Observer.hpp"
-#include "infra/util/Optional.hpp"
-#include "protobuf/echo/Proto.hpp"
-#include "protobuf/echo/Serialization.hpp"
+#include <cstdint>
 
 namespace services
 {
