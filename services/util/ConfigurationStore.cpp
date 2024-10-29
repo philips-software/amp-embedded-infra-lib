@@ -209,14 +209,17 @@ namespace services
             ++operationId;
             writeRequested = false;
             writingBlob = true;
-            Serialize(*activeBlob, [this, thisId]()
+            activeBlob->Erase([this, thisId]()
                 {
-                    inactiveBlob->Erase([this, thisId]()
+                    Serialize(*activeBlob, [this, thisId]()
                         {
-                            BlobWriteDone();
-                            NotifyObservers([thisId](ConfigurationStoreObserver& observer)
+                            inactiveBlob->Erase([this, thisId]()
                                 {
-                                    observer.OperationDone(thisId);
+                                    BlobWriteDone();
+                                    NotifyObservers([thisId](ConfigurationStoreObserver& observer)
+                                        {
+                                            observer.OperationDone(thisId);
+                                        });
                                 });
                         });
                 });
