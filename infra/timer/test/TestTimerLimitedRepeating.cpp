@@ -1,8 +1,10 @@
+#include "infra/timer/Timer.hpp"
 #include "infra/timer/TimerLimitedRepeating.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include <chrono>
 
 class TimerLimitedRepeatingTest
     : public testing::Test
@@ -91,4 +93,53 @@ TEST_F(TimerLimitedRepeatingTest, Restart0AfterFirstCallback)
         });
 
     ForwardTime(std::chrono::seconds(5));
+}
+
+TEST_F(TimerLimitedRepeatingTest, TimerTriggersImmediately)
+{
+    infra::MockCallback<void()> callback;
+    EXPECT_CALL(callback, callback()).With(After(std::chrono::seconds(0)));
+    EXPECT_CALL(callback, callback()).With(After(std::chrono::seconds(1)));
+
+    infra::TimerLimitedRepeating timer(
+        2,
+        std::chrono::seconds(1), [&callback]()
+        {
+            callback.callback();
+        },
+        infra::triggerImmediately);
+
+    ForwardTime(std::chrono::seconds(1));
+}
+
+TEST_F(TimerLimitedRepeatingTest, TimerTriggersImmediatelyNever)
+{
+    infra::MockCallback<void()> callback;
+    EXPECT_CALL(callback, callback()).Times(0);
+
+    infra::TimerLimitedRepeating timer(
+        0,
+        std::chrono::seconds(1), [&callback]()
+        {
+            callback.callback();
+        },
+        infra::triggerImmediately);
+
+    ForwardTime(std::chrono::seconds(1));
+}
+
+TEST_F(TimerLimitedRepeatingTest, TimerTriggersImmediatelyOnce)
+{
+    infra::MockCallback<void()> callback;
+    EXPECT_CALL(callback, callback()).Times(1);
+
+    infra::TimerLimitedRepeating timer(
+        1,
+        std::chrono::seconds(1), [&callback]()
+        {
+            callback.callback();
+        },
+        infra::triggerImmediately);
+
+    ForwardTime(std::chrono::seconds(1));
 }
