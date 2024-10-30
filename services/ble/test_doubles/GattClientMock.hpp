@@ -13,7 +13,18 @@ namespace services
     public:
         using services::GattClientCharacteristicUpdateObserver::GattClientCharacteristicUpdateObserver;
 
-        MOCK_METHOD(void, UpdateReceived, (infra::ConstByteRange data), (override));
+        MOCK_METHOD(void, NotificationReceived, (infra::ConstByteRange data), (override));
+        MOCK_METHOD(void, IndicationReceived, (infra::ConstByteRange data, const infra::Function<void()>& onDone), (override));
+    };
+
+    class GattClientStackUpdateObserverMock
+        : public services::GattClientStackUpdateObserver
+    {
+    public:
+        using services::GattClientStackUpdateObserver::GattClientStackUpdateObserver;
+
+        MOCK_METHOD(void, NotificationReceived, (AttAttribute::Handle handle, infra::ConstByteRange data), (override));
+        MOCK_METHOD(void, IndicationReceived, (AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone), (override));
     };
 
     class GattClientCharacteristicOperationsObserverMock

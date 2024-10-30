@@ -105,6 +105,8 @@ service GattClient
     rpc DisableNotification(Handle) returns (Nothing) { option (method_id) = 12; };
     rpc EnableIndication(Handle) returns (Nothing) { option (method_id) = 13; };
     rpc DisableIndication(Handle) returns (Nothing) { option (method_id) = 14; };
+
+    rpc IndicationDone(Nothing) returns (Nothing) { option (method_id) = 15; };
 }
 
 service GattClientResponse

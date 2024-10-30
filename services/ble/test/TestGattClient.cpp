@@ -77,10 +77,24 @@ public:
 
 TEST_F(GattClientCharacteristicTest, receives_valid_notification_should_notify_observers)
 {
-    EXPECT_CALL(gattUpdateObserver, UpdateReceived(infra::ByteRangeContentsEqual(infra::MakeStringByteRange("string"))));
+    EXPECT_CALL(gattUpdateObserver, NotificationReceived(infra::ByteRangeContentsEqual(infra::MakeStringByteRange("string"))));
     operations.infra::Subject<services::GattClientStackUpdateObserver>::NotifyObservers([](auto& observer)
         {
-            observer.UpdateReceived(characteristicValueHandle, infra::MakeStringByteRange("string"));
+            observer.NotificationReceived(characteristicValueHandle, infra::MakeStringByteRange("string"));
+        });
+}
+
+TEST_F(GattClientCharacteristicTest, receives_valid_indication_should_notify_observers)
+{
+    infra::VerifyingFunction<void()> callback;
+
+    EXPECT_CALL(gattUpdateObserver, IndicationReceived(infra::ByteRangeContentsEqual(infra::MakeStringByteRange("string")), testing::_));
+    operations.infra::Subject<services::GattClientStackUpdateObserver>::NotifyObservers([&callback](auto& observer)
+        {
+            observer.IndicationReceived(characteristicValueHandle, infra::MakeStringByteRange("string"), [&callback]()
+                {
+                    callback.callback();
+                });
         });
 }
 
@@ -90,7 +104,17 @@ TEST_F(GattClientCharacteristicTest, receives_invalid_notification_should_not_no
 
     operations.infra::Subject<services::GattClientStackUpdateObserver>::NotifyObservers([&invalidCharacteristicValueHandle](auto& observer)
         {
-            observer.UpdateReceived(invalidCharacteristicValueHandle, infra::MakeStringByteRange("string"));
+            observer.NotificationReceived(invalidCharacteristicValueHandle, infra::MakeStringByteRange("string"));
+        });
+}
+
+TEST_F(GattClientCharacteristicTest, receives_invalid_indication_should_not_notify_observers)
+{
+    const services::AttAttribute::Handle invalidCharacteristicValueHandle = 0x7;
+
+    operations.infra::Subject<services::GattClientStackUpdateObserver>::NotifyObservers([&invalidCharacteristicValueHandle](auto& observer)
+        {
+            observer.IndicationReceived(invalidCharacteristicValueHandle, infra::MakeStringByteRange("string"));
         });
 }
 
