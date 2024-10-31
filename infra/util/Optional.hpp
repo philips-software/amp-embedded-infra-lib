@@ -52,9 +52,9 @@ namespace infra
         Optional& operator=(T&& value);
 
         template<class... Args>
-        void Emplace(Args&&... args);
+        T& Emplace(Args&&... args);
         template<class U, class... Args>
-        void Emplace(std::initializer_list<U> list, Args&&... args);
+        T& Emplace(std::initializer_list<U> list, Args&&... args);
 
         const T& operator*() const;
         T& operator*();
@@ -387,20 +387,22 @@ namespace infra
 
     template<class T>
     template<class... Args>
-    void Optional<T>::Emplace(Args&&... args)
+    T& Optional<T>::Emplace(Args&&... args)
     {
         Reset();
         data.Construct(std::forward<Args>(args)...);
         initialized = true;
+        return *data;
     }
 
     template<class T>
     template<class U, class... Args>
-    void Optional<T>::Emplace(std::initializer_list<U> list, Args&&... args)
+    T& Optional<T>::Emplace(std::initializer_list<U> list, Args&&... args)
     {
         Reset();
         data.Construct(list, std::forward<Args>(args)...);
         initialized = true;
+        return *data;
     }
 
     template<class T>
