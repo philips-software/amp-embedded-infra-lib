@@ -88,7 +88,7 @@ TEST_F(GattClientCharacteristicTest, receives_valid_indication_should_notify_obs
 {
     infra::VerifyingFunction<void()> callback;
 
-    EXPECT_CALL(gattUpdateObserver, IndicationReceived(infra::ByteRangeContentsEqual(infra::MakeStringByteRange("string")), testing::_));
+    EXPECT_CALL(gattUpdateObserver, IndicationReceived(infra::ByteRangeContentsEqual(infra::MakeStringByteRange("string")), testing::_)).WillOnce(testing::InvokeArgument<1>());
     operations.infra::Subject<services::GattClientStackUpdateObserver>::NotifyObservers([&callback](auto& observer)
         {
             observer.IndicationReceived(characteristicValueHandle, infra::MakeStringByteRange("string"), [&callback]()
@@ -112,9 +112,14 @@ TEST_F(GattClientCharacteristicTest, receives_invalid_indication_should_not_noti
 {
     const services::AttAttribute::Handle invalidCharacteristicValueHandle = 0x7;
 
-    operations.infra::Subject<services::GattClientStackUpdateObserver>::NotifyObservers([&invalidCharacteristicValueHandle](auto& observer)
+    infra::VerifyingFunction<void()> callback;
+
+    operations.infra::Subject<services::GattClientStackUpdateObserver>::NotifyObservers([&invalidCharacteristicValueHandle, &callback](auto& observer)
         {
-            observer.IndicationReceived(invalidCharacteristicValueHandle, infra::MakeStringByteRange("string"));
+            observer.IndicationReceived(invalidCharacteristicValueHandle, infra::MakeStringByteRange("string"), [&callback]()
+                {
+                    callback.callback();
+                });
         });
 }
 
