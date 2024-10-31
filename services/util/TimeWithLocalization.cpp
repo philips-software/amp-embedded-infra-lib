@@ -43,7 +43,7 @@ namespace services
         if (stream.Failed())
             return infra::none;
 
-        return infra::MakeOptional(infra::PartitionedTime(year, month, day, hour, minute, second).ToTimePoint());
+        return std::make_optional(infra::PartitionedTime(year, month, day, hour, minute, second).ToTimePoint());
     }
 
     infra::Optional<infra::Duration> TimeWithLocalization::DurationFromString(infra::BoundedConstString durationString)

@@ -74,11 +74,11 @@ namespace services
     {
         auto ipv4 = ParseIpv4Address(address);
         if (ipv4)
-            return infra::MakeOptional(IPAddress{ *ipv4 });
+            return std::make_optional(IPAddress{ *ipv4 });
 
         auto ipv6 = ParseFullIpv6Address(address);
         if (ipv6)
-            return infra::MakeOptional(IPAddress{ *ipv6 });
+            return std::make_optional(IPAddress{ *ipv6 });
 
         return infra::none;
     }
@@ -110,7 +110,7 @@ namespace services
         if (parsedCount + 3 != address.size())
             return infra::none;
 
-        return infra::MakeOptional(ipv4Address);
+        return std::make_optional(ipv4Address);
     }
 
     infra::Optional<IPv6Address> ParseFullIpv6Address(infra::BoundedConstString address)
@@ -137,7 +137,7 @@ namespace services
         if (parsedCount + 7 != address.size())
             return infra::none;
 
-        return infra::MakeOptional(ipv6Address);
+        return std::make_optional(ipv6Address);
     }
 
     IPv6Address FromNetworkOrder(IPv6AddressNetworkOrder address)

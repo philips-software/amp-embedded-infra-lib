@@ -37,7 +37,7 @@ namespace application
         if (stream.Failed() || !stream.Empty())
             throw ParseException(std::string("ConfigParser error: object component '" + key + "' contains key 'address' with invalid string value"));
 
-        return std::make_pair(jsonStringpath->ToStdString(), infra::MakeOptional(address));
+        return std::make_pair(jsonStringpath->ToStdString(), std::make_optional(address));
     }
 
     std::vector<std::tuple<std::string, std::string, infra::Optional<uint32_t>>> UpgradePackConfigParser::GetComponents()

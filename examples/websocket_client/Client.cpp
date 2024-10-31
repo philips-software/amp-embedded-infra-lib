@@ -2,7 +2,6 @@
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "hal/generic/TimerServiceGeneric.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
-#include "services/network/HttpClientBasic.hpp"
 #include "services/network/HttpClientImpl.hpp"
 #include "services/network/WebSocketClientConnectionObserver.hpp"
 #include "services/network_instantiations/NetworkAdapter.hpp"
@@ -163,7 +162,7 @@ int main(int argc, const char* argv[], const char* env[])
         static infra::Creator<services::Stoppable, services::HttpClientWebSocketInitiation, void(services::WebSocketClientObserverFactory & clientObserverFactory, services::HttpClientWebSocketInitiationResult & result, hal::SynchronousRandomDataGenerator & randomDataGenerator)> httpClientInitiationCreator{ [](infra::Optional<services::HttpClientWebSocketInitiation>& value, services::WebSocketClientObserverFactory& clientObserverFactory,
                                                                                                                                                                                                                                                                                                                         services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)
             {
-                value.Emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
+                value.emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
             } };
         static services::WebSocketClientFactorySingleConnection webSocketFactory{ randomDataGenerator, { httpClientInitiationCreator } };
 

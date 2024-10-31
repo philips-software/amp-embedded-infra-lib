@@ -60,7 +60,7 @@ namespace services
     {
         infra::JsonArrayIterator iterator(input.begin());
         if (++iterator != input.end())
-            scenarioTags.Emplace(std::move(iterator->Get<infra::JsonObject>()));
+            scenarioTags.emplace(std::move(iterator->Get<infra::JsonObject>()));
         else
             scenarioTags = infra::none;
         requestType = RequestType::BeginScenario;

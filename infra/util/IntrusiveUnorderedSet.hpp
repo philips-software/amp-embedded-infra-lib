@@ -5,6 +5,7 @@
 #include "infra/util/MemoryRange.hpp"
 #include "infra/util/WithStorage.hpp"
 #include <array>
+#include <cstdint>
 #include <functional>
 #include <utility>
 

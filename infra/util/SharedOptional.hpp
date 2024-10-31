@@ -3,7 +3,7 @@
 
 #include "infra/util/Function.hpp"
 #include "infra/util/Optional.hpp"
-#include "infra/util/SharedObjectAllocator.hpp"
+#include "infra/util/SharedPtr.hpp"
 #include <cstddef>
 
 namespace infra
@@ -91,7 +91,7 @@ namespace infra
     {
         assert(allocatable);
         allocatable = false;
-        object.Emplace(std::forward<Args>(args)...);
+        object.emplace(std::forward<Args>(args)...);
         return SharedPtr<T>(&control, &*object);
     }
 

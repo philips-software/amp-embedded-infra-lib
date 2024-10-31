@@ -109,7 +109,7 @@ namespace services
         really_assert(readerPtr == nullptr);
 
         readerPtr = std::move(reader);
-        bufferedReader.Emplace(receiveBuffer, *readerPtr);
+        bufferedReader.emplace(receiveBuffer, *readerPtr);
         DataReceived();
     }
 
@@ -228,7 +228,7 @@ namespace services
             errorPolicy.MessageFormatError();
         else
         {
-            limitedReader.Emplace(*bufferedReader, contents.Get<infra::PartialProtoLengthDelimited>().length);
+            limitedReader.emplace(*bufferedReader, contents.Get<infra::PartialProtoLengthDelimited>().length);
             StartMethod(serviceId, methodId, contents.Get<infra::PartialProtoLengthDelimited>().length);
 
             if (formatErrorPolicy.Failed())
