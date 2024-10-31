@@ -8,8 +8,23 @@
 
 namespace services
 {
+    class SingleConnectionListener;
+
+    class NewConnectionStrategy
+    {
+    public:
+        NewConnectionStrategy() = default;
+        NewConnectionStrategy(const NewConnectionStrategy& other) = delete;
+        NewConnectionStrategy& operator=(const NewConnectionStrategy& other) = delete;
+        ~NewConnectionStrategy() = default;
+
+        virtual void StopCurrentConnection(SingleConnectionListener& listener) = 0;
+        virtual void StartNewConnection() = 0;
+    };
+
     class SingleConnectionListener
         : public Stoppable
+        , public NewConnectionStrategy
         , private ServerConnectionObserverFactory
     {
     public:
@@ -20,17 +35,23 @@ namespace services
 
         SingleConnectionListener(ConnectionFactory& connectionFactory, uint16_t port, const Creators& creators);
 
+        void SetNewConnectionStrategy(NewConnectionStrategy& newConnectionStrategy);
+
         // Implementation of Stoppable
         void Stop(const infra::Function<void()>& onDone) override;
+
+        // Implementation of NewConnectionStrategy
+        void StopCurrentConnection(SingleConnectionListener& listener) override;
+        void StartNewConnection() override;
 
     private:
         // Implementation of ServerConnectionObserverFactory
         void ConnectionAccepted(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, IPAddress address) override;
 
         void Stop(const infra::Function<void()>& onDone, bool force);
-        void CreateObserver();
 
     private:
+        NewConnectionStrategy* newConnectionStrategy = this;
         decltype(Creators::connectionCreator) connectionCreator;
         infra::NotifyingSharedOptional<infra::ProxyCreator<decltype(Creators::connectionCreator)>> connection;
         infra::SharedPtr<void> listener;

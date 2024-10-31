@@ -1,4 +1,5 @@
 #include "protobuf/echo/EchoErrorPolicy.hpp"
+#include <cstdlib>
 
 namespace services
 {
