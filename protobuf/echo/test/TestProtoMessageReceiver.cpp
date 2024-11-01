@@ -198,7 +198,19 @@ TEST(ProtoMessageReceiverTest, parse_bytes)
     infra::StdVectorInputStreamReader::WithStorage data(infra::inPlace, std::initializer_list<uint8_t>{ 10, 2, 5, 6 });
     receiver.Feed(data);
 
+    EXPECT_FALSE(receiver.Failed());
     EXPECT_EQ((infra::BoundedVector<uint8_t>::WithMaxSize<10>{ { 5, 6 } }), receiver.message.value);
+}
+
+TEST(ProtoMessageReceiverTest, parse_bytes_too_long)
+{
+    services::ProtoMessageReceiver<test_messages::TestBytes> receiver;
+
+    infra::StdVectorInputStreamReader::WithStorage data(infra::inPlace, std::initializer_list<uint8_t>{ 10, 51, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1 });
+    receiver.Feed(data);
+
+    EXPECT_TRUE(receiver.Failed());
+    EXPECT_EQ((infra::BoundedVector<uint8_t>::WithMaxSize<50>{ { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 } }), receiver.message.value);
 }
 
 TEST(ProtoMessageReceiverTest, parse_message)
