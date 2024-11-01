@@ -43,6 +43,8 @@ namespace application
         void DiscoverPeerServices();
         void StartDiscovery();
         void ClearUpdatedServices();
+        uint32_t SearchRangeBegin() const;
+        uint32_t SearchRangeEnd() const;
 
     private:
         infra::BoundedVector<uint32_t>::WithMaxSize<10> services;

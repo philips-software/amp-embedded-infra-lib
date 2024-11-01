@@ -25,10 +25,17 @@ namespace application
     void PeerServiceDiscovererEcho::FirstServiceSupported(uint32_t id)
     {
         services.push_back(id);
-        RequestSend([this]
-            {
-                FindFirstServiceInRange(services.back() + 1, std::get<1>(searchRange));
-            });
+
+        if (id == SearchRangeEnd())
+            NotifyObservers([this](auto& observer)
+                {
+                    observer.ServicesDiscovered(services.range());
+                });
+        else
+            RequestSend([this]
+                {
+                    FindFirstServiceInRange(services.back() + 1, SearchRangeEnd());
+                });
 
         MethodDone();
     }
@@ -57,7 +64,7 @@ namespace application
     {
         services.erase(std::remove_if(services.begin(), services.end(), [this](uint32_t serviceId)
                            {
-                               return serviceId >= std::get<0>(searchRange) && serviceId <= std::get<1>(searchRange);
+                               return serviceId >= SearchRangeBegin() && serviceId <= SearchRangeEnd();
                            }),
             services.end());
     }
@@ -68,7 +75,17 @@ namespace application
 
         RequestSend([this]
             {
-                FindFirstServiceInRange(std::get<0>(searchRange), std::get<1>(searchRange));
+                FindFirstServiceInRange(SearchRangeBegin(), SearchRangeEnd());
             });
+    }
+
+    uint32_t PeerServiceDiscovererEcho::SearchRangeBegin() const
+    {
+        return std::get<0>(searchRange);
+    }
+
+    uint32_t PeerServiceDiscovererEcho::SearchRangeEnd() const
+    {
+        return std::get<1>(searchRange);
     }
 }

@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <limits>
 #include <tuple>
+#include <vector>
 
 namespace
 {
@@ -77,10 +78,9 @@ public:
             });
     }
 
-    void ServicesDiscovered(infra::MemoryRange<uint32_t> services)
+    void ServicesDiscovered(const std::vector<uint32_t>& services)
     {
-        EXPECT_CALL(observer, ServicesDiscovered(infra::ByteRangeContentsEqual(services)));
-        NoServiceSupported();
+        EXPECT_CALL(observer, ServicesDiscovered(infra::ContentsEqual(services)));
     }
 
     void ServiceSupported(uint32_t id)
@@ -105,24 +105,29 @@ public:
         EXPECT_CALL(serviceDiscovery, FindFirstServiceInRangeMock(0, std::numeric_limits<uint32_t>::max()));
     }
 
-    void QueryServices(infra::MemoryRange<uint32_t> services, uint32_t searchEnd = std::numeric_limits<uint32_t>::max())
+    void QueryServices(const std::vector<uint32_t>& services, uint32_t searchEnd = std::numeric_limits<uint32_t>::max())
     {
-        for (auto service : services)
+        auto orderedServices = services;
+        std::sort(orderedServices.begin(), orderedServices.end());
+
+        for (auto service : orderedServices)
         {
-            EXPECT_CALL(serviceDiscovery, FindFirstServiceInRangeMock(service + 1, searchEnd));
+            if (service + 1 <= searchEnd)
+                EXPECT_CALL(serviceDiscovery, FindFirstServiceInRangeMock(service + 1, searchEnd));
             ServiceSupported(service);
         }
+
+        if (services.empty() || services.back() != searchEnd)
+            NoServiceSupported();
     }
 
-    void OneCompleteRoundOfServiceDiscovery(infra::MemoryRange<uint32_t> services)
+    void OneCompleteRoundOfServiceDiscovery(const std::vector<uint32_t>& services)
     {
+        EXPECT_CALL(observer, ServicesDiscovered(infra::ContentsEqual(services)));
         QueryServices(services);
-        ServicesDiscovered(services);
     }
 
-    using ServicesList = infra::MemoryRange<uint32_t>;
-
-    auto FindAddedAndRemovedServices(ServicesList oldServiceList, ServicesList newServiceList)
+    auto FindAddedAndRemovedServices(const std::vector<uint32_t>& oldServiceList, const std::vector<uint32_t>& newServiceList)
     {
         std::set<uint32_t> oldSet(oldServiceList.begin(), oldServiceList.end());
         std::set<uint32_t> newSet(newServiceList.begin(), newServiceList.end());
@@ -139,7 +144,7 @@ public:
         return std::make_tuple(addedServicesVector, removedServicesVector);
     }
 
-    auto FindMaximalRange(std::vector<uint32_t> range1, std::vector<uint32_t> range2)
+    auto FindMaximalRange(const std::vector<uint32_t>& range1, const std::vector<uint32_t>& range2)
     {
         if (range1.empty())
             return std::make_tuple(*range2.begin(), *range2.rbegin());
@@ -149,7 +154,25 @@ public:
             return std::make_tuple(std::min(*range1.begin(), *range2.begin()), std::max(*range1.rbegin(), *range2.rbegin()));
     }
 
-    void UpdateServices(ServicesList oldServiceList, ServicesList newServiceList)
+    auto FindServicesInRange(const std::vector<uint32_t>& newServiceList, const std::tuple<uint32_t, uint32_t>& updatedRange)
+    {
+        const auto searchBegin = std::get<0>(updatedRange);
+        const auto searchEnd = std::get<1>(updatedRange);
+
+        std::vector<uint32_t> filteredServices;
+        for (const auto& service : newServiceList)
+        {
+            if (service >= searchBegin && service <= searchEnd)
+            {
+                filteredServices.push_back(service);
+            }
+        }
+
+        std::sort(filteredServices.begin(), filteredServices.end());
+        return filteredServices;
+    }
+
+    void UpdateServices(const std::vector<uint32_t>& oldServiceList, const std::vector<uint32_t>& newServiceList)
     {
         auto [addedServices, removedServices] = FindAddedAndRemovedServices(oldServiceList, newServiceList);
 
@@ -160,50 +183,62 @@ public:
         EXPECT_CALL(serviceDiscovery, FindFirstServiceInRangeMock(searchBegin, searchEnd));
         ServicesChanged(searchBegin, searchEnd);
 
-        QueryServices(addedServices, searchEnd);
-        // ServicesDiscovered(newServiceList);
+        auto filteredServices = FindServicesInRange(newServiceList, updatedRange);
+        EXPECT_CALL(observer, ServicesDiscovered(infra::ContentsEqual(newServiceList)));
+        QueryServices(filteredServices, searchEnd);
     }
 };
 
 TEST_F(PeerServiceDiscovererTest, immediate_NoServiceSupported_ends_discovery_with_no_services)
 {
-    infra::MemoryRange<uint32_t> services;
+    const std::vector<uint32_t> services;
     OneCompleteRoundOfServiceDiscovery(services);
 }
 
 TEST_F(PeerServiceDiscovererTest, NoServiceSupported_ends_discovery_with_single_service)
 {
-    std::array<uint32_t, 1> services{ 5 };
+    std::vector<uint32_t> services{ 5 };
     OneCompleteRoundOfServiceDiscovery(services);
 }
 
 TEST_F(PeerServiceDiscovererTest, NoServiceSupported_ends_discovery_with_two_services)
 {
-    std::array<uint32_t, 2> services{ 5, 10 };
+    std::vector<uint32_t> services{ 5, 10 };
     OneCompleteRoundOfServiceDiscovery(services);
 }
 
 TEST_F(PeerServiceDiscovererTest, ServicesChanged_triggers_rediscovery)
 {
-    std::array<uint32_t, 2> services{ 5, 10 };
+    std::vector<uint32_t> services{ 5, 10 };
     OneCompleteRoundOfServiceDiscovery(services);
 
     EXPECT_CALL(serviceDiscovery, FindFirstServiceInRangeMock(0, 0));
 
     ServicesChanged(0, 0);
 
-    EXPECT_CALL(observer, ServicesDiscovered(infra::ByteRangeContentsEqual(infra::MakeRange(services))));
+    EXPECT_CALL(observer, ServicesDiscovered(infra::ContentsEqual(services)));
     NoServiceSupported();
 
     EXPECT_CALL(serviceDiscovery, FindFirstServiceInRangeMock(5, 5));
-
     ServicesChanged(5, 5);
 
-    std::array<uint32_t, 1> servicesUpdated{ 10 };
-    EXPECT_CALL(observer, ServicesDiscovered(infra::ByteRangeContentsEqual(infra::MakeRange(servicesUpdated))));
+    std::vector<uint32_t> servicesUpdated{ 10 };
+    EXPECT_CALL(observer, ServicesDiscovered(infra::ContentsEqual(servicesUpdated)));
     NoServiceSupported();
 
-    std::vector<uint32_t> oldServices{ 1, 3, 5 };
-    std::vector<uint32_t> newServices{ 5, 6, 3, 4 };
-    UpdateServices(infra::MakeRange(oldServices), infra::MakeRange(newServices));
+    EXPECT_CALL(serviceDiscovery, FindFirstServiceInRangeMock(10, 10));
+    ServicesChanged(10, 10);
+
+    std::vector<uint32_t> servicesUpdated2;
+    EXPECT_CALL(observer, ServicesDiscovered(infra::ContentsEqual(servicesUpdated2)));
+    NoServiceSupported();
+}
+
+TEST_F(PeerServiceDiscovererTest, ServicesChanged_triggers_rediscovery_2)
+{
+    std::vector<uint32_t> services{ 1, 3, 5 };
+    OneCompleteRoundOfServiceDiscovery(services);
+
+    std::vector<uint32_t> newServices{ 3, 4, 5, 6 };
+    UpdateServices(services, newServices);
 }
