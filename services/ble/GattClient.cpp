@@ -76,24 +76,21 @@ namespace services
         if (handle == (Handle() + GattDescriptor::ClientCharacteristicConfiguration::valueHandleOffset))
         {
             onIndicationDone = onDone;
-            observers = 0;
-            GattClientCharacteristicUpdate::SubjectType::NotifyObservers([this](auto& obs)
+            observers = 1;
+            auto indicationReceived = [this]()
+            {
+                --observers;
+                if (observers == 0)
+                    onIndicationDone();
+            };
+
+            GattClientCharacteristicUpdate::SubjectType::NotifyObservers([this, &data, &indicationReceived](auto& obs)
                 {
                     ++observers;
+                    obs.IndicationReceived(data, indicationReceived);
                 });
 
-            if (observers != 0)
-                GattClientCharacteristicUpdate::SubjectType::NotifyObservers([this, &data](auto& obs)
-                    {
-                        obs.IndicationReceived(data, [this]()
-                            {
-                                --observers;
-                                if (observers == 0)
-                                    onIndicationDone();
-                            });
-                    });
-            else
-                onIndicationDone();
+            indicationReceived();
         }
         else
             onDone();
