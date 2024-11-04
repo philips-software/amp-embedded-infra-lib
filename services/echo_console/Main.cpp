@@ -96,6 +96,8 @@ class ConsoleClientConnection
 public:
     explicit ConsoleClientConnection(application::Console& console);
 
+    ~ConsoleClientConnection();
+
     // Implementation of ConnectionObserver
     void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
     void DataReceived() override;
@@ -114,7 +116,14 @@ private:
 
 ConsoleClientConnection::ConsoleClientConnection(application::Console& console)
     : application::ConsoleObserver(console)
-{}
+{
+    services::GlobalTracer().Trace() << "ConsoleClientConnection";
+}
+
+ConsoleClientConnection::~ConsoleClientConnection()
+{
+    services::GlobalTracer().Trace() << "~ConsoleClientConnection";
+}
 
 void ConsoleClientConnection::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
 {
@@ -198,6 +207,8 @@ ConsoleClientTcp::ConsoleClientTcp(services::ConnectionFactoryWithNameResolver& 
 
 ConsoleClientTcp::~ConsoleClientTcp()
 {
+    tracer.Trace() << "~ConsoleClientTcp";
+
     consoleClientConnection->services::ConnectionObserver::Subject().AbortAndDestroy();
 }
 

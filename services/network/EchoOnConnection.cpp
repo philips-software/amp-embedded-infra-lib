@@ -1,4 +1,5 @@
 #include "services/network/EchoOnConnection.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -9,6 +10,8 @@ namespace services
 
     void EchoOnConnection::DataReceived()
     {
+        services::GlobalTracer().Trace() << "EchoOnConnection::DataReceived";
+
         if (reader.Allocatable())
         {
             auto readerPtr = reader.Emplace(ConnectionObserver::Subject().ReceiveStream());
