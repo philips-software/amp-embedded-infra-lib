@@ -1,6 +1,7 @@
 #ifndef SERVICES_GATT_CLIENT_HPP
 #define SERVICES_GATT_CLIENT_HPP
 
+#include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/IntrusiveForwardList.hpp"
 #include "infra/util/Observer.hpp"
@@ -17,7 +18,8 @@ namespace services
     public:
         using infra::Observer<GattClientCharacteristicUpdateObserver, GattClientCharacteristicUpdate>::Observer;
 
-        virtual void UpdateReceived(infra::ConstByteRange data) = 0;
+        virtual void NotificationReceived(infra::ConstByteRange data) = 0;
+        virtual void IndicationReceived(infra::ConstByteRange data, const infra::Function<void()>& onDone) = 0;
     };
 
     class GattClientCharacteristicUpdate
@@ -32,7 +34,8 @@ namespace services
     public:
         using infra::Observer<GattClientStackUpdateObserver, GattClientCharacteristicOperations>::Observer;
 
-        virtual void UpdateReceived(AttAttribute::Handle handle, infra::ConstByteRange data) = 0;
+        virtual void NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data) = 0;
+        virtual void IndicationReceived(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone) = 0;
     };
 
     class GattClientCharacteristicOperationsObserver
@@ -85,7 +88,12 @@ namespace services
         GattCharacteristic::PropertyFlags CharacteristicProperties() const override;
 
         // Implementation of GattClientStackUpdateObserver
-        void UpdateReceived(AttAttribute::Handle handle, infra::ConstByteRange data) override;
+        void NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data) override;
+        void IndicationReceived(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone) override;
+
+    private:
+        infra::AutoResetFunction<void()> onIndicationDone;
+        uint32_t observers;
     };
 
     class GattClientService
