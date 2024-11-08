@@ -123,9 +123,21 @@ to divide the stream of bytes into delimited packets,
 second a window protocol to prevent overflowing buffers,
 and third (optional) a layer that provides security.</p>
 </div>
-<div class="imageblock kroki">
+<div class="listingblock kroki-error">
 <div class="content">
-<img src="_images/diag-ae642e19bd4f05f10c73b52619f523635545c7f5.svg" alt="Diagram">
+<pre>@startuml
+node node [
+ECHO
+====
+Secured
+....
+Windowed
+....
+COBS
+====
+Serial Communication
+]
+@enduml</pre>
 </div>
 </div>
 </div>
@@ -175,11 +187,14 @@ which specifies the available window size, encoded in little endian order. An In
 packet. Before receiving an InitResponse, a peer must assume that no window is available, so
 further packets may not be sent.</p>
 </div>
-<div class="imageblock kroki">
+<div class="listingblock kroki-error">
+<div class="title">Init packet</div>
 <div class="content">
-<img src="_images/diag-af6b8f6d3d484374fcb8f52f4518e36cbd856da4.svg" alt="Init packet">
+<pre>(def boxes-per-row 3)
+(draw-column-headers)
+(draw-box 1)
+(draw-box "size" {:span 2})</pre>
 </div>
-<div class="title">Figure 1. Init packet</div>
 </div>
 <div class="paragraph">
 <p>An Init packet consumes no window, and may always be sent. This results in an edge case that an
@@ -196,11 +211,14 @@ Init packets.</p>
 space using the InitResponse packet. Similar to the Init packet, the InitResponse packet
 has one 16-bit unsigned parameter <code>size</code> encoded in little endian which advertises available buffer size.</p>
 </div>
-<div class="imageblock kroki">
+<div class="listingblock kroki-error">
+<div class="title">InitResponse packet</div>
 <div class="content">
-<img src="_images/diag-4a7611f0d08d0dbc679a6b536923367f5320c5bc.svg" alt="InitResponse packet">
+<pre>(def boxes-per-row 3)
+(draw-column-headers)
+(draw-box 2)
+(draw-box "size" {:span 2})</pre>
 </div>
-<div class="title">Figure 2. InitResponse packet</div>
 </div>
 <div class="paragraph">
 <p>An InitResponse packet consumes 5 window bytes: 3 for the packet contents, 2 for the
@@ -215,11 +233,14 @@ it advertises the freed up space using the ReleaseWindow packet. The ReleaseWind
 has one 16-bit unsigned parameter <code>size</code> encoded in little endian which specifies the amount of bytes in the buffer
 freed up in addition to already known free space.</p>
 </div>
-<div class="imageblock kroki">
+<div class="listingblock kroki-error">
+<div class="title">ReleaseWindow packet</div>
 <div class="content">
-<img src="_images/diag-c284003e0e9883d57f06dc12da3de88d15d8519e.svg" alt="ReleaseWindow packet">
+<pre>(def boxes-per-row 3)
+(draw-column-headers)
+(draw-box 3)
+(draw-box "size" {:span 2})</pre>
 </div>
-<div class="title">Figure 3. ReleaseWindow packet</div>
 </div>
 <div class="paragraph">
 <p>In order to avoid continuous exchanges of ReleaseWindow packets, hosts should only release
@@ -234,11 +255,15 @@ size of the biggest packet should be increased by 5 to accommodate for a Release
 amount equal to the size of that packet plus the COBS overhead of that specific packet, plus
 its terminating 0.</p>
 </div>
-<div class="imageblock kroki">
+<div class="listingblock kroki-error">
+<div class="title">Message packet</div>
 <div class="content">
-<img src="_images/diag-44a7e6fea768804d3b097dc66093dfeaa0e0b109.svg" alt="Message packet">
+<pre>(def boxes-per-row 8)
+(draw-column-headers)
+(draw-box 4)
+(draw-gap "message")
+(draw-bottom)</pre>
 </div>
-<div class="title">Figure 4. Message packet</div>
 </div>
 </div>
 </div>
@@ -314,11 +339,29 @@ A full key negotiation will therefore result in ActivateNewKeyMaterial invocatio
 <p>This sequence diagram shows a typical sequence of the SESAME protocol being initialized and a message
 being sent.</p>
 </div>
-<div class="imageblock kroki">
+<div class="listingblock kroki-error">
+<div class="title">Typical sequence</div>
 <div class="content">
-<img src="_images/diag-f5af5a4b5404143a9c1b8dfb93a66295bd65b6d3.svg" alt="Typical sequence">
+<pre>@startuml
+COBS &lt;- Windowed : Init\n01 10 00
+note right
+  16 bytes of window are advertised, which is 0x10 0x00
+end note
+[&lt;- COBS : 00 03 01 10 01 00
+note right
+  The init message is wrapped right and left with 00
+  A 03 indicates that the third byte must be replaced with 00
+  The replaced byte contained 01 pointing to the end
+end note
+[-&gt; COBS : 00 03 02 10 01 00
+COBS -&gt; Windowed : InitResponse\n02 10 00
+Windowed &lt;- Application : Message\n12 34 56 78
+COBS &lt;- Windowed : Message\n03 12 34 56 78
+[&lt;- COBS : 06 03 12 34 56 78 00
+[-&gt; COBS : 03 03 07 01 00
+COBS -&gt; Windowed : ReleaseWindow\n03 07 00
+@enduml</pre>
 </div>
-<div class="title">Figure 5. Typical sequence</div>
 </div>
 </div>
 </div>
