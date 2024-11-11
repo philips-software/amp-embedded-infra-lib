@@ -9,6 +9,7 @@ if (EMIL_HOST_BUILD)
         protobuf.echo
         services.network_instantiations
         services.util
+        protobuf.meta_services
     )
 
     if (EMIL_BUILD_WIN)

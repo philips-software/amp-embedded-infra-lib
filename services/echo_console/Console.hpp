@@ -4,7 +4,9 @@
 #include "hal/generic/TimerServiceGeneric.hpp"
 #include "infra/syntax/ProtoFormatter.hpp"
 #include "infra/syntax/ProtoParser.hpp"
+#include "protobuf/echo/Echo.hpp"
 #include "protobuf/protoc_echo_plugin/EchoObjects.hpp"
+#include "services/network/EchoOnConnection.hpp"
 #include "services/network_instantiations/NetworkAdapter.hpp"
 #include <thread>
 
@@ -173,6 +175,7 @@ namespace application
 
     class Console
         : public infra::Subject<ConsoleObserver>
+        // , public services::Service
     {
     public:
         explicit Console(EchoRoot& root);

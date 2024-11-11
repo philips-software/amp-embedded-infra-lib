@@ -1,5 +1,8 @@
 #include "args.hxx"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
+#include "protobuf/echo/Serialization.hpp"
+#include "protobuf/meta_services/PeerServiceDiscoverer.hpp"
+#include "services/network/EchoOnConnection.hpp"
 #include <ostream>
 #include <vector>
 #ifdef EMIL_HAL_WINDOWS
@@ -90,7 +93,8 @@ void ConsoleClientUart::CheckDataToBeSent()
 }
 
 class ConsoleClientConnection
-    : public services::ConnectionObserver
+    : private services::MethodSerializerFactory::OnHeap
+    , public services::EchoOnConnection
     , public application::ConsoleObserver
 {
 public:
@@ -99,9 +103,9 @@ public:
     ~ConsoleClientConnection();
 
     // Implementation of ConnectionObserver
-    void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-    void DataReceived() override;
-    void Attached() override;
+    // void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+    // void DataReceived() override;
+    // void Attached() override;
 
     // Implementation of ConsoleObserver
     void Send(const std::string& message) override;
@@ -112,10 +116,13 @@ private:
 private:
     std::string dataToBeSent;
     infra::SharedPtr<infra::StreamWriter> writer;
+    application::PeerServiceDiscovererEcho peerServiceDiscoverer;
 };
 
 ConsoleClientConnection::ConsoleClientConnection(application::Console& console)
     : application::ConsoleObserver(console)
+    , services::EchoOnConnection(*static_cast<services::MethodSerializerFactory*>(this))
+    , peerServiceDiscoverer(*this)
 {
     services::GlobalTracer().Trace() << "ConsoleClientConnection";
 }
@@ -125,33 +132,33 @@ ConsoleClientConnection::~ConsoleClientConnection()
     services::GlobalTracer().Trace() << "~ConsoleClientConnection";
 }
 
-void ConsoleClientConnection::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
-{
-    this->writer = writer;
-    writer = nullptr;
+// void ConsoleClientConnection::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+// {
+//     this->writer = writer;
+//     writer = nullptr;
 
-    CheckDataToBeSent();
-}
+//     CheckDataToBeSent();
+// }
 
-void ConsoleClientConnection::DataReceived()
-{
-    try
-    {
-        while (true)
-        {
-            auto stream = services::ConnectionObserver::Subject().ReceiveStream();
-            ConsoleObserver::Subject().DataReceived(*stream);
-            services::ConnectionObserver::Subject().AckReceived();
-        }
-    }
-    catch (application::Console::IncompletePacket&)
-    {}
-}
+// void ConsoleClientConnection::DataReceived()
+// {
+//     try
+//     {
+//         while (true)
+//         {
+//             auto stream = services::ConnectionObserver::Subject().ReceiveStream();
+//             ConsoleObserver::Subject().DataReceived(*stream);
+//             services::ConnectionObserver::Subject().AckReceived();
+//         }
+//     }
+//     catch (application::Console::IncompletePacket&)
+//     {}
+// }
 
-void ConsoleClientConnection::Attached()
-{
-    services::ConnectionObserver::Subject().RequestSendStream(services::ConnectionObserver::Subject().MaxSendStreamSize());
-}
+// void ConsoleClientConnection::Attached()
+// {
+//     services::ConnectionObserver::Subject().RequestSendStream(services::ConnectionObserver::Subject().MaxSendStreamSize());
+// }
 
 void ConsoleClientConnection::Send(const std::string& message)
 {

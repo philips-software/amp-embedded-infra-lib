@@ -2,6 +2,7 @@
 #define MAIN_ECHO_TEST_TCP_SERVER_HPP
 
 #include "args.hxx"
+#include "echo/TracingServiceDiscovery.pb.hpp"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "infra/util/SharedPtr.hpp"
 #include "services/network/Connection.hpp"
@@ -38,13 +39,15 @@ public:
     EchoServerConnectionObserver(services::Tracer& tracer);
 
 private:
+    service_discovery::ServiceDiscoveryTracer serviceDiscoveryTracer;
     application::ServiceDiscoveryEcho serviceDiscoveryEcho;
 };
 
 EchoServerConnectionObserver::EchoServerConnectionObserver(services::Tracer& tracer)
     : services::TracingEchoOnConnection(tracer, *this)
+    , serviceDiscoveryTracer(*this)
     , serviceDiscoveryEcho(*this)
-{}
+{};
 
 class EchoServerConnection
     : public services::ServerConnectionObserverFactory

@@ -1,7 +1,7 @@
 #ifndef PROTOBUF_ECHO_PEER_SERVICE_DISCOVERER_HPP
 #define PROTOBUF_ECHO_PEER_SERVICE_DISCOVERER_HPP
 
-#include "echo/ServiceDiscovery.pb.hpp"
+#include "generated/echo/ServiceDiscovery.pb.hpp"
 #include "infra/syntax/CppFormatter.hpp"
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/MemoryRange.hpp"
