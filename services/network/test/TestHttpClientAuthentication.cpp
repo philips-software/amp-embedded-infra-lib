@@ -37,7 +37,8 @@ public:
 
     ~HttpClientAuthenticationTest() override
     {
-        EXPECT_CALL(*httpClientObserver, Detaching());
+        if (httpClientObserver->IsAttached())
+            EXPECT_CALL(*httpClientObserver, Detaching());
     }
 
     void CheckHeaders(services::HttpHeaders headersToCheck, infra::BoundedConstString headerValueToAdd)
@@ -258,6 +259,30 @@ TEST_F(HttpClientAuthenticationTest, unauthorized_is_retried)
     EXPECT_CALL(httpClient, Get("target", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString requestTarget, services::HttpHeaders headers)
         {
             CheckHeaders(headers, "header contents");
+        }));
+    httpClient.Observer().BodyComplete();
+}
+
+TEST_F(HttpClientAuthenticationTest, detach_during_StatusAvailable)
+{
+    Get();
+
+    httpClient.Observer().StatusAvailable(services::HttpStatusCode::Unauthorized);
+
+    httpClient.Observer().HeaderAvailable({ "name", "value" });
+    EXPECT_CALL(clientAuthentication, AuthenticationHeader()).WillOnce(testing::Return("header contents"));
+    EXPECT_CALL(clientAuthentication, Authenticate(services::HttpVerb::get, "target", "scheme", "value"));
+    httpClient.Observer().HeaderAvailable({ "WWW-Authenticate", "scheme value" });
+
+    testing::StrictMock<infra::StreamReaderMock> reader;
+    EXPECT_CALL(reader, Empty()).WillOnce(testing::Return(true));
+    httpClient.Observer().BodyAvailable(infra::UnOwnedSharedPtr(reader));
+
+    EXPECT_CALL(clientAuthentication, Retry()).WillOnce(testing::Return(false));
+    EXPECT_CALL(*httpClientObserver, StatusAvailable(services::HttpStatusCode::Unauthorized)).WillOnce(testing::Invoke([this](services::HttpStatusCode)
+        {
+            EXPECT_CALL(*httpClientObserver, Detaching());
+            httpClientObserver->Detach();
         }));
     httpClient.Observer().BodyComplete();
 }
