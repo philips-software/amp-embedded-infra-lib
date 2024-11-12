@@ -155,7 +155,8 @@ namespace services
             Observer().StatusAvailable(HttpStatusCode::Unauthorized);
         }
 
-        Observer().BodyComplete();
+        if (HttpClient::IsAttached())
+            Observer().BodyComplete();
     }
 
     void HttpClientAuthentication::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -170,7 +171,8 @@ namespace services
 
     void HttpClientAuthentication::Detaching()
     {
-        HttpClient::Detach();
+        if (HttpClient::IsAttached())
+            HttpClient::Detach();
         HttpClientObserver::Detaching();
     }
 
