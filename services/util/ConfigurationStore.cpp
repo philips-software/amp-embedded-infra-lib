@@ -134,7 +134,10 @@ namespace services
                 {
                     auto verificationBlock = infra::Head(verificationBuffer, blob.size() - currentVerificationIndex);
 
-                    if (std::find_if_not(verificationBlock.begin(), verificationBlock.end(), [](uint8_t byte) { return byte == 0xFF; }) == verificationBlock.end())
+                    if (std::find_if_not(verificationBlock.begin(), verificationBlock.end(), [](uint8_t byte)
+                            {
+                                return byte == 0xFF;
+                            }) == verificationBlock.end())
                     {
                         currentVerificationIndex += verificationBlock.size();
                         VerifyIfIsErased();
