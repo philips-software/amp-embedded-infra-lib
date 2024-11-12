@@ -139,6 +139,26 @@ TEST_F(HttpClientAuthenticationTest, Put_request_is_forwarded_3)
     httpClientObserver->Subject().Put("target", infra::MakeRange(headers));
 }
 
+TEST_F(HttpClientAuthenticationTest, Patch_request_is_forwarded_1)
+{
+    EXPECT_CALL(httpClient, Patch("target", "contents", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString requestTarget, infra::BoundedConstString contents, services::HttpHeaders headers)
+        {
+            CheckHeaders(headers, "header contents");
+        }));
+    EXPECT_CALL(clientAuthentication, AuthenticationHeader()).WillOnce(testing::Return("header contents"));
+    httpClientObserver->Subject().Patch("target", "contents", infra::MakeRange(headers));
+}
+
+TEST_F(HttpClientAuthenticationTest, Patch_request_is_forwarded_3)
+{
+    EXPECT_CALL(httpClient, Patch("target", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString requestTarget, services::HttpHeaders headers)
+        {
+            CheckHeaders(headers, "header contents");
+        }));
+    EXPECT_CALL(clientAuthentication, AuthenticationHeader()).WillOnce(testing::Return("header contents"));
+    httpClientObserver->Subject().Patch("target", infra::MakeRange(headers));
+}
+
 TEST_F(HttpClientAuthenticationTest, Delete_request_is_forwarded)
 {
     EXPECT_CALL(httpClient, Delete("target", "contents", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString requestTarget, infra::BoundedConstString contents, services::HttpHeaders headers)
