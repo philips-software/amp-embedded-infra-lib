@@ -17,7 +17,7 @@ namespace
 
         using services::HttpClientAuthentication::HttpClientAuthentication;
 
-        MOCK_METHOD2(Authenticate, void(infra::BoundedConstString scheme, infra::BoundedConstString value));
+        MOCK_METHOD4(Authenticate, void(services::HttpVerb verb, infra::BoundedConstString target, infra::BoundedConstString scheme, infra::BoundedConstString value));
         MOCK_CONST_METHOD0(AuthenticationHeader, infra::BoundedConstString());
         MOCK_CONST_METHOD0(Retry, bool());
         MOCK_METHOD0(Reset, void());
@@ -47,6 +47,16 @@ public:
         EXPECT_TRUE(infra::ContentsEqual(infra::MakeRange(copy), headersToCheck));
     }
 
+    void Get()
+    {
+        EXPECT_CALL(httpClient, Get("target", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString requestTarget, services::HttpHeaders headers)
+            {
+                CheckHeaders(headers, "header contents");
+            }));
+        EXPECT_CALL(clientAuthentication, AuthenticationHeader()).WillOnce(testing::Return("header contents"));
+        httpClientObserver->Subject().Get("target", infra::MakeRange(headers));
+    }
+
     infra::SharedOptional<testing::StrictMock<services::HttpClientObserverMock>> httpClientObserver;
     testing::StrictMock<HttpClientAuthentication::WithMaxHeaders<4>> clientAuthentication;
     testing::StrictMock<services::HttpClientMock> httpClient;
@@ -56,12 +66,7 @@ public:
 
 TEST_F(HttpClientAuthenticationTest, Get_request_is_forwarded)
 {
-    EXPECT_CALL(httpClient, Get("target", testing::_)).WillOnce(testing::Invoke([this](infra::BoundedConstString requestTarget, services::HttpHeaders headers)
-        {
-            CheckHeaders(headers, "header contents");
-        }));
-    EXPECT_CALL(clientAuthentication, AuthenticationHeader()).WillOnce(testing::Return("header contents"));
-    httpClientObserver->Subject().Get("target", infra::MakeRange(headers));
+    Get();
 }
 
 TEST_F(HttpClientAuthenticationTest, Head_request_is_forwarded)
@@ -165,6 +170,8 @@ TEST_F(HttpClientAuthenticationTest, GetConnection_is_forwarded)
 
 TEST_F(HttpClientAuthenticationTest, normal_flow_is_forwarded)
 {
+    Get();
+
     testing::StrictMock<infra::StreamWriterMock> writer;
     EXPECT_CALL(*httpClientObserver, FillContent(testing::Ref(writer)));
     httpClient.Observer().FillContent(writer);
@@ -190,10 +197,13 @@ TEST_F(HttpClientAuthenticationTest, normal_flow_is_forwarded)
 
 TEST_F(HttpClientAuthenticationTest, unauthorized_is_not_retried)
 {
+    Get();
+
     httpClient.Observer().StatusAvailable(services::HttpStatusCode::Unauthorized);
 
     httpClient.Observer().HeaderAvailable({ "name", "value" });
-    EXPECT_CALL(clientAuthentication, Authenticate("scheme", "value"));
+    EXPECT_CALL(clientAuthentication, AuthenticationHeader()).WillOnce(testing::Return("header contents"));
+    EXPECT_CALL(clientAuthentication, Authenticate(services::HttpVerb::get, "target", "scheme", "value"));
     httpClient.Observer().HeaderAvailable({ "WWW-Authenticate", "scheme value" });
 
     testing::StrictMock<infra::StreamReaderMock> reader;
@@ -215,7 +225,8 @@ TEST_F(HttpClientAuthenticationTest, unauthorized_is_retried)
     httpClient.Observer().StatusAvailable(services::HttpStatusCode::Unauthorized);
 
     httpClient.Observer().HeaderAvailable({ "name", "value" });
-    EXPECT_CALL(clientAuthentication, Authenticate("scheme", "value"));
+    EXPECT_CALL(clientAuthentication, AuthenticationHeader()).WillOnce(testing::Return("header contents"));
+    EXPECT_CALL(clientAuthentication, Authenticate(services::HttpVerb::get, "target", "scheme", "value"));
     httpClient.Observer().HeaderAvailable({ "WWW-Authenticate", "scheme value" });
 
     testing::StrictMock<infra::StreamReaderMock> reader;
