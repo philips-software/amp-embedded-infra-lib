@@ -81,6 +81,10 @@ namespace infra
         {
             struct ExceptionSafePop
             {
+                ExceptionSafePop(EventDispatcherWithWeakPtrWorker& worker)
+                    : worker(worker)
+                {}
+
                 ExceptionSafePop(const ExceptionSafePop&) = delete;
                 ExceptionSafePop& operator=(const ExceptionSafePop&) = delete;
 

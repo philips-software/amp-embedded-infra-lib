@@ -112,6 +112,8 @@ namespace services
                         while (!stream.Empty())
                         {
                             auto range = infra::ReinterpretCastMemoryRange<const typename C::value_type>(stream.ContiguousRange());
+                            stream.ErrorPolicy().ReportResult(range.size() <= value.max_size() - value.size());
+                            range.shrink_from_back_to(value.max_size() - value.size());
                             value.insert(value.end(), range.begin(), range.end());
                         }
                     });

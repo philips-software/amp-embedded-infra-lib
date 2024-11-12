@@ -2,6 +2,8 @@
 #define INFRA_TIMER_LIMITED_REPEATING_HPP
 
 #include "infra/timer/Timer.hpp"
+#include "infra/util/Function.hpp"
+#include <cstdint>
 
 namespace infra
 {
@@ -10,15 +12,17 @@ namespace infra
     {
     public:
         using detail::TimerRepeating::TimerRepeating;
-        TimerLimitedRepeating(int aHowMany, Duration duration, const infra::Function<void()>& action, uint32_t timerServiceId = systemTimerServiceId);
+        TimerLimitedRepeating(uint32_t aHowMany, Duration duration, const infra::Function<void()>& action, uint32_t timerServiceId = systemTimerServiceId);
+        TimerLimitedRepeating(uint32_t aHowMany, Duration duration, const infra::Function<void()>& action, TriggerImmediately, uint32_t timerServiceId = systemTimerServiceId);
 
-        void Start(int aHowMany, Duration duration, const infra::Function<void()>& action);
+        void Start(uint32_t aHowMany, Duration duration, const infra::Function<void()>& action);
+        void Start(uint32_t aHowMany, Duration duration, const infra::Function<void()>& action, TriggerImmediately);
 
     protected:
         void ComputeNextTriggerTime() override;
 
     private:
-        int howMany{ 0 };
+        uint32_t howMany{ 0 };
     };
 }
 

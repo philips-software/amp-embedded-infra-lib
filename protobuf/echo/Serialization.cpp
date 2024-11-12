@@ -11,8 +11,6 @@ namespace services
     {
         while (!reader->Empty())
             reader->ExtractContiguousRange(std::numeric_limits<uint32_t>::max());
-
-        reader = nullptr;
     }
 
     void MethodDeserializerDummy::ExecuteMethod()

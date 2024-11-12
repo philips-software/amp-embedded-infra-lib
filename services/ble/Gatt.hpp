@@ -35,6 +35,21 @@ namespace services
                 enableIndication = 0x0002,
             };
         };
+
+        GattDescriptor(const AttAttribute::Uuid& type, AttAttribute::Handle handle);
+        GattDescriptor() = default;
+
+        const AttAttribute::Uuid& Type() const;
+
+        AttAttribute::Handle Handle() const;
+        AttAttribute::Handle& Handle();
+
+        bool operator==(const GattDescriptor& other) const;
+        bool operator!=(const GattDescriptor& other) const;
+
+    private:
+        AttAttribute::Uuid type;
+        AttAttribute::Handle handle;
     };
 
     namespace uuid
@@ -72,9 +87,6 @@ namespace services
     public:
         GattCharacteristic(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, PropertyFlags properties);
         GattCharacteristic() = default;
-        GattCharacteristic(GattCharacteristic& other) = delete;
-        GattCharacteristic& operator=(const GattCharacteristic& other) = delete;
-        virtual ~GattCharacteristic() = default;
 
         const PropertyFlags& Properties() const;
         const AttAttribute::Uuid& Type() const;
@@ -96,9 +108,6 @@ namespace services
     public:
         GattService(const AttAttribute::Uuid& type);
         GattService(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle endHandle);
-        GattService(GattService& other) = delete;
-        GattService& operator=(const GattService& other) = delete;
-        virtual ~GattService() = default;
 
         AttAttribute::Uuid Type() const;
         AttAttribute::Handle Handle() const;

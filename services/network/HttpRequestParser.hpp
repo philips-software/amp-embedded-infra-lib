@@ -21,6 +21,8 @@ namespace services
         virtual bool Valid() const = 0;
         virtual HttpVerb Verb() const = 0;
         virtual const infra::Tokenizer& PathTokens() const = 0;
+        virtual infra::BoundedConstString Query() const = 0;
+        virtual infra::BoundedConstString Fragment() const = 0;
         virtual infra::BoundedConstString Header(infra::BoundedConstString name) const = 0;
         virtual void EnumerateHeaders(const infra::Function<void(infra::BoundedConstString name, infra::BoundedConstString value)>& enumerator) const = 0;
         virtual infra::BoundedString& BodyBuffer() = 0;
@@ -37,6 +39,8 @@ namespace services
         bool Valid() const override;
         HttpVerb Verb() const override;
         const infra::Tokenizer& PathTokens() const override;
+        infra::BoundedConstString Query() const override;
+        infra::BoundedConstString Fragment() const override;
         infra::BoundedConstString Header(infra::BoundedConstString name) const override;
         void EnumerateHeaders(const infra::Function<void(infra::BoundedConstString name, infra::BoundedConstString value)>& enumerator) const override;
         infra::BoundedString& BodyBuffer() override;
@@ -54,7 +58,8 @@ namespace services
         infra::BoundedString headers;
         infra::BoundedString bodyBuffer;
         HttpVerb verb;
-        infra::BoundedConstString path;
+        infra::BoundedConstString query;
+        infra::BoundedConstString fragment;
         infra::Tokenizer pathTokens;
         bool headersComplete = true;
         bool valid = true;

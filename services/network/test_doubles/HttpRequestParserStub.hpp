@@ -48,6 +48,16 @@ namespace services
             return pathTokens;
         }
 
+        infra::BoundedConstString Query() const override
+        {
+            return query;
+        }
+
+        infra::BoundedConstString Fragment() const override
+        {
+            return fragment;
+        }
+
         infra::BoundedConstString Header(infra::BoundedConstString name) const override
         {
             for (auto& header : headers)
@@ -75,6 +85,8 @@ namespace services
 
         HttpVerb verb;
         infra::BoundedConstString path;
+        infra::BoundedConstString query;
+        infra::BoundedConstString fragment;
         infra::Tokenizer pathTokens;
         infra::BoundedString::WithStorage<1024> body;
         uint32_t contentLength;

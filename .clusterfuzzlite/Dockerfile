@@ -1,4 +1,4 @@
-FROM gcr.io/oss-fuzz-base/base-builder@sha256:9d3d9054487e2d641e910184b6fde9d1559e675ee622997ad77f7fa04c8a203f
+FROM gcr.io/oss-fuzz-base/base-builder@sha256:0d3e5b7e259deb6c4a64f3b850733394b1552bdd1940376702b4c48de53d8a14
 
 HEALTHCHECK NONE
 

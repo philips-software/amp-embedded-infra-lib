@@ -5,6 +5,12 @@
 #include "infra/util/VariantDetail.hpp"
 #include <type_traits>
 
+#ifdef _MSC_VER
+#define NOEXCEPT_SPECIFICATION(x) // VS2022 does not handle nothrow specifications well in c++20 mode
+#else
+#define NOEXCEPT_SPECIFICATION(x) noexcept(x)
+#endif
+
 namespace infra
 {
     struct AtIndex
@@ -20,6 +26,7 @@ namespace infra
 
         Variant();
         Variant(const Variant& other);
+        Variant(Variant&& other) NOEXCEPT_SPECIFICATION((std::is_nothrow_move_constructible_v<T> && ...));
         template<class... T2>
         Variant(const Variant<T2...>& other);
         template<class U>
@@ -30,6 +37,7 @@ namespace infra
         Variant(AtIndex, std::size_t index, Args&&... args);
 
         Variant& operator=(const Variant& other);
+        Variant& operator=(Variant&& other) NOEXCEPT_SPECIFICATION((std::is_nothrow_move_assignable_v<T> && ...) && (std::is_nothrow_move_constructible_v<T> && ...));
         template<class... T2>
         Variant& operator=(const Variant<T2...>& other);
         template<class U>
@@ -80,7 +88,6 @@ namespace infra
         template<class... Args>
         void ConstructByIndexInEmptyVariant(std::size_t index, Args&&... args);
 
-    private:
         void Destruct();
 
     private:
@@ -88,7 +95,9 @@ namespace infra
         typename std::aligned_storage<MaxSizeOfTypes<T...>::value, MaxAlignmentOfTypes<T...>::value>::type data;
 
         template<class... T2>
-        friend struct detail::ConstructVisitor;
+        friend struct detail::CopyConstructVisitor;
+        template<class... T2>
+        friend struct detail::MoveConstructVisitor;
     };
 
     template<class... T>
@@ -112,7 +121,14 @@ namespace infra
     template<class... T>
     Variant<T...>::Variant(const Variant& other)
     {
-        detail::ConstructVisitor<T...> visitor(*this);
+        detail::CopyConstructVisitor<T...> visitor(*this);
+        ApplyVisitor(visitor, other);
+    }
+
+    template<class... T>
+    Variant<T...>::Variant(Variant&& other) NOEXCEPT_SPECIFICATION((std::is_nothrow_move_constructible_v<T> && ...))
+    {
+        detail::MoveConstructVisitor<T...> visitor(*this);
         ApplyVisitor(visitor, other);
     }
 
@@ -120,7 +136,7 @@ namespace infra
     template<class... T2>
     Variant<T...>::Variant(const Variant<T2...>& other)
     {
-        detail::ConstructVisitor<T...> visitor(*this);
+        detail::CopyConstructVisitor<T...> visitor(*this);
         ApplyVisitor(visitor, other);
     }
 
@@ -150,7 +166,19 @@ namespace infra
     {
         if (this != &other)
         {
-            detail::CopyVisitor<T...> visitor(*this);
+            detail::CopyAssignVisitor<T...> visitor(*this);
+            ApplyVisitor(visitor, other);
+        }
+
+        return *this;
+    }
+
+    template<class... T>
+    Variant<T...>& Variant<T...>::operator=(Variant&& other) NOEXCEPT_SPECIFICATION((std::is_nothrow_move_assignable_v<T> && ...) && (std::is_nothrow_move_constructible_v<T> && ...))
+    {
+        if (this != &other)
+        {
+            detail::MoveAssignVisitor<T...> visitor(*this);
             ApplyVisitor(visitor, other);
         }
 
@@ -161,7 +189,7 @@ namespace infra
     template<class... T2>
     Variant<T...>& Variant<T...>::operator=(const Variant<T2...>& other)
     {
-        detail::CopyVisitor<T...> visitor(*this);
+        detail::CopyAssignVisitor<T...> visitor(*this);
         ApplyVisitor(visitor, other);
 
         return *this;
