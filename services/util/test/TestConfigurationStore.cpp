@@ -240,6 +240,7 @@ namespace
         MOCK_METHOD1(Recover, void(const infra::Function<void(bool success)>& onLoaded));
         MOCK_METHOD2(Write, void(uint32_t size, const infra::Function<void()>& onDone));
         MOCK_METHOD1(Erase, void(const infra::Function<void()>& onDone));
+        MOCK_METHOD1(IsErased, void(const infra::Function<void(bool)>& onEraseCheckDone));
     };
 
     class ConfigurationStoreObserverMock
@@ -273,8 +274,11 @@ public:
         EXPECT_CALL(configurationBlob2, Recover(testing::_)).WillOnce(testing::SaveArg<0>(&onRecoverDone));
         onRecoverDone(false);
 
-        EXPECT_CALL(configurationBlob1, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+        EXPECT_CALL(configurationBlob1, IsErased(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseCheckDone));
         onRecoverDone(false);
+
+        EXPECT_CALL(configurationBlob1, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+        onEraseCheckDone(false);
 
         EXPECT_CALL(*this, OnLoaded(false));
         onEraseDone();
@@ -283,6 +287,7 @@ public:
 public:
     infra::Function<void(bool success)> onRecoverDone;
     infra::Function<void()> onEraseDone;
+    infra::Function<void(bool success)> onEraseCheckDone;
     testing::StrictMock<ConfigurationBlobMock> configurationBlob1;
     testing::StrictMock<ConfigurationBlobMock> configurationBlob2;
     testing::StrictMock<Data> dataInstance;
@@ -301,8 +306,11 @@ TEST_F(ConfigurationStoreTest, failed_blob_load_is_propagated)
     EXPECT_CALL(configurationBlob2, Recover(testing::_)).WillOnce(testing::SaveArg<0>(&onRecoverDone));
     onRecoverDone(false);
 
-    EXPECT_CALL(configurationBlob1, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    EXPECT_CALL(configurationBlob1, IsErased(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseCheckDone));
     onRecoverDone(false);
+
+    EXPECT_CALL(configurationBlob1, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onEraseCheckDone(false);
 
     EXPECT_CALL(*this, OnLoaded(false));
     onEraseDone();
@@ -316,8 +324,11 @@ TEST_F(ConfigurationStoreTest, after_successful_blob_load_configuration_is_avail
             OnLoaded(success);
         });
 
-    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    EXPECT_CALL(configurationBlob2, IsErased(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseCheckDone));
     onRecoverDone(true);
+
+    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onEraseCheckDone(false);
 
     EXPECT_CALL(configurationBlob1, CurrentBlob()).WillOnce(testing::Return(infra::ByteRange()));
     EXPECT_CALL(dataInstance, Deserialize(testing::_));
@@ -336,8 +347,11 @@ TEST_F(ConfigurationStoreTest, after_successful_blob_load_from_second_flash_conf
     EXPECT_CALL(configurationBlob2, Recover(testing::_)).WillOnce(testing::SaveArg<0>(&onRecoverDone));
     onRecoverDone(false);
 
-    EXPECT_CALL(configurationBlob1, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    EXPECT_CALL(configurationBlob1, IsErased(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseCheckDone));
     onRecoverDone(true);
+
+    EXPECT_CALL(configurationBlob1, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onEraseCheckDone(false);
 
     EXPECT_CALL(configurationBlob2, CurrentBlob()).WillOnce(testing::Return(infra::ByteRange()));
     EXPECT_CALL(dataInstance, Deserialize(testing::_));
@@ -374,8 +388,11 @@ TEST_F(ConfigurationStoreTest, Write_writes_to_other_blob_than_recovered)
             OnLoaded(success);
         });
 
-    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    EXPECT_CALL(configurationBlob2, IsErased(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseCheckDone));
     onRecoverDone(true);
+
+    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onEraseCheckDone(false);
 
     EXPECT_CALL(configurationBlob1, CurrentBlob()).WillOnce(testing::Return(infra::ByteRange()));
     EXPECT_CALL(dataInstance, Deserialize(testing::_));
