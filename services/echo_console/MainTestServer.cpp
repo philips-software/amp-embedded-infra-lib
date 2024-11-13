@@ -1,35 +1,15 @@
 #ifndef MAIN_ECHO_TEST_TCP_SERVER_HPP
 #define MAIN_ECHO_TEST_TCP_SERVER_HPP
 
-#include "args.hxx"
 #include "echo/TracingServiceDiscovery.pb.hpp"
-#include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
-#include "infra/util/SharedPtr.hpp"
-#include "services/network/Connection.hpp"
-#include <ostream>
-#include <vector>
-#ifdef EMIL_HAL_WINDOWS
-#include "hal/windows/UartWindows.hpp"
-#else
-#include "hal/unix/UartUnix.hpp"
-#endif
 #include "infra/stream/IoOutputStream.hpp"
-#include "infra/syntax/Json.hpp"
-#include "infra/util/Tokenizer.hpp"
+#include "infra/util/SharedPtr.hpp"
 #include "protobuf/echo/Serialization.hpp"
 #include "protobuf/meta_services/ServiceDiscoveryEcho.hpp"
 #include "services/echo_console/Console.hpp"
-#include "services/network/ConnectionFactoryWithNameResolver.hpp"
-#include "services/network/HttpClientImpl.hpp"
+#include "services/network/Connection.hpp"
 #include "services/network/TracingEchoOnConnection.hpp"
-#include "services/network/WebSocketClientConnectionObserver.hpp"
 #include "services/tracer/GlobalTracer.hpp"
-#include "services/util/MessageCommunicationCobs.hpp"
-#include "services/util/MessageCommunicationWindowed.hpp"
-#include <deque>
-#include <filesystem>
-#include <fstream>
-#include <iostream>
 
 class EchoServerConnectionObserver
     : private services::MethodSerializerFactory::OnHeap
@@ -40,14 +20,15 @@ public:
 
 private:
     service_discovery::ServiceDiscoveryTracer serviceDiscoveryTracer;
+    service_discovery::ServiceDiscoveryResponseTracer serviceDiscoveryResponseTracer;
     application::ServiceDiscoveryEcho serviceDiscoveryEcho;
 };
 
 EchoServerConnectionObserver::EchoServerConnectionObserver(services::Tracer& tracer)
     : services::TracingEchoOnConnection(tracer, *this)
     , serviceDiscoveryTracer(*this)
-    , serviceDiscoveryEcho(*this)
-{};
+    , serviceDiscoveryResponseTracer(*this)
+    , serviceDiscoveryEcho(*this){};
 
 class EchoServerConnection
     : public services::ServerConnectionObserverFactory
