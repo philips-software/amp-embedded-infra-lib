@@ -1,8 +1,12 @@
 #include "args.hxx"
+#include "echo/TracingServiceDiscovery.pb.hpp"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
+#include "infra/util/Optional.hpp"
 #include "protobuf/echo/Serialization.hpp"
 #include "protobuf/meta_services/PeerServiceDiscoverer.hpp"
 #include "services/network/EchoOnConnection.hpp"
+#include "services/network/TracingEchoOnConnection.hpp"
+#include "services/tracer/Tracer.hpp"
 #include <ostream>
 #include <vector>
 #ifdef EMIL_HAL_WINDOWS
@@ -94,18 +98,18 @@ void ConsoleClientUart::CheckDataToBeSent()
 
 class ConsoleClientConnection
     : private services::MethodSerializerFactory::OnHeap
-    , public services::EchoOnConnection
+    , public services::TracingEchoOnConnection
     , public application::ConsoleObserver
 {
 public:
-    explicit ConsoleClientConnection(application::Console& console);
+    explicit ConsoleClientConnection(application::Console& console, services::Tracer& tracer);
 
     ~ConsoleClientConnection();
 
     // Implementation of ConnectionObserver
     // void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
     // void DataReceived() override;
-    // void Attached() override;
+    void Attached() override;
 
     // Implementation of ConsoleObserver
     void Send(const std::string& message) override;
@@ -116,13 +120,16 @@ private:
 private:
     std::string dataToBeSent;
     infra::SharedPtr<infra::StreamWriter> writer;
-    application::PeerServiceDiscovererEcho peerServiceDiscoverer;
+    service_discovery::ServiceDiscoveryTracer serviceDiscoveryTracer;
+    service_discovery::ServiceDiscoveryResponseTracer serviceDiscoveryResponseTracer;
+    infra::Optional<application::PeerServiceDiscovererEcho> peerServiceDiscoverer;
 };
 
-ConsoleClientConnection::ConsoleClientConnection(application::Console& console)
+ConsoleClientConnection::ConsoleClientConnection(application::Console& console, services::Tracer& tracer)
     : application::ConsoleObserver(console)
-    , services::EchoOnConnection(*static_cast<services::MethodSerializerFactory*>(this))
-    , peerServiceDiscoverer(*this)
+    , services::TracingEchoOnConnection(tracer, *static_cast<services::MethodSerializerFactory*>(this))
+    , serviceDiscoveryTracer(*this)
+    , serviceDiscoveryResponseTracer(*this)
 {
     services::GlobalTracer().Trace() << "ConsoleClientConnection";
 }
@@ -155,10 +162,10 @@ ConsoleClientConnection::~ConsoleClientConnection()
 //     {}
 // }
 
-// void ConsoleClientConnection::Attached()
-// {
-//     services::ConnectionObserver::Subject().RequestSendStream(services::ConnectionObserver::Subject().MaxSendStreamSize());
-// }
+void ConsoleClientConnection::Attached()
+{
+    peerServiceDiscoverer.Emplace(*this);
+}
 
 void ConsoleClientConnection::Send(const std::string& message)
 {
@@ -216,7 +223,7 @@ ConsoleClientTcp::~ConsoleClientTcp()
 {
     tracer.Trace() << "~ConsoleClientTcp";
 
-    consoleClientConnection->services::ConnectionObserver::Subject().AbortAndDestroy();
+    consoleClientConnection->ConnectionObserver::Subject().AbortAndDestroy();
 }
 
 infra::BoundedConstString ConsoleClientTcp::Hostname() const
@@ -233,7 +240,7 @@ void ConsoleClientTcp::ConnectionEstablished(infra::AutoResetFunction<void(infra
 {
     tracer.Trace() << "Connection established";
     tracer.Trace();
-    createdObserver(consoleClientConnection.Emplace(console));
+    createdObserver(consoleClientConnection.Emplace(console, tracer));
 }
 
 void ConsoleClientTcp::ConnectionFailed(services::ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason reason)
@@ -297,7 +304,7 @@ void ConsoleClientWebSocket::ConnectionEstablished(infra::AutoResetFunction<void
 {
     tracer.Trace() << "Connection established";
     tracer.Trace();
-    createdClientObserver(consoleClientConnection.Emplace(console));
+    createdClientObserver(consoleClientConnection.Emplace(console, tracer));
 }
 
 void ConsoleClientWebSocket::ConnectionFailed(ConnectFailReason reason)

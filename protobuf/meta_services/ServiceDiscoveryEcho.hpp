@@ -45,6 +45,7 @@ namespace application
         services::Echo& UpstreamRpc();
         void UpdateChangedServices(uint32_t& serviceId);
         void ServicesChangeNotification(uint32_t serviceId);
+        uint32_t GetServiceId(infra::Observer<Service, Echo>& observer) const;
 
     private:
         infra::Optional<std::pair<uint32_t, uint32_t>> changedServices;

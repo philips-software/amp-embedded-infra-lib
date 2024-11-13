@@ -28,13 +28,41 @@ namespace application
         MethodDone();
     }
 
+    uint32_t ServiceDiscoveryEcho::GetServiceId(infra::Observer<Service, Echo>& observer) const
+    {
+        return services::ServiceIdAccess::GetId(*static_cast<services::ServiceId*>(static_cast<Service*>(&observer)));
+    }
+
     infra::Optional<uint32_t> ServiceDiscoveryEcho::FirstSupportedServiceId(uint32_t startServiceId, uint32_t endServiceId)
     {
-        for (auto id = startServiceId; id <= endServiceId; ++id)
-            if (AcceptsService(id))
-                return infra::MakeOptional(id);
+        struct FirstSupportedServiceQuery
+        {
+            void UpdateServiceId(uint32_t id)
+            {
+                if (id >= startServiceId && id <= endServiceId)
+                {
+                    if (serviceId)
+                        *serviceId = std::min(*serviceId, id);
+                    else
+                        serviceId = infra::MakeOptional(id);
+                }
+            }
 
-        return infra::none;
+            const uint32_t startServiceId;
+            const uint32_t endServiceId;
+            infra::Optional<uint32_t> serviceId;
+        };
+
+        FirstSupportedServiceQuery query{ startServiceId, endServiceId };
+
+        services::Echo::NotifyObservers([&query, this](auto& observer)
+            {
+                query.UpdateServiceId(GetServiceId(observer));
+            });
+
+        query.UpdateServiceId(GetServiceId(*this));
+
+        return query.serviceId;
     }
 
     void ServiceDiscoveryEcho::NotifyServiceChanges(bool value)
@@ -112,7 +140,7 @@ namespace application
 
     void ServiceDiscoveryEcho::RegisterObserver(infra::Observer<Service, Echo>* observer)
     {
-        auto id = services::ServiceIdAccess::GetId(*static_cast<services::ServiceId*>(static_cast<Service*>(observer)));
+        auto id = GetServiceId(*observer);
         ServicesChangeNotification(id);
 
         services::Echo::RegisterObserver(observer);
