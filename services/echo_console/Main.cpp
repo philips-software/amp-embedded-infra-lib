@@ -106,23 +106,45 @@ public:
 
     ~ConsoleClientConnection();
 
-    // Implementation of ConnectionObserver
-    // void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-    // void DataReceived() override;
+    // ConnectionObserver
     void Attached() override;
 
     // Implementation of ConsoleObserver
     void Send(const std::string& message) override;
 
 private:
+    class PeerServiceDiscoveryObserverTracer
+        : public application::PeerServiceDiscoveryObserver
+    {
+    public:
+        PeerServiceDiscoveryObserverTracer(application::PeerServiceDiscovererEcho& subject, services::Tracer& tracer)
+            : PeerServiceDiscoveryObserver(subject)
+            , tracer(tracer)
+        {}
+
+        // Implementation of PeerServiceDiscoveryObserver
+        void ServicesDiscovered(infra::MemoryRange<uint32_t> services) override
+        {
+            tracer.Trace() << "Services discovered: ";
+            for (auto service : services)
+                tracer.Continue() << service << " ";
+        }
+
+    private:
+        services::Tracer& tracer;
+    };
+
+private:
     void CheckDataToBeSent();
 
 private:
+    services::Tracer& tracer;
     std::string dataToBeSent;
     infra::SharedPtr<infra::StreamWriter> writer;
     service_discovery::ServiceDiscoveryTracer serviceDiscoveryTracer;
     service_discovery::ServiceDiscoveryResponseTracer serviceDiscoveryResponseTracer;
     infra::Optional<application::PeerServiceDiscovererEcho> peerServiceDiscoverer;
+    infra::Optional<PeerServiceDiscoveryObserverTracer> peerServiceDiscoveryObserverTracer;
 };
 
 ConsoleClientConnection::ConsoleClientConnection(application::Console& console, services::Tracer& tracer)
@@ -130,41 +152,20 @@ ConsoleClientConnection::ConsoleClientConnection(application::Console& console, 
     , services::TracingEchoOnConnection(tracer, *static_cast<services::MethodSerializerFactory*>(this))
     , serviceDiscoveryTracer(*this)
     , serviceDiscoveryResponseTracer(*this)
+    , tracer(tracer)
 {
-    services::GlobalTracer().Trace() << "ConsoleClientConnection";
+    tracer.Trace() << "ConsoleClientConnection";
 }
 
 ConsoleClientConnection::~ConsoleClientConnection()
 {
-    services::GlobalTracer().Trace() << "~ConsoleClientConnection";
+    tracer.Trace() << "~ConsoleClientConnection";
 }
-
-// void ConsoleClientConnection::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
-// {
-//     this->writer = writer;
-//     writer = nullptr;
-
-//     CheckDataToBeSent();
-// }
-
-// void ConsoleClientConnection::DataReceived()
-// {
-//     try
-//     {
-//         while (true)
-//         {
-//             auto stream = services::ConnectionObserver::Subject().ReceiveStream();
-//             ConsoleObserver::Subject().DataReceived(*stream);
-//             services::ConnectionObserver::Subject().AckReceived();
-//         }
-//     }
-//     catch (application::Console::IncompletePacket&)
-//     {}
-// }
 
 void ConsoleClientConnection::Attached()
 {
     peerServiceDiscoverer.Emplace(*this);
+    peerServiceDiscoveryObserverTracer.Emplace(*peerServiceDiscoverer, tracer);
 }
 
 void ConsoleClientConnection::Send(const std::string& message)
