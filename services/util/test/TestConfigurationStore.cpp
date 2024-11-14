@@ -2,6 +2,7 @@
 #include "hal/interfaces/test_doubles/FlashStub.hpp"
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
+#include "infra/util/ByteRange.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/util/ConfigurationStore.hpp"
@@ -294,6 +295,24 @@ public:
     services::ConfigurationStoreImpl<DataProxy> configurationStore;
     testing::StrictMock<ConfigurationStoreObserverMock> observer{ configurationStore };
 };
+
+TEST_F(ConfigurationStoreTest, do_not_erase_blob_if_is_already_erased)
+{
+    EXPECT_CALL(configurationBlob1, Recover(testing::_)).WillOnce(testing::SaveArg<0>(&onRecoverDone));
+    configurationStore.Recover([this](bool success)
+        {
+            OnLoaded(success);
+        });
+
+    EXPECT_CALL(configurationBlob2, IsErased(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseCheckDone));
+    onRecoverDone(true);
+
+    EXPECT_CALL(configurationBlob1, CurrentBlob()).WillOnce(testing::Return(infra::ConstByteRange()));
+    EXPECT_CALL(dataInstance, Deserialize(testing::_));
+
+    EXPECT_CALL(*this, OnLoaded(true));
+    onEraseCheckDone(true);
+}
 
 TEST_F(ConfigurationStoreTest, failed_blob_load_is_propagated)
 {
