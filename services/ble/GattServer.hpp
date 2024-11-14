@@ -118,7 +118,6 @@ namespace services
         GattServer() = default;
         GattServer(GattServer& other) = delete;
         GattServer& operator=(const GattServer& other) = delete;
-        virtual ~GattServer() = default;
 
         virtual void AddService(GattServerService& service) = 0;
     };
