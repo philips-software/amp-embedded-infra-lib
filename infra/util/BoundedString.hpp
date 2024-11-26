@@ -230,8 +230,21 @@ namespace infra
         size_type find_last_not_of(const char* s, size_type pos = npos) const;
         size_type find_last_not_of(char ch, size_type pos = npos) const;
 
+        template<class U>
+        bool starts_with(const BoundedStringBase<U>& other) const;
+        bool starts_with(const char* s, size_type count) const;
+        bool starts_with(const char* s) const;
+        bool starts_with(char ch) const;
+
+        template<class U>
+        bool ends_with(const BoundedStringBase<U>& other) const;
+        bool ends_with(const char* s, size_type count) const;
+        bool ends_with(const char* s) const;
+        bool ends_with(char ch) const;
+
     private:
-        static void AssignToRange(MemoryRange<NonConstT> range, size_type& length, size_type count, char ch);
+        static void
+        AssignToRange(MemoryRange<NonConstT> range, size_type& length, size_type count, char ch);
         template<class U>
         static void AssignToRange(MemoryRange<NonConstT> range, size_type& length, const BoundedStringBase<U>& other);
         template<class U>
@@ -370,6 +383,11 @@ namespace infra
         *os << '"';
     }
 #endif
+
+    namespace literals
+    {
+        infra::BoundedConstString operator""_s(const char* str, std::size_t count);
+    }
 
     ////    Implementation    ////
 
@@ -1288,6 +1306,58 @@ namespace infra
     typename BoundedStringBase<T>::size_type BoundedStringBase<T>::find_last_not_of(char ch, size_type pos) const
     {
         return find_last_not_of(&ch, pos, 1);
+    }
+
+    template<class T>
+    template<class U>
+    bool BoundedStringBase<T>::starts_with(const BoundedStringBase<U>& other) const
+    {
+        return starts_with(other.begin(), other.size());
+    }
+
+    template<class T>
+    bool BoundedStringBase<T>::starts_with(const char* s, size_type count) const
+    {
+        return this->substr(0, count) == BoundedConstString{ s, count };
+    }
+
+    template<class T>
+    bool BoundedStringBase<T>::starts_with(const char* s) const
+    {
+        return starts_with(s, std::strlen(s)); //NOSONAR
+    }
+
+    template<class T>
+    bool BoundedStringBase<T>::starts_with(char ch) const
+    {
+        return starts_with(&ch, 1);
+    }
+
+    template<class T>
+    template<class U>
+    bool BoundedStringBase<T>::ends_with(const BoundedStringBase<U>& other) const
+    {
+        return ends_with(other.begin(), other.size());
+    }
+
+    template<class T>
+    bool BoundedStringBase<T>::ends_with(const char* s, size_type count) const
+    {
+        if (count > length)
+            return false;
+        return this->substr(length - count, count) == BoundedConstString{ s, count };
+    }
+
+    template<class T>
+    bool BoundedStringBase<T>::ends_with(const char* s) const
+    {
+        return ends_with(s, std::strlen(s)); //NOSONAR
+    }
+
+    template<class T>
+    bool BoundedStringBase<T>::ends_with(char ch) const
+    {
+        return ends_with(&ch, 1);
     }
 
     template<class T>
