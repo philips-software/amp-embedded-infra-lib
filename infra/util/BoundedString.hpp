@@ -4,6 +4,7 @@
 //  BoundedString is similar to std::string, except that it can contain a maximum number of characters
 
 #include "infra/util/MemoryRange.hpp"
+#include "infra/util/ReallyAssert.hpp"
 #include "infra/util/WithStorage.hpp"
 #include <algorithm>
 #include <cctype>
