@@ -4,6 +4,7 @@
 //  BoundedString is similar to std::string, except that it can contain a maximum number of characters
 
 #include "infra/util/MemoryRange.hpp"
+#include "infra/util/ReallyAssert.hpp"
 #include "infra/util/WithStorage.hpp"
 #include <algorithm>
 #include <cctype>
@@ -1063,7 +1064,8 @@ namespace infra
     template<class T>
     typename BoundedStringBase<T>::size_type BoundedStringBase<T>::copy(char* dest, size_type count, size_type pos)
     {
-        assert(pos + count <= length);
+        assert(pos <= length);
+        count = std::min(count, length - pos);
         std::copy(begin() + pos, begin() + pos + count, dest);
         return count;
     }
