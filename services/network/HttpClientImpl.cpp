@@ -222,9 +222,11 @@ namespace services
             else
             {
                 bodyReader.Emplace(ConnectionObserver::Subject().ReceiveStream(), *contentLength);
+                auto reader = infra::MakeContainedSharedObject(bodyReader->countingReader, bodyReaderAccess.MakeShared(bodyReader));
+                BodyReaderAvailable(reader);
 
                 if (HttpClient::IsAttached())
-                    Observer().BodyAvailable(infra::MakeContainedSharedObject(bodyReader->countingReader, bodyReaderAccess.MakeShared(bodyReader)));
+                    Observer().BodyAvailable(std::move(reader));
                 repeat = chunkedEncoding && contentLength == 0;
             }
         }

@@ -7,19 +7,18 @@ namespace services
         , tracer(tracer)
     {}
 
-    void TracingHttpClientImpl::DataReceived()
+    void TracingHttpClientImpl::BodyReaderAvailable(infra::SharedPtr<infra::CountingStreamReaderWithRewinding> bodyReader)
     {
-        tracer.Trace() << "HttpClientImpl::DataReceived; received response:" << infra::endl;
+        tracer.Trace() << "HttpClientImpl::BodyAvailable; received response:" << infra::endl;
 
-        auto reader = ConnectionObserver::Subject().ReceiveStream();
+        auto reader = bodyReader;
         infra::DataInputStream::WithErrorPolicy stream(*reader);
-
+        auto marker = reader->ConstructSaveMarker();
         while (!stream.Empty())
             tracer.Trace() << infra::ByteRangeAsString(stream.ContiguousRange());
 
+        reader->Rewind(marker);
         reader = nullptr;
-
-        HttpClientImpl::DataReceived();
     }
 
     void TracingHttpClientImpl::Attached()
@@ -55,19 +54,18 @@ namespace services
         , tracer(tracer)
     {}
 
-    void TracingHttpClientImplWithRedirection::DataReceived()
+    void TracingHttpClientImplWithRedirection::BodyReaderAvailable(infra::SharedPtr<infra::CountingStreamReaderWithRewinding> bodyReader)
     {
-        tracer.Trace() << "HttpClientImplWithRedirection::DataReceived; received response:" << infra::endl;
+        tracer.Trace() << "HttpClientImplWithRedirection::BodyAvailable; received response:" << infra::endl;
 
-        auto reader = ConnectionObserver::Subject().ReceiveStream();
+        auto reader = bodyReader;
         infra::DataInputStream::WithErrorPolicy stream(*reader);
-
+        auto marker = reader->ConstructSaveMarker();
         while (!stream.Empty())
             tracer.Trace() << infra::ByteRangeAsString(stream.ContiguousRange());
 
+        reader->Rewind(marker);
         reader = nullptr;
-
-        HttpClientImplWithRedirection::DataReceived();
     }
 
     void TracingHttpClientImplWithRedirection::Attached()
