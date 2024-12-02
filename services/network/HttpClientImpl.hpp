@@ -55,7 +55,7 @@ namespace services
         void BodyComplete();
 
     protected:
-        virtual void BodyReaderAvailable(infra::SharedPtr<infra::CountingStreamReaderWithRewinding> bodyReader){};
+        virtual void BodyReaderAvailable(infra::SharedPtr<infra::CountingStreamReaderWithRewinding>&& bodyReader);
 
     private:
         void ExpectResponse();

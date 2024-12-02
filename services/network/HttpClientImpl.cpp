@@ -223,13 +223,17 @@ namespace services
             {
                 bodyReader.Emplace(ConnectionObserver::Subject().ReceiveStream(), *contentLength);
                 auto reader = infra::MakeContainedSharedObject(bodyReader->countingReader, bodyReaderAccess.MakeShared(bodyReader));
-                BodyReaderAvailable(reader);
+                BodyReaderAvailable(std::move(reader));
 
-                if (HttpClient::IsAttached())
-                    Observer().BodyAvailable(std::move(reader));
                 repeat = chunkedEncoding && contentLength == 0;
             }
         }
+    }
+
+    void HttpClientImpl::BodyReaderAvailable(infra::SharedPtr<infra::CountingStreamReaderWithRewinding>&& bodyReader)
+    {
+        if (HttpClient::IsAttached())
+            Observer().BodyAvailable(std::move(bodyReader));
     }
 
     void HttpClientImpl::BodyReaderDestroyed()

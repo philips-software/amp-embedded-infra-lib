@@ -21,7 +21,7 @@ namespace services
 
     protected:
         // Implementation of HttpClientImplWithRedirection
-        void BodyReaderAvailable(infra::SharedPtr<infra::CountingStreamReaderWithRewinding> bodyReader) override;
+        void BodyReaderAvailable(infra::SharedPtr<infra::CountingStreamReaderWithRewinding>&& bodyReader) override;
 
     private:
         class TracingWriter
@@ -61,7 +61,7 @@ namespace services
 
     protected:
         // Implementation of HttpClientImplWithRedirection
-        void BodyReaderAvailable(infra::SharedPtr<infra::CountingStreamReaderWithRewinding> bodyReader) override;
+        void BodyReaderAvailable(infra::SharedPtr<infra::CountingStreamReaderWithRewinding>&& bodyReader) override;
 
     private:
         class TracingWriter

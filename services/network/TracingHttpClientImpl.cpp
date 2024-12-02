@@ -7,7 +7,7 @@ namespace services
         , tracer(tracer)
     {}
 
-    void TracingHttpClientImpl::BodyReaderAvailable(infra::SharedPtr<infra::CountingStreamReaderWithRewinding> bodyReader)
+    void TracingHttpClientImpl::BodyReaderAvailable(infra::SharedPtr<infra::CountingStreamReaderWithRewinding>&& bodyReader)
     {
         tracer.Trace() << "HttpClientImpl::BodyAvailable; received response:" << infra::endl;
 
@@ -18,7 +18,7 @@ namespace services
             tracer.Trace() << infra::ByteRangeAsString(stream.ContiguousRange());
 
         reader->Rewind(marker);
-        reader = nullptr;
+        HttpClientImpl::BodyReaderAvailable(std::move(reader));
     }
 
     void TracingHttpClientImpl::Attached()
@@ -54,7 +54,7 @@ namespace services
         , tracer(tracer)
     {}
 
-    void TracingHttpClientImplWithRedirection::BodyReaderAvailable(infra::SharedPtr<infra::CountingStreamReaderWithRewinding> bodyReader)
+    void TracingHttpClientImplWithRedirection::BodyReaderAvailable(infra::SharedPtr<infra::CountingStreamReaderWithRewinding>&& bodyReader)
     {
         tracer.Trace() << "HttpClientImplWithRedirection::BodyAvailable; received response:" << infra::endl;
 
@@ -65,7 +65,7 @@ namespace services
             tracer.Trace() << infra::ByteRangeAsString(stream.ContiguousRange());
 
         reader->Rewind(marker);
-        reader = nullptr;
+        HttpClientImplWithRedirection::BodyReaderAvailable(std::move(reader));
     }
 
     void TracingHttpClientImplWithRedirection::Attached()
