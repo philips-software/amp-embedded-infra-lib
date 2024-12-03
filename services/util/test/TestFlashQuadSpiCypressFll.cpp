@@ -21,7 +21,7 @@ public:
     }
 
     testing::StrictMock<hal::QuadSpiStub> spiStub;
-    infra::VerifyingFunctionMock<void()> onInitialized;
+    infra::VerifyingFunction<void()> onInitialized;
     services::FlashQuadSpiCypressFll flash;
 
     testing::StrictMock<infra::MockCallback<void()>> finished;

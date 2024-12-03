@@ -18,8 +18,8 @@ public:
 
 TEST_F(RegisterAccessMockTest, ReadRegisterInOneRead)
 {
-    infra::VerifyingFunctionMock<void(hal::Result, uint32_t)> sendDataDoneVerifier(hal::Result::complete, 1);
-    infra::VerifyingFunctionMock<void(hal::Result)> receiveDataDoneVerifier(hal::Result::complete);
+    infra::VerifyingFunction<void(hal::Result, uint32_t)> sendDataDoneVerifier(hal::Result::complete, 1);
+    infra::VerifyingFunction<void(hal::Result)> receiveDataDoneVerifier(hal::Result::complete);
     EXPECT_CALL(masterMock, ReadRegisterMock(3)).WillOnce(testing::Return(std::vector<uint8_t>{ 1, 2, 3, 4 }));
 
     uint8_t dataRegister = 3;
@@ -32,8 +32,8 @@ TEST_F(RegisterAccessMockTest, ReadRegisterInOneRead)
 
 TEST_F(RegisterAccessMockTest, ReadRegisterInTwoReads)
 {
-    infra::VerifyingFunctionMock<void(hal::Result)> receiveDataDone1Verifier(hal::Result::complete);
-    infra::VerifyingFunctionMock<void(hal::Result)> receiveDataDone2Verifier(hal::Result::complete);
+    infra::VerifyingFunction<void(hal::Result)> receiveDataDone1Verifier(hal::Result::complete);
+    infra::VerifyingFunction<void(hal::Result)> receiveDataDone2Verifier(hal::Result::complete);
     EXPECT_CALL(masterMock, ReadRegisterMock(3)).WillOnce(testing::Return(std::vector<uint8_t>{ 1, 2, 3, 4 }));
 
     uint8_t dataRegister = 3;
@@ -49,7 +49,7 @@ TEST_F(RegisterAccessMockTest, ReadRegisterInTwoReads)
 
 TEST_F(RegisterAccessMockTest, WriteRegisterInOneWrite)
 {
-    infra::VerifyingFunctionMock<void(hal::Result, uint32_t)> sendDataDoneVerifier(hal::Result::complete, 5);
+    infra::VerifyingFunction<void(hal::Result, uint32_t)> sendDataDoneVerifier(hal::Result::complete, 5);
     EXPECT_CALL(masterMock, WriteRegisterMock(3, std::vector<uint8_t>{ 1, 2, 3, 4 }));
 
     std::array<uint8_t, 5> data = { 3, 1, 2, 3, 4 };
@@ -58,8 +58,8 @@ TEST_F(RegisterAccessMockTest, WriteRegisterInOneWrite)
 
 TEST_F(RegisterAccessMockTest, WriteRegisterInTwoWrites)
 {
-    infra::VerifyingFunctionMock<void(hal::Result, uint32_t)> sendDataDone1Verifier(hal::Result::complete, 1);
-    infra::VerifyingFunctionMock<void(hal::Result, uint32_t)> sendDataDone2Verifier(hal::Result::complete, 4);
+    infra::VerifyingFunction<void(hal::Result, uint32_t)> sendDataDone1Verifier(hal::Result::complete, 1);
+    infra::VerifyingFunction<void(hal::Result, uint32_t)> sendDataDone2Verifier(hal::Result::complete, 4);
     EXPECT_CALL(masterMock, WriteRegisterMock(3, std::vector<uint8_t>{ 1, 2, 3, 4 }));
 
     uint8_t dataRegister = 3;
@@ -70,9 +70,9 @@ TEST_F(RegisterAccessMockTest, WriteRegisterInTwoWrites)
 
 TEST_F(RegisterAccessMockTest, WriteRegisterInThreeWrites)
 {
-    infra::VerifyingFunctionMock<void(hal::Result, uint32_t)> sendDataDone1Verifier(hal::Result::complete, 1);
-    infra::VerifyingFunctionMock<void(hal::Result, uint32_t)> sendDataDone2Verifier(hal::Result::complete, 3);
-    infra::VerifyingFunctionMock<void(hal::Result, uint32_t)> sendDataDone3Verifier(hal::Result::complete, 1);
+    infra::VerifyingFunction<void(hal::Result, uint32_t)> sendDataDone1Verifier(hal::Result::complete, 1);
+    infra::VerifyingFunction<void(hal::Result, uint32_t)> sendDataDone2Verifier(hal::Result::complete, 3);
+    infra::VerifyingFunction<void(hal::Result, uint32_t)> sendDataDone3Verifier(hal::Result::complete, 1);
     EXPECT_CALL(masterMock, WriteRegisterMock(3, std::vector<uint8_t>{ 1, 2, 3, 4 }));
 
     uint8_t dataRegister = 3;

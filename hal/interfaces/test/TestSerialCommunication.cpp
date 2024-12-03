@@ -31,7 +31,7 @@ public:
 
 TEST_F(BufferedSerialCommunicationOnUnbufferedTest, SendData_is_forwarded)
 {
-    infra::VerifyingFunctionMock<void()> onDone;
+    infra::VerifyingFunction<void()> onDone;
     std::array<uint8_t, 4> data;
 
     EXPECT_CALL(serial, SendData(infra::MakeConstByteRange(data), testing::_)).WillOnce(testing::InvokeArgument<1>());
