@@ -10,7 +10,7 @@ namespace hal
     class AdcMultiChannel
     {
     public:
-        using Samples = infra::MemoryRange<uint16_t>;
+        using Samples = infra::MemoryRange<const uint16_t>;
 
         virtual void Measure(const infra::Function<void(Samples)>& onDone) = 0;
 
