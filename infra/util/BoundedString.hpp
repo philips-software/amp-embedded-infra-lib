@@ -1081,7 +1081,8 @@ namespace infra
     template<class T>
     typename BoundedStringBase<T>::size_type BoundedStringBase<T>::copy(char* dest, size_type count, size_type pos)
     {
-        assert(pos + count <= length);
+        assert(pos <= length);
+        count = std::min(count, length - pos);
         std::copy(begin() + pos, begin() + pos + count, dest);
         return count;
     }
