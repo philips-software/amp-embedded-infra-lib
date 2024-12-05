@@ -6,7 +6,8 @@
 
 namespace hal
 {
-    class AdcMultiChannelMock : public AdcMultiChannel
+    class AdcMultiChannelMock
+        : public AdcMultiChannel
     {
     public:
         MOCK_METHOD(void, Measure, (const infra::Function<void(Samples)>& onDone), (override));
