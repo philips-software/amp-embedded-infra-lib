@@ -10,11 +10,9 @@ namespace hal
             });
     }
 
-    void AdcMultiChannelStub::MeasurementDone(std::vector<uint16_t> samples)
+    void AdcMultiChannelStub::MeasurementDone(const std::vector<uint16_t>& samples)
     {
         if (onDone)
-        {
             onDone(Samples{ &*samples.begin(), &*samples.end() });
-        }
     }
 }

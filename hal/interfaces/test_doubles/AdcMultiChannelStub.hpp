@@ -8,12 +8,13 @@
 
 namespace hal
 {
-    class AdcMultiChannelStub : public AdcMultiChannelMock
+    class AdcMultiChannelStub
+        : public AdcMultiChannelMock
     {
     public:
         AdcMultiChannelStub();
 
-        void MeasurementDone(std::vector<uint16_t> samples);
+        void MeasurementDone(const std::vector<uint16_t>& samples);
 
     private:
         infra::Function<void(Samples)> onDone;
