@@ -1,8 +1,8 @@
 #ifndef HAL_CAN_HPP
 #define HAL_CAN_HPP
 
-#include "hal/interfaces/Gpio.hpp"
 #include "infra/util/BoundedVector.hpp"
+#include "infra/util/Function.hpp"
 #include <cstdint>
 
 namespace hal
@@ -21,6 +21,9 @@ namespace hal
 
             uint32_t Get11BitId() const;
             uint32_t Get29BitId() const;
+
+            bool operator==(const Id& other) const;
+            bool operator!=(const Id& other) const;
 
         private:
             explicit Id(uint32_t id);

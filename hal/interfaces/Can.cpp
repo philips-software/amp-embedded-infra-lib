@@ -39,4 +39,14 @@ namespace hal
 
         return id ^ indicator29Bit;
     }
+
+    bool Can::Id::operator==(const Id& other) const
+    {
+        return id == other.id;
+    }
+
+    bool Can::Id::operator!=(const Id& other) const
+    {
+        return !(*this == other);
+    }
 }
