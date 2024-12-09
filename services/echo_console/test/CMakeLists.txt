@@ -9,4 +9,9 @@ target_sources(services.echo_console_test PRIVATE
 target_link_libraries(services.echo_console_test PUBLIC
     gmock_main
     services.console_service
+    protobuf.protoc_echo_plugin_lib
+    protobuf.echo
+    services.network_instantiations
+    services.util
+    protobuf.meta_services
 )
