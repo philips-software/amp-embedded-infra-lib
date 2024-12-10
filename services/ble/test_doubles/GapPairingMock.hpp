@@ -16,6 +16,7 @@ namespace services
         MOCK_METHOD(void, SetIoCapabilities, (IoCapabilities caps));
         MOCK_METHOD(void, AuthenticateWithPasskey, (uint32_t passkey));
         MOCK_METHOD(void, NumericComparisonConfirm, (bool accept));
+        MOCK_METHOD(hal::MacAddress, ResolveDeviceAddress, (hal::MacAddress deviceAddress), (const));
     };
 }
 

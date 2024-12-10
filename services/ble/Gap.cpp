@@ -56,6 +56,11 @@ namespace services
         GapPairingObserver::Subject().NumericComparisonConfirm(accept);
     }
 
+    hal::MacAddress GapPairingDecorator::ResolveDeviceAddress(hal::MacAddress deviceAddress) const
+    {
+        return GapPairingObserver::Subject().ResolveDeviceAddress(deviceAddress);
+    }
+
     void GapBondingDecorator::NumberOfBondsChanged(std::size_t nrBonds)
     {
         GapBonding::NotifyObservers([&nrBonds](auto& obs)
