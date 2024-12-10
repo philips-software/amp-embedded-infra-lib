@@ -13,8 +13,15 @@ namespace hal
         class Id
         {
         public:
-            static Id Create11BitId(uint32_t id);
-            static Id Create29BitId(uint32_t id);
+            static constexpr Id Create11BitId(uint32_t id)
+            {
+                return Can::Id(id);
+            }
+
+            static constexpr Id Create29BitId(uint32_t id)
+            {
+                return Can::Id(id | indicator29Bit);
+            }
 
             bool Is11BitId() const;
             bool Is29BitId() const;
@@ -23,10 +30,11 @@ namespace hal
             uint32_t Get29BitId() const;
 
             bool operator==(const Id& other) const = default;
-            bool operator!=(const Id& other) const = default;
 
         private:
-            explicit Id(uint32_t id);
+            constexpr explicit Id(uint32_t id)
+                : id(id)
+            {}
 
         private:
             static const uint32_t indicator29Bit = static_cast<uint32_t>(1) << 31;
