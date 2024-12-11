@@ -164,6 +164,7 @@ namespace services
 
         virtual void AuthenticateWithPasskey(uint32_t passkey) = 0;
         virtual void NumericComparisonConfirm(bool accept) = 0;
+        virtual hal::MacAddress ResolveDeviceAddress(hal::MacAddress deviceAddress) const = 0;
     };
 
     class GapPairingDecorator
@@ -185,6 +186,7 @@ namespace services
         void SetIoCapabilities(IoCapabilities caps) override;
         void AuthenticateWithPasskey(uint32_t passkey) override;
         void NumericComparisonConfirm(bool accept) override;
+        hal::MacAddress ResolveDeviceAddress(hal::MacAddress deviceAddress) const override;
     };
 
     class GapBonding;
