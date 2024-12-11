@@ -2,20 +2,6 @@
 
 namespace hal
 {
-    Can::Id::Id(uint32_t id)
-        : id(id)
-    {}
-
-    Can::Id Can::Id::Create11BitId(uint32_t id)
-    {
-        return Can::Id(id);
-    }
-
-    Can::Id Can::Id::Create29BitId(uint32_t id)
-    {
-        return Can::Id(id | indicator29Bit);
-    }
-
     bool Can::Id::Is11BitId() const
     {
         return (id & indicator29Bit) == 0;
