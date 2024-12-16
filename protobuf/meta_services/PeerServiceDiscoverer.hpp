@@ -14,10 +14,10 @@ namespace application
     class PeerServiceDiscovererEcho;
 
     class PeerServiceDiscoveryObserver
-        : public infra::SingleObserver<PeerServiceDiscoveryObserver, PeerServiceDiscovererEcho>
+        : public infra::Observer<PeerServiceDiscoveryObserver, PeerServiceDiscovererEcho>
     {
     public:
-        using infra::SingleObserver<PeerServiceDiscoveryObserver, PeerServiceDiscovererEcho>::SingleObserver;
+        using infra::Observer<PeerServiceDiscoveryObserver, PeerServiceDiscovererEcho>::Observer;
 
         virtual void ServicesDiscovered(infra::MemoryRange<uint32_t> services) = 0;
     };
@@ -46,7 +46,7 @@ namespace application
         uint32_t SearchRangeEnd() const;
 
     private:
-        infra::BoundedVector<uint32_t>::WithMaxSize<10> services;
+        infra::BoundedVector<uint32_t>::WithMaxSize<100> services;
         ServiceRange searchRange;
     };
 }

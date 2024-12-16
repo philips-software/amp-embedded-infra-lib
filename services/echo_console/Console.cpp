@@ -358,6 +358,12 @@ namespace application
               })
     {}
 
+    void Console::ServicesDiscovered(infra::MemoryRange<uint32_t> services)
+    {
+        std::cout << "Services discovered";
+        discoveredServices.assign(services.begin(), services.end());
+    }
+
     void Console::Run()
     {
         {
@@ -638,13 +644,16 @@ namespace application
     {
         for (const auto& service : root.services)
         {
-            services::GlobalTracer().Trace() << service->name;
-            for (const auto& method : service->methods)
+            if (std::find(discoveredServices.begin(), discoveredServices.end(), service->serviceId) != discoveredServices.end())
             {
-                services::GlobalTracer().Trace() << "    " << method.name << "(";
-                if (method.parameter != nullptr)
-                    ListFields(*method.parameter);
-                services::GlobalTracer().Continue() << ")";
+                services::GlobalTracer().Trace() << service->name;
+                for (const auto& method : service->methods)
+                {
+                    services::GlobalTracer().Trace() << "    " << method.name << "(";
+                    if (method.parameter != nullptr)
+                        ListFields(*method.parameter);
+                    services::GlobalTracer().Continue() << ")";
+                }
             }
         }
 

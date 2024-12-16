@@ -118,6 +118,11 @@ namespace application
             });
     }
 
+    void ServiceDiscoveryEcho::CancelRequestSend(ServiceProxy& serviceProxy)
+    {
+        UpstreamRpc().CancelRequestSend(serviceProxy);
+    }
+
     void ServiceDiscoveryEcho::RequestSend(ServiceProxy& serviceProxy)
     {
         UpstreamRpc().RequestSend(serviceProxy);

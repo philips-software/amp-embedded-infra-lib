@@ -33,6 +33,7 @@ namespace application
         // Implementation of services::Echo
         void RequestSend(ServiceProxy& serviceProxy) override;
         void ServiceDone() override;
+        void CancelRequestSend(ServiceProxy& serviceProxy) override;
         services::MethodSerializerFactory& SerializerFactory() override;
 
     private:

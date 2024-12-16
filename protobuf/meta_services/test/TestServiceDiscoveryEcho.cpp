@@ -50,6 +50,11 @@ namespace
             echo.ServiceDone();
         }
 
+        void CancelRequestSend(services::ServiceProxy& serviceProxy) override
+        {
+            echo.CancelRequestSend(serviceProxy);
+        }
+
         services::MethodSerializerFactory& SerializerFactory() override
         {
             return echo.SerializerFactory();

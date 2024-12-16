@@ -137,6 +137,25 @@ private:
         services::Tracer& tracer;
     };
 
+    class PeerServiceDiscoveryConsoleInteractor
+        : public application::PeerServiceDiscoveryObserver
+    {
+    public:
+        PeerServiceDiscoveryConsoleInteractor(application::PeerServiceDiscovererEcho& subject, application::Console& console)
+            : PeerServiceDiscoveryObserver(subject)
+            , console(console)
+        {}
+
+        // Implementation of PeerServiceDiscoveryObserver
+        void ServicesDiscovered(infra::MemoryRange<uint32_t> services) override
+        {
+            console.ServicesDiscovered(services);
+        }
+
+    private:
+        application::Console& console;
+    };
+
 private:
     void CheckDataToBeSent();
 
@@ -148,6 +167,7 @@ private:
     service_discovery::ServiceDiscoveryResponseTracer serviceDiscoveryResponseTracer;
     infra::Optional<application::PeerServiceDiscovererEcho> peerServiceDiscoverer;
     infra::Optional<PeerServiceDiscoveryObserverTracer> peerServiceDiscoveryObserverTracer;
+    infra::Optional<PeerServiceDiscoveryConsoleInteractor> peerServiceDiscoveryConsoleInteractor;
 };
 
 ConsoleClientConnection::ConsoleClientConnection(application::Console& console, services::Tracer& tracer)
@@ -169,6 +189,7 @@ void ConsoleClientConnection::Attached()
 {
     peerServiceDiscoverer.Emplace(*this);
     peerServiceDiscoveryObserverTracer.Emplace(*peerServiceDiscoverer, tracer);
+    peerServiceDiscoveryConsoleInteractor.Emplace(*peerServiceDiscoverer, application::ConsoleObserver::Subject());
 }
 
 void ConsoleClientConnection::Send(const std::string& message)
