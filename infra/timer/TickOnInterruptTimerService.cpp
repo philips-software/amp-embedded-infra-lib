@@ -1,5 +1,6 @@
 #include "infra/timer/TickOnInterruptTimerService.hpp"
 #include "infra/event/EventDispatcher.hpp"
+#include "infra/util/ReallyAssert.hpp"
 #include <cassert>
 
 namespace infra
@@ -8,6 +9,8 @@ namespace infra
         : TimerService(id)
         , resolution(resolution)
     {
+        really_assert(infra::EventDispatcher::InstanceSet());
+
         CalculateNextTrigger();
     }
 

@@ -7,6 +7,7 @@
 #include "infra/syntax/ProtoFormatter.hpp"
 #include "infra/syntax/ProtoParser.hpp"
 #include "infra/util/AutoResetFunction.hpp"
+#include "infra/util/ByteRange.hpp"
 #include "infra/util/Observer.hpp"
 #include "infra/util/ReallyAssert.hpp"
 #include "infra/util/WithStorage.hpp"
@@ -28,6 +29,7 @@ namespace services
         virtual void Recover(const infra::Function<void(bool success)>& onRecovered) = 0;
         virtual void Write(uint32_t size, const infra::Function<void()>& onDone) = 0;
         virtual void Erase(const infra::Function<void()>& onDone) = 0;
+        virtual void IsErased(const infra::Function<void(bool)>& onDone) = 0;
     };
 
     class ConfigurationBlobFlash
@@ -53,6 +55,7 @@ namespace services
         void Recover(const infra::Function<void(bool success)>& onRecovered) override;
         void Write(uint32_t size, const infra::Function<void()>& onDone) override;
         void Erase(const infra::Function<void()>& onDone) override;
+        void IsErased(const infra::Function<void(bool)>& onDone) override;
 
         infra::ByteRange Blob();
         infra::ByteRange VerificationBuffer();
@@ -63,6 +66,7 @@ namespace services
         void PrepareBlobForWriting();
         void Verify();
         void VerifyBlock();
+        void VerifyIfIsErased();
 
     private:
         infra::ByteRange blob;
@@ -73,6 +77,7 @@ namespace services
         uint32_t currentVerificationIndex = 0;
         infra::AutoResetFunction<void(bool success)> onRecovered;
         infra::AutoResetFunction<void()> onDone;
+        infra::AutoResetFunction<void(bool success)> onErased;
     };
 
     class ConfigurationBlobReadOnlyMemory
@@ -92,6 +97,7 @@ namespace services
         void Recover(const infra::Function<void(bool success)>& onRecovered) override;
         void Write(uint32_t size, const infra::Function<void()>& onDone) override;
         void Erase(const infra::Function<void()>& onDone) override;
+        void IsErased(const infra::Function<void(bool)>& onDone) override;
 
     private:
         infra::ConstByteRange data;

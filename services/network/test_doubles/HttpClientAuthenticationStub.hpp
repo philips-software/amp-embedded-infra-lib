@@ -15,7 +15,7 @@ public:
 
 protected:
     // Implementation of HttpClientAuthentication
-    void Authenticate(infra::BoundedConstString scheme, infra::BoundedConstString value) override
+    void Authenticate(services::HttpVerb verb, infra::BoundedConstString target, infra::BoundedConstString scheme, infra::BoundedConstString value) override
     {}
 
     infra::BoundedConstString AuthenticationHeader() const override

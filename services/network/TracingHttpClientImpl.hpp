@@ -1,6 +1,7 @@
 #ifndef SERVICES_TRACING_HTTP_CLIENT_IMPL_HPP
 #define SERVICES_TRACING_HTTP_CLIENT_IMPL_HPP
 
+#include "infra/stream/CountingInputStream.hpp"
 #include "services/network/HttpClientImpl.hpp"
 #include "services/tracer/Tracer.hpp"
 #include "services/tracer/TracingOutputStream.hpp"
@@ -14,10 +15,13 @@ namespace services
         TracingHttpClientImpl(infra::BoundedConstString hostname, Tracer& tracer);
 
         // Implementation of ConnectionObserver
-        void DataReceived() override;
         void Attached() override;
         void Detaching() override;
         void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+
+    protected:
+        // Implementation of HttpClientImplWithRedirection
+        void BodyReaderAvailable(infra::SharedPtr<infra::CountingStreamReaderWithRewinding>&& bodyReader) override;
 
     private:
         class TracingWriter
@@ -48,13 +52,16 @@ namespace services
         TracingHttpClientImplWithRedirection(infra::BoundedString redirectedUrlStorage, infra::BoundedConstString hostname, ConnectionFactoryWithNameResolver& connectionFactory, Tracer& tracer);
 
         // Implementation of ConnectionObserver
-        void DataReceived() override;
         void Attached() override;
         void Detaching() override;
         void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
         // Implementation of HttpClientImplWithRedirection
         void Redirecting(infra::BoundedConstString url) override;
+
+    protected:
+        // Implementation of HttpClientImplWithRedirection
+        void BodyReaderAvailable(infra::SharedPtr<infra::CountingStreamReaderWithRewinding>&& bodyReader) override;
 
     private:
         class TracingWriter

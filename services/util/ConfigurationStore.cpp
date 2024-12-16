@@ -1,4 +1,5 @@
 #include "services/util/ConfigurationStore.hpp"
+#include <algorithm>
 
 namespace services
 {
@@ -50,6 +51,14 @@ namespace services
     void ConfigurationBlobFlash::Erase(const infra::Function<void()>& onDone)
     {
         flash.EraseAll(onDone);
+    }
+
+    void ConfigurationBlobFlash::IsErased(const infra::Function<void(bool)>& onDone)
+    {
+        onErased = onDone;
+        currentVerificationIndex = 0;
+
+        VerifyIfIsErased();
     }
 
     infra::ByteRange ConfigurationBlobFlash::Blob()
@@ -118,6 +127,28 @@ namespace services
             onDone();
     }
 
+    void ConfigurationBlobFlash::VerifyIfIsErased()
+    {
+        if (currentVerificationIndex != blob.size())
+            flash.ReadBuffer(infra::Head(verificationBuffer, blob.size() - currentVerificationIndex), currentVerificationIndex, [this]()
+                {
+                    auto verificationBlock = infra::Head(verificationBuffer, blob.size() - currentVerificationIndex);
+
+                    if (std::find_if_not(verificationBlock.begin(), verificationBlock.end(), [](uint8_t byte)
+                            {
+                                return byte == 0xFF;
+                            }) == verificationBlock.end())
+                    {
+                        currentVerificationIndex += verificationBlock.size();
+                        VerifyIfIsErased();
+                    }
+                    else
+                        onErased(false);
+                });
+        else
+            onErased(true);
+    }
+
     ConfigurationBlobReadOnlyMemory::ConfigurationBlobReadOnlyMemory(infra::ConstByteRange data)
         : data(data)
     {}
@@ -146,6 +177,11 @@ namespace services
     }
 
     void ConfigurationBlobReadOnlyMemory::Erase(const infra::Function<void()>& onDone)
+    {
+        std::abort();
+    }
+
+    void ConfigurationBlobReadOnlyMemory::IsErased(const infra::Function<void(bool)>& onDone)
     {
         std::abort();
     }
@@ -252,9 +288,15 @@ namespace services
             {
                 if (success)
                 {
-                    inactiveBlob->Erase([this]()
+                    inactiveBlob->IsErased([this](bool isErased)
                         {
-                            OnBlobLoaded(true);
+                            if (isErased)
+                                OnBlobLoaded(true);
+                            else
+                                inactiveBlob->Erase([this]()
+                                    {
+                                        OnBlobLoaded(true);
+                                    });
                         });
                 }
                 else
@@ -262,9 +304,15 @@ namespace services
                     std::swap(activeBlob, inactiveBlob);
                     activeBlob->Recover([this](bool success)
                         {
-                            inactiveBlob->Erase([this, success]()
+                            inactiveBlob->IsErased([this, success](bool isErased)
                                 {
-                                    OnBlobLoaded(success);
+                                    if (isErased)
+                                        OnBlobLoaded(success);
+                                    else
+                                        inactiveBlob->Erase([this, success]()
+                                            {
+                                                OnBlobLoaded(success);
+                                            });
                                 });
                         });
                 }
