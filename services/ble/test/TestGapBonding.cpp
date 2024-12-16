@@ -41,5 +41,12 @@ namespace services
 
         EXPECT_CALL(gapBonding, GetNumberOfBonds()).WillOnce(testing::Return(5));
         EXPECT_EQ(decorator.GetNumberOfBonds(), 5);
+
+        hal::MacAddress mac = { 0x00, 0x1A, 0x7D, 0xDA, 0x71, 0x13 };
+        EXPECT_CALL(gapBonding, IsDeviceBounded(mac)).WillOnce(testing::Return(true));
+        EXPECT_THAT(decorator.IsDeviceBounded(mac), testing::IsTrue());
+
+        EXPECT_CALL(gapBonding, IsDeviceBounded(mac)).WillOnce(testing::Return(false));
+        EXPECT_THAT(decorator.IsDeviceBounded(mac), testing::IsFalse());
     }
 }
