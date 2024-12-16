@@ -152,7 +152,7 @@ private:
 
 ConsoleClientConnection::ConsoleClientConnection(application::Console& console, services::Tracer& tracer)
     : application::ConsoleObserver(console)
-    , services::TracingEchoOnConnection(tracer, *static_cast<services::MethodSerializerFactory*>(this))
+    , services::TracingEchoOnConnection(*static_cast<services::MethodSerializerFactory*>(this), services::echoErrorPolicyAbort, tracer)
     , serviceDiscoveryTracer(*this)
     , serviceDiscoveryResponseTracer(*this)
     , tracer(tracer)
@@ -351,7 +351,7 @@ int main(int argc, char* argv[], const char* env[])
                 {
                     auto path = entry.path();
 
-                    if (path.extension() == ".pb" && path.parent_path().string().rfind("\\echo") != std::string::npos)
+                    if (path.extension() == ".pb" && path.parent_path().string().rfind("/echo") != std::string::npos)
                         pbFiles.push_back(path);
                 }
             else if (path.extension() == ".pb")
