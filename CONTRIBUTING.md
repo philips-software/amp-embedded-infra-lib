@@ -14,7 +14,7 @@ amp-embedded-infra-lib is a young open source project and we love to receive con
 * As amp-embedded-infra-lib core-team we have spent considerate effort to make our components testable; please make sure that you have test coverage for your changes as well. Inspiration can be drawn from existing components.
 * One of the unique selling points of amp-embedded-infra-lib is not using any heap; don't use the heap in your changes. This excludes using most components from the standard template library, for which we provide heap-less alternatives.
 * Ensure cross-platform compatibility for your changes.
-* Adhere to the [Coding Standard C++ Embedded Projects]; when in doubt, look at the surrounding code that you are changing and stick to the local style.
+* Adhere to the [Coding Standard C++ Embedded Projects](https://github.com/philips-software/amp-embedded-infra-lib/blob/main/documents/modules/ROOT/pages/CodingStandard.adoc); when in doubt, look at the surrounding code that you are changing and stick to the local style.
 * Create issues for any major changes and enhancements that you wish to make. Discuss things transparently and get core-team feedback.
 
 ### Test are not optional

@@ -17,6 +17,8 @@ namespace application
     public:
         bool Generate(const google::protobuf::FileDescriptor* file, const std::string& parameter,
             google::protobuf::compiler::GeneratorContext* generatorContext, std::string* error) const override;
+
+        uint64_t GetSupportedFeatures() const override;
     };
 
     class EnumGenerator
@@ -105,6 +107,7 @@ namespace application
         virtual void GenerateNestedMessages(Entities& formatter);
         virtual void GenerateFieldDeclarations();
         void GenerateFieldConstants();
+        void GenerateFieldSizes();
         virtual void GenerateMaxMessageSize();
         virtual std::string SerializerBody();
         virtual std::string DeserializerBody();

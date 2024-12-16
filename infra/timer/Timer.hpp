@@ -85,24 +85,34 @@ namespace infra
         void ComputeNextTriggerTime() override;
     };
 
+    namespace detail
+    {
+        class TimerRepeating
+            : public Timer
+        {
+        public:
+            explicit TimerRepeating(uint32_t timerServiceId = systemTimerServiceId);
+            Duration TriggerPeriod() const;
+
+        protected:
+            void StartTimer(Duration duration, const infra::Function<void()>& action);
+            void ComputeNextTriggerTime() override;
+
+        private:
+            Duration triggerPeriod = Duration();
+        };
+    }
+
     class TimerRepeating
-        : public Timer
+        : public detail::TimerRepeating
     {
     public:
-        explicit TimerRepeating(uint32_t timerServiceId = systemTimerServiceId);
+        using detail::TimerRepeating::TimerRepeating;
         TimerRepeating(Duration duration, const infra::Function<void()>& action, uint32_t timerServiceId = systemTimerServiceId);
         TimerRepeating(Duration duration, const infra::Function<void()>& action, TriggerImmediately, uint32_t timerServiceId = systemTimerServiceId);
 
         void Start(Duration duration, const infra::Function<void()>& action);
         void Start(Duration duration, const infra::Function<void()>& action, TriggerImmediately);
-
-        Duration TriggerPeriod() const;
-
-    protected:
-        void ComputeNextTriggerTime() override;
-
-    private:
-        Duration triggerPeriod = Duration();
     };
 }
 

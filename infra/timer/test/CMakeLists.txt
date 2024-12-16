@@ -18,4 +18,5 @@ target_sources(infra.timer_test PRIVATE
     TestTimerAlternating.cpp
     TestTimerLimitedRepeating.cpp
     TestTimerLimitedRepeatingWithClosingAction.cpp
+    TestWaiting.cpp
 )

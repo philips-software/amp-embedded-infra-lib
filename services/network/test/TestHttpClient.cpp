@@ -12,12 +12,12 @@
 
 TEST(HttpTest, parse_components_from_url)
 {
-    EXPECT_EQ("http", services::SchemeFromUrl("http://host/path"));
-    EXPECT_EQ("host", services::HostFromUrl("http://host/path"));
-    EXPECT_EQ("host", services::HostFromUrl("http://host?query"));
-    EXPECT_EQ("/path", services::PathFromUrl("http://host/path"));
-    EXPECT_EQ("?query", services::PathFromUrl("http://host?query"));
-    EXPECT_EQ("/path/more", services::PathFromUrl("http://host/path/more"));
+    EXPECT_EQ("http", services::SchemeFromUrl(infra::BoundedConstString("http://host/path")));
+    EXPECT_EQ("host", services::HostFromUrl(infra::BoundedConstString("http://host/path")));
+    EXPECT_EQ("host", services::HostFromUrl(infra::BoundedConstString("http://host?query")));
+    EXPECT_EQ("/path", services::PathFromUrl(infra::BoundedConstString("http://host/path")));
+    EXPECT_EQ("?query", services::PathFromUrl(infra::BoundedConstString("http://host?query")));
+    EXPECT_EQ("/path/more", services::PathFromUrl(infra::BoundedConstString("http://host/path/more")));
 }
 
 TEST(HttpTest, write_formatted_HttpHeader_to_stream)
@@ -870,7 +870,7 @@ TEST_F(HttpClientTest, Stop_while_closed)
     EXPECT_CALL(client, Detaching());
     client.Subject().CloseConnection();
 
-    infra::VerifyingFunctionMock<void()> onDone;
+    infra::VerifyingFunction<void()> onDone;
     connector.Stop([&]()
         {
             onDone.callback();
@@ -881,7 +881,7 @@ TEST_F(HttpClientTest, Stop_while_connection_open)
 {
     Connect();
 
-    infra::VerifyingFunctionMock<void()> onDone;
+    infra::VerifyingFunction<void()> onDone;
     EXPECT_CALL(connection, CloseAndDestroyMock());
     EXPECT_CALL(client, Detaching());
     connector.Stop([&]()

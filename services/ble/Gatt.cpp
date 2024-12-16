@@ -2,6 +2,36 @@
 
 namespace services
 {
+    GattDescriptor::GattDescriptor(const AttAttribute::Uuid& type, AttAttribute::Handle handle)
+        : type(type)
+        , handle(handle)
+    {}
+
+    const AttAttribute::Uuid& GattDescriptor::Type() const
+    {
+        return type;
+    }
+
+    AttAttribute::Handle GattDescriptor::Handle() const
+    {
+        return handle;
+    }
+
+    AttAttribute::Handle& GattDescriptor::Handle()
+    {
+        return handle;
+    }
+
+    bool GattDescriptor::operator==(const GattDescriptor& other) const
+    {
+        return type == other.type && handle == other.handle;
+    }
+
+    bool GattDescriptor::operator!=(const GattDescriptor& other) const
+    {
+        return !(*this == other);
+    }
+
     GattCharacteristic::GattCharacteristic(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties)
         : type(type)
         , handle(handle)

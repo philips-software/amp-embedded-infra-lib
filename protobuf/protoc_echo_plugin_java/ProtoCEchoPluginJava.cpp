@@ -101,6 +101,11 @@ namespace application
         }
     }
 
+    uint64_t JavaEchoCodeGenerator::GetSupportedFeatures() const
+    {
+        return FEATURE_PROTO3_OPTIONAL;
+    }
+
     JavaGenerator::JavaGenerator(const google::protobuf::ServiceDescriptor& service, google::protobuf::io::Printer& printer)
         : service(service)
         , printer(printer)

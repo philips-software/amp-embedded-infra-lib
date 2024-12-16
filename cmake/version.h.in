@@ -1,3 +1,4 @@
+// clang-format off
 #ifndef GENERATED_VERSION_${CMAKE_PROJECT_NAME}
 #define GENERATED_VERSION_${CMAKE_PROJECT_NAME}
 
@@ -12,18 +13,26 @@
 #include "infra/util/Compatibility.hpp"
 #include <cstdint>
 
+#define ${CMAKE_PROJECT_NAME}_generated_VERSION         "${${CMAKE_PROJECT_NAME}_VERSION_STRING}"
+#define ${CMAKE_PROJECT_NAME}_generated_VERSION_FULL    "${${CMAKE_PROJECT_NAME}_VERSION_STRING_FULL}"
+#define ${CMAKE_PROJECT_NAME}_generated_VERSION_GIT_SHA "${${CMAKE_PROJECT_NAME}_VERSION_GIT_SHA}"
+
+#define ${CMAKE_PROJECT_NAME}_generated_VERSION_MAJOR   ${VERSION_MAJOR}
+#define ${CMAKE_PROJECT_NAME}_generated_VERSION_MINOR   ${VERSION_MINOR}
+#define ${CMAKE_PROJECT_NAME}_generated_VERSION_PATCH   ${VERSION_PATCH}
+
 namespace ${CMAKE_PROJECT_NAME}
 {
     namespace generated
     {
-        static const char* VERSION EMIL_MAYBE_UNUSED = "${${CMAKE_PROJECT_NAME}_VERSION_STRING}";
-        static const char* VERSION_FULL EMIL_MAYBE_UNUSED = "${${CMAKE_PROJECT_NAME}_VERSION_STRING_FULL}";
-        static const char* VERSION_GIT_SHA EMIL_MAYBE_UNUSED = "${${CMAKE_PROJECT_NAME}_VERSION_GIT_SHA}";
+        static const char* VERSION EMIL_MAYBE_UNUSED         = ${CMAKE_PROJECT_NAME}_generated_VERSION;
+        static const char* VERSION_FULL EMIL_MAYBE_UNUSED    = ${CMAKE_PROJECT_NAME}_generated_VERSION_FULL;
+        static const char* VERSION_GIT_SHA EMIL_MAYBE_UNUSED = ${CMAKE_PROJECT_NAME}_generated_VERSION_GIT_SHA;
 
-        static const uint16_t VERSION_MAJOR = ${VERSION_MAJOR};
-        static const uint16_t VERSION_MINOR = ${VERSION_MINOR};
-        static const uint16_t VERSION_PATCH = ${VERSION_PATCH};
+        static constexpr uint16_t VERSION_MAJOR              = ${CMAKE_PROJECT_NAME}_generated_VERSION_MAJOR;
+        static constexpr uint16_t VERSION_MINOR              = ${CMAKE_PROJECT_NAME}_generated_VERSION_MINOR;
+        static constexpr uint16_t VERSION_PATCH              = ${CMAKE_PROJECT_NAME}_generated_VERSION_PATCH;
     }
 }
-
+// clang-format on
 #endif

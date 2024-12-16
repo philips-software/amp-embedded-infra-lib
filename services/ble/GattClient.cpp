@@ -62,13 +62,38 @@ namespace services
         GattClientCharacteristicOperationsObserver::Subject().DisableIndication(*this, onDone);
     }
 
-    void GattClientCharacteristic::UpdateReceived(AttAttribute::Handle handle, infra::ConstByteRange data)
+    void GattClientCharacteristic::NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data)
     {
         if (handle == (Handle() + GattDescriptor::ClientCharacteristicConfiguration::valueHandleOffset))
             GattClientCharacteristicUpdate::SubjectType::NotifyObservers([&data](auto& obs)
                 {
-                    obs.UpdateReceived(data);
+                    obs.NotificationReceived(data);
                 });
+    }
+
+    void GattClientCharacteristic::IndicationReceived(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone)
+    {
+        if (handle == (Handle() + GattDescriptor::ClientCharacteristicConfiguration::valueHandleOffset))
+        {
+            onIndicationDone = onDone;
+            observers = 1;
+            auto indicationReceived = [this]()
+            {
+                --observers;
+                if (observers == 0)
+                    onIndicationDone();
+            };
+
+            GattClientCharacteristicUpdate::SubjectType::NotifyObservers([this, &data, &indicationReceived](auto& obs)
+                {
+                    ++observers;
+                    obs.IndicationReceived(data, indicationReceived);
+                });
+
+            indicationReceived();
+        }
+        else
+            onDone();
     }
 
     AttAttribute::Handle GattClientCharacteristic::CharacteristicValueHandle() const
@@ -148,13 +173,13 @@ namespace services
         GattClientDiscoveryObserver::Subject().StartServiceDiscovery();
     }
 
-    void GattClientDiscoveryDecorator::StartCharacteristicDiscovery(const GattService& service)
+    void GattClientDiscoveryDecorator::StartCharacteristicDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle)
     {
-        GattClientDiscoveryObserver::Subject().StartCharacteristicDiscovery(service);
+        GattClientDiscoveryObserver::Subject().StartCharacteristicDiscovery(handle, endHandle);
     }
 
-    void GattClientDiscoveryDecorator::StartDescriptorDiscovery(const GattService& service)
+    void GattClientDiscoveryDecorator::StartDescriptorDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle)
     {
-        GattClientDiscoveryObserver::Subject().StartDescriptorDiscovery(service);
+        GattClientDiscoveryObserver::Subject().StartDescriptorDiscovery(handle, endHandle);
     }
 }

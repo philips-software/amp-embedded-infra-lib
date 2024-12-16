@@ -2,6 +2,8 @@ add_library(services.network_instantiations STATIC)
 emil_build_for(services.network_instantiations HOST All PREREQUISITE_BOOL EMIL_STANDALONE)
 
 target_sources(services.network_instantiations PRIVATE
+    EchoInstantiation.cpp
+    EchoInstantiation.hpp
     NameLookup.cpp
     NameLookup.hpp
     NetworkAdapter.cpp

@@ -491,8 +491,12 @@ namespace infra
     void BoundedVector<T>::insert(iterator position, size_type n, const value_type& value)
     {
         really_assert(size() + n <= max_size());
+
+        auto initialized_size = std::min(std::min(position - begin() + n, size()), n);
+
         move_up(position, n);
-        std::fill_n(position, n, value);
+        std::fill_n(position, initialized_size, value);
+        std::uninitialized_fill_n(position + initialized_size, n - initialized_size, value);
     }
 
     template<class T>
@@ -502,8 +506,12 @@ namespace infra
         size_type n = last - first;
         really_assert(size() + n <= max_size());
 
+        auto initialized_size = std::min(std::min(position - begin() + n, size()), n);
+        auto last_initialized = first + initialized_size;
+
         move_up(position, n);
-        std::copy(first, last, position);
+        std::copy(first, last_initialized, position);
+        std::uninitialized_copy(last_initialized, last, position + initialized_size);
     }
 
     template<class T>

@@ -4,9 +4,15 @@
 #include "infra/util/Function.hpp"
 #include "infra/util/Optional.hpp"
 #include "infra/util/SharedObjectAllocator.hpp"
+#include <cstddef>
 
 namespace infra
 {
+    // clang-format off
+    extern const struct AlsoWhenAlreadyAllocatable{} alsoWhenAlreadyAllocatable;
+
+    // clang-format on
+
     template<class T>
     class SharedOptional
         : protected SharedObjectDeleter
@@ -54,6 +60,7 @@ namespace infra
         explicit NotifyingSharedOptionalWithSize(const infra::Function<void(), AllocatableSize>& onAllocatable);
 
         void OnAllocatable(const infra::Function<void(), AllocatableSize>& newOnAllocatable);
+        void OnAllocatable(const infra::Function<void(), AllocatableSize>& newOnAllocatable, AlsoWhenAlreadyAllocatable);
 
     protected:
         void Deallocate(void* control) override;
@@ -160,10 +167,18 @@ namespace infra
     }
 
     template<class T, std::size_t AllocatableSize>
+    void NotifyingSharedOptionalWithSize<T, AllocatableSize>::OnAllocatable(const infra::Function<void(), AllocatableSize>& newOnAllocatable, AlsoWhenAlreadyAllocatable)
+    {
+        onAllocatable = newOnAllocatable;
+        if (SharedOptional<T>::Allocatable() && onAllocatable != nullptr)
+            onAllocatable();
+    }
+
+    template<class T, std::size_t AllocatableSize>
     void NotifyingSharedOptionalWithSize<T, AllocatableSize>::Deallocate(void* control)
     {
         SharedOptional<T>::Deallocate(control);
-        if (onAllocatable)
+        if (onAllocatable != nullptr)
             onAllocatable();
     }
 }

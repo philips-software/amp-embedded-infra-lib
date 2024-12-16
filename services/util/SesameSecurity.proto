@@ -2,7 +2,7 @@ syntax = "proto3";
 
 import "EchoAttributes.proto";
 
-package message_communication_security;
+package sesame_security;
 
 message SymmetricKeyMaterial
 {

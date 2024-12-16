@@ -39,6 +39,14 @@
       }
     },
     {
+      "name": "host-no-mbedtls",
+      "displayName": "Configuration without MbedTLS",
+      "inherits": "host",
+      "cacheVariables": {
+        "EMIL_INCLUDE_MBEDTLS": "Off"
+      }
+    },
+    {
       "name": "coverage",
       "displayName": "Configuration for Code Coverage",
       "inherits": "host",
@@ -148,6 +156,11 @@
       "configurePreset": "host-single-Debug"
     },
     {
+      "name": "host-no-mbedtls-Debug",
+      "configuration": "Debug",
+      "configurePreset": "host-no-mbedtls"
+    },
+    {
       "name": "release-package",
       "configuration": "MinSizeRel",
       "configurePreset": "host-single-MinSizeRel",
@@ -231,6 +244,12 @@
       "name": "host-single-Debug",
       "configurePreset": "host-single-Debug",
       "configuration": "Debug",
+      "inherits": "defaults"
+    },
+    {
+      "name": "host-RelWithDebInfo",
+      "configurePreset": "host",
+      "configuration": "RelWithDebInfo",
       "inherits": "defaults"
     },
     {

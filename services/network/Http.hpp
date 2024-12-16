@@ -167,8 +167,11 @@ namespace services
     };
 
     infra::BoundedConstString SchemeFromUrl(infra::BoundedConstString url);
+    infra::BoundedString SchemeFromUrl(infra::BoundedString url);
     infra::BoundedConstString HostAndPortFromUrl(infra::BoundedConstString url);
+    infra::BoundedString HostAndPortFromUrl(infra::BoundedString url);
     infra::BoundedConstString HostFromUrl(infra::BoundedConstString url);
+    infra::BoundedString HostFromUrl(infra::BoundedString url);
     infra::Optional<uint16_t> PortFromUrl(infra::BoundedConstString url);
     infra::BoundedConstString PathFromUrl(infra::BoundedConstString url);
 

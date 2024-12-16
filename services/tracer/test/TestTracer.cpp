@@ -4,10 +4,10 @@
 #include "gmock/gmock.h"
 
 class TracerTestImpl
-    : public services::Tracer
+    : public services::TracerToStream
 {
 public:
-    using services::Tracer::Tracer;
+    using services::TracerToStream::TracerToStream;
 
     MOCK_METHOD0(InsertHeader, void());
 };

@@ -9,7 +9,7 @@
 
 namespace services
 {
-    WebSocketClientConnectionObserver::WebSocketClientConnectionObserver(infra::BoundedConstString path)
+    WebSocketClientConnectionObserver::WebSocketClientConnectionObserver()
         : streamWriter([this]()
               {
                   StreamWriterAllocatable();
@@ -545,7 +545,7 @@ namespace services
     void WebSocketClientFactorySingleConnection::InitiationDone(services::Connection& connection)
     {
         auto& factory = initiation->Factory();
-        auto webSocketConnection = webSocket.Emplace(PathFromUrl(factory.Url()));
+        auto webSocketConnection = webSocket.Emplace();
 
         connection.Detach();
         connection.Attach(webSocketConnection);

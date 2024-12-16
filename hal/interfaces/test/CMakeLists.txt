@@ -14,7 +14,9 @@ target_sources(hal.interfaces_test PRIVATE
     TestFlash.cpp
     TestFlashHeterogeneous.cpp
     TestFlashHomogeneous.cpp
+    TestGpio.cpp
     TestI2cRegisterAccess.cpp
     TestMacAddress.cpp
     TestQuadSpi.cpp
+    TestSerialCommunication.cpp
 )

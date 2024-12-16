@@ -40,8 +40,8 @@ namespace application
         uint32_t errorCode;           // Set by the boot loaders upon detection of an error. 0-999 is reserved by the reference boot loaders.
         uint32_t signedContentsLength;
 
-        uint16_t signatureMethod; // Identifier that indicates the signature method chosen. 1 = ECDSA.
-        uint16_t signatureLength; // Size of the signature. 56 for ECDSA.
+        uint16_t signatureMethod; // Identifier that indicates the signature method chosen. 1 = ECDSA-224, 2 = ECDSA-256.
+        uint16_t signatureLength; // Size of the signature. 56 for ECDSA-224, 64 for ECDSA-256.
     };
 
     static_assert(sizeof(UpgradePackHeaderPrologue) == 16, "Incorrect size");

@@ -20,7 +20,7 @@ public:
 TEST_F(SerialCommunicationLoopbackTest, SendFromServerReceiveByClient)
 {
     infra::ConstByteRange data = infra::MakeStringByteRange("hello");
-    infra::VerifyingFunctionMock<void(infra::ConstByteRange)> clientReceiveCallback{ data };
+    infra::VerifyingFunction<void(infra::ConstByteRange)> clientReceiveCallback{ data };
 
     client.ReceiveData(clientReceiveCallback);
     server.SendData(data, infra::emptyFunction);
@@ -31,7 +31,7 @@ TEST_F(SerialCommunicationLoopbackTest, SendFromServerReceiveByClient)
 TEST_F(SerialCommunicationLoopbackTest, SendFromClientReceiveByServer)
 {
     infra::ConstByteRange data = infra::MakeStringByteRange("world");
-    infra::VerifyingFunctionMock<void(infra::ConstByteRange)> serverReceiveCallback{ data };
+    infra::VerifyingFunction<void(infra::ConstByteRange)> serverReceiveCallback{ data };
 
     server.ReceiveData(serverReceiveCallback);
     client.SendData(data, infra::emptyFunction);

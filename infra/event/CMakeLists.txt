@@ -6,6 +6,8 @@ target_link_libraries(infra.event PUBLIC
 )
 
 target_sources(infra.event PRIVATE
+    AtomicTriggerScheduler.cpp
+    AtomicTriggerScheduler.hpp
     ClaimableResource.cpp
     ClaimableResource.hpp
     EventDispatcher.cpp

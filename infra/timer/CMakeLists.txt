@@ -31,6 +31,8 @@ target_sources(infra.timer PRIVATE
     TimerService.hpp
     TimeStreaming.cpp
     TimeStreaming.hpp
+    Waiting.cpp
+    Waiting.hpp
 )
 
 add_subdirectory(test)

@@ -1,6 +1,7 @@
 #ifndef UPGRADE_INPUT_HPP
 #define UPGRADE_INPUT_HPP
 
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <vector>

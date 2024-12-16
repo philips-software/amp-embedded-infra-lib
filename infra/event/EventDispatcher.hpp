@@ -19,6 +19,7 @@ namespace infra
     public:
         virtual void Schedule(const infra::Function<void()>& action) = 0;
         virtual void ExecuteFirstAction() = 0;
+        virtual void ExecuteUntil(const infra::Function<bool()>& predicate) = 0;
         virtual std::size_t MinCapacity() const = 0;
         virtual bool IsIdle() const = 0;
     };
@@ -34,12 +35,12 @@ namespace infra
 
         void Schedule(const infra::Function<void()>& action) override;
         void ExecuteFirstAction() override;
+        void ExecuteUntil(const infra::Function<bool()>& predicate) override;
         std::size_t MinCapacity() const override;
         bool IsIdle() const override;
 
         void Run();
         void ExecuteAllActions();
-        void ExecuteUntil(const infra::Function<bool()>& predicate);
 
     protected:
         virtual void RequestExecution();

@@ -31,12 +31,16 @@ target_sources(services.tracer PRIVATE
     TracerWithTime.hpp
     TracerAdapterPrintf.cpp
     TracerAdapterPrintf.hpp
+    TracingEchoInstantiation.cpp
+    TracingEchoInstantiation.hpp
     TracingFlash.cpp
     TracingFlash.hpp
     TracingInputStream.cpp
     TracingInputStream.hpp
     TracingOutputStream.cpp
     TracingOutputStream.hpp
+    TracingSesameWindowed.cpp
+    TracingSesameWindowed.hpp
     TracingReset.cpp
     TracingReset.hpp
 )

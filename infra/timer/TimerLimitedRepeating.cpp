@@ -1,42 +1,47 @@
 #include "infra/timer/TimerLimitedRepeating.hpp"
+#include "infra/timer/Timer.hpp"
+#include "infra/util/Function.hpp"
+#include <cstdint>
 
 namespace infra
 {
-    TimerLimitedRepeating::TimerLimitedRepeating(uint32_t timerServiceId)
-        : Timer(timerServiceId)
-    {}
-
-    TimerLimitedRepeating::TimerLimitedRepeating(int aHowMany, Duration duration, const infra::Function<void()>& aAction, uint32_t timerServiceId)
-        : Timer(timerServiceId)
+    TimerLimitedRepeating::TimerLimitedRepeating(uint32_t aHowMany, Duration duration, const infra::Function<void()>& action, uint32_t timerServiceId)
+        : detail::TimerRepeating(timerServiceId)
     {
-        Start(aHowMany, duration, aAction);
+        Start(aHowMany, duration, action);
     }
 
-    void TimerLimitedRepeating::Start(int aHowMany, Duration duration, const infra::Function<void()>& aAction)
+    TimerLimitedRepeating::TimerLimitedRepeating(uint32_t aHowMany, Duration duration, const infra::Function<void()>& action, TriggerImmediately, uint32_t timerServiceId)
+        : detail::TimerRepeating(timerServiceId)
     {
-        action = aAction;
+        Start(aHowMany, duration, action, triggerImmediately);
+    }
 
-        triggerStart = Now() + Resolution();
-        triggerPeriod = duration;
+    void TimerLimitedRepeating::Start(uint32_t aHowMany, Duration duration, const infra::Function<void()>& aAction)
+    {
         howMany = aHowMany;
+        if (howMany > 0)
+            StartTimer(duration, aAction);
+        else
+            Cancel();
+    }
 
-        ComputeNextTriggerTime();
+    void TimerLimitedRepeating::Start(uint32_t aHowMany, Duration duration, const infra::Function<void()>& action, TriggerImmediately)
+    {
+        const auto atLeastOnce = aHowMany > 0;
+        const auto howManyRemaining = atLeastOnce ? aHowMany - 1 : 0;
+
+        Start(howManyRemaining, duration, action);
+
+        if (atLeastOnce)
+            action();
     }
 
     void TimerLimitedRepeating::ComputeNextTriggerTime()
     {
-        if (howMany != 0)
-        {
-            --howMany;
-
-            TimePoint now = Now();
-
-            Duration diff = now - triggerStart;
-            if (diff < Duration())
-                now += triggerPeriod;
-            diff %= triggerPeriod;
-            SetNextTriggerTime(now - diff + triggerPeriod, action);
-        }
+        --howMany;
+        if (howMany > 0)
+            detail::TimerRepeating::ComputeNextTriggerTime();
         else
             Cancel();
     }

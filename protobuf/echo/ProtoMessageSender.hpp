@@ -15,6 +15,7 @@ namespace services
         explicit ProtoMessageSenderBase(infra::BoundedVector<std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter), 3 * sizeof(uint8_t*)>>>& stack);
 
         void Fill(infra::DataOutputStream output);
+        bool BufferEmpty() const;
 
     protected:
         template<class Message>
@@ -40,11 +41,14 @@ namespace services
         bool SerializeField(ProtoStringBase, infra::ProtoFormatter& formatter, const infra::BoundedString& value, uint32_t fieldNumber, bool& retry) const;
         bool SerializeField(ProtoUnboundedString, infra::ProtoFormatter& formatter, const std::string& value, uint32_t fieldNumber, bool& retry) const;
         bool SerializeField(ProtoBytesBase, infra::ProtoFormatter& formatter, const infra::BoundedVector<uint8_t>& value, uint32_t fieldNumber, bool& retry) const;
+        bool SerializeField(ProtoUnboundedBytes, infra::ProtoFormatter& formatter, const std::vector<uint8_t>& value, uint32_t fieldNumber, bool& retry) const;
 
         template<class Enum>
         bool SerializeField(ProtoEnum<Enum>, infra::ProtoFormatter& formatter, const Enum& value, uint32_t fieldNumber, const bool& retry) const;
         template<class Message>
         bool SerializeField(ProtoMessage<Message>, infra::ProtoFormatter& formatter, const Message& value, uint32_t fieldNumber, bool& retry) const;
+        template<class ProtoType, class Type>
+        bool SerializeField(ProtoOptional<ProtoType>, infra::ProtoFormatter& formatter, const infra::Optional<Type>& value, uint32_t fieldNumber, bool& retry) const;
         template<class ProtoType, class Type>
         bool SerializeField(ProtoRepeatedBase<ProtoType>, const infra::ProtoFormatter& formatter, const infra::BoundedVector<Type>& value, uint32_t fieldNumber, bool& retry) const;
         template<class ProtoType, class Type>
@@ -114,7 +118,8 @@ namespace services
     template<class Message>
     bool ProtoMessageSenderBase::SerializeField(ProtoMessage<Message>, infra::ProtoFormatter& formatter, const Message& value, uint32_t fieldNumber, bool& retry) const
     {
-        infra::DataOutputStream::WithWriter<infra::CountingStreamWriter> countingStream;
+        std::array<uint8_t, 16> saveStateStorage; // For writing length fields
+        infra::DataOutputStream::WithWriter<infra::CountingStreamWriter> countingStream{ saveStateStorage };
         infra::ProtoFormatter countingFormatter{ countingStream };
         value.Serialize(countingFormatter);
         formatter.PutLengthDelimitedSize(countingStream.Writer().Processed(), fieldNumber);
@@ -125,6 +130,14 @@ namespace services
             });
 
         retry = true;
+        return true;
+    }
+
+    template<class ProtoType, class Type>
+    bool ProtoMessageSenderBase::SerializeField(ProtoOptional<ProtoType>, infra::ProtoFormatter& formatter, const infra::Optional<Type>& value, uint32_t fieldNumber, [[maybe_unused]] bool& retry) const
+    {
+        if (value != infra::none)
+            return SerializeField(ProtoType(), formatter, *value, fieldNumber, retry);
         return true;
     }
 

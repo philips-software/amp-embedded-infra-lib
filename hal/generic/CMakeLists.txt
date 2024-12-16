@@ -7,6 +7,10 @@ target_link_libraries(hal.generic PUBLIC
     $<$<OR:$<BOOL:${EMIL_BUILD_UNIX}>,$<BOOL:${EMIL_BUILD_DARWIN}>>:pthread>
 )
 
+target_compile_definitions(hal.generic PUBLIC
+    EMIL_HAL_GENERIC
+)
+
 target_sources(hal.generic PRIVATE
     FileSystemGeneric.cpp
     FileSystemGeneric.hpp

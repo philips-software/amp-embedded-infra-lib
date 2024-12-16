@@ -56,7 +56,7 @@ namespace services
         , public services::Connection
     {
     public:
-        explicit WebSocketClientConnectionObserver(infra::BoundedConstString path);
+        explicit WebSocketClientConnectionObserver();
 
         // Implementation of ConnectionObserver
         void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;

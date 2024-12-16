@@ -1,0 +1,16 @@
+ls:
+  .dir: snake_case
+  .hpp: PascalCase
+  .cpp: PascalCase
+
+ignore:
+  - .clusterfuzzlite
+  - .devcontainer
+  - .git
+  - .github
+  - .vscode
+  - documents
+  - external
+  - lwip/lwip_config
+  - megalinter-reports
+  - osal/*_std_thread

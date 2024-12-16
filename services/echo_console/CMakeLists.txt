@@ -1,4 +1,4 @@
-if (EMIL_HOST_BUILD)
+if (EMIL_HOST_BUILD AND EMIL_INCLUDE_MBEDTLS)
     add_executable(services.echo_console ${EMIL_EXCLUDE_FROM_ALL})
     emil_install(services.echo_console DESTINATION bin)
 
@@ -11,14 +11,6 @@ if (EMIL_HOST_BUILD)
         services.util
         protobuf.meta_services
     )
-
-    if (EMIL_BUILD_WIN)
-        target_link_libraries(services.echo_console PRIVATE hal.windows)
-    endif()
-
-    if (EMIL_BUILD_UNIX OR EMIL_BUILD_DARWIN)
-        target_link_libraries(services.echo_console PRIVATE hal.unix)
-    endif()
 
     target_sources(services.echo_console PRIVATE
         Console.cpp

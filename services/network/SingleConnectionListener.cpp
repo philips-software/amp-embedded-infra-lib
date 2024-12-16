@@ -7,6 +7,11 @@ namespace services
         , listener(connectionFactory.Listen(port, *this))
     {}
 
+    void SingleConnectionListener::SetNewConnectionStrategy(NewConnectionStrategy& newConnectionStrategy)
+    {
+        this->newConnectionStrategy = &newConnectionStrategy;
+    }
+
     void SingleConnectionListener::Stop(const infra::Function<void()>& onDone)
     {
         listener = nullptr;
@@ -20,11 +25,23 @@ namespace services
         this->createdObserver = std::move(createdObserver);
         this->address = address;
 
+        newConnectionStrategy->StopCurrentConnection(*this);
+    }
+
+    void SingleConnectionListener::StopCurrentConnection(SingleConnectionListener& listener)
+    {
         Stop([this]()
             {
-                CreateObserver();
+                newConnectionStrategy->StartNewConnection();
             },
             false);
+    }
+
+    void SingleConnectionListener::StartNewConnection()
+    {
+        connection.OnAllocatable(infra::emptyFunction);
+        auto proxyPtr = connection.Emplace(connectionCreator, address);
+        this->createdObserver(infra::MakeContainedSharedObject(**proxyPtr, proxyPtr));
     }
 
     void SingleConnectionListener::Stop(const infra::Function<void()>& onDone, bool force)
@@ -43,12 +60,5 @@ namespace services
                     (*connection)->Close();
             }
         }
-    }
-
-    void SingleConnectionListener::CreateObserver()
-    {
-        connection.OnAllocatable(infra::emptyFunction);
-        auto proxyPtr = connection.Emplace(connectionCreator, address);
-        this->createdObserver(infra::MakeContainedSharedObject(**proxyPtr, proxyPtr));
     }
 }

@@ -34,7 +34,7 @@ target_sources(infra.util PRIVATE
     Compatibility.hpp
     ConstructBin.cpp
     ConstructBin.hpp
-    CrcCcittCalculator.cpp
+    Crc.hpp
     CrcCcittCalculator.hpp
     CyclicBuffer.hpp
     Endian.hpp
@@ -66,6 +66,7 @@ target_sources(infra.util PRIVATE
     SharedObjectAllocator.hpp
     SharedObjectAllocatorFixedSize.hpp
     SharedObjectAllocatorHeap.hpp
+    SharedOptional.cpp
     SharedOptional.hpp
     SharedOwnedObserver.hpp
     SharedPtr.cpp

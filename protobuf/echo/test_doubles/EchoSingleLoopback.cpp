@@ -15,9 +15,6 @@ namespace application
         ReleaseReader();
     }
 
-    void EchoSingleLoopback::AckReceived()
-    {}
-
     void EchoSingleLoopback::SendStreamFilled()
     {
         sending.push_back({ sendStream.Processed().begin(), sendStream.Processed().end() });
@@ -29,14 +26,15 @@ namespace application
     {
         if (reader.Allocatable() && !sending.empty())
         {
-            auto data = sending.front();
+            sendingNow = sending.front();
             sending.pop_front();
-            DataReceived(reader.Emplace(infra::MakeRange(data)));
+            DataReceived(reader.Emplace(infra::MakeRange(sendingNow)));
         }
     }
 
     void EchoSingleLoopback::ReaderDone()
     {
+        sendingNow.clear();
         TryForward();
     }
 }

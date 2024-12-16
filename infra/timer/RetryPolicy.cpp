@@ -17,7 +17,7 @@ namespace infra
             if (infra::Now() >= retryAfterMaximumDelay)
             {
                 retryAfterMaximumDelay += maximumDelay;
-                *retryDelay = InitialDelay(intermittentFailure);
+                *retryDelay = InitialDelay(false);
             }
             else
             {

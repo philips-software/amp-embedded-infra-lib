@@ -2,6 +2,7 @@
 #include "hal/interfaces/test_doubles/FlashStub.hpp"
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
+#include "infra/util/ByteRange.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/util/ConfigurationStore.hpp"
@@ -158,7 +159,7 @@ TEST_F(ConfigurationBlobTest, Write_writes_to_flash)
 
     infra::ConstByteRange writeBuffer;
     EXPECT_CALL(flash, WriteBuffer(testing::_, 0, testing::_)).WillOnce(testing::DoAll(testing::SaveArg<0>(&writeBuffer), testing::SaveArg<2>(&onWriteDone)));
-    infra::VerifyingFunctionMock<void()> writeDone;
+    infra::VerifyingFunction<void()> writeDone;
     configurationBlob.Write(8, writeDone);
 
     std::array<uint8_t, 20> blobData = { 0x21, 0xf1, 0xfb, 0x20, 0xaf, 0x91, 0x92, 0x86, 8, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 0 };
@@ -190,7 +191,7 @@ TEST_F(ConfigurationBlobTest, Write_writes_to_flash)
 TEST_F(ConfigurationBlobTest, Erase_erases_flash)
 {
     EXPECT_CALL(flash, EraseSectors(0, 1, testing::_)).WillOnce(testing::SaveArg<2>(&onEraseDone));
-    infra::VerifyingFunctionMock<void()> eraseDone;
+    infra::VerifyingFunction<void()> eraseDone;
     configurationBlob.Erase(eraseDone);
 
     onEraseDone();
@@ -240,6 +241,7 @@ namespace
         MOCK_METHOD1(Recover, void(const infra::Function<void(bool success)>& onLoaded));
         MOCK_METHOD2(Write, void(uint32_t size, const infra::Function<void()>& onDone));
         MOCK_METHOD1(Erase, void(const infra::Function<void()>& onDone));
+        MOCK_METHOD1(IsErased, void(const infra::Function<void(bool)>& onEraseCheckDone));
     };
 
     class ConfigurationStoreObserverMock
@@ -273,8 +275,11 @@ public:
         EXPECT_CALL(configurationBlob2, Recover(testing::_)).WillOnce(testing::SaveArg<0>(&onRecoverDone));
         onRecoverDone(false);
 
-        EXPECT_CALL(configurationBlob1, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+        EXPECT_CALL(configurationBlob1, IsErased(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseCheckDone));
         onRecoverDone(false);
+
+        EXPECT_CALL(configurationBlob1, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+        onEraseCheckDone(false);
 
         EXPECT_CALL(*this, OnLoaded(false));
         onEraseDone();
@@ -283,12 +288,31 @@ public:
 public:
     infra::Function<void(bool success)> onRecoverDone;
     infra::Function<void()> onEraseDone;
+    infra::Function<void(bool success)> onEraseCheckDone;
     testing::StrictMock<ConfigurationBlobMock> configurationBlob1;
     testing::StrictMock<ConfigurationBlobMock> configurationBlob2;
     testing::StrictMock<Data> dataInstance;
     services::ConfigurationStoreImpl<DataProxy> configurationStore;
     testing::StrictMock<ConfigurationStoreObserverMock> observer{ configurationStore };
 };
+
+TEST_F(ConfigurationStoreTest, do_not_erase_blob_if_is_already_erased)
+{
+    EXPECT_CALL(configurationBlob1, Recover(testing::_)).WillOnce(testing::SaveArg<0>(&onRecoverDone));
+    configurationStore.Recover([this](bool success)
+        {
+            OnLoaded(success);
+        });
+
+    EXPECT_CALL(configurationBlob2, IsErased(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseCheckDone));
+    onRecoverDone(true);
+
+    EXPECT_CALL(configurationBlob1, CurrentBlob()).WillOnce(testing::Return(infra::ConstByteRange()));
+    EXPECT_CALL(dataInstance, Deserialize(testing::_));
+
+    EXPECT_CALL(*this, OnLoaded(true));
+    onEraseCheckDone(true);
+}
 
 TEST_F(ConfigurationStoreTest, failed_blob_load_is_propagated)
 {
@@ -301,8 +325,11 @@ TEST_F(ConfigurationStoreTest, failed_blob_load_is_propagated)
     EXPECT_CALL(configurationBlob2, Recover(testing::_)).WillOnce(testing::SaveArg<0>(&onRecoverDone));
     onRecoverDone(false);
 
-    EXPECT_CALL(configurationBlob1, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    EXPECT_CALL(configurationBlob1, IsErased(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseCheckDone));
     onRecoverDone(false);
+
+    EXPECT_CALL(configurationBlob1, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onEraseCheckDone(false);
 
     EXPECT_CALL(*this, OnLoaded(false));
     onEraseDone();
@@ -316,8 +343,11 @@ TEST_F(ConfigurationStoreTest, after_successful_blob_load_configuration_is_avail
             OnLoaded(success);
         });
 
-    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    EXPECT_CALL(configurationBlob2, IsErased(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseCheckDone));
     onRecoverDone(true);
+
+    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onEraseCheckDone(false);
 
     EXPECT_CALL(configurationBlob1, CurrentBlob()).WillOnce(testing::Return(infra::ByteRange()));
     EXPECT_CALL(dataInstance, Deserialize(testing::_));
@@ -336,8 +366,11 @@ TEST_F(ConfigurationStoreTest, after_successful_blob_load_from_second_flash_conf
     EXPECT_CALL(configurationBlob2, Recover(testing::_)).WillOnce(testing::SaveArg<0>(&onRecoverDone));
     onRecoverDone(false);
 
-    EXPECT_CALL(configurationBlob1, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    EXPECT_CALL(configurationBlob1, IsErased(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseCheckDone));
     onRecoverDone(true);
+
+    EXPECT_CALL(configurationBlob1, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onEraseCheckDone(false);
 
     EXPECT_CALL(configurationBlob2, CurrentBlob()).WillOnce(testing::Return(infra::ByteRange()));
     EXPECT_CALL(dataInstance, Deserialize(testing::_));
@@ -374,8 +407,11 @@ TEST_F(ConfigurationStoreTest, Write_writes_to_other_blob_than_recovered)
             OnLoaded(success);
         });
 
-    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    EXPECT_CALL(configurationBlob2, IsErased(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseCheckDone));
     onRecoverDone(true);
+
+    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onEraseCheckDone(false);
 
     EXPECT_CALL(configurationBlob1, CurrentBlob()).WillOnce(testing::Return(infra::ByteRange()));
     EXPECT_CALL(dataInstance, Deserialize(testing::_));
@@ -550,6 +586,7 @@ public:
 public:
     infra::Function<void(bool success)> onRecoverDone;
     infra::Function<void()> onEraseDone;
+    infra::Function<void(bool success)> onEraseCheckDone;
     testing::StrictMock<ConfigurationBlobMock> configurationBlobFactoryDefault;
     testing::StrictMock<ConfigurationBlobMock> configurationBlob1;
     testing::StrictMock<ConfigurationBlobMock> configurationBlob2;
@@ -575,6 +612,7 @@ TEST_F(FactoryDefaultConfigurationStoreTest, failed_factory_default_results_in_O
         {
             configurationStore.Configuration().data = 5;
         }));
+
     EXPECT_CALL(configurationBlobFactoryDefault, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
     onRecoverDone(false);
 
@@ -592,8 +630,11 @@ TEST_F(FactoryDefaultConfigurationStoreTest, failed_factory_default_results_in_O
     EXPECT_CALL(configurationBlob2, Recover(testing::_)).WillOnce(testing::SaveArg<0>(&onRecoverDone));
     onRecoverDone(false);
 
-    EXPECT_CALL(configurationBlob1, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    EXPECT_CALL(configurationBlob1, IsErased(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseCheckDone));
     onRecoverDone(false);
+
+    EXPECT_CALL(configurationBlob1, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onEraseCheckDone(false);
 
     EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
     onEraseDone();
@@ -640,8 +681,11 @@ TEST_F(FactoryDefaultConfigurationStoreTest, failed_factory_default_but_successf
 
     blob = 0;
 
-    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    EXPECT_CALL(configurationBlob2, IsErased(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseCheckDone));
     onRecoverDone(true);
+
+    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onEraseCheckDone(false);
 
     blob = 15;
     EXPECT_CALL(configurationBlob1, CurrentBlob()).WillOnce(testing::Return(infra::MakeByteRange(blob)));
@@ -674,8 +718,11 @@ TEST_F(FactoryDefaultConfigurationStoreTest, successful_factory_default_results_
 
     blob = 0;
 
+    EXPECT_CALL(configurationBlob2, IsErased(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseCheckDone));
+    onRecoverDone(true);
+
     EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
-    onRecoverDone(true); // Blob 1 is recovered
+    onEraseCheckDone(false); // Blob 1 is recovered
 
     blob = 5;
     EXPECT_CALL(configurationBlob1, CurrentBlob()).WillOnce(testing::Return(infra::MakeByteRange(blob)));
@@ -709,8 +756,11 @@ TEST_F(FactoryDefaultConfigurationStoreTest, when_ConfigurationStore_Recover_fai
     EXPECT_CALL(configurationBlob2, Recover(testing::_)).WillOnce(testing::SaveArg<0>(&onRecoverDone));
     onRecoverDone(false); // Blob 1 is not recovered
 
+    EXPECT_CALL(configurationBlob1, IsErased(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseCheckDone));
+    onRecoverDone(false);
+
     EXPECT_CALL(configurationBlob1, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
-    onRecoverDone(false); // Blob 2 is not recovered
+    onEraseCheckDone(false); // Blob 2 is not recovered
 
     EXPECT_CALL(*this, OnRecovered(true));
     onEraseDone();

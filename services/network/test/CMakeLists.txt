@@ -22,7 +22,7 @@ target_link_libraries(services.network_test PUBLIC
 target_sources(services.network_test PRIVATE
     TestAddress.cpp
     TestBonjourServer.cpp
-    TestConnectionMbedTls.cpp
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestConnectionMbedTls.cpp>
     TestDnsResolver.cpp
     TestDnsServer.cpp
     TestEchoOnConnection.cpp
@@ -31,21 +31,21 @@ target_sources(services.network_test PRIVATE
     TestHttpClient.cpp
     TestHttpClientAuthentication.cpp
     TestHttpClientBasic.cpp
-    TestHttpClientCachedConnection.cpp
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestHttpClientCachedConnection.cpp>
     TestHttpClientJson.cpp
     TestHttpServer.cpp
     TestLlmnrResponder.cpp
     TestMdnsClient.cpp
     TestMqttClient.cpp
-    TestNameResolverCache.cpp
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestNameResolverCache.cpp>
     TestSerialServer.cpp
     TestSingleConnectionListener.cpp
     TestSntpClient.cpp
     TestSsdpDeviceDiscovery.cpp
     TestWebSocketClient.cpp
-    TestWebSocketClientConnectionObserver.cpp
-    TestWebSocketIntegration.cpp
-    TestWebSocketServerConnectionObserver.cpp
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestWebSocketClientConnectionObserver.cpp>
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestWebSocketIntegration.cpp>
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestWebSocketServerConnectionObserver.cpp>
     TestWiFiNetwork.cpp
 )
 
@@ -66,5 +66,5 @@ target_link_libraries(services.network_test_certificates PUBLIC
 
 target_sources(services.network_test_certificates PRIVATE
     TestCertificateConvertor.cpp
-    TestCertificatesMbedTls.cpp
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestCertificatesMbedTls.cpp>
 )
