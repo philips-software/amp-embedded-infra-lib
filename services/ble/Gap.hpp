@@ -201,6 +201,7 @@ namespace services
 
         virtual std::size_t GetMaxNumberOfBonds() const = 0;
         virtual std::size_t GetNumberOfBonds() const = 0;
+        virtual bool IsDeviceBounded(hal::MacAddress deviceAddress) const = 0;
     };
 
     class GapBondingDecorator
@@ -218,6 +219,7 @@ namespace services
         void RemoveOldestBond() override;
         std::size_t GetMaxNumberOfBonds() const override;
         std::size_t GetNumberOfBonds() const override;
+        bool IsDeviceBounded(hal::MacAddress deviceAddress) const override;
     };
 
     class GapPeripheral;
@@ -320,6 +322,7 @@ namespace services
         virtual void SetAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) = 0;
         virtual void StartDeviceDiscovery() = 0;
         virtual void StopDeviceDiscovery() = 0;
+        virtual hal::MacAddress ResolveDeviceAddress(hal::MacAddress deviceAddress) const = 0;
     };
 
     class GapCentralDecorator
@@ -340,6 +343,7 @@ namespace services
         void SetAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) override;
         void StartDeviceDiscovery() override;
         void StopDeviceDiscovery() override;
+        hal::MacAddress ResolveDeviceAddress(hal::MacAddress deviceAddress) const override;
     };
 }
 
