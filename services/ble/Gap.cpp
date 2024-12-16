@@ -84,6 +84,11 @@ namespace services
         return GapBondingObserver::Subject().GetNumberOfBonds();
     }
 
+    bool GapBondingDecorator::IsDeviceBounded(hal::MacAddress deviceAddress) const
+    {
+        return GapBondingObserver::Subject().IsDeviceBounded(deviceAddress);
+    }
+
     void GapPeripheralDecorator::StateChanged(GapState state)
     {
         GapPeripheral::NotifyObservers([&state](auto& obs)
@@ -176,6 +181,11 @@ namespace services
     void GapCentralDecorator::StopDeviceDiscovery()
     {
         GapCentralObserver::Subject().StopDeviceDiscovery();
+    }
+
+    hal::MacAddress GapCentralDecorator::ResolveDeviceAddress(hal::MacAddress deviceAddress) const
+    {
+        return GapCentralObserver::Subject().ResolveDeviceAddress(deviceAddress);
     }
 
     GapAdvertisingDataParser::GapAdvertisingDataParser(infra::ConstByteRange data)
