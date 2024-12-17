@@ -93,7 +93,7 @@ option(EMIL_ENABLE_TRACING "Enable Tracing" On)
 option(EMIL_BUILD_ECHO_COMPILERS "Build and install the Protobuf ECHO compilers" ${EMIL_DEFAULTOPT})
 
 # Enable or disable optional features.
-option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of EmIL" On)
+option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of EmIL" Off)
 set(EMIL_EXTERNAL_MBEDTLS_TARGET "" CACHE STRING "Specify an external MbedTLS target")
 option(EMIL_INCLUDE_FREERTOS "Include FreeRTOS as part of EmIL" Off)
 option(EMIL_INCLUDE_THREADX "Include ThreadX as part of EmIL (Incomplete, experimental)" Off)

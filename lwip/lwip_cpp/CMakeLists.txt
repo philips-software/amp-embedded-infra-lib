@@ -7,8 +7,8 @@ target_link_libraries(lwip.lwip_cpp PUBLIC
 )
 
 if (EMIL_EXTERNAL_LWIP_TARGET)
-    target_link_libraries(lwip.lwip_cpp PUBLIC
-        ${EMIL_EXTERNAL_LWIP_TARGET}
+    target_include_directories(lwip.lwip_cpp PUBLIC
+        $<TARGET_PROPERTY:${EMIL_EXTERNAL_LWIP_TARGET},INCLUDE_DIRECTORIES>
     )
 else()
     target_link_libraries(lwip.lwip_cpp PUBLIC
