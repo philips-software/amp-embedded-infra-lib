@@ -1,13 +1,19 @@
 #include "args.hxx"
 #include "echo/TracingServiceDiscovery.pb.hpp"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
+#include "infra/stream/StdStringInputStream.hpp"
+#include "infra/stream/StreamErrorPolicy.hpp"
+#include "infra/stream/StringInputStream.hpp"
 #include "infra/util/Optional.hpp"
+#include "infra/util/SharedOptional.hpp"
 #include "protobuf/echo/Serialization.hpp"
 #include "protobuf/meta_services/PeerServiceDiscoverer.hpp"
+#include "services/echo_console/ConsoleService.hpp"
 #include "services/network/EchoOnConnection.hpp"
 #include "services/network/TracingEchoOnConnection.hpp"
 #include "services/tracer/Tracer.hpp"
 #include <ostream>
+#include <queue>
 #include <vector>
 #ifdef EMIL_HAL_WINDOWS
 #include "hal/windows/UartWindows.hpp"
@@ -158,21 +164,24 @@ private:
 
 private:
     void CheckDataToBeSent();
+    void SendAsEcho();
 
 private:
     services::Tracer& tracer;
-    std::string dataToBeSent;
+    std::queue<std::string> dataQueue;
+    infra::NotifyingSharedOptional<infra::StringInputStream> reader;
     infra::SharedPtr<infra::StreamWriter> writer;
     service_discovery::ServiceDiscoveryTracer serviceDiscoveryTracer;
     service_discovery::ServiceDiscoveryResponseTracer serviceDiscoveryResponseTracer;
     infra::Optional<application::PeerServiceDiscovererEcho> peerServiceDiscoverer;
     infra::Optional<PeerServiceDiscoveryObserverTracer> peerServiceDiscoveryObserverTracer;
     infra::Optional<PeerServiceDiscoveryConsoleInteractor> peerServiceDiscoveryConsoleInteractor;
+    infra::Optional<services::ConsoleServiceProxy> consoleServiceProxy;
 };
 
 ConsoleClientConnection::ConsoleClientConnection(application::Console& console, services::Tracer& tracer)
     : application::ConsoleObserver(console)
-    , services::TracingEchoOnConnection(*static_cast<services::MethodSerializerFactory*>(this), services::echoErrorPolicyAbort, tracer)
+    , services::TracingEchoOnConnection(*static_cast<services::MethodSerializerFactory*>(this), services::echoErrorPolicyAbortOnMessageFormatError, tracer)
     , serviceDiscoveryTracer(*this)
     , serviceDiscoveryResponseTracer(*this)
     , tracer(tracer)
@@ -190,26 +199,46 @@ void ConsoleClientConnection::Attached()
     peerServiceDiscoverer.Emplace(*this);
     peerServiceDiscoveryObserverTracer.Emplace(*peerServiceDiscoverer, tracer);
     peerServiceDiscoveryConsoleInteractor.Emplace(*peerServiceDiscoverer, application::ConsoleObserver::Subject());
+    consoleServiceProxy.Emplace(*this);
 }
 
 void ConsoleClientConnection::Send(const std::string& message)
 {
-    dataToBeSent += message;
-    CheckDataToBeSent();
+    // Do we need to know the serviceid, methodid and treat them differently or do we just send strings back to back?
+    dataQueue.push(message);
+    SendAsEcho();
 }
 
 void ConsoleClientConnection::CheckDataToBeSent()
 {
-    if (writer != nullptr && !dataToBeSent.empty())
-    {
-        infra::TextOutputStream::WithErrorPolicy stream(*writer);
-        std::size_t amount = std::min(stream.Available(), dataToBeSent.size());
-        stream << dataToBeSent.substr(0, amount);
-        dataToBeSent.erase(0, amount);
+    // if (writer != nullptr && !dataToBeSent.empty())
+    // {
+    //     infra::TextOutputStream::WithErrorPolicy stream(*writer);
+    //     std::size_t amount = std::min(stream.Available(), dataToBeSent.size());
+    //     stream << dataToBeSent.substr(0, amount);
+    //     dataToBeSent.erase(0, amount);
 
-        writer = nullptr;
-        services::ConnectionObserver::Subject().RequestSendStream(services::ConnectionObserver::Subject().MaxSendStreamSize());
-    }
+    //     writer = nullptr;
+    //     services::ConnectionObserver::Subject().RequestSendStream(services::ConnectionObserver::Subject().MaxSendStreamSize());
+    // }
+}
+
+void ConsoleClientConnection::SendAsEcho()
+{
+    if (!consoleServiceProxy)
+        throw std::runtime_error("No console service proxy available");
+
+    if (!dataQueue.empty() && reader.Allocatable())
+        consoleServiceProxy->RequestSend([this]()
+            {
+                auto inputReader = reader.Emplace(dataQueue.front(), infra::softFail);
+                reader.OnAllocatable([this]
+                {
+                    dataQueue.pop();
+                    SendAsEcho();
+                });
+                consoleServiceProxy->SendMessage(inputReader);
+            });
 }
 
 class ConsoleClientTcp

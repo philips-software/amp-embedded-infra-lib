@@ -831,12 +831,10 @@ namespace application
     std::pair<std::shared_ptr<const EchoService>, const EchoMethod&> Console::SearchMethod(MethodInvocation& methodInvocation) const
     {
         for (auto service : root.services)
-        {
             if (methodInvocation.method.size() == 1 || methodInvocation.method.front() == service->name)
                 for (auto& method : service->methods)
-                    if (method.name == methodInvocation.method.back())
+                    if (methodInvocation.method.back() == method.name)
                         return std::pair<std::shared_ptr<const EchoService>, const EchoMethod&>(service, method);
-        }
 
         throw ConsoleExceptions::MethodNotFound{ methodInvocation.method };
     }

@@ -2,6 +2,8 @@
 #define PROTOBUF_ECHO_SERVICE_DISCOVERY_HPP
 
 #include "generated/echo/ServiceDiscovery.pb.hpp"
+#include "infra/event/ClaimableResource.hpp"
+#include "infra/timer/Timer.hpp"
 #include "infra/util/Optional.hpp"
 #include "protobuf/echo/Echo.hpp"
 #include <cstdint>
@@ -51,6 +53,10 @@ namespace application
     private:
         infra::Optional<std::pair<uint32_t, uint32_t>> changedServices;
         bool notifyServiceChanges = false;
+        infra::ClaimableResource serviceProxyResource;
+        infra::ClaimableResource::Claimer servicesChangedClaimer{ serviceProxyResource };
+        infra::ClaimableResource::Claimer serviceSupportedClaimer{ serviceProxyResource };
+        infra::TimerSingleShot serviceChangeNotificationTimer;
     };
 }
 

@@ -1,9 +1,10 @@
 #include "protobuf/echo/ServiceForwarder.hpp"
+#include <cstdint>
 
 namespace services
 {
-    ServiceForwarderBase::ServiceForwarderBase(Echo& echo, Echo& forwardTo)
-        : Service(echo, 0)
+    ServiceForwarderBase::ServiceForwarderBase(Echo& echo, uint32_t id, Echo& forwardTo)
+        : Service(echo, id)
         , ServiceProxy(forwardTo, 0)
     {}
 
@@ -89,7 +90,7 @@ namespace services
     }
 
     ServiceForwarder::ServiceForwarder(Echo& echo, uint32_t id, Echo& forwardTo)
-        : ServiceForwarderBase(echo, forwardTo)
+        : ServiceForwarderBase(echo, id, forwardTo)
         , serviceId(id)
     {}
 
