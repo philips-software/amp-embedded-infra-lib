@@ -142,6 +142,29 @@ message PairingStatus
     Error error = 1;
 };
 
+message OutOfBandDataInput
+{
+    enum OutOfBandDataType
+    {
+        temporary = 0;
+        random = 1;
+        confirm = 2;
+    }
+
+    Address address = 1;
+    AddressType addressType = 2;
+    OutOfBandDataType dataType = 3;
+    bytes payload = 4 [(bytes_size) = 16];
+}
+
+message OutOfBandDataDataGenerated
+{
+    Address address = 1;
+    AddressType addressType = 2;
+    bytes randomData = 3 [(bytes_size) = 16];
+    bytes confirmData = 4 [(bytes_size) = 16];
+}
+
 message DiscoveredDevice
 {
     Address address = 1;
@@ -193,6 +216,9 @@ service GapPeripheral
 
     // Allowed states: advertising
     rpc GetResolvableAddress(Nothing) returns (Nothing) { option (method_id) = 9; }
+
+    rpc GenerateOutOfBandData(Nothing) returns (Nothing) { option (method_id) = 10; }
+    rpc SetOutOfBandData(OutOfBandDataInput) returns (Nothing) { option (method_id) = 11; }
 }
 
 service GapCentral
@@ -225,6 +251,8 @@ service GapCentral
     rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 10; }
     rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 11; }
     rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 12; }
+    rpc GenerateOutOfBandData(Nothing) returns (Nothing) { option (method_id) = 13; }
+    rpc SetOutOfBandData(OutOfBandDataInput) returns (Nothing) { option (method_id) = 14; }
 }
 
 service GapPeripheralResponse
@@ -236,6 +264,7 @@ service GapPeripheralResponse
     rpc StateChanged(State) returns (Nothing) { option (method_id) = 3; }
     rpc ResolvableAddress(Address) returns (Nothing) { option (method_id) = 4; }
     rpc DisplayPasskey(Passkey) returns (Nothing) { option (method_id) = 5; }
+    rpc OutOfBandDataGenerated(OutOfBandDataDataGenerated) returns (Nothing) { option (method_id) = 6; }
 }
 
 service GapCentralResponse
@@ -247,6 +276,7 @@ service GapCentralResponse
     rpc StateChanged(State) returns (Nothing) { option (method_id) = 3; }
     rpc PairingSuccessfullyCompleted(Nothing) returns (Nothing) { option (method_id) =  4; }
     rpc PairingFailed(PairingStatus) returns (Nothing) { option (method_id) = 5; }
-    rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
-    rpc DeviceStarted(Nothing) returns (Nothing) { option (method_id) = 7; }
+    rpc OutOfBandDataGenerated(OutOfBandDataDataGenerated) returns (Nothing) { option (method_id) = 6; }
+    rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 7; }
+    rpc DeviceStarted(Nothing) returns (Nothing) { option (method_id) = 8; }
 }
