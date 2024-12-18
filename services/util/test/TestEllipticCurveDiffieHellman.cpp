@@ -9,9 +9,9 @@ namespace
         : public testing::Test
     {
     public:
-        testing::StrictMock<application::EllipticCurveOperationsMock> eccMock;
-        application::EllipticCurveExtendedParameters curveStub;
-        application::EllipticCurveDiffieHellman ecdh{ eccMock };
+        testing::StrictMock<services::EllipticCurveOperationsMock> eccMock;
+        services::EllipticCurveExtendedParameters curveStub;
+        services::EllipticCurveDiffieHellman ecdh{ eccMock };
         // clang-format off
         std::array<uint8_t, 32> privateKey{
             0x4e, 0xdb, 0xb1, 0x09, 0x27, 0x68, 0xac, 0x3c,
@@ -50,7 +50,7 @@ namespace
 
 TEST_F(EllipticCurveDiffieHellmanTest, public_key_x_invalid)
 {
-    infra::Function<void(application::EllipticCurveOperations::ComparisonResult)> onDone;
+    infra::Function<void(services::EllipticCurveOperations::ComparisonResult)> onDone;
 
     ::testing::InSequence _;
 
@@ -61,13 +61,13 @@ TEST_F(EllipticCurveDiffieHellmanTest, public_key_x_invalid)
         {
             EXPECT_FALSE(result);
         });
-    onDone(application::EllipticCurveOperations::ComparisonResult::aGreaterThanB);
+    onDone(services::EllipticCurveOperations::ComparisonResult::aGreaterThanB);
 }
 
 TEST_F(EllipticCurveDiffieHellmanTest, public_key_y_invalid)
 {
-    infra::Function<void(application::EllipticCurveOperations::ComparisonResult)> onPublicKeyXCalculated;
-    infra::Function<void(application::EllipticCurveOperations::ComparisonResult)> onPublicKeyYCalculated;
+    infra::Function<void(services::EllipticCurveOperations::ComparisonResult)> onPublicKeyXCalculated;
+    infra::Function<void(services::EllipticCurveOperations::ComparisonResult)> onPublicKeyYCalculated;
 
     ::testing::InSequence _;
 
@@ -81,15 +81,15 @@ TEST_F(EllipticCurveDiffieHellmanTest, public_key_y_invalid)
         {
             EXPECT_FALSE(result);
         });
-    onPublicKeyXCalculated(application::EllipticCurveOperations::ComparisonResult::aLessThanB);
-    onPublicKeyYCalculated(application::EllipticCurveOperations::ComparisonResult::aGreaterThanB);
+    onPublicKeyXCalculated(services::EllipticCurveOperations::ComparisonResult::aLessThanB);
+    onPublicKeyYCalculated(services::EllipticCurveOperations::ComparisonResult::aGreaterThanB);
 }
 
 TEST_F(EllipticCurveDiffieHellmanTest, public_key_not_on_curve)
 {
-    infra::Function<void(application::EllipticCurveOperations::ComparisonResult)> onPublicKeyXCalculated;
-    infra::Function<void(application::EllipticCurveOperations::ComparisonResult)> onPublicKeyYCalculated;
-    infra::Function<void(application::EllipticCurveOperations::PointOnCurveResult)> onCheckPointOnCurveFinished;
+    infra::Function<void(services::EllipticCurveOperations::ComparisonResult)> onPublicKeyXCalculated;
+    infra::Function<void(services::EllipticCurveOperations::ComparisonResult)> onPublicKeyYCalculated;
+    infra::Function<void(services::EllipticCurveOperations::PointOnCurveResult)> onCheckPointOnCurveFinished;
 
     ::testing::InSequence _;
 
@@ -106,16 +106,16 @@ TEST_F(EllipticCurveDiffieHellmanTest, public_key_not_on_curve)
         {
             EXPECT_FALSE(result);
         });
-    onPublicKeyXCalculated(application::EllipticCurveOperations::ComparisonResult::aLessThanB);
-    onPublicKeyYCalculated(application::EllipticCurveOperations::ComparisonResult::aLessThanB);
-    onCheckPointOnCurveFinished(application::EllipticCurveOperations::PointOnCurveResult::pointNotOnCurve);
+    onPublicKeyXCalculated(services::EllipticCurveOperations::ComparisonResult::aLessThanB);
+    onPublicKeyYCalculated(services::EllipticCurveOperations::ComparisonResult::aLessThanB);
+    onCheckPointOnCurveFinished(services::EllipticCurveOperations::PointOnCurveResult::pointNotOnCurve);
 }
 
 TEST_F(EllipticCurveDiffieHellmanTest, calculate_shared_secret_key_successfully)
 {
-    infra::Function<void(application::EllipticCurveOperations::ComparisonResult)> onPublicKeyXCalculated;
-    infra::Function<void(application::EllipticCurveOperations::ComparisonResult)> onPublicKeyYCalculated;
-    infra::Function<void(application::EllipticCurveOperations::PointOnCurveResult)> onCheckPointOnCurveFinished;
+    infra::Function<void(services::EllipticCurveOperations::ComparisonResult)> onPublicKeyXCalculated;
+    infra::Function<void(services::EllipticCurveOperations::ComparisonResult)> onPublicKeyYCalculated;
+    infra::Function<void(services::EllipticCurveOperations::PointOnCurveResult)> onCheckPointOnCurveFinished;
     infra::Function<void(infra::ConstByteRange, infra::ConstByteRange)> onScalarMultiplicationFinished;
 
     ::testing::InSequence _;
@@ -137,8 +137,8 @@ TEST_F(EllipticCurveDiffieHellmanTest, calculate_shared_secret_key_successfully)
             EXPECT_TRUE(result);
             EXPECT_TRUE(sharedSecretKeyGenerated == sharedSecretKeyExpected);
         });
-    onPublicKeyXCalculated(application::EllipticCurveOperations::ComparisonResult::aLessThanB);
-    onPublicKeyYCalculated(application::EllipticCurveOperations::ComparisonResult::aLessThanB);
-    onCheckPointOnCurveFinished(application::EllipticCurveOperations::PointOnCurveResult::pointOnCurve);
+    onPublicKeyXCalculated(services::EllipticCurveOperations::ComparisonResult::aLessThanB);
+    onPublicKeyYCalculated(services::EllipticCurveOperations::ComparisonResult::aLessThanB);
+    onCheckPointOnCurveFinished(services::EllipticCurveOperations::PointOnCurveResult::pointOnCurve);
     onScalarMultiplicationFinished(infra::MakeRange(this->sharedSecretKeyExpected), infra::ConstByteRange());
 }

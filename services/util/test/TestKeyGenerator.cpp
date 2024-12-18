@@ -9,9 +9,9 @@ namespace
         : public testing::Test
     {
     public:
-        testing::StrictMock<application::EllipticCurveOperationsMock> eccMock;
-        application::EllipticCurveExtendedParameters curveStub;
-        application::KeyGenerator keyGenerator{ eccMock };
+        testing::StrictMock<services::EllipticCurveOperationsMock> eccMock;
+        services::EllipticCurveExtendedParameters curveStub;
+        services::KeyGenerator keyGenerator{ eccMock };
         // clang-format off
         std::array<uint8_t, 32> privateKey{
             0xbd, 0x46, 0x7c, 0x77, 0xf8, 0xb5, 0xf9, 0xff,
