@@ -10,15 +10,8 @@
     "vscode": {
       "settings": {
         "C_Cpp.autoAddFileAssociations": false,
-        "C_Cpp.intelliSenseEngine": "disabled",
-        "clangd.arguments": [
-          "--query-driver=/opt/**/arm-none-eabi-*",
-          "--compile-commands-dir=${workspaceFolder}/build"
-        ],
-        "cmake.copyCompileCommands": "${workspaceFolder}/build/compile_commands.json",
         "cmake.statusbar.visibility": "default",
-        "cmake.useProjectStatusView": false,
-        "sonarlint.pathToCompileCommands": "${workspaceFolder}/build/compile_commands.json"
+        "cmake.useProjectStatusView": false
       }
     }
   }

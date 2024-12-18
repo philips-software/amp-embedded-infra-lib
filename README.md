@@ -57,7 +57,7 @@ Documentation is available on [philips-software.github.io/amp-embedded-infra-lib
 
 amp-embedded-infra-lib uses semantic versioning and conventional commits.
 
-Please refer to our [Contributing](CONTRIBUTING.md) guide when you want to contribute to this project.
+Please refer to our [Contributing](.github/CONTRIBUTING.md) guide when you want to contribute to this project.
 
 ## License
 

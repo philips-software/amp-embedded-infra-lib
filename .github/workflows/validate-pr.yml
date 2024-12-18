@@ -3,16 +3,44 @@ name: Validate Pull-Request
 
 on:
   pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
-  conventional_commit:
+  validate-pr-title:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
-      - uses: Namchee/conventional-pr@497c801eb96ea7484971691e76f254886e3e1f32 # v0.15.5
+      - uses: amannn/action-semantic-pull-request@0723387faaf9b38adef4775cd42cfd5155ed6017 # v5.5.3
+        id: pr-title
         with:
-          access_token: ${{ secrets.GITHUB_TOKEN }}
-          body: false
-          issue: false
+          subjectPattern: ^(?![A-Z]).+$
+          subjectPatternError: |
+            The subject "{subject}" found in the pull request title "{title}"
+            didn't match the configured pattern. Please ensure that the subject
+            doesn't start with an uppercase character.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: marocchino/sticky-pull-request-comment@331f8f5b4215f0445d3c07b4967662a32a2d3e31 # v2.9.0
+        if: always() && steps.pr-title.outputs.error_message != null
+        with:
+          header: pr-title-lint-error
+          message: |
+            Hey there and thank you for opening this pull request! 👋🏼
+
+            We require pull request titles to follow the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/) and it looks like your proposed title needs to be adjusted.
+
+            :warning: Details
+
+            ${{ steps.pr-title.outputs.error_message }}
+
+      - if: steps.pr-title.outputs.error_message == null
+        uses: marocchino/sticky-pull-request-comment@331f8f5b4215f0445d3c07b4967662a32a2d3e31 # v2.9.0
+        with:
+          header: pr-title-lint-error
+          delete: true
