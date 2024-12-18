@@ -3,7 +3,7 @@
 
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/PolymorphicVariant.hpp"
-#include "rcm/interfaces/EllipticCurve.hpp"
+#include "services/util/EllipticCurve.hpp"
 
 namespace services
 {
