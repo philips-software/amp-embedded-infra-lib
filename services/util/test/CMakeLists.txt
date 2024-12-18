@@ -25,6 +25,7 @@ target_sources(services.util_test PRIVATE
     TestDebugLed.cpp
     TestEchoOnSesame.cpp
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestEchoOnSesameSymmetricKey.cpp>
+    TestEllipticCurveDiffieHellman.cpp
     TestFlashAlign.cpp
     TestFlashMultipleAccess.cpp
     TestFlashQuadSpiCypressFll.cpp
@@ -32,6 +33,7 @@ target_sources(services.util_test PRIVATE
     TestFlashQuadSpiSingleSpeed.cpp
     TestFlashRegion.cpp
     TestFlashSpi.cpp
+    TestKeyGenerator.cpp
     TestI2cMultipleAccess.cpp
     TestInverseLogicPin.cpp
     TestLowPowerSerialCommunication.cpp
