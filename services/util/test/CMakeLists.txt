@@ -18,6 +18,7 @@ target_link_libraries(services.util_test PUBLIC
 )
 
 target_sources(services.util_test PRIVATE
+    TestAesCmac.cpp
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestAesMbedTls.cpp>
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestConfigurationStore.cpp>
     TestCyclicStore.cpp
