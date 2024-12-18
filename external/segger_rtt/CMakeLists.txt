@@ -2,8 +2,6 @@ FetchContent_Declare(
     segger_rtt
     GIT_REPOSITORY https://github.com/SEGGERMicro/RTT
     GIT_TAG ff57c3d516ea59b0a2d4d5cafb33a48572b09c0b # v7.54
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
 )
 
 FetchContent_MakeAvailable(segger_rtt)
