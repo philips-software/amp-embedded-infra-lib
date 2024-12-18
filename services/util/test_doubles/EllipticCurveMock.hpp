@@ -1,7 +1,7 @@
 #ifndef SERVICES_TEST_DOUBLES_ELLIPTIC_CURVE_MOCK_HPP
 #define SERVICES_TEST_DOUBLES_ELLIPTIC_CURVE_MOCK_HPP
 
-#include "rservices/util/EllipticCurve.hpp"
+#include "services/util/EllipticCurve.hpp"
 #include <gmock/gmock.h>
 
 namespace services
