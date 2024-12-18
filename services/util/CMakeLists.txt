@@ -12,6 +12,8 @@ target_link_libraries(services.util PUBLIC
 
 target_sources(services.util PRIVATE
     Aes.hpp
+    AesCmac.cpp
+    AesCmac.hpp
     ConfigurationStore.cpp
     ConfigurationStore.hpp
     CyclicStore.cpp
