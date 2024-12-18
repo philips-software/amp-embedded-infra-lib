@@ -43,7 +43,7 @@ class TerminalTest
     : public TerminalTestBase
 {
 protected:
-    services::Terminal terminal{ communication, tracer };
+    services::Terminal::WithMaxQueueAndMaxBufferAndMaxHistory<> terminal{ communication, tracer };
 };
 
 class TerminalCommandsStub
@@ -72,7 +72,7 @@ class TerminalWithCommandsTest
     : public TerminalTestBase
 {
 protected:
-    services::TerminalWithCommandsImpl terminal{ communication, tracer };
+    services::TerminalWithCommandsImpl::WithMaxQueueAndMaxBufferAndMaxHistory<> terminal{ communication, tracer };
     TerminalCommandsStub commands{ terminal };
 };
 
