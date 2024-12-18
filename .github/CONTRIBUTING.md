@@ -31,9 +31,49 @@ Submitting your first contribution (or Pull Request) can be scary, but we promis
 
 **Contributing to open source for the first time can be scary and a little overwhelming.** Perhaps you’re a [Code Newbie](https://www.codenewbie.org/) or maybe you’ve been coding for a while but haven’t found a project you felt comfortable contributing to. [You can do it; here's how.](https://www.firsttimersonly.com/)
 
+### Naming a Pull Request (PR)
+
+The title of your Pull Request (PR) should follow the style of [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/). Not only does this present a standardized categorization of the kind of work done on a pull request, but it also instructs the release workflow to increment the correct level of the version according to the rules of [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+The format of the title of the pull request is this:
+
+ `<type>[(optional scope)][!]: <description>`
+
+The `<type>` of the pull request is one of these, taken from [conventional commit types](https://github.com/commitizen/conventional-commit-types):
+
+- `feat:` a new feature
+- `fix:` a bug fix
+- `docs:` documentation only changes
+- `style:` changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+- `refactor:` a code change that neither fixes a bug nor adds a feature
+- `perf:` a code change that improves performance
+- `test:` adding missing tests or correcting existing tests
+- `build:` changes that affect the build system or external dependencies
+- `ci:` changes to our CI configuration files and scripts
+- `chore:` other changes that don't modify source or test files
+- `revert:` reverts a previous commit
+
+An exclamation mark `!` is added to the type if the change is not backwards compatible. This should only be added to `feat` or `fix`.
+
+> [!NOTE]
+> We do not enforce conventional commits for individual commit messages, only for the title of your pull request.
+
+Examples:
+
+- `feat: add required-tool to devcontainer`
+
+   This pull request adds the "required-tool" to the devcontainer because everybody want to use it.
+
+- `fix!: escape fe ff in binary ports`
+
+   This pull request fixes binary ports, and indicates that this is a backwards-incompatible change.
+
+> [!TIP]
+> If your work consists of a single commit, creating a pull request will default to the name of that commit. If you use conventional commit style for that single commit, your pull request already has the correct name.
+
 ### Full example
 
-Make sure you have all development dependencies installed. E.g. [CMake](https://cmake.org/) version >= 3.8. A modern C++ compiler that supports C++11.
+Make sure you have all development dependencies installed as described in the [README](https://github.com/philips-software/amp-embedded-infra-lib?tab=readme-ov-file).
 
 #### Preparing your Fork
 
@@ -61,7 +101,8 @@ Make sure you have all development dependencies installed. E.g. [CMake](https://
 
 ## How to report a bug
 
-If you find a security vulnerability, do NOT open an issue. Email one of the [maintainers](./CODEOWNERS) instead.
+If you discover a vulnerability in our software, please refer to the [security policy](https://github.com/philips-software/amp-embedded-infra-lib?tab=security-ov-file) and report it appropriately.
+Do not submit an issue, unless asked to.
 
 In order to determine whether you are dealing with a security issue, ask yourself these two questions:
 * Can I access something that's not mine, or something I shouldn't have access to?
