@@ -221,7 +221,7 @@ service GapCentral
     rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 11; }
     rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 12; }
     rpc ResolveDeviceAddress(Address) returns (Nothing) { option (method_id) = 13; }
-    rpc IsDeviceBounded(Address) returns (Nothing) { option (method_id) = 14; }
+    rpc IsDeviceBonded(Address) returns (Nothing) { option (method_id) = 14; }
 }
 
 service GapPeripheralResponse
@@ -247,5 +247,5 @@ service GapCentralResponse
     rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
     rpc DeviceStarted(Nothing) returns (Nothing) { option (method_id) = 7; }
     rpc ResolveDeviceAddress(Address) returns (Nothing) { option (method_id) = 8; }
-    rpc IsDeviceBounded(Address) returns (Nothing) { option (method_id) = 9; }
+    rpc IsDeviceBonded(Address) returns (Nothing) { option (method_id) = 9; }
 }
