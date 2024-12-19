@@ -4,9 +4,12 @@
 #include "hal/generic/TimerServiceGeneric.hpp"
 #include "infra/syntax/ProtoFormatter.hpp"
 #include "infra/syntax/ProtoParser.hpp"
+#include "protobuf/meta_services/PeerServiceDiscoverer.hpp"
 #include "protobuf/protoc_echo_plugin/EchoObjects.hpp"
 #include "services/network_instantiations/NetworkAdapter.hpp"
+#include <cstdint>
 #include <thread>
+#include <vector>
 
 namespace application
 {
@@ -192,6 +195,7 @@ namespace application
         services::ConnectionFactory& ConnectionFactory();
         services::NameResolver& NameResolver();
         void DataReceived(infra::StreamReader& reader);
+        void ServicesDiscovered(infra::MemoryRange<uint32_t> services);
 
     private:
         struct Empty
@@ -253,6 +257,7 @@ namespace application
         std::condition_variable condition;
         bool processDone = false;
         std::string receivedData;
+        std::vector<uint32_t> discoveredServices;
     };
 
     namespace ConsoleExceptions
