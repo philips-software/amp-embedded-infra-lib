@@ -14,7 +14,7 @@ namespace services
         MOCK_METHOD(void, RemoveOldestBond, ());
         MOCK_METHOD(std::size_t, GetMaxNumberOfBonds, (), (const));
         MOCK_METHOD(std::size_t, GetNumberOfBonds, (), (const));
-        MOCK_METHOD(bool, IsDeviceBounded, (hal::MacAddress deviceAddress), (const));
+        MOCK_METHOD(bool, IsDeviceBonded, (hal::MacAddress deviceAddress), (const));
     };
 }
 
