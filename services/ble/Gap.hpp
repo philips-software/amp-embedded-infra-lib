@@ -5,6 +5,7 @@
 #include "infra/timer/Timer.hpp"
 #include "infra/util/EnumCast.hpp"
 #include "infra/util/Observer.hpp"
+#include "infra/util/Optional.hpp"
 
 namespace services
 {
@@ -319,7 +320,7 @@ namespace services
         virtual void SetAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) = 0;
         virtual void StartDeviceDiscovery() = 0;
         virtual void StopDeviceDiscovery() = 0;
-        virtual hal::MacAddress ResolveDeviceAddress(hal::MacAddress deviceAddress) const = 0;
+        virtual infra::Optional<hal::MacAddress> ResolveDeviceAddress(hal::MacAddress deviceAddress) const = 0;
     };
 
     class GapCentralDecorator
@@ -340,7 +341,7 @@ namespace services
         void SetAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) override;
         void StartDeviceDiscovery() override;
         void StopDeviceDiscovery() override;
-        hal::MacAddress ResolveDeviceAddress(hal::MacAddress deviceAddress) const override;
+        infra::Optional<hal::MacAddress> ResolveDeviceAddress(hal::MacAddress deviceAddress) const override;
     };
 }
 

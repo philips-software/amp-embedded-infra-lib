@@ -183,7 +183,7 @@ namespace services
         GapCentralObserver::Subject().StopDeviceDiscovery();
     }
 
-    hal::MacAddress GapCentralDecorator::ResolveDeviceAddress(hal::MacAddress deviceAddress) const
+    infra::Optional<hal::MacAddress> GapCentralDecorator::ResolveDeviceAddress(hal::MacAddress deviceAddress) const
     {
         return GapCentralObserver::Subject().ResolveDeviceAddress(deviceAddress);
     }
