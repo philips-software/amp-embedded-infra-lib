@@ -2,8 +2,6 @@ FetchContent_Declare(
     microecc
     GIT_REPOSITORY https://github.com/kmackay/micro-ecc
     GIT_TAG 24c60e243580c7868f4334a1ba3123481fe1aa48 # v1.1
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
 )
 
 FetchContent_MakeAvailable(microecc)
