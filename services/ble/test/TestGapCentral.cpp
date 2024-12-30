@@ -79,6 +79,13 @@ namespace services
 
         EXPECT_CALL(gap, StopDeviceDiscovery());
         decorator.StopDeviceDiscovery();
+
+        hal::MacAddress mac = { 0x00, 0x1A, 0x7D, 0xDA, 0x71, 0x13 };
+        EXPECT_CALL(gap, ResolveDeviceAddress(mac)).WillOnce(testing::Return(infra::none));
+        EXPECT_EQ(decorator.ResolveDeviceAddress(mac), infra::none);
+
+        EXPECT_CALL(gap, ResolveDeviceAddress(mac)).WillOnce(testing::Return(infra::MakeOptional(mac)));
+        EXPECT_EQ(decorator.ResolveDeviceAddress(mac), mac);
     }
 
     TEST(GapAdvertisingDataParserTest, payload_too_small)
