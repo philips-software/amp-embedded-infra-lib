@@ -1,7 +1,6 @@
 #include "hal/interfaces/test_doubles/SerialCommunicationMock.hpp"
 #include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
 #include "infra/stream/OutputStream.hpp"
-#include "infra/util/Optional.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/util/Terminal.hpp"
@@ -43,14 +42,16 @@ class TerminalTest
     : public TerminalTestBase
 {
 protected:
-    services::Terminal terminal{ communication, tracer };
+    services::Terminal::WithMaxQueueAndMaxHistory<> terminal{ communication, tracer };
 };
 
 class TerminalCommandsStub
     : public services::TerminalCommands
 {
 public:
-    TerminalCommandsStub(services::TerminalWithCommands& terminal)
+    using services::TerminalCommands::TerminalCommands;
+
+    explicit TerminalCommandsStub(services::TerminalWithCommands& terminal)
         : services::TerminalCommands(terminal)
     {}
 
@@ -72,7 +73,7 @@ class TerminalWithCommandsTest
     : public TerminalTestBase
 {
 protected:
-    services::TerminalWithCommandsImpl terminal{ communication, tracer };
+    services::TerminalWithCommandsImpl::WithMaxQueueAndMaxHistory<> terminal{ communication, tracer };
     TerminalCommandsStub commands{ terminal };
 };
 

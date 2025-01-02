@@ -3,12 +3,13 @@
 
 namespace services
 {
-    Terminal::Terminal(hal::SerialCommunication& communication, services::Tracer& tracer)
-        : tracer(tracer)
-        , queue([this]
+    Terminal::Terminal(infra::MemoryRange<uint8_t> bufferQueue, infra::BoundedDeque<infra::BoundedString::WithStorage<MaxBuffer>>& history, hal::SerialCommunication& communication, services::Tracer& tracer)
+        : queue(bufferQueue, [this]
               {
                   HandleInput();
               })
+        , history(history)
+        , tracer(tracer)
     {
         communication.ReceiveData([this](infra::ConstByteRange data)
             {
@@ -212,7 +213,7 @@ namespace services
     void Terminal::OverwriteBuffer(infra::BoundedConstString element)
     {
         std::size_t previousSize = buffer.size();
-        buffer = element;
+        buffer.assign(element);
 
         tracer.Continue() << '\r';
         Print(state.prompt);
@@ -283,8 +284,8 @@ namespace services
             return false;
     }
 
-    TerminalWithCommandsImpl::TerminalWithCommandsImpl(hal::SerialCommunication& communication, services::Tracer& tracer)
-        : services::Terminal(communication, tracer)
+    TerminalWithCommandsImpl::TerminalWithCommandsImpl(infra::MemoryRange<uint8_t> bufferQueue, infra::BoundedDeque<infra::BoundedString::WithStorage<MaxBuffer>>& history, hal::SerialCommunication& communication, services::Tracer& tracer)
+        : services::Terminal(bufferQueue, history, communication, tracer)
     {}
 
     void TerminalWithCommandsImpl::OnData(infra::BoundedConstString data)
