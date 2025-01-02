@@ -9,6 +9,9 @@ target_link_libraries(hal.interfaces_test_doubles PRIVATE
 )
 
 target_sources(hal.interfaces_test_doubles PRIVATE
+    AdcMultiChannelMock.hpp
+    AdcMultiChannelStub.cpp
+    AdcMultiChannelStub.hpp
     AnalogToDigitalPinImplMock.hpp
     CommunicationConfiguratorMock.hpp
     DigitalToAnalogPinImplMock.hpp

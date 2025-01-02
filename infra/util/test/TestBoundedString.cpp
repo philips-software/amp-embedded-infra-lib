@@ -587,6 +587,9 @@ TEST(BoundedStringTest, TestCopy)
     infra::BoundedString::WithStorage<5> string("abcde");
     EXPECT_EQ(3, string.copy(buffer, 3, 1));
     EXPECT_EQ('b', buffer[0]);
+
+    EXPECT_EQ(2, string.copy(buffer, 5, 3));
+    EXPECT_EQ('d', buffer[0]);
 }
 
 TEST(BoundedStringTest, TestResize)

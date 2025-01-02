@@ -54,6 +54,9 @@ namespace services
 
         void BodyComplete();
 
+    protected:
+        virtual void BodyReaderAvailable(infra::SharedPtr<infra::CountingStreamReaderWithRewinding>&& bodyReader);
+
     private:
         void ExpectResponse();
         void HandleData();
@@ -73,8 +76,8 @@ namespace services
             BodyReader(const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader, uint32_t contentLength);
 
             infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
-            infra::LimitedStreamReader limitedReader;
-            infra::CountingStreamReader countingReader{ limitedReader };
+            infra::LimitedStreamReaderWithRewinding limitedReader;
+            infra::CountingStreamReaderWithRewinding countingReader{ limitedReader };
         };
 
         class SendingState
