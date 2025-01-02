@@ -3,12 +3,11 @@
 
 namespace services
 {
-    Terminal::Terminal(infra::MemoryRange<uint8_t> bufferQueue, infra::BoundedString& internalBuffer, infra::BoundedDeque<infra::BoundedString>& history, hal::SerialCommunication& communication, services::Tracer& tracer)
+    Terminal::Terminal(infra::MemoryRange<uint8_t> bufferQueue, infra::BoundedDeque<infra::BoundedString::WithStorage<MaxBuffer>>& history, hal::SerialCommunication& communication, services::Tracer& tracer)
         : queue(bufferQueue, [this]
               {
                   HandleInput();
               })
-        , buffer(internalBuffer)
         , history(history)
         , tracer(tracer)
     {
@@ -285,8 +284,8 @@ namespace services
             return false;
     }
 
-    TerminalWithCommandsImpl::TerminalWithCommandsImpl(infra::MemoryRange<uint8_t> bufferQueue, infra::BoundedString& internalBuffer, infra::BoundedDeque<infra::BoundedString>& history, hal::SerialCommunication& communication, services::Tracer& tracer)
-        : services::Terminal(bufferQueue, internalBuffer, history, communication, tracer)
+    TerminalWithCommandsImpl::TerminalWithCommandsImpl(infra::MemoryRange<uint8_t> bufferQueue, infra::BoundedDeque<infra::BoundedString::WithStorage<MaxBuffer>>& history, hal::SerialCommunication& communication, services::Tracer& tracer)
+        : services::Terminal(bufferQueue, history, communication, tracer)
     {}
 
     void TerminalWithCommandsImpl::OnData(infra::BoundedConstString data)

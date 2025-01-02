@@ -14,10 +14,12 @@ namespace services
     class Terminal
     {
     public:
-        template<std::size_t MaxQueueSize = 32, std::size_t MaxBuffer = 256, std::size_t MaxHistory = 4>
-        using WithMaxQueueAndMaxBufferAndMaxHistory = infra::WithStorage<infra::WithStorage<infra::WithStorage<Terminal, std::array<uint8_t, MaxQueueSize + 1>>, infra::BoundedString::WithStorage<MaxBuffer>>, infra::BoundedDeque<infra::BoundedString>::WithMaxSize<MaxHistory>>;
+        constexpr static std::size_t MaxBuffer = 256;
 
-        explicit Terminal(infra::MemoryRange<uint8_t> bufferQueue, infra::BoundedString& internalBuffer, infra::BoundedDeque<infra::BoundedString>& history, hal::SerialCommunication& communication, services::Tracer& tracer);
+        template<std::size_t MaxQueueSize = 32, std::size_t MaxHistory = 4>
+        using WithMaxQueueAndMaxHistory = infra::WithStorage<infra::WithStorage<Terminal, std::array<uint8_t, MaxQueueSize + 1>>, infra::BoundedDeque<infra::BoundedString::WithStorage<MaxBuffer>>::WithMaxSize<MaxHistory>>;
+
+        explicit Terminal(infra::MemoryRange<uint8_t> bufferQueue, infra::BoundedDeque<infra::BoundedString::WithStorage<MaxBuffer>>& history, hal::SerialCommunication& communication, services::Tracer& tracer);
 
         void Print(const char* message);
 
@@ -59,8 +61,8 @@ namespace services
 
     private:
         infra::QueueForOneReaderOneIrqWriter<uint8_t> queue;
-        infra::BoundedString& buffer;
-        infra::BoundedDeque<infra::BoundedString>& history;
+        infra::BoundedString::WithStorage<MaxBuffer> buffer;
+        infra::BoundedDeque<decltype(buffer)>& history;
         TerminalState state;
         services::Tracer& tracer;
     };
@@ -111,10 +113,10 @@ namespace services
         , public Terminal
     {
     public:
-        template<std::size_t MaxQueueSize = 32, std::size_t MaxBuffer = 256, std::size_t MaxHistory = 4>
-        using WithMaxQueueAndMaxBufferAndMaxHistory = infra::WithStorage<infra::WithStorage<infra::WithStorage<TerminalWithCommandsImpl, std::array<uint8_t, MaxQueueSize + 1>>, infra::BoundedString::WithStorage<MaxBuffer>>, infra::BoundedDeque<infra::BoundedString>::WithMaxSize<MaxHistory>>;
+        template<std::size_t MaxQueueSize = 32, std::size_t MaxHistory = 4>
+        using WithMaxQueueAndMaxHistory = infra::WithStorage<infra::WithStorage<TerminalWithCommandsImpl, std::array<uint8_t, MaxQueueSize + 1>>, infra::BoundedDeque<infra::BoundedString::WithStorage<MaxBuffer>>::WithMaxSize<MaxHistory>>;
 
-        TerminalWithCommandsImpl(infra::MemoryRange<uint8_t> bufferQueue, infra::BoundedString& internalBuffer, infra::BoundedDeque<infra::BoundedString>& history, hal::SerialCommunication& communication, services::Tracer& tracer);
+        TerminalWithCommandsImpl(infra::MemoryRange<uint8_t> bufferQueue, infra::BoundedDeque<infra::BoundedString::WithStorage<MaxBuffer>>& history, hal::SerialCommunication& communication, services::Tracer& tracer);
 
     private:
         void OnData(infra::BoundedConstString data) override;
