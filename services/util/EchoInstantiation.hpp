@@ -7,7 +7,7 @@
 #include "infra/util/BoundedVector.hpp"
 #include "protobuf/echo/ServiceForwarder.hpp"
 #include "services/util/EchoOnMessageCommunication.hpp"
-#include "services/util/EchoOnSesameSymmetricKey.hpp"
+#include "services/util/EchoOnSesame.hpp"
 #include "services/util/MessageCommunicationCobs.hpp"
 #include "services/util/MessageCommunicationWindowed.hpp"
 #include "services/util/SesameCobs.hpp"
