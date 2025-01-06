@@ -5,6 +5,7 @@
 #include "services/tracer/Tracer.hpp"
 #include "services/util/EchoInstantiation.hpp"
 #include "services/util/SesameCobs.hpp"
+#include "services/util/SesameSecured.hpp"
 #include "services/util/SesameWindowed.hpp"
 #include "services/util/TracingEchoOnSesame.hpp"
 
@@ -36,6 +37,37 @@ namespace main_
 
         services::SesameCobs::WithMaxMessageSize<MessageSize> cobs;
         services::SesameWindowed windowed{ cobs };
+        services::TracingEchoOnSesame echo;
+    };
+
+    template<std::size_t MessageSize>
+    struct TracingEchoOnSesameSecured
+    {
+        TracingEchoOnSesameSecured(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::SesameSecured::KeyMaterial& keyMaterial, services::Tracer& tracer)
+            : cobs(serialCommunication)
+            , secured(windowed, keyMaterial)
+            , echo(serializerFactory, services::echoErrorPolicyAbortOnMessageFormatError, tracer, secured)
+        {}
+
+        ~TracingEchoOnSesameSecured()
+        {
+            cobs.Stop();
+            windowed.Stop();
+        }
+
+        operator services::Echo&()
+        {
+            return echo;
+        }
+
+        void Reset()
+        {
+            echo.Reset();
+        }
+
+        services::SesameCobs::WithMaxMessageSize<MessageSize> cobs;
+        services::SesameWindowed windowed{ cobs };
+        services::SesameSecured::WithBuffers<MessageSize> secured;
         services::TracingEchoOnSesame echo;
     };
 
