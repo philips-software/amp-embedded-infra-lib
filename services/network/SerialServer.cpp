@@ -12,6 +12,7 @@ namespace services
     {
         serialCommunication.ReceiveData([this](infra::ConstByteRange buffer)
             {
+                really_assert(!receiveQueue.Full());
                 receiveQueue.AddFromInterrupt(buffer);
             });
     }
