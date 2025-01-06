@@ -62,7 +62,7 @@ public:
     std::array<uint8_t, services::SesameSecured::keySize> key{ 1, 2 };
     std::array<uint8_t, services::SesameSecured::blockSize> iv{ 1, 3 };
     services::SesameSecured::WithBuffers<64> secured{ lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
-    services::EchoOnSesameSymmetricKey echo{ secured, serializerFactory, randomDataGenerator, errorPolicy };
+    services::EchoOnSesameSymmetricKey echo{ secured, randomDataGenerator, serializerFactory, errorPolicy };
 
     services::ServiceStubProxy serviceProxy{ echo };
     testing::StrictMock<services::ServiceStub> service{ echo };

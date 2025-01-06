@@ -43,10 +43,10 @@ namespace main_
     template<std::size_t MessageSize>
     struct TracingEchoOnSesameSecured
     {
-        TracingEchoOnSesameSecured(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::SesameSecured::KeyMaterial& keyMaterial, services::Tracer& tracer)
+        TracingEchoOnSesameSecured(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::SesameSecured::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator, services::Tracer& tracer)
             : cobs(serialCommunication)
             , secured(windowed, keyMaterial)
-            , echo(serializerFactory, services::echoErrorPolicyAbortOnMessageFormatError, tracer, secured)
+            , echo(serializerFactory, services::echoErrorPolicyAbortOnMessageFormatError, tracer, secured, randomDataGenerator)
         {}
 
         ~TracingEchoOnSesameSecured()
@@ -68,7 +68,7 @@ namespace main_
         services::SesameCobs::WithMaxMessageSize<MessageSize> cobs;
         services::SesameWindowed windowed{ cobs };
         services::SesameSecured::WithBuffers<MessageSize> secured;
-        services::TracingEchoOnSesame echo;
+        services::TracingEchoOnStreamsDescendant<services::EchoOnSesameSymmetricKey> echo;
     };
 
 #ifdef EMIL_HAL_GENERIC
