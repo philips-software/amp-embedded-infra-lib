@@ -100,6 +100,8 @@ if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
     target_sources(services.util PRIVATE
         AesMbedTls.cpp
         AesMbedTls.hpp
+        EchoInstantiationSecured.cpp
+        EchoInstantiationSecured.hpp
         EchoOnSesameSymmetricKey.cpp
         EchoOnSesameSymmetricKey.hpp
         SesameSecured.cpp
