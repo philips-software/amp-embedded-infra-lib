@@ -10,27 +10,48 @@ namespace hal
     class Can
     {
     public:
-        class Id
+        class [[nodiscard]] Id
         {
         public:
-            static constexpr Id Create11BitId(uint32_t id)
+            [[nodiscard]] static constexpr Id Create11BitId(uint32_t id)
             {
                 return Can::Id(id);
             }
 
-            static constexpr Id Create29BitId(uint32_t id)
+            [[nodiscard]] static constexpr Id Create29BitId(uint32_t id)
             {
                 return Can::Id(id | indicator29Bit);
             }
 
-            bool Is11BitId() const;
-            bool Is29BitId() const;
+            [[nodiscard]] constexpr bool Is11BitId() const
+            {
+                return (id & indicator29Bit) == 0;
+            }
 
-            uint32_t Get11BitId() const;
-            uint32_t Get29BitId() const;
+            [[nodiscard]] constexpr bool Is29BitId() const
+            {
+                return !Is11BitId();
+            }
 
-            bool operator==(const Id& other) const;
-            bool operator!=(const Id& other) const;
+            [[nodiscard]] constexpr uint32_t Get11BitId() const
+            {
+                return id;
+            }
+
+            [[nodiscard]] constexpr uint32_t Get29BitId() const
+            {
+                return id ^ indicator29Bit;
+            }
+
+            [[nodiscard]] constexpr bool operator==(const Id& other) const
+            {
+                return id == other.id;
+            }
+
+            [[nodiscard]] constexpr bool operator!=(const Id& other) const
+            {
+                return !(*this == other);
+            }
 
         private:
             constexpr explicit Id(uint32_t id)
@@ -38,7 +59,7 @@ namespace hal
             {}
 
         private:
-            static const uint32_t indicator29Bit = static_cast<uint32_t>(1) << 31;
+            static constexpr uint32_t indicator29Bit{ 1u << 31 };
 
             uint32_t id;
         };
