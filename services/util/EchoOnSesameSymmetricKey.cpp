@@ -14,7 +14,7 @@ namespace services
         }
     }
 
-    EchoOnSesameSymmetricKey::EchoOnSesameSymmetricKey(SesameSecured& secured, MethodSerializerFactory& serializerFactory, hal::SynchronousRandomDataGenerator& randomDataGenerator, const EchoErrorPolicy& errorPolicy)
+    EchoOnSesameSymmetricKey::EchoOnSesameSymmetricKey(SesameSecured& secured, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy)
         : EchoOnSesame(secured, serializerFactory, errorPolicy)
         , SymmetricKeyEstablishment(static_cast<services::Echo&>(*this))
         , SymmetricKeyEstablishmentProxy(static_cast<services::Echo&>(*this))

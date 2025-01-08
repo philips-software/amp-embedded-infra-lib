@@ -7,13 +7,19 @@
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/Observer.hpp"
 #include "services/tracer/Tracer.hpp"
+#include <cstddef>
 
 namespace services
 {
     class Terminal
     {
     public:
-        explicit Terminal(hal::SerialCommunication& communication, services::Tracer& tracer);
+        constexpr static std::size_t MaxBuffer = 256;
+
+        template<std::size_t MaxQueueSize = 32, std::size_t MaxHistory = 4>
+        using WithMaxQueueAndMaxHistory = infra::WithStorage<infra::WithStorage<Terminal, std::array<uint8_t, MaxQueueSize + 1>>, infra::BoundedDeque<infra::BoundedString::WithStorage<MaxBuffer>>::WithMaxSize<MaxHistory>>;
+
+        explicit Terminal(infra::MemoryRange<uint8_t> bufferQueue, infra::BoundedDeque<infra::BoundedString::WithStorage<MaxBuffer>>& history, hal::SerialCommunication& communication, services::Tracer& tracer);
 
         void Print(const char* message);
 
@@ -54,11 +60,11 @@ namespace services
         };
 
     private:
+        infra::QueueForOneReaderOneIrqWriter<uint8_t> queue;
+        infra::BoundedString::WithStorage<MaxBuffer> buffer;
+        infra::BoundedDeque<decltype(buffer)>& history;
         TerminalState state;
         services::Tracer& tracer;
-        infra::QueueForOneReaderOneIrqWriter<uint8_t>::WithStorage<32> queue;
-        infra::BoundedString::WithStorage<256> buffer;
-        infra::BoundedDeque<decltype(buffer)>::WithMaxSize<4> history;
     };
 
     class TerminalWithCommands;
@@ -107,7 +113,10 @@ namespace services
         , public Terminal
     {
     public:
-        TerminalWithCommandsImpl(hal::SerialCommunication& communication, services::Tracer& tracer);
+        template<std::size_t MaxQueueSize = 32, std::size_t MaxHistory = 4>
+        using WithMaxQueueAndMaxHistory = infra::WithStorage<infra::WithStorage<TerminalWithCommandsImpl, std::array<uint8_t, MaxQueueSize + 1>>, infra::BoundedDeque<infra::BoundedString::WithStorage<MaxBuffer>>::WithMaxSize<MaxHistory>>;
+
+        TerminalWithCommandsImpl(infra::MemoryRange<uint8_t> bufferQueue, infra::BoundedDeque<infra::BoundedString::WithStorage<MaxBuffer>>& history, hal::SerialCommunication& communication, services::Tracer& tracer);
 
     private:
         void OnData(infra::BoundedConstString data) override;
