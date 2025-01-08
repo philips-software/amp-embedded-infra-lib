@@ -28,23 +28,23 @@ public:
 TEST_F(StreamWriterFileTest, WriteString)
 {
     {
-        infra::StreamWriterFile streamWriter(file);
+        infra::StreamWriterFile streamWriter{ file };
         streamWriter.Insert(infra::StdStringAsByteRange("Hello, world!"), noFailPolicy);
     }
 
-    std::ifstream fileStream(file);
-    std::string content((std::istreambuf_iterator<char>(fileStream)), std::istreambuf_iterator<char>());
+    std::ifstream fileStream{ file };
+    std::string content{ std::istreambuf_iterator<char>(fileStream), std::istreambuf_iterator<char>() };
     EXPECT_THAT(content, testing::StrEq("Hello, world!"));
 }
 
 TEST_F(StreamWriterFileTest, WriteDecimal)
 {
     {
-        infra::StreamWriterFile streamWriter(file);
+        infra::StreamWriterFile streamWriter{ file };
         streamWriter.Insert(infra::MakeByteRange(std::uint64_t{ 0xCCCCCCCCCCCCCCCC }), noFailPolicy);
     }
 
-    std::ifstream fileStream(file);
+    std::ifstream fileStream{ file };
     std::uint64_t actual{ 0xFFFFFFFFFFFFFFFF };
     fileStream.read(reinterpret_cast<char*>(&actual), sizeof(actual));
     EXPECT_THAT(fileStream.fail(), testing::Eq(false));
@@ -54,16 +54,16 @@ TEST_F(StreamWriterFileTest, WriteDecimal)
 TEST_F(StreamWriterFileTest, OverwriteExistingFile)
 {
     {
-        infra::StreamWriterFile streamWriter(file);
+        infra::StreamWriterFile streamWriter{ file };
         streamWriter.Insert(infra::StdStringAsByteRange("Hello"), noFailPolicy);
     }
 
     {
-        infra::StreamWriterFile streamWriter(file);
+        infra::StreamWriterFile streamWriter{ file };
         streamWriter.Insert(infra::StdStringAsByteRange("world!"), noFailPolicy);
     }
 
-    std::ifstream fileStream(file);
-    std::string content(std::istreambuf_iterator<char>(fileStream), std::istreambuf_iterator<char>());
+    std::ifstream fileStream{ file };
+    std::string content{ std::istreambuf_iterator<char>(fileStream), std::istreambuf_iterator<char>() };
     EXPECT_THAT(content, testing::StrEq("world!"));
 }
