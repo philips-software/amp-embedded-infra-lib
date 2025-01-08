@@ -14,8 +14,8 @@ namespace hal
         class [[nodiscard]] Id
         {
         public:
-            [[nodiscard]] static constexpr Id Create11BitId(uint32_t id);
-            [[nodiscard]] static constexpr Id Create29BitId(uint32_t id);
+            static constexpr Id Create11BitId(uint32_t id);
+            static constexpr Id Create29BitId(uint32_t id);
 
             [[nodiscard]] constexpr bool Is11BitId() const;
             [[nodiscard]] constexpr bool Is29BitId() const;
