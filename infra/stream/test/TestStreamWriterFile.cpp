@@ -64,6 +64,6 @@ TEST_F(StreamWriterFileTest, OverwriteExistingFile)
     }
 
     std::ifstream fileStream(file);
-    std::string content((std::istreambuf_iterator<char>(fileStream)), std::istreambuf_iterator<char>());
+    std::string content(std::istreambuf_iterator<char>(fileStream), std::istreambuf_iterator<char>());
     EXPECT_THAT(content, testing::StrEq("world!"));
 }
