@@ -11,11 +11,11 @@ target_link_libraries(hal.interfaces PUBLIC
 )
 
 target_sources(hal.interfaces PRIVATE
+    AdcMultiChannel.hpp
     AnalogToDigitalPin.hpp
     AsyncGpio.cpp
     AsyncGpio.hpp
     BackupRam.hpp
-    Can.cpp
     Can.hpp
     CommunicationConfigurator.hpp
     DigitalToAnalogPin.hpp
