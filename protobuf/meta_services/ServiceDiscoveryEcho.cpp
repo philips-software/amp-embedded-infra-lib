@@ -1,10 +1,7 @@
 #include "protobuf/meta_services/ServiceDiscoveryEcho.hpp"
 #include "echo/ServiceDiscovery.pb.hpp"
-#include "infra/event/EventDispatcher.hpp"
 #include "infra/util/Optional.hpp"
-#include "infra/util/ReallyAssert.hpp"
 #include "protobuf/echo/Echo.hpp"
-#include "services/tracer/GlobalTracer.hpp"
 #include <cstdint>
 #include <tuple>
 #include <utility>
@@ -189,16 +186,15 @@ namespace application
             if (!serviceChangeNotificationTimer.Armed())
                 serviceChangeNotificationTimer.Start(std::chrono::milliseconds(500), [this]
                     {
-                        if (!servicesChangedClaimer.IsQueued())
-                            servicesChangedClaimer.Claim([this]
-                                {
-                                    service_discovery::ServiceDiscoveryResponseProxy::RequestSend([this]
-                                        {
-                                            ServicesChanged(changedServices->first, changedServices->second);
-                                            changedServices = infra::none;
-                                            servicesChangedClaimer.Release();
-                                        });
-                                });
+                        servicesChangedClaimer.Claim([this]
+                            {
+                                service_discovery::ServiceDiscoveryResponseProxy::RequestSend([this]
+                                    {
+                                        ServicesChanged(changedServices->first, changedServices->second);
+                                        changedServices = infra::none;
+                                        servicesChangedClaimer.Release();
+                                    });
+                            });
                     });
         }
     }
