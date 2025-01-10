@@ -11,4 +11,5 @@ target_link_libraries(protobuf.meta_services_test PUBLIC
     gmock_main
     protobuf.test_doubles
     protobuf.meta_services
+    infra.timer_test_helper
 )

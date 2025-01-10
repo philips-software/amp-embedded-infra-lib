@@ -1,5 +1,5 @@
 #include "echo/ServiceDiscovery.pb.hpp"
-#include "infra/event/test_helper/EventDispatcherFixture.hpp"
+#include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/Optional.hpp"
 #include "protobuf/echo/Echo.hpp"
 #include "protobuf/echo/test_doubles/EchoSingleLoopback.hpp"
@@ -13,59 +13,6 @@
 
 namespace
 {
-    class RequestBlockingEchoDecorator
-        : public services::Echo
-    {
-    public:
-        RequestBlockingEchoDecorator(services::Echo& echo)
-            : echo(echo)
-        {}
-
-        void RegisterObserver(infra::Observer<services::Service, services::Echo>* observer) override
-        {
-            observer->Attach(echo);
-        }
-
-        void BlockRequest(bool block)
-        {
-            blocked = block;
-
-            if (!blocked && serviceProxy)
-            {
-                echo.RequestSend(**serviceProxy);
-                serviceProxy = infra::none;
-            }
-        }
-
-        void RequestSend(services::ServiceProxy& serviceProxy) override
-        {
-            if (blocked)
-                this->serviceProxy = &serviceProxy;
-            else
-                echo.RequestSend(serviceProxy);
-        }
-
-        void ServiceDone() override
-        {
-            echo.ServiceDone();
-        }
-
-        void CancelRequestSend(services::ServiceProxy& serviceProxy) override
-        {
-            echo.CancelRequestSend(serviceProxy);
-        }
-
-        services::MethodSerializerFactory& SerializerFactory() override
-        {
-            return echo.SerializerFactory();
-        }
-
-    private:
-        services::Echo& echo;
-        infra::Optional<services::ServiceProxy*> serviceProxy;
-        bool blocked = false;
-    };
-
     class ServiceDiscoveryResponseMock
         : public service_discovery::ServiceDiscoveryResponse
     {
@@ -99,16 +46,14 @@ namespace
 
 class ServiceDiscoveryTest
     : public testing::Test
-    , public infra::EventDispatcherFixture
+    , public infra::ClockFixture
 {
 public:
     services::MethodSerializerFactory::ForServices<service_discovery::ServiceDiscovery, service_discovery::ServiceDiscoveryResponse>::AndProxies<service_discovery::ServiceDiscoveryProxy> serializerFactory;
     application::EchoSingleLoopback echo{ serializerFactory };
     service_discovery::ServiceDiscoveryProxy proxy{ echo };
     testing::StrictMock<ServiceDiscoveryResponseMock> serviceDiscoveryResponse{ echo };
-
-    RequestBlockingEchoDecorator echoBlocking{ echo };
-    application::ServiceDiscoveryEcho serviceDiscoveryEcho{ echoBlocking };
+    application::ServiceDiscoveryEcho serviceDiscoveryEcho{ echo };
 
     void FindFirstServiceInRange(uint32_t startServiceId, uint32_t endServiceId)
     {
@@ -132,18 +77,20 @@ TEST_F(ServiceDiscoveryTest, return_no_service)
 {
     services::ServiceStub service5{ serviceDiscoveryEcho, 5 };
 
-    EXPECT_CALL(serviceDiscoveryResponse, NoServiceSupportedMock);
-
     FindFirstServiceInRange(0, 4);
+
+    EXPECT_CALL(serviceDiscoveryResponse, NoServiceSupportedMock);
+    ExecuteAllActions();
 }
 
 TEST_F(ServiceDiscoveryTest, return_service)
 {
     services::ServiceStub service5{ serviceDiscoveryEcho, 5 };
 
-    EXPECT_CALL(serviceDiscoveryResponse, FirstServiceSupportedMock(5));
-
     FindFirstServiceInRange(0, 15);
+
+    EXPECT_CALL(serviceDiscoveryResponse, FirstServiceSupportedMock(5));
+    ExecuteAllActions();
 }
 
 TEST_F(ServiceDiscoveryTest, return_service_with_lowest_id)
@@ -151,51 +98,53 @@ TEST_F(ServiceDiscoveryTest, return_service_with_lowest_id)
     services::ServiceStub service5{ serviceDiscoveryEcho, 5 };
     services::ServiceStub service6{ serviceDiscoveryEcho, 6 };
 
-    EXPECT_CALL(serviceDiscoveryResponse, FirstServiceSupportedMock(5));
-
     FindFirstServiceInRange(0, 15);
+
+    EXPECT_CALL(serviceDiscoveryResponse, FirstServiceSupportedMock(5));
+    ExecuteAllActions();
 }
 
 TEST_F(ServiceDiscoveryTest, notify_service_change)
 {
     NotifyServiceChanges(true);
 
-    EXPECT_CALL(serviceDiscoveryResponse, ServicesChangedMock(5, 5));
     infra::Optional<services::ServiceStub> service5(infra::inPlace, serviceDiscoveryEcho, 5);
 
     EXPECT_CALL(serviceDiscoveryResponse, ServicesChangedMock(5, 5));
+    ForwardTime(std::chrono::milliseconds(500));
+
     service5 = infra::none;
+
+    EXPECT_CALL(serviceDiscoveryResponse, ServicesChangedMock(5, 5));
+    ForwardTime(std::chrono::milliseconds(500));
 
     NotifyServiceChanges(false);
 
     service5.Emplace(serviceDiscoveryEcho, 5);
+    ForwardTime(std::chrono::milliseconds(500));
 }
 
 TEST_F(ServiceDiscoveryTest, notify_simultaneous_service_changes)
 {
     NotifyServiceChanges(true);
 
-    echoBlocking.BlockRequest(true);
     services::ServiceStub service5(serviceDiscoveryEcho, 5);
     services::ServiceStub service15(serviceDiscoveryEcho, 15);
 
     EXPECT_CALL(serviceDiscoveryResponse, ServicesChangedMock(5, 15));
-    echoBlocking.BlockRequest(false);
+    ForwardTime(std::chrono::milliseconds(500));
 
-    echoBlocking.BlockRequest(true);
     services::ServiceStub service7(serviceDiscoveryEcho, 7);
     services::ServiceStub service12(serviceDiscoveryEcho, 12);
 
     EXPECT_CALL(serviceDiscoveryResponse, ServicesChangedMock(7, 12));
-    echoBlocking.BlockRequest(false);
+    ForwardTime(std::chrono::milliseconds(500));
 
     NotifyServiceChanges(false);
 }
 
 TEST_F(ServiceDiscoveryTest, notify_service_changes_only_after_NotifyServiceChanges)
 {
-    echoBlocking.BlockRequest(true);
-
     NotifyServiceChanges(true);
     services::ServiceStub service5(serviceDiscoveryEcho, 5);
 
@@ -206,16 +155,17 @@ TEST_F(ServiceDiscoveryTest, notify_service_changes_only_after_NotifyServiceChan
     services::ServiceStub service25(serviceDiscoveryEcho, 25);
 
     EXPECT_CALL(serviceDiscoveryResponse, ServicesChangedMock(25, 25));
-    echoBlocking.BlockRequest(false);
+    ForwardTime(std::chrono::milliseconds(500));
 
     NotifyServiceChanges(false);
 }
 
 TEST_F(ServiceDiscoveryTest, find_own_service_id)
 {
-    EXPECT_CALL(serviceDiscoveryResponse, FirstServiceSupportedMock(service_discovery::ServiceDiscovery::serviceId));
-
     FindFirstServiceInRange(service_discovery::ServiceDiscovery::serviceId, service_discovery::ServiceDiscovery::serviceId);
+
+    EXPECT_CALL(serviceDiscoveryResponse, FirstServiceSupportedMock(service_discovery::ServiceDiscovery::serviceId));
+    ExecuteAllActions();
 }
 
 TEST_F(ServiceDiscoveryTest, start_proxy_service_method)
@@ -246,7 +196,7 @@ TEST_F(ServiceDiscoveryTest, start_proxy_service_method)
 TEST_F(ServiceDiscoveryTest, forward_methods_only_to_first_matching_proxy_service)
 {
     services::ServiceStub service1{ serviceDiscoveryEcho, 1 };
-    services::ServiceStub service1_{ serviceDiscoveryEcho, 1 };
+    services::ServiceStub service1Copy{ serviceDiscoveryEcho, 1 };
     services::ServiceStubProxy service1Proxy{ echo, 1 };
 
     EXPECT_CALL(service1, Method(11)).WillOnce(testing::InvokeWithoutArgs([&service1]
