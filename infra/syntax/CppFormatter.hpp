@@ -387,6 +387,20 @@ namespace application
     private:
         std::string name;
     };
+
+    class StaticAssert
+        : public Entity
+    {
+    public:
+        explicit StaticAssert(const std::string& condition, const std::string& message);
+
+        void PrintHeader(google::protobuf::io::Printer& printer) const override;
+        void PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const override;
+
+    private:
+        std::string condition;
+        std::string message;
+    };
 }
 
 #endif

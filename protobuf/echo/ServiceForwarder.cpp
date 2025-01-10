@@ -1,4 +1,5 @@
 #include "protobuf/echo/ServiceForwarder.hpp"
+#include "protobuf/echo/Echo.hpp"
 #include <cstdint>
 
 namespace services
@@ -84,6 +85,10 @@ namespace services
             contentsReader = nullptr;
     }
 
+    ServiceForwarderAll::ServiceForwarderAll(Echo& echo, Echo& forwardTo)
+        : ServiceForwarderBase(echo, ServiceId::reservedServiceId, forwardTo)
+    {}
+
     bool ServiceForwarderAll::AcceptsService(uint32_t id) const
     {
         return true;
@@ -91,11 +96,5 @@ namespace services
 
     ServiceForwarder::ServiceForwarder(Echo& echo, uint32_t id, Echo& forwardTo)
         : ServiceForwarderBase(echo, id, forwardTo)
-        , serviceId(id)
     {}
-
-    bool ServiceForwarder::AcceptsService(uint32_t id) const
-    {
-        return serviceId == id;
-    }
 }

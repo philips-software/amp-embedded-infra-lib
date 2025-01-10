@@ -45,9 +45,12 @@ namespace services
         : public ServiceForwarderBase
     {
     public:
-        using ServiceForwarderBase::ServiceForwarderBase;
+        ServiceForwarderAll(Echo& echo, Echo& forwardTo);
 
         bool AcceptsService(uint32_t id) const override;
+
+    private:
+        static constexpr uint8_t invalidServiceId = 0;
     };
 
     class ServiceForwarder
@@ -55,11 +58,6 @@ namespace services
     {
     public:
         ServiceForwarder(Echo& echo, uint32_t id, Echo& forwardTo);
-
-        bool AcceptsService(uint32_t id) const override;
-
-    private:
-        uint32_t serviceId;
     };
 }
 

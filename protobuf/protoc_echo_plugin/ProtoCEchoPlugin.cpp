@@ -1188,7 +1188,8 @@ namespace application
         auto constructors = std::make_shared<Access>("public");
         auto constructor = std::make_shared<Constructor>(service->name, "", 0);
         constructor->Parameter("services::Echo& echo");
-        constructor->Initializer(std::string("services::Service(echo, ").append(google::protobuf::SimpleItoa(service->serviceId)).append(")"));
+        // constructor->Initializer(std::string("services::Service(echo, ").append(google::protobuf::SimpleItoa(service->serviceId)).append(")"));
+        constructor->Initializer(std::string("services::Service(echo, serviceId)"));
 
         constructors->Add(constructor);
         serviceFormatter->Add(constructors);
@@ -1268,6 +1269,7 @@ namespace application
         auto fields = std::make_shared<Access>("public");
 
         fields->Add(std::make_shared<DataMember>("serviceId", "static constexpr uint32_t", google::protobuf::SimpleItoa(service->serviceId)));
+        fields->Add(std::make_shared<StaticAssert>("serviceId != services::ServiceId::reservedServiceId", "ServiceId must not be reserved"));
 
         for (auto& method : service->methods)
             fields->Add(std::make_shared<DataMember>("id" + method.name, "static constexpr uint32_t", google::protobuf::SimpleItoa(method.methodId)));

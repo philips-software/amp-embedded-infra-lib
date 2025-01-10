@@ -731,3 +731,18 @@ TEST_F(CppFormatterTest, Undef_prints_no_source)
     declaration.PrintSource(*printer, "scope");
     ExpectPrinted("");
 }
+
+TEST_F(CppFormatterTest, StaticAssert_prints_header)
+{
+    application::StaticAssert declaration("condition", "message");
+    declaration.PrintHeader(*printer);
+    ExpectPrinted(R"(static_assert(condition, "message");
+)");
+}
+
+TEST_F(CppFormatterTest, StaticAssert_prints_no_source)
+{
+    application::StaticAssert declaration("condition", "message");
+    declaration.PrintSource(*printer, "scope");
+    ExpectPrinted("");
+}

@@ -37,6 +37,9 @@ namespace services
             return id == this->id;
         }
 
+    public:
+        static constexpr uint32_t reservedServiceId = 0;
+
     private:
         const uint32_t id;
     };
