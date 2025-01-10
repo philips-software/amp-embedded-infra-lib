@@ -15,35 +15,17 @@ namespace services
         : public MethodDeserializer
     {
     public:
-        void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override
-        {
-            int a = 3;
-            a++;
-        }
-
-        void ExecuteMethod() override
-        {
-            int a = 3;
-            a++;
-        }
-
-        bool Failed() const override
-        {
-            return false;
-        }
+        void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
+        void ExecuteMethod() override;
+        bool Failed() const override;
     };
 
     class ConsoleServiceMethodExecute
     {
     public:
-        ConsoleServiceMethodExecute(application::Console& console)
-            : console(console)
-        {}
+        ConsoleServiceMethodExecute(application::Console& console);
 
-        infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy)
-        {
-            return methodDeserializer.Emplace();
-        }
+        infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy);
 
     private:
         application::Console& console;
@@ -54,15 +36,9 @@ namespace services
         : public Service
     {
     public:
-        ConsoleService(Echo& echo, uint32_t serviceId, ConsoleServiceMethodExecute& methodExecute)
-            : Service(echo, serviceId)
-            , methodExecute(methodExecute)
-        {}
+        ConsoleService(Echo& echo, uint32_t serviceId, ConsoleServiceMethodExecute& methodExecute);
 
-        infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy) override
-        {
-            return methodExecute.StartMethod(serviceId, methodId, size, errorPolicy);
-        }
+        infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy) override;
 
     private:
         ConsoleServiceMethodExecute& methodExecute;
@@ -72,21 +48,9 @@ namespace services
         : public MethodSerializer
     {
     public:
-        GenericMethodSerializer(infra::SharedPtr<infra::StringInputStream>& inputStream)
-            : inputStream(inputStream)
-        {}
+        GenericMethodSerializer(infra::SharedPtr<infra::StringInputStream>& inputStream);
 
-        bool Serialize(infra::SharedPtr<infra::StreamWriter>&& writer) override
-        {
-            infra::DataOutputStream::WithErrorPolicy stream(*writer, infra::softFail);
-
-            stream << inputStream->ContiguousRange(stream.Available());
-
-            auto partlySent = stream.Failed() || inputStream->Available();
-            writer = nullptr;
-
-            return partlySent;
-        }
+        bool Serialize(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
     private:
         infra::SharedPtr<infra::StringInputStream> inputStream;
@@ -96,15 +60,9 @@ namespace services
         : public ServiceProxy
     {
     public:
-        ConsoleServiceProxy(Echo& echo, uint32_t maxMessageSize = 1000)
-            : ServiceProxy(echo, maxMessageSize)
-        {}
+        ConsoleServiceProxy(Echo& echo, uint32_t maxMessageSize = 1000);
 
-        void SendMessage(infra::SharedPtr<infra::StringInputStream>& inputStream)
-        {
-            auto serializer = methodSerializer.Emplace(inputStream);
-            SetSerializer(serializer);
-        }
+        void SendMessage(infra::SharedPtr<infra::StringInputStream>& inputStream);
 
     private:
         infra::SharedOptional<GenericMethodSerializer> methodSerializer;

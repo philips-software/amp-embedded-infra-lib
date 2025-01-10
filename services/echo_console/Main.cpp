@@ -1,7 +1,6 @@
 #include "args.hxx"
-#include "echo/TracingServiceDiscovery.pb.hpp"
+#include "generated/echo/TracingServiceDiscovery.pb.hpp"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
-#include "infra/stream/StdStringInputStream.hpp"
 #include "infra/stream/StreamErrorPolicy.hpp"
 #include "infra/stream/StringInputStream.hpp"
 #include "infra/util/Optional.hpp"
@@ -9,7 +8,6 @@
 #include "protobuf/echo/Serialization.hpp"
 #include "protobuf/meta_services/PeerServiceDiscoverer.hpp"
 #include "services/echo_console/ConsoleService.hpp"
-#include "services/network/EchoOnConnection.hpp"
 #include "services/network/TracingEchoOnConnection.hpp"
 #include "services/tracer/Tracer.hpp"
 #include <ostream>
@@ -22,8 +20,6 @@
 #endif
 #include "hal/generic/UartGeneric.hpp"
 #include "infra/stream/IoOutputStream.hpp"
-#include "infra/syntax/Json.hpp"
-#include "infra/util/Tokenizer.hpp"
 #include "services/echo_console/Console.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 #include "services/network/HttpClientImpl.hpp"
@@ -233,10 +229,10 @@ void ConsoleClientConnection::SendAsEcho()
             {
                 auto inputReader = reader.Emplace(dataQueue.front(), infra::softFail);
                 reader.OnAllocatable([this]
-                {
-                    dataQueue.pop();
-                    SendAsEcho();
-                });
+                    {
+                        dataQueue.pop();
+                        SendAsEcho();
+                    });
                 consoleServiceProxy->SendMessage(inputReader);
             });
 }

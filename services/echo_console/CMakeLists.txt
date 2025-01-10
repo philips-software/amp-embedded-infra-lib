@@ -2,6 +2,8 @@ if (EMIL_HOST_BUILD AND EMIL_INCLUDE_MBEDTLS)
     add_executable(services.echo_console ${EMIL_EXCLUDE_FROM_ALL})
     emil_install(services.echo_console DESTINATION bin)
 
+    protocol_buffer_dependencies(services.echo_console protobuf.meta_services)
+
     target_link_libraries(services.echo_console PUBLIC
         args
         hal.generic
@@ -15,22 +17,12 @@ if (EMIL_HOST_BUILD AND EMIL_INCLUDE_MBEDTLS)
     target_sources(services.echo_console PRIVATE
         Console.cpp
         Console.hpp
+        ConsoleService.cpp
+        ConsoleService.hpp
         Main.cpp
         )
         
     add_subdirectory(test)
-
-    add_library(services.console_service ${EMIL_EXCLUDE_FROM_ALL} STATIC)
-        
-    target_include_directories(services.console_service PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/../..>"
-    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-    )
-
-    target_sources(services.console_service PRIVATE
-        ConsoleService.cpp
-        ConsoleService.hpp
-        )
 
     add_executable(services.echo_test_tcp_server ${EMIL_EXCLUDE_FROM_ALL})
     emil_install(services.echo_test_tcp_server DESTINATION bin) 
