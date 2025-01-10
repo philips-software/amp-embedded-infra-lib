@@ -50,6 +50,10 @@ namespace application
         void ServicesChangeNotification(uint32_t serviceId);
         uint32_t GetServiceId(infra::Observer<Service, Echo>& observer) const;
 
+        void SendFirstServiceSupported(uint32_t serviceId);
+        void SendNoServiceSupported();
+        void SendServicesChanged();
+
     private:
         infra::Optional<std::pair<uint32_t, uint32_t>> changedServices;
         bool notifyServiceChanges = false;

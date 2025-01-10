@@ -10,32 +10,36 @@ namespace application
 {
     void ServiceDiscoveryEcho::FindFirstServiceInRange(uint32_t startServiceId, uint32_t endServiceId)
     {
-        if (auto service = FirstSupportedServiceId(startServiceId, endServiceId); service)
-        {
-            auto serviceId = *service;
-
-            serviceSupportedClaimer.Claim([this, serviceId]
-                {
-                    service_discovery::ServiceDiscoveryResponseProxy::RequestSend([this, serviceId]
-                        {
-                            FirstServiceSupported(serviceId);
-                            serviceSupportedClaimer.Release();
-                        });
-                });
-        }
+        if (auto serviceId = FirstSupportedServiceId(startServiceId, endServiceId); serviceId)
+            SendFirstServiceSupported(*serviceId);
         else
-        {
-            serviceSupportedClaimer.Claim([this]
-                {
-                    service_discovery::ServiceDiscoveryResponseProxy::RequestSend([this]
-                        {
-                            NoServiceSupported();
-                            serviceSupportedClaimer.Release();
-                        });
-                });
-        }
+            SendNoServiceSupported();
 
         MethodDone();
+    }
+
+    void ServiceDiscoveryEcho::SendFirstServiceSupported(uint32_t serviceId)
+    {
+        serviceSupportedClaimer.Claim([this, serviceId]
+            {
+                service_discovery::ServiceDiscoveryResponseProxy::RequestSend([this, serviceId]
+                    {
+                        FirstServiceSupported(serviceId);
+                        serviceSupportedClaimer.Release();
+                    });
+            });
+    }
+
+    void ServiceDiscoveryEcho::SendNoServiceSupported()
+    {
+        serviceSupportedClaimer.Claim([this]
+            {
+                service_discovery::ServiceDiscoveryResponseProxy::RequestSend([this]
+                    {
+                        NoServiceSupported();
+                        serviceSupportedClaimer.Release();
+                    });
+            });
     }
 
     uint32_t ServiceDiscoveryEcho::GetServiceId(infra::Observer<Service, Echo>& observer) const
@@ -186,16 +190,21 @@ namespace application
             if (!serviceChangeNotificationTimer.Armed())
                 serviceChangeNotificationTimer.Start(std::chrono::milliseconds(500), [this]
                     {
-                        servicesChangedClaimer.Claim([this]
-                            {
-                                service_discovery::ServiceDiscoveryResponseProxy::RequestSend([this]
-                                    {
-                                        ServicesChanged(changedServices->first, changedServices->second);
-                                        changedServices = infra::none;
-                                        servicesChangedClaimer.Release();
-                                    });
-                            });
+                        SendServicesChanged();
                     });
         }
+    }
+
+    void ServiceDiscoveryEcho::SendServicesChanged()
+    {
+        servicesChangedClaimer.Claim([this]
+            {
+                service_discovery::ServiceDiscoveryResponseProxy::RequestSend([this]
+                    {
+                        ServicesChanged(changedServices->first, changedServices->second);
+                        changedServices = infra::none;
+                        servicesChangedClaimer.Release();
+                    });
+            });
     }
 }

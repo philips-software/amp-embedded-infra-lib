@@ -13,6 +13,59 @@
 
 namespace
 {
+    class RequestBlockingEchoDecorator
+        : public services::Echo
+    {
+    public:
+        RequestBlockingEchoDecorator(services::Echo& echo)
+            : echo(echo)
+        {}
+
+        void RegisterObserver(infra::Observer<services::Service, services::Echo>* observer) override
+        {
+            observer->Attach(echo);
+        }
+
+        void BlockRequest(bool block)
+        {
+            blocked = block;
+
+            if (!blocked && serviceProxy)
+            {
+                echo.RequestSend(**serviceProxy);
+                serviceProxy = infra::none;
+            }
+        }
+
+        void RequestSend(services::ServiceProxy& serviceProxy) override
+        {
+            if (blocked)
+                this->serviceProxy = &serviceProxy;
+            else
+                echo.RequestSend(serviceProxy);
+        }
+
+        void ServiceDone() override
+        {
+            echo.ServiceDone();
+        }
+
+        void CancelRequestSend(services::ServiceProxy& serviceProxy) override
+        {
+            echo.CancelRequestSend(serviceProxy);
+        }
+
+        services::MethodSerializerFactory& SerializerFactory() override
+        {
+            return echo.SerializerFactory();
+        }
+
+    private:
+        services::Echo& echo;
+        infra::Optional<services::ServiceProxy*> serviceProxy;
+        bool blocked = false;
+    };
+
     class ServiceDiscoveryResponseMock
         : public service_discovery::ServiceDiscoveryResponse
     {
@@ -53,7 +106,9 @@ public:
     application::EchoSingleLoopback echo{ serializerFactory };
     service_discovery::ServiceDiscoveryProxy proxy{ echo };
     testing::StrictMock<ServiceDiscoveryResponseMock> serviceDiscoveryResponse{ echo };
-    application::ServiceDiscoveryEcho serviceDiscoveryEcho{ echo };
+
+    RequestBlockingEchoDecorator echoBlocking{ echo };
+    application::ServiceDiscoveryEcho serviceDiscoveryEcho{ echoBlocking };
 
     void FindFirstServiceInRange(uint32_t startServiceId, uint32_t endServiceId)
     {
@@ -208,4 +263,22 @@ TEST_F(ServiceDiscoveryTest, forward_methods_only_to_first_matching_proxy_servic
         {
             service1Proxy.Method(11);
         });
+}
+
+TEST_F(ServiceDiscoveryTest, change_of_services_notification_does_not_clash_with_FindFirstServiceInRange_response)
+{
+    echoBlocking.BlockRequest(true);
+
+    EXPECT_CALL(serviceDiscoveryResponse, NoServiceSupportedMock());
+    FindFirstServiceInRange(0, 15);
+
+    NotifyServiceChanges(true);
+    services::ServiceStub service5{ serviceDiscoveryEcho, 5 };
+
+    EXPECT_CALL(serviceDiscoveryResponse, ServicesChangedMock(5, 5));
+    ForwardTime(std::chrono::milliseconds(500));
+
+    echoBlocking.BlockRequest(false);
+
+    ExecuteAllActions();
 }
