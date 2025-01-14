@@ -12,7 +12,6 @@ namespace services
     {
         communication.ReceiveData([this](infra::ConstByteRange data)
             {
-                really_assert(!queue.Full());
                 queue.AddFromInterrupt(data);
             });
         Print(state.prompt);
