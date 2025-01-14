@@ -10,6 +10,9 @@ if (EMIL_EXTERNAL_LWIP_TARGET)
     target_include_directories(lwip.lwip_cpp PUBLIC
         $<TARGET_PROPERTY:${EMIL_EXTERNAL_LWIP_TARGET},INCLUDE_DIRECTORIES>
     )
+    target_compile_definitions(lwip.lwip_cpp PUBLIC
+        $<TARGET_PROPERTY:${EMIL_EXTERNAL_LWIP_TARGET},COMPILE_DEFINITIONS>
+    )
 else()
     target_link_libraries(lwip.lwip_cpp PUBLIC
         lwip.lwip
