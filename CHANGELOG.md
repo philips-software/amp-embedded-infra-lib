@@ -7,6 +7,35 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [7.1.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v7.0.0...v7.1.0) (2025-01-15)
+
+
+### Features
+
+* Add AdcMultiChannel interface ([#784](https://github.com/philips-software/amp-embedded-infra-lib/issues/784)) ([c77731b](https://github.com/philips-software/amp-embedded-infra-lib/commit/c77731ba79bfbe8af22450cf33fcdf4fd30a3587))
+* Add ble state 'initiating' ([bcfe895](https://github.com/philips-software/amp-embedded-infra-lib/commit/bcfe895ad4509290a47759763412e638f600a0a6))
+* Add instantiations for EchoOnSesameSecured ([#801](https://github.com/philips-software/amp-embedded-infra-lib/issues/801)) ([4c5d083](https://github.com/philips-software/amp-embedded-infra-lib/commit/4c5d083fe29af7a31d9a914e83be7aa5675d8930))
+* Add query and fragment parsing to HttpRequestParser ([#766](https://github.com/philips-software/amp-embedded-infra-lib/issues/766)) ([644934b](https://github.com/philips-software/amp-embedded-infra-lib/commit/644934b74cbf7818b76443b4dc6b1cf53a574dc0))
+* Add TimerLimitedRepeating::Start overload to support TriggerImmediately ([#760](https://github.com/philips-software/amp-embedded-infra-lib/issues/760)) ([631ec6c](https://github.com/philips-software/amp-embedded-infra-lib/commit/631ec6c217c15b850f4007e55457c71939571b93))
+* Add verb and target to HttpClientAuthentication to enable Digest authentication ([#768](https://github.com/philips-software/amp-embedded-infra-lib/issues/768)) ([ea7de38](https://github.com/philips-software/amp-embedded-infra-lib/commit/ea7de38a0830e585dd481779b308b3812179d49a))
+* Added starts_with ends_with and ""_s literal for Bounded(Const)String ([#777](https://github.com/philips-software/amp-embedded-infra-lib/issues/777)) ([6c5cb00](https://github.com/philips-software/amp-embedded-infra-lib/commit/6c5cb009407dbc58b7d3727e65930cfd3c40f76c))
+* Changed `BoundedString::copy` to copy up to `length-pos` characters ([#779](https://github.com/philips-software/amp-embedded-infra-lib/issues/779)) ([6659905](https://github.com/philips-software/amp-embedded-infra-lib/commit/665990562db32570e9386168fbb9cea48f5e86dd))
+* Extend GattClient interface with enable/disable indication/notification ([#744](https://github.com/philips-software/amp-embedded-infra-lib/issues/744)) ([e110c4d](https://github.com/philips-software/amp-embedded-infra-lib/commit/e110c4d31115e2ae14e91bbc40f9cf0f4fa3cb7c))
+* Improve hal::Can::Id ([#786](https://github.com/philips-software/amp-embedded-infra-lib/issues/786)) ([50860b1](https://github.com/philips-software/amp-embedded-infra-lib/commit/50860b19f357ababa90d056d3d7cd67f6b7e0ac7))
+* Infra::Optional returns the type on Emplace instead of void ([#762](https://github.com/philips-software/amp-embedded-infra-lib/issues/762)) ([49bce7d](https://github.com/philips-software/amp-embedded-infra-lib/commit/49bce7d56bdd656a8c50f5835dab2ae509838c67))
+* Make all hal::Can::Id functions constexpr and add static assert tests ([#803](https://github.com/philips-software/amp-embedded-infra-lib/issues/803)) ([6184a66](https://github.com/philips-software/amp-embedded-infra-lib/commit/6184a66a231354c7e5b1b3ef2fa8fd6e479d5a68))
+* Make terminal's hardcoded sizes configurable ([#798](https://github.com/philips-software/amp-embedded-infra-lib/issues/798)) ([9cc6606](https://github.com/philips-software/amp-embedded-infra-lib/commit/9cc66069a0ed7c9f2ed582234658459040bf5bec))
+* Refactor BodyReader handling in HttpClient implementations ([#781](https://github.com/philips-software/amp-embedded-infra-lib/issues/781)) ([6c84af5](https://github.com/philips-software/amp-embedded-infra-lib/commit/6c84af5324c79219059d1066cc5ce3aad8f2b927))
+* Replaced assert with really_assert to align `BoundedString` overflow behaviour with other `Bounded` classes ([#780](https://github.com/philips-software/amp-embedded-infra-lib/issues/780)) ([d3b1218](https://github.com/philips-software/amp-embedded-infra-lib/commit/d3b12180e6ff6082911d857f68454c505458c10a))
+
+
+### Bug Fixes
+
+* Assert when serial server and terminal receive data queue is full ([#802](https://github.com/philips-software/amp-embedded-infra-lib/issues/802)) ([8a83678](https://github.com/philips-software/amp-embedded-infra-lib/commit/8a83678d41cc1dcf956e328ac893865688765021))
+* In HttpClientApplication don't crash when detaching during StatusAvailable ([#770](https://github.com/philips-software/amp-embedded-infra-lib/issues/770)) ([e626133](https://github.com/philips-software/amp-embedded-infra-lib/commit/e626133f463b6df2630be14d50df2a4b9c232bf2))
+* When opening an ECHO connection over websockets, use the full URL ([#799](https://github.com/philips-software/amp-embedded-infra-lib/issues/799)) ([4f62987](https://github.com/philips-software/amp-embedded-infra-lib/commit/4f62987aaa129baf88bbd39f2137120fec5f0e89))
+* Workaround lwip dhcp+auto-ip issue ([#753](https://github.com/philips-software/amp-embedded-infra-lib/issues/753)) ([2bb0caf](https://github.com/philips-software/amp-embedded-infra-lib/commit/2bb0cafbfec225fcf9fff8d564de65d75bbda55a))
+
 ## [7.0.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v6.1.0...v7.0.0) (2024-10-24)
 
 
