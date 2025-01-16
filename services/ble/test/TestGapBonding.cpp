@@ -43,10 +43,12 @@ namespace services
         EXPECT_EQ(decorator.GetNumberOfBonds(), 5);
 
         hal::MacAddress mac = { 0x00, 0x1A, 0x7D, 0xDA, 0x71, 0x13 };
-        EXPECT_CALL(gapBonding, IsDeviceBonded(mac)).WillOnce(testing::Return(true));
-        EXPECT_THAT(decorator.IsDeviceBonded(mac), testing::IsTrue());
+        services::GapDeviceAddressType addressType = services::GapDeviceAddressType::randomAddress;
 
-        EXPECT_CALL(gapBonding, IsDeviceBonded(mac)).WillOnce(testing::Return(false));
-        EXPECT_THAT(decorator.IsDeviceBonded(mac), testing::IsFalse());
+        EXPECT_CALL(gapBonding, IsDeviceBonded(mac, addressType)).WillOnce(testing::Return(true));
+        EXPECT_THAT(decorator.IsDeviceBonded(mac, addressType), testing::IsTrue());
+
+        EXPECT_CALL(gapBonding, IsDeviceBonded(mac, addressType)).WillOnce(testing::Return(false));
+        EXPECT_THAT(decorator.IsDeviceBonded(mac, addressType), testing::IsFalse());
     }
 }
