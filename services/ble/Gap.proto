@@ -112,11 +112,16 @@ message AdvertisementData
     bytes data = 1 [(bytes_size) = 31];
 }
 
-message ConnectionParameters
+message PeerNodeParameters
 {
     Address address = 1;
     AddressType addressType = 2;
-    uint32 initiatingTimeoutInMs = 3;
+}
+
+message ConnectionParameters
+{
+    PeerNodeParameters nodeParameters = 1;
+    uint32 initiatingTimeoutInMs = 2;
 }
 
 message Passkey
@@ -223,7 +228,7 @@ service GapCentral
     rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 11; }
     rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 12; }
     rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; }
-    rpc IsDeviceBonded(Address) returns (Nothing) { option (method_id) = 14; }
+    rpc IsDeviceBonded(PeerNodeParameters) returns (Nothing) { option (method_id) = 14; }
 }
 
 service GapPeripheralResponse
@@ -249,5 +254,5 @@ service GapCentralResponse
     rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
     rpc DeviceStarted(Nothing) returns (Nothing) { option (method_id) = 7; }
     rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 8; }
-    rpc IsDeviceBonded(Address) returns (Nothing) { option (method_id) = 9; }
+    rpc IsDeviceBonded(PeerNodeParameters) returns (Nothing) { option (method_id) = 9; }
 }
