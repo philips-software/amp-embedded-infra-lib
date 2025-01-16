@@ -39,14 +39,6 @@ namespace services
         scanResponse,
     };
 
-    enum class GapAdvertisingEventAddressType : uint8_t
-    {
-        publicDeviceAddress,
-        randomDeviceAddress,
-        publicIdentityAddress,
-        randomIdentityAddress
-    };
-
     enum class GapAdvertisementDataType : uint8_t
     {
         unknownType = 0x00u,
@@ -72,7 +64,7 @@ namespace services
     struct GapAdvertisingReport
     {
         GapAdvertisingEventType eventType;
-        GapAdvertisingEventAddressType addressType;
+        GapDeviceAddressType addressType;
         hal::MacAddress address;
         infra::ConstByteRange data;
         int8_t rssi;
@@ -208,7 +200,7 @@ namespace services
 
         virtual std::size_t GetMaxNumberOfBonds() const = 0;
         virtual std::size_t GetNumberOfBonds() const = 0;
-        virtual bool IsDeviceBonded(hal::MacAddress identityAddress) const = 0;
+        virtual bool IsDeviceBonded(hal::MacAddress address, GapDeviceAddressType addressType) const = 0;
     };
 
     class GapBondingDecorator
@@ -226,7 +218,7 @@ namespace services
         void RemoveOldestBond() override;
         std::size_t GetMaxNumberOfBonds() const override;
         std::size_t GetNumberOfBonds() const override;
-        bool IsDeviceBonded(hal::MacAddress identityAddress) const override;
+        bool IsDeviceBonded(hal::MacAddress address, GapDeviceAddressType addressType) const override;
     };
 
     class GapPeripheral;
@@ -348,7 +340,7 @@ namespace services
 namespace infra
 {
     infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::GapAdvertisingEventType& eventType);
-    infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::GapAdvertisingEventAddressType& addressType);
+    infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::GapDeviceAddressType& addressType);
     infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::GapState& state);
 }
 
