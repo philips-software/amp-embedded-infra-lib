@@ -1,4 +1,5 @@
 #include "infra/stream/OutputStream.hpp"
+#include "infra/util/BoundedString.hpp"
 #include <cmath>
 #include <limits>
 
@@ -93,7 +94,12 @@ namespace infra
     {
         const auto len = std::strlen(zeroTerminatedString); //NOSONAR
         OutputOptionalPadding(len);
-        Writer().Insert(ReinterpretCastByteRange(MakeRange(zeroTerminatedString, zeroTerminatedString + len)), ErrorPolicy());
+
+        // Writer().Insert(ReinterpretCastByteRange(MakeRange(zeroTerminatedString, zeroTerminatedString + len)), ErrorPolicy());
+
+        infra::BoundedString d(zeroTerminatedString);
+        Writer().Insert(infra::StringAsByteRange(d), ErrorPolicy());
+
         return *this;
     }
 
