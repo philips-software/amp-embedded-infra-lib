@@ -25,10 +25,10 @@ namespace services
         this->createdObserver = std::move(createdObserver);
         this->address = address;
 
-        newConnectionStrategy->StopCurrentConnection(*this);
+        newConnectionStrategy->StopCurrentConnection(this);
     }
 
-    void SingleConnectionListener::StopCurrentConnection(SingleConnectionListener& listener)
+    void SingleConnectionListener::StopCurrentConnection(void* listener)
     {
         Stop([this]()
             {
