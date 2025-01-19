@@ -5,14 +5,14 @@
 namespace services
 {
     SesameSecured::SesameSecured(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate,
-        const KeyType& sendKey, const IvType& sendIv, const KeyType& receiveKey, const IvType& receiveIv)
+        const KeyMaterial& keyMaterial)
         : SesameObserver(delegate)
         , sendBuffer(sendBuffer)
-        , initialSendKey(sendKey)
-        , initialSendIv(sendIv)
+        , initialSendKey(keyMaterial.sendKey)
+        , initialSendIv(keyMaterial.sendIv)
         , receiveBuffer(receiveBuffer)
-        , initialReceiveKey(receiveKey)
-        , initialReceiveIv(receiveIv)
+        , initialReceiveKey(keyMaterial.receiveKey)
+        , initialReceiveIv(keyMaterial.receiveIv)
     {
         mbedtls_gcm_init(&sendContext);
         mbedtls_gcm_init(&receiveContext);

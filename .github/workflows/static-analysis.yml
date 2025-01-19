@@ -18,20 +18,12 @@ jobs:
   sonar:
     name: SonarCloud
     runs-on: ubuntu-latest
-    container: ghcr.io/philips-software/amp-devcontainer-cpp:5.1.4@sha256:46239906460dedb3baf3c33d9275f3de4f17d7a237fc136c2013b021589a6dbd # 5.1.4
-    env:
-      SONAR_SCANNER_VERSION: 5.0.1.3006
-      SONAR_SERVER_URL: "https://sonarcloud.io"
+    container: ghcr.io/philips-software/amp-devcontainer-cpp:v5.5.3@sha256:9c51320e357ad7274033c34bb1b53131aad43e2f342b7aacfd03b07292d7960d # v5.5.3
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0 # Disable shallow clone to enable blame information
           persist-credentials: false
-      - name: Install Sonar Scanner
-        run: |
-          wget -qN "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip"
-          unzip -qqo "sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip"
-          echo "${PWD}/sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-linux/bin" >> "$GITHUB_PATH"
       - uses: hendrikmuhs/ccache-action@ed74d11c0b343532753ecead8a951bb09bb34bc9 # v1.2.14
         with:
           key: ${{ github.job }}
@@ -61,18 +53,13 @@ jobs:
           jq -s 'reduce .[] as $item ({}; . * $item)' reports/mull/*.json > reports/mull/merged-mutation.json
           jq --arg workspace "$GITHUB_WORKSPACE" -f .github/formatters/mutation-report-to-generic-issue.jq reports/mull/merged-mutation.json > mutation-sonar.json
           cp build/coverage/compile_commands.json compile_commands.json
-      - name: Run analysis
-        # skip the analysis step for dependabot PRs since dependabot does not have access to secrets
-        if: ${{ github.actor != 'dependabot[bot]' }}
+      - uses: sonarsource/sonarqube-scan-action@bfd4e558cda28cda6b5defafb9232d191be8c203 # v4.2.1
         env:
-          # to get access to secrets.SONAR_TOKEN, provide GITHUB_TOKEN
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: sonar-scanner -D sonar.host.url="${{ env.SONAR_SERVER_URL }}"
   codeql:
     name: CodeQL
     runs-on: ubuntu-latest
-    container: ghcr.io/philips-software/amp-devcontainer-cpp:5.1.4@sha256:46239906460dedb3baf3c33d9275f3de4f17d7a237fc136c2013b021589a6dbd # 5.1.4
+    container: ghcr.io/philips-software/amp-devcontainer-cpp:v5.5.3@sha256:9c51320e357ad7274033c34bb1b53131aad43e2f342b7aacfd03b07292d7960d # v5.5.3
     permissions:
       security-events: write
     steps:
@@ -82,7 +69,7 @@ jobs:
       - uses: hendrikmuhs/ccache-action@ed74d11c0b343532753ecead8a951bb09bb34bc9 # v1.2.14
         with:
           key: ${{ github.job }}
-      - uses: github/codeql-action/init@4f3212b61783c3c68e8309a0f18a699764811cda # v3.27.1
+      - uses: github/codeql-action/init@df409f7d9260372bd5f19e5b04e83cb3c43714ae # v3.27.9
         with:
           languages: cpp
       - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
@@ -90,4 +77,4 @@ jobs:
           configurePreset: "host"
           buildPreset: "host-Debug"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"
-      - uses: github/codeql-action/analyze@4f3212b61783c3c68e8309a0f18a699764811cda # v3.27.1
+      - uses: github/codeql-action/analyze@df409f7d9260372bd5f19e5b04e83cb3c43714ae # v3.27.9

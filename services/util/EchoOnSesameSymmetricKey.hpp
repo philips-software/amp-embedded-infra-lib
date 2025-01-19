@@ -14,7 +14,7 @@ namespace services
         , private sesame_security::SymmetricKeyEstablishmentProxy
     {
     public:
-        EchoOnSesameSymmetricKey(SesameSecured& secured, MethodSerializerFactory& serializerFactory, hal::SynchronousRandomDataGenerator& randomDataGenerator, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
+        EchoOnSesameSymmetricKey(SesameSecured& secured, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
 
         // Implementation of Echo
         void RequestSend(ServiceProxy& serviceProxy) override;

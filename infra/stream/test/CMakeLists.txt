@@ -26,6 +26,7 @@ target_sources(infra.stream_test PRIVATE
     TestStdStringInputStream.cpp
     TestStdStringOutputStream.cpp
     TestStdVectorInputStream.cpp
+    TestStreamWriterFile.cpp
     TestStringInputStream.cpp
     TestStringOutputStream.cpp
 )
