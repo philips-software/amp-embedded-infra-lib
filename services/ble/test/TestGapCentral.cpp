@@ -27,7 +27,7 @@ namespace services
 
     MATCHER_P(ObjectContentsEqual, x, negation ? "Contents not equal" : "Contents are equal")
     {
-        return x.eventType == arg.eventType && x.addressType == arg.addressType && x.address == arg.address && x.rssi == arg.rssi;
+        return x.eventType == arg.eventType && x.peerAddress.type == arg.peerAddress.type && x.peerAddress.address == arg.peerAddress.address && x.rssi == arg.rssi;
     }
 
     TEST_F(GapCentralDecoratorTest, forward_all_state_changed_events_to_observers)
@@ -48,7 +48,7 @@ namespace services
 
     TEST_F(GapCentralDecoratorTest, forward_device_discovered_event_to_observers)
     {
-        GapAdvertisingReport deviceDiscovered{ GapAdvertisingEventType::advInd, GapDeviceAddressType::publicAddress, hal::MacAddress{ 0, 1, 2, 3, 4, 5 }, infra::ConstByteRange(), -75 };
+        GapAdvertisingReport deviceDiscovered{ { hal::MacAddress{ 0, 1, 2, 3, 4, 5 }, GapDeviceAddressType::publicAddress }, GapAdvertisingEventType::advInd, infra::ConstByteRange(), -75 };
 
         EXPECT_CALL(gapObserver, DeviceDiscovered(ObjectContentsEqual(deviceDiscovered)));
 
