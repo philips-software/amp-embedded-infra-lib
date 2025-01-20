@@ -70,12 +70,12 @@ namespace services
         int8_t rssi;
     };
 
-    struct GapAddress
+    struct GapDeviceAddress
     {
         hal::MacAddress address;
         GapDeviceAddressType type;
 
-        bool operator==(GapAddress const& rhs) const
+        bool operator==(GapDeviceAddress const& rhs) const
         {
             return type == rhs.type && address == rhs.address;
         }
@@ -253,8 +253,8 @@ namespace services
         static constexpr uint8_t maxScanResponseDataSize = 31;
 
     public:
-        virtual GapAddress GetAddress() const = 0;
-        virtual GapAddress GetIdentityAddress() const = 0;
+        virtual GapDeviceAddress GetAddress() const = 0;
+        virtual GapDeviceAddress GetIdentityAddress() const = 0;
         virtual void SetAdvertisementData(infra::ConstByteRange data) = 0;
         virtual infra::ConstByteRange GetAdvertisementData() const = 0;
         virtual void SetScanResponseData(infra::ConstByteRange data) = 0;
@@ -274,8 +274,8 @@ namespace services
         void StateChanged(GapState state) override;
 
         // Implementation of GapPeripheral
-        GapAddress GetAddress() const override;
-        GapAddress GetIdentityAddress() const override;
+        GapDeviceAddress GetAddress() const override;
+        GapDeviceAddress GetIdentityAddress() const override;
 
         void SetAdvertisementData(infra::ConstByteRange data) override;
         infra::ConstByteRange GetAdvertisementData() const override;

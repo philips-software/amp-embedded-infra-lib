@@ -97,12 +97,12 @@ namespace services
             });
     }
 
-    GapAddress GapPeripheralDecorator::GetAddress() const
+    GapDeviceAddress GapPeripheralDecorator::GetAddress() const
     {
         return GapPeripheralObserver::Subject().GetAddress();
     }
 
-    GapAddress GapPeripheralDecorator::GetIdentityAddress() const
+    GapDeviceAddress GapPeripheralDecorator::GetIdentityAddress() const
     {
         return GapPeripheralObserver::Subject().GetIdentityAddress();
     }

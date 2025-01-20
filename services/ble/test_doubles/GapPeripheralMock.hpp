@@ -10,8 +10,8 @@ namespace services
         : public GapPeripheral
     {
     public:
-        MOCK_METHOD(GapAddress, GetAddress, (), (const));
-        MOCK_METHOD(GapAddress, GetIdentityAddress, (), (const));
+        MOCK_METHOD(GapDeviceAddress, GetAddress, (), (const));
+        MOCK_METHOD(GapDeviceAddress, GetIdentityAddress, (), (const));
         MOCK_METHOD(void, SetAdvertisementData, (infra::ConstByteRange data));
         MOCK_METHOD(infra::ConstByteRange, GetAdvertisementData, (), (const));
         MOCK_METHOD(void, SetScanResponseData, (infra::ConstByteRange data));
