@@ -120,7 +120,7 @@ message PeerNodeParameters
 
 message ConnectionParameters
 {
-    PeerNodeParameters nodeParameters = 1;
+    PeerNodeParameters peerParameters = 1;
     uint32 initiatingTimeoutInMs = 2;
 }
 
@@ -174,6 +174,11 @@ message BoolValue
 message UInt32Value
 {
     uint32 value = 1;
+}
+
+message OptionalAddress
+{
+    optional Address address = 1;
 }
 
 service GapPeripheral
@@ -251,6 +256,6 @@ service GapCentralResponse
     rpc PairingFailed(PairingStatus) returns (Nothing) { option (method_id) = 5; }
     rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
     rpc DeviceStarted(Nothing) returns (Nothing) { option (method_id) = 7; }
-    rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 8; }
-    rpc IsDeviceBonded(PeerNodeParameters) returns (Nothing) { option (method_id) = 9; }
+    rpc ResolvedPrivateAddress(OptionalAddress) returns (Nothing) { option (method_id) = 8; }
+    rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 9; }
 }
