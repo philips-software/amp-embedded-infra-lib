@@ -61,15 +61,6 @@ namespace services
         static constexpr uint16_t connectionInitialMaxTxTime = 2120; // (connectionInitialMaxTxOctets + 14) * 8
     };
 
-    struct GapAdvertisingReport
-    {
-        GapAdvertisingEventType eventType;
-        GapDeviceAddressType addressType;
-        hal::MacAddress address;
-        infra::ConstByteRange data;
-        int8_t rssi;
-    };
-
     struct GapDeviceAddress
     {
         hal::MacAddress address;
@@ -79,6 +70,14 @@ namespace services
         {
             return type == rhs.type && address == rhs.address;
         }
+    };
+
+    struct GapAdvertisingReport
+    {
+        GapDeviceAddress peerAddress;
+        GapAdvertisingEventType eventType;
+        infra::ConstByteRange data;
+        int8_t rssi;
     };
 
     class GapAdvertisingDataParser
