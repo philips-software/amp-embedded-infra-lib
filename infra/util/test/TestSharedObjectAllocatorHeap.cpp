@@ -15,9 +15,15 @@ public:
 
 TEST_F(SharedObjectAllocatorHeapTest, allocate_one_object)
 {
+    EXPECT_TRUE(allocator.NoneAllocated());
+
     void* savedObject;
     EXPECT_CALL(objectConstructionMock, Construct(testing::_)).WillOnce(testing::SaveArg<0>(&savedObject));
     infra::SharedPtr<infra::MonitoredConstructionObject> object = allocator.Allocate(objectConstructionMock);
     EXPECT_TRUE(static_cast<bool>(object));
+
+    EXPECT_FALSE(allocator.NoneAllocated());
     EXPECT_CALL(objectConstructionMock, Destruct(savedObject));
+    object = nullptr;
+    EXPECT_TRUE(allocator.NoneAllocated());
 }
