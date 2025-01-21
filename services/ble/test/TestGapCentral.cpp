@@ -1,6 +1,7 @@
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/test_helper/MemoryRangeMatcher.hpp"
+#include "services/ble/Gap.hpp"
 #include "services/ble/test_doubles/GapCentralMock.hpp"
 #include "services/ble/test_doubles/GapCentralObserverMock.hpp"
 #include "gmock/gmock.h"
@@ -48,7 +49,7 @@ namespace services
 
     TEST_F(GapCentralDecoratorTest, forward_device_discovered_event_to_observers)
     {
-        GapAdvertisingReport deviceDiscovered{ GapAdvertisingEventType::advInd, GapAdvertisingEventAddressType::publicDeviceAddress, hal::MacAddress{ 0, 1, 2, 3, 4, 5 }, infra::ConstByteRange(), -75 };
+        GapAdvertisingReport deviceDiscovered{ GapAdvertisingEventType::advInd, GapAdvertisingEventAddressType::publicDeviceAddress, hal::MacAddress{ 0, 1, 2, 3, 4, 5 }, infra::BoundedVector<uint8_t>::WithMaxSize<GapPeripheral::maxAdvertisementDataSize>{}, -75 };
 
         EXPECT_CALL(gapObserver, DeviceDiscovered(ObjectContentsEqual(deviceDiscovered)));
 
