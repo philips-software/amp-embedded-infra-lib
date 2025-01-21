@@ -111,16 +111,16 @@
 <h2 id="_introduction_and_scope"><a class="anchor" href="#_introduction_and_scope"></a>Introduction and Scope</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This coding standard defines various aspects of the contents of C++ source files. The goal is to provide a usable standard from which programmers should only deviate in very specific circumstances. Care shall be taken to not restrict programmers in any way but form, so that new techniques and new insights are not obstructed by this standard.</p>
+<p>This coding standard defines various aspects of the contents of C++ source files. The goal is to provide a usable standard from which programmers should only deviate in very specific circumstances. Care shall be taken to not restrict programmers in any way or form, so that new techniques and new insights are not obstructed by this standard.</p>
 </div>
 <div class="paragraph">
 <p>This standard assumes that the programmer writes Clean Code. This influences decisions, for example whether or not multiple <code>return</code> statements are allowed.</p>
 </div>
 <div class="paragraph">
-<p>This standard assumes the use of Standard C++, of which the current version is published in 2014. If a compiler is used that does not support specific constructs in this coding standard, those rules are exempted from compliance.</p>
+<p>This standard assumes the use of Standard C++, of which the current version was published in 2014. If a compiler is used that does not support specific constructs in this coding standard, those rules are exempted from compliance.</p>
 </div>
 <div class="paragraph">
-<p>The scope of this coding standard is limited to C++ source and header files. In e.g. C and C# other constructions and other de facto conventions exist, and the aim is not to supersede those.</p>
+<p>The scope of this coding standard is limited to C++ source and header files. E.g. in C and C# other constructions and de facto conventions exist, and the aim is not to supersede those.</p>
 </div>
 <div class="paragraph">
 <p>Currently, the structure of files in directories is out of scope, since this is often dependent on preferences in specific tools. This may later be standardized. Furthermore, the partitioning of source files into layers like infra, hal, etc. is also out of scope.</p>
@@ -134,7 +134,7 @@
 <h2 id="_principles"><a class="anchor" href="#_principles"></a>Principles</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Much of writing a standard on coding rules is making arbitrary decisions. For each decision arguments exist why another decision would also work. However, as a complete set of decision, this standard strives to adhere to these principles:</p>
+<p>Much of writing a standard on coding rules is making arbitrary decisions. For each decision discussions take place on why another would also work. However, as a complete set of decision, this standard strives to adhere to these principles:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -290,7 +290,7 @@
 <p><strong>Rationale 3.</strong> Macro names, and only macro names, are written in UPPER_CASE. The C++ Preprocessor creates a special layer on top of the rest of the C++ syntax, which makes macros special in the sense that they do not follow the scoping of namespaces. Therefore, they should be easily recognizable, so UPPER_CASE is chosen, and UPPER_CASE is not used for any other identifier.</p>
 </div>
 <div class="paragraph">
-<p><strong>Rule 2.</strong> An exemption exists for member functions of classes that behave like Standard C++ container classes. Member functions of those classes shall be written in lower_case, in order to be able to conform to requirements placed on containers by the C++ Standard.</p>
+<p><strong>Rule 2.</strong> An exemption exists for member functions of classes that behave like Standard C++ container classes. Member functions of those classes shall be written in lower_case, to conform with requirements placed on containers by the C++ Standard.</p>
 </div>
 <div class="paragraph">
 <p><strong>Rule 3.</strong> Identifiers shall not contain any prefix or postfix in the form of <code>s&#8230;&#8203;</code>, <code>m&#8230;&#8203;</code>, <code>_ptr</code>, etc. Since we write Clean Code, scope and type of identifiers should be clear from the context.</p>
@@ -415,25 +415,25 @@ void X&lt;T&gt;::F()			 This line is not indented
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-<code>#ifdef</code>, <code>#if</code>, <code>#else</code>, <code>#elif</code> need not be followed by indentation, although there are certainly cases where clarity would be improved by applying indentation.
+<code>#ifdef</code>, <code>#if</code>, <code>#else</code>, <code>#elif</code> does not need to be followed by indentation, although there are certain cases where indentation would improve clarity.
 </td>
 </tr>
 </table>
 </div>
 <div class="paragraph">
-<p><strong>Rule 17.</strong> A logical block consists of lines of code that logically belong together. Logical blocks shall not contain blank lines. Logical blocks are separated from other blocks by one blank line.</p>
+<p><strong>Rule 17.</strong> A logical block consists of lines of code that logically belong together and shall not contain blank lines. Logical blocks are separated from other blocks by one blank line.</p>
 </div>
 <div class="paragraph">
 <p><strong>Rule 18.</strong> A blank line shall not be followed by another blank line.</p>
 </div>
 <div class="paragraph">
-<p><strong>Rule 19.</strong> A <code>{</code> belongs to the logical block beneath it, and a <code>}</code> belongs to the logical block above it, and they shall therefore not be succeeded resp. preceded by a blank line.</p>
+<p><strong>Rule 19.</strong> A <code>{</code> belongs to the logical block beneath it, and a <code>}</code> belongs to the logical block above it, and shall therefore not be succeeded or preceded by a blank line, respectively.</p>
 </div>
 <div class="paragraph">
 <p><strong>Rule 20.</strong> All <code>#include</code> statements form one single logical block.</p>
 </div>
 <div class="paragraph">
-<p><strong>Rule 21.</strong> Class members that have similar functionality, e.g. all constructors, all modifiers like push and pop, or all accessors like front and back belong to the same logical block. When a block becomes too big, it should be split up. Data members and member functions shall not be mixed in the same block. Example:</p>
+<p><strong>Rule 21.</strong> Class members that have similar functionality, e.g. constructors, modifiers like push and pop, or accessors like front and back belong to the same logical block. When a block becomes too big, it should be split up. Data members and member functions shall not be mixed in the same block. Example:</p>
 </div>
 <div class="listingblock">
 <div class="content">

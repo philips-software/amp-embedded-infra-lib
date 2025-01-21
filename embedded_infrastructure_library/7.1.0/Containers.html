@@ -269,7 +269,7 @@ position</p></td>
 <h3 id="_references_to_bounded_containers"><a class="anchor" href="#_references_to_bounded_containers"></a>References to Bounded Containers</h3>
 <div class="paragraph">
 <p>Often, the class that holds a container of elements is not the class
-that makes the decision how big that container should be. For example,
+that makes the decision on how big that container should be. For example,
 the <code>UrlRouter</code> holds a <code>BoundedVector</code> for storing the <code>PageServers</code> to
 which it refers. It doesn’t know, however, whether it should be able to
 hold 2, 10, or 500 <code>PageServers</code>. Allocating too much space would be
