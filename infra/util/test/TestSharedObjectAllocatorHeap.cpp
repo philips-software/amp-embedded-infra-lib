@@ -1,5 +1,6 @@
 #include "infra/util/SharedObjectAllocatorHeap.hpp"
 #include "infra/util/SharedPtr.hpp"
+#include "infra/util/test_helper/MockCallback.hpp"
 #include "infra/util/test_helper/MonitoredConstructionObject.hpp"
 #include <gmock/gmock.h>
 
@@ -26,4 +27,28 @@ TEST_F(SharedObjectAllocatorHeapTest, allocate_one_object)
     EXPECT_CALL(objectConstructionMock, Destruct(savedObject));
     object = nullptr;
     EXPECT_TRUE(allocator.NoneAllocated());
+}
+
+TEST_F(SharedObjectAllocatorHeapTest, invoke_on_allocatable_when_WeakPtrs_expire)
+{
+    testing::StrictMock<infra::MockCallback<void()>> callback;
+    allocator.OnAllocatable([&]()
+        {
+            callback.callback();
+        });
+
+    {
+        infra::WeakPtr<infra::MonitoredConstructionObject> weakObject;
+
+        {
+            EXPECT_CALL(objectConstructionMock, Construct(testing::_));
+            infra::SharedPtr<infra::MonitoredConstructionObject> object = allocator.Allocate(objectConstructionMock);
+            weakObject = object;
+            EXPECT_CALL(objectConstructionMock, Destruct(testing::_));
+        }
+
+        EXPECT_CALL(callback, callback());
+    }
+
+    testing::Mock::VerifyAndClearExpectations(&callback);
 }
