@@ -62,6 +62,20 @@ message AdvertisementType
     AdvertisementTypeEnum type = 1;
 }
 
+message AdvertisementEventType
+{
+    enum AdvertisementEventTypeEnum
+    {
+        AdvInd = 0;
+        AdvDirectInd = 1;
+        AdvScanInd = 2;
+        AdvNonconnInd = 3;
+        ScanRsp = 4;
+    }
+
+    AdvertisementEventTypeEnum type = 1;
+}
+
 message SecurityModeAndLevel
 {
     enum SecurityLevelEnum
@@ -138,6 +152,14 @@ message PairingStatus
 
     Error error = 1;
 };
+
+message AdvertisingReport
+{
+    DeviceAddress deviceAddress = 1;
+    AdvertisementEventType advertisementEventType = 2;
+    bytes data = 3 [(bytes_size) = 32];
+    int32 rssi = 4;
+}
 
 message DiscoveredDevice
 {
@@ -219,7 +241,7 @@ service GapCentralResponse
     option (service_id) = 35;
 
     rpc Done(Nothing) returns (Nothing) { option (method_id) = 1; }
-    rpc DeviceDiscovered(DiscoveredDevice) returns (Nothing) { option (method_id) = 2; }
+    rpc DeviceDiscovered(AdvertisingReport) returns (Nothing) { option (method_id) = 2; }
     rpc StateChanged(State) returns (Nothing) { option (method_id) = 3; }
     rpc PairingSuccessfullyCompleted(Nothing) returns (Nothing) { option (method_id) =  4; }
     rpc PairingFailed(PairingStatus) returns (Nothing) { option (method_id) = 5; }
