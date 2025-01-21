@@ -89,7 +89,7 @@ position
 === References to Bounded Containers
 
 Often, the class that holds a container of elements is not the class
-that makes the decision how big that container should be. For example,
+that makes the decision on how big that container should be. For example,
 the `UrlRouter` holds a `BoundedVector` for storing the `PageServers` to
 which it refers. It doesn’t know, however, whether it should be able to
 hold 2, 10, or 500 `PageServers`. Allocating too much space would be
