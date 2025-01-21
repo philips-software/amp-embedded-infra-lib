@@ -5,7 +5,7 @@ ifndef::sourceRoot[:sourceRoot: ../../../..]
 
 == Introduction and Scope
 
-This coding standard defines various aspects of the contents of C++ source files. The goal is to provide a usable standard from which programmers should only deviate in very specific circumstances. Care shall be taken to not restrict programmers in any other than form, so that new techniques and new insights are not obstructed by this standard.
+This coding standard defines various aspects of the contents of C++ source files. The goal is to provide a usable standard from which programmers should only deviate in very specific circumstances. Care shall be taken to not restrict programmers in any way or form, so that new techniques and new insights are not obstructed by this standard.
 
 This standard assumes that the programmer writes Clean Code. This influences decisions, for example whether or not multiple `return` statements are allowed.
 
@@ -155,13 +155,13 @@ a = firstObject.VeryLongFunction(withSomeParameters)
 ----
 
 [NOTE]
-`#ifdef`, `#if`, `#else`, `#elif` do not need to be followed by indentation, although there are certain cases where indentation would improve clarity.
+`#ifdef`, `#if`, `#else`, `#elif` does not need to be followed by indentation, although there are certain cases where indentation would improve clarity.
 
 *Rule 17.* A logical block consists of lines of code that logically belong together and shall not contain blank lines. Logical blocks are separated from other blocks by one blank line.
 
 *Rule 18.* A blank line shall not be followed by another blank line.
 
-*Rule 19.* A `{` belongs to the logical block beneath it, and a `}` belongs to the logical block above it, and shall therefore not be succeeded nor preceded by a blank line.
+*Rule 19.* A `{` belongs to the logical block beneath it, and a `}` belongs to the logical block above it, and shall therefore not be succeeded or preceded by a blank line, respectively.
 
 *Rule 20.* All `#include` statements form one single logical block.
 
@@ -371,7 +371,7 @@ Colour c = todayIsMonday
     : SomeVeryLargeFactoryFunctionThatTranslatesColours(green);
 ----
 
-*Rule 42.* `{` and `}` shall be the single token in one line, except when used to define short arrays, when used in a lambda expressions containing only a single statement, and when used in an empty definition. Example:
+*Rule 42.* `{` and `}` shall be the single token in one line(except when `}` is followed by `;`), except when used to define short arrays, when used in a lambda expressions containing only a single statement, and when used in an empty definition. Example:
 
 [source,cpp]
 ----
