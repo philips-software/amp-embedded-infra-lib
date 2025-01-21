@@ -155,13 +155,13 @@ a = firstObject.VeryLongFunction(withSomeParameters)
 ----
 
 [NOTE]
-`#ifdef`, `#if`, `#else`, `#elif` does not need to be followed by indentation, although there are certain cases where indentation would improve clarity.
+`#ifdef`, `#if`, `#else`, `#elif` do not need to be followed by indentation, although there are certain cases where indentation would improve clarity.
 
 *Rule 17.* A logical block consists of lines of code that logically belong together and shall not contain blank lines. Logical blocks are separated from other blocks by one blank line.
 
 *Rule 18.* A blank line shall not be followed by another blank line.
 
-*Rule 19.* A `{` belongs to the logical block beneath it, and a `}` belongs to the logical block above it, and shall therefore not be succeeded or preceded by a blank line, respectively.
+*Rule 19.* A `{` belongs to the logical block beneath it, and a `}` belongs to the logical block above it, and shall therefore not be succeeded nor preceded by a blank line.
 
 *Rule 20.* All `#include` statements form one single logical block.
 
