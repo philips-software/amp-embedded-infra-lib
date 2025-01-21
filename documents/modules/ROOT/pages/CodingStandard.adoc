@@ -371,7 +371,7 @@ Colour c = todayIsMonday
     : SomeVeryLargeFactoryFunctionThatTranslatesColours(green);
 ----
 
-*Rule 42.* `{` and `}` shall be the single token in one line(except when `}` is followed by `;`), except when used to define short arrays, when used in a lambda expressions containing only a single statement, and when used in an empty definition. Example:
+*Rule 42.* `{` and `}` shall be the single token in one line (except when `}` is followed by `;`), except when used to define short arrays, when used in a lambda expressions containing only a single statement, and when used in an empty definition. Example:
 
 [source,cpp]
 ----
