@@ -5,7 +5,7 @@ ifndef::sourceRoot[:sourceRoot: ../../../..]
 
 == Introduction and Scope
 
-This coding standard defines various aspects of the contents of C++ source files. The goal is to provide a usable standard from which programmers should only deviate in very specific circumstances. Care shall be taken to not restrict programmers in any way or form, so that new techniques and new insights are not obstructed by this standard.
+This coding standard defines various aspects of the contents of C++ source files. The goal is to provide a usable standard from which programmers should only deviate in very specific circumstances. Care shall be taken to not restrict programmers in any other than form, so that new techniques and new insights are not obstructed by this standard.
 
 This standard assumes that the programmer writes Clean Code. This influences decisions, for example whether or not multiple `return` statements are allowed.
 
