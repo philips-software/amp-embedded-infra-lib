@@ -20,7 +20,7 @@ public:
         : public services::NewConnectionStrategy
     {
     public:
-        MOCK_METHOD(void, StopCurrentConnection, (services::SingleConnectionListener & listener), (override));
+        MOCK_METHOD(void, StopCurrentConnection, (void* listener), (override));
         MOCK_METHOD(void, StartNewConnection, (), (override));
     };
 
@@ -182,18 +182,18 @@ TEST_F(SingleConnectionListenerTest, NewConnectionStrategy)
 {
     listener.SetNewConnectionStrategy(newConnectionStrategy);
 
-    EXPECT_CALL(newConnectionStrategy, StopCurrentConnection(testing::Ref(listener)));
+    EXPECT_CALL(newConnectionStrategy, StopCurrentConnection(&listener));
     AcceptConnection();
     EXPECT_CALL(newConnectionStrategy, StartNewConnection());
-    listener.StopCurrentConnection(listener);
+    listener.StopCurrentConnection(&listener);
     listener.StartNewConnection();
     connectionObserver = nullptr;
 
-    EXPECT_CALL(newConnectionStrategy, StopCurrentConnection(testing::Ref(listener)));
+    EXPECT_CALL(newConnectionStrategy, StopCurrentConnection(&listener));
     ConnectionAccepted();
 
     EXPECT_CALL(connection, CloseAndDestroy());
-    listener.StopCurrentConnection(listener);
+    listener.StopCurrentConnection(&listener);
 
     EXPECT_CALL(connectionObserverMock, Destructed());
     EXPECT_CALL(newConnectionStrategy, StartNewConnection());
