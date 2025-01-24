@@ -1,7 +1,6 @@
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/test_helper/MemoryRangeMatcher.hpp"
-#include "services/ble/Gap.hpp"
 #include "services/ble/test_doubles/GapCentralMock.hpp"
 #include "services/ble/test_doubles/GapCentralObserverMock.hpp"
 #include "gmock/gmock.h"
