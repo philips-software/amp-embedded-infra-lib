@@ -16,7 +16,6 @@ target_sources(hal.interfaces PRIVATE
     AsyncGpio.cpp
     AsyncGpio.hpp
     BackupRam.hpp
-    Can.cpp
     Can.hpp
     CommunicationConfigurator.hpp
     DigitalToAnalogPin.hpp

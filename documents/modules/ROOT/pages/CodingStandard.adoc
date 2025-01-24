@@ -5,13 +5,13 @@ ifndef::sourceRoot[:sourceRoot: ../../../..]
 
 == Introduction and Scope
 
-This coding standard defines various aspects of the contents of C++ source files. The goal is to provide a usable standard from which programmers should only deviate in very specific circumstances. Care shall be taken to not restrict programmers in any way but form, so that new techniques and new insights are not obstructed by this standard.
+This coding standard defines various aspects of the contents of C++ source files. The goal is to provide a usable standard from which programmers should only deviate in very specific circumstances. Care shall be taken to not restrict programmers in any way or form, so that new techniques and new insights are not obstructed by this standard.
 
 This standard assumes that the programmer writes Clean Code. This influences decisions, for example whether or not multiple `return` statements are allowed.
 
-This standard assumes the use of Standard C++, of which the current version is published in 2014. If a compiler is used that does not support specific constructs in this coding standard, those rules are exempted from compliance.
+This standard assumes the use of Standard C++, of which the current version was published in 2014. If a compiler is used that does not support specific constructs in this coding standard, those rules are exempted from compliance.
 
-The scope of this coding standard is limited to C++ source and header files. In e.g. C and C# other constructions and other de facto conventions exist, and the aim is not to supersede those.
+The scope of this coding standard is limited to C++ source and header files. E.g. in C and C# other constructions and de facto conventions exist, and the aim is not to supersede those.
 
 Currently, the structure of files in directories is out of scope, since this is often dependent on preferences in specific tools. This may later be standardized. Furthermore, the partitioning of source files into layers like infra, hal, etc. is also out of scope.
 
@@ -19,7 +19,7 @@ Tools and libraries used are out of scope. This standard does not force a choice
 
 == Principles
 
-Much of writing a standard on coding rules is making arbitrary decisions. For each decision arguments exist why another decision would also work. However, as a complete set of decision, this standard strives to adhere to these principles:
+Much of writing a standard on coding rules is making arbitrary decisions. For each decision discussions take place on why another would also work. However, as a complete set of decision, this standard strives to adhere to these principles:
 
 * *Consistency*: At the very least, following this standard should result in consistent-looking code. This is important because our brains are wired to very quickly identify known patterns and discern structure.
 * *Show importance*: Each line of code is constructed by more important and less important parts. Some parts should immediately capture our attention; other parts are details which should minimize interference with more important parts. An example of this is giving business-logic-level classes long names, while giving arguments short names.
@@ -75,7 +75,7 @@ Table 1 shows the different letter case forms used in identifiers:
 
 *Rationale 3.* Macro names, and only macro names, are written in UPPER_CASE. The C\++ Preprocessor creates a special layer on top of the rest of the C++ syntax, which makes macros special in the sense that they do not follow the scoping of namespaces. Therefore, they should be easily recognizable, so UPPER_CASE is chosen, and UPPER_CASE is not used for any other identifier.
 
-*Rule 2.* An exemption exists for member functions of classes that behave like Standard C\++ container classes. Member functions of those classes shall be written in lower_case, in order to be able to conform to requirements placed on containers by the C++ Standard.
+*Rule 2.* An exemption exists for member functions of classes that behave like Standard C\++ container classes. Member functions of those classes shall be written in lower_case, to conform with requirements placed on containers by the C++ Standard.
 
 *Rule 3.* Identifiers shall not contain any prefix or postfix in the form of `s...`, `m...`, `_ptr`, etc. Since we write Clean Code, scope and type of identifiers should be clear from the context.
 
@@ -155,17 +155,17 @@ a = firstObject.VeryLongFunction(withSomeParameters)
 ----
 
 [NOTE]
-`#ifdef`, `#if`, `#else`, `#elif` need not be followed by indentation, although there are certainly cases where clarity would be improved by applying indentation.
+`#ifdef`, `#if`, `#else`, `#elif` does not need to be followed by indentation, although there are certain cases where indentation would improve clarity.
 
-*Rule 17.* A logical block consists of lines of code that logically belong together. Logical blocks shall not contain blank lines. Logical blocks are separated from other blocks by one blank line.
+*Rule 17.* A logical block consists of lines of code that logically belong together and shall not contain blank lines. Logical blocks are separated from other blocks by one blank line.
 
 *Rule 18.* A blank line shall not be followed by another blank line.
 
-*Rule 19.* A `{` belongs to the logical block beneath it, and a `}` belongs to the logical block above it, and they shall therefore not be succeeded resp. preceded by a blank line.
+*Rule 19.* A `{` belongs to the logical block beneath it, and a `}` belongs to the logical block above it, and shall therefore not be succeeded or preceded by a blank line, respectively.
 
 *Rule 20.* All `#include` statements form one single logical block.
 
-*Rule 21.* Class members that have similar functionality, e.g. all constructors, all modifiers like push and pop, or all accessors like front and back belong to the same logical block. When a block becomes too big, it should be split up. Data members and member functions shall not be mixed in the same block. Example:
+*Rule 21.* Class members that have similar functionality, e.g. constructors, modifiers like push and pop, or accessors like front and back belong to the same logical block. When a block becomes too big, it should be split up. Data members and member functions shall not be mixed in the same block. Example:
 
 [source,cpp]
 ----

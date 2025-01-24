@@ -18,7 +18,7 @@ namespace services
         NewConnectionStrategy& operator=(const NewConnectionStrategy& other) = delete;
         ~NewConnectionStrategy() = default;
 
-        virtual void StopCurrentConnection(SingleConnectionListener& listener) = 0;
+        virtual void StopCurrentConnection(void* listener) = 0;
         virtual void StartNewConnection() = 0;
     };
 
@@ -41,7 +41,7 @@ namespace services
         void Stop(const infra::Function<void()>& onDone) override;
 
         // Implementation of NewConnectionStrategy
-        void StopCurrentConnection(SingleConnectionListener& listener) override;
+        void StopCurrentConnection(void* listener) override;
         void StartNewConnection() override;
 
     private:
