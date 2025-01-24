@@ -64,15 +64,6 @@ namespace services
         tracer.Continue() << "]";
     }
 
-    template<class T>
-    void PrintField(const infra::Optional<T>& value, services::Tracer& tracer)
-    {
-        if (value)
-            PrintField(*value, tracer);
-        else
-            tracer.Continue() << "null";
-    }
-
     namespace detail
     {
         class TracingEchoOnStreamsDescendantHelper
