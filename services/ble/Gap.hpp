@@ -3,7 +3,6 @@
 
 #include "hal/interfaces/MacAddress.hpp"
 #include "infra/timer/Timer.hpp"
-#include "infra/util/BoundedVector.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/EnumCast.hpp"
 #include "infra/util/Observer.hpp"
@@ -291,15 +290,6 @@ namespace services
     {
         return static_cast<GapPeripheral::AdvertisementFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
     }
-
-    struct GapAdvertisingReport
-    {
-        GapAdvertisingEventType eventType;
-        GapAdvertisingEventAddressType addressType;
-        hal::MacAddress address;
-        infra::BoundedVector<uint8_t>::WithMaxSize<GapPeripheral::maxAdvertisementDataSize> data;
-        int8_t rssi;
-    };
 
     class GapCentral;
 
