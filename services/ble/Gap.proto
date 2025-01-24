@@ -178,11 +178,6 @@ message UInt32Value
     uint32 value = 1;
 }
 
-message OptionalAddress
-{
-    optional Address address = 1;
-}
-
 service GapPeripheral
 {
     option (service_id) = 32;
@@ -202,6 +197,7 @@ service GapPeripheral
 
     // Allowed states: advertising
     rpc GetResolvableAddress(Nothing) returns (Nothing) { option (method_id) = 9; }
+    rpc GetIdentityAddress(Nothing) returns (Nothing) { option (method_id) = 10; }
 }
 
 service GapCentral
@@ -245,6 +241,7 @@ service GapPeripheralResponse
     rpc StateChanged(State) returns (Nothing) { option (method_id) = 3; }
     rpc ResolvableAddress(Address) returns (Nothing) { option (method_id) = 4; }
     rpc DisplayPasskey(Passkey) returns (Nothing) { option (method_id) = 5; }
+    rpc IdentityAddress(Address) returns (Nothing) { option (method_id) = 6; }
 }
 
 service GapCentralResponse
@@ -258,6 +255,7 @@ service GapCentralResponse
     rpc PairingFailed(PairingStatus) returns (Nothing) { option (method_id) = 5; }
     rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
     rpc DeviceStarted(Nothing) returns (Nothing) { option (method_id) = 7; }
-    rpc ResolvedPrivateAddress(OptionalAddress) returns (Nothing) { option (method_id) = 8; }
-    rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 9; }
+    rpc ResolvedPrivateAddress(Address) returns (Nothing) { option (method_id) = 8; }
+    rpc ResolvePrivateAddressFailed(Nothing) returns (Nothing) { option (method_id) = 9; }
+    rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 10; }
 }
