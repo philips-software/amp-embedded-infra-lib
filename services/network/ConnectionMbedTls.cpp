@@ -40,7 +40,7 @@ namespace services
             static const char* protos[] = { "http/1.1", nullptr };
             mbedtls_ssl_conf_alpn_protocols(&sslConfig, protos);
             // client configuration only
-            mbedtls_ssl_conf_session_tickets(&sslConfig, MBEDTLS_SSL_SESSION_TICKETS_ENABLED);
+            //mbedtls_ssl_conf_session_tickets(&sslConfig, MBEDTLS_SSL_SESSION_TICKETS_ENABLED);
         }
     }
 

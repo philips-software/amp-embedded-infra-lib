@@ -99,6 +99,7 @@ TEST_F(CertificatesMbedTlsTest, generate_new_key)
 
 TEST_F(CertificatesMbedTlsTest, write_certificate)
 {
+    //psa_crypto_init();
     infra::BoundedString::WithStorage<2048> ownCertificate;
     certificates.WriteOwnCertificate(ownCertificate, randomDataGenerator);
 

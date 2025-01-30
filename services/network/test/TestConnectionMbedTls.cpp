@@ -66,6 +66,7 @@ TEST_F(ConnectionMbedTlsTest, Listen_returns_listener)
 
 TEST_F(ConnectionMbedTlsTest, create_connection)
 {
+    //psa_crypto_init();
     services::ConnectionFactoryMbedTls::WithMaxConnectionsListenersAndConnectors<2, 0, 1> tlsNetworkClient(loopBackNetwork, clientCertificates, randomDataGenerator);
     services::ConnectionFactoryMbedTls::WithMaxConnectionsListenersAndConnectors<2, 1, 0> tlsNetworkServer(loopBackNetwork, serverCertificates, randomDataGenerator);
     infra::SharedPtr<void> listener = tlsNetworkServer.Listen(1234, serverObserverFactory);
@@ -92,6 +93,7 @@ TEST_F(ConnectionMbedTlsTest, create_connection)
 
 TEST_F(ConnectionMbedTlsTest, send_and_receive_data)
 {
+    //psa_crypto_init();
     services::ConnectionFactoryMbedTls::WithMaxConnectionsListenersAndConnectors<2, 1, 0> tlsNetworkServer(loopBackNetwork, serverCertificates, randomDataGenerator);
     services::ConnectionFactoryMbedTls::WithMaxConnectionsListenersAndConnectors<2, 0, 1> tlsNetworkClient(loopBackNetwork, clientCertificates, randomDataGenerator);
     infra::SharedPtr<void> listener = tlsNetworkServer.Listen(1234, serverObserverFactory);
@@ -127,6 +129,7 @@ TEST_F(ConnectionMbedTlsTest, send_and_receive_data)
 
 TEST_F(ConnectionMbedTlsTest, reopen_connection)
 {
+    //psa_crypto_init();
     services::ConnectionFactoryMbedTls::WithMaxConnectionsListenersAndConnectors<2, 1, 0> tlsNetworkServer(loopBackNetwork, serverCertificates, randomDataGenerator);
     services::ConnectionFactoryMbedTls::WithMaxConnectionsListenersAndConnectors<2, 0, 1> tlsNetworkClient(loopBackNetwork, clientCertificates, randomDataGenerator);
     infra::SharedPtr<void> listener = tlsNetworkServer.Listen(1234, serverObserverFactory);
@@ -178,6 +181,7 @@ TEST_F(ConnectionMbedTlsTest, reopen_connection)
 
 TEST_F(ConnectionMbedTlsTest, persistent_session_reopen_connection)
 {
+    //psa_crypto_init();
     infra::BoundedVector<network::MbedTlsPersistedSession>::WithMaxSize<1> stores;
     testing::StrictMock<services::ConfigurationStoreInterfaceMock> configInterface;
     services::ConfigurationStoreAccess<infra::BoundedVector<network::MbedTlsPersistedSession>> configStore{ configInterface, stores };
