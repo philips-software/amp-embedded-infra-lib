@@ -47,7 +47,7 @@ jobs:
           buildPreset: "mutation-testing"
           testPreset: "mutation-testing"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"
-      - uses: philips-software/sonarqube-issue-conversion@ef8f19e025b4e7c6581ca6511662da6774eea09e # v1.0.0
+      - uses: philips-software/sonarqube-issue-conversion@574a39dedf13464c712b9d36be4bac33241884d8 # v1.0.1
         with:
           input: ${{ github.workspace }}/testresults/*.xml
           output: execution.xml
