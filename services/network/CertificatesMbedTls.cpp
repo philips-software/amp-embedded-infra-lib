@@ -36,6 +36,7 @@ namespace services
         mbedtls_x509_crt_init(&caCertificates);
         mbedtls_x509_crt_init(&ownCertificate);
         mbedtls_pk_init(&privateKey);
+        psa_crypto_init();
     }
 
     CertificatesMbedTls::~CertificatesMbedTls()
@@ -43,6 +44,7 @@ namespace services
         mbedtls_pk_free(&privateKey);
         mbedtls_x509_crt_free(&caCertificates);
         mbedtls_x509_crt_free(&ownCertificate);
+        mbedtls_psa_crypto_free();
     }
 
     void CertificatesMbedTls::AddCertificateAuthority(infra::ConstByteRange certificate)
