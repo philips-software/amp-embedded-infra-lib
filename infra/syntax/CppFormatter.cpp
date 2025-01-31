@@ -652,4 +652,18 @@ namespace application
 
     void Undef::PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const
     {}
+
+    StaticAssert::StaticAssert(const std::string& condition, const std::string& message)
+        : Entity(true, false)
+        , condition(condition)
+        , message(message)
+    {}
+
+    void StaticAssert::PrintHeader(google::protobuf::io::Printer& printer) const
+    {
+        printer.Print("static_assert($condition$, \"$message$\");\n", "condition", condition, "message", message);
+    }
+
+    void StaticAssert::PrintSource(google::protobuf::io::Printer& printer, const std::string& scope) const
+    {}
 }
