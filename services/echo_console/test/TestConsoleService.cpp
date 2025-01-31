@@ -1,4 +1,5 @@
 #include "protobuf/echo/test_doubles/EchoSingleLoopback.hpp"
+#include "protobuf/meta_services/ServiceDiscoveryEcho.hpp"
 #include "services/echo_console/ConsoleService.hpp"
 #include "gtest/gtest.h"
 
@@ -11,5 +12,5 @@ public:
         service_discovery::ServiceDiscoveryResponseProxy>
         serializerFactory;
 
-    application::EchoSingleLoopback echo{};
+    application::EchoSingleLoopback echo{ serializerFactory };
 };
