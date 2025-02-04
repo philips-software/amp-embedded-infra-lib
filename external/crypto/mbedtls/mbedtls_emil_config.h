@@ -131,7 +131,9 @@
  *
  * Comment if your system does not support time functions
  */
+#ifdef EMIL_HOST_BUILD
 #define MBEDTLS_HAVE_TIME
+#endif
 
 /**
  * \def MBEDTLS_HAVE_TIME_DATE
