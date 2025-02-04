@@ -3,7 +3,7 @@
 #include "services/echo_console/ConsoleService.hpp"
 #include "gtest/gtest.h"
 
-class ConsoleServiceTest
+class ConsoleServiceProxyTest
     : public testing::Test
 {
 public:
@@ -13,4 +13,5 @@ public:
         serializerFactory;
 
     application::EchoSingleLoopback echo{ serializerFactory };
+    services::ConsoleServiceProxy consoleServiceProxy{ echo };
 };
