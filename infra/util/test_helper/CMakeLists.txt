@@ -1,5 +1,5 @@
-add_library(infra.util_test_helper INTERFACE)
-emil_build_for(infra.util_test_helper BOOL BUILD_TESTING)
+add_library(infra.util_test_helper INTERFACE EXCLUDE_FROM_ALL)
+# emil_build_for(infra.util_test_helper BOOL BUILD_TESTING)
 
 target_link_libraries(infra.util_test_helper INTERFACE
     gmock

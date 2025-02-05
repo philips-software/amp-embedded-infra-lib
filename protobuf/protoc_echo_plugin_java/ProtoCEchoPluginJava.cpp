@@ -3,7 +3,6 @@
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
-#include "google/protobuf/stubs/strutil.h"
 #include <sstream>
 
 namespace application
@@ -117,7 +116,7 @@ namespace application
         printer.Print(R"(        final static int serviceId = $id$;
 
 )",
-            "id", google::protobuf::SimpleItoa(serviceId));
+            "id", std::to_string(serviceId));
 
         for (int i = 0; i != service.method_count(); ++i)
         {
@@ -125,7 +124,7 @@ namespace application
             if (methodId == 0)
                 throw UnspecifiedMethodId{ service.name(), service.method(i)->name() };
 
-            printer.Print("        final static int id$method$ = $id$;\n", "method", service.method(i)->name(), "id", google::protobuf::SimpleItoa(methodId));
+            printer.Print("        final static int id$method$ = $id$;\n", "method", service.method(i)->name(), "id", std::to_string(methodId));
         }
 
         printer.Print("\n");
@@ -177,7 +176,7 @@ namespace application
                     $method$(param$parameter_nr$);
                     break;
 )",
-                    "method_type", service.method(i)->name(), "method", UnderscoresToCamelCase(service.method(i)->name(), false), "parameter_type", QualifiedName(*service.method(i)->input_type()), "parameter_nr", google::protobuf::SimpleItoa(i));
+                    "method_type", service.method(i)->name(), "method", UnderscoresToCamelCase(service.method(i)->name(), false), "parameter_type", QualifiedName(*service.method(i)->input_type()), "parameter_nr", std::to_string(i));
             else
                 printer.Print(R"(                case id$method_type$:
                     $method$();
