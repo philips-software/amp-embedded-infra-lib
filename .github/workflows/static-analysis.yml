@@ -47,9 +47,13 @@ jobs:
           buildPreset: "mutation-testing"
           testPreset: "mutation-testing"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"
+      - uses: philips-software/sonarqube-issue-conversion@574a39dedf13464c712b9d36be4bac33241884d8 # v1.0.1
+        with:
+          input: ${{ github.workspace }}/testresults/*.xml
+          output: execution.xml
+          transformation: gtest-to-generic-execution
       - name: Convert results
         run: |
-          { echo '<testExecutions version="1">'; xsltproc .github/formatters/gtest-to-generic-execution.xslt ${{ github.workspace }}/testresults/*.xml; echo '</testExecutions>'; } | tee execution.xml > /dev/null
           jq -s 'reduce .[] as $item ({}; . * $item)' reports/mull/*.json > reports/mull/merged-mutation.json
           jq --arg workspace "$GITHUB_WORKSPACE" -f .github/formatters/mutation-report-to-generic-issue.jq reports/mull/merged-mutation.json > mutation-sonar.json
           cp build/coverage/compile_commands.json compile_commands.json
