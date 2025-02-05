@@ -1,7 +1,7 @@
 FetchContent_Declare(
     mbedtls
     GIT_REPOSITORY https://github.com/ccrugoPhilips/mbedtls # Mbed-TLS fork
-    GIT_TAG bea92dabc3502f964edb5d83772da52405f84aff # v3.6.2 with patch
+    GIT_TAG e0b9fdf17e1d584ac3713fc7970fd9de530e7063 # v3.6.2 with patch
 )
 
 set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL On)
