@@ -1,5 +1,5 @@
-add_library(services.network_test_doubles STATIC)
-emil_build_for(services.network_test_doubles BOOL BUILD_TESTING)
+add_library(services.network_test_doubles STATIC EXCLUDE_FROM_ALL)
+# emil_build_for(services.network_test_doubles BOOL BUILD_TESTING)
 
 target_link_libraries(services.network_test_doubles PRIVATE
     services.network

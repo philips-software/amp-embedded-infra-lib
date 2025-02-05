@@ -1,7 +1,6 @@
 #include "protobuf/protoc_echo_plugin/EchoObjects.hpp"
 #include "generated/EchoAttributes.pb.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
-#include "google/protobuf/stubs/strutil.h"
 #include "infra/syntax/ProtoFormatter.hpp"
 
 namespace application
@@ -91,6 +90,23 @@ namespace application
 
             return namespaceString + descriptor.name() + "Reference";
         }
+
+        std::vector<std::string> Split(const std::string& str, const char* delimiter)
+        {
+            std::vector<std::string> tokens;
+            std::string::size_type start = 0;
+            std::string::size_type end = str.find(delimiter);
+
+            while (end != std::string::npos)
+            {
+                tokens.push_back(str.substr(start, end - start));
+                start = end + 1;
+                end = str.find(delimiter, start);
+            }
+            tokens.push_back(str.substr(start));
+
+            return tokens;
+        }
     }
 
     EchoField::EchoField(const google::protobuf::FieldDescriptor& descriptor)
@@ -107,7 +123,7 @@ namespace application
 
     std::shared_ptr<EchoField> EchoField::GenerateField(const google::protobuf::FieldDescriptor& fieldDescriptor, EchoRoot& root)
     {
-        if (fieldDescriptor.has_optional_keyword())
+        if (fieldDescriptor.is_optional() && fieldDescriptor.has_presence() && fieldDescriptor.type() != google::protobuf::FieldDescriptor::TYPE_MESSAGE)
             switch (fieldDescriptor.type())
             {
                 case google::protobuf::FieldDescriptor::TYPE_INT64:
@@ -480,7 +496,7 @@ namespace application
         , maxStringSize(descriptor.options().GetExtension(string_size))
     {
         assert(maxStringSize != 0);
-        protoReferenceType = protoType = "services::ProtoString<" + google::protobuf::SimpleItoa(maxStringSize) + ">";
+        protoReferenceType = protoType = "services::ProtoString<" + std::to_string(maxStringSize) + ">";
     }
 
     void EchoFieldString::Accept(EchoFieldVisitor& visitor) const
@@ -518,7 +534,7 @@ namespace application
         if (maxBytesSize == 0)
             throw UnspecifiedBytesSize{ name };
 
-        protoReferenceType = protoType = "services::ProtoBytes<" + google::protobuf::SimpleItoa(maxBytesSize) + ">";
+        protoReferenceType = protoType = "services::ProtoBytes<" + std::to_string(maxBytesSize) + ">";
     }
 
     void EchoFieldBytes::Accept(EchoFieldVisitor& visitor) const
@@ -606,8 +622,8 @@ namespace application
         if (maxArraySize == 0)
             throw UnspecifiedArraySize{ name };
 
-        protoType = "services::ProtoRepeated<" + google::protobuf::SimpleItoa(maxArraySize) + ", " + type->protoType + ">";
-        protoReferenceType = "services::ProtoRepeated<" + google::protobuf::SimpleItoa(maxArraySize) + ", " + type->protoReferenceType + ">";
+        protoType = "services::ProtoRepeated<" + std::to_string(maxArraySize) + ", " + type->protoType + ">";
+        protoReferenceType = "services::ProtoRepeated<" + std::to_string(maxArraySize) + ", " + type->protoReferenceType + ">";
     }
 
     void EchoFieldRepeated::Accept(EchoFieldVisitor& visitor) const
@@ -661,7 +677,7 @@ namespace application
     EchoFile::EchoFile(const google::protobuf::FileDescriptor& file, EchoRoot& root)
     {
         name = google::protobuf::compiler::cpp::StripProto(file.name());
-        packageParts = google::protobuf::Split(file.package(), ".", true);
+        packageParts = Split(file.package(), ".");
 
         for (int i = 0; i != file.dependency_count(); ++i)
             if (file.dependency(i)->name() != "EchoAttributes.proto")

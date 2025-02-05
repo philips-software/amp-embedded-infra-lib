@@ -73,7 +73,7 @@ namespace services
         Message message;
 
     private:
-        infra::BoundedVector<std::pair<uint32_t, infra::Function<void(const infra::DataInputStream& stream)>>>::WithMaxSize<MessageDepth<services::ProtoMessage<Message>>::value + 1> stack{ { std::pair<uint32_t, infra::Function<void(const infra::DataInputStream& stream)>>{ std::numeric_limits<uint32_t>::max(), [this](const infra::DataInputStream& stream)
+        infra::BoundedVector<std::pair<uint32_t, infra::Function<void(const infra::DataInputStream& stream)>>>::WithMaxSize<MessageDepth<services::ProtoMessage<Message>>::value + 2> stack{ { std::pair<uint32_t, infra::Function<void(const infra::DataInputStream& stream)>>{ std::numeric_limits<uint32_t>::max(), [this](const infra::DataInputStream& stream)
             {
                 FeedForMessage(stream, message);
             } } } };

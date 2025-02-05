@@ -3,7 +3,6 @@
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
-#include "google/protobuf/stubs/strutil.h"
 #include <sstream>
 
 namespace application
@@ -119,7 +118,7 @@ namespace application
         printer.Print(R"(        const int serviceId = $id$;
 
 )",
-            "id", google::protobuf::SimpleItoa(serviceId));
+            "id", std::to_string(serviceId));
 
         for (int i = 0; i != service.method_count(); ++i)
         {
@@ -127,7 +126,7 @@ namespace application
             if (methodId == 0)
                 throw UnspecifiedMethodId{ service.name(), service.method(i)->name() };
 
-            printer.Print("        const int id$method$ = $id$;\n", "method", service.method(i)->name(), "id", google::protobuf::SimpleItoa(methodId));
+            printer.Print("        const int id$method$ = $id$;\n", "method", service.method(i)->name(), "id", std::to_string(methodId));
         }
 
         printer.Print("\n");
