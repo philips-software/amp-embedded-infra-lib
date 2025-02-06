@@ -22,10 +22,18 @@ namespace services
         using KeyType = std::array<uint8_t, keySize>;
         using IvType = std::array<uint8_t, blockSize>;
 
+        struct KeyMaterial
+        {
+            KeyType sendKey;
+            IvType sendIv;
+            KeyType receiveKey;
+            IvType receiveIv;
+        };
+
         template<std::size_t Size>
         using WithBuffers = infra::WithStorage<infra::WithStorage<SesameSecured, infra::BoundedVector<uint8_t>::WithMaxSize<Size + blockSize>>, infra::BoundedVector<uint8_t>::WithMaxSize<Size + blockSize>>;
 
-        SesameSecured(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const KeyType& sendKey, const IvType& sendIv, const KeyType& receiveKey, const IvType& receiveIv);
+        SesameSecured(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const KeyMaterial& keyMaterial);
         ~SesameSecured();
 
         void SetNextSendKey(const KeyType& nextSendKey, const IvType& nextSendIv);

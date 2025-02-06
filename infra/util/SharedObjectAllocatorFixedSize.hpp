@@ -37,10 +37,13 @@ namespace infra
         SharedObjectAllocatorFixedSize& operator=(const SharedObjectAllocatorFixedSize& other) = delete;
         ~SharedObjectAllocatorFixedSize();
 
+        // Implementation of SharedObjectAllocator
         SharedPtr<T> Allocate(ConstructionArgs... args) override;
         void OnAllocatable(infra::AutoResetFunction<void()>&& callback) override;
+        bool NoneAllocated() const override;
 
     private:
+        // Implementation of SharedObjectDeleter
         void Destruct(const void* object) override;
         void Deallocate(void* control) override;
 
@@ -64,7 +67,7 @@ namespace infra
     template<class T, class... ConstructionArgs>
     SharedObjectAllocatorFixedSize<T, void(ConstructionArgs...)>::~SharedObjectAllocatorFixedSize()
     {
-        assert(FreeListSize() == elements.size());
+        assert(NoneAllocated());
     }
 
     template<class T, class... ConstructionArgs>
@@ -84,6 +87,12 @@ namespace infra
     void SharedObjectAllocatorFixedSize<T, void(ConstructionArgs...)>::OnAllocatable(infra::AutoResetFunction<void()>&& callback)
     {
         onAllocatable = std::move(callback);
+    }
+
+    template<class T, class... ConstructionArgs>
+    bool SharedObjectAllocatorFixedSize<T, void(ConstructionArgs...)>::NoneAllocated() const
+    {
+        return FreeListSize() == elements.size();
     }
 
     template<class T, class... ConstructionArgs>

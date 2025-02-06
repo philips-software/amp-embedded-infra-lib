@@ -1,5 +1,5 @@
-#ifndef SERVICES_TRACING_ECHO_INSTANTIATIONS
-#define SERVICES_TRACING_ECHO_INSTANTIATIONS
+#ifndef SERVICES_TRACING_ECHO_INSTANTIATION_HPP
+#define SERVICES_TRACING_ECHO_INSTANTIATION_HPP
 
 #include "hal/interfaces/SerialCommunication.hpp"
 #include "services/tracer/Tracer.hpp"
