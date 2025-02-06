@@ -1,5 +1,6 @@
 #include "services/network/HttpClientImpl.hpp"
 #include "infra/stream/CountingOutputStream.hpp"
+#include "infra/stream/LimitedOutputStream.hpp"
 #include "infra/stream/SavedMarkerStream.hpp"
 #include "infra/stream/StringInputStream.hpp"
 #include "infra/util/Compatibility.hpp"
@@ -45,6 +46,11 @@ namespace services
         ExecuteRequestWithContent(HttpVerb::post, requestTarget, content, headers);
     }
 
+    void HttpClientImpl::Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers)
+    {
+        ExecuteRequestWithContent(HttpVerb::post, requestTarget, contentSize, headers);
+    }
+
     void HttpClientImpl::Post(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
         ExecuteRequestWithContent(HttpVerb::post, requestTarget, headers);
@@ -53,6 +59,11 @@ namespace services
     void HttpClientImpl::Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
     {
         ExecuteRequestWithContent(HttpVerb::put, requestTarget, content, headers);
+    }
+
+    void HttpClientImpl::Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers)
+    {
+        ExecuteRequestWithContent(HttpVerb::put, requestTarget, contentSize, headers);
     }
 
     void HttpClientImpl::Put(infra::BoundedConstString requestTarget, HttpHeaders headers)
@@ -330,11 +341,25 @@ namespace services
         ConnectionObserver::Subject().RequestSendStream(std::min(request->Size(), ConnectionObserver::Subject().MaxSendStreamSize()));
     }
 
+    void HttpClientImpl::ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, std::size_t contentSize, const HttpHeaders headers)
+    {
+        request.Emplace(verb, hostname, requestTarget, contentSize, headers);
+        nextState.Emplace<SendingStateForwardFillContent>(*this, contentSize);
+        ConnectionObserver::Subject().RequestSendStream(request->Size());
+    }
+
     void HttpClientImpl::ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, const HttpHeaders headers)
     {
         request.Emplace(verb, hostname, requestTarget, headers, chunked);
         nextState.Emplace<SendingStateForwardSendStream>(*this);
         ConnectionObserver::Subject().RequestSendStream(request->Size());
+    }
+
+    uint32_t HttpClientImpl::ReadContentSizeFromObserver() const
+    {
+        infra::DataOutputStream::WithWriter<infra::CountingStreamWriter> stream;
+        Observer().FillContent(stream.Writer());
+        return stream.Writer().Processed();
     }
 
     void HttpClientImpl::AbortAndDestroy()
@@ -447,6 +472,29 @@ namespace services
         }
     }
 
+    HttpClientImpl::SendingStateForwardFillContent::SendingStateForwardFillContent(HttpClientImpl& client, std::size_t contentSize)
+        : SendingState(client)
+        , contentSize(contentSize)
+    {}
+
+    void HttpClientImpl::SendingStateForwardFillContent::Activate()
+    {
+        if (contentSize != 0)
+            client.ConnectionObserver::Subject().RequestSendStream(std::min(contentSize, client.ConnectionObserver::Subject().MaxSendStreamSize()));
+        else
+            NextState();
+    }
+
+    void HttpClientImpl::SendingStateForwardFillContent::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+    {
+        infra::LimitedStreamWriter limitedWriter(*writer, std::min(contentSize, writer->Available()));
+        auto marker = limitedWriter.ConstructSaveMarker();
+        client.Observer().FillContent(limitedWriter);
+        contentSize -= limitedWriter.GetProcessedBytesSince(marker);
+        writer = nullptr;
+        Activate();
+    }
+
     HttpClientImplWithRedirection::HttpClientImplWithRedirection(infra::BoundedString redirectedUrlStorage, infra::BoundedConstString hostname, ConnectionFactoryWithNameResolver& connectionFactory)
         : HttpClientImpl(hostname)
         , redirectedUrlStorage(redirectedUrlStorage)
@@ -513,6 +561,14 @@ namespace services
         HttpClientImpl::Post(requestTarget, content, headers);
     }
 
+    void HttpClientImplWithRedirection::Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers)
+    {
+        if (query == infra::none)
+            query.Emplace(infra::InPlaceType<QueryPostStreamed>(), contentSize, headers);
+
+        HttpClientImpl::Post(requestTarget, contentSize, headers);
+    }
+
     void HttpClientImplWithRedirection::Post(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
         if (query == infra::none)
@@ -527,6 +583,14 @@ namespace services
             query.Emplace(infra::InPlaceType<QueryPut>(), content, headers);
 
         HttpClientImpl::Put(requestTarget, content, headers);
+    }
+
+    void HttpClientImplWithRedirection::Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers)
+    {
+        if (query == infra::none)
+            query.Emplace(infra::InPlaceType<QueryPutStreamed>(), contentSize, headers);
+
+        HttpClientImpl::Put(requestTarget, contentSize, headers);
     }
 
     void HttpClientImplWithRedirection::Put(infra::BoundedConstString requestTarget, HttpHeaders headers)
@@ -724,6 +788,16 @@ namespace services
         client.Post(requestTarget, headers);
     }
 
+    HttpClientImplWithRedirection::QueryPostStreamed::QueryPostStreamed(std::size_t contentSize, HttpHeaders headers)
+        : headers(headers)
+        , contentSize(contentSize)
+    {}
+
+    void HttpClientImplWithRedirection::QueryPostStreamed::Execute(HttpClient& client, infra::BoundedConstString requestTarget)
+    {
+        client.Post(requestTarget, contentSize, headers);
+    }
+
     HttpClientImplWithRedirection::QueryPut::QueryPut(infra::BoundedConstString content, HttpHeaders headers)
         : content(content)
         , headers(headers)
@@ -741,6 +815,16 @@ namespace services
     void HttpClientImplWithRedirection::QueryPutChunked::Execute(HttpClient& client, infra::BoundedConstString requestTarget)
     {
         client.Put(requestTarget, headers);
+    }
+
+    HttpClientImplWithRedirection::QueryPutStreamed::QueryPutStreamed(std::size_t contentSize, HttpHeaders headers)
+        : headers(headers)
+        , contentSize(contentSize)
+    {}
+
+    void HttpClientImplWithRedirection::QueryPutStreamed::Execute(HttpClient& client, infra::BoundedConstString requestTarget)
+    {
+        client.Put(requestTarget, contentSize, headers);
     }
 
     HttpClientImplWithRedirection::QueryPatch::QueryPatch(infra::BoundedConstString content, HttpHeaders headers)
