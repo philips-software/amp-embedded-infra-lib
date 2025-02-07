@@ -205,7 +205,7 @@ service GapCentral
     // Allowed states: standby
     rpc Connect(ConnectionParameters) returns (Nothing) { option (method_id) = 3; }
 
-    // Allowed states: initiating???
+    // Allowed states: initiating
     rpc CancelConnect(Nothing) returns (Nothing) { option (method_id) = 4; }
 
     // Allowed states: connected
