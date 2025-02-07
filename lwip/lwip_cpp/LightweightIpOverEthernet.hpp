@@ -26,7 +26,9 @@ namespace services
         void SentFrame() override;
 
         err_t Output(pbuf* p);
+#if LWIP_IPV6 == 1
         err_t SetMldMacFilter(const ip6_addr_t* group, netif_mac_filter_action action);
+#endif
         err_t SetIgmpMacFilter(const ip4_addr_t* group, netif_mac_filter_action action);
 
     private:
@@ -63,12 +65,16 @@ namespace services
     private:
         err_t Init();
         err_t Output(pbuf* buffer);
+#if LWIP_IPV6 == 1
         err_t SetMldMacFilter(netif* netif, const ip6_addr_t* group, netif_mac_filter_action action);
+#endif
         err_t SetIgmpMacFilter(netif* netif, const ip4_addr_t* group, netif_mac_filter_action action);
 
         static err_t StaticOutput(netif* netif, pbuf* buffer);
         static err_t StaticInit(netif* netif);
+#if LWIP_IPV6 == 1
         static err_t StaticSetMldMacFilter(netif* netif, const ip6_addr_t* group, netif_mac_filter_action action);
+#endif
         static err_t StaticSetIgmpMacFilter(netif* netif, const ip4_addr_t* group, netif_mac_filter_action action);
 
     private:

@@ -23,10 +23,10 @@ namespace services
         IPv4Address Convert(ip_addr_t address)
         {
             return {
-                ip4_addr1(&address.u_addr.ip4),
-                ip4_addr2(&address.u_addr.ip4),
-                ip4_addr3(&address.u_addr.ip4),
-                ip4_addr4(&address.u_addr.ip4),
+                ip4_addr1(&address),
+                ip4_addr2(&address),
+                ip4_addr3(&address),
+                ip4_addr4(&address),
             };
         }
     }
