@@ -355,13 +355,6 @@ namespace services
         ConnectionObserver::Subject().RequestSendStream(request->Size());
     }
 
-    uint32_t HttpClientImpl::ReadContentSizeFromObserver() const
-    {
-        infra::DataOutputStream::WithWriter<infra::CountingStreamWriter> stream;
-        Observer().FillContent(stream.Writer());
-        return stream.Writer().Processed();
-    }
-
     void HttpClientImpl::AbortAndDestroy()
     {
         ConnectionObserver::Subject().AbortAndDestroy();
@@ -487,7 +480,7 @@ namespace services
 
     void HttpClientImpl::SendingStateForwardFillContent::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
-        infra::LimitedStreamWriter limitedWriter(*writer, std::min(contentSize, writer->Available()));
+        infra::LimitedStreamWriter limitedWriter(*writer, std::min<std::size_t>(contentSize, writer->Available()));
         auto marker = limitedWriter.ConstructSaveMarker();
         client.Observer().FillContent(limitedWriter);
         contentSize -= limitedWriter.GetProcessedBytesSince(marker);
