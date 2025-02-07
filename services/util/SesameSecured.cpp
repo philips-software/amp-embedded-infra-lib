@@ -125,7 +125,11 @@ namespace services
         std::array<uint8_t, blockSize> receivedMac;
         stream >> infra::MakeRange(receivedMac);
 
-        if (computedMac != receivedMac)
+        uint32_t numSame = 0;
+        for (auto i = 0; i != computedMac.size(); ++i)
+            numSame += computedMac[i] == receivedMac[i];
+
+        if (numSame != computedMac.size())
             return;
 
         IncreaseIv(receiveIv);
