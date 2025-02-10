@@ -7,6 +7,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [7.2.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v7.1.0...v7.2.0) (2025-02-10)
+
+
+### Features
+
+* Add NoneAllocated to SharedObjectAllocator ([#808](https://github.com/philips-software/amp-embedded-infra-lib/issues/808)) ([ed9ac24](https://github.com/philips-software/amp-embedded-infra-lib/commit/ed9ac24de4934f103975b71da277d13c28674746))
+* Documentation update ([#809](https://github.com/philips-software/amp-embedded-infra-lib/issues/809)) ([661a1ee](https://github.com/philips-software/amp-embedded-infra-lib/commit/661a1eeee5cc787f8ab4565c4e7e561bbdaef2a6))
+
+
+### Bug Fixes
+
+* Services/util/SesameSecured: avoid timing attack on verifying MAC ([#818](https://github.com/philips-software/amp-embedded-infra-lib/issues/818)) ([51dca2d](https://github.com/philips-software/amp-embedded-infra-lib/commit/51dca2dd532975e17cc53e5f43521916ebb2657e))
+
 ## [7.1.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v7.0.0...v7.1.0) (2025-01-15)
 
 
