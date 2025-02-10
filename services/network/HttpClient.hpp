@@ -75,9 +75,13 @@ namespace services
         virtual void Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) = 0;
         // With this overload, the observer receives repeated SendStreamAvailable calls until it provides no content anymore. Chunked encoding will be used
         virtual void Post(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) = 0;
+        // No chunked encoding will be used
+        virtual void Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) = 0;
 
         virtual void Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) = 0;
         virtual void Put(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) = 0;
+        // No chunked encoding will be used
+        virtual void Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) = 0;
 
         virtual void Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) = 0;
         virtual void Patch(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) = 0;

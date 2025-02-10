@@ -30,7 +30,9 @@ namespace services
         void Options(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         void Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
         void Post(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) override;
         void Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+        void Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) override;
         void Put(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         void Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
         void Patch(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
@@ -67,6 +69,7 @@ namespace services
         void ExecuteRequest(HttpVerb verb, infra::BoundedConstString requestTarget, const HttpHeaders headers);
         void ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers);
         void ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, const HttpHeaders headers);
+        void ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, std::size_t contentSize, const HttpHeaders headers);
         void AbortAndDestroy();
 
     private:
@@ -138,6 +141,22 @@ namespace services
             bool done = false;
         };
 
+        class SendingStateForwardFillContent
+            : public SendingState
+        {
+        public:
+            SendingStateForwardFillContent(HttpClientImpl& client, std::size_t contentSize);
+            SendingStateForwardFillContent(const SendingStateForwardSendStream& other);
+            SendingStateForwardFillContent& operator=(const SendingStateForwardSendStream& other) = delete;
+            ~SendingStateForwardFillContent() override = default;
+
+            void Activate() override;
+            void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+
+        private:
+            std::size_t contentSize;
+        };
+
     protected:
         infra::Optional<HttpRequestFormatter> request;
         infra::Optional<HttpHeaderParser> response;
@@ -153,8 +172,8 @@ namespace services
         infra::Optional<BodyReader> bodyReader;
         infra::AccessedBySharedPtr bodyReaderAccess;
         infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
-        infra::PolymorphicVariant<SendingState, SendingStateRequest, SendingStateForwardSendStream> sendingState;
-        infra::PolymorphicVariant<SendingState, SendingStateRequest, SendingStateForwardSendStream> nextState;
+        infra::PolymorphicVariant<SendingState, SendingStateRequest, SendingStateForwardSendStream, SendingStateForwardFillContent> sendingState;
+        infra::PolymorphicVariant<SendingState, SendingStateRequest, SendingStateForwardSendStream, SendingStateForwardFillContent> nextState;
     };
 
     template<class HttpClient = services::HttpClientImpl, class... Args>
@@ -252,8 +271,10 @@ namespace services
         void Connect(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         void Options(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         void Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+        void Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) override;
         void Post(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         void Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
+        void Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) override;
         void Put(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         void Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
         void Patch(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
@@ -366,6 +387,19 @@ namespace services
             HttpHeaders headers;
         };
 
+        class QueryPostStreamed
+            : public Query
+        {
+        public:
+            explicit QueryPostStreamed(std::size_t contentSize, HttpHeaders headers);
+
+            void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
+
+        private:
+            HttpHeaders headers;
+            std::size_t contentSize;
+        };
+
         class QueryPut
             : public Query
         {
@@ -389,6 +423,19 @@ namespace services
 
         private:
             HttpHeaders headers;
+        };
+
+        class QueryPutStreamed
+            : public Query
+        {
+        public:
+            explicit QueryPutStreamed(std::size_t contentSize, HttpHeaders headers);
+
+            void Execute(HttpClient& client, infra::BoundedConstString requestTarget) override;
+
+        private:
+            HttpHeaders headers;
+            std::size_t contentSize;
         };
 
         class QueryPatch
@@ -441,7 +488,7 @@ namespace services
 
         bool redirecting = false;
         bool connecting = false;
-        infra::Optional<infra::PolymorphicVariant<Query, QueryGet, QueryHead, QueryConnect, QueryOptions, QueryPost, QueryPostChunked, QueryPut, QueryPutChunked, QueryPatch, QueryPatchChunked, QueryDelete>> query;
+        infra::Optional<infra::PolymorphicVariant<Query, QueryGet, QueryHead, QueryConnect, QueryOptions, QueryPost, QueryPostStreamed, QueryPostChunked, QueryPut, QueryPutStreamed, QueryPutChunked, QueryPatch, QueryPatchChunked, QueryDelete>> query;
     };
 
     ////    Implementation    ////
