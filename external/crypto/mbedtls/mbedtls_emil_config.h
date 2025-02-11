@@ -1451,7 +1451,7 @@
  * Comment this macro to disable storing the peer's certificate
  * after the handshake.
  */
-//#define MBEDTLS_SSL_KEEP_PEER_CERTIFICATE
+#define MBEDTLS_SSL_KEEP_PEER_CERTIFICATE
 
 /**
  * \def MBEDTLS_SSL_RENEGOTIATION
@@ -1509,7 +1509,7 @@
  * Uncomment this macro to enable the support for TLS 1.3.
  *
  */
-//#define MBEDTLS_SSL_PROTO_TLS1_3
+#define MBEDTLS_SSL_PROTO_TLS1_3
 
 /**
  * \def MBEDTLS_SSL_TLS1_3_COMPATIBILITY_MODE
@@ -1532,6 +1532,24 @@
  *
  */
 //#define MBEDTLS_SSL_TLS1_3_COMPATIBILITY_MODE
+
+/**
+ * \def MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_MODE_EPHEMERAL_ENABLED
+ *
+ * Enable TLS 1.3 ephemeral key exchange mode.
+ *
+ * Requires: PSA_WANT_ALG_ECDH or PSA_WANT_ALG_FFDH
+ *           MBEDTLS_X509_CRT_PARSE_C
+ *           and at least one of:
+ *               MBEDTLS_ECDSA_C or PSA_WANT_ALG_ECDSA
+ *               MBEDTLS_PKCS1_V21
+ *
+ * Comment to disable support for the ephemeral key exchange mode in TLS 1.3.
+ * If MBEDTLS_SSL_PROTO_TLS1_3 is not enabled, this option does not have any
+ * effect on the build.
+ *
+ */
+#define MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_MODE_EPHEMERAL_ENABLED
 
 /**
  * \def MBEDTLS_SSL_PROTO_DTLS
@@ -2359,7 +2377,7 @@
  * This module adds support for the Hashed Message Authentication Code
  * (HMAC)-based key derivation function (HKDF).
  */
-//#define MBEDTLS_HKDF_C
+#define MBEDTLS_HKDF_C
 
 /**
  * \def MBEDTLS_HMAC_DRBG_C
@@ -2644,7 +2662,7 @@
  *           or MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG.
  *
  */
-//#define MBEDTLS_PSA_CRYPTO_C
+#define MBEDTLS_PSA_CRYPTO_C
 
 /**
  * \def MBEDTLS_PSA_CRYPTO_SE_C
@@ -3283,7 +3301,8 @@
  */
 #define MBEDTLS_SSL_CIPHERSUITES \
     MBEDTLS_TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, \
-    MBEDTLS_TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+    MBEDTLS_TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,  \
+    MBEDTLS_TLS1_3_AES_128_GCM_SHA256
 //#define MBEDTLS_SSL_CIPHERSUITES MBEDTLS_TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,MBEDTLS_TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
 
 /* X509 options */
