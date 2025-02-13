@@ -147,7 +147,7 @@ message DiscoveredDevice
     Address address = 1;
     AddressType addressType = 2;
     bytes data = 3 [(bytes_size) = 32];
-    uint32 rssi = 4;
+    int32 rssi = 4;
     bool isScanResponse = 5;
 }
 
