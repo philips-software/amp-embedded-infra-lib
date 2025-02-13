@@ -344,7 +344,7 @@ namespace services
     void HttpClientImpl::ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, std::size_t contentSize, const HttpHeaders headers)
     {
         request.Emplace(verb, hostname, requestTarget, contentSize, headers);
-        nextState.Emplace<SendingStateForwardFillContent>(*this, contentSize);
+        nextState.Emplace<SendingStateForwardLimitedSendStream>(*this, contentSize);
         ConnectionObserver::Subject().RequestSendStream(request->Size());
     }
 
@@ -465,12 +465,20 @@ namespace services
         }
     }
 
-    HttpClientImpl::SendingStateForwardFillContent::SendingStateForwardFillContent(HttpClientImpl& client, std::size_t contentSize)
+    HttpClientImpl::SendingStateForwardLimitedSendStream::SendingStateForwardLimitedSendStream(HttpClientImpl& client, std::size_t contentSize)
         : SendingState(client)
         , contentSize(contentSize)
     {}
 
-    void HttpClientImpl::SendingStateForwardFillContent::Activate()
+    HttpClientImpl::SendingStateForwardLimitedSendStream::SendingStateForwardLimitedSendStream(const SendingStateForwardLimitedSendStream& other)
+        : SendingState(other.client)
+        , contentSize(other.contentSize)
+    {
+        assert(streamWriter.Allocatable());
+        assert(other.streamWriter.Allocatable());
+    }
+
+    void HttpClientImpl::SendingStateForwardLimitedSendStream::Activate()
     {
         if (contentSize != 0)
             client.ConnectionObserver::Subject().RequestSendStream(std::min(contentSize, client.ConnectionObserver::Subject().MaxSendStreamSize()));
@@ -478,14 +486,25 @@ namespace services
             NextState();
     }
 
-    void HttpClientImpl::SendingStateForwardFillContent::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+    void HttpClientImpl::SendingStateForwardLimitedSendStream::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
-        infra::LimitedStreamWriter limitedWriter(*writer, std::min<std::size_t>(contentSize, writer->Available()));
-        auto marker = limitedWriter.ConstructSaveMarker();
-        client.Observer().FillContent(limitedWriter);
-        contentSize -= limitedWriter.GetProcessedBytesSince(marker);
-        writer = nullptr;
-        Activate();
+        streamWriter.OnAllocatable([this]()
+            {
+                Activate();
+            });
+        client.Observer().SendStreamAvailable(streamWriter.Emplace(*this, std::move(writer)));
+    }
+
+    HttpClientImpl::SendingStateForwardLimitedSendStream::SizeTrackingWriter::SizeTrackingWriter(SendingStateForwardLimitedSendStream& state, infra::SharedPtr<infra::StreamWriter>&& writer)
+        : infra::LimitedStreamWriter(*writer, std::min<std::size_t>(writer->Available(), state.contentSize))
+        , state(state)
+        , writer(std::move(writer))
+        , start(ConstructSaveMarker())
+    {}
+
+    HttpClientImpl::SendingStateForwardLimitedSendStream::SizeTrackingWriter::~SizeTrackingWriter()
+    {
+        state.contentSize -= ConstructSaveMarker() - start;
     }
 
     HttpClientImplWithRedirection::HttpClientImplWithRedirection(infra::BoundedString redirectedUrlStorage, infra::BoundedConstString hostname, ConnectionFactoryWithNameResolver& connectionFactory)

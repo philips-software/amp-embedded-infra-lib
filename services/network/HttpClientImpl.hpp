@@ -141,20 +141,35 @@ namespace services
             bool done = false;
         };
 
-        class SendingStateForwardFillContent
+        class SendingStateForwardLimitedSendStream
             : public SendingState
         {
         public:
-            SendingStateForwardFillContent(HttpClientImpl& client, std::size_t contentSize);
-            SendingStateForwardFillContent(const SendingStateForwardSendStream& other);
-            SendingStateForwardFillContent& operator=(const SendingStateForwardSendStream& other) = delete;
-            ~SendingStateForwardFillContent() override = default;
+            SendingStateForwardLimitedSendStream(HttpClientImpl& client, std::size_t contentSize);
+            SendingStateForwardLimitedSendStream(const SendingStateForwardLimitedSendStream& other);
+            SendingStateForwardLimitedSendStream& operator=(const SendingStateForwardLimitedSendStream& other) = delete;
+            ~SendingStateForwardLimitedSendStream() override = default;
 
             void Activate() override;
             void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
         private:
+            class SizeTrackingWriter
+                : public infra::LimitedStreamWriter
+            {
+            public:
+                SizeTrackingWriter(SendingStateForwardLimitedSendStream& state, infra::SharedPtr<infra::StreamWriter>&& writer);
+                ~SizeTrackingWriter();
+
+            private:
+                SendingStateForwardLimitedSendStream& state;
+                infra::SharedPtr<infra::StreamWriter> writer;
+                std::size_t start;
+            };
+
+        private:
             std::size_t contentSize;
+            infra::NotifyingSharedOptional<SizeTrackingWriter> streamWriter;
         };
 
     protected:
@@ -172,8 +187,8 @@ namespace services
         infra::Optional<BodyReader> bodyReader;
         infra::AccessedBySharedPtr bodyReaderAccess;
         infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
-        infra::PolymorphicVariant<SendingState, SendingStateRequest, SendingStateForwardSendStream, SendingStateForwardFillContent> sendingState;
-        infra::PolymorphicVariant<SendingState, SendingStateRequest, SendingStateForwardSendStream, SendingStateForwardFillContent> nextState;
+        infra::PolymorphicVariant<SendingState, SendingStateRequest, SendingStateForwardSendStream, SendingStateForwardLimitedSendStream> sendingState;
+        infra::PolymorphicVariant<SendingState, SendingStateRequest, SendingStateForwardSendStream, SendingStateForwardLimitedSendStream> nextState;
     };
 
     template<class HttpClient = services::HttpClientImpl, class... Args>
