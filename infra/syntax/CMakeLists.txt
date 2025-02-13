@@ -50,8 +50,9 @@ if (EMIL_HOST_BUILD)
     )
 
     target_link_libraries(infra.syntax PUBLIC
-        protobuf::libprotoc
+        libprotoc
         pugixml
+        libprotobuf
     )
 endif()
 

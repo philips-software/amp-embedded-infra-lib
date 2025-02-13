@@ -1,5 +1,5 @@
-add_library(protobuf.test_doubles STATIC)
-emil_build_for(protobuf.test_doubles BOOL BUILD_TESTING)
+add_library(protobuf.test_doubles STATIC EXCLUDE_FROM_ALL)
+# emil_build_for(protobuf.test_doubles BOOL BUILD_TESTING)
 
 target_link_libraries(protobuf.test_doubles PUBLIC
     gmock
