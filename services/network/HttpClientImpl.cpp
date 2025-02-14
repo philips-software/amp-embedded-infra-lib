@@ -499,12 +499,12 @@ namespace services
         : infra::LimitedStreamWriter(*writer, std::min<std::size_t>(writer->Available(), state.contentSize))
         , state(state)
         , writer(std::move(writer))
-        , start(ConstructSaveMarker())
+        , start(infra::LimitedStreamWriter::ConstructSaveMarker())
     {}
 
     HttpClientImpl::SendingStateForwardLimitedSendStream::SizeTrackingWriter::~SizeTrackingWriter()
     {
-        state.contentSize -= ConstructSaveMarker() - start;
+        state.contentSize -= infra::LimitedStreamWriter::ConstructSaveMarker() - start;
     }
 
     HttpClientImplWithRedirection::HttpClientImplWithRedirection(infra::BoundedString redirectedUrlStorage, infra::BoundedConstString hostname, ConnectionFactoryWithNameResolver& connectionFactory)
