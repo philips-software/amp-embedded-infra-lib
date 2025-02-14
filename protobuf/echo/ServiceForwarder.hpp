@@ -2,6 +2,7 @@
 #define PROTOBUF_ECHO_SERVICE_FORWARDER_HPP
 
 #include "protobuf/echo/Echo.hpp"
+#include <cstdint>
 
 namespace services
 {
@@ -12,7 +13,7 @@ namespace services
         , private MethodSerializer
     {
     public:
-        ServiceForwarderBase(Echo& echo, Echo& forwardTo);
+        ServiceForwarderBase(Echo& echo, uint32_t id, Echo& forwardTo);
 
         // Implementation of Service
         infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy) override;
@@ -44,9 +45,12 @@ namespace services
         : public ServiceForwarderBase
     {
     public:
-        using ServiceForwarderBase::ServiceForwarderBase;
+        ServiceForwarderAll(Echo& echo, Echo& forwardTo);
 
         bool AcceptsService(uint32_t id) const override;
+
+    private:
+        static constexpr uint8_t invalidServiceId = 0;
     };
 
     class ServiceForwarder
@@ -54,11 +58,6 @@ namespace services
     {
     public:
         ServiceForwarder(Echo& echo, uint32_t id, Echo& forwardTo);
-
-        bool AcceptsService(uint32_t id) const override;
-
-    private:
-        uint32_t serviceId;
     };
 }
 
