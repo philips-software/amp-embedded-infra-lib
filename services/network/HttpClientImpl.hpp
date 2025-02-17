@@ -32,8 +32,8 @@ namespace services
         void Post(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         void Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) override;
         void Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
-        void Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) override;
         void Put(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
+        void Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers = noHeaders) override;
         void Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
         void Patch(infra::BoundedConstString requestTarget, HttpHeaders headers = noHeaders) override;
         void Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers = noHeaders) override;
@@ -141,14 +141,14 @@ namespace services
             bool done = false;
         };
 
-        class SendingStateForwardLimitedSendStream
+        class SendingStateForwardDefinedSizeStream
             : public SendingState
         {
         public:
-            SendingStateForwardLimitedSendStream(HttpClientImpl& client, std::size_t contentSize);
-            SendingStateForwardLimitedSendStream(const SendingStateForwardLimitedSendStream& other);
-            SendingStateForwardLimitedSendStream& operator=(const SendingStateForwardLimitedSendStream& other) = delete;
-            ~SendingStateForwardLimitedSendStream() override = default;
+            SendingStateForwardDefinedSizeStream(HttpClientImpl& client, std::size_t contentSize);
+            SendingStateForwardDefinedSizeStream(const SendingStateForwardDefinedSizeStream& other);
+            SendingStateForwardDefinedSizeStream& operator=(const SendingStateForwardDefinedSizeStream& other) = delete;
+            ~SendingStateForwardDefinedSizeStream() override = default;
 
             void Activate() override;
             void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
@@ -158,11 +158,11 @@ namespace services
                 : public infra::LimitedStreamWriter
             {
             public:
-                SizeTrackingWriter(SendingStateForwardLimitedSendStream& state, infra::SharedPtr<infra::StreamWriter>&& writer);
+                SizeTrackingWriter(SendingStateForwardDefinedSizeStream& state, infra::SharedPtr<infra::StreamWriter>&& writer);
                 ~SizeTrackingWriter();
 
             private:
-                SendingStateForwardLimitedSendStream& state;
+                SendingStateForwardDefinedSizeStream& state;
                 infra::SharedPtr<infra::StreamWriter> writer;
                 std::size_t start;
             };
@@ -187,8 +187,8 @@ namespace services
         infra::Optional<BodyReader> bodyReader;
         infra::AccessedBySharedPtr bodyReaderAccess;
         infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
-        infra::PolymorphicVariant<SendingState, SendingStateRequest, SendingStateForwardSendStream, SendingStateForwardLimitedSendStream> sendingState;
-        infra::PolymorphicVariant<SendingState, SendingStateRequest, SendingStateForwardSendStream, SendingStateForwardLimitedSendStream> nextState;
+        infra::PolymorphicVariant<SendingState, SendingStateRequest, SendingStateForwardSendStream, SendingStateForwardDefinedSizeStream> sendingState;
+        infra::PolymorphicVariant<SendingState, SendingStateRequest, SendingStateForwardSendStream, SendingStateForwardDefinedSizeStream> nextState;
     };
 
     template<class HttpClient = services::HttpClientImpl, class... Args>
