@@ -49,6 +49,18 @@ namespace infra
         return (dataRegister & Bit<T>(index)) != 0;
     }
 
+    template<class T, class U>
+    bool AreAnyBitsSet(T dataRegister, const U& mask)
+    {
+        return (dataRegister & mask) != 0;
+    }
+
+    template<class T, class U>
+    bool AreAllBitsSet(T dataRegister, const U& mask)
+    {
+        return (dataRegister & mask) == mask;
+    }
+
     template<class T>
     T GetBits(T dataRegister, uint8_t size, uint8_t position)
     {
