@@ -2,6 +2,20 @@
 
 namespace services
 {
+    ServiceId::ServiceId(uint32_t id)
+        : id(id)
+    {}
+
+    Service::Service(Echo& echo, uint32_t serviceId)
+        : ServiceId(serviceId)
+        , infra::Observer<Service, Echo>(echo)
+    {}
+
+    uint32_t ServiceIdAccess::GetId(const ServiceId& serviceId)
+    {
+        return serviceId.id;
+    }
+
     void Service::MethodDone()
     {
         Rpc().ServiceDone();
