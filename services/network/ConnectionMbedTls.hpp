@@ -80,6 +80,8 @@ namespace services
         virtual void TlsWriteFailure(int reason);
         virtual void TlsLog(int level, const char* file, int line, const char* message);
 
+        static int StaticGenerateRandomData(void* data, unsigned char* output, std::size_t size, std::size_t* osize);
+
     private:
         void InitTls();
         int GetAuthMode(const ParametersWorkaround& parameters) const;
@@ -90,7 +92,6 @@ namespace services
         int SslSend(infra::ConstByteRange buffer);
         int SslReceive(infra::ByteRange buffer);
         void TrySend();
-        static int StaticGenerateRandomData(void* data, unsigned char* output, std::size_t size);
         void GenerateRandomData(infra::ByteRange data);
         static void StaticDebugWrapper(void* context, int level, const char* file, int line, const char* message);
 
@@ -125,6 +126,7 @@ namespace services
         MbedTlsSession* clientSession = nullptr;
         mbedtls_ssl_context sslContext;
         mbedtls_ssl_config sslConfig;
+        mbedtls_entropy_context entropy;
         mbedtls_ctr_drbg_context ctr_drbg;
 
         infra::BoundedDeque<uint8_t>::WithMaxSize<1024> receiveBuffer;

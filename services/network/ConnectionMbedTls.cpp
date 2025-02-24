@@ -1,5 +1,6 @@
 #include "services/network/ConnectionMbedTls.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
+#include "psa/crypto.h"
 
 namespace services
 {
@@ -17,11 +18,16 @@ namespace services
         mbedtls_ssl_init(&sslContext);
         mbedtls_ssl_config_init(&sslConfig);
         mbedtls_ctr_drbg_init(&ctr_drbg);
+        mbedtls_entropy_init(&entropy);
         mbedtls_ssl_conf_dbg(&sslConfig, StaticDebugWrapper, this);
 
         int result;
 
-        result = mbedtls_ctr_drbg_seed(&ctr_drbg, &ConnectionMbedTls::StaticGenerateRandomData, this, nullptr, 0);
+        // Add hardware RNG source if available
+        result = mbedtls_entropy_add_source(&entropy, ConnectionMbedTls::StaticGenerateRandomData, this, MBEDTLS_ENTROPY_BLOCK_SIZE, MBEDTLS_ENTROPY_SOURCE_STRONG);
+        assert(result == 0);
+
+        result = psa_inject_global_data(entropy, ctr_drbg, nullptr, nullptr);
         assert(result == 0);
 
         result = mbedtls_ssl_config_defaults(&sslConfig, server ? MBEDTLS_SSL_IS_SERVER : MBEDTLS_SSL_IS_CLIENT, MBEDTLS_SSL_TRANSPORT_STREAM, MBEDTLS_SSL_PRESET_DEFAULT);
@@ -396,9 +402,10 @@ namespace services
         TryAllocateSendStream();
     }
 
-    int ConnectionMbedTls::StaticGenerateRandomData(void* data, unsigned char* output, std::size_t size)
+    int ConnectionMbedTls::StaticGenerateRandomData(void* data, unsigned char* output, std::size_t size, std::size_t* osize)
     {
         reinterpret_cast<ConnectionMbedTls*>(data)->GenerateRandomData(infra::ByteRange(output, output + size));
+        std::string str(static_cast<char*>(data), size);
         return 0;
     }
 
