@@ -1,6 +1,38 @@
 #include "services/network/ConnectionMbedTls.hpp"
+#include "../../mbedtls-src/library/entropy_poll.h"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "psa/crypto.h"
+
+extern "C"
+{
+    int mbedtls_hardware_poll(void* data, unsigned char* output, size_t len, size_t* olen)
+    {
+        if (data != NULL)
+        {
+            services::ConnectionMbedTls::StaticGenerateRandomData(data, output, len);
+            *olen = len;
+        }
+
+        else
+        {
+            *olen = len;
+        }
+
+        return 0;
+    }
+
+    int psa_inject_entropy_sources(mbedtls_entropy_context* entropy, mbedtls_ctr_drbg_context* drbg)
+    {
+        int result;
+        result = mbedtls_entropy_add_source(entropy, mbedtls_hardware_poll, NULL, MBEDTLS_ENTROPY_BLOCK_SIZE, MBEDTLS_ENTROPY_SOURCE_STRONG);
+        assert(result == 0);
+
+        result = mbedtls_ctr_drbg_seed(drbg, mbedtls_entropy_func, entropy, NULL, 0);
+        assert(result == 0);
+
+        return result;
+    }
+}
 
 namespace services
 {
@@ -23,11 +55,10 @@ namespace services
 
         int result;
 
-        // Add hardware RNG source if available
-        result = mbedtls_entropy_add_source(&entropy, ConnectionMbedTls::StaticGenerateRandomData, this, MBEDTLS_ENTROPY_BLOCK_SIZE, MBEDTLS_ENTROPY_SOURCE_STRONG);
+        result = mbedtls_entropy_add_source(&entropy, mbedtls_hardware_poll, this, MBEDTLS_ENTROPY_BLOCK_SIZE, MBEDTLS_ENTROPY_SOURCE_STRONG);
         assert(result == 0);
 
-        result = psa_inject_global_data(entropy, ctr_drbg, nullptr, nullptr);
+        result = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, nullptr, 0);
         assert(result == 0);
 
         result = mbedtls_ssl_config_defaults(&sslConfig, server ? MBEDTLS_SSL_IS_SERVER : MBEDTLS_SSL_IS_CLIENT, MBEDTLS_SSL_TRANSPORT_STREAM, MBEDTLS_SSL_PRESET_DEFAULT);
@@ -402,7 +433,7 @@ namespace services
         TryAllocateSendStream();
     }
 
-    int ConnectionMbedTls::StaticGenerateRandomData(void* data, unsigned char* output, std::size_t size, std::size_t* osize)
+    int ConnectionMbedTls::StaticGenerateRandomData(void* data, unsigned char* output, std::size_t size)
     {
         reinterpret_cast<ConnectionMbedTls*>(data)->GenerateRandomData(infra::ByteRange(output, output + size));
         std::string str(static_cast<char*>(data), size);

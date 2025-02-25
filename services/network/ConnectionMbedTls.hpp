@@ -80,7 +80,7 @@ namespace services
         virtual void TlsWriteFailure(int reason);
         virtual void TlsLog(int level, const char* file, int line, const char* message);
 
-        static int StaticGenerateRandomData(void* data, unsigned char* output, std::size_t size, std::size_t* osize);
+        static int StaticGenerateRandomData(void* data, unsigned char* output, std::size_t size);
 
     private:
         void InitTls();
