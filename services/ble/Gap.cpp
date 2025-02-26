@@ -84,6 +84,11 @@ namespace services
         return GapBondingObserver::Subject().GetNumberOfBonds();
     }
 
+    bool GapBondingDecorator::IsDeviceBonded(hal::MacAddress address, GapDeviceAddressType addressType) const
+    {
+        return GapBondingObserver::Subject().IsDeviceBonded(address, addressType);
+    }
+
     void GapPeripheralDecorator::StateChanged(GapState state)
     {
         GapPeripheral::NotifyObservers([&state](auto& obs)
@@ -178,6 +183,11 @@ namespace services
         GapCentralObserver::Subject().StopDeviceDiscovery();
     }
 
+    infra::Optional<hal::MacAddress> GapCentralDecorator::ResolvePrivateAddress(hal::MacAddress address) const
+    {
+        return GapCentralObserver::Subject().ResolvePrivateAddress(address);
+    }
+
     GapAdvertisingDataParser::GapAdvertisingDataParser(infra::ConstByteRange data)
         : data(data)
     {}
@@ -242,16 +252,12 @@ namespace infra
         return stream;
     }
 
-    TextOutputStream& operator<<(TextOutputStream& stream, const services::GapAdvertisingEventAddressType& addressType)
+    TextOutputStream& operator<<(TextOutputStream& stream, const services::GapDeviceAddressType& addressType)
     {
-        if (addressType == services::GapAdvertisingEventAddressType::publicDeviceAddress)
+        if (addressType == services::GapDeviceAddressType::publicAddress)
             stream << "Public Device Address";
-        else if (addressType == services::GapAdvertisingEventAddressType::randomDeviceAddress)
-            stream << "Random Device Address";
-        else if (addressType == services::GapAdvertisingEventAddressType::publicIdentityAddress)
-            stream << "Public Identity Address";
         else
-            stream << "Random Identity Address";
+            stream << "Random Device Address";
 
         return stream;
     }
