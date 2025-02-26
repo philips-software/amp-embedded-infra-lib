@@ -156,7 +156,8 @@ message DeviceDiscoveryFilter
     enum Filter
     {
         address = 0;
-        advertisingData = 1;
+        advertisingData = 1; // Filtering on contents of Manufacturer specific data
+
     }
 
     Filter filter = 1;
