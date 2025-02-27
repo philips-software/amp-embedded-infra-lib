@@ -73,7 +73,7 @@ class TerminalWithCommandsTest
     : public TerminalTestBase
 {
 protected:
-    services::TerminalWithCommandsImpl<>::WithMaxQueueAndMaxHistory<> terminal{ communication, tracer };
+    services::TerminalWithCommandsImpl::WithMaxQueueAndMaxHistory<> terminal{ communication, tracer };
     TerminalCommandsStub commands{ terminal };
 };
 
