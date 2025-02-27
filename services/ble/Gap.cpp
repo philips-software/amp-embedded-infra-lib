@@ -2,6 +2,13 @@
 
 namespace services
 {
+    services::GapConnectionParameters GapPeripheral::connectionParameters{
+        6,
+        6,
+        0,
+        500,
+    };
+
     void GapPairingDecorator::DisplayPasskey(int32_t passkey, bool numericComparison)
     {
         GapPairing::NotifyObservers([&passkey, &numericComparison](auto& obs)

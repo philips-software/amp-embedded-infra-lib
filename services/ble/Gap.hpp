@@ -6,8 +6,10 @@
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/EnumCast.hpp"
+#include "infra/util/Function.hpp"
 #include "infra/util/Observer.hpp"
 #include <array>
+#include <cstdint>
 
 namespace services
 {
@@ -250,6 +252,10 @@ namespace services
 
         static constexpr uint8_t maxAdvertisementDataSize = 31;
         static constexpr uint8_t maxScanResponseDataSize = 31;
+
+        static services::GapConnectionParameters connectionParameters;
+
+        virtual void ConnectionUpdate(infra::Function<void(uint16_t intervalMultiplier)> onConnectionUpdate) {}
 
     public:
         virtual GapAddress GetAddress() const = 0;
