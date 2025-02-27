@@ -6,22 +6,21 @@
 #include "infra/util/BoundedDeque.hpp"
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/Observer.hpp"
-#include "infra/util/Tokenizer.hpp"
 #include "services/tracer/Tracer.hpp"
 #include <cstddef>
 
 namespace services
 {
     template<size_t MaxCommandLength = 256>
-    class Terminal
+    class TerminalBase
     {
     public:
         constexpr static std::size_t MaxBuffer = MaxCommandLength;
 
         template<std::size_t MaxQueueSize = 32, std::size_t MaxHistory = 4>
-        using WithMaxQueueAndMaxHistory = infra::WithStorage<infra::WithStorage<Terminal, std::array<uint8_t, MaxQueueSize + 1>>, typename infra::BoundedDeque<infra::BoundedString::WithStorage<MaxBuffer>>::template WithMaxSize<MaxHistory>>;
+        using WithMaxQueueAndMaxHistory = infra::WithStorage<infra::WithStorage<TerminalBase, std::array<uint8_t, MaxQueueSize + 1>>, typename infra::BoundedDeque<infra::BoundedString::WithStorage<MaxBuffer>>::template WithMaxSize<MaxHistory>>;
 
-        explicit Terminal(infra::MemoryRange<uint8_t> bufferQueue, infra::BoundedDeque<infra::BoundedString::WithStorage<MaxBuffer>>& history, hal::SerialCommunication& communication, services::Tracer& tracer);
+        explicit TerminalBase(infra::MemoryRange<uint8_t> bufferQueue, infra::BoundedDeque<infra::BoundedString::WithStorage<MaxBuffer>>& history, hal::SerialCommunication& communication, services::Tracer& tracer);
 
         void Print(const char* message);
 
@@ -111,22 +110,24 @@ namespace services
     {};
 
     template<size_t MaxCommandLength = 256>
-    class TerminalWithCommandsImpl
+    class TerminalWithCommandsImplBase
         : public TerminalWithCommands
-        , public Terminal<MaxCommandLength>
+        , public TerminalBase<MaxCommandLength>
     {
     public:
         template<std::size_t MaxQueueSize = 32, std::size_t MaxHistory = 4>
-        using WithMaxQueueAndMaxHistory = infra::WithStorage<infra::WithStorage<TerminalWithCommandsImpl, std::array<uint8_t, MaxQueueSize + 1>>, typename infra::BoundedDeque<infra::BoundedString::WithStorage<Terminal<MaxCommandLength>::MaxBuffer>>::template WithMaxSize<MaxHistory>>;
+        using WithMaxQueueAndMaxHistory = infra::WithStorage<infra::WithStorage<TerminalWithCommandsImplBase, std::array<uint8_t, MaxQueueSize + 1>>, typename infra::BoundedDeque<infra::BoundedString::WithStorage<TerminalBase<MaxCommandLength>::MaxBuffer>>::template WithMaxSize<MaxHistory>>;
 
-        TerminalWithCommandsImpl(infra::MemoryRange<uint8_t> bufferQueue, infra::BoundedDeque<infra::BoundedString::WithStorage<Terminal<MaxCommandLength>::MaxBuffer>>& history, hal::SerialCommunication& communication, services::Tracer& tracer);
+        TerminalWithCommandsImplBase(infra::MemoryRange<uint8_t> bufferQueue, infra::BoundedDeque<infra::BoundedString::WithStorage<TerminalBase<MaxCommandLength>::MaxBuffer>>& history, hal::SerialCommunication& communication, services::Tracer& tracer);
 
     private:
         void OnData(infra::BoundedConstString data) override;
     };
 
+    ////    Implementation    ////
+
     template<size_t MaxCommandLength>
-    Terminal<MaxCommandLength>::Terminal(infra::MemoryRange<uint8_t> bufferQueue, infra::BoundedDeque<infra::BoundedString::WithStorage<MaxBuffer>>& history, hal::SerialCommunication& communication, services::Tracer& tracer)
+    TerminalBase<MaxCommandLength>::TerminalBase(infra::MemoryRange<uint8_t> bufferQueue, infra::BoundedDeque<infra::BoundedString::WithStorage<MaxBuffer>>& history, hal::SerialCommunication& communication, services::Tracer& tracer)
         : queue(bufferQueue, [this]
               {
                   HandleInput();
@@ -142,20 +143,20 @@ namespace services
     }
 
     template<size_t MaxCommandLength>
-    void Terminal<MaxCommandLength>::Print(const char* message)
+    void TerminalBase<MaxCommandLength>::Print(const char* message)
     {
         tracer.Continue() << message;
     }
 
     template<size_t MaxCommandLength>
-    void Terminal<MaxCommandLength>::HandleInput()
+    void TerminalBase<MaxCommandLength>::HandleInput()
     {
         while (!queue.Empty())
             HandleChar(static_cast<char>(queue.Get()));
     }
 
     template<size_t MaxCommandLength>
-    void Terminal<MaxCommandLength>::HandleChar(char c)
+    void TerminalBase<MaxCommandLength>::HandleChar(char c)
     {
         if (state.processingEscapeSequence)
             state.processingEscapeSequence = ProcessEscapeSequence(c);
@@ -164,7 +165,7 @@ namespace services
     }
 
     template<size_t MaxCommandLength>
-    void Terminal<MaxCommandLength>::HandleNonEscapeChar(char c)
+    void TerminalBase<MaxCommandLength>::HandleNonEscapeChar(char c)
     {
         switch (c)
         {
@@ -211,7 +212,7 @@ namespace services
     }
 
     template<size_t MaxCommandLength>
-    bool Terminal<MaxCommandLength>::ProcessEscapeSequence(char in)
+    bool TerminalBase<MaxCommandLength>::ProcessEscapeSequence(char in)
     {
         static const infra::BoundedConstString ignoredEscapeCharacters = ";[O0123456789";
         if (ignoredEscapeCharacters.find(in) != infra::BoundedConstString::npos)
@@ -246,7 +247,7 @@ namespace services
     }
 
     template<size_t MaxCommandLength>
-    void Terminal<MaxCommandLength>::ProcessEnter()
+    void TerminalBase<MaxCommandLength>::ProcessEnter()
     {
         Print("\r\n");
 
@@ -262,14 +263,14 @@ namespace services
     }
 
     template<size_t MaxCommandLength>
-    void Terminal<MaxCommandLength>::ProcessBackspace()
+    void TerminalBase<MaxCommandLength>::ProcessBackspace()
     {
         MoveCursorLeft();
         ProcessDelete();
     }
 
     template<size_t MaxCommandLength>
-    void Terminal<MaxCommandLength>::ProcessDelete()
+    void TerminalBase<MaxCommandLength>::ProcessDelete()
     {
         if (state.cursorPosition < buffer.size())
             EraseCharacterUnderCursor();
@@ -278,7 +279,7 @@ namespace services
     }
 
     template<size_t MaxCommandLength>
-    void Terminal<MaxCommandLength>::EraseCharacterUnderCursor()
+    void TerminalBase<MaxCommandLength>::EraseCharacterUnderCursor()
     {
         assert(state.cursorPosition < buffer.size());
 
@@ -298,7 +299,7 @@ namespace services
     }
 
     template<size_t MaxCommandLength>
-    void Terminal<MaxCommandLength>::MoveCursorHome()
+    void TerminalBase<MaxCommandLength>::MoveCursorHome()
     {
         state.cursorPosition = 0;
         tracer.Continue() << '\r';
@@ -306,7 +307,7 @@ namespace services
     }
 
     template<size_t MaxCommandLength>
-    void Terminal<MaxCommandLength>::MoveCursorEnd()
+    void TerminalBase<MaxCommandLength>::MoveCursorEnd()
     {
         if (buffer.size() > 0 && state.cursorPosition < buffer.size())
             tracer.Continue() << ByteRangeAsString(infra::MakeRange(reinterpret_cast<const uint8_t*>(std::next(buffer.begin(), state.cursorPosition)), reinterpret_cast<const uint8_t*>(buffer.end())));
@@ -314,7 +315,7 @@ namespace services
     }
 
     template<size_t MaxCommandLength>
-    void Terminal<MaxCommandLength>::MoveCursorLeft()
+    void TerminalBase<MaxCommandLength>::MoveCursorLeft()
     {
         if (state.cursorPosition > 0)
         {
@@ -326,7 +327,7 @@ namespace services
     }
 
     template<size_t MaxCommandLength>
-    void Terminal<MaxCommandLength>::MoveCursorRight()
+    void TerminalBase<MaxCommandLength>::MoveCursorRight()
     {
         if (state.cursorPosition < buffer.size())
         {
@@ -338,7 +339,7 @@ namespace services
     }
 
     template<size_t MaxCommandLength>
-    void Terminal<MaxCommandLength>::StoreHistory(infra::BoundedString element)
+    void TerminalBase<MaxCommandLength>::StoreHistory(infra::BoundedString element)
     {
         if (history.full())
             history.pop_front();
@@ -348,7 +349,7 @@ namespace services
     }
 
     template<size_t MaxCommandLength>
-    void Terminal<MaxCommandLength>::OverwriteBuffer(infra::BoundedConstString element)
+    void TerminalBase<MaxCommandLength>::OverwriteBuffer(infra::BoundedConstString element)
     {
         std::size_t previousSize = buffer.size();
         buffer.assign(element);
@@ -369,7 +370,7 @@ namespace services
     }
 
     template<size_t MaxCommandLength>
-    void Terminal<MaxCommandLength>::HistoryForward()
+    void TerminalBase<MaxCommandLength>::HistoryForward()
     {
         if (!history.empty() && state.historyIndex < history.size() - 1)
             OverwriteBuffer(history[++state.historyIndex]);
@@ -378,7 +379,7 @@ namespace services
     }
 
     template<size_t MaxCommandLength>
-    void Terminal<MaxCommandLength>::HistoryBackward()
+    void TerminalBase<MaxCommandLength>::HistoryBackward()
     {
         if (state.historyIndex > 0)
             OverwriteBuffer(history[--state.historyIndex]);
@@ -387,7 +388,7 @@ namespace services
     }
 
     template<size_t MaxCommandLength>
-    void Terminal<MaxCommandLength>::SendNonEscapeChar(char c)
+    void TerminalBase<MaxCommandLength>::SendNonEscapeChar(char c)
     {
         if (c > 31 && c < 127)
         {
@@ -400,39 +401,18 @@ namespace services
     }
 
     template<size_t MaxCommandLength>
-    void Terminal<MaxCommandLength>::SendBell()
+    void TerminalBase<MaxCommandLength>::SendBell()
     {
         tracer.Continue() << '\a';
     }
 
-    bool TerminalCommands::ProcessCommand(infra::BoundedConstString data)
-    {
-        infra::Tokenizer tokenizer(data, ' ');
-        infra::BoundedConstString command = tokenizer.Token(0);
-        infra::BoundedConstString params = tokenizer.TokenAndRest(1);
-
-        auto commands = Commands();
-        auto it = std::find_if(commands.begin(), commands.end(), [command](const Command& entry)
-            {
-                return (command == entry.info.longName) || (command == entry.info.shortName);
-            });
-
-        if (it != commands.end())
-        {
-            it->function(params);
-            return true;
-        }
-        else
-            return false;
-    }
-
     template<size_t MaxCommandLength>
-    TerminalWithCommandsImpl<MaxCommandLength>::TerminalWithCommandsImpl(infra::MemoryRange<uint8_t> bufferQueue, infra::BoundedDeque<infra::BoundedString::WithStorage<Terminal<MaxCommandLength>::MaxBuffer>>& history, hal::SerialCommunication& communication, services::Tracer& tracer)
-        : services::Terminal<MaxCommandLength>(bufferQueue, history, communication, tracer)
+    TerminalWithCommandsImplBase<MaxCommandLength>::TerminalWithCommandsImplBase(infra::MemoryRange<uint8_t> bufferQueue, infra::BoundedDeque<infra::BoundedString::WithStorage<TerminalBase<MaxCommandLength>::MaxBuffer>>& history, hal::SerialCommunication& communication, services::Tracer& tracer)
+        : services::TerminalBase<MaxCommandLength>(bufferQueue, history, communication, tracer)
     {}
 
     template<size_t MaxCommandLength>
-    void TerminalWithCommandsImpl<MaxCommandLength>::OnData(infra::BoundedConstString data)
+    void TerminalWithCommandsImplBase<MaxCommandLength>::OnData(infra::BoundedConstString data)
     {
         bool commandProcessed = NotifyObservers([data](TerminalCommands& observer)
             {
@@ -440,8 +420,11 @@ namespace services
             });
 
         if (!commandProcessed)
-            Terminal<MaxCommandLength>::Print("Unrecognized command.");
+            TerminalBase<MaxCommandLength>::Print("Unrecognized command.");
     }
+
+    using Terminal = TerminalBase<>;
+    using TerminalWithCommandsImpl = TerminalWithCommandsImplBase<>;
 }
 
 #endif
