@@ -3,6 +3,7 @@
 
 namespace services
 {
+    /*
     Terminal::Terminal(infra::MemoryRange<uint8_t> bufferQueue, infra::BoundedDeque<infra::BoundedString::WithStorage<MaxBuffer>>& history, hal::SerialCommunication& communication, services::Tracer& tracer)
         : queue(bufferQueue, [this]
               {
@@ -298,4 +299,5 @@ namespace services
         if (!commandProcessed)
             Print("Unrecognized command.");
     }
+    */
 }
