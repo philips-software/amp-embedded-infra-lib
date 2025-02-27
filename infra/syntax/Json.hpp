@@ -3,6 +3,7 @@
 
 #include "infra/stream/OutputStream.hpp"
 #include "infra/util/BoundedString.hpp"
+#include "infra/util/Compatibility.hpp"
 #include "infra/util/Optional.hpp"
 #include "infra/util/ReverseRange.hpp"
 #include "infra/util/Variant.hpp"
@@ -293,6 +294,9 @@ namespace infra
         JsonArray GetArray(infra::BoundedConstString key);
         JsonValue GetValue(infra::BoundedConstString key);
 
+        template<class T>
+        T GetIntegerAs(infra::BoundedConstString key);
+
         infra::Optional<JsonString> GetOptionalString(infra::BoundedConstString key);
         infra::Optional<JsonFloat> GetOptionalFloat(infra::BoundedConstString key);
         infra::Optional<bool> GetOptionalBoolean(infra::BoundedConstString key);
@@ -492,7 +496,6 @@ namespace infra
         JsonValueArrayIterator() = default;
         JsonValueArrayIterator(const JsonArrayIterator& arrayIterator, const JsonArrayIterator& arrayEndIterator);
 
-    public:
         bool operator==(const JsonValueArrayIterator& other) const;
         bool operator!=(const JsonValueArrayIterator& other) const;
 
@@ -516,6 +519,35 @@ namespace infra
     bool ValidJsonObject(infra::BoundedConstString contents);
 
     ////    Implementation    ////
+
+    template<class T>
+    T JsonObject::GetIntegerAs(infra::BoundedConstString key)
+    {
+        const auto convert = [this](uint64_t value, bool negative) -> T
+        {
+            if (negative)
+            {
+                const auto signedValue = static_cast<int64_t>(value) * -1;
+                if (signedValue < 0 && infra::in_range<T>(signedValue))
+                    return static_cast<T>(signedValue);
+            }
+            else if (infra::in_range<T>(value))
+                return static_cast<T>(value);
+
+            SetError();
+            return {};
+        };
+
+        const auto jsonValue = GetValue(key);
+
+        if (jsonValue.Is<int32_t>())
+            return convert(std::abs(static_cast<int64_t>(jsonValue.Get<int32_t>())), jsonValue.Get<int32_t>() < 0);
+        else if (jsonValue.Is<JsonBiggerInt>())
+            return convert(jsonValue.Get<JsonBiggerInt>().Value(), jsonValue.Get<JsonBiggerInt>().Negative());
+
+        SetError();
+        return {};
+    }
 
     template<class T>
     JsonValueArrayIterator<T>::JsonValueArrayIterator(const JsonArrayIterator& arrayIterator, const JsonArrayIterator& arrayEndIterator)
