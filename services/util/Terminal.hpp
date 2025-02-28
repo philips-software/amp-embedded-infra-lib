@@ -11,7 +11,7 @@
 
 namespace services
 {
-    template<size_t MaxCommandLength = 256>
+    template<size_t MaxCommandLength>
     class TerminalBase
     {
     public:
@@ -109,7 +109,7 @@ namespace services
         : public infra::Subject<TerminalCommands>
     {};
 
-    template<size_t MaxCommandLength = 256>
+    template<size_t MaxCommandLength>
     class TerminalWithCommandsImplBase
         : public TerminalWithCommands
         , public TerminalBase<MaxCommandLength>
@@ -344,7 +344,7 @@ namespace services
         if (history.full())
             history.pop_front();
 
-        history.push_back(buffer);
+        history.push_back(element);
         state.historyIndex = history.size();
     }
 
@@ -390,6 +390,7 @@ namespace services
     template<size_t MaxCommandLength>
     void TerminalBase<MaxCommandLength>::SendNonEscapeChar(char c)
     {
+        tracer.Trace() << "Buffer Fill rate:" << buffer.size() << "/" << buffer.max_size();
         if (c > 31 && c < 127)
         {
             tracer.Continue() << c;
@@ -423,8 +424,8 @@ namespace services
             TerminalBase<MaxCommandLength>::Print("Unrecognized command.");
     }
 
-    using Terminal = TerminalBase<>;
-    using TerminalWithCommandsImpl = TerminalWithCommandsImplBase<>;
+    using Terminal = TerminalBase<256>;
+    using TerminalWithCommandsImpl = TerminalWithCommandsImplBase<256>;
 }
 
 #endif
