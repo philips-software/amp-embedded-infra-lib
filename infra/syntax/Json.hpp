@@ -527,7 +527,7 @@ namespace infra
         {
             if (negative)
             {
-                const auto signedValue = static_cast<int64_t>(value) * -1;
+                const auto signedValue = (static_cast<int64_t>(value - 1) * -1ll) - 1;
                 if (signedValue < 0 && infra::in_range<T>(signedValue))
                     return static_cast<T>(signedValue);
             }
