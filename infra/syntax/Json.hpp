@@ -527,7 +527,14 @@ namespace infra
         {
             if (negative)
             {
-                const auto signedValue = (static_cast<int64_t>(value - 1) * -1ll) - 1;
+                // the offset by one (twice) is to prevent overflow when converting a uint64_t
+                // to a int64_t, where the uint64_t value is equal to the absolute of
+                // std::numeric_limits<int64_t>::min(), which is equivalent to
+                // 9223372036854775808, which can't be represented in a int64_t.
+                // the offset first reduces the 9223372036854775808 to 9223372036854775807
+                // which can be represented in a int64_t, and the second offset is to
+                // convert -9223372036854775807 back to -9223372036854775808
+                const auto signedValue = (static_cast<int64_t>(value - 1) * -1) - 1;
                 if (signedValue < 0 && infra::in_range<T>(signedValue))
                     return static_cast<T>(signedValue);
             }
