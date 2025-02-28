@@ -390,7 +390,6 @@ namespace services
     template<size_t MaxCommandLength>
     void TerminalBase<MaxCommandLength>::SendNonEscapeChar(char c)
     {
-        tracer.Trace() << "Buffer Fill rate:" << buffer.size() << "/" << buffer.max_size();
         if (c > 31 && c < 127)
         {
             tracer.Continue() << c;
