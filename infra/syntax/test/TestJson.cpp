@@ -1,5 +1,8 @@
 #include "infra/syntax/Json.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include <cstdint>
+#include <limits>
 
 TEST(BasicUsageTest, object_with_some_values)
 {
@@ -710,6 +713,147 @@ TEST(JsonObjectTest, null_value)
     EXPECT_TRUE(object.HasKey("key1"));
     EXPECT_FALSE(object.GetOptionalString("key1"));
     EXPECT_FALSE(object.Error());
+}
+
+TEST(JsonObjectTest, integer_conversion_uint8)
+{
+    EXPECT_THAT(infra::JsonObject{ R"({"key1":0})" }.GetIntegerAs<uint8_t>("key1"), testing::Eq(std::numeric_limits<uint8_t>::min()));
+    EXPECT_THAT(infra::JsonObject{ R"({"key1":255})" }.GetIntegerAs<uint8_t>("key1"), testing::Eq(std::numeric_limits<uint8_t>::max()));
+}
+
+TEST(JsonObjectTest, integer_conversion_uint8_out_of_bounds)
+{
+    auto jsonObjectMin = infra::JsonObject{ R"({"min":-1)" };
+    auto jsonObjectMax = infra::JsonObject{ R"({"max":256)" };
+
+    EXPECT_THAT(jsonObjectMin.GetIntegerAs<uint8_t>("min"), testing::Eq(0));
+    EXPECT_THAT(jsonObjectMin.Error(), testing::IsTrue());
+
+    EXPECT_THAT(jsonObjectMax.GetIntegerAs<uint8_t>("max"), testing::Eq(0));
+    EXPECT_THAT(jsonObjectMax.Error(), testing::IsTrue());
+}
+
+TEST(JsonObjectTest, integer_conversion_int8)
+{
+    EXPECT_THAT(infra::JsonObject{ R"({"key1":-128})" }.GetIntegerAs<int8_t>("key1"), testing::Eq(std::numeric_limits<int8_t>::min()));
+    EXPECT_THAT(infra::JsonObject{ R"({"key1":127})" }.GetIntegerAs<int8_t>("key1"), testing::Eq(std::numeric_limits<int8_t>::max()));
+}
+
+TEST(JsonObjectTest, integer_conversion_int8_out_of_bounds)
+{
+    auto jsonObjectMin = infra::JsonObject{ R"({"min":-129)" };
+    auto jsonObjectMax = infra::JsonObject{ R"({"max":128)" };
+
+    EXPECT_THAT(jsonObjectMin.GetIntegerAs<int8_t>("min"), testing::Eq(0));
+    EXPECT_THAT(jsonObjectMin.Error(), testing::IsTrue());
+
+    EXPECT_THAT(jsonObjectMax.GetIntegerAs<int8_t>("max"), testing::Eq(0));
+    EXPECT_THAT(jsonObjectMax.Error(), testing::IsTrue());
+}
+
+TEST(JsonObjectTest, integer_conversion_uint16)
+{
+    EXPECT_THAT(infra::JsonObject{ R"({"key1":0})" }.GetIntegerAs<uint16_t>("key1"), testing::Eq(std::numeric_limits<uint16_t>::min()));
+    EXPECT_THAT(infra::JsonObject{ R"({"key1":65535})" }.GetIntegerAs<uint16_t>("key1"), testing::Eq(std::numeric_limits<uint16_t>::max()));
+}
+
+TEST(JsonObjectTest, integer_conversion_uint16_t_out_of_bounds)
+{
+    auto jsonObjectMin = infra::JsonObject{ R"({"min":-1)" };
+    auto jsonObjectMax = infra::JsonObject{ R"({"max":65536)" };
+
+    EXPECT_THAT(jsonObjectMin.GetIntegerAs<uint16_t>("min"), testing::Eq(0));
+    EXPECT_THAT(jsonObjectMin.Error(), testing::IsTrue());
+
+    EXPECT_THAT(jsonObjectMax.GetIntegerAs<uint16_t>("max"), testing::Eq(0));
+    EXPECT_THAT(jsonObjectMax.Error(), testing::IsTrue());
+}
+
+TEST(JsonObjectTest, integer_conversion_int16)
+{
+    EXPECT_THAT(infra::JsonObject{ R"({"key1":-32768})" }.GetIntegerAs<int16_t>("key1"), testing::Eq(std::numeric_limits<int16_t>::min()));
+    EXPECT_THAT(infra::JsonObject{ R"({"key1":32767})" }.GetIntegerAs<int16_t>("key1"), testing::Eq(std::numeric_limits<int16_t>::max()));
+}
+
+TEST(JsonObjectTest, integer_conversion_int16_t_out_of_bounds)
+{
+    auto jsonObjectMin = infra::JsonObject{ R"({"min":-32769)" };
+    auto jsonObjectMax = infra::JsonObject{ R"({"max":32768)" };
+
+    EXPECT_THAT(jsonObjectMin.GetIntegerAs<int16_t>("min"), testing::Eq(0));
+    EXPECT_THAT(jsonObjectMin.Error(), testing::IsTrue());
+
+    EXPECT_THAT(jsonObjectMax.GetIntegerAs<int16_t>("max"), testing::Eq(0));
+    EXPECT_THAT(jsonObjectMax.Error(), testing::IsTrue());
+}
+
+TEST(JsonObjectTest, integer_conversion_uint32)
+{
+    EXPECT_THAT(infra::JsonObject{ R"({"key1":0})" }.GetIntegerAs<uint32_t>("key1"), testing::Eq(std::numeric_limits<uint32_t>::min()));
+    EXPECT_THAT(infra::JsonObject{ R"({"key1":4294967295})" }.GetIntegerAs<uint32_t>("key1"), testing::Eq(std::numeric_limits<uint32_t>::max()));
+}
+
+TEST(JsonObjectTest, integer_conversion_uint32_t_out_of_bounds)
+{
+    auto jsonObjectMin = infra::JsonObject{ R"({"min":-1)" };
+    auto jsonObjectMax = infra::JsonObject{ R"({"max":4294967296)" };
+
+    EXPECT_THAT(jsonObjectMin.GetIntegerAs<uint32_t>("min"), testing::Eq(0));
+    EXPECT_THAT(jsonObjectMin.Error(), testing::IsTrue());
+
+    EXPECT_THAT(jsonObjectMax.GetIntegerAs<uint32_t>("max"), testing::Eq(0));
+    EXPECT_THAT(jsonObjectMax.Error(), testing::IsTrue());
+}
+
+TEST(JsonObjectTest, integer_conversion_int32)
+{
+    EXPECT_THAT(infra::JsonObject{ R"({"key1":-2147483648})" }.GetIntegerAs<int32_t>("key1"), testing::Eq(std::numeric_limits<int32_t>::min()));
+    EXPECT_THAT(infra::JsonObject{ R"({"key1":2147483647})" }.GetIntegerAs<int32_t>("key1"), testing::Eq(std::numeric_limits<int32_t>::max()));
+}
+
+TEST(JsonObjectTest, integer_conversion_int32_t_out_of_bounds)
+{
+    auto jsonObjectMin = infra::JsonObject{ R"({"min":-2147483649)" };
+    auto jsonObjectMax = infra::JsonObject{ R"({"max":2147483648)" };
+
+    EXPECT_THAT(jsonObjectMin.GetIntegerAs<int32_t>("min"), testing::Eq(0));
+    EXPECT_THAT(jsonObjectMin.Error(), testing::IsTrue());
+
+    EXPECT_THAT(jsonObjectMax.GetIntegerAs<int32_t>("max"), testing::Eq(0));
+    EXPECT_THAT(jsonObjectMax.Error(), testing::IsTrue());
+}
+
+TEST(JsonObjectTest, integer_conversion_uint64)
+{
+    EXPECT_THAT(infra::JsonObject{ R"({"key1":0})" }.GetIntegerAs<uint64_t>("key1"), testing::Eq(std::numeric_limits<uint64_t>::min()));
+    EXPECT_THAT(infra::JsonObject{ R"({"key1":18446744073709551615})" }.GetIntegerAs<uint64_t>("key1"), testing::Eq(std::numeric_limits<uint64_t>::max()));
+}
+
+TEST(JsonObjectTest, integer_conversion_uint64_t_out_of_bounds)
+{
+    auto jsonObjectMin = infra::JsonObject{ R"({"min":-1)" };
+    // testing for a overflow of uint64_t max is not possible
+
+    EXPECT_THAT(jsonObjectMin.GetIntegerAs<uint64_t>("min"), testing::Eq(0));
+    EXPECT_THAT(jsonObjectMin.Error(), testing::IsTrue());
+}
+
+TEST(JsonObjectTest, integer_conversion_int64)
+{
+    EXPECT_THAT(infra::JsonObject{ R"({"key1":-9223372036854775808})" }.GetIntegerAs<int64_t>("key1"), testing::Eq(std::numeric_limits<int64_t>::min()));
+    EXPECT_THAT(infra::JsonObject{ R"({"key1":9223372036854775807})" }.GetIntegerAs<int64_t>("key1"), testing::Eq(std::numeric_limits<int64_t>::max()));
+}
+
+TEST(JsonObjectTest, integer_conversion_int64_t_out_of_bounds)
+{
+    auto jsonObjectMin = infra::JsonObject{ R"({"min":-9223372036854775809)" };
+    auto jsonObjectMax = infra::JsonObject{ R"({"max":9223372036854775808)" };
+
+    EXPECT_THAT(jsonObjectMin.GetIntegerAs<int64_t>("min"), testing::Eq(0));
+    EXPECT_THAT(jsonObjectMin.Error(), testing::IsTrue());
+
+    EXPECT_THAT(jsonObjectMax.GetIntegerAs<int64_t>("max"), testing::Eq(0));
+    EXPECT_THAT(jsonObjectMax.Error(), testing::IsTrue());
 }
 
 TEST(JsonArrayIteratorTest, empty_array_iterator_compares_equal_to_end)

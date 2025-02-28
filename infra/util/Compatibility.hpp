@@ -2,7 +2,9 @@
 #define INFRA_COMPATIBILITY_HPP
 
 #include <iterator>
+#include <limits>
 #include <type_traits>
+#include <utility>
 
 // This file contains compatibility wrappers for features that
 // are not present in all versions of the C++ standard.
@@ -71,6 +73,40 @@ namespace infra
         return std::reverse_iterator<Iterator>(i);
 #endif
     }
+
+#ifdef __cpp_lib_integer_comparison_functions
+    using std::in_range;
+#else
+    template<class T, class U>
+    constexpr bool cmp_less(T t, U u) noexcept
+    {
+        if constexpr (std::is_signed_v<T> == std::is_signed_v<U>)
+            return t < u;
+        else if constexpr (std::is_signed_v<T>)
+            return t < 0 || std::make_unsigned_t<T>(t) < u;
+        else
+            return u >= 0 && t < std::make_unsigned_t<U>(u);
+    }
+
+    template<class T, class U>
+    constexpr bool cmp_less_equal(T t, U u) noexcept
+    {
+        return !cmp_less(u, t);
+    }
+
+    template<class T, class U>
+    constexpr bool cmp_greater_equal(T t, U u) noexcept
+    {
+        return !cmp_less(t, u);
+    }
+
+    template<class R, class T>
+    constexpr bool in_range(T t) noexcept
+    {
+        return cmp_greater_equal(t, std::numeric_limits<R>::min()) &&
+               cmp_less_equal(t, std::numeric_limits<R>::max());
+    }
+#endif
 }
 
 #endif

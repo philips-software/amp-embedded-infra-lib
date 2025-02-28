@@ -731,7 +731,7 @@ namespace infra
 
     JsonValue JsonObject::GetValue(infra::BoundedConstString key)
     {
-        for (auto& keyValue : *this)
+        for (const auto& keyValue : *this)
         {
             if (keyValue.key == key)
                 return keyValue.value;
