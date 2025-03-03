@@ -7,6 +7,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [7.2.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v7.1.0...v7.2.0) (2025-03-03)
+
+
+### Features
+
+* Add address type and rssi to discovered device ([#822](https://github.com/philips-software/amp-embedded-infra-lib/issues/822)) ([2e0b3ec](https://github.com/philips-software/amp-embedded-infra-lib/commit/2e0b3ecac46240163795b4cdac69d48423b8de69))
+* Add AreAnyBitsSet() and AreAllBitsSet() ([#823](https://github.com/philips-software/amp-embedded-infra-lib/issues/823)) ([f83c37b](https://github.com/philips-software/amp-embedded-infra-lib/commit/f83c37bb48f733b7e7969d52a0432b98db798113))
+* Add NoneAllocated to SharedObjectAllocator ([#808](https://github.com/philips-software/amp-embedded-infra-lib/issues/808)) ([ed9ac24](https://github.com/philips-software/amp-embedded-infra-lib/commit/ed9ac24de4934f103975b71da277d13c28674746))
+* Add support to create x509 certificates ([#826](https://github.com/philips-software/amp-embedded-infra-lib/issues/826)) ([7dfa477](https://github.com/philips-software/amp-embedded-infra-lib/commit/7dfa477e696294e13d40253f9e0935cd36f4e06f))
+* Documentation update ([#809](https://github.com/philips-software/amp-embedded-infra-lib/issues/809)) ([661a1ee](https://github.com/philips-software/amp-embedded-infra-lib/commit/661a1eeee5cc787f8ab4565c4e7e561bbdaef2a6))
+* Streamed http put and post without chunked transfer encoding ([#817](https://github.com/philips-software/amp-embedded-infra-lib/issues/817)) ([1943573](https://github.com/philips-software/amp-embedded-infra-lib/commit/1943573ebc842bba73d8d78cecda11d5dd26e130))
+
+
+### Bug Fixes
+
+* Services/util/SesameSecured: avoid timing attack on verifying MAC ([#818](https://github.com/philips-software/amp-embedded-infra-lib/issues/818)) ([51dca2d](https://github.com/philips-software/amp-embedded-infra-lib/commit/51dca2dd532975e17cc53e5f43521916ebb2657e))
+
 ## [7.1.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v7.0.0...v7.1.0) (2025-01-15)
 
 
