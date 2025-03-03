@@ -1,5 +1,6 @@
 #include "infra/syntax/JsonFormatter.hpp"
 #include "infra/syntax/EscapeCharacterHelper.hpp"
+#include "infra/syntax/Json.hpp"
 #include "infra/util/BoundedVector.hpp"
 
 namespace infra
@@ -369,6 +370,8 @@ namespace infra
             Add(keyValue.key, keyValue.value.Get<bool>());
         else if (keyValue.value.Is<int32_t>())
             Add(keyValue.key, keyValue.value.Get<int32_t>());
+        else if (keyValue.value.Is<JsonBiggerInt>())
+            Add(keyValue.key, keyValue.value.Get<JsonBiggerInt>());
         else if (keyValue.value.Is<JsonString>())
             Add(keyValue.key, keyValue.value.Get<JsonString>());
         else if (keyValue.value.Is<JsonObject>())
@@ -385,6 +388,8 @@ namespace infra
             Add(key, value.Get<bool>());
         else if (value.Is<int32_t>())
             Add(key, value.Get<int32_t>());
+        else if (value.Is<JsonBiggerInt>())
+            Add(key, value.Get<JsonBiggerInt>());
         else if (value.Is<JsonFloat>())
             Add(key, value.Get<JsonFloat>());
         else if (value.Is<JsonString>())
