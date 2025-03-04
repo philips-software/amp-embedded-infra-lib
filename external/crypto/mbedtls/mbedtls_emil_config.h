@@ -469,7 +469,7 @@
  *
  * Uncomment to use your own hardware entropy collector.
  */
-#define MBEDTLS_ENTROPY_HARDWARE_ALT
+//#define MBEDTLS_ENTROPY_HARDWARE_ALT
 
 /**
  * \def MBEDTLS_AES_ROM_TABLES
@@ -876,7 +876,7 @@
  *      MBEDTLS_TLS_ECDHE_RSA_WITH_CAMELLIA_128_GCM_SHA256
  *      MBEDTLS_TLS_ECDHE_RSA_WITH_CAMELLIA_128_CBC_SHA256
  */
-//#define MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED
+#define MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED
 
 /**
  * \def MBEDTLS_KEY_EXCHANGE_ECDHE_ECDSA_ENABLED
@@ -942,7 +942,7 @@
  *      MBEDTLS_TLS_ECDH_RSA_WITH_CAMELLIA_128_GCM_SHA256
  *      MBEDTLS_TLS_ECDH_RSA_WITH_CAMELLIA_256_GCM_SHA384
  */
-//#define MBEDTLS_KEY_EXCHANGE_ECDH_RSA_ENABLED
+#define MBEDTLS_KEY_EXCHANGE_ECDH_RSA_ENABLED
 
 /**
  * \def MBEDTLS_KEY_EXCHANGE_ECJPAKE_ENABLED
@@ -1051,7 +1051,7 @@
  * This option is only useful if both MBEDTLS_SHA256_C and
  * MBEDTLS_SHA512_C are defined. Otherwise the available hash module is used.
  */
-#define MBEDTLS_ENTROPY_FORCE_SHA256
+//#define MBEDTLS_ENTROPY_FORCE_SHA256
 
 /**
  * \def MBEDTLS_ENTROPY_NV_SEED
@@ -1413,7 +1413,7 @@
  *
  * Comment this macro to disable support for Encrypt-then-MAC
  */
-//#define MBEDTLS_SSL_ENCRYPT_THEN_MAC
+#define MBEDTLS_SSL_ENCRYPT_THEN_MAC
 
 /** \def MBEDTLS_SSL_EXTENDED_MASTER_SECRET
  *
@@ -1429,7 +1429,7 @@
  *
  * Comment this macro to disable support for Extended Master Secret.
  */
-//#define MBEDTLS_SSL_EXTENDED_MASTER_SECRET
+#define MBEDTLS_SSL_EXTENDED_MASTER_SECRET
 
 /**
  * \def MBEDTLS_SSL_KEEP_PEER_CERTIFICATE
@@ -1482,7 +1482,7 @@
  *
  * Comment this macro to disable support for the max_fragment_length extension
  */
-//#define MBEDTLS_SSL_MAX_FRAGMENT_LENGTH
+#define MBEDTLS_SSL_MAX_FRAGMENT_LENGTH
 
 /**
  * \def MBEDTLS_SSL_PROTO_TLS1_2
@@ -1494,7 +1494,7 @@
  *
  * Comment this macro to disable support for TLS 1.2 / DTLS 1.2
  */
-//#define MBEDTLS_SSL_PROTO_TLS1_2
+#define MBEDTLS_SSL_PROTO_TLS1_2
 
 /**
  * \def MBEDTLS_SSL_PROTO_TLS1_3
