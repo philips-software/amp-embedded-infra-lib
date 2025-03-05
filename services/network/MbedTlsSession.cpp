@@ -3,7 +3,6 @@
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/ByteRange.hpp"
-#include "infra/util/ReallyAssert.hpp"
 #include "services/network/Address.hpp"
 #include "services/util/Sha256.hpp"
 
@@ -34,7 +33,7 @@ namespace services
         , identifier(reference.identifier)
     {
         mbedtls_ssl_session_init(&session);
-        really_assert(mbedtls_ssl_session_load(&session, reference.serializedSession.begin(), reference.serializedSession.size()) == 0);
+        clientSessionLoaded = mbedtls_ssl_session_load(&session, reference.serializedSession.begin(), reference.serializedSession.size()) ? false : true;
     }
 
     MbedTlsSession::~MbedTlsSession()
@@ -56,6 +55,11 @@ namespace services
     bool MbedTlsSession::IsObtained()
     {
         return clientSessionObtained;
+    }
+
+    bool MbedTlsSession::IsLoaded()
+    {
+        return clientSessionLoaded;
     }
 
     int MbedTlsSession::SetSession(mbedtls_ssl_context* context)
@@ -255,6 +259,12 @@ namespace services
                 {
                     SerializeSessionToFlash(session);
                 });
+
+            if (!storage.back().IsLoaded())
+            {
+                nvm->erase(&persistedSession);
+                storage.pop_back();
+            }
         }
     }
 
