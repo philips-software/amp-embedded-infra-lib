@@ -46,6 +46,14 @@ namespace services
             });
     }
 
+    void HttpClientAuthentication::Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers)
+    {
+        Request(headers, HttpVerb::post, requestTarget, [this, contentSize]()
+            {
+                Subject().Post(target, contentSize, infra::MakeRange(headersWithAuthorization));
+            });
+    }
+
     void HttpClientAuthentication::Post(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
         Request(headers, HttpVerb::post, requestTarget, [this]()
@@ -59,6 +67,14 @@ namespace services
         Request(headers, HttpVerb::put, requestTarget, [this, content]()
             {
                 Subject().Put(target, content, infra::MakeRange(headersWithAuthorization));
+            });
+    }
+
+    void HttpClientAuthentication::Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers)
+    {
+        Request(headers, HttpVerb::put, requestTarget, [this, contentSize]()
+            {
+                Subject().Put(target, contentSize, infra::MakeRange(headersWithAuthorization));
             });
     }
 

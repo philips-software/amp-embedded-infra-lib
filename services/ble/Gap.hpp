@@ -295,7 +295,7 @@ namespace services
         GapAdvertisingEventAddressType addressType;
         hal::MacAddress address;
         infra::BoundedVector<uint8_t>::WithMaxSize<GapPeripheral::maxAdvertisementDataSize> data;
-        int8_t rssi;
+        int32_t rssi;
     };
 
     class GapCentral;
