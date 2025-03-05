@@ -436,7 +436,6 @@ namespace services
     int ConnectionMbedTls::StaticGenerateRandomData(void* data, unsigned char* output, std::size_t size)
     {
         reinterpret_cast<ConnectionMbedTls*>(data)->GenerateRandomData(infra::ByteRange(output, output + size));
-        std::string str(static_cast<char*>(data), size);
         return 0;
     }
 
