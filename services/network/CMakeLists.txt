@@ -121,6 +121,7 @@ if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
         ConnectionMbedTls.hpp
         HttpPageWebSocket.cpp
         HttpPageWebSocket.hpp
+        MbedTlsPsaEntropy.hpp
         MbedTlsSession.cpp
         MbedTlsSession.hpp
         NameResolverCache.cpp
