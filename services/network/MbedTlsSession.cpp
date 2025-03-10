@@ -168,7 +168,7 @@ namespace services
         , storage(storage)
         , hasher(hasher)
     {
-        // LoadSessions();
+        LoadSessions();
     }
 
     MbedTlsSession* MbedTlsSessionStoragePersistent::NewSession(infra::BoundedConstString hostname)
