@@ -126,7 +126,6 @@ namespace services
         MbedTlsSession* clientSession = nullptr;
         mbedtls_ssl_context sslContext;
         mbedtls_ssl_config sslConfig;
-        mbedtls_entropy_context entropy;
         mbedtls_ctr_drbg_context ctr_drbg;
 
         infra::BoundedDeque<uint8_t>::WithMaxSize<1024> receiveBuffer;
