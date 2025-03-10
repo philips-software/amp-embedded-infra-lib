@@ -856,6 +856,34 @@ TEST(JsonObjectTest, integer_conversion_int64_t_out_of_bounds)
     EXPECT_THAT(jsonObjectMax.Error(), testing::IsTrue());
 }
 
+TEST(JsonObjectTest, integer_conversion_not_a_number)
+{
+    auto jsonObject = infra::JsonObject{ R"({"key":"not-a-number")" };
+
+    EXPECT_THAT(jsonObject.GetIntegerAs<int64_t>("key"), testing::Eq(0));
+    EXPECT_THAT(jsonObject.Error(), testing::IsTrue());
+}
+
+TEST(JsonObjectTest, integer_conversion_unsigned_overflow)
+{
+    auto jsonObject = infra::JsonObject{ R"({"key":18446744073709551615)" };
+
+    EXPECT_THAT(jsonObject.GetIntegerAs<int64_t>("key"), testing::Eq(0));
+    EXPECT_THAT(jsonObject.Error(), testing::IsTrue());
+}
+
+TEST(JsonObjectTest, integer_conversion_signed_overflow)
+{
+    auto jsonObjectMin = infra::JsonObject{ R"({"key":-9223372036854775808)" };
+    auto jsonObjectMax = infra::JsonObject{ R"({"key":9223372036854775807)" };
+
+    EXPECT_THAT(jsonObjectMin.GetIntegerAs<int8_t>("key"), testing::Eq(0));
+    EXPECT_THAT(jsonObjectMin.Error(), testing::IsTrue());
+
+    EXPECT_THAT(jsonObjectMax.GetIntegerAs<int8_t>("key"), testing::Eq(0));
+    EXPECT_THAT(jsonObjectMax.Error(), testing::IsTrue());
+}
+
 TEST(JsonArrayIteratorTest, empty_array_iterator_compares_equal_to_end)
 {
     infra::JsonArray jsonArray(R"([ ])");
