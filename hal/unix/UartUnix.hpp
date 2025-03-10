@@ -3,8 +3,10 @@
 
 #include "hal/interfaces/SerialCommunication.hpp"
 #include "hal/unix/UartUnixBase.hpp"
+#include "infra/util/ByteRange.hpp"
+#include "infra/util/Function.hpp"
 #include <atomic>
-#include <condition_variable>
+#include <cstdint>
 #include <mutex>
 #include <string>
 #include <thread>
@@ -30,10 +32,9 @@ namespace hal
 
     private:
         uint8_t buffer;
-        std::atomic<bool> running{ true };
-        std::mutex mutex;
-        std::condition_variable receivedDataSet;
+        std::atomic<bool> running{ false };
         std::thread readThread;
+        std::mutex receivedDataMutex;
         infra::Function<void(infra::ConstByteRange data)> receivedData;
     };
 }
