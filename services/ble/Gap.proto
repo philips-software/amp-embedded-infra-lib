@@ -156,7 +156,8 @@ message DeviceDiscoveryFilter
     enum Filter
     {
         address = 0;
-        advertisingData = 1;
+        advertisingData = 1; // Filtering on contents of Manufacturer specific data
+
     }
 
     Filter filter = 1;
@@ -205,6 +206,8 @@ service GapCentral
     rpc StopDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 2; }
 
     // Allowed states: standby
+    // For successful connection establishment, state will follow: standby -> initiating -> connected
+    // For falied connection establishment, state will follow: standby -> initiating -> standby 
     rpc Connect(ConnectionParameters) returns (Nothing) { option (method_id) = 3; }
 
     // Allowed states: initiating
