@@ -27,6 +27,7 @@ namespace services
         virtual void Reinitialize();
         virtual void Obtained();
         virtual bool IsObtained();
+        virtual bool IsDeserialized();
         virtual int SetSession(mbedtls_ssl_context* context);
         virtual int GetSession(mbedtls_ssl_context* context);
         virtual const infra::BoundedVector<uint8_t>& Identifier() const;
@@ -34,6 +35,7 @@ namespace services
     private:
         mbedtls_ssl_session session;
         bool clientSessionObtained = false;
+        bool clientSessionDeserialized = false;
         infra::BoundedVector<uint8_t>::WithMaxSize<32> identifier;
     };
 
