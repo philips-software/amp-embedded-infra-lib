@@ -3,19 +3,15 @@
 
 #ifndef EMIL_HOST_BUILD
 #include "mbedtls/platform_time.h"
+#include "psa/crypto_extra.h"
+
 extern "C"
 {
     mbedtls_ms_time_t mbedtls_ms_time(void)
     {
         return static_cast<mbedtls_ms_time_t>(std::chrono::duration_cast<std::chrono::milliseconds>(infra::Now(3).time_since_epoch()).count());
     }
-}
-#endif
 
-#ifndef EMIL_HOST_BUILD
-#include "psa/crypto_extra.h"
-extern "C"
-{
     psa_status_t mbedtls_psa_external_get_random(mbedtls_psa_external_random_context_t* context, uint8_t* output, size_t output_size, size_t* output_length)
     {
         hal::SynchronousRandomDataGenerator::Instance().GenerateRandomData(infra::ByteRange(output, output + output_size));
