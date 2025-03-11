@@ -131,9 +131,7 @@
  *
  * Comment if your system does not support time functions
  */
-#ifdef EMIL_HOST_BUILD
 #define MBEDTLS_HAVE_TIME
-#endif
 
 /**
  * \def MBEDTLS_HAVE_TIME_DATE
@@ -230,6 +228,10 @@
 //#define MBEDTLS_PLATFORM_VSNPRINTF_ALT
 //#define MBEDTLS_PLATFORM_NV_SEED_ALT
 //#define MBEDTLS_PLATFORM_SETUP_TEARDOWN_ALT
+
+#ifndef EMIL_HOST_BUILD
+#define MBEDTLS_PLATFORM_MS_TIME_ALT
+#endif
 
 /**
  * \def MBEDTLS_DEPRECATED_WARNING
