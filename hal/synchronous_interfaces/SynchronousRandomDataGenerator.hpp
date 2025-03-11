@@ -2,10 +2,12 @@
 #define SYNCHRONOUS_HAL_RANDOM_DATA_GENERATOR_HPP
 
 #include "infra/util/ByteRange.hpp"
+#include "infra/util/InterfaceConnector.hpp"
 
 namespace hal
 {
     class SynchronousRandomDataGenerator
+        : public infra::InterfaceConnector<SynchronousRandomDataGenerator>
     {
     protected:
         SynchronousRandomDataGenerator() = default;
@@ -14,6 +16,8 @@ namespace hal
         ~SynchronousRandomDataGenerator() = default;
 
     public:
+        using infra::InterfaceConnector<SynchronousRandomDataGenerator>::Instance;
+
         virtual void GenerateRandomData(infra::ByteRange result) = 0;
 
         template<class T>
