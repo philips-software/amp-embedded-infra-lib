@@ -33,7 +33,8 @@ namespace services
         , identifier(reference.identifier)
     {
         mbedtls_ssl_session_init(&session);
-        clientSessionLoaded = mbedtls_ssl_session_load(&session, reference.serializedSession.begin(), reference.serializedSession.size()) ? false : true;
+        if (mbedtls_ssl_session_load(&session, reference.serializedSession.begin(), reference.serializedSession.size()) == 0)
+            clientSessionDeserialized = true;
     }
 
     MbedTlsSession::~MbedTlsSession()
@@ -57,9 +58,9 @@ namespace services
         return clientSessionObtained;
     }
 
-    bool MbedTlsSession::IsLoaded()
+    bool MbedTlsSession::IsDeserialized()
     {
-        return clientSessionLoaded;
+        return clientSessionDeserialized;
     }
 
     int MbedTlsSession::SetSession(mbedtls_ssl_context* context)
@@ -260,7 +261,7 @@ namespace services
                     SerializeSessionToFlash(session);
                 });
 
-            if (!storage.back().IsLoaded())
+            if (!storage.back().IsDeserialized())
             {
                 nvm->erase(&persistedSession);
                 storage.pop_back();
