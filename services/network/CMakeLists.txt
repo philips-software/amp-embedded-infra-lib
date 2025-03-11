@@ -117,8 +117,6 @@ if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
     target_sources(services.network PRIVATE
         CertificatesMbedTls.cpp
         CertificatesMbedTls.hpp
-        MbedTlsPsaEntropy.cpp
-        MbedTlsPsaEntropy.hpp
         ConnectionMbedTls.cpp
         ConnectionMbedTls.hpp
         HttpPageWebSocket.cpp

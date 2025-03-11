@@ -1,6 +1,20 @@
 #include "services/network/ConnectionMbedTls.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
 
+#ifndef EMIL_HOST_BUILD
+#include "psa/crypto.h"
+extern "C"
+{
+    psa_status_t mbedtls_psa_external_get_random(mbedtls_psa_external_random_context_t* context, uint8_t* output, size_t output_size, size_t* output_length)
+    {
+        hal::SynchronousRandomDataGenerator::Instance().GenerateRandomData(infra::ByteRange(output, output + output_size));
+        *output_length = output_size;
+
+        return PSA_SUCCESS;
+    }
+}
+#endif
+
 namespace services
 {
     ConnectionMbedTls::ConnectionMbedTls(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, CertificatesMbedTls& certificates,
