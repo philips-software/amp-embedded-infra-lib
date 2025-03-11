@@ -1228,7 +1228,9 @@
  *
  * \note This option is experimental and may be removed without notice.
  */
+#ifndef EMIL_HOST_BUILD
 #define MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG
+#endif
 
 /**
  * \def MBEDTLS_PSA_CRYPTO_SPM

@@ -1,6 +1,5 @@
 #include "services/network/ConnectionMbedTls.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
-#include "services/network/MbedTlsPsaEntropy.hpp"
 
 namespace services
 {
@@ -15,8 +14,6 @@ namespace services
                   keepAliveForReader = nullptr;
               })
     {
-        psa_external_rng_init(&randomDataGenerator);
-
         mbedtls_ssl_init(&sslContext);
         mbedtls_ssl_config_init(&sslConfig);
         mbedtls_ctr_drbg_init(&ctr_drbg);
