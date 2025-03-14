@@ -1,26 +1,26 @@
 #include "services/network/ConnectionMbedTls.hpp"
+#include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
-
-#ifndef EMIL_HOST_BUILD
 #include "mbedtls/platform_time.h"
-#include "psa/crypto_extra.h"
+//#include "../../mbedtls-src/library/entropy_poll.h"
 
 extern "C"
 {
+    static hal::SynchronousRandomDataGenerator* rng = nullptr;
+
     mbedtls_ms_time_t mbedtls_ms_time(void)
     {
         return static_cast<mbedtls_ms_time_t>(std::chrono::duration_cast<std::chrono::milliseconds>(infra::Now(3).time_since_epoch()).count());
     }
 
-    psa_status_t mbedtls_psa_external_get_random(mbedtls_psa_external_random_context_t* context, uint8_t* output, size_t output_size, size_t* output_length)
+    int mbedtls_hardware_poll(void* data, unsigned char* output, size_t len, size_t* olen)
     {
-        hal::SynchronousRandomDataGenerator::Instance().GenerateRandomData(infra::ByteRange(output, output + output_size));
-        *output_length = output_size;
+        rng->GenerateRandomData(infra::ByteRange(output, output + len));
+        *olen = len;
 
-        return PSA_SUCCESS;
+        return 0;
     }
 }
-#endif
 
 namespace services
 {
@@ -35,6 +35,8 @@ namespace services
                   keepAliveForReader = nullptr;
               })
     {
+        rng = &randomDataGenerator;
+
         mbedtls_ssl_init(&sslContext);
         mbedtls_ssl_config_init(&sslConfig);
         mbedtls_ctr_drbg_init(&ctr_drbg);

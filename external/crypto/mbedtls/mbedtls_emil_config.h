@@ -471,7 +471,7 @@
  *
  * Uncomment to use your own hardware entropy collector.
  */
-//#define MBEDTLS_ENTROPY_HARDWARE_ALT
+#define MBEDTLS_ENTROPY_HARDWARE_ALT
 
 /**
  * \def MBEDTLS_AES_ROM_TABLES
@@ -1022,9 +1022,7 @@
  *
  * Uncomment this macro to prevent loading of default entropy functions.
  */
-#ifndef EMIL_HOST_BUILD
-#define MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES
-#endif
+//#define MBEDTLS_NO_DEFAULT_ENTROPY_SOURCES
 
 /**
  * \def MBEDTLS_NO_PLATFORM_ENTROPY
@@ -1230,9 +1228,7 @@
  *
  * \note This option is experimental and may be removed without notice.
  */
-#ifndef EMIL_HOST_BUILD
-#define MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG
-#endif
+//#define MBEDTLS_PSA_CRYPTO_EXTERNAL_RNG
 
 /**
  * \def MBEDTLS_PSA_CRYPTO_SPM
