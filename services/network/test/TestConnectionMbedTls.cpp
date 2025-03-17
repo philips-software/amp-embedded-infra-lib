@@ -250,7 +250,6 @@ TEST_F(ConnectionMbedTlsTest, persistent_session_fails_deserialize)
     configStore->emplace_back();
     network::MbedTlsPersistedSession persistedSession = configStore->back();
     services::MbedTlsSession::Serialize(session, persistedSession);
-    
     auto sessionDeserialize = services::MbedTlsSession(persistedSession);
     EXPECT_FALSE(sessionDeserialize.IsDeserialized());
     EXPECT_FALSE(configStore->empty());

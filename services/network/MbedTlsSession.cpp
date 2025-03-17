@@ -33,8 +33,7 @@ namespace services
         , identifier(reference.identifier)
     {
         mbedtls_ssl_session_init(&session);
-        if (mbedtls_ssl_session_load(&session, reference.serializedSession.begin(), reference.serializedSession.size()) == 0)
-            clientSessionDeserialized = true;
+        clientSessionDeserialized = mbedtls_ssl_session_load(&session, reference.serializedSession.begin(), reference.serializedSession.size()) == 0;
     }
 
     MbedTlsSession::~MbedTlsSession()
