@@ -2,7 +2,6 @@
 #include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "mbedtls/platform_time.h"
-#include "../../mbedtls-src/library/entropy_poll.h"
 
 extern "C"
 {
