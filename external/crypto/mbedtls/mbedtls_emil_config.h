@@ -471,7 +471,9 @@
  *
  * Uncomment to use your own hardware entropy collector.
  */
+#ifdef EMIL_SERVICES_NETWORK
 #define MBEDTLS_ENTROPY_HARDWARE_ALT
+#endif
 
 /**
  * \def MBEDTLS_AES_ROM_TABLES

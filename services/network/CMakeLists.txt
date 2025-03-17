@@ -1,3 +1,5 @@
+add_compile_definitions(EMIL_SERVICES_NETWORK)
+
 add_library(services.network ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
 protocol_buffer_echo_cpp(services.network Network.proto)
