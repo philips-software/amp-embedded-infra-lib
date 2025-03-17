@@ -255,17 +255,17 @@ namespace services
     {
         for (auto persistedSession = nvm->begin(); persistedSession != nvm->end();)
         {
-            MbedTlsSessionWithCallback session (*persistedSession,[this](MbedTlsSession* session)
-            {
-                SerializeSessionToFlash(session);
-            });
+            MbedTlsSessionWithCallback session(*persistedSession, [this](MbedTlsSession* session)
+                {
+                    SerializeSessionToFlash(session);
+                });
 
             if (session.IsDeserialized())
             {
                 storage.emplace_back(session);
                 persistedSession++;
             }
-            else 
+            else
             {
                 nvm->erase(persistedSession);
             }
