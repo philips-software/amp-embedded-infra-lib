@@ -471,7 +471,7 @@
  *
  * Uncomment to use your own hardware entropy collector.
  */
-#ifdef EMIL_SERVICES_NETWORK
+#ifndef EMIL_HOST_BUILD
 #define MBEDTLS_ENTROPY_HARDWARE_ALT
 #endif
 
