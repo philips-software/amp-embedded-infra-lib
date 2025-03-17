@@ -33,8 +33,7 @@ namespace services
         , identifier(reference.identifier)
     {
         mbedtls_ssl_session_init(&session);
-        if (mbedtls_ssl_session_load(&session, reference.serializedSession.begin(), reference.serializedSession.size()) == 0)
-            clientSessionDeserialized = true;
+        clientSessionDeserialized = mbedtls_ssl_session_load(&session, reference.serializedSession.begin(), reference.serializedSession.size()) == 0;
     }
 
     MbedTlsSession::~MbedTlsSession()
@@ -254,17 +253,21 @@ namespace services
 
     void MbedTlsSessionStoragePersistent::LoadSessions()
     {
-        for (auto& persistedSession : *nvm)
+        for (auto persistedSession = nvm->begin(); persistedSession != nvm->end();)
         {
-            storage.emplace_back(persistedSession, [this](MbedTlsSession* session)
-                {
-                    SerializeSessionToFlash(session);
-                });
-
-            if (!storage.back().IsDeserialized())
+            MbedTlsSessionWithCallback session (*persistedSession,[this](MbedTlsSession* session)
             {
-                nvm->erase(&persistedSession);
-                storage.pop_back();
+                SerializeSessionToFlash(session);
+            });
+
+            if (session.IsDeserialized())
+            {
+                storage.emplace_back(session);
+                persistedSession++;
+            }
+            else 
+            {
+                nvm->erase(persistedSession);
             }
         }
     }
