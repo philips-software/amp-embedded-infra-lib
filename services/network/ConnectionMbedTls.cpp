@@ -7,14 +7,14 @@ extern "C"
 {
     static hal::SynchronousRandomDataGenerator* rng = nullptr;
 
-    #ifndef EMIL_HOST_BUILD
+#ifndef EMIL_HOST_BUILD
     mbedtls_ms_time_t mbedtls_ms_time(void)
     {
         return static_cast<mbedtls_ms_time_t>(std::chrono::duration_cast<std::chrono::milliseconds>(infra::Now(3).time_since_epoch()).count());
     }
-    #endif
+#endif
 
-    int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t *olen)
+    int mbedtls_hardware_poll(void* data, unsigned char* output, size_t len, size_t* olen)
     {
         rng->GenerateRandomData(infra::ByteRange(output, output + len));
         *olen = len;
