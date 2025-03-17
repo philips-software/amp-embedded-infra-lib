@@ -237,6 +237,28 @@ TEST_F(ConnectionMbedTlsTest, persistent_session_reopen_connection)
     }
 }
 
+TEST_F(ConnectionMbedTlsTest, persistent_session_fails_deserialize)
+{
+    infra::BoundedVector<network::MbedTlsPersistedSession>::WithMaxSize<1> stores;
+    testing::StrictMock<services::ConfigurationStoreInterfaceMock> configInterface;
+    services::ConfigurationStoreAccess<infra::BoundedVector<network::MbedTlsPersistedSession>> configStore{ configInterface, stores };
+    services::Sha256MbedTls sha256;
+    services::MbedTlsSessionHasher mbedTlsHasher{ sha256 };
+
+    auto session = services::MbedTlsSession(mbedTlsHasher.HashHostname("persistent_session_fails_deserialize"));
+
+    configStore->emplace_back();
+    network::MbedTlsPersistedSession persistedSession = configStore->back();
+    services::MbedTlsSession::Serialize(session, persistedSession);
+    
+    auto sessionDeserialize = services::MbedTlsSession(persistedSession);
+    EXPECT_FALSE(sessionDeserialize.IsDeserialized());
+    EXPECT_FALSE(configStore->empty());
+
+    services::MbedTlsSessionStoragePersistent::WithMaxSize<1> persistentStorage{ configStore, mbedTlsHasher };
+    EXPECT_TRUE(configStore->empty());
+}
+
 class ConnectionWithNameResolverMbedTlsTest
     : public testing::Test
     , public infra::ClockFixture
