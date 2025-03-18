@@ -282,7 +282,6 @@ TEST_F(ConnectionMbedTlsTest, persistent_session_fails_deserialize)
         newConfigStore->emplace_back();
         std::copy(stores.back().serializedSession.begin(), stores.back().serializedSession.end(), std::back_inserter(newConfigStore->back().serializedSession));
         newConfigStore->emplace_back();
-    
         EXPECT_EQ(newConfigStore->size(), 2);
         services::MbedTlsSessionStoragePersistent::WithMaxSize<1> newPersistentStorage{ newConfigStore, mbedTlsHasher };
         EXPECT_EQ(newConfigStore->size(), 1);
