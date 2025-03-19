@@ -16,6 +16,6 @@ namespace infra
     ConstructBin& operator<<(ConstructBin&& constructBin, const TextStreamHelper& helper)
     {
         helper.callback(infra::StdVectorOutputStream(constructBin.Vector()) << infra::text);
-        return constructBin;
+        return static_cast<ConstructBin&>(constructBin);
     }
 }

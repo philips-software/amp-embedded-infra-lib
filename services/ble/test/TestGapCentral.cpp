@@ -5,7 +5,6 @@
 #include "services/ble/test_doubles/GapCentralMock.hpp"
 #include "services/ble/test_doubles/GapCentralObserverMock.hpp"
 #include "gmock/gmock.h"
-#include <chrono>
 
 namespace services
 {
@@ -49,7 +48,7 @@ namespace services
 
     TEST_F(GapCentralDecoratorTest, forward_device_discovered_event_to_observers)
     {
-        GapAdvertisingReport deviceDiscovered{ GapAdvertisingEventType::advInd, GapAdvertisingEventAddressType::publicDeviceAddress, hal::MacAddress{ 0, 1, 2, 3, 4, 5 }, infra::BoundedVector<uint8_t>::WithMaxSize<GapPeripheral::maxAdvertisementDataSize>{}, -75 };
+        GapAdvertisingReport deviceDiscovered{ GapAdvertisingEventType::advInd, GapDeviceAddressType::publicAddress, hal::MacAddress{ 0, 1, 2, 3, 4, 5 }, infra::BoundedVector<uint8_t>::WithMaxSize<GapPeripheral::maxAdvertisementDataSize>{}, -75 };
 
         EXPECT_CALL(gapObserver, DeviceDiscovered(ObjectContentsEqual(deviceDiscovered)));
 
@@ -80,6 +79,13 @@ namespace services
 
         EXPECT_CALL(gap, StopDeviceDiscovery());
         decorator.StopDeviceDiscovery();
+
+        hal::MacAddress mac = { 0x00, 0x1A, 0x7D, 0xDA, 0x71, 0x13 };
+        EXPECT_CALL(gap, ResolvePrivateAddress(mac)).WillOnce(testing::Return(infra::none));
+        EXPECT_EQ(decorator.ResolvePrivateAddress(mac), infra::none);
+
+        EXPECT_CALL(gap, ResolvePrivateAddress(mac)).WillOnce(testing::Return(infra::MakeOptional(mac)));
+        EXPECT_EQ(decorator.ResolvePrivateAddress(mac), mac);
     }
 
     TEST(GapAdvertisingDataParserTest, payload_too_small)
@@ -167,14 +173,11 @@ namespace services
     {
         infra::StringOutputStream::WithStorage<128> stream;
 
-        services::GapAdvertisingEventAddressType eventAddressTypePublicDevice = services::GapAdvertisingEventAddressType::publicDeviceAddress;
-        services::GapAdvertisingEventAddressType eventAddressTypeRandomDevice = services::GapAdvertisingEventAddressType::randomDeviceAddress;
-        services::GapAdvertisingEventAddressType eventAddressTypePublicIdentity = services::GapAdvertisingEventAddressType::publicIdentityAddress;
-        services::GapAdvertisingEventAddressType eventAddressTypeRandomIdentity = services::GapAdvertisingEventAddressType::randomIdentityAddress;
+        services::GapDeviceAddressType eventAddressTypePublicDevice = services::GapDeviceAddressType::publicAddress;
+        services::GapDeviceAddressType eventAddressTypeRandomDevice = services::GapDeviceAddressType::randomAddress;
+        stream << eventAddressTypePublicDevice << " " << eventAddressTypeRandomDevice;
 
-        stream << eventAddressTypePublicDevice << " " << eventAddressTypeRandomDevice << " " << eventAddressTypePublicIdentity << " " << eventAddressTypeRandomIdentity;
-
-        EXPECT_EQ("Public Device Address Random Device Address Public Identity Address Random Identity Address", stream.Storage());
+        EXPECT_EQ("Public Device Address Random Device Address", stream.Storage());
     }
 
     TEST(GapInsertionOperatorStateTest, state_overload_operator)
