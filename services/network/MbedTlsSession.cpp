@@ -264,7 +264,7 @@ namespace services
                 ++persistedSession;
             else 
             {
-                nvm->erase(persistedSession);
+                persistedSession = nvm->erase(persistedSession);
                 storage.pop_back();
             }
         }

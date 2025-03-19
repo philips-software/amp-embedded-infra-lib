@@ -1,6 +1,7 @@
 #include "services/network/ConnectionMbedTls.hpp"
 #include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
+#include "infra/util/ReallyAssert.hpp"
 #include "mbedtls/platform_time.h"
 
 extern "C"
@@ -15,6 +16,7 @@ extern "C"
 
     int mbedtls_hardware_poll(void* data, unsigned char* output, size_t len, size_t* olen)
     {
+        really_assert(rng != nullptr);
         rng->GenerateRandomData(infra::ByteRange(output, output + len));
         *olen = len;
 

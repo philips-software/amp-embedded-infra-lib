@@ -7,7 +7,6 @@
 namespace hal
 {
     class SynchronousRandomDataGenerator
-        : public infra::InterfaceConnector<SynchronousRandomDataGenerator>
     {
     protected:
         SynchronousRandomDataGenerator() = default;
@@ -16,8 +15,6 @@ namespace hal
         ~SynchronousRandomDataGenerator() = default;
 
     public:
-        using infra::InterfaceConnector<SynchronousRandomDataGenerator>::Instance;
-
         virtual void GenerateRandomData(infra::ByteRange result) = 0;
 
         template<class T>
