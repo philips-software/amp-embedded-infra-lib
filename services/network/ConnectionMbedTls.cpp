@@ -1,5 +1,4 @@
 #include "services/network/ConnectionMbedTls.hpp"
-#include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "infra/util/ReallyAssert.hpp"
 #include "mbedtls/platform_time.h"
