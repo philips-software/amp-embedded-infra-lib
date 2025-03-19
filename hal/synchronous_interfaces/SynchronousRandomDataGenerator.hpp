@@ -2,7 +2,6 @@
 #define SYNCHRONOUS_HAL_RANDOM_DATA_GENERATOR_HPP
 
 #include "infra/util/ByteRange.hpp"
-#include "infra/util/InterfaceConnector.hpp"
 
 namespace hal
 {
