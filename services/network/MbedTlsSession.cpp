@@ -262,7 +262,7 @@ namespace services
 
             if (storage.back().IsDeserialized())
                 ++persistedSession;
-            else 
+            else
             {
                 persistedSession = nvm->erase(persistedSession);
                 storage.pop_back();
