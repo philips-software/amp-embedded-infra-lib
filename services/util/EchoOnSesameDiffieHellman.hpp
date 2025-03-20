@@ -6,6 +6,7 @@
 #include "mbedtls/ecdh.h"
 #include "mbedtls/ecp.h"
 #include "mbedtls/pk.h"
+#include "mbedtls/x509_crt.h"
 #include "services/util/EchoOnSesame.hpp"
 #include "services/util/SesameSecured.hpp"
 
@@ -46,12 +47,11 @@ namespace services
         infra::Optional<std::pair<std::array<uint8_t, 16>, std::array<uint8_t, 16>>> nextKeyPair;
         infra::IntrusiveList<ServiceProxy> waitingProxies;
 
-        mbedtls_pk_context rootDsaPublicKey;
+        mbedtls_x509_crt rootCertificate;
         mbedtls_ecp_group group;
         mbedtls_mpi dhPrivateKey;
         mbedtls_ecp_point dhPublicKey;
         mbedtls_mpi dsaPrivateKey;
-        mbedtls_ecp_point dsaPublicKey;
         mbedtls_ecp_point otherDsaPublicKey;
 
         mbedtls_ecdh_context ecdhContext;

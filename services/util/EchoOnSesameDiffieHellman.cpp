@@ -1,8 +1,6 @@
 #include "services/util/EchoOnSesameDiffieHellman.hpp"
 #include "mbedtls/ecdsa.h"
 #include "mbedtls/hmac_drbg.h"
-#include "mbedtls/x509_crt.h"
-#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -26,20 +24,9 @@ namespace services
         , randomDataGenerator(randomDataGenerator)
         , dsaCertificate(dsaCertificate)
     {
-        mbedtls_pk_init(&rootDsaPublicKey);
-        //mbedtls_mpi rootDsaPrivateKey;
-        //mbedtls_mpi_init(&rootDsaPrivateKey);
-
-        //mbedtls_x509_crt certificate;
-        //mbedtls_x509_crt_init(&certificate);
-
-        //really_assert(mbedtls_x509_crt_parse(&certificate, infra::ReinterpretCastByteRange(infra::MakeRange(rootCaCertificate)).begin(), rootCaCertificate.size()) == 0);
-        //really_assert(mbedtls_pk_get_type(&certificate.pk) == MBEDTLS_PK_ECKEY);
-        //really_assert(mbedtls_ecp_export(mbedtls_pk_ec(certificate.pk), &rootGroup, &rootDsaPrivateKey, &rootDsaPublicKey.MBEDTLS_PRIVATE(pk_info)) == 0);
-        really_assert(mbedtls_pk_parse_public_key(&rootDsaPublicKey, infra::ReinterpretCastByteRange(infra::MakeRange(rootCaCertificate)).begin(), rootCaCertificate.size()) == 0);
-
-        //mbedtls_x509_crt_free(&certificate);
-        //mbedtls_mpi_free(&rootDsaPrivateKey);
+        mbedtls_x509_crt_init(&rootCertificate);
+        really_assert(mbedtls_x509_crt_parse(&rootCertificate, infra::ReinterpretCastByteRange(infra::MakeRange(rootCaCertificate)).begin(), rootCaCertificate.size()) == 0);
+        really_assert(mbedtls_pk_get_type(&rootCertificate.pk) == MBEDTLS_PK_ECKEY);
 
         mbedtls_ecp_group_init(&group);
         really_assert(mbedtls_ecp_group_load(&group, MBEDTLS_ECP_DP_SECP256R1) == 0);
@@ -48,9 +35,10 @@ namespace services
         mbedtls_ecp_point_init(&dhPublicKey);
 
         mbedtls_ecdh_init(&ecdhContext);
-        really_assert(mbedtls_ecdh_setup(&ecdhContext, MBEDTLS_ECP_DP_SECP256R1) == 0);
+        really_assert(mbedtls_ecdh_setup(&ecdhContext, group.id) == 0);
 
         mbedtls_mpi_init(&dsaPrivateKey);
+        mbedtls_ecp_point dsaPublicKey;
         mbedtls_ecp_point_init(&dsaPublicKey);
         mbedtls_ecp_point_init(&otherDsaPublicKey);
 
@@ -59,18 +47,18 @@ namespace services
         really_assert(mbedtls_pk_parse_key(&dsaPrivateKeyContext, infra::ReinterpretCastByteRange(infra::MakeRange(dsaCertificatePrivateKey)).begin(), dsaCertificatePrivateKey.size(), nullptr, 0, &EchoOnSesameDiffieHellman::StaticRng, this) == 0);
         really_assert(mbedtls_ecp_export(mbedtls_pk_ec(dsaPrivateKeyContext), &group, &dsaPrivateKey, &dsaPublicKey) == 0);
         mbedtls_pk_free(&dsaPrivateKeyContext);
+        mbedtls_ecp_point_free(&dsaPublicKey);
     }
 
     EchoOnSesameDiffieHellman::~EchoOnSesameDiffieHellman()
     {
         mbedtls_ecp_point_free(&otherDsaPublicKey);
-        mbedtls_ecp_point_free(&dsaPublicKey);
         mbedtls_mpi_free(&dsaPrivateKey);
         mbedtls_ecdh_free(&ecdhContext);
         mbedtls_ecp_point_free(&dhPublicKey);
         mbedtls_mpi_free(&dhPrivateKey);
         mbedtls_ecp_group_free(&group);
-        mbedtls_pk_free(&rootDsaPublicKey);
+        mbedtls_x509_crt_free(&rootCertificate);
     }
 
     void EchoOnSesameDiffieHellman::RequestSend(ServiceProxy& serviceProxy)
@@ -83,7 +71,6 @@ namespace services
 
     void EchoOnSesameDiffieHellman::Initialized()
     {
-        services::GlobalTracer().Trace() << "Initialized";
         initializingKeys = true;
         EchoOnSesame::Initialized();
 
@@ -91,10 +78,6 @@ namespace services
 
         DiffieHellmanKeyEstablishmentProxy::RequestSend([this]()
             {
-                // std::array<uint8_t, 65> encodedDsaPublicKey;
-                // std::size_t size = 0;
-                // really_assert(mbedtls_ecp_point_write_binary(&group, &dsaPublicKey, MBEDTLS_ECP_PF_UNCOMPRESSED, &size, encodedDsaPublicKey.data(), encodedDsaPublicKey.size()) == 0);
-                // really_assert(size == encodedDsaPublicKey.size());
                 DiffieHellmanKeyEstablishmentProxy::PresentCertificate(dsaCertificate);
 
                 DiffieHellmanKeyEstablishmentProxy::RequestSend([this]()
@@ -119,7 +102,6 @@ namespace services
                         mbedtls_mpi_free(&r);
 
                         sentExchange = true;
-                        services::GlobalTracer().Trace() << "Sending Exchange";
                         DiffieHellmanKeyEstablishmentProxy::Exchange(encodedDhPublicKey, encodedR, encodedS);
 
                         if (nextKeyPair)
@@ -141,8 +123,6 @@ namespace services
 
     void EchoOnSesameDiffieHellman::Exchange(infra::ConstByteRange otherPublicKey, infra::ConstByteRange signatureR, infra::ConstByteRange signatureS)
     {
-        services::GlobalTracer().Trace() << "Received Exchange";
-
         mbedtls_mpi r;
         mbedtls_mpi_init(&r);
         mbedtls_mpi s;
@@ -212,11 +192,10 @@ namespace services
         really_assert(mbedtls_x509_crt_parse(&certificate, infra::ReinterpretCastByteRange(infra::MakeRange(dsaCertificate)).begin(), dsaCertificate.size()) == 0);
         really_assert(mbedtls_pk_get_type(&certificate.pk) == MBEDTLS_PK_ECKEY);
 
-
         std::array<uint8_t, 32> hash;
         const mbedtls_md_info_t* mdInfo = mbedtls_md_info_from_type(MBEDTLS_MD_SHA256);
         mbedtls_md(mdInfo, certificate.tbs.p, certificate.tbs.len, hash.data());
-        bool verificationOk = mbedtls_pk_verify(&rootDsaPublicKey, MBEDTLS_MD_SHA256, hash.data(), hash.size(), infra::ReinterpretCastByteRange(infra::MakeRange(dsaCertificate)).begin(), dsaCertificate.size()) == 0;
+        bool verificationOk = mbedtls_pk_verify(&rootCertificate.pk, MBEDTLS_MD_SHA256, hash.data(), hash.size(), certificate.MBEDTLS_PRIVATE(sig).p, certificate.MBEDTLS_PRIVATE(sig).len) == 0;
         really_assert(verificationOk);
 
         really_assert(mbedtls_ecp_export(mbedtls_pk_ec(certificate.pk), &otherGroup, &otherDsaPrivateKey, &otherDsaPublicKey) == 0);
