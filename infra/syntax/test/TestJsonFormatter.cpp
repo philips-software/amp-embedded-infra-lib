@@ -1,4 +1,5 @@
 #include "infra/stream/StdStringOutputStream.hpp"
+#include "infra/syntax/Json.hpp"
 #include "infra/syntax/JsonFormatter.hpp"
 #include "gtest/gtest.h"
 
@@ -135,7 +136,7 @@ TEST(JsonObjectFormatter, add_milli_float_jsonstring_key)
     EXPECT_EQ(R"({ "tag":12.034 })", string);
 }
 
-TEST(JsonObjectFormatter, add_sting_as_sub_object)
+TEST(JsonObjectFormatter, add_string_as_sub_object)
 {
     infra::BoundedString::WithStorage<64> string;
 
@@ -230,6 +231,18 @@ TEST(JsonObjectFormatter, add_json_value_int)
     EXPECT_EQ(R"({ "tag":5 })", string);
 }
 
+TEST(JsonObjectFormatter, add_json_value_BiggerInt)
+{
+    infra::BoundedString::WithStorage<64> string;
+
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        formatter.Add(infra::JsonKeyValue{ "tag", infra::JsonValue(infra::InPlaceType<infra::JsonBiggerInt>(), 15, true) });
+    }
+
+    EXPECT_EQ(R"({ "tag":-15 })", string);
+}
+
 TEST(JsonObjectFormatter, add_json_value_string)
 {
     infra::BoundedString::WithStorage<64> string;
@@ -286,6 +299,17 @@ TEST(JsonObjectFormatter, add_key_jsonstring_value_Int)
         formatter.Add(infra::JsonString{ "tag" }, infra::JsonValue(infra::InPlaceType<int32_t>(), -2));
     }
     EXPECT_EQ(R"({ "tag":-2 })", string);
+}
+
+TEST(JsonObjectFormatter, add_key_jsonstring_value_BiggerInt)
+{
+    infra::BoundedString::WithStorage<64> string;
+
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(infra::inPlace, string);
+        formatter.Add(infra::JsonString{ "tag" }, infra::JsonValue(infra::InPlaceType<infra::JsonBiggerInt>(), 5, true));
+    }
+    EXPECT_EQ(R"({ "tag":-5 })", string);
 }
 
 TEST(JsonObjectFormatter, add_key_jsonstring_value_JsonFloat)
