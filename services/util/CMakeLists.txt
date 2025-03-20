@@ -104,6 +104,8 @@ if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
         EchoInstantiationSecured.hpp
         EchoOnSesameSymmetricKey.cpp
         EchoOnSesameSymmetricKey.hpp
+        EchoOnSesameDiffieHellman.cpp
+        EchoOnSesameDiffieHellman.hpp
         SesameSecured.cpp
         SesameSecured.hpp
         Sha256MbedTls.cpp
