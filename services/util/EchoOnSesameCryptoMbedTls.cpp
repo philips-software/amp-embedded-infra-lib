@@ -27,6 +27,7 @@ namespace services
     }
 
     EcSecP256r1DiffieHellmanMbedTls::EcSecP256r1DiffieHellmanMbedTls(hal::SynchronousRandomDataGenerator& randomDataGenerator)
+        : randomDataGenerator(randomDataGenerator)
     {
         mbedtls_ecp_group_init(&group);
         really_assert(mbedtls_ecp_group_load(&group, MBEDTLS_ECP_DP_SECP256R1) == 0);
@@ -50,7 +51,7 @@ namespace services
         return ConvertToBytes<65>(group, publicKey);
     }
 
-    std::array<uint8_t, 32> EcSecP256r1DiffieHellmanMbedTls::SharedSecret(infra::ConstByteRange otherPublicKey, hal::SynchronousRandomDataGenerator& randomDataGenerator) const
+    std::array<uint8_t, 32> EcSecP256r1DiffieHellmanMbedTls::SharedSecret(infra::ConstByteRange otherPublicKey) const
     {
         mbedtls_mpi z;
         mbedtls_mpi_init(&z);
@@ -78,6 +79,7 @@ namespace services
     }
 
     EcSecP256r1DsaSignerMbedTls::EcSecP256r1DsaSignerMbedTls(infra::BoundedConstString dsaCertificatePrivateKey, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+        : randomDataGenerator(randomDataGenerator)
     {
         mbedtls_ecp_group_init(&group);
         really_assert(mbedtls_ecp_group_load(&group, MBEDTLS_ECP_DP_SECP256R1) == 0);
@@ -104,7 +106,7 @@ namespace services
         mbedtls_ecp_group_free(&group);
     }
 
-    std::pair<std::array<uint8_t, 32>, std::array<uint8_t, 32>> EcSecP256r1DsaSignerMbedTls::Sign(infra::ConstByteRange data, hal::SynchronousRandomDataGenerator& randomDataGenerator) const
+    std::pair<std::array<uint8_t, 32>, std::array<uint8_t, 32>> EcSecP256r1DsaSignerMbedTls::Sign(infra::ConstByteRange data) const
     {
         mbedtls_mpi r;
         mbedtls_mpi_init(&r);

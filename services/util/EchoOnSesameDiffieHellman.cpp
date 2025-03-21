@@ -38,7 +38,7 @@ namespace services
                 DiffieHellmanKeyEstablishmentProxy::RequestSend([this]()
                     {
                         auto encodedDhPublicKey = (*keyExchange)->PublicKey();
-                        auto [r, s] = signer.Sign(encodedDhPublicKey, randomDataGenerator);
+                        auto [r, s] = signer.Sign(encodedDhPublicKey);
 
                         sentExchange = true;
                         DiffieHellmanKeyEstablishmentProxy::Exchange(encodedDhPublicKey, r, s);
@@ -65,7 +65,7 @@ namespace services
         if (verifier == infra::none || !(*verifier)->Verify(otherPublicKey, signatureR, signatureS))
             return;
 
-        auto sharedSecret = (*keyExchange)->SharedSecret(otherPublicKey, randomDataGenerator);
+        auto sharedSecret = (*keyExchange)->SharedSecret(otherPublicKey);
         auto publicKey = (*keyExchange)->PublicKey();
 
         int swap = std::lexicographical_compare(publicKey.begin(), publicKey.end(), otherPublicKey.begin(), otherPublicKey.end()) ? 32 : 0;

@@ -14,7 +14,7 @@ namespace services
         EcSecP256r1DiffieHellman& operator=(const EcSecP256r1DiffieHellman& other) = delete;
 
         virtual std::array<uint8_t, 65> PublicKey() const = 0;
-        virtual std::array<uint8_t, 32> SharedSecret(infra::ConstByteRange otherPublicKey, hal::SynchronousRandomDataGenerator& randomDataGenerator) const = 0;
+        virtual std::array<uint8_t, 32> SharedSecret(infra::ConstByteRange otherPublicKey) const = 0;
     };
 
     class EcSecP256r1DsaSigner
@@ -24,7 +24,7 @@ namespace services
         EcSecP256r1DsaSigner(const EcSecP256r1DsaSigner& other) = delete;
         EcSecP256r1DsaSigner& operator=(const EcSecP256r1DsaSigner& other) = delete;
 
-        virtual std::pair<std::array<uint8_t, 32>, std::array<uint8_t, 32>> Sign(infra::ConstByteRange data, hal::SynchronousRandomDataGenerator& randomDataGenerator) const = 0;
+        virtual std::pair<std::array<uint8_t, 32>, std::array<uint8_t, 32>> Sign(infra::ConstByteRange data) const = 0;
     };
 
     class EcSecP256r1DsaVerifier

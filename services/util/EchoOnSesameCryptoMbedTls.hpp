@@ -17,9 +17,11 @@ namespace services
         ~EcSecP256r1DiffieHellmanMbedTls();
 
         std::array<uint8_t, 65> PublicKey() const override;
-        std::array<uint8_t, 32> SharedSecret(infra::ConstByteRange otherPublicKey, hal::SynchronousRandomDataGenerator& randomDataGenerator) const override;
+        std::array<uint8_t, 32> SharedSecret(infra::ConstByteRange otherPublicKey) const override;
 
     private:
+        hal::SynchronousRandomDataGenerator& randomDataGenerator;
+
         mbedtls_ecp_group group;
         mbedtls_mpi privateKey;
         mbedtls_ecp_point publicKey;
@@ -37,9 +39,10 @@ namespace services
         EcSecP256r1DsaSignerMbedTls(infra::BoundedConstString dsaCertificatePrivateKey, hal::SynchronousRandomDataGenerator& randomDataGenerator);
         ~EcSecP256r1DsaSignerMbedTls();
 
-        std::pair<std::array<uint8_t, 32>, std::array<uint8_t, 32>> Sign(infra::ConstByteRange data, hal::SynchronousRandomDataGenerator& randomDataGenerator) const override;
+        std::pair<std::array<uint8_t, 32>, std::array<uint8_t, 32>> Sign(infra::ConstByteRange data) const override;
 
     private:
+        hal::SynchronousRandomDataGenerator& randomDataGenerator;
         mbedtls_ecp_group group;
         mbedtls_mpi privateKey;
         mbedtls_ecdh_context context;
