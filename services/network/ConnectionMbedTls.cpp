@@ -26,17 +26,6 @@ extern "C"
 #endif
 }
 
-#ifndef EMIL_HOST_BUILD
-#include "mbedtls/platform_time.h"
-extern "C"
-{
-    mbedtls_ms_time_t mbedtls_ms_time(void)
-    {
-        return static_cast<mbedtls_ms_time_t>(std::chrono::duration_cast<std::chrono::milliseconds>(infra::Now(3).time_since_epoch()).count());
-    }
-}
-#endif
-
 namespace services
 {
     ConnectionMbedTls::ConnectionMbedTls(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver, CertificatesMbedTls& certificates,
