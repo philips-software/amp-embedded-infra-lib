@@ -30,7 +30,7 @@ namespace services
         struct WithCryptoMbedTls;
 #endif
 
-        EchoOnSesameDiffieHellman(Crypto& crypto, SesameSecured& secured, infra::BoundedConstString dsaCertificate, infra::BoundedConstString rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
+        EchoOnSesameDiffieHellman(const Crypto& crypto, SesameSecured& secured, infra::BoundedConstString dsaCertificate, infra::BoundedConstString rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
 
         // Implementation of Echo
         void RequestSend(ServiceProxy& serviceProxy) override;

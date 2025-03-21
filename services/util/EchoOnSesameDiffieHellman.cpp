@@ -2,7 +2,7 @@
 
 namespace services
 {
-    EchoOnSesameDiffieHellman::EchoOnSesameDiffieHellman(Crypto& crypto, SesameSecured& secured, infra::BoundedConstString dsaCertificate, infra::BoundedConstString rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy)
+    EchoOnSesameDiffieHellman::EchoOnSesameDiffieHellman(const Crypto& crypto, SesameSecured& secured, infra::BoundedConstString dsaCertificate, infra::BoundedConstString rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy)
         : EchoOnSesame(secured, serializerFactory, errorPolicy)
         , DiffieHellmanKeyEstablishment(static_cast<services::Echo&>(*this))
         , DiffieHellmanKeyEstablishmentProxy(static_cast<services::Echo&>(*this))
