@@ -161,8 +161,8 @@ public:
             dsaCertificatePrivateKeyRight.push_back(0);
         }
     };
-    services::EchoOnSesameDiffieHellman echoLeft{ securedLeft, dsaCertificateLeft, dsaCertificatePrivateKeyLeft, rootCaCertificate, randomDataGenerator, serializerFactory, errorPolicy };
-    services::EchoOnSesameDiffieHellman echoRight{ securedRight, dsaCertificateRight, dsaCertificatePrivateKeyRight, rootCaCertificate, randomDataGenerator, serializerFactory, errorPolicy };
+    services::EchoOnSesameDiffieHellman::WithCryptoMbedTls echoLeft{ securedLeft, dsaCertificateLeft, dsaCertificatePrivateKeyLeft, rootCaCertificate, randomDataGenerator, serializerFactory, errorPolicy };
+    services::EchoOnSesameDiffieHellman::WithCryptoMbedTls echoRight{ securedRight, dsaCertificateRight, dsaCertificatePrivateKeyRight, rootCaCertificate, randomDataGenerator, serializerFactory, errorPolicy };
 
     services::ServiceStubProxy serviceProxy{ echoLeft };
     testing::StrictMock<services::ServiceStub> service{ echoRight };

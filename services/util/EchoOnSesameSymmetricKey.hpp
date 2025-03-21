@@ -1,5 +1,5 @@
-#ifndef SERVICES_ECHO_ON_MESSAGE_COMMUNICATION_SYMMETRIC_KEY_HPP
-#define SERVICES_ECHO_ON_MESSAGE_COMMUNICATION_SYMMETRIC_KEY_HPP
+#ifndef SERVICES_ECHO_ON_SESAME_SYMMETRIC_KEY_HPP
+#define SERVICES_ECHO_ON_SESAME_SYMMETRIC_KEY_HPP
 
 #include "generated/echo/SesameSecurity.pb.hpp"
 #include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"

@@ -26,6 +26,9 @@ target_sources(services.util PRIVATE
     EchoOnMessageCommunication.hpp
     EchoOnSesame.cpp
     EchoOnSesame.hpp
+    EchoOnSesameDiffieHellman.cpp
+    EchoOnSesameDiffieHellman.hpp
+    EchoOnSesameCrypto.hpp
     FlashAlign.cpp
     FlashAlign.hpp
     FlashMultipleAccess.cpp
@@ -97,15 +100,19 @@ if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
         )
     endif()
 
+    target_compile_definitions(services.util PUBLIC
+        EMIL_USE_MBEDTLS
+    )
+
     target_sources(services.util PRIVATE
         AesMbedTls.cpp
         AesMbedTls.hpp
         EchoInstantiationSecured.cpp
         EchoInstantiationSecured.hpp
+        EchoOnSesameCryptoMbedTls.cpp
+        EchoOnSesameCryptoMbedTls.hpp
         EchoOnSesameSymmetricKey.cpp
         EchoOnSesameSymmetricKey.hpp
-        EchoOnSesameDiffieHellman.cpp
-        EchoOnSesameDiffieHellman.hpp
         SesameSecured.cpp
         SesameSecured.hpp
         Sha256MbedTls.cpp
