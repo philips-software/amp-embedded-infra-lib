@@ -98,7 +98,7 @@ namespace services
         }
 
         std::array<uint8_t, blockSize> computedMac;
-        std::size_t processedSize = receiveEncryption.Finish(infra::ByteRange(), computedMac);
+        receiveEncryption.Finish(infra::ByteRange(), computedMac);
 
         std::array<uint8_t, blockSize> receivedMac;
         stream >> infra::MakeRange(receivedMac);

@@ -14,7 +14,7 @@ namespace services
         : public EcSecP256r1DiffieHellman
     {
     public:
-        EcSecP256r1DiffieHellmanMbedTls(hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        explicit EcSecP256r1DiffieHellmanMbedTls(hal::SynchronousRandomDataGenerator& randomDataGenerator);
         ~EcSecP256r1DiffieHellmanMbedTls();
 
         std::array<uint8_t, 65> PublicKey() const override;
