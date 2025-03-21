@@ -90,62 +90,67 @@ public:
     std::array<uint8_t, services::SesameSecured::blockSize> iv{ 1, 3 };
     services::SesameSecured::WithBuffers<1024> securedLeft{ lowerLeft, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
     services::SesameSecured::WithBuffers<1024> securedRight{ lowerRight, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
-    std::string rootCaCertificate{ R"(-----BEGIN CERTIFICATE-----
-MIICdTCCAhugAwIBAgIULwmcYHDmNNaIjMkxhavqK1YdGvowCgYIKoZIzj0EAwIw
-gY8xCzAJBgNVBAYTAk5MMRQwEgYDVQQIDAtOZXRoZXJsYW5kczEMMAoGA1UEBwwD
-U29uMRAwDgYDVQQKDAdSaWNoYXJkMRAwDgYDVQQLDAdSaWNoYXJkMRQwEgYDVQQD
-DAtycGV0ZXJzLm9yZzEiMCAGCSqGSIb3DQEJARYTcmljaGFyZEBycGV0ZXJzLm9y
-ZzAeFw0yNTAzMjAxNjM0MzhaFw0yNzEyMTUxNjM0MzhaMIGPMQswCQYDVQQGEwJO
-TDEUMBIGA1UECAwLTmV0aGVybGFuZHMxDDAKBgNVBAcMA1NvbjEQMA4GA1UECgwH
-UmljaGFyZDEQMA4GA1UECwwHUmljaGFyZDEUMBIGA1UEAwwLcnBldGVycy5vcmcx
-IjAgBgkqhkiG9w0BCQEWE3JpY2hhcmRAcnBldGVycy5vcmcwWTATBgcqhkjOPQIB
-BggqhkjOPQMBBwNCAASs2aVQCxjuXi/j+P1nEkBq1vBreaTSIU2qJ7Ef5LAn0KSN
-1GrE1YBRSszzs4+E5+0kUNdUiWZlYoCc19H4RwQ8o1MwUTAdBgNVHQ4EFgQUjXoQ
-8n3vMX8IHRWwAXEC5i6tUScwHwYDVR0jBBgwFoAUjXoQ8n3vMX8IHRWwAXEC5i6t
-UScwDwYDVR0TAQH/BAUwAwEB/zAKBggqhkjOPQQDAgNIADBFAiEA7KCumPkfTtiN
-x8A5IXgZsPlL2YWB4TpNgU5MGd50IBsCIEz0JhuYeidumzxnPdf7iNk7SEyXgBvS
-7koJHaaGZIJl
------END CERTIFICATE-----
-)" };
-    std::string dsaCertificateLeft{ R"(-----BEGIN CERTIFICATE-----
-MIICCjCCAa8CAhI0MAoGCCqGSM49BAMCMIGPMQswCQYDVQQGEwJOTDEUMBIGA1UE
-CAwLTmV0aGVybGFuZHMxDDAKBgNVBAcMA1NvbjEQMA4GA1UECgwHUmljaGFyZDEQ
-MA4GA1UECwwHUmljaGFyZDEUMBIGA1UEAwwLcnBldGVycy5vcmcxIjAgBgkqhkiG
-9w0BCQEWE3JpY2hhcmRAcnBldGVycy5vcmcwHhcNMjUwMzIwMTYzNzA2WhcNMjYw
-MzIwMTYzNzA2WjCBjzELMAkGA1UEBhMCTkwxFDASBgNVBAgMC05ldGhlcmxhbmRz
-MQwwCgYDVQQHDANzb24xEDAOBgNVBAoMB1JpY2hhcmQxEDAOBgNVBAsMB1JpY2hh
-cmQxFDASBgNVBAMMC3JwZXRlcnMub3JnMSIwIAYJKoZIhvcNAQkBFhNyaWNoYXJk
-QHJwZXRlcnMub3JnMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEj1db5MMOZ5us
-N4bSwnHJnaktm7Lx5OH9Pe0GzJ3R9uO8+ODkGD6C5XUtXLK+Hi3RbmEWLJBR/5/t
-kw2ax/qYUDAKBggqhkjOPQQDAgNJADBGAiEA/dVzXiplT/nQGCEOKYYZ0ZYpkLab
-NBBMfU/mN47dxG8CIQD1vhxhEXVyL5FdTIR6GCii/mD2IAceYPl2JUI8jS02Nw==
------END CERTIFICATE-----
-)" };
-    std::string dsaCertificatePrivateKeyLeft{ R"(-----BEGIN PRIVATE KEY-----
-MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgNizKWb5B7zV9m+VJ
-oyThdFsz48QYtESsKwPBlXH317GhRANCAASPV1vkww5nm6w3htLCccmdqS2bsvHk
-4f097QbMndH247z44OQYPoLldS1csr4eLdFuYRYskFH/n+2TDZrH+phQ
------END PRIVATE KEY-----
-)" };
-    std::string dsaCertificateRight{ R"(-----BEGIN CERTIFICATE-----
-MIIBvzCCAWQCAhI1MAoGCCqGSM49BAMCMIGPMQswCQYDVQQGEwJOTDEUMBIGA1UE
-CAwLTmV0aGVybGFuZHMxDDAKBgNVBAcMA1NvbjEQMA4GA1UECgwHUmljaGFyZDEQ
-MA4GA1UECwwHUmljaGFyZDEUMBIGA1UEAwwLcnBldGVycy5vcmcxIjAgBgkqhkiG
-9w0BCQEWE3JpY2hhcmRAcnBldGVycy5vcmcwHhcNMjUwMzIwMTYzOTA5WhcNMjYw
-MzIwMTYzOTA5WjBFMQswCQYDVQQGEwJBVTETMBEGA1UECAwKU29tZS1TdGF0ZTEh
-MB8GA1UECgwYSW50ZXJuZXQgV2lkZ2l0cyBQdHkgTHRkMFkwEwYHKoZIzj0CAQYI
-KoZIzj0DAQcDQgAEj1db5MMOZ5usN4bSwnHJnaktm7Lx5OH9Pe0GzJ3R9uO8+ODk
-GD6C5XUtXLK+Hi3RbmEWLJBR/5/tkw2ax/qYUDAKBggqhkjOPQQDAgNJADBGAiEA
-7xcmh4F96+2Ue9nYpDc/xAyaS9ok3OvpiFrEjQjPi2kCIQCKkiTjEpgOaHOuq2gY
-FIG+UTm+O3R40/iY9h206Tzsug==
------END CERTIFICATE-----
-)" };
-    std::string dsaCertificatePrivateKeyRight{ R"(-----BEGIN PRIVATE KEY-----
-MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgNizKWb5B7zV9m+VJ
-oyThdFsz48QYtESsKwPBlXH317GhRANCAASPV1vkww5nm6w3htLCccmdqS2bsvHk
-4f097QbMndH247z44OQYPoLldS1csr4eLdFuYRYskFH/n+2TDZrH+phQ
------END PRIVATE KEY-----
-)" };
+    std::string rootCaCertificate{
+        "-----BEGIN CERTIFICATE-----\r\n"
+        "MIICdTCCAhugAwIBAgIULwmcYHDmNNaIjMkxhavqK1YdGvowCgYIKoZIzj0EAwIw\r\n"
+        "gY8xCzAJBgNVBAYTAk5MMRQwEgYDVQQIDAtOZXRoZXJsYW5kczEMMAoGA1UEBwwD\r\n"
+        "U29uMRAwDgYDVQQKDAdSaWNoYXJkMRAwDgYDVQQLDAdSaWNoYXJkMRQwEgYDVQQD\r\n"
+        "DAtycGV0ZXJzLm9yZzEiMCAGCSqGSIb3DQEJARYTcmljaGFyZEBycGV0ZXJzLm9y\r\n"
+        "ZzAeFw0yNTAzMjAxNjM0MzhaFw0yNzEyMTUxNjM0MzhaMIGPMQswCQYDVQQGEwJO\r\n"
+        "TDEUMBIGA1UECAwLTmV0aGVybGFuZHMxDDAKBgNVBAcMA1NvbjEQMA4GA1UECgwH\r\n"
+        "UmljaGFyZDEQMA4GA1UECwwHUmljaGFyZDEUMBIGA1UEAwwLcnBldGVycy5vcmcx\r\n"
+        "IjAgBgkqhkiG9w0BCQEWE3JpY2hhcmRAcnBldGVycy5vcmcwWTATBgcqhkjOPQIB\r\n"
+        "BggqhkjOPQMBBwNCAASs2aVQCxjuXi/j+P1nEkBq1vBreaTSIU2qJ7Ef5LAn0KSN\r\n"
+        "1GrE1YBRSszzs4+E5+0kUNdUiWZlYoCc19H4RwQ8o1MwUTAdBgNVHQ4EFgQUjXoQ\r\n"
+        "8n3vMX8IHRWwAXEC5i6tUScwHwYDVR0jBBgwFoAUjXoQ8n3vMX8IHRWwAXEC5i6t\r\n"
+        "UScwDwYDVR0TAQH/BAUwAwEB/zAKBggqhkjOPQQDAgNIADBFAiEA7KCumPkfTtiN\r\n"
+        "x8A5IXgZsPlL2YWB4TpNgU5MGd50IBsCIEz0JhuYeidumzxnPdf7iNk7SEyXgBvS\r\n"
+        "7koJHaaGZIJl\r\n"
+        "-----END CERTIFICATE-----\r\n"
+    };
+    std::string dsaCertificateLeft{
+        "-----BEGIN CERTIFICATE-----\r\n"
+        "MIICCjCCAa8CAhI0MAoGCCqGSM49BAMCMIGPMQswCQYDVQQGEwJOTDEUMBIGA1UE\r\n"
+        "CAwLTmV0aGVybGFuZHMxDDAKBgNVBAcMA1NvbjEQMA4GA1UECgwHUmljaGFyZDEQ\r\n"
+        "MA4GA1UECwwHUmljaGFyZDEUMBIGA1UEAwwLcnBldGVycy5vcmcxIjAgBgkqhkiG\r\n"
+        "9w0BCQEWE3JpY2hhcmRAcnBldGVycy5vcmcwHhcNMjUwMzIwMTYzNzA2WhcNMjYw\r\n"
+        "MzIwMTYzNzA2WjCBjzELMAkGA1UEBhMCTkwxFDASBgNVBAgMC05ldGhlcmxhbmRz\r\n"
+        "MQwwCgYDVQQHDANzb24xEDAOBgNVBAoMB1JpY2hhcmQxEDAOBgNVBAsMB1JpY2hh\r\n"
+        "cmQxFDASBgNVBAMMC3JwZXRlcnMub3JnMSIwIAYJKoZIhvcNAQkBFhNyaWNoYXJk\r\n"
+        "QHJwZXRlcnMub3JnMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEj1db5MMOZ5us\r\n"
+        "N4bSwnHJnaktm7Lx5OH9Pe0GzJ3R9uO8+ODkGD6C5XUtXLK+Hi3RbmEWLJBR/5/t\r\n"
+        "kw2ax/qYUDAKBggqhkjOPQQDAgNJADBGAiEA/dVzXiplT/nQGCEOKYYZ0ZYpkLab\r\n"
+        "NBBMfU/mN47dxG8CIQD1vhxhEXVyL5FdTIR6GCii/mD2IAceYPl2JUI8jS02Nw==\r\n"
+        "-----END CERTIFICATE-----\r\n"
+    };
+    std::string dsaCertificatePrivateKeyLeft{
+        "-----BEGIN PRIVATE KEY-----\r\n" //NOSONAR
+        "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgNizKWb5B7zV9m+VJ\r\n"
+        "oyThdFsz48QYtESsKwPBlXH317GhRANCAASPV1vkww5nm6w3htLCccmdqS2bsvHk\r\n"
+        "4f097QbMndH247z44OQYPoLldS1csr4eLdFuYRYskFH/n+2TDZrH+phQ\r\n"
+        "-----END PRIVATE KEY-----\r\n"
+    };
+    std::string dsaCertificateRight{
+        "-----BEGIN CERTIFICATE-----\r\n"
+        "MIIBvzCCAWQCAhI1MAoGCCqGSM49BAMCMIGPMQswCQYDVQQGEwJOTDEUMBIGA1UE\r\n"
+        "CAwLTmV0aGVybGFuZHMxDDAKBgNVBAcMA1NvbjEQMA4GA1UECgwHUmljaGFyZDEQ\r\n"
+        "MA4GA1UECwwHUmljaGFyZDEUMBIGA1UEAwwLcnBldGVycy5vcmcxIjAgBgkqhkiG\r\n"
+        "9w0BCQEWE3JpY2hhcmRAcnBldGVycy5vcmcwHhcNMjUwMzIwMTYzOTA5WhcNMjYw\r\n"
+        "MzIwMTYzOTA5WjBFMQswCQYDVQQGEwJBVTETMBEGA1UECAwKU29tZS1TdGF0ZTEh\r\n"
+        "MB8GA1UECgwYSW50ZXJuZXQgV2lkZ2l0cyBQdHkgTHRkMFkwEwYHKoZIzj0CAQYI\r\n"
+        "KoZIzj0DAQcDQgAEj1db5MMOZ5usN4bSwnHJnaktm7Lx5OH9Pe0GzJ3R9uO8+ODk\r\n"
+        "GD6C5XUtXLK+Hi3RbmEWLJBR/5/tkw2ax/qYUDAKBggqhkjOPQQDAgNJADBGAiEA\r\n"
+        "7xcmh4F96+2Ue9nYpDc/xAyaS9ok3OvpiFrEjQjPi2kCIQCKkiTjEpgOaHOuq2gY\r\n"
+        "FIG+UTm+O3R40/iY9h206Tzsug==\r\n"
+        "-----END CERTIFICATE-----\r\n"
+    };
+    std::string dsaCertificatePrivateKeyRight{
+        "-----BEGIN PRIVATE KEY-----\r\n" //NOSONAR
+        "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgNizKWb5B7zV9m+VJ\r\n"
+        "oyThdFsz48QYtESsKwPBlXH317GhRANCAASPV1vkww5nm6w3htLCccmdqS2bsvHk\r\n"
+        "4f097QbMndH247z44OQYPoLldS1csr4eLdFuYRYskFH/n+2TDZrH+phQ\r\n"
+        "-----END PRIVATE KEY-----\r\n"
+    };
     infra::Execute e2{
         [this]()
         {
