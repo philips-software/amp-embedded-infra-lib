@@ -10,7 +10,7 @@ namespace services
         template<std::size_t Size>
         std::array<uint8_t, Size> ConvertToBytes(const mbedtls_ecp_group& group, const mbedtls_ecp_point& x)
         {
-            std::array<uint8_t, 65> result;
+            std::array<uint8_t, Size> result;
             std::size_t size = 0;
             really_assert(mbedtls_ecp_point_write_binary(&group, &x, MBEDTLS_ECP_PF_UNCOMPRESSED, &size, result.data(), result.size()) == 0);
             really_assert(size == result.size());
