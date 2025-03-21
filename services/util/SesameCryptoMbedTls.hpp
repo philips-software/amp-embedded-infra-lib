@@ -1,11 +1,12 @@
-#ifndef SERVICES_ECHO_ON_SESAME_CRYPTO_MBED_TLS_HPP
-#define SERVICES_ECHO_ON_SESAME_CRYPTO_MBED_TLS_HPP
+#ifndef SERVICES_SESAME_CRYPTO_MBED_TLS_HPP
+#define SERVICES_SESAME_CRYPTO_MBED_TLS_HPP
 
 #include "mbedtls/ecdh.h"
 #include "mbedtls/ecp.h"
+#include "mbedtls/gcm.h"
 #include "mbedtls/pk.h"
 #include "mbedtls/x509_crt.h"
-#include "services/util/EchoOnSesameCrypto.hpp"
+#include "services/util/SesameCrypto.hpp"
 
 namespace services
 {
@@ -73,6 +74,24 @@ namespace services
     {
     public:
         void Expand(infra::ConstByteRange seed, infra::ByteRange expandedMaterial) const override;
+    };
+
+    class AesGcmEncryptionMbedTls
+        : public AesGcmEncryption
+    {
+    public:
+        AesGcmEncryptionMbedTls();
+        ~AesGcmEncryptionMbedTls();
+
+        void EncryptWithKey(infra::ConstByteRange key) override;
+        void DecryptWithKey(infra::ConstByteRange key) override;
+        void Start(infra::ConstByteRange iv) override;
+        std::size_t Update(infra::ConstByteRange from, infra::ByteRange to) override;
+        std::size_t Finish(infra::ByteRange to, infra::ByteRange mac) override;
+
+    private:
+        bool encrypt = false;
+        mbedtls_gcm_context context;
     };
 }
 

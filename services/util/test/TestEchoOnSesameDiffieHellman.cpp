@@ -88,8 +88,8 @@ public:
     bool lowerRightRequest = false;
     std::array<uint8_t, services::SesameSecured::keySize> key{ 1, 2 };
     std::array<uint8_t, services::SesameSecured::blockSize> iv{ 1, 3 };
-    services::SesameSecured::WithBuffers<1024> securedLeft{ lowerLeft, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
-    services::SesameSecured::WithBuffers<1024> securedRight{ lowerRight, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
+    services::SesameSecured::WithCryptoMbedTls::WithBuffers<1024> securedLeft{ lowerLeft, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
+    services::SesameSecured::WithCryptoMbedTls::WithBuffers<1024> securedRight{ lowerRight, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
     std::string rootCaCertificate{
         "-----BEGIN CERTIFICATE-----\r\n"
         "MIICdTCCAhugAwIBAgIULwmcYHDmNNaIjMkxhavqK1YdGvowCgYIKoZIzj0EAwIw\r\n"

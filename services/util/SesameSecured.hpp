@@ -7,8 +7,11 @@
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "infra/util/WithStorage.hpp"
-#include "mbedtls/gcm.h"
 #include "services/util/Sesame.hpp"
+#include "services/util/SesameCrypto.hpp"
+#ifdef EMIL_USE_MBEDTLS
+#include "services/util/SesameCryptoMbedTls.hpp"
+#endif
 
 namespace services
 {
@@ -30,11 +33,11 @@ namespace services
             IvType receiveIv;
         };
 
-        template<std::size_t Size>
-        using WithBuffers = infra::WithStorage<infra::WithStorage<SesameSecured, infra::BoundedVector<uint8_t>::WithMaxSize<Size + blockSize>>, infra::BoundedVector<uint8_t>::WithMaxSize<Size + blockSize>>;
+#ifdef EMIL_USE_MBEDTLS
+        struct WithCryptoMbedTls;
+#endif
 
-        SesameSecured(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const KeyMaterial& keyMaterial);
-        ~SesameSecured();
+        SesameSecured(AesGcmEncryption& sendEncryption, AesGcmEncryption& receiveEncryption, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const KeyMaterial& keyMaterial);
 
         void SetNextSendKey(const KeyType& nextSendKey, const IvType& nextSendIv);
         void SetReceiveKey(const KeyType& newReceiveKey, const IvType& newReceiveIv);
@@ -67,7 +70,8 @@ namespace services
         };
 
     private:
-        mbedtls_gcm_context sendContext;
+        AesGcmEncryption& sendEncryption;
+        AesGcmEncryption& receiveEncryption;
         infra::BoundedVector<uint8_t>& sendBuffer;
         std::array<uint8_t, keySize> initialSendKey;
         std::array<uint8_t, blockSize> initialSendIv;
@@ -80,13 +84,33 @@ namespace services
         std::size_t requestedSendSize = 0;
         infra::Optional<std::pair<KeyType, IvType>> nextKeys;
 
-        mbedtls_gcm_context receiveContext;
         infra::BoundedVector<uint8_t>& receiveBuffer;
         std::array<uint8_t, keySize> initialReceiveKey;
         std::array<uint8_t, blockSize> initialReceiveIv;
         std::array<uint8_t, blockSize> receiveIv;
         infra::SharedOptional<ReceiveBufferReader> receiveBufferReader;
     };
+
+#ifdef EMIL_USE_MBEDTLS
+    namespace detail
+    {
+        struct SesameSecuredMbedTlsEncryptors
+        {
+            AesGcmEncryptionMbedTls sendEncryption;
+            AesGcmEncryptionMbedTls receiveEncryption;
+        };
+    }
+
+    struct SesameSecured::WithCryptoMbedTls
+        : private detail::SesameSecuredMbedTlsEncryptors
+        , public SesameSecured
+    {
+        template<std::size_t Size>
+        using WithBuffers = infra::WithStorage<infra::WithStorage<WithCryptoMbedTls, infra::BoundedVector<uint8_t>::WithMaxSize<Size + blockSize>>, infra::BoundedVector<uint8_t>::WithMaxSize<Size + blockSize>>;
+
+        WithCryptoMbedTls(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const KeyMaterial& keyMaterial);
+    };
+#endif
 }
 
 #endif

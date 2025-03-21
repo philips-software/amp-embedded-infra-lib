@@ -34,7 +34,7 @@ namespace main_
 
         services::SesameCobs::WithMaxMessageSize<MessageSize> cobs;
         services::SesameWindowed windowed{ cobs };
-        services::SesameSecured::WithBuffers<MessageSize> secured;
+        services::SesameSecured::WithCryptoMbedTls::WithBuffers<MessageSize> secured;
         services::TracingEchoOnStreamsDescendant<services::EchoOnSesameSymmetricKey> echo;
     };
 }

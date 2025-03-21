@@ -1,5 +1,5 @@
-#ifndef SERVICES_ECHO_ON_SESAME_CRYPTO_HPP
-#define SERVICES_ECHO_ON_SESAME_CRYPTO_HPP
+#ifndef SERVICES_SESAME_CRYPTO_HPP
+#define SERVICES_SESAME_CRYPTO_HPP
 
 #include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"
 #include "infra/util/BoundedString.hpp"
@@ -45,6 +45,20 @@ namespace services
         HmacDrbgSha256& operator=(const HmacDrbgSha256& other) = delete;
 
         virtual void Expand(infra::ConstByteRange seed, infra::ByteRange expandedMaterial) const = 0;
+    };
+
+    class AesGcmEncryption
+    {
+    public:
+        AesGcmEncryption() = default;
+        AesGcmEncryption(const AesGcmEncryption& other) = delete;
+        AesGcmEncryption& operator=(const AesGcmEncryption& other) = delete;
+
+        virtual void EncryptWithKey(infra::ConstByteRange key) = 0;
+        virtual void DecryptWithKey(infra::ConstByteRange key) = 0;
+        virtual void Start(infra::ConstByteRange iv) = 0;
+        virtual std::size_t Update(infra::ConstByteRange from, infra::ByteRange to) = 0;
+        virtual std::size_t Finish(infra::ByteRange to, infra::ByteRange mac) = 0;
     };
 }
 

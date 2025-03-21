@@ -69,7 +69,7 @@ public:
     std::array<uint8_t, services::SesameSecured::blockSize> iv{ 1, 3 };
 
     testing::StrictMock<services::SesameMock> lower;
-    services::SesameSecured::WithBuffers<64> secured{ lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
+    services::SesameSecured::WithCryptoMbedTls::WithBuffers<64> secured{ lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
     testing::StrictMock<services::SesameObserverMock> upper{ secured };
 
     infra::SharedOptional<infra::StdVectorInputStreamReader> reader;

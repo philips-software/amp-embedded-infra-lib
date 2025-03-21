@@ -4,9 +4,9 @@
 #include "generated/echo/SesameSecurity.pb.hpp"
 #include "infra/util/ProxyCreator.hpp"
 #include "services/util/EchoOnSesame.hpp"
-#include "services/util/EchoOnSesameCrypto.hpp"
+#include "services/util/SesameCrypto.hpp"
 #ifdef EMIL_USE_MBEDTLS
-#include "services/util/EchoOnSesameCryptoMbedTls.hpp"
+#include "services/util/SesameCryptoMbedTls.hpp"
 #endif
 #include "services/util/SesameSecured.hpp"
 

@@ -1,4 +1,4 @@
-#include "services/util/EchoOnSesameCryptoMbedTls.hpp"
+#include "services/util/SesameCryptoMbedTls.hpp"
 #include "infra/util/ReallyAssert.hpp"
 #include "mbedtls/ecdsa.h"
 #include "mbedtls/hmac_drbg.h"
@@ -202,5 +202,46 @@ namespace services
         really_assert(mbedtls_hmac_drbg_random(&context, expandedMaterial.begin(), expandedMaterial.size()) == 0);
 
         mbedtls_hmac_drbg_free(&context);
+    }
+
+    AesGcmEncryptionMbedTls::AesGcmEncryptionMbedTls()
+    {
+        mbedtls_gcm_init(&context);
+    }
+
+    AesGcmEncryptionMbedTls::~AesGcmEncryptionMbedTls()
+    {
+        mbedtls_gcm_free(&context);
+    }
+
+    void AesGcmEncryptionMbedTls::EncryptWithKey(infra::ConstByteRange key)
+    {
+        encrypt = true;
+        mbedtls_gcm_setkey(&context, MBEDTLS_CIPHER_ID_AES, key.begin(), key.size() * 8); //NOSONAR
+    }
+
+    void AesGcmEncryptionMbedTls::DecryptWithKey(infra::ConstByteRange key)
+    {
+        encrypt = false;
+        mbedtls_gcm_setkey(&context, MBEDTLS_CIPHER_ID_AES, key.begin(), key.size() * 8); //NOSONAR
+    }
+
+    void AesGcmEncryptionMbedTls::Start(infra::ConstByteRange iv)
+    {
+        really_assert(mbedtls_gcm_starts(&context, encrypt ? MBEDTLS_GCM_ENCRYPT : MBEDTLS_GCM_DECRYPT, iv.begin(), iv.size()) == 0);
+    }
+
+    std::size_t AesGcmEncryptionMbedTls::Update(infra::ConstByteRange from, infra::ByteRange to)
+    {
+        std::size_t processedSize = 0;
+        really_assert(mbedtls_gcm_update(&context, from.begin(), from.size(), to.begin(), to.size(), &processedSize) == 0);
+        return processedSize;
+    }
+
+    std::size_t AesGcmEncryptionMbedTls::Finish(infra::ByteRange to, infra::ByteRange mac)
+    {
+        std::size_t processedSize = 0;
+        really_assert(mbedtls_gcm_finish(&context, to.begin(), to.size(), &processedSize, mac.begin(), mac.size()) == 0);
+        return processedSize;
     }
 }
