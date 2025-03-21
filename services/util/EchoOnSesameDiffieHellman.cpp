@@ -107,8 +107,10 @@ namespace services
         }
     }
 
+#ifdef EMIL_USE_MBEDTLS
     EchoOnSesameDiffieHellman::WithCryptoMbedTls::WithCryptoMbedTls(SesameSecured& secured, infra::BoundedConstString dsaCertificate, infra::BoundedConstString dsaCertificatePrivateKey, infra::BoundedConstString rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy)
         : EchoOnSesameDiffieHellman(Crypto{ keyExchange, signer, verifier, keyExpander }, secured, dsaCertificate, rootCaCertificate, randomDataGenerator, serializerFactory, errorPolicy)
         , signer(dsaCertificatePrivateKey, randomDataGenerator)
     {}
+#endif
 }
