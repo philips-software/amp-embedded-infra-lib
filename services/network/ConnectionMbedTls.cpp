@@ -1,16 +1,30 @@
 #include "services/network/ConnectionMbedTls.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
-
-#ifndef EMIL_HOST_BUILD
+#include "infra/util/ReallyAssert.hpp"
 #include "mbedtls/platform_time.h"
+
 extern "C"
 {
+    static hal::SynchronousRandomDataGenerator* rng = nullptr;
+
+#ifndef EMIL_HOST_BUILD
+#ifdef MBEDTLS_PLATFORM_MS_TIME_ALT
     mbedtls_ms_time_t mbedtls_ms_time(void)
     {
         return static_cast<mbedtls_ms_time_t>(std::chrono::duration_cast<std::chrono::milliseconds>(infra::Now(3).time_since_epoch()).count());
     }
-}
 #endif
+
+    int mbedtls_hardware_poll(void* data, unsigned char* output, size_t len, size_t* olen)
+    {
+        really_assert(rng != nullptr);
+        rng->GenerateRandomData(infra::ByteRange(output, output + len));
+        *olen = len;
+
+        return 0;
+    }
+#endif
+}
 
 namespace services
 {
@@ -25,6 +39,8 @@ namespace services
                   keepAliveForReader = nullptr;
               })
     {
+        rng = &randomDataGenerator;
+
         mbedtls_ssl_init(&sslContext);
         mbedtls_ssl_config_init(&sslConfig);
         mbedtls_ctr_drbg_init(&ctr_drbg);
