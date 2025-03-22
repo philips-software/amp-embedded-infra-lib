@@ -38,6 +38,10 @@ namespace services
         // Implementation of SesameObserver
         void Initialized() override;
 
+    protected:
+        // Implementation of EchoOnStreams
+        infra::SharedPtr<MethodSerializer> GrantSend(ServiceProxy& proxy) override;
+
     private:
         // Implementation of DiffieHellmanKeyEstablishment
         void Exchange(infra::ConstByteRange otherPublicKey, infra::ConstByteRange signatureR, infra::ConstByteRange signatureS) override;

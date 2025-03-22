@@ -73,7 +73,8 @@ public:
         ASSERT_TRUE(reader.Allocatable());
     }
 
-    services::MethodSerializerFactory::ForServices<services::ServiceStub, sesame_security::DiffieHellmanKeyEstablishment>::AndProxies<services::ServiceStubProxy, sesame_security::DiffieHellmanKeyEstablishmentProxy> serializerFactory;
+    services::MethodSerializerFactory::ForServices<services::ServiceStub, sesame_security::DiffieHellmanKeyEstablishment>::AndProxies<services::ServiceStubProxy, sesame_security::DiffieHellmanKeyEstablishmentProxy> serializerFactoryLeft;
+    services::MethodSerializerFactory::ForServices<services::ServiceStub, sesame_security::DiffieHellmanKeyEstablishment>::AndProxies<services::ServiceStubProxy, sesame_security::DiffieHellmanKeyEstablishmentProxy> serializerFactoryRight;
     testing::StrictMock<services::EchoErrorPolicyMock> errorPolicy;
     testing::StrictMock<hal::SynchronousRandomDataGeneratorMock> randomDataGenerator;
     infra::Execute e{
@@ -88,8 +89,8 @@ public:
     bool lowerRightRequest = false;
     std::array<uint8_t, services::SesameSecured::keySize> key{ 1, 2 };
     std::array<uint8_t, services::SesameSecured::blockSize> iv{ 1, 3 };
-    services::SesameSecured::WithCryptoMbedTls::WithBuffers<1024> securedLeft{ lowerLeft, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
-    services::SesameSecured::WithCryptoMbedTls::WithBuffers<1024> securedRight{ lowerRight, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
+    services::SesameSecured::WithCryptoMbedTls::WithBuffers<100> securedLeft{ lowerLeft, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
+    services::SesameSecured::WithCryptoMbedTls::WithBuffers<100> securedRight{ lowerRight, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
     std::string rootCaCertificate{
         "-----BEGIN CERTIFICATE-----\r\n"
         "MIICdTCCAhugAwIBAgIULwmcYHDmNNaIjMkxhavqK1YdGvowCgYIKoZIzj0EAwIw\r\n"
@@ -161,8 +162,8 @@ public:
             dsaCertificatePrivateKeyRight.push_back(0);
         }
     };
-    services::EchoOnSesameDiffieHellman::WithCryptoMbedTls echoLeft{ securedLeft, dsaCertificateLeft, dsaCertificatePrivateKeyLeft, rootCaCertificate, randomDataGenerator, serializerFactory, errorPolicy };
-    services::EchoOnSesameDiffieHellman::WithCryptoMbedTls echoRight{ securedRight, dsaCertificateRight, dsaCertificatePrivateKeyRight, rootCaCertificate, randomDataGenerator, serializerFactory, errorPolicy };
+    services::EchoOnSesameDiffieHellman::WithCryptoMbedTls echoLeft{ securedLeft, dsaCertificateLeft, dsaCertificatePrivateKeyLeft, rootCaCertificate, randomDataGenerator, serializerFactoryLeft, errorPolicy };
+    services::EchoOnSesameDiffieHellman::WithCryptoMbedTls echoRight{ securedRight, dsaCertificateRight, dsaCertificatePrivateKeyRight, rootCaCertificate, randomDataGenerator, serializerFactoryRight, errorPolicy };
 
     services::ServiceStubProxy serviceProxy{ echoLeft };
     testing::StrictMock<services::ServiceStub> service{ echoRight };

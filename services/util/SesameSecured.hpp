@@ -39,7 +39,7 @@ namespace services
 
         SesameSecured(AesGcmEncryption& sendEncryption, AesGcmEncryption& receiveEncryption, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const KeyMaterial& keyMaterial);
 
-        void SetNextSendKey(const KeyType& nextSendKey, const IvType& nextSendIv);
+        void SetSendKey(const KeyType& newSendKey, const IvType& newSendIv);
         void SetReceiveKey(const KeyType& newReceiveKey, const IvType& newReceiveIv);
 
         // Implementation of Sesame
@@ -53,7 +53,6 @@ namespace services
         void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
 
-        void SetSendKey(const KeyType& sendKey, const IvType& sendIv);
         void ActivateSendKey();
         void SendMessageStreamReleased();
         void IncreaseIv(infra::ByteRange iv) const;
@@ -82,7 +81,6 @@ namespace services
                 SendMessageStreamReleased();
             } };
         std::size_t requestedSendSize = 0;
-        infra::Optional<std::pair<KeyType, IvType>> nextKeys;
 
         infra::BoundedVector<uint8_t>& receiveBuffer;
         std::array<uint8_t, keySize> initialReceiveKey;

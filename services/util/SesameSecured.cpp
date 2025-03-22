@@ -19,12 +19,10 @@ namespace services
         SetReceiveKey(initialReceiveKey, initialReceiveIv);
     }
 
-    void SesameSecured::SetNextSendKey(const KeyType& nextSendKey, const IvType& nextSendIv)
+    void SesameSecured::SetSendKey(const KeyType& newSendKey, const IvType& newSendIv)
     {
-        nextKeys = { nextSendKey, nextSendIv };
-
-        if (sendWriter == nullptr)
-            ActivateSendKey();
+        sendEncryption.EncryptWithKey(newSendKey);
+        sendIv = newSendIv;
     }
 
     void SesameSecured::SetReceiveKey(const KeyType& newReceiveKey, const IvType& newReceiveIv)
@@ -55,18 +53,6 @@ namespace services
     void SesameSecured::Reset()
     {
         SesameObserver::Subject().Reset();
-    }
-
-    void SesameSecured::SetSendKey(const KeyType& sendKey, const IvType& sendIv)
-    {
-        sendEncryption.EncryptWithKey(sendKey);
-        this->sendIv = sendIv;
-    }
-
-    void SesameSecured::ActivateSendKey()
-    {
-        SetSendKey(nextKeys->first, nextKeys->second);
-        nextKeys = infra::none;
     }
 
     void SesameSecured::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -111,6 +97,7 @@ namespace services
             return;
 
         IncreaseIv(receiveIv);
+
         Sesame::GetObserver().ReceivedMessage(receiveBufferReader.Emplace(receiveBuffer, reader));
     }
 
@@ -127,9 +114,6 @@ namespace services
         sendBuffer.clear();
         IncreaseIv(sendIv);
         sendWriter = nullptr;
-
-        if (nextKeys)
-            ActivateSendKey();
     }
 
     void SesameSecured::IncreaseIv(infra::ByteRange iv) const

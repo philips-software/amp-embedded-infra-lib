@@ -42,14 +42,19 @@ namespace services
 
                         sentExchange = true;
                         DiffieHellmanKeyEstablishmentProxy::Exchange(encodedDhPublicKey, r, s);
-
-                        if (nextKeyPair)
-                        {
-                            secured.SetNextSendKey(nextKeyPair->first, nextKeyPair->second);
-                            nextKeyPair = infra::none;
-                        }
                     });
             });
+    }
+
+    infra::SharedPtr<MethodSerializer> EchoOnSesameDiffieHellman::GrantSend(ServiceProxy& proxy)
+    {
+        if (nextKeyPair && &proxy != this)
+        {
+            secured.SetSendKey(nextKeyPair->first, nextKeyPair->second);
+            nextKeyPair = infra::none;
+        }
+
+        return EchoOnSesame::GrantSend(proxy);
     }
 
     template<std::size_t Size>
@@ -78,11 +83,7 @@ namespace services
         std::array<uint8_t, 16> otherKey = Middle<16>(expandedMaterial, 32 - swap);
         std::array<uint8_t, 16> otherIv = Middle<16>(expandedMaterial, 48 - swap);
 
-        if (sentExchange)
-            secured.SetNextSendKey(key, iv);
-        else
-            nextKeyPair = { key, iv };
-
+        nextKeyPair = { key, iv };
         secured.SetReceiveKey(otherKey, otherIv);
 
         initializingKeys = false;
