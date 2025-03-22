@@ -24,6 +24,7 @@ target_sources(services.util_test PRIVATE
     TestDebouncedButton.cpp
     TestDebugLed.cpp
     TestEchoOnSesame.cpp
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestEchoOnSesameDiffieHellman.cpp>
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestEchoOnSesameSymmetricKey.cpp>
     TestFlashAlign.cpp
     TestFlashMultipleAccess.cpp
