@@ -94,10 +94,10 @@ TEST_F(EchoOnSesameSymmetricKeyTest, send_and_receive_large_message)
             LoopBackData();
 
             EXPECT_CALL(service, MethodBytes(testing::_)).WillOnce(testing::Invoke([this](const infra::BoundedVector<uint8_t>& value)
-            {
-                EXPECT_TRUE(infra::ContentsEqual(infra::MakeRange(bytes), infra::MakeRange(value)));
-                service.MethodDone();
-            }));
+                {
+                    EXPECT_TRUE(infra::ContentsEqual(infra::MakeRange(bytes), infra::MakeRange(value)));
+                    service.MethodDone();
+                }));
             LoopBackData();
         }));
 
