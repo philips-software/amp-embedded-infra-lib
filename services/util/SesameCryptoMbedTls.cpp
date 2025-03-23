@@ -227,4 +227,60 @@ namespace services
         really_assert(mbedtls_gcm_finish(&context, to.begin(), to.size(), &processedSize, mac.begin(), mac.size()) == 0);
         return processedSize;
     }
+
+    EcSecP256r1PrivateKey::EcSecP256r1PrivateKey(hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    {
+        mbedtls_pk_init(&context);
+        really_assert(mbedtls_pk_setup(&context, mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY)) == 0);
+        really_assert(mbedtls_ecp_gen_key(MBEDTLS_ECP_DP_SECP256R1, mbedtls_pk_ec(context), &services::MbedTlsRandomDataGeneratorWrapper, &randomDataGenerator) == 0);
+    }
+
+    EcSecP256r1PrivateKey::~EcSecP256r1PrivateKey()
+    {
+        mbedtls_pk_free(&context);
+    }
+
+    infra::BoundedString::WithStorage<228> EcSecP256r1PrivateKey::Pem() const
+    {
+        infra::BoundedString::WithStorage<228> result(228, '\0');
+        really_assert(mbedtls_pk_write_key_pem(&context, reinterpret_cast<unsigned char*>(result.data()), result.size()) == 0);
+        really_assert(result.find('\0') == result.size() - 1);
+        return result;
+    }
+
+    const mbedtls_pk_context& EcSecP256r1PrivateKey::Context() const
+    {
+        return context;
+    }
+
+
+EcSecP256r1Certificate::EcSecP256r1Certificate(const EcSecP256r1PrivateKey& subjectKey, const char* subjectName, const EcSecP256r1PrivateKey& issuerKey, const char* issuerName, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+        : randomDataGenerator(randomDataGenerator)
+    {
+        mbedtls_x509write_crt_init(&dsaCertificate);
+
+        infra::BoundedConstString serial("1");
+        mbedtls_x509write_crt_set_version(&dsaCertificate, MBEDTLS_X509_CRT_VERSION_3);
+        mbedtls_x509write_crt_set_serial_raw(&dsaCertificate, reinterpret_cast<unsigned char*>(const_cast<char*>(serial.data())), serial.size());
+        mbedtls_x509write_crt_set_md_alg(&dsaCertificate, MBEDTLS_MD_SHA256);
+        mbedtls_x509write_crt_set_validity(&dsaCertificate, "20000101000000", "21000101000000");
+        mbedtls_x509write_crt_set_subject_name(&dsaCertificate, subjectName);
+        mbedtls_x509write_crt_set_subject_key(&dsaCertificate, &const_cast<mbedtls_pk_context&>(subjectKey.Context()));
+        mbedtls_x509write_crt_set_issuer_name(&dsaCertificate, issuerName);
+        mbedtls_x509write_crt_set_issuer_key(&dsaCertificate, &const_cast<mbedtls_pk_context&>(issuerKey.Context()));
+        mbedtls_x509write_crt_set_basic_constraints(&dsaCertificate, 0, -1);
+    }
+
+    EcSecP256r1Certificate::~EcSecP256r1Certificate()
+    {
+        mbedtls_x509write_crt_free(&dsaCertificate);
+    }
+
+    infra::BoundedString::WithStorage<512> EcSecP256r1Certificate::Pem() const
+    {
+        infra::BoundedString::WithStorage<512> result(512, '\0');
+        really_assert(mbedtls_x509write_crt_pem(&const_cast<mbedtls_x509write_cert&>(dsaCertificate), reinterpret_cast<unsigned char*>(const_cast<char*>(result.data())), result.size(), &services::MbedTlsRandomDataGeneratorWrapper, &randomDataGenerator) == 0);
+        result.resize(result.find('\0') + 1);
+        return result;
+    }
 }

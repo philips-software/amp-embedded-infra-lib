@@ -83,6 +83,32 @@ namespace services
         bool encrypt = false;
         mbedtls_gcm_context context;
     };
+
+    class EcSecP256r1PrivateKey
+    {
+    public:
+        EcSecP256r1PrivateKey(hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        ~EcSecP256r1PrivateKey();
+
+        infra::BoundedString::WithStorage<228> Pem() const;
+        const mbedtls_pk_context& Context() const;
+
+    private:
+        mbedtls_pk_context context;
+    };
+
+    class EcSecP256r1Certificate
+    {
+    public:
+        EcSecP256r1Certificate(const EcSecP256r1PrivateKey& subjectKey, const char* subjectName, const EcSecP256r1PrivateKey& issuerKey, const char* issuerName, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        ~EcSecP256r1Certificate();
+
+        infra::BoundedString::WithStorage<512> Pem() const;
+
+    private:
+        mbedtls_x509write_cert dsaCertificate;
+        hal::SynchronousRandomDataGenerator& randomDataGenerator;
+    };
 }
 
 #endif
