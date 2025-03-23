@@ -87,7 +87,9 @@ namespace services
     class EcSecP256r1PrivateKey
     {
     public:
-        EcSecP256r1PrivateKey(hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        explicit EcSecP256r1PrivateKey(hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        EcSecP256r1PrivateKey(const EcSecP256r1PrivateKey& other) = delete;
+        EcSecP256r1PrivateKey& operator=(const EcSecP256r1PrivateKey& other) = delete;
         ~EcSecP256r1PrivateKey();
 
         infra::BoundedString::WithStorage<228> Pem() const;
@@ -101,6 +103,8 @@ namespace services
     {
     public:
         EcSecP256r1Certificate(const EcSecP256r1PrivateKey& subjectKey, const char* subjectName, const EcSecP256r1PrivateKey& issuerKey, const char* issuerName, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        EcSecP256r1Certificate(const EcSecP256r1Certificate& other) = delete;
+        EcSecP256r1Certificate& operator=(const EcSecP256r1Certificate& other) = delete;
         ~EcSecP256r1Certificate();
 
         infra::BoundedString::WithStorage<512> Pem() const;
