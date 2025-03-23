@@ -2,6 +2,7 @@
 #include "infra/util/ReallyAssert.hpp"
 #include "mbedtls/ecdsa.h"
 #include "mbedtls/hmac_drbg.h"
+#include "services/util/MbedTlsRandomDataGeneratorWrapper.hpp"
 
 namespace services
 {
@@ -35,9 +36,7 @@ namespace services
         mbedtls_mpi_init(&privateKey);
         mbedtls_ecp_point_init(&publicKey);
 
-        rng = &randomDataGenerator;
-        really_assert(mbedtls_ecdh_gen_public(&group, &privateKey, &publicKey, &EcSecP256r1DiffieHellmanMbedTls::StaticRng, this) == 0);
-        rng = nullptr;
+        really_assert(mbedtls_ecdh_gen_public(&group, &privateKey, &publicKey, &MbedTlsRandomDataGeneratorWrapper, &randomDataGenerator) == 0);
     }
 
     EcSecP256r1DiffieHellmanMbedTls::~EcSecP256r1DiffieHellmanMbedTls()
@@ -60,9 +59,7 @@ namespace services
         mbedtls_ecp_point_init(&dhOtherPublicKey);
         really_assert(mbedtls_ecp_point_read_binary(&group, &dhOtherPublicKey, otherPublicKey.begin(), otherPublicKey.size()) == 0);
 
-        rng = &randomDataGenerator;
-        really_assert(mbedtls_ecdh_compute_shared(const_cast<mbedtls_ecp_group*>(&group), &z, &dhOtherPublicKey, &privateKey, &EcSecP256r1DiffieHellmanMbedTls::StaticRng, const_cast<EcSecP256r1DiffieHellmanMbedTls*>(this)) == 0);
-        rng = nullptr;
+        really_assert(mbedtls_ecdh_compute_shared(const_cast<mbedtls_ecp_group*>(&group), &z, &dhOtherPublicKey, &privateKey, &MbedTlsRandomDataGeneratorWrapper, &randomDataGenerator) == 0);
 
         auto sharedSecret = ConvertToBytes<32>(z);
 
@@ -70,12 +67,6 @@ namespace services
         mbedtls_mpi_free(&z);
 
         return sharedSecret;
-    }
-
-    int EcSecP256r1DiffieHellmanMbedTls::StaticRng(void* self, unsigned char* data, std::size_t size)
-    {
-        static_cast<EcSecP256r1DiffieHellmanMbedTls*>(self)->rng->GenerateRandomData(infra::MakeRange(data, data + size));
-        return 0;
     }
 
     EcSecP256r1DsaSignerMbedTls::EcSecP256r1DsaSignerMbedTls(infra::BoundedConstString dsaCertificatePrivateKey, hal::SynchronousRandomDataGenerator& randomDataGenerator)
@@ -93,7 +84,7 @@ namespace services
 
         mbedtls_pk_context dsaPrivateKeyContext;
         mbedtls_pk_init(&dsaPrivateKeyContext);
-        really_assert(mbedtls_pk_parse_key(&dsaPrivateKeyContext, infra::ReinterpretCastByteRange(infra::MakeRange(dsaCertificatePrivateKey)).begin(), dsaCertificatePrivateKey.size(), nullptr, 0, &EcSecP256r1DsaSignerMbedTls::StaticRng, this) == 0);
+        really_assert(mbedtls_pk_parse_key(&dsaPrivateKeyContext, infra::ReinterpretCastByteRange(infra::MakeRange(dsaCertificatePrivateKey)).begin(), dsaCertificatePrivateKey.size(), nullptr, 0, &MbedTlsRandomDataGeneratorWrapper, &randomDataGenerator) == 0);
         really_assert(mbedtls_ecp_export(mbedtls_pk_ec(dsaPrivateKeyContext), &group, &privateKey, &dsaPublicKey) == 0);
         mbedtls_pk_free(&dsaPrivateKeyContext);
         mbedtls_ecp_point_free(&dsaPublicKey);
@@ -113,9 +104,7 @@ namespace services
         mbedtls_mpi s;
         mbedtls_mpi_init(&s);
 
-        rng = &randomDataGenerator;
-        really_assert(mbedtls_ecdsa_sign(const_cast<mbedtls_ecp_group*>(&group), &r, &s, &privateKey, data.begin(), data.size(), &EcSecP256r1DsaSignerMbedTls::StaticRng, const_cast<EcSecP256r1DsaSignerMbedTls*>(this)) == 0);
-        rng = nullptr;
+        really_assert(mbedtls_ecdsa_sign(const_cast<mbedtls_ecp_group*>(&group), &r, &s, &privateKey, data.begin(), data.size(), &MbedTlsRandomDataGeneratorWrapper, &randomDataGenerator) == 0);
 
         auto encodedR = ConvertToBytes<32>(r);
         auto encodedS = ConvertToBytes<32>(s);
@@ -124,12 +113,6 @@ namespace services
         mbedtls_mpi_free(&r);
 
         return { encodedR, encodedS };
-    }
-
-    int EcSecP256r1DsaSignerMbedTls::StaticRng(void* self, unsigned char* data, std::size_t size)
-    {
-        static_cast<EcSecP256r1DsaSignerMbedTls*>(self)->rng->GenerateRandomData(infra::MakeRange(data, data + size));
-        return 0;
     }
 
     EcSecP256r1DsaVerifierMbedTls::EcSecP256r1DsaVerifierMbedTls(infra::BoundedConstString dsaCertificate, infra::BoundedConstString rootCaCertificate)

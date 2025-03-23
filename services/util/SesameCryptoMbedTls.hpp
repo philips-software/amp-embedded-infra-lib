@@ -26,11 +26,6 @@ namespace services
         mbedtls_ecp_group group;
         mbedtls_mpi privateKey;
         mbedtls_ecp_point publicKey;
-
-    private:
-        static int StaticRng(void* self, unsigned char* data, std::size_t size);
-
-        mutable hal::SynchronousRandomDataGenerator* rng = nullptr;
     };
 
     class EcSecP256r1DsaSignerMbedTls
@@ -47,11 +42,6 @@ namespace services
         mbedtls_ecp_group group;
         mbedtls_mpi privateKey;
         mbedtls_ecdh_context context;
-
-    private:
-        static int StaticRng(void* self, unsigned char* data, std::size_t size);
-
-        mutable hal::SynchronousRandomDataGenerator* rng = nullptr;
     };
 
     class EcSecP256r1DsaVerifierMbedTls
