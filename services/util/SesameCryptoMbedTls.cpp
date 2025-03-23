@@ -253,8 +253,7 @@ namespace services
         return context;
     }
 
-
-EcSecP256r1Certificate::EcSecP256r1Certificate(const EcSecP256r1PrivateKey& subjectKey, const char* subjectName, const EcSecP256r1PrivateKey& issuerKey, const char* issuerName, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    EcSecP256r1Certificate::EcSecP256r1Certificate(const EcSecP256r1PrivateKey& subjectKey, const char* subjectName, const EcSecP256r1PrivateKey& issuerKey, const char* issuerName, hal::SynchronousRandomDataGenerator& randomDataGenerator)
         : randomDataGenerator(randomDataGenerator)
     {
         mbedtls_x509write_crt_init(&dsaCertificate);
