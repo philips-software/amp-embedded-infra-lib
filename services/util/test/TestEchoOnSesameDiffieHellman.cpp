@@ -248,16 +248,13 @@ TEST_F(EchoOnSesameDiffieHellmanAdversaryTest, self_signed_certificate_leads_to_
     ExchangeData();
 }
 
-TEST_F(EchoOnSesameDiffieHellmanAdversaryTest, incorrect_signature_leads_to_failure)
+TEST_F(EchoOnSesameDiffieHellmanAdversaryTest, signature_over_incorrect_data_leads_to_failure)
 {
     Initialized();
 
-    services::EcSecP256r1Certificate certificateRightSelfSigned{ privateKeyRight, "CN=right", privateKeyRight, "CN=Root", randomDataGenerator };
-    std::string certificateRightSelfSignedPem{ infra::AsStdString(certificateRightSelfSigned.Pem()) };
-
-    proxy.RequestSend([this, &certificateRightSelfSignedPem]()
+    proxy.RequestSend([this]()
         {
-            proxy.PresentCertificate(certificateRightSelfSignedPem);
+            proxy.PresentCertificate(certificateRightPem);
         });
 
     EXPECT_CALL(keyEstablishment, PresentCertificate(testing::_)).WillOnce(testing::Invoke([this]()
@@ -270,6 +267,66 @@ TEST_F(EchoOnSesameDiffieHellmanAdversaryTest, incorrect_signature_leads_to_fail
                             auto encodedDhPublicKeyCopy = encodedDhPublicKey;
                             ++encodedDhPublicKeyCopy[5];
                             auto [r, s] = signer.Sign(encodedDhPublicKeyCopy);
+
+                            proxy.Exchange(encodedDhPublicKey, r, s);
+                        });
+
+                    keyEstablishment.MethodDone();
+                }));
+
+            keyEstablishment.MethodDone();
+        }));
+
+    EXPECT_CALL(echoLeft, KeyExchangeFailed());
+
+    ExchangeData();
+}
+
+TEST_F(EchoOnSesameDiffieHellmanAdversaryTest, incorrect_signature_leads_to_failure)
+{
+    Initialized();
+
+    proxy.RequestSend([this]()
+        {
+            proxy.PresentCertificate(certificateRightPem);
+        });
+
+    EXPECT_CALL(keyEstablishment, PresentCertificate(testing::_)).WillOnce(testing::Invoke([this]()
+        {
+            EXPECT_CALL(keyEstablishment, Exchange(testing::_, testing::_, testing::_)).WillOnce(testing::Invoke([this](infra::ConstByteRange publicKey, infra::ConstByteRange signatureR, infra::ConstByteRange signatureS)
+                {
+                    proxy.RequestSend([this]()
+                        {
+                            auto encodedDhPublicKey = keyExchange.PublicKey();
+                            auto [r, s] = signer.Sign(encodedDhPublicKey);
+                            ++r[0];
+
+                            proxy.Exchange(encodedDhPublicKey, r, s);
+                        });
+
+                    keyEstablishment.MethodDone();
+                }));
+
+            keyEstablishment.MethodDone();
+        }));
+
+    EXPECT_CALL(echoLeft, KeyExchangeFailed());
+
+    ExchangeData();
+}
+
+TEST_F(EchoOnSesameDiffieHellmanAdversaryTest, not_presenting_certificate_leads_to_failure)
+{
+    Initialized();
+
+    EXPECT_CALL(keyEstablishment, PresentCertificate(testing::_)).WillOnce(testing::Invoke([this]()
+        {
+            EXPECT_CALL(keyEstablishment, Exchange(testing::_, testing::_, testing::_)).WillOnce(testing::Invoke([this](infra::ConstByteRange publicKey, infra::ConstByteRange signatureR, infra::ConstByteRange signatureS)
+                {
+                    proxy.RequestSend([this]()
+                        {
+                            auto encodedDhPublicKey = keyExchange.PublicKey();
+                            auto [r, s] = signer.Sign(encodedDhPublicKey);
 
                             proxy.Exchange(encodedDhPublicKey, r, s);
                         });
