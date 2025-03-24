@@ -57,6 +57,8 @@ namespace services
         mbedtls_x509_crt rootCertificate;
         mbedtls_ecp_group group;
         mbedtls_ecp_point publicKey;
+
+        bool valid = false;
     };
 
     class HmacDrbgSha256MbedTls

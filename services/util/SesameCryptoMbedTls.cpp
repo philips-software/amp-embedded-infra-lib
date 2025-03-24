@@ -140,8 +140,7 @@ namespace services
         std::array<uint8_t, 32> hash;
         const mbedtls_md_info_t* mdInfo = mbedtls_md_info_from_type(MBEDTLS_MD_SHA256);
         mbedtls_md(mdInfo, certificate.tbs.p, certificate.tbs.len, hash.data());
-        bool verificationOk = mbedtls_pk_verify(&rootCertificate.pk, MBEDTLS_MD_SHA256, hash.data(), hash.size(), certificate.MBEDTLS_PRIVATE(sig).p, certificate.MBEDTLS_PRIVATE(sig).len) == 0;
-        really_assert(verificationOk);
+        valid = mbedtls_pk_verify(&rootCertificate.pk, MBEDTLS_MD_SHA256, hash.data(), hash.size(), certificate.MBEDTLS_PRIVATE(sig).p, certificate.MBEDTLS_PRIVATE(sig).len) == 0;
 
         really_assert(mbedtls_ecp_export(mbedtls_pk_ec(certificate.pk), &otherGroup, &otherDsaPrivateKey, &publicKey) == 0);
 
@@ -160,6 +159,9 @@ namespace services
 
     bool EcSecP256r1DsaVerifierMbedTls::Verify(infra::ConstByteRange data, infra::ConstByteRange signatureR, infra::ConstByteRange signatureS) const
     {
+        if (!valid)
+            return false;
+
         mbedtls_mpi r;
         mbedtls_mpi_init(&r);
         mbedtls_mpi s;

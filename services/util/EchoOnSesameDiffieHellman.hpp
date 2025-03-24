@@ -42,6 +42,9 @@ namespace services
         // Implementation of EchoOnStreams
         infra::SharedPtr<MethodSerializer> GrantSend(ServiceProxy& proxy) override;
 
+        virtual void KeyExchangeSuccessful();
+        virtual void KeyExchangeFailed();
+
     private:
         // Implementation of DiffieHellmanKeyEstablishment
         void Exchange(infra::ConstByteRange otherPublicKey, infra::ConstByteRange signatureR, infra::ConstByteRange signatureS) override;

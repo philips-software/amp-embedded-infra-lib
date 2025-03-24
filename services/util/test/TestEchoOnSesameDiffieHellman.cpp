@@ -12,11 +12,24 @@
 #include "services/util/MbedTlsRandomDataGeneratorWrapper.hpp"
 #include "services/util/test_doubles/SesameMock.hpp"
 
-class EchoOnSesameDiffieHellmanTest
+namespace
+{
+    class EchoOnSesameDiffieHellmanWithCryptoMbedTlsMock
+        : public services::EchoOnSesameDiffieHellman::WithCryptoMbedTls
+    {
+    public:
+        using services::EchoOnSesameDiffieHellman::WithCryptoMbedTls::WithCryptoMbedTls;
+
+        MOCK_METHOD(void, KeyExchangeSuccessful, (), (override));
+        MOCK_METHOD(void, KeyExchangeFailed, (), (override));
+    };
+}
+
+class EchoOnSesameDiffieHellmanTestBase
     : public testing::Test
 {
 public:
-    EchoOnSesameDiffieHellmanTest()
+    EchoOnSesameDiffieHellmanTestBase()
     {
         EXPECT_CALL(lowerLeft, MaxSendMessageSize()).WillRepeatedly(testing::Return(10000));
         EXPECT_CALL(lowerRight, MaxSendMessageSize()).WillRepeatedly(testing::Return(10000));
@@ -32,8 +45,6 @@ public:
                 assert(!lowerRightRequest);
                 lowerRightRequest = true;
             }));
-
-        Initialized();
     }
 
     void Initialized()
@@ -110,8 +121,19 @@ public:
     services::EcSecP256r1Certificate certificateRight{ privateKeyRight, "CN=right", rootCaPrivateKey, "CN=Root", randomDataGenerator };
     std::string certificateRightPem{ infra::AsStdString(certificateRight.Pem()) };
 
-    services::EchoOnSesameDiffieHellman::WithCryptoMbedTls echoLeft{ securedLeft, certificateLeftPem, privateKeyLeftPem, rootCaCertificatePem, randomDataGenerator, serializerFactoryLeft, errorPolicy };
-    services::EchoOnSesameDiffieHellman::WithCryptoMbedTls echoRight{ securedRight, certificateRightPem, privateKeyRightPem, rootCaCertificatePem, randomDataGenerator, serializerFactoryRight, errorPolicy };
+    testing::StrictMock<EchoOnSesameDiffieHellmanWithCryptoMbedTlsMock> echoLeft{ securedLeft, certificateLeftPem, privateKeyLeftPem, rootCaCertificatePem, randomDataGenerator, serializerFactoryLeft, errorPolicy };
+};
+
+class EchoOnSesameDiffieHellmanTest
+    : public EchoOnSesameDiffieHellmanTestBase
+{
+public:
+    EchoOnSesameDiffieHellmanTest()
+    {
+        Initialized();
+    }
+
+    testing::StrictMock<EchoOnSesameDiffieHellmanWithCryptoMbedTlsMock> echoRight{ securedRight, certificateRightPem, privateKeyRightPem, rootCaCertificatePem, randomDataGenerator, serializerFactoryRight, errorPolicy };
 
     services::ServiceStubProxy serviceProxy{ echoLeft };
     testing::StrictMock<services::ServiceStub> service{ echoRight };
@@ -119,6 +141,9 @@ public:
 
 TEST_F(EchoOnSesameDiffieHellmanTest, send_and_receive)
 {
+    EXPECT_CALL(echoLeft, KeyExchangeSuccessful());
+    EXPECT_CALL(echoRight, KeyExchangeSuccessful());
+
     EXPECT_CALL(service, Method(5)).WillOnce(testing::Invoke([this]()
         {
             service.MethodDone();
@@ -128,5 +153,134 @@ TEST_F(EchoOnSesameDiffieHellmanTest, send_and_receive)
         {
             serviceProxy.Method(5);
         });
+    ExchangeData();
+}
+
+namespace
+{
+    class DiffieHellmanKeyEstablishmentMock
+        : public sesame_security::DiffieHellmanKeyEstablishment
+    {
+    public:
+        using sesame_security::DiffieHellmanKeyEstablishment::DiffieHellmanKeyEstablishment;
+
+        MOCK_METHOD(void, Exchange, (infra::ConstByteRange publicKey, infra::ConstByteRange signatureR, infra::ConstByteRange signatureS), (override));
+        MOCK_METHOD(void, PresentCertificate, (infra::BoundedConstString certificate), (override));
+    };
+}
+
+class EchoOnSesameDiffieHellmanAdversaryTest
+    : public EchoOnSesameDiffieHellmanTestBase
+{
+public:
+    services::EchoOnSesame echoRight{ securedRight, serializerFactoryRight };
+    testing::StrictMock<DiffieHellmanKeyEstablishmentMock> keyEstablishment{ echoRight };
+    sesame_security::DiffieHellmanKeyEstablishmentProxy proxy{ echoRight };
+
+    services::EcSecP256r1DiffieHellmanMbedTls keyExchange{ randomDataGenerator };
+    services::EcSecP256r1DsaSignerMbedTls signer{ privateKeyRightPem, randomDataGenerator };
+};
+
+TEST_F(EchoOnSesameDiffieHellmanAdversaryTest, successful_manual_implementation)
+{
+    Initialized();
+
+    proxy.RequestSend([this]()
+        {
+            proxy.PresentCertificate(certificateRightPem);
+        });
+
+    EXPECT_CALL(keyEstablishment, PresentCertificate(testing::_)).WillOnce(testing::Invoke([this]()
+        {
+            EXPECT_CALL(keyEstablishment, Exchange(testing::_, testing::_, testing::_)).WillOnce(testing::Invoke([this](infra::ConstByteRange publicKey, infra::ConstByteRange signatureR, infra::ConstByteRange signatureS)
+                {
+                    proxy.RequestSend([this]()
+                        {
+                            auto encodedDhPublicKey = keyExchange.PublicKey();
+                            auto [r, s] = signer.Sign(encodedDhPublicKey);
+
+                            proxy.Exchange(encodedDhPublicKey, r, s);
+                        });
+
+                    keyEstablishment.MethodDone();
+                }));
+
+            keyEstablishment.MethodDone();
+        }));
+
+    EXPECT_CALL(echoLeft, KeyExchangeSuccessful());
+
+    ExchangeData();
+}
+
+TEST_F(EchoOnSesameDiffieHellmanAdversaryTest, self_signed_certificate_leads_to_failure)
+{
+    Initialized();
+
+    services::EcSecP256r1Certificate certificateRightSelfSigned{ privateKeyRight, "CN=right", privateKeyRight, "CN=Root", randomDataGenerator };
+    std::string certificateRightSelfSignedPem{ infra::AsStdString(certificateRightSelfSigned.Pem()) };
+
+    proxy.RequestSend([this, &certificateRightSelfSignedPem]()
+        {
+            proxy.PresentCertificate(certificateRightSelfSignedPem);
+        });
+
+    EXPECT_CALL(keyEstablishment, PresentCertificate(testing::_)).WillOnce(testing::Invoke([this]()
+        {
+            EXPECT_CALL(keyEstablishment, Exchange(testing::_, testing::_, testing::_)).WillOnce(testing::Invoke([this](infra::ConstByteRange publicKey, infra::ConstByteRange signatureR, infra::ConstByteRange signatureS)
+                {
+                    proxy.RequestSend([this]()
+                        {
+                            auto encodedDhPublicKey = keyExchange.PublicKey();
+                            auto [r, s] = signer.Sign(encodedDhPublicKey);
+
+                            proxy.Exchange(encodedDhPublicKey, r, s);
+                        });
+
+                    keyEstablishment.MethodDone();
+                }));
+
+            keyEstablishment.MethodDone();
+        }));
+
+    EXPECT_CALL(echoLeft, KeyExchangeFailed());
+
+    ExchangeData();
+}
+
+TEST_F(EchoOnSesameDiffieHellmanAdversaryTest, incorrect_signature_leads_to_failure)
+{
+    Initialized();
+
+    services::EcSecP256r1Certificate certificateRightSelfSigned{ privateKeyRight, "CN=right", privateKeyRight, "CN=Root", randomDataGenerator };
+    std::string certificateRightSelfSignedPem{ infra::AsStdString(certificateRightSelfSigned.Pem()) };
+
+    proxy.RequestSend([this, &certificateRightSelfSignedPem]()
+        {
+            proxy.PresentCertificate(certificateRightSelfSignedPem);
+        });
+
+    EXPECT_CALL(keyEstablishment, PresentCertificate(testing::_)).WillOnce(testing::Invoke([this]()
+        {
+            EXPECT_CALL(keyEstablishment, Exchange(testing::_, testing::_, testing::_)).WillOnce(testing::Invoke([this](infra::ConstByteRange publicKey, infra::ConstByteRange signatureR, infra::ConstByteRange signatureS)
+                {
+                    proxy.RequestSend([this]()
+                        {
+                            auto encodedDhPublicKey = keyExchange.PublicKey();
+                            auto encodedDhPublicKeyCopy = encodedDhPublicKey;
+                            ++encodedDhPublicKeyCopy[5];
+                            auto [r, s] = signer.Sign(encodedDhPublicKeyCopy);
+
+                            proxy.Exchange(encodedDhPublicKey, r, s);
+                        });
+
+                    keyEstablishment.MethodDone();
+                }));
+
+            keyEstablishment.MethodDone();
+        }));
+
+    EXPECT_CALL(echoLeft, KeyExchangeFailed());
+
     ExchangeData();
 }

@@ -57,6 +57,12 @@ namespace services
         return EchoOnSesame::GrantSend(proxy);
     }
 
+    void EchoOnSesameDiffieHellman::KeyExchangeSuccessful()
+    {}
+
+    void EchoOnSesameDiffieHellman::KeyExchangeFailed()
+    {}
+
     template<std::size_t Size>
     std::array<uint8_t, Size> Middle(infra::ConstByteRange range, std::size_t start)
     {
@@ -68,7 +74,10 @@ namespace services
     void EchoOnSesameDiffieHellman::Exchange(infra::ConstByteRange otherPublicKey, infra::ConstByteRange signatureR, infra::ConstByteRange signatureS)
     {
         if (verifier == infra::none || !(*verifier)->Verify(otherPublicKey, signatureR, signatureS))
+        {
+            KeyExchangeFailed();
             return;
+        }
 
         auto sharedSecret = (*keyExchange)->SharedSecret(otherPublicKey);
         auto publicKey = (*keyExchange)->PublicKey();
@@ -85,6 +94,8 @@ namespace services
 
         nextKeyPair = { key, iv };
         secured.SetReceiveKey(otherKey, otherIv);
+
+        KeyExchangeSuccessful();
 
         initializingKeys = false;
         ReQueueWaitingProxies();
