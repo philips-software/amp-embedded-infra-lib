@@ -97,6 +97,14 @@ namespace services
             });
     }
 
+    void GapPeripheralDecorator::ConnectionIntervalUpdated(uint16_t connMultiplierMin, uint16_t connMultiplierMax)
+    {
+        GapPeripheral::NotifyObservers([&connMultiplierMin, &connMultiplierMax](auto& obs)
+            {
+                obs.ConnectionIntervalUpdated(connMultiplierMin, connMultiplierMax);
+            });
+    }
+
     GapAddress GapPeripheralDecorator::GetAddress() const
     {
         return GapPeripheralObserver::Subject().GetAddress();
@@ -135,6 +143,11 @@ namespace services
     void GapPeripheralDecorator::Standby()
     {
         GapPeripheralObserver::Subject().Standby();
+    }
+
+    void GapPeripheralDecorator::SetConnectionInterval(uint16_t connMultiplierMin, uint16_t connMultiplierMax)
+    {
+        GapPeripheralObserver::Subject().SetConnectionInterval(connMultiplierMin, connMultiplierMax);
     }
 
     void GapCentralDecorator::DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered)
