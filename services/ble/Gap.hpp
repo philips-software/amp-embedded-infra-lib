@@ -214,6 +214,13 @@ namespace services
         bool IsDeviceBonded(hal::MacAddress address, GapDeviceAddressType addressType) const override;
     };
 
+    class GapPeripheralIntervalController
+    {
+    public:
+        virtual void SwitchToLongInterval() = 0;
+        virtual void SwitchToUserInterval() = 0;
+    };
+
     class GapPeripheral;
 
     class GapPeripheralObserver
