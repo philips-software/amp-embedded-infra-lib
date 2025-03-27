@@ -14,7 +14,10 @@ namespace services
         , sendBuffer(sendBuffer)
         , streamReader([this]()
               {
-                  ReceiveStreamAllocatable();
+                  infra::WeakPtr<void> checkAlive = keepAliveWhileReading;
+                  keepAliveWhileReading = nullptr;
+                  if (checkAlive.lock())
+                      ReceiveStreamAllocatable();
               })
         , streamWriter([this]()
               {
@@ -66,6 +69,7 @@ namespace services
     infra::SharedPtr<infra::StreamReaderWithRewinding> WebSocketServerConnectionObserver::ReceiveStream()
     {
         assert(!streamReader);
+        keepAliveWhileReading = Subject().ObserverPtr();
         return streamReader.Emplace(infra::inPlace, receiveBuffer, receiveBuffer.size());
     }
 
