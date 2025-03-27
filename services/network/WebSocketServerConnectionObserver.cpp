@@ -21,7 +21,10 @@ namespace services
               })
         , streamWriter([this]()
               {
-                  SendStreamAllocatable();
+                  infra::WeakPtr<void> checkAlive = keepAliveWhileWriting;
+                  keepAliveWhileWriting = nullptr;
+                  if (checkAlive.lock())
+                      SendStreamAllocatable();
               })
     {}
 
@@ -147,7 +150,10 @@ namespace services
     void WebSocketServerConnectionObserver::TryAllocateSendStream()
     {
         if (streamWriter.Allocatable() && sendBuffer.empty() && requestedSendSize != 0)
+        {
+            keepAliveWhileWriting = Subject().ObserverPtr();
             services::Connection::Observer().SendStreamAvailable(streamWriter.Emplace(infra::inPlace, sendBuffer, std::exchange(requestedSendSize, 0)));
+        }
     }
 
     void WebSocketServerConnectionObserver::ReceivingState::DataReceived()

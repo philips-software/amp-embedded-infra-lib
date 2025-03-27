@@ -196,6 +196,7 @@ namespace services
         infra::NotifyingSharedOptional<infra::LimitedStreamReaderWithRewinding::WithInput<infra::BoundedDequeInputStreamReader>> streamReader;
         infra::SharedPtr<void> keepAliveWhileReading;
         infra::NotifyingSharedOptional<infra::LimitedStreamWriter::WithOutput<infra::BoundedVectorStreamWriter>> streamWriter;
+        infra::SharedPtr<void> keepAliveWhileWriting;
         bool sendBufferReadyForSending = false;
         infra::BoundedVector<uint8_t>::WithMaxSize<8> pongBuffer;
     };
