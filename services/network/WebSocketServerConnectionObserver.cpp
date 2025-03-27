@@ -16,7 +16,7 @@ namespace services
               {
                   infra::WeakPtr<void> checkAlive = keepAliveWhileReading;
                   keepAliveWhileReading = nullptr;
-                  if (checkAlive.lock())
+                  if (checkAlive.lock() && services::ConnectionObserver::IsAttached())
                       ReceiveStreamAllocatable();
               })
         , streamWriter([this]()
