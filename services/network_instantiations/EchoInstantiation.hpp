@@ -38,6 +38,7 @@ namespace application
         services::WebSocketClientFactorySingleConnection webSocketFactory;
 
         infra::SharedOptional<services::EchoOnConnection> echoConnection;
+        infra::SharedPtr<services::EchoOnConnection> echoConnectionPtr;
         OnDoneType onDone;
         services::MethodSerializerFactory::OnHeap serializerFactory;
     };
@@ -59,6 +60,7 @@ namespace application
     private:
         services::Tracer& tracer;
         infra::SharedOptional<services::TracingEchoOnConnection> echoConnection;
+        infra::SharedPtr<services::TracingEchoOnConnection> echoConnectionPtr;
         OnDoneType onDone;
         services::MethodSerializerFactory::OnHeap serializerFactory;
     };
@@ -85,6 +87,7 @@ namespace application
         uint16_t port;
 
         infra::SharedOptional<services::EchoOnConnection> echoConnection;
+        infra::SharedPtr<services::EchoOnConnection> echoConnectionPtr;
         OnDoneType onDone;
         services::MethodSerializerFactory::OnHeap serializerFactory;
     };
@@ -105,6 +108,7 @@ namespace application
     private:
         services::Tracer& tracer;
         infra::SharedOptional<services::TracingEchoOnConnection> echoConnection;
+        infra::SharedPtr<services::TracingEchoOnConnection> echoConnectionPtr;
         OnDoneType onDone;
         services::MethodSerializerFactory::OnHeap serializerFactory;
     };

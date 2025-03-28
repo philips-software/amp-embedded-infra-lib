@@ -194,7 +194,9 @@ namespace services
         infra::BoundedVector<uint8_t>& sendBuffer;
         std::size_t requestedSendSize = 0;
         infra::NotifyingSharedOptional<infra::LimitedStreamReaderWithRewinding::WithInput<infra::BoundedDequeInputStreamReader>> streamReader;
+        infra::SharedPtr<void> keepAliveWhileReading;
         infra::NotifyingSharedOptional<infra::LimitedStreamWriter::WithOutput<infra::BoundedVectorStreamWriter>> streamWriter;
+        infra::SharedPtr<void> keepAliveWhileWriting;
         bool sendBufferReadyForSending = false;
         infra::BoundedVector<uint8_t>::WithMaxSize<8> pongBuffer;
     };
