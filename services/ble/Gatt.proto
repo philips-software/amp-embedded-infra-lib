@@ -71,20 +71,12 @@ message Descriptr
 
 message GattResult
 {
-    enum ResultEnum
-    {
-        Success = 0;
-        InsufficientAuthentication = 1;
-        UnknownError = 2;
-    }
-
-    ResultEnum result = 1;
+    uint32 value = 1;
 }
 
 message ReadResult
 {
-    GattResult result = 1;
-    CharacteristicData data = 2;
+    CharacteristicData data = 1;
 }
 
 service GattClient
@@ -99,9 +91,9 @@ service GattClient
     rpc StartDescriptorDiscovery(HandleRange) returns (Nothing) { option (method_id) = 6; }
 
     // In the below block, the methods with a response, shall be called after the previous one is completed
-    // Example 1: If Read is called, EnableIndication shall only be called after ReadComplete
-    // Example 2: If DisableNotification is called, Write shall only be called after SubscriptionChangeDone
-    // Example 3: If EnableNotification is called, EnableIndication shall only be called after SubscriptionChangeDone
+    // Example 1: If Read is called, EnableIndication shall only be called after CharacteristicOperationComplete
+    // Example 2: If DisableNotification is called, Write shall only be called after CharacteristicOperationComplete
+    // Example 3: If EnableNotification is called, EnableIndication shall only be called after CharacteristicOperationComplete
     rpc Read(Handle) returns (Nothing) { option (method_id) = 8; }
     rpc Write(CharacteristicData) returns (Nothing) { option (method_id) = 9; }
     rpc WriteWithoutResponse(CharacteristicData) returns (Nothing) { option (method_id) = 10; }
@@ -129,13 +121,12 @@ service GattClientResponse
     rpc DescriptorDiscovered(Descriptr) returns (Nothing) { option (method_id) = 6; }
     rpc DescriptorDiscoveryComplete(Nothing) returns (Nothing) { option (method_id) = 7; }
 
-    rpc ReadComplete(ReadResult) returns (Nothing) { option (method_id) = 8; }
-    rpc WriteComplete(GattResult) returns (Nothing) { option (method_id) = 9; }
+    rpc ReadResponse(ReadResult) returns (Nothing) { option (method_id) = 8; }
 
-    // SubscriptionChangeDone is called after completion of Enable/Disable Notification/Indication
-    rpc SubscriptionChangeDone(Nothing) returns (Nothing) { option (method_id) = 10; }
+    // Called after completion of characteristic operations with response: Read, Write, Enable/Disable Notification/Indication
+    rpc CharacteristicOperationComplete(GattResult) returns (Nothing) { option (method_id) = 9; }
 
-    rpc IndicationReceived(CharacteristicData) returns (Nothing) { option (method_id) = 11; }
-    rpc NotificationReceived(CharacteristicData) returns (Nothing) { option (method_id) = 12; }
+    rpc IndicationReceived(CharacteristicData) returns (Nothing) { option (method_id) = 10; }
+    rpc NotificationReceived(CharacteristicData) returns (Nothing) { option (method_id) = 11; }
 }
 

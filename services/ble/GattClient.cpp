@@ -13,14 +13,14 @@ namespace services
         : GattCharacteristic(type, handle, valueHandle, properties)
     {}
 
-    void GattClientCharacteristic::Read(infra::Function<void(const infra::ConstByteRange&)> onResponse)
+    void GattClientCharacteristic::Read(infra::Function<void(const infra::ConstByteRange&)> onResponse, OperationOnDone onDone)
     {
         really_assert(GattClientCharacteristicOperationsObserver::Attached());
 
-        GattClientCharacteristicOperationsObserver::Subject().Read(*this, onResponse);
+        GattClientCharacteristicOperationsObserver::Subject().Read(*this, onResponse, onDone);
     }
 
-    void GattClientCharacteristic::Write(infra::ConstByteRange data, infra::Function<void()> onDone)
+    void GattClientCharacteristic::Write(infra::ConstByteRange data, OperationOnDone onDone)
     {
         really_assert(GattClientCharacteristicOperationsObserver::Attached());
 
@@ -34,28 +34,28 @@ namespace services
         GattClientCharacteristicOperationsObserver::Subject().WriteWithoutResponse(*this, data);
     }
 
-    void GattClientCharacteristic::EnableNotification(infra::Function<void()> onDone)
+    void GattClientCharacteristic::EnableNotification(OperationOnDone onDone)
     {
         really_assert(GattClientCharacteristicOperationsObserver::Attached());
 
         GattClientCharacteristicOperationsObserver::Subject().EnableNotification(*this, onDone);
     }
 
-    void GattClientCharacteristic::DisableNotification(infra::Function<void()> onDone)
+    void GattClientCharacteristic::DisableNotification(OperationOnDone onDone)
     {
         really_assert(GattClientCharacteristicOperationsObserver::Attached());
 
         GattClientCharacteristicOperationsObserver::Subject().DisableNotification(*this, onDone);
     }
 
-    void GattClientCharacteristic::EnableIndication(infra::Function<void()> onDone)
+    void GattClientCharacteristic::EnableIndication(OperationOnDone onDone)
     {
         really_assert(GattClientCharacteristicOperationsObserver::Attached());
 
         GattClientCharacteristicOperationsObserver::Subject().EnableIndication(*this, onDone);
     }
 
-    void GattClientCharacteristic::DisableIndication(infra::Function<void()> onDone)
+    void GattClientCharacteristic::DisableIndication(OperationOnDone onDone)
     {
         really_assert(GattClientCharacteristicOperationsObserver::Attached());
 
