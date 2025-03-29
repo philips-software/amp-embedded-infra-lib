@@ -2547,7 +2547,7 @@
  *
  * This modules adds support for encoding / writing PEM files.
  */
-//#define MBEDTLS_PEM_WRITE_C
+#define MBEDTLS_PEM_WRITE_C
 
 /**
  * \def MBEDTLS_PK_C
