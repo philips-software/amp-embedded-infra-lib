@@ -12,7 +12,7 @@ message SymmetricKeyMaterial
 
 message DiffieHellmanMaterial
 {
-    // This method uses an EC Diffie-Hellman exchange over the 256-bit curve defined by FIPL 186-4 and SEC1
+    // This method uses an EC Diffie-Hellman exchange over the 256-bit curve defined by FIPS 186-4 and SEC1
     bytes publicKey = 1 [(bytes_size) = 65];
     // The signature will be computed over the publicKey using the sender's certificate, which uses EC DSA over the same curve as the EC DH operation
     bytes signatureR = 2 [(bytes_size) = 32];
