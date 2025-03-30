@@ -22,7 +22,7 @@ namespace services
         {
             infra::CreatorBase<EcSecP256r1DiffieHellman, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)>& keyExchange;
             EcSecP256r1DsaSigner& signer;
-            infra::CreatorBase<EcSecP256r1DsaVerifier, void(infra::BoundedConstString dsaCertificate, infra::BoundedConstString rootCaCertificate)>& verifier;
+            infra::CreatorBase<EcSecP256r1DsaVerifier, void(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)>& verifier;
             HmacDrbgSha256& keyExpander;
         };
 
@@ -30,7 +30,7 @@ namespace services
         struct WithCryptoMbedTls;
 #endif
 
-        EchoOnSesameDiffieHellman(const Crypto& crypto, SesameSecured& secured, infra::BoundedConstString dsaCertificate, infra::BoundedConstString rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
+        EchoOnSesameDiffieHellman(const Crypto& crypto, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
 
         // Implementation of Echo
         void RequestSend(ServiceProxy& serviceProxy) override;
@@ -48,15 +48,15 @@ namespace services
     private:
         // Implementation of DiffieHellmanKeyEstablishment
         void Exchange(infra::ConstByteRange otherPublicKey, infra::ConstByteRange signatureR, infra::ConstByteRange signatureS) override;
-        void PresentCertificate(infra::BoundedConstString otherDsaCertificate) override;
+        void PresentCertificate(infra::ConstByteRange otherDsaCertificate) override;
 
         void ReQueueWaitingProxies();
 
     private:
         SesameSecured& secured;
         hal::SynchronousRandomDataGenerator& randomDataGenerator;
-        infra::BoundedConstString dsaCertificate;
-        infra::BoundedConstString rootCaCertificate;
+        infra::ConstByteRange dsaCertificate;
+        infra::ConstByteRange rootCaCertificate;
 
         bool initializingKeys = true;
         bool sentExchange = false;
@@ -66,8 +66,8 @@ namespace services
         infra::CreatorBase<EcSecP256r1DiffieHellman, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)>& keyExchangeCreator;
         infra::Optional<infra::ProxyCreator<EcSecP256r1DiffieHellman, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)>> keyExchange;
         EcSecP256r1DsaSigner& signer;
-        infra::CreatorBase<EcSecP256r1DsaVerifier, void(infra::BoundedConstString dsaCertificate, infra::BoundedConstString rootCaCertificate)>& verifierCreator;
-        infra::Optional<infra::ProxyCreator<EcSecP256r1DsaVerifier, void(infra::BoundedConstString dsaCertificate, infra::BoundedConstString rootCaCertificate)>> verifier;
+        infra::CreatorBase<EcSecP256r1DsaVerifier, void(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)>& verifierCreator;
+        infra::Optional<infra::ProxyCreator<EcSecP256r1DsaVerifier, void(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)>> verifier;
         HmacDrbgSha256& keyExpander;
     };
 
@@ -75,11 +75,11 @@ namespace services
     struct EchoOnSesameDiffieHellman::WithCryptoMbedTls
         : public EchoOnSesameDiffieHellman
     {
-        WithCryptoMbedTls(SesameSecured& secured, infra::BoundedConstString dsaCertificate, infra::ConstByteRange dsaCertificatePrivateKey, infra::BoundedConstString rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
+        WithCryptoMbedTls(SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange dsaCertificatePrivateKey, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
 
         infra::Creator<EcSecP256r1DiffieHellman, EcSecP256r1DiffieHellmanMbedTls, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)> keyExchange;
         EcSecP256r1DsaSignerMbedTls signer;
-        infra::Creator<EcSecP256r1DsaVerifier, EcSecP256r1DsaVerifierMbedTls, void(infra::BoundedConstString dsaCertificate, infra::BoundedConstString rootCaCertificate)> verifier;
+        infra::Creator<EcSecP256r1DsaVerifier, EcSecP256r1DsaVerifierMbedTls, void(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)> verifier;
         HmacDrbgSha256MbedTls keyExpander;
     };
 #endif

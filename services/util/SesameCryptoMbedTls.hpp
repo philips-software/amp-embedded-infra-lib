@@ -1,6 +1,7 @@
 #ifndef SERVICES_SESAME_CRYPTO_MBED_TLS_HPP
 #define SERVICES_SESAME_CRYPTO_MBED_TLS_HPP
 
+#include "infra/util/BoundedVector.hpp"
 #include "mbedtls/ecdh.h"
 #include "mbedtls/ecp.h"
 #include "mbedtls/gcm.h"
@@ -48,7 +49,7 @@ namespace services
         : public EcSecP256r1DsaVerifier
     {
     public:
-        EcSecP256r1DsaVerifierMbedTls(infra::BoundedConstString dsaCertificate, infra::BoundedConstString rootCaCertificate);
+        EcSecP256r1DsaVerifierMbedTls(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate);
         ~EcSecP256r1DsaVerifierMbedTls();
 
         bool Verify(infra::ConstByteRange data, infra::ConstByteRange r, infra::ConstByteRange s) const override;
@@ -111,6 +112,7 @@ namespace services
         ~EcSecP256r1Certificate();
 
         infra::BoundedString::WithStorage<512> Pem() const;
+        infra::BoundedVector<uint8_t>::WithMaxSize<512> Der() const;
 
     private:
         mbedtls_x509write_cert dsaCertificate;

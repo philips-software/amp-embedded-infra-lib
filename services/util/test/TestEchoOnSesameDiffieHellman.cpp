@@ -110,20 +110,23 @@ public:
     services::EcSecP256r1PrivateKey rootCaPrivateKey{ randomDataGenerator };
     services::EcSecP256r1Certificate rootCaCertificate{ rootCaPrivateKey, "CN=Root", rootCaPrivateKey, "CN=Root", randomDataGenerator };
     std::string rootCaCertificatePem{ infra::AsStdString(rootCaCertificate.Pem()) };
+    infra::BoundedVector<uint8_t>::WithMaxSize<512> rootCaCertificateDer{ rootCaCertificate.Der() };
 
     services::EcSecP256r1PrivateKey privateKeyLeft{ randomDataGenerator };
     std::string privateKeyLeftPem{ infra::AsStdString(privateKeyLeft.Pem()) };
     std::array<uint8_t, 121> privateKeyLeftDer{ privateKeyLeft.Der() };
     services::EcSecP256r1Certificate certificateLeft{ privateKeyLeft, "CN=left", rootCaPrivateKey, "CN=Root", randomDataGenerator };
     std::string certificateLeftPem{ infra::AsStdString(certificateLeft.Pem()) };
+    infra::BoundedVector<uint8_t>::WithMaxSize<512> certificateLeftDer{ certificateLeft.Der() };
 
     services::EcSecP256r1PrivateKey privateKeyRight{ randomDataGenerator };
     std::string privateKeyRightPem{ infra::AsStdString(privateKeyRight.Pem()) };
     std::array<uint8_t, 121> privateKeyRightDer{ privateKeyRight.Der() };
     services::EcSecP256r1Certificate certificateRight{ privateKeyRight, "CN=right", rootCaPrivateKey, "CN=Root", randomDataGenerator };
     std::string certificateRightPem{ infra::AsStdString(certificateRight.Pem()) };
+    infra::BoundedVector<uint8_t>::WithMaxSize<512> certificateRightDer{ certificateRight.Der() };
 
-    testing::StrictMock<EchoOnSesameDiffieHellmanWithCryptoMbedTlsMock> echoLeft{ securedLeft, certificateLeftPem, privateKeyLeftDer, rootCaCertificatePem, randomDataGenerator, serializerFactoryLeft, errorPolicy };
+    testing::StrictMock<EchoOnSesameDiffieHellmanWithCryptoMbedTlsMock> echoLeft{ securedLeft, infra::MakeRange(certificateLeftDer), infra::MakeRange(privateKeyLeftDer), infra::MakeRange(rootCaCertificateDer), randomDataGenerator, serializerFactoryLeft, errorPolicy };
 };
 
 class EchoOnSesameDiffieHellmanTest
@@ -135,7 +138,7 @@ public:
         Initialized();
     }
 
-    testing::StrictMock<EchoOnSesameDiffieHellmanWithCryptoMbedTlsMock> echoRight{ securedRight, certificateRightPem, privateKeyRightDer, rootCaCertificatePem, randomDataGenerator, serializerFactoryRight, errorPolicy };
+    testing::StrictMock<EchoOnSesameDiffieHellmanWithCryptoMbedTlsMock> echoRight{ securedRight, infra::MakeRange(certificateRightDer), infra::MakeRange(privateKeyRightDer), infra::MakeRange(rootCaCertificateDer), randomDataGenerator, serializerFactoryRight, errorPolicy };
 
     services::ServiceStubProxy serviceProxy{ echoLeft };
     testing::StrictMock<services::ServiceStub> service{ echoRight };
@@ -167,7 +170,7 @@ namespace
         using sesame_security::DiffieHellmanKeyEstablishment::DiffieHellmanKeyEstablishment;
 
         MOCK_METHOD(void, Exchange, (infra::ConstByteRange publicKey, infra::ConstByteRange signatureR, infra::ConstByteRange signatureS), (override));
-        MOCK_METHOD(void, PresentCertificate, (infra::BoundedConstString certificate), (override));
+        MOCK_METHOD(void, PresentCertificate, (infra::ConstByteRange certificate), (override));
     };
 }
 
@@ -189,7 +192,7 @@ TEST_F(EchoOnSesameDiffieHellmanAdversaryTest, successful_manual_implementation)
 
     proxy.RequestSend([this]()
         {
-            proxy.PresentCertificate(certificateRightPem);
+            proxy.PresentCertificate(infra::MakeRange(certificateRightDer));
         });
 
     EXPECT_CALL(keyEstablishment, PresentCertificate(testing::_)).WillOnce(testing::Invoke([this]()
@@ -220,11 +223,11 @@ TEST_F(EchoOnSesameDiffieHellmanAdversaryTest, self_signed_certificate_leads_to_
     Initialized();
 
     services::EcSecP256r1Certificate certificateRightSelfSigned{ privateKeyRight, "CN=right", privateKeyRight, "CN=Root", randomDataGenerator };
-    std::string certificateRightSelfSignedPem{ infra::AsStdString(certificateRightSelfSigned.Pem()) };
+    infra::BoundedVector<uint8_t>::WithMaxSize<512> certificateRightSelfSignedDer{ certificateRightSelfSigned.Der() };
 
-    proxy.RequestSend([this, &certificateRightSelfSignedPem]()
+    proxy.RequestSend([this, &certificateRightSelfSignedDer]()
         {
-            proxy.PresentCertificate(certificateRightSelfSignedPem);
+            proxy.PresentCertificate(infra::MakeRange(certificateRightSelfSignedDer));
         });
 
     EXPECT_CALL(keyEstablishment, PresentCertificate(testing::_)).WillOnce(testing::Invoke([this]()
@@ -256,7 +259,7 @@ TEST_F(EchoOnSesameDiffieHellmanAdversaryTest, signature_over_incorrect_data_lea
 
     proxy.RequestSend([this]()
         {
-            proxy.PresentCertificate(certificateRightPem);
+            proxy.PresentCertificate(infra::MakeRange(certificateRightDer));
         });
 
     EXPECT_CALL(keyEstablishment, PresentCertificate(testing::_)).WillOnce(testing::Invoke([this]()
@@ -290,7 +293,7 @@ TEST_F(EchoOnSesameDiffieHellmanAdversaryTest, incorrect_signature_leads_to_fail
 
     proxy.RequestSend([this]()
         {
-            proxy.PresentCertificate(certificateRightPem);
+            proxy.PresentCertificate(infra::MakeRange(certificateRightDer));
         });
 
     EXPECT_CALL(keyEstablishment, PresentCertificate(testing::_)).WillOnce(testing::Invoke([this]()

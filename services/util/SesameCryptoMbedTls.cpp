@@ -115,10 +115,10 @@ namespace services
         return { encodedR, encodedS };
     }
 
-    EcSecP256r1DsaVerifierMbedTls::EcSecP256r1DsaVerifierMbedTls(infra::BoundedConstString dsaCertificate, infra::BoundedConstString rootCaCertificate)
+    EcSecP256r1DsaVerifierMbedTls::EcSecP256r1DsaVerifierMbedTls(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)
     {
         mbedtls_x509_crt_init(&rootCertificate);
-        really_assert(mbedtls_x509_crt_parse(&rootCertificate, infra::ReinterpretCastByteRange(infra::MakeRange(rootCaCertificate)).begin(), rootCaCertificate.size()) == 0);
+        really_assert(mbedtls_x509_crt_parse(&rootCertificate, rootCaCertificate.begin(), rootCaCertificate.size()) == 0);
         really_assert(mbedtls_pk_get_type(&rootCertificate.pk) == MBEDTLS_PK_ECKEY);
 
         mbedtls_ecp_group_init(&group);
@@ -134,7 +134,7 @@ namespace services
         mbedtls_x509_crt certificate;
         mbedtls_x509_crt_init(&certificate);
 
-        really_assert(mbedtls_x509_crt_parse(&certificate, infra::ReinterpretCastByteRange(infra::MakeRange(dsaCertificate)).begin(), dsaCertificate.size()) == 0);
+        really_assert(mbedtls_x509_crt_parse(&certificate, dsaCertificate.begin(), dsaCertificate.size()) == 0);
         really_assert(mbedtls_pk_get_type(&certificate.pk) == MBEDTLS_PK_ECKEY);
 
         std::array<uint8_t, 32> hash;
@@ -290,6 +290,14 @@ namespace services
         infra::BoundedString::WithStorage<512> result(512, '\0');
         really_assert(mbedtls_x509write_crt_pem(&const_cast<mbedtls_x509write_cert&>(dsaCertificate), reinterpret_cast<unsigned char*>(const_cast<char*>(result.data())), result.size(), &services::MbedTlsRandomDataGeneratorWrapper, &randomDataGenerator) == 0);
         result.resize(result.find('\0') + 1);
+        return result;
+    }
+
+    infra::BoundedVector<uint8_t>::WithMaxSize<512> EcSecP256r1Certificate::Der() const
+    {
+        infra::BoundedVector<uint8_t>::WithMaxSize<512> result(512, static_cast<uint8_t>(0));
+        auto size = mbedtls_x509write_crt_der(&const_cast<mbedtls_x509write_cert&>(dsaCertificate), result.data(), result.size(), &services::MbedTlsRandomDataGeneratorWrapper, &randomDataGenerator);
+        result.erase(result.begin(), result.begin() + result.size() - size);
         return result;
     }
 }

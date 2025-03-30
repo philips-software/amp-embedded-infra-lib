@@ -2,7 +2,7 @@
 
 namespace services
 {
-    EchoOnSesameDiffieHellman::EchoOnSesameDiffieHellman(const Crypto& crypto, SesameSecured& secured, infra::BoundedConstString dsaCertificate, infra::BoundedConstString rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy)
+    EchoOnSesameDiffieHellman::EchoOnSesameDiffieHellman(const Crypto& crypto, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy)
         : EchoOnSesame(secured, serializerFactory, errorPolicy)
         , DiffieHellmanKeyEstablishment(static_cast<services::Echo&>(*this))
         , DiffieHellmanKeyEstablishmentProxy(static_cast<services::Echo&>(*this))
@@ -102,7 +102,7 @@ namespace services
         MethodDone();
     }
 
-    void EchoOnSesameDiffieHellman::PresentCertificate(infra::BoundedConstString otherDsaCertificate)
+    void EchoOnSesameDiffieHellman::PresentCertificate(infra::ConstByteRange otherDsaCertificate)
     {
         verifier.Emplace(verifierCreator, otherDsaCertificate, rootCaCertificate);
 
@@ -120,7 +120,7 @@ namespace services
     }
 
 #ifdef EMIL_USE_MBEDTLS
-    EchoOnSesameDiffieHellman::WithCryptoMbedTls::WithCryptoMbedTls(SesameSecured& secured, infra::BoundedConstString dsaCertificate, infra::ConstByteRange dsaCertificatePrivateKey, infra::BoundedConstString rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy)
+    EchoOnSesameDiffieHellman::WithCryptoMbedTls::WithCryptoMbedTls(SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange dsaCertificatePrivateKey, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy)
         : EchoOnSesameDiffieHellman(Crypto{ keyExchange, signer, verifier, keyExpander }, secured, dsaCertificate, rootCaCertificate, randomDataGenerator, serializerFactory, errorPolicy)
         , signer(dsaCertificatePrivateKey, randomDataGenerator)
     {}
