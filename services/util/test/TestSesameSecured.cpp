@@ -69,7 +69,7 @@ public:
     std::array<uint8_t, services::SesameSecured::blockSize> iv{ 1, 3 };
 
     testing::StrictMock<services::SesameMock> lower;
-    services::SesameSecured::WithBuffers<64> secured{ lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
+    services::SesameSecured::WithCryptoMbedTls::WithBuffers<64> secured{ lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
     testing::StrictMock<services::SesameObserverMock> upper{ secured };
 
     infra::SharedOptional<infra::StdVectorInputStreamReader> reader;
@@ -110,7 +110,7 @@ TEST_F(SesameSecuredTest, key_change_to_default_key_results_in_same_encryption)
     auto first = sentData;
     Receive("abcd");
 
-    secured.SetNextSendKey(key, iv);
+    secured.SetSendKey(key, iv);
     secured.SetReceiveKey(key, iv);
 
     Send("abcd");
@@ -128,7 +128,7 @@ TEST_F(SesameSecuredTest, key_change_to_different_key_results_in_different_encry
 
     std::array<uint8_t, services::SesameSecured::keySize> key2{ 1, 2, 1 };
     std::array<uint8_t, services::SesameSecured::blockSize> iv2{ 1, 3, 1 };
-    secured.SetNextSendKey(key2, iv2);
+    secured.SetSendKey(key2, iv2);
 
     Send("abcd");
     auto second = sentData;
@@ -144,7 +144,7 @@ TEST_F(SesameSecuredTest, initialization_results_in_default_keys)
 
     std::array<uint8_t, services::SesameSecured::keySize> key2{ 1, 2, 1 };
     std::array<uint8_t, services::SesameSecured::blockSize> iv2{ 1, 3, 1 };
-    secured.SetNextSendKey(key2, iv2);
+    secured.SetSendKey(key2, iv2);
 
     EXPECT_CALL(upper, Initialized());
     lower.GetObserver().Initialized();

@@ -40,11 +40,22 @@ namespace services
                 auto key = randomDataGenerator.GenerateRandomData<SesameSecured::KeyType>();
                 auto iv = randomDataGenerator.GenerateRandomData<SesameSecured::IvType>();
                 SymmetricKeyEstablishmentProxy::ActivateNewKeyMaterial(infra::MakeRange(key), infra::MakeRange(iv));
-                secured.SetNextSendKey(key, iv);
+                nextKeyPair = { key, iv };
 
                 initializingSending = false;
                 ReQueueWaitingProxies();
             });
+    }
+
+    infra::SharedPtr<MethodSerializer> EchoOnSesameSymmetricKey::GrantSend(ServiceProxy& proxy)
+    {
+        if (nextKeyPair && &proxy != this)
+        {
+            secured.SetSendKey(nextKeyPair->first, nextKeyPair->second);
+            nextKeyPair = infra::none;
+        }
+
+        return EchoOnStreams::GrantSend(proxy);
     }
 
     void EchoOnSesameSymmetricKey::ActivateNewKeyMaterial(infra::ConstByteRange key, infra::ConstByteRange iv)

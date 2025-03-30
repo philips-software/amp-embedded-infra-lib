@@ -1,5 +1,5 @@
-#ifndef SERVICES_ECHO_ON_MESSAGE_COMMUNICATION_SYMMETRIC_KEY_HPP
-#define SERVICES_ECHO_ON_MESSAGE_COMMUNICATION_SYMMETRIC_KEY_HPP
+#ifndef SERVICES_ECHO_ON_SESAME_SYMMETRIC_KEY_HPP
+#define SERVICES_ECHO_ON_SESAME_SYMMETRIC_KEY_HPP
 
 #include "generated/echo/SesameSecurity.pb.hpp"
 #include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"
@@ -22,6 +22,10 @@ namespace services
         // Implementation of SesameObserver
         void Initialized() override;
 
+    protected:
+        // Implementation of EchoOnStreams
+        infra::SharedPtr<MethodSerializer> GrantSend(ServiceProxy& proxy) override;
+
     private:
         // Implementation of SymmetricKeyEstablishment
         void ActivateNewKeyMaterial(infra::ConstByteRange key, infra::ConstByteRange iv) override;
@@ -34,6 +38,7 @@ namespace services
 
         bool initializingSending = true;
         infra::IntrusiveList<ServiceProxy> waitingProxies;
+        infra::Optional<std::pair<std::array<uint8_t, 16>, std::array<uint8_t, 16>>> nextKeyPair;
     };
 }
 

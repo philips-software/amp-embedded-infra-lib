@@ -48,7 +48,7 @@ TEST_F(EchoOnSesameTest, invoke_service_proxy_method)
     sesame.GetObserver().Initialized();
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
-    EXPECT_CALL(sesame, RequestSendMessage(38));
+    EXPECT_CALL(sesame, RequestSendMessage(98));
     serviceProxy.RequestSend([this]()
         {
             serviceProxy.Method(5);
@@ -83,7 +83,7 @@ TEST_F(EchoOnSesameTest, invoke_service_proxy_method_without_parameters)
     sesame.GetObserver().Initialized();
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
-    EXPECT_CALL(sesame, RequestSendMessage(38));
+    EXPECT_CALL(sesame, RequestSendMessage(98));
     serviceProxy.RequestSend([this]()
         {
             serviceProxy.MethodNoParameter();
@@ -102,7 +102,7 @@ TEST_F(EchoOnSesameTest, RequestSendMessage_is_delayed_until_Initialized)
         });
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
-    EXPECT_CALL(sesame, RequestSendMessage(38));
+    EXPECT_CALL(sesame, RequestSendMessage(98));
     sesame.GetObserver().Initialized();
 }
 
@@ -231,7 +231,7 @@ TEST_F(EchoOnSesameTest, Reset_forgets_send_requests)
     sesame.GetObserver().Initialized();
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
-    EXPECT_CALL(sesame, RequestSendMessage(38));
+    EXPECT_CALL(sesame, RequestSendMessage(98));
     serviceProxy.RequestSend([this]()
         {
             serviceProxy.Method(5);
@@ -248,7 +248,7 @@ TEST_F(EchoOnSesameTest, after_Reset_RequestSendMessage_is_delayed_until_Initial
     sesame.GetObserver().Initialized();
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
-    EXPECT_CALL(sesame, RequestSendMessage(38));
+    EXPECT_CALL(sesame, RequestSendMessage(98));
     serviceProxy.RequestSend([this]()
         {
             serviceProxy.Method(5);
@@ -268,6 +268,6 @@ TEST_F(EchoOnSesameTest, after_Reset_RequestSendMessage_is_delayed_until_Initial
         });
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
-    EXPECT_CALL(sesame, RequestSendMessage(38));
+    EXPECT_CALL(sesame, RequestSendMessage(98));
     sesame.GetObserver().Initialized();
 }
