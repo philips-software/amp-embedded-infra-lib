@@ -75,7 +75,7 @@ namespace services
     struct EchoOnSesameDiffieHellman::WithCryptoMbedTls
         : public EchoOnSesameDiffieHellman
     {
-        WithCryptoMbedTls(SesameSecured& secured, infra::BoundedConstString dsaCertificate, infra::BoundedConstString dsaCertificatePrivateKey, infra::BoundedConstString rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
+        WithCryptoMbedTls(SesameSecured& secured, infra::BoundedConstString dsaCertificate, infra::ConstByteRange dsaCertificatePrivateKey, infra::BoundedConstString rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
 
         infra::Creator<EcSecP256r1DiffieHellman, EcSecP256r1DiffieHellmanMbedTls, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)> keyExchange;
         EcSecP256r1DsaSignerMbedTls signer;

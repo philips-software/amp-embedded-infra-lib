@@ -69,7 +69,7 @@ namespace services
         return sharedSecret;
     }
 
-    EcSecP256r1DsaSignerMbedTls::EcSecP256r1DsaSignerMbedTls(infra::BoundedConstString dsaCertificatePrivateKey, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    EcSecP256r1DsaSignerMbedTls::EcSecP256r1DsaSignerMbedTls(infra::ConstByteRange dsaCertificatePrivateKey, hal::SynchronousRandomDataGenerator& randomDataGenerator)
         : randomDataGenerator(randomDataGenerator)
     {
         mbedtls_ecp_group_init(&group);
@@ -84,7 +84,7 @@ namespace services
 
         mbedtls_pk_context dsaPrivateKeyContext;
         mbedtls_pk_init(&dsaPrivateKeyContext);
-        really_assert(mbedtls_pk_parse_key(&dsaPrivateKeyContext, infra::ReinterpretCastByteRange(infra::MakeRange(dsaCertificatePrivateKey)).begin(), dsaCertificatePrivateKey.size(), nullptr, 0, &MbedTlsRandomDataGeneratorWrapper, &randomDataGenerator) == 0);
+        really_assert(mbedtls_pk_parse_key(&dsaPrivateKeyContext, dsaCertificatePrivateKey.begin(), dsaCertificatePrivateKey.size(), nullptr, 0, &MbedTlsRandomDataGeneratorWrapper, &randomDataGenerator) == 0);
         really_assert(mbedtls_ecp_export(mbedtls_pk_ec(dsaPrivateKeyContext), &group, &privateKey, &dsaPublicKey) == 0);
         mbedtls_pk_free(&dsaPrivateKeyContext);
         mbedtls_ecp_point_free(&dsaPublicKey);
@@ -247,6 +247,14 @@ namespace services
         infra::BoundedString::WithStorage<228> result(228, '\0');
         really_assert(mbedtls_pk_write_key_pem(&context, reinterpret_cast<unsigned char*>(result.data()), result.size()) == 0);
         really_assert(result.find('\0') == result.size() - 1);
+        return result;
+    }
+
+    std::array<uint8_t, 121> EcSecP256r1PrivateKey::Der() const
+    {
+        std::array<uint8_t, 121> result{};
+        auto size = mbedtls_pk_write_key_der(&context, result.data(), result.size());
+        really_assert(size == result.size());
         return result;
     }
 

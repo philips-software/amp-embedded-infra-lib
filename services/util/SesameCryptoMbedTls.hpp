@@ -32,7 +32,7 @@ namespace services
         : public EcSecP256r1DsaSigner
     {
     public:
-        EcSecP256r1DsaSignerMbedTls(infra::BoundedConstString dsaCertificatePrivateKey, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        EcSecP256r1DsaSignerMbedTls(infra::ConstByteRange dsaCertificatePrivateKey, hal::SynchronousRandomDataGenerator& randomDataGenerator);
         ~EcSecP256r1DsaSignerMbedTls();
 
         std::pair<std::array<uint8_t, 32>, std::array<uint8_t, 32>> Sign(infra::ConstByteRange data) const override;
@@ -95,6 +95,7 @@ namespace services
         ~EcSecP256r1PrivateKey();
 
         infra::BoundedString::WithStorage<228> Pem() const;
+        std::array<uint8_t, 121> Der() const;
         const mbedtls_pk_context& Context() const;
 
     private:

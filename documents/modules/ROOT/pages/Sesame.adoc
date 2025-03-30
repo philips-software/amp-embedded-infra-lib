@@ -292,7 +292,8 @@ EchoOnSesameSymmetricKey (services/util/EchoOnSesameSymmetricKey.hpp) places ECH
 SESAME with security, and implements the Hardcoded Keys scheme.
 
 EchoOnSesameDiffieHellman (services/util/EchoOnSesameDiffieHellman.hpp) places ECHO on top of
-SESAME with security and implements the Diffie-Hellman scheme.
+SESAME with security and implements the Diffie-Hellman scheme. This class is instantiated with
+one root certificate which is used to verify one certificate received by a peer.
 
 == Appendix: SesameSecurity.proto
 

@@ -113,15 +113,17 @@ public:
 
     services::EcSecP256r1PrivateKey privateKeyLeft{ randomDataGenerator };
     std::string privateKeyLeftPem{ infra::AsStdString(privateKeyLeft.Pem()) };
+    std::array<uint8_t, 121> privateKeyLeftDer{ privateKeyLeft.Der() };
     services::EcSecP256r1Certificate certificateLeft{ privateKeyLeft, "CN=left", rootCaPrivateKey, "CN=Root", randomDataGenerator };
     std::string certificateLeftPem{ infra::AsStdString(certificateLeft.Pem()) };
 
     services::EcSecP256r1PrivateKey privateKeyRight{ randomDataGenerator };
     std::string privateKeyRightPem{ infra::AsStdString(privateKeyRight.Pem()) };
+    std::array<uint8_t, 121> privateKeyRightDer{ privateKeyRight.Der() };
     services::EcSecP256r1Certificate certificateRight{ privateKeyRight, "CN=right", rootCaPrivateKey, "CN=Root", randomDataGenerator };
     std::string certificateRightPem{ infra::AsStdString(certificateRight.Pem()) };
 
-    testing::StrictMock<EchoOnSesameDiffieHellmanWithCryptoMbedTlsMock> echoLeft{ securedLeft, certificateLeftPem, privateKeyLeftPem, rootCaCertificatePem, randomDataGenerator, serializerFactoryLeft, errorPolicy };
+    testing::StrictMock<EchoOnSesameDiffieHellmanWithCryptoMbedTlsMock> echoLeft{ securedLeft, certificateLeftPem, privateKeyLeftDer, rootCaCertificatePem, randomDataGenerator, serializerFactoryLeft, errorPolicy };
 };
 
 class EchoOnSesameDiffieHellmanTest
@@ -133,7 +135,7 @@ public:
         Initialized();
     }
 
-    testing::StrictMock<EchoOnSesameDiffieHellmanWithCryptoMbedTlsMock> echoRight{ securedRight, certificateRightPem, privateKeyRightPem, rootCaCertificatePem, randomDataGenerator, serializerFactoryRight, errorPolicy };
+    testing::StrictMock<EchoOnSesameDiffieHellmanWithCryptoMbedTlsMock> echoRight{ securedRight, certificateRightPem, privateKeyRightDer, rootCaCertificatePem, randomDataGenerator, serializerFactoryRight, errorPolicy };
 
     services::ServiceStubProxy serviceProxy{ echoLeft };
     testing::StrictMock<services::ServiceStub> service{ echoRight };
@@ -178,7 +180,7 @@ public:
     sesame_security::DiffieHellmanKeyEstablishmentProxy proxy{ echoRight };
 
     services::EcSecP256r1DiffieHellmanMbedTls keyExchange{ randomDataGenerator };
-    services::EcSecP256r1DsaSignerMbedTls signer{ privateKeyRightPem, randomDataGenerator };
+    services::EcSecP256r1DsaSignerMbedTls signer{ privateKeyRightDer, randomDataGenerator };
 };
 
 TEST_F(EchoOnSesameDiffieHellmanAdversaryTest, successful_manual_implementation)
