@@ -69,6 +69,8 @@ message Descriptr
     Handle handle = 2;
 }
 
+// Value 0 indicates success
+// Any non-zero value indicates an error defined in "Status error codes" section of ST application note AN5270
 message GattResult
 {
     uint32 value = 1;
