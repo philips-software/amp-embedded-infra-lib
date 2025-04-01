@@ -136,7 +136,7 @@ namespace application
 
     void EchoClientWebSocket::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> client)>&& createdClientObserver)
     {
-        auto echoConnectionPtr = echoConnection.Emplace(serializerFactory);
+        echoConnectionPtr = echoConnection.Emplace(serializerFactory);
         createdClientObserver(echoConnectionPtr);
         onDone(*echoConnectionPtr);
     }
@@ -159,7 +159,7 @@ namespace application
 
     void TracingEchoClientWebSocket::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> client)>&& createdClientObserver)
     {
-        auto echoConnectionPtr = echoConnection.Emplace(serializerFactory, services::echoErrorPolicyAbortOnMessageFormatError, tracer);
+        echoConnectionPtr = echoConnection.Emplace(serializerFactory, services::echoErrorPolicyAbortOnMessageFormatError, tracer);
         createdClientObserver(echoConnectionPtr);
         onDone(*echoConnectionPtr, *echoConnectionPtr);
     }
@@ -188,7 +188,7 @@ namespace application
 
     void EchoClientTcp::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
     {
-        auto echoConnectionPtr = echoConnection.Emplace(serializerFactory);
+        echoConnectionPtr = echoConnection.Emplace(serializerFactory);
         createdObserver(echoConnectionPtr);
         onDone(*echoConnectionPtr);
     }
@@ -210,7 +210,7 @@ namespace application
 
     void TracingEchoClientTcp::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
     {
-        auto echoConnectionPtr = echoConnection.Emplace(serializerFactory, services::echoErrorPolicyAbortOnMessageFormatError, tracer);
+        echoConnectionPtr = echoConnection.Emplace(serializerFactory, services::echoErrorPolicyAbortOnMessageFormatError, tracer);
         createdObserver(echoConnectionPtr);
         onDone(*echoConnectionPtr, *echoConnectionPtr);
     }
