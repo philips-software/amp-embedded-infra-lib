@@ -45,7 +45,6 @@ namespace services
         using infra::Observer<GattClientCharacteristicOperationsObserver, GattClientCharacteristicOperations>::Observer;
 
         virtual AttAttribute::Handle CharacteristicValueHandle() const = 0;
-        // virtual GattCharacteristic::PropertyFlags CharacteristicProperties() const = 0;
     };
 
     class GattClientCharacteristicOperations
