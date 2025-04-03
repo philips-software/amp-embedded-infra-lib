@@ -57,3 +57,6 @@ endfunction()
 
 add_mbedtls_target_properties(mbedcrypto mbedx509 mbedtls)
 set_target_properties(apidoc lib PROPERTIES FOLDER External/MbedTLS)
+
+# Without optimization bignum_core fails to compile due to lack of assembly registers
+target_compile_options(mbedcrypto PRIVATE $<$<CXX_COMPILER_ID:GNU>:$<$<CONFIG:Debug>:-O2>>)
