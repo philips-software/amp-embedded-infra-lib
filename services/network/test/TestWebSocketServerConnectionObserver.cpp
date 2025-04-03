@@ -315,3 +315,27 @@ TEST_F(WebSocketServerConnectionObserverTest, dont_use_whole_buffer)
     ExecuteAllActions();
     EXPECT_EQ(sendFrame, connection.sentData);
 }
+
+TEST_F(WebSocketServerConnectionObserverTest, when_reader_is_open_websocket_is_kept_alive_after_connection_close)
+{
+    auto reader = webSocket->ReceiveStream();
+
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+    EXPECT_CALL(connectionObserver, Detaching());
+    webSocket->AbortAndDestroy();
+
+    reader = nullptr;
+}
+
+TEST_F(WebSocketServerConnectionObserverTest, when_writer_is_open_websocket_is_kept_alive_after_connection_close)
+{
+    infra::SharedPtr<infra::StreamWriter> streamWriter;
+    EXPECT_CALL(connectionObserver, SendStreamAvailable(testing::_)).WillOnce(testing::SaveArg<0>(&streamWriter));
+    webSocket->RequestSendStream(1);
+
+    EXPECT_CALL(connection, AbortAndDestroyMock());
+    EXPECT_CALL(connectionObserver, Detaching());
+    webSocket->AbortAndDestroy();
+
+    streamWriter = nullptr;
+}

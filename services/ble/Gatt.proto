@@ -93,19 +93,24 @@ service GattClient
 
     rpc MtuSizeExchangeRequest(Nothing) returns (Nothing) { option (method_id) = 1; }
 
+    // In the below block, all methods shall be called after the previous one is completed
     rpc StartServiceDiscovery(Nothing) returns (Nothing) { option (method_id) = 2; }
     rpc StartCharacteristicDiscovery(HandleRange) returns (Nothing) { option (method_id) = 4; }
     rpc StartDescriptorDiscovery(HandleRange) returns (Nothing) { option (method_id) = 6; }
 
+    // In the below block, the methods with a response, shall be called after the previous one is completed
+    // Example 1: If Read is called, EnableIndication shall only be called after ReadComplete
+    // Example 2: If DisableNotification is called, Write shall only be called after SubscriptionChangeDone
+    // Example 3: If EnableNotification is called, EnableIndication shall only be called after SubscriptionChangeDone
     rpc Read(Handle) returns (Nothing) { option (method_id) = 8; }
     rpc Write(CharacteristicData) returns (Nothing) { option (method_id) = 9; }
     rpc WriteWithoutResponse(CharacteristicData) returns (Nothing) { option (method_id) = 10; }
-
     rpc EnableNotification(Handle) returns (Nothing) { option (method_id) = 11; };
     rpc DisableNotification(Handle) returns (Nothing) { option (method_id) = 12; };
     rpc EnableIndication(Handle) returns (Nothing) { option (method_id) = 13; };
     rpc DisableIndication(Handle) returns (Nothing) { option (method_id) = 14; };
 
+    // IndicationDone shall be called for every IndicationReceived
     rpc IndicationDone(Nothing) returns (Nothing) { option (method_id) = 15; };
 }
 
@@ -126,6 +131,8 @@ service GattClientResponse
 
     rpc ReadComplete(ReadResult) returns (Nothing) { option (method_id) = 8; }
     rpc WriteComplete(GattResult) returns (Nothing) { option (method_id) = 9; }
+
+    // SubscriptionChangeDone is called after completion of Enable/Disable Notification/Indication
     rpc SubscriptionChangeDone(Nothing) returns (Nothing) { option (method_id) = 10; }
 
     rpc IndicationReceived(CharacteristicData) returns (Nothing) { option (method_id) = 11; }

@@ -3,7 +3,6 @@
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/ByteRange.hpp"
-#include "infra/util/ReallyAssert.hpp"
 #include "services/network/Address.hpp"
 #include "services/util/Sha256.hpp"
 
@@ -34,7 +33,7 @@ namespace services
         , identifier(reference.identifier)
     {
         mbedtls_ssl_session_init(&session);
-        really_assert(mbedtls_ssl_session_load(&session, reference.serializedSession.begin(), reference.serializedSession.size()) == 0);
+        clientSessionDeserialized = mbedtls_ssl_session_load(&session, reference.serializedSession.begin(), reference.serializedSession.size()) == 0;
     }
 
     MbedTlsSession::~MbedTlsSession()
@@ -56,6 +55,11 @@ namespace services
     bool MbedTlsSession::IsObtained()
     {
         return clientSessionObtained;
+    }
+
+    bool MbedTlsSession::IsDeserialized()
+    {
+        return clientSessionDeserialized;
     }
 
     int MbedTlsSession::SetSession(mbedtls_ssl_context* context)
@@ -249,12 +253,20 @@ namespace services
 
     void MbedTlsSessionStoragePersistent::LoadSessions()
     {
-        for (auto& persistedSession : *nvm)
+        for (auto persistedSession = nvm->begin(); persistedSession != nvm->end();)
         {
-            storage.emplace_back(persistedSession, [this](MbedTlsSession* session)
+            storage.emplace_back(*persistedSession, [this](MbedTlsSession* session)
                 {
                     SerializeSessionToFlash(session);
                 });
+
+            if (storage.back().IsDeserialized())
+                ++persistedSession;
+            else
+            {
+                persistedSession = nvm->erase(persistedSession);
+                storage.pop_back();
+            }
         }
     }
 

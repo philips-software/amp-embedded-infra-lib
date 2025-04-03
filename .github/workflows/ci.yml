@@ -142,7 +142,7 @@ jobs:
     strategy:
       matrix:
         gcc: ["7-2018-q2", "8-2019-q3", "9-2020-q2", "10.3-2021.10"]
-        configuration: ["RelWithDebInfo"]
+        configuration: ["RelWithDebInfo", "Debug"]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
