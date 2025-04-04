@@ -13,6 +13,7 @@ target_sources(hal.interfaces_test_doubles PRIVATE
     AdcMultiChannelStub.cpp
     AdcMultiChannelStub.hpp
     AnalogToDigitalPinImplMock.hpp
+    BleDtmMock.hpp
     CommunicationConfiguratorMock.hpp
     DigitalToAnalogPinImplMock.hpp
     FileSystemStub.cpp
