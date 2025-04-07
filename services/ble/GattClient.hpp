@@ -52,16 +52,14 @@ namespace services
         , public infra::Subject<GattClientStackUpdateObserver>
     {
     public:
-        using OperationOnDone = infra::Function<void(uint8_t)>;
-
-        virtual void Read(const GattClientCharacteristicOperationsObserver& characteristic, infra::Function<void(const infra::ConstByteRange&)> onRead, OperationOnDone onDone) = 0;
-        virtual void Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, OperationOnDone onDone) = 0;
+        virtual void Read(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone) = 0;
         virtual void WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data) = 0;
 
-        virtual void EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic, OperationOnDone onDone) = 0;
-        virtual void DisableNotification(const GattClientCharacteristicOperationsObserver& characteristic, OperationOnDone onDone) = 0;
-        virtual void EnableIndication(const GattClientCharacteristicOperationsObserver& characteristic, OperationOnDone onDone) = 0;
-        virtual void DisableIndication(const GattClientCharacteristicOperationsObserver& characteristic, OperationOnDone onDone) = 0;
+        virtual void EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void DisableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void EnableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void DisableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
     };
 
     class GattClientCharacteristic
@@ -72,19 +70,17 @@ namespace services
         , protected GattClientStackUpdateObserver
     {
     public:
-        using OperationOnDone = GattClientCharacteristicOperations::OperationOnDone;
-
         GattClientCharacteristic(AttAttribute::Uuid type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties);
         GattClientCharacteristic(GattClientCharacteristicOperations& operations, AttAttribute::Uuid type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties);
 
-        virtual void Read(infra::Function<void(const infra::ConstByteRange&)> onResponse, OperationOnDone onDone);
-        virtual void Write(infra::ConstByteRange data, OperationOnDone onDone);
+        virtual void Read(const infra::Function<void(const infra::ConstByteRange&)>& onResponse, const infra::Function<void(uint8_t)>& onDone);
+        virtual void Write(infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone);
         virtual void WriteWithoutResponse(infra::ConstByteRange data);
 
-        virtual void EnableNotification(OperationOnDone onDone);
-        virtual void DisableNotification(OperationOnDone onDone);
-        virtual void EnableIndication(OperationOnDone onDone);
-        virtual void DisableIndication(OperationOnDone onDone);
+        virtual void EnableNotification(const infra::Function<void(uint8_t)>& onDone);
+        virtual void DisableNotification(const infra::Function<void(uint8_t)>& onDone);
+        virtual void EnableIndication(const infra::Function<void(uint8_t)>& onDone);
+        virtual void DisableIndication(const infra::Function<void(uint8_t)>& onDone);
 
         GattCharacteristic::PropertyFlags CharacteristicProperties() const;
 
