@@ -70,7 +70,8 @@ message Descriptr
 }
 
 // Value 0 indicates success
-// Any non-zero value indicates an error defined in "Status error codes" section of ST application note AN5270
+// Any non-zero value indicates an error. The actual meaning of the error code is platform specific.
+// For ST-based platforms error codes are defined in "Status error codes" section of ST application note AN5270
 message GattResult
 {
     uint32 value = 1;
