@@ -78,12 +78,12 @@ public:
 
 TEST_F(GattClientCharacteristicTest, receives_valid_notification_should_notify_observers)
 {
-    const auto expectedData = infra::MakeStringByteRange("string");
+    const auto data = infra::MakeStringByteRange("string");
 
-    EXPECT_CALL(gattUpdateObserver, NotificationReceived(infra::ByteRangeContentsEqual(expectedData)));
-    operations.infra::Subject<services::GattClientStackUpdateObserver>::NotifyObservers([&expectedData](auto& observer)
+    EXPECT_CALL(gattUpdateObserver, NotificationReceived(infra::ByteRangeContentsEqual(data)));
+    operations.infra::Subject<services::GattClientStackUpdateObserver>::NotifyObservers([&data](auto& observer)
         {
-            observer.NotificationReceived(characteristicValueHandle, expectedData);
+            observer.NotificationReceived(characteristicValueHandle, data);
         });
 }
 
@@ -121,36 +121,36 @@ TEST_F(GattClientCharacteristicTest, receives_invalid_indication_should_not_noti
 TEST_F(GattClientCharacteristicTest, should_read_characteristic_and_callback_with_data_received)
 {
     const auto result = 0;
-    const auto expectedData = infra::MakeStringByteRange("string");
+    const auto data = infra::MakeStringByteRange("string");
 
     EXPECT_CALL(operations, Read(testing::Ref(characteristic), ::testing::_, testing::_))
-        .WillOnce([&expectedData](const services::GattClientCharacteristicOperationsObserver&, infra::Function<void(const infra::ConstByteRange&)> onResponse, infra::Function<void(uint8_t)> onDone)
+        .WillOnce([&data](const services::GattClientCharacteristicOperationsObserver&, infra::Function<void(const infra::ConstByteRange&)> onResponse, infra::Function<void(uint8_t)> onDone)
         {
-            onResponse(expectedData);
+            onResponse(data);
             onDone(result);
         });
 
-    characteristic.Read(infra::MockFunction<void(const infra::ConstByteRange&)>(expectedData), infra::MockFunction<void(uint8_t)>(result));
+    characteristic.Read(infra::MockFunction<void(const infra::ConstByteRange&)>(data), infra::MockFunction<void(uint8_t)>(result));
 }
 
 TEST_F(GattClientCharacteristicTest, should_write_characteristic_and_callback)
 {
     const auto result = 0;
-    const auto expectedData = infra::MakeStringByteRange("string");
+    const auto data = infra::MakeStringByteRange("string");
 
-    EXPECT_CALL(operations, Write(testing::Ref(characteristic), infra::ByteRangeContentsEqual(expectedData), ::testing::_)).WillOnce([](const services::GattClientCharacteristicOperationsObserver&, infra::ConstByteRange, infra::Function<void(uint8_t)> onDone)
+    EXPECT_CALL(operations, Write(testing::Ref(characteristic), infra::ByteRangeContentsEqual(data), ::testing::_)).WillOnce([](const services::GattClientCharacteristicOperationsObserver&, infra::ConstByteRange, infra::Function<void(uint8_t)> onDone)
         {
             onDone(result);
         });
-    characteristic.Write(expectedData, infra::MockFunction<void(uint8_t)>(result));
+    characteristic.Write(data, infra::MockFunction<void(uint8_t)>(result));
 }
 
 TEST_F(GattClientCharacteristicTest, should_write_without_response_characteristic)
 {
-    const auto expectedData = infra::MakeStringByteRange("string");
+    const auto data = infra::MakeStringByteRange("string");
 
-    EXPECT_CALL(operations, WriteWithoutResponse(testing::Ref(characteristic), infra::ByteRangeContentsEqual(expectedData)));
-    characteristic.WriteWithoutResponse(expectedData);
+    EXPECT_CALL(operations, WriteWithoutResponse(testing::Ref(characteristic), infra::ByteRangeContentsEqual(data)));
+    characteristic.WriteWithoutResponse(data);
 }
 
 TEST_F(GattClientCharacteristicTest, should_enable_notification_characteristic_and_callback)
