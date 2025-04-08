@@ -348,7 +348,7 @@ namespace services
         : public infra::InterfaceConnector<MbedTlsAdapter>
     {
     public:
-        MbedTlsAdapter(hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        explicit MbedTlsAdapter(hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
         hal::SynchronousRandomDataGenerator& RandomDataGenerator() const;
 
