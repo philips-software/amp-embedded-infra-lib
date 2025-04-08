@@ -34,21 +34,20 @@ namespace services
         using services::GattClientCharacteristicOperationsObserver::GattClientCharacteristicOperationsObserver;
 
         MOCK_METHOD(AttAttribute::Handle, CharacteristicValueHandle, (), (const, override));
-        MOCK_METHOD(GattCharacteristic::PropertyFlags, CharacteristicProperties, (), (const, override));
     };
 
     class GattClientCharacteristicOperationsMock
         : public services::GattClientCharacteristicOperations
     {
     public:
-        MOCK_METHOD(void, Read, (const GattClientCharacteristicOperationsObserver&, const infra::Function<void(const infra::ConstByteRange&)>&), (override));
-        MOCK_METHOD(void, Write, (const GattClientCharacteristicOperationsObserver&, infra::ConstByteRange, const infra::Function<void()>&), (override));
+        MOCK_METHOD(void, Read, (const GattClientCharacteristicOperationsObserver&, const infra::Function<void(const infra::ConstByteRange&)>&, const infra::Function<void(uint8_t)>&), (override));
+        MOCK_METHOD(void, Write, (const GattClientCharacteristicOperationsObserver&, infra::ConstByteRange, const infra::Function<void(uint8_t)>&), (override));
         MOCK_METHOD(void, WriteWithoutResponse, (const GattClientCharacteristicOperationsObserver&, infra::ConstByteRange), (override));
 
-        MOCK_METHOD(void, EnableNotification, (const GattClientCharacteristicOperationsObserver&, const infra::Function<void()>&), (override));
-        MOCK_METHOD(void, DisableNotification, (const GattClientCharacteristicOperationsObserver&, const infra::Function<void()>&), (override));
-        MOCK_METHOD(void, EnableIndication, (const GattClientCharacteristicOperationsObserver&, const infra::Function<void()>&), (override));
-        MOCK_METHOD(void, DisableIndication, (const GattClientCharacteristicOperationsObserver&, const infra::Function<void()>&), (override));
+        MOCK_METHOD(void, EnableNotification, (const GattClientCharacteristicOperationsObserver&, const infra::Function<void(uint8_t)>&), (override));
+        MOCK_METHOD(void, DisableNotification, (const GattClientCharacteristicOperationsObserver&, const infra::Function<void(uint8_t)>&), (override));
+        MOCK_METHOD(void, EnableIndication, (const GattClientCharacteristicOperationsObserver&, const infra::Function<void(uint8_t)>&), (override));
+        MOCK_METHOD(void, DisableIndication, (const GattClientCharacteristicOperationsObserver&, const infra::Function<void(uint8_t)>&), (override));
     };
 
     class GattClientDiscoveryObserverMock
