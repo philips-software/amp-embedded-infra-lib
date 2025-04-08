@@ -37,6 +37,7 @@ public:
     testing::StrictMock<services::ConnectionFactoryMock> network;
     services::ConnectionLoopBackFactory loopBackNetwork;
     hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
+    services::MbedTlsHelper mbedtlsHelper{ randomDataGenerator };
     infra::SharedPtr<void> thisListener;
     services::CertificatesMbedTls serverCertificates;
     services::CertificatesMbedTls clientCertificates;
