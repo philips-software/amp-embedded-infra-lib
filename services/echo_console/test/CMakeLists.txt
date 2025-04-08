@@ -11,6 +11,7 @@ target_link_libraries(services.echo_console_test PUBLIC
     services.console_service
     protobuf.protoc_echo_plugin_lib
     protobuf.echo
+    protobuf.test_doubles
     services.network_instantiations
     services.util
     protobuf.meta_services

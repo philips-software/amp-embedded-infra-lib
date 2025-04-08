@@ -15,3 +15,6 @@ public:
     application::EchoSingleLoopback echo{ serializerFactory };
     services::ConsoleServiceProxy consoleServiceProxy{ echo };
 };
+
+TEST_F(ConsoleServiceProxyTest, construction)
+{}
