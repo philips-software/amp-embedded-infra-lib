@@ -215,14 +215,11 @@ it advertises the freed up space using the ReleaseWindow packet. The ReleaseWind
 has one 16-bit unsigned parameter <code>size</code> encoded in little endian which specifies the amount of bytes in the buffer
 freed up in addition to already known free space.</p>
 </div>
-<div class="listingblock kroki-error">
-<div class="title">ReleaseWindow packet</div>
+<div class="imageblock kroki">
 <div class="content">
-<pre>(def boxes-per-row 3)
-(draw-column-headers)
-(draw-box 3)
-(draw-box "size" {:span 2})</pre>
+<img src="_images/diag-c284003e0e9883d57f06dc12da3de88d15d8519e.svg" alt="ReleaseWindow packet">
 </div>
+<div class="title">Figure 3. ReleaseWindow packet</div>
 </div>
 <div class="paragraph">
 <p>In order to avoid continuous exchanges of ReleaseWindow packets, hosts should only release
@@ -241,7 +238,7 @@ its terminating 0.</p>
 <div class="content">
 <img src="_images/diag-44a7e6fea768804d3b097dc66093dfeaa0e0b109.svg" alt="Message packet">
 </div>
-<div class="title">Figure 3. Message packet</div>
+<div class="title">Figure 4. Message packet</div>
 </div>
 </div>
 </div>
@@ -321,7 +318,7 @@ being sent.</p>
 <div class="content">
 <img src="_images/diag-f5af5a4b5404143a9c1b8dfb93a66295bd65b6d3.svg" alt="Typical sequence">
 </div>
-<div class="title">Figure 4. Typical sequence</div>
+<div class="title">Figure 5. Typical sequence</div>
 </div>
 </div>
 </div>
