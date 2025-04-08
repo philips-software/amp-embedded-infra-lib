@@ -15,8 +15,8 @@ extern "C"
 
     int mbedtls_hardware_poll(void* data, unsigned char* output, size_t len, size_t* olen)
     {
-        really_assert(services::MbedTlsHelper::InstanceSet());
-        services::MbedTlsHelper::Instance().RandomDataGenerator().GenerateRandomData(infra::ByteRange(output, output + len));
+        really_assert(services::MbedTlsAdapter::InstanceSet());
+        services::MbedTlsAdapter::Instance().RandomDataGenerator().GenerateRandomData(infra::ByteRange(output, output + len));
         *olen = len;
 
         return 0;
@@ -826,11 +826,11 @@ namespace services
         }
     }
 
-    MbedTlsHelper::MbedTlsHelper(hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    MbedTlsAdapter::MbedTlsAdapter(hal::SynchronousRandomDataGenerator& randomDataGenerator)
         : randomDataGenerator(randomDataGenerator)
     {}
 
-    hal::SynchronousRandomDataGenerator& MbedTlsHelper::RandomDataGenerator() const
+    hal::SynchronousRandomDataGenerator& MbedTlsAdapter::RandomDataGenerator() const
     {
         return randomDataGenerator;
     }

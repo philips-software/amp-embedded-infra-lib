@@ -344,11 +344,11 @@ namespace services
         infra::BoundedConstString hostname;
     };
 
-    class MbedTlsHelper
-        : public infra::InterfaceConnector<MbedTlsHelper>
+    class MbedTlsAdapter
+        : public infra::InterfaceConnector<MbedTlsAdapter>
     {
     public:
-        MbedTlsHelper(hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        MbedTlsAdapter(hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
         hal::SynchronousRandomDataGenerator& RandomDataGenerator() const;
 

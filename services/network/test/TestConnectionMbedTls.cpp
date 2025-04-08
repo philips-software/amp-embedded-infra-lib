@@ -37,7 +37,6 @@ public:
     testing::StrictMock<services::ConnectionFactoryMock> network;
     services::ConnectionLoopBackFactory loopBackNetwork;
     hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
-    services::MbedTlsHelper mbedtlsHelper{ randomDataGenerator };
     infra::SharedPtr<void> thisListener;
     services::CertificatesMbedTls serverCertificates;
     services::CertificatesMbedTls clientCertificates;
@@ -563,4 +562,11 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, persistent_session_minimal_memory_
             connection = infra::none;
         }));
     observer1->Subject().AbortAndDestroy();
+}
+
+TEST(MbedTlsAdapterTest, RandomDataGenerator)
+{
+    hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
+    services::MbedTlsAdapter mbedtlsAdapter{ randomDataGenerator };
+    EXPECT_THAT(mbedtlsAdapter.RandomDataGenerator(), testing::Ref(randomDataGenerator));
 }
