@@ -234,11 +234,15 @@ size of the biggest packet should be increased by 5 to accommodate for a Release
 amount equal to the size of that packet plus the COBS overhead of that specific packet, plus
 its terminating 0.</p>
 </div>
-<div class="imageblock kroki">
+<div class="listingblock kroki-error">
+<div class="title">Message packet</div>
 <div class="content">
-<img src="_images/diag-44a7e6fea768804d3b097dc66093dfeaa0e0b109.svg" alt="Message packet">
+<pre>(def boxes-per-row 8)
+(draw-column-headers)
+(draw-box 4)
+(draw-gap "message")
+(draw-bottom)</pre>
 </div>
-<div class="title">Figure 4. Message packet</div>
 </div>
 </div>
 </div>
@@ -314,11 +318,29 @@ A full key negotiation will therefore result in ActivateNewKeyMaterial invocatio
 <p>This sequence diagram shows a typical sequence of the SESAME protocol being initialized and a message
 being sent.</p>
 </div>
-<div class="imageblock kroki">
+<div class="listingblock kroki-error">
+<div class="title">Typical sequence</div>
 <div class="content">
-<img src="_images/diag-f5af5a4b5404143a9c1b8dfb93a66295bd65b6d3.svg" alt="Typical sequence">
+<pre>@startuml
+COBS &lt;- Windowed : Init\n01 10 00
+note right
+  16 bytes of window are advertised, which is 0x10 0x00
+end note
+[&lt;- COBS : 00 03 01 10 01 00
+note right
+  The init message is wrapped right and left with 00
+  A 03 indicates that the third byte must be replaced with 00
+  The replaced byte contained 01 pointing to the end
+end note
+[-&gt; COBS : 00 03 02 10 01 00
+COBS -&gt; Windowed : InitResponse\n02 10 00
+Windowed &lt;- Application : Message\n12 34 56 78
+COBS &lt;- Windowed : Message\n03 12 34 56 78
+[&lt;- COBS : 06 03 12 34 56 78 00
+[-&gt; COBS : 03 03 07 01 00
+COBS -&gt; Windowed : ReleaseWindow\n03 07 00
+@enduml</pre>
 </div>
-<div class="title">Figure 5. Typical sequence</div>
 </div>
 </div>
 </div>
