@@ -13,10 +13,6 @@ namespace services
         return false;
     }
 
-    ConsoleServiceMethodExecute::ConsoleServiceMethodExecute(application::Console& console)
-        : console(console)
-    {}
-
     infra::SharedPtr<MethodDeserializer> ConsoleServiceMethodExecute::StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy)
     {
         return methodDeserializer.Emplace();

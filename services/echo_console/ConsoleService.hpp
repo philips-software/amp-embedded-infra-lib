@@ -23,12 +23,9 @@ namespace services
     class ConsoleServiceMethodExecute
     {
     public:
-        ConsoleServiceMethodExecute(application::Console& console);
-
-        infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy);
+        virtual infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy);
 
     private:
-        application::Console& console;
         infra::SharedOptional<GenericMethodDeserializer> methodDeserializer;
     };
 
