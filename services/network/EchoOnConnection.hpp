@@ -3,7 +3,6 @@
 
 #include "infra/stream/LimitedInputStream.hpp"
 #include "infra/util/SharedOptional.hpp"
-#include "infra/util/SharedPtr.hpp"
 #include "protobuf/echo/Echo.hpp"
 #include "services/network/Connection.hpp"
 
@@ -23,7 +22,6 @@ namespace services
     protected:
         // Implementation of EchoOnStreams
         void RequestSendStream(std::size_t size) override;
-        void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
 
     private:
         struct LimitedReader
@@ -42,9 +40,7 @@ namespace services
         infra::NotifyingSharedOptional<LimitedReader> reader{
             [this]()
             {
-                infra::WeakPtr<void> checkAlive = keepAliveWhileReading;
-                keepAliveWhileReading = nullptr;
-                if (checkAlive.lock() != nullptr && delayReceived)
+                if (delayReceived)
                 {
                     delayReceived = false;
                     if (ConnectionObserver::IsAttached())
@@ -52,15 +48,6 @@ namespace services
                 }
             }
         };
-        infra::SharedPtr<void> keepAliveWhileReading;
-
-        struct Forwarder
-        {
-            infra::SharedPtr<void> keepAliveWhileForwarding;
-            infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
-        };
-
-        infra::SharedOptional<Forwarder> forwarder;
     };
 }
 
