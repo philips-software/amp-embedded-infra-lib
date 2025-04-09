@@ -1,4 +1,5 @@
 #include "infra/stream/StdVectorOutputStream.hpp"
+#include "infra/util/ConstructBin.hpp"
 #include "protobuf/echo/test_doubles/EchoSingleLoopback.hpp"
 #include "protobuf/meta_services/ServiceDiscoveryEcho.hpp"
 #include "services/echo_console/ConsoleService.hpp"
@@ -32,17 +33,19 @@ TEST_F(ConsoleServiceProxyTest, construction)
 
 TEST_F(ConsoleServiceProxyTest, send)
 {
-    const auto serviceId = 1;
-    const auto methodId = 2;
+    // const auto serviceId = 1;
+    // const auto methodId = 2;
 
     infra::StdVectorOutputStream::WithStorage stream;
-    infra::ProtoFormatter formatter(stream);
+    stream << infra::ConstructBin()({ 1, (1 << 3) | 2, 2, 8, 5 }).Range();
 
-    formatter.PutVarInt(serviceId);
-    {
-        auto subFormatter = formatter.LengthDelimitedFormatter(methodId);
-        // methodInvocation.EncodeParameters(method.parameter, line.size(), formatter); //TODO
-    }
+    // infra::ProtoFormatter formatter(stream);
+
+    // formatter.PutVarInt(serviceId);
+    // {
+    //     auto subFormatter = formatter.LengthDelimitedFormatter(methodId);
+    //     // methodInvocation.EncodeParameters(method.parameter, line.size(), formatter); //TODO
+    // }
 
     infra::NotifyingSharedOptional<infra::StringInputStream> reader;
     auto readerPtr = reader.Emplace(infra::ByteRangeAsStdString(infra::MakeRange(stream.Storage())), infra::softFail);
