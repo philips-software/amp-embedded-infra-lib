@@ -3,6 +3,11 @@
 
 namespace services
 {
+    EchoOnConnection::~EchoOnConnection()
+    {
+        forwarder.OnAllocatable(nullptr);
+    }
+
     void EchoOnConnection::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         EchoOnStreams::SendStreamAvailable(std::move(writer));
@@ -29,13 +34,17 @@ namespace services
     {
         if (forwarder.Allocatable())
         {
+            forwarder.OnAllocatable(nullptr);
             auto forwarderPtr = forwarder.Emplace(Forwarder{ ConnectionObserver::Subject().ObserverPtr(), std::move(reader) });
             auto forwardingReader = infra::MakeContainedSharedObject(*forwarderPtr->reader, forwarderPtr);
             forwarderPtr = nullptr;
             EchoOnStreams::MethodContents(std::move(forwardingReader));
         }
         else
-            EchoOnStreams::MethodContents(infra::MakeContainedSharedObject(*forwarder->reader, forwarder.MakePtr()));
+            forwarder.OnAllocatable([this, reader]()
+                {
+                    MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>(reader));
+                });
     }
 
     EchoOnConnection::LimitedReader::LimitedReader(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, EchoOnConnection& connection)

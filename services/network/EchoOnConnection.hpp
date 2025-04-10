@@ -15,6 +15,7 @@ namespace services
     {
     public:
         using EchoOnStreams::EchoOnStreams;
+        ~EchoOnConnection();
 
         // Implementation of ConnectionObserver
         void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
@@ -60,7 +61,7 @@ namespace services
             infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
         };
 
-        infra::SharedOptional<Forwarder> forwarder;
+        infra::NotifyingSharedOptional<Forwarder>::WithSize<sizeof(EchoOnConnection*) + sizeof(infra::SharedPtr<infra::StreamReaderWithRewinding>)> forwarder;
     };
 }
 
