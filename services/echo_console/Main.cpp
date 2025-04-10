@@ -1,6 +1,7 @@
 #include "args.hxx"
 #include "generated/echo/TracingServiceDiscovery.pb.hpp"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
+#include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/StreamErrorPolicy.hpp"
 #include "infra/stream/StringInputStream.hpp"
 #include "infra/util/Optional.hpp"
@@ -10,6 +11,7 @@
 #include "services/echo_console/ConsoleService.hpp"
 #include "services/network/TracingEchoOnConnection.hpp"
 #include "services/tracer/Tracer.hpp"
+#include <cstdint>
 #include <ostream>
 #include <queue>
 #include <vector>
@@ -40,7 +42,7 @@ public:
     ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial);
 
     // Implementation of ConsoleObserver
-    void Send(const std::string& message) override;
+    void Send(const std::vector<uint8_t>& message) override;
 
 private:
     // Implementation of SesameObserver
@@ -52,7 +54,7 @@ private:
     void CheckDataToBeSent();
 
 private:
-    std::deque<std::string> messagesToBeSent;
+    std::deque<std::vector<uint8_t>> messagesToBeSent;
     services::SesameCobs::WithMaxMessageSize<2048> cobs;
     services::SesameWindowed windowed{ cobs };
     bool sending = false;
@@ -64,11 +66,11 @@ ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::Buffere
     , cobs(serial)
 {}
 
-void ConsoleClientUart::Send(const std::string& message)
+void ConsoleClientUart::Send(const std::vector<uint8_t>& message)
 {
     auto size = windowed.MaxSendMessageSize();
     for (std::size_t index = 0; index < message.size(); index += size)
-        messagesToBeSent.push_back(message.substr(index, size));
+        messagesToBeSent.push_back(std::vector<uint8_t>(message.begin() + index, message.begin() + size));
     CheckDataToBeSent();
 }
 
@@ -78,7 +80,7 @@ void ConsoleClientUart::Initialized()
 void ConsoleClientUart::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
 {
     infra::DataOutputStream::WithErrorPolicy stream(*writer);
-    stream << infra::StringAsByteRange(infra::BoundedConstString(messagesToBeSent.front()));
+    stream << messagesToBeSent.front();
     writer = nullptr;
 
     messagesToBeSent.pop_front();
@@ -115,7 +117,7 @@ public:
     void Attached() override;
 
     // Implementation of ConsoleObserver
-    void Send(const std::string& message) override;
+    void Send(const std::vector<uint8_t>& message) override;
 
 private:
     class PeerServiceDiscoveryObserverTracer
@@ -164,8 +166,8 @@ private:
 
 private:
     services::Tracer& tracer;
-    std::queue<std::string> dataQueue;
-    infra::NotifyingSharedOptional<infra::StringInputStream> reader;
+    std::queue<std::vector<uint8_t>> dataQueue;
+    infra::NotifyingSharedOptional<infra::ByteInputStream> reader;
     infra::SharedPtr<infra::StreamWriter> writer;
     service_discovery::ServiceDiscoveryTracer serviceDiscoveryTracer;
     service_discovery::ServiceDiscoveryResponseTracer serviceDiscoveryResponseTracer;
@@ -198,7 +200,7 @@ void ConsoleClientConnection::Attached()
     consoleServiceProxy.Emplace(*this);
 }
 
-void ConsoleClientConnection::Send(const std::string& message)
+void ConsoleClientConnection::Send(const std::vector<uint8_t>& message)
 {
     // Do we need to know the serviceid, methodid and treat them differently or do we just send strings back to back?
     dataQueue.push(message);

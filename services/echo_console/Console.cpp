@@ -795,7 +795,7 @@ namespace application
                 methodInvocation.EncodeParameters(method.parameter, line.size(), formatter);
             }
 
-            GetObserver().Send(infra::ByteRangeAsStdString(infra::MakeRange(stream.Storage())));
+            GetObserver().Send(stream.Storage());
         }
         catch (ConsoleExceptions::SyntaxError& error)
         {
