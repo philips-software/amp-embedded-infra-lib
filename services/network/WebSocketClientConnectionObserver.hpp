@@ -130,9 +130,7 @@ namespace services
     private:
         infra::Optional<std::size_t> requestedSendSize;
         infra::NotifyingSharedOptional<FrameWriter> streamWriter;
-        infra::SharedPtr<void> keepAliveWhileWriting;
-        infra::NotifyingSharedOptional<FrameReader> streamReader;
-        infra::SharedPtr<void> keepAliveWhileReading;
+        infra::SharedOptional<FrameReader> streamReader;
         std::size_t unackedReadAvailable = 0;
         std::size_t availableInCurrentFrame = 0;
         std::size_t saveAtEndOfDiscovery = 0;
