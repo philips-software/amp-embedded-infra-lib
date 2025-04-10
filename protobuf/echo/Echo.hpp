@@ -67,6 +67,7 @@ namespace services
 
     class EchoOnStreams
         : public Echo
+        , public infra::EnableSharedFromThis<EchoOnStreams>
     {
     public:
         explicit EchoOnStreams(services::MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
@@ -87,7 +88,6 @@ namespace services
         void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
         void ReleaseReader();
         void Initialized();
-        virtual void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
         virtual void ReleaseDeserializer();
 
     private:

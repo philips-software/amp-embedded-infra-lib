@@ -2,7 +2,6 @@
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/Endian.hpp"
 #include "infra/util/EnumCast.hpp"
-#include "services/network/WebSocketServerConnectionObserver.hpp"
 
 namespace
 {
@@ -97,7 +96,7 @@ namespace services
                 {
                     OnAllocatable(connection);
                 });
-            if (webSocketConnectionObserver && (*webSocketConnectionObserver)->IsAttached())
+            if (webSocketConnectionObserver)
                 (*webSocketConnectionObserver)->Close();
         }
     }
