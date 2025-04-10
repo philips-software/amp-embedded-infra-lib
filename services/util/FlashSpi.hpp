@@ -10,7 +10,7 @@
 
 namespace services
 {
-    namespace details
+    namespace detail
     {
         struct FlashSpiConfig
         {
@@ -26,7 +26,7 @@ namespace services
         , public hal::FlashId
     {
     public:
-        using Config = details::FlashSpiConfig;
+        using Config = detail::FlashSpiConfig;
 
         static const uint8_t commandPageProgram;
         static const uint8_t commandReadData;

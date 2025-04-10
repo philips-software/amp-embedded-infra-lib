@@ -47,12 +47,12 @@ TEST_F(FlashSpiTest, ConstructionWithConfig)
     services::FlashSpi::Config config;
     config.nrOfSubSectors = 1024;
     config.sizeSector = 8192;
-    config.sizeSubSector = 1024;
+    config.sizeSubSector = 2048;
     config.sizePage = 64;
     services::FlashSpi flashConfigured{ spiMock, config };
 
     EXPECT_EQ(1024, flashConfigured.NumberOfSectors());
-    EXPECT_EQ(1024, flashConfigured.SizeOfSector(0));
+    EXPECT_EQ(2048, flashConfigured.SizeOfSector(0));
 }
 
 TEST_F(FlashSpiTest, ReadData)
