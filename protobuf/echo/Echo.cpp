@@ -1,6 +1,4 @@
 #include "protobuf/echo/Echo.hpp"
-#include "infra/stream/InputStream.hpp"
-#include "infra/util/Function.hpp"
 
 namespace services
 {
@@ -70,7 +68,7 @@ namespace services
 
     EchoOnStreams::~EchoOnStreams()
     {
-        limitedReaderAccess.SetAction(infra::emptyFunction);
+        limitedReaderAccess.SetAction(nullptr);
     }
 
     void EchoOnStreams::RequestSend(ServiceProxy& serviceProxy)
@@ -117,7 +115,7 @@ namespace services
 
     void EchoOnStreams::ReleaseReader()
     {
-        limitedReaderAccess.SetAction(infra::emptyFunction);
+        limitedReaderAccess.SetAction(nullptr);
         bufferedReader = infra::none;
         readerPtr = nullptr;
     }
@@ -238,16 +236,11 @@ namespace services
         }
     }
 
-    void EchoOnStreams::MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
-    {
-        methodDeserializer->MethodContents(std::move(reader));
-    }
-
     void EchoOnStreams::ContinueReceiveMessage()
     {
         limitedReader->SwitchInput(*bufferedReader);
         limitedReaderAccess.SetAction(infra::emptyFunction);
-        MethodContents(limitedReaderAccess.MakeShared(*limitedReader));
+        methodDeserializer->MethodContents(limitedReaderAccess.MakeShared(*limitedReader));
 
         if (limitedReaderAccess.Referenced())
             limitedReaderAccess.SetAction([this]()
