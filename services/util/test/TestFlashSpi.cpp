@@ -318,7 +318,11 @@ TEST_F(FlashSpiTest, EraseAllErasesBulk)
 
 TEST_F(FlashSpiTest, EraseSubSectorWhenSubSectorEqualsSector)
 {
-    services::FlashSpi::Config config{ .nrOfSubSectors = 64, .sizeSector = 1024, .sizeSubSector = 1024, .sizePage = 256 };
+    services::FlashSpi::Config config;
+    config.nrOfSubSectors = 64;
+    config.sizeSector = 1024;
+    config.sizeSubSector = 1024;
+    config.sizePage = 256;
     services::FlashSpi flashConfigured{ spiMock, config };
 
     EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandWriteEnable), hal::SpiAction::stop));
