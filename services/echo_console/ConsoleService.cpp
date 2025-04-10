@@ -1,34 +1,19 @@
 #include "services/echo_console/ConsoleService.hpp"
+#include "infra/stream/ByteInputStream.hpp"
 
 namespace services
 {
-    void GenericMethodDeserializer::MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
-    {}
-
-    void GenericMethodDeserializer::ExecuteMethod()
-    {}
-
-    bool GenericMethodDeserializer::Failed() const
-    {
-        return false;
-    }
-
-    infra::SharedPtr<MethodDeserializer> ConsoleServiceMethodExecute::StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy)
-    {
-        return methodDeserializer.Emplace();
-    }
-
-    ConsoleService::ConsoleService(Echo& echo, uint32_t serviceId, ConsoleServiceMethodExecute& methodExecute)
+    ConsoleService::ConsoleService(Echo& echo, uint32_t serviceId, GenericMethodDeserializerFactory& deserializerFactory)
         : Service(echo, serviceId)
-        , methodExecute(methodExecute)
+        , methodDeserializerFactory(deserializerFactory)
     {}
 
     infra::SharedPtr<MethodDeserializer> ConsoleService::StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy)
     {
-        return methodExecute.StartMethod(serviceId, methodId, size, errorPolicy);
+        return methodDeserializerFactory.MakeDeserializer(serviceId, methodId, size);
     }
 
-    GenericMethodSerializer::GenericMethodSerializer(infra::SharedPtr<infra::StringInputStream>& inputStream)
+    GenericMethodSerializer::GenericMethodSerializer(infra::SharedPtr<infra::ByteInputStream>& inputStream)
         : inputStream(inputStream)
     {}
 
@@ -48,7 +33,7 @@ namespace services
         : ServiceProxy(echo, maxMessageSize)
     {}
 
-    void ConsoleServiceProxy::SendMessage(infra::SharedPtr<infra::StringInputStream>& inputStream)
+    void ConsoleServiceProxy::SendMessage(infra::SharedPtr<infra::ByteInputStream>& inputStream)
     {
         auto serializer = methodSerializer.Emplace(inputStream);
         SetSerializer(serializer);
