@@ -5,8 +5,6 @@
 
 extern "C"
 {
-    static hal::SynchronousRandomDataGenerator* rng = nullptr;
-
 #ifndef EMIL_HOST_BUILD
 #ifdef MBEDTLS_PLATFORM_MS_TIME_ALT
     mbedtls_ms_time_t mbedtls_ms_time(void)
@@ -17,8 +15,8 @@ extern "C"
 
     int mbedtls_hardware_poll(void* data, unsigned char* output, size_t len, size_t* olen)
     {
-        really_assert(rng != nullptr);
-        rng->GenerateRandomData(infra::ByteRange(output, output + len));
+        really_assert(services::MbedTlsAdapter::InstanceSet());
+        services::MbedTlsAdapter::Instance().RandomDataGenerator().GenerateRandomData(infra::ByteRange(output, output + len));
         *olen = len;
 
         return 0;
@@ -39,8 +37,6 @@ namespace services
                   keepAliveForReader = nullptr;
               })
     {
-        rng = &randomDataGenerator;
-
         mbedtls_ssl_init(&sslContext);
         mbedtls_ssl_config_init(&sslConfig);
         mbedtls_ctr_drbg_init(&ctr_drbg);
@@ -828,5 +824,14 @@ namespace services
             waitingConnects.pop_front();
             connectionFactoryWithNameResolver.Connect(*this);
         }
+    }
+
+    MbedTlsAdapter::MbedTlsAdapter(hal::SynchronousRandomDataGenerator& randomDataGenerator)
+        : randomDataGenerator(randomDataGenerator)
+    {}
+
+    hal::SynchronousRandomDataGenerator& MbedTlsAdapter::RandomDataGenerator() const
+    {
+        return randomDataGenerator;
     }
 }
