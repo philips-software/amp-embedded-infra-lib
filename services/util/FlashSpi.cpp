@@ -13,9 +13,10 @@ namespace services
     const uint8_t FlashSpi::commandEraseBulk = 0xc7;
     const uint8_t FlashSpi::commandReadId = 0x9f;
 
-    FlashSpi::FlashSpi(hal::SpiMaster& spi, uint32_t numberOfSubSectors, uint32_t timerId, infra::Function<void()> onInitialized)
-        : hal::FlashHomogeneous(numberOfSubSectors, sizeSubSector)
+    FlashSpi::FlashSpi(hal::SpiMaster& spi, const Config& config, uint32_t timerId, infra::Function<void()> onInitialized)
+        : hal::FlashHomogeneous(config.nrOfSubSectors, config.sizeSubSector)
         , spi(spi)
+        , config(config)
         , delayTimer(timerId)
     {
         onInitialized();
@@ -134,7 +135,7 @@ namespace services
 
     void FlashSpi::PageProgram()
     {
-        writeBuffer = infra::Head(buffer, sizePage - AddressOffsetInSector(address) % sizePage);
+        writeBuffer = infra::Head(buffer, config.sizePage - AddressOffsetInSector(address) % config.sizePage);
         buffer.pop_front(writeBuffer.size());
 
         instructionAndAddress.instruction = commandPageProgram;
@@ -158,10 +159,10 @@ namespace services
             SendEraseBulk();
             sectorIndex += NumberOfSectors();
         }
-        else if (sectorIndex % (sizeSector / sizeSubSector) == 0 && sectorIndex + sizeSector / sizeSubSector <= endIndex)
+        else if (sectorIndex % (config.sizeSector / config.sizeSubSector) == 0 && sectorIndex + config.sizeSector / config.sizeSubSector <= endIndex)
         {
             SendEraseSector(sectorIndex);
-            sectorIndex += sizeSector / sizeSubSector;
+            sectorIndex += config.sizeSector / config.sizeSubSector;
         }
         else
         {
