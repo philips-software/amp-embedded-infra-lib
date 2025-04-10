@@ -28,16 +28,18 @@ class GenericMethodDeserializerFactoryStub
     : public services::GenericMethodDeserializerFactory
 {
 public:
-    GenericMethodDeserializerFactoryStub(infra::Function<void()> serviceDone)
+    GenericMethodDeserializerFactoryStub(uint32_t serviceId, uint32_t methodId, infra::Function<void()> serviceDone)
         : serviceDone(serviceDone)
+        , serviceId(serviceId)
+        , methodId(methodId)
     {}
 
     infra::SharedPtr<services::MethodDeserializer> MakeDeserializer(uint32_t serviceId, uint32_t methodId, uint32_t size) override
     {
         auto ptr = deserializer.Emplace();
 
-        EXPECT_EQ(serviceId, 1);
-        EXPECT_EQ(methodId, 2);
+        EXPECT_EQ(serviceId, this->serviceDone);
+        EXPECT_EQ(methodId, this->methodId);
 
         EXPECT_CALL(*deserializer, MethodContents(testing::_)).WillOnce(testing::Invoke([size](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
             {
@@ -56,6 +58,8 @@ public:
 
     infra::SharedOptional<testing::StrictMock<MethodDeserializerMock>> deserializer;
     infra::Function<void()> serviceDone;
+    uint32_t serviceId;
+    uint32_t methodId;
 };
 
 class ConsoleServiceProxyTest
@@ -69,7 +73,11 @@ public:
 
     application::EchoSingleLoopback echo{ serializerFactory };
     services::ConsoleServiceProxy consoleServiceProxy{ echo };
-    GenericMethodDeserializerFactoryStub deserializerFactory{ [this]()
+
+    const uint8_t serviceId = 1;
+    const uint8_t methodId = 2;
+
+    GenericMethodDeserializerFactoryStub deserializerFactory{ serviceId, methodId, [this]()
         {
             echo.ServiceDone();
         } };
@@ -81,9 +89,6 @@ TEST_F(ConsoleServiceProxyTest, construction)
 
 TEST_F(ConsoleServiceProxyTest, send)
 {
-    const auto serviceId = 1;
-    const auto methodId = 2;
-
     static infra::StdVectorOutputStream::WithStorage stream;
     stream << infra::ConstructBin()({ serviceId, (methodId << 3) | 2, 2, 8, 5 }).Range();
 
