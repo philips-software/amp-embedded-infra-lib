@@ -7,6 +7,7 @@
 #include "infra/stream/LimitedOutputStream.hpp"
 #include "infra/util/BoundedList.hpp"
 #include "infra/util/ByteRange.hpp"
+#include "infra/util/InterfaceConnector.hpp"
 #include "infra/util/SharedObjectAllocatorFixedSize.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "mbedtls/ctr_drbg.h"
@@ -341,6 +342,18 @@ namespace services
         ClientConnectionObserverFactoryWithNameResolver* clientConnectionFactory = nullptr;
         infra::IntrusiveList<ClientConnectionObserverFactoryWithNameResolver> waitingConnects;
         infra::BoundedConstString hostname;
+    };
+
+    class MbedTlsAdapter
+        : public infra::InterfaceConnector<MbedTlsAdapter>
+    {
+    public:
+        explicit MbedTlsAdapter(hal::SynchronousRandomDataGenerator& randomDataGenerator);
+
+        hal::SynchronousRandomDataGenerator& RandomDataGenerator() const;
+
+    private:
+        hal::SynchronousRandomDataGenerator& randomDataGenerator;
     };
 }
 

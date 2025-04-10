@@ -563,3 +563,10 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, persistent_session_minimal_memory_
         }));
     observer1->Subject().AbortAndDestroy();
 }
+
+TEST(MbedTlsAdapterTest, RandomDataGenerator)
+{
+    hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
+    services::MbedTlsAdapter mbedtlsAdapter{ randomDataGenerator };
+    EXPECT_THAT(mbedtlsAdapter.RandomDataGenerator(), testing::Ref(randomDataGenerator));
+}
