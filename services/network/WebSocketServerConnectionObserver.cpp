@@ -14,11 +14,17 @@ namespace services
         , sendBuffer(sendBuffer)
         , streamReader([this]()
               {
-                  ReceiveStreamAllocatable();
+                  infra::WeakPtr<void> checkAlive = keepAliveWhileReading;
+                  keepAliveWhileReading = nullptr;
+                  if (checkAlive.lock() && services::ConnectionObserver::IsAttached())
+                      ReceiveStreamAllocatable();
               })
         , streamWriter([this]()
               {
-                  SendStreamAllocatable();
+                  infra::WeakPtr<void> checkAlive = keepAliveWhileWriting;
+                  keepAliveWhileWriting = nullptr;
+                  if (checkAlive.lock())
+                      SendStreamAllocatable();
               })
     {}
 
@@ -66,6 +72,7 @@ namespace services
     infra::SharedPtr<infra::StreamReaderWithRewinding> WebSocketServerConnectionObserver::ReceiveStream()
     {
         assert(!streamReader);
+        keepAliveWhileReading = Subject().ObserverPtr();
         return streamReader.Emplace(infra::inPlace, receiveBuffer, receiveBuffer.size());
     }
 
@@ -143,7 +150,10 @@ namespace services
     void WebSocketServerConnectionObserver::TryAllocateSendStream()
     {
         if (streamWriter.Allocatable() && sendBuffer.empty() && requestedSendSize != 0)
+        {
+            keepAliveWhileWriting = Subject().ObserverPtr();
             services::Connection::Observer().SendStreamAvailable(streamWriter.Emplace(infra::inPlace, sendBuffer, std::exchange(requestedSendSize, 0)));
+        }
     }
 
     void WebSocketServerConnectionObserver::ReceivingState::DataReceived()
