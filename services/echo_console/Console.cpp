@@ -358,6 +358,12 @@ namespace application
               })
     {}
 
+    void Console::ServicesDiscovered(infra::MemoryRange<uint32_t> services)
+    {
+        std::cout << "Services discovered";
+        discoveredServices.assign(services.begin(), services.end());
+    }
+
     void Console::Run()
     {
         {
@@ -640,13 +646,16 @@ namespace application
     {
         for (const auto& service : root.services)
         {
-            services::GlobalTracer().Trace() << service->name;
-            for (const auto& method : service->methods)
+            if (std::find(discoveredServices.begin(), discoveredServices.end(), service->serviceId) != discoveredServices.end())
             {
-                services::GlobalTracer().Trace() << "    " << method.name << "(";
-                if (method.parameter != nullptr)
-                    ListFields(*method.parameter);
-                services::GlobalTracer().Continue() << ")";
+                services::GlobalTracer().Trace() << service->name;
+                for (const auto& method : service->methods)
+                {
+                    services::GlobalTracer().Trace() << "    " << method.name << "(";
+                    if (method.parameter != nullptr)
+                        ListFields(*method.parameter);
+                    services::GlobalTracer().Continue() << ")";
+                }
             }
         }
 
@@ -849,7 +858,7 @@ namespace application
                 methodInvocation.EncodeParameters(method.parameter, line.size(), formatter);
             }
 
-            GetObserver().Send(infra::ByteRangeAsStdString(infra::MakeRange(stream.Storage())));
+            GetObserver().Send(stream.Storage());
         }
         catch (ConsoleExceptions::SyntaxError& error)
         {
@@ -885,12 +894,10 @@ namespace application
     std::pair<std::shared_ptr<const EchoService>, const EchoMethod&> Console::SearchMethod(MethodInvocation& methodInvocation) const
     {
         for (auto service : root.services)
-        {
             if (methodInvocation.method.size() == 1 || methodInvocation.method.front() == service->name)
                 for (auto& method : service->methods)
-                    if (method.name == methodInvocation.method.back())
+                    if (methodInvocation.method.back() == method.name)
                         return std::pair<std::shared_ptr<const EchoService>, const EchoMethod&>(service, method);
-        }
 
         throw ConsoleExceptions::MethodNotFound{ methodInvocation.method };
     }
