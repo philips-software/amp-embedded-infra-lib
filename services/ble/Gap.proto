@@ -11,6 +11,14 @@ message Address
     bytes address = 1 [(bytes_size) = 6];
 }
 
+// Link layer states of a device in a Peripheral or Central role
+// Peripheral role states are standby, connected and advertising.
+// Central role states are standby, scanning, connected and initiating.
+// Allowed transitions are as follows.
+// 1. Every state can go to standby.
+// 2. Every state can be entered from standby except the connected state.
+// 3. Connected state can only be entered from advertising and initiating states.
+// For further details refer to Section 1.1, BLUETOOTH CORE SPECIFICATION Version 5.3 | Vol 6, Part B  
 message State
 {
     enum Event
@@ -104,11 +112,16 @@ message AdvertisementData
     bytes data = 1 [(bytes_size) = 31];
 }
 
-message ConnectionParameters
+message PeerNodeParameters
 {
     Address address = 1;
     AddressType addressType = 2;
-    uint32 initiatingTimeoutInMs = 3;
+}
+
+message ConnectionParameters
+{
+    PeerNodeParameters peerParameters = 1;
+    uint32 initiatingTimeoutInMs = 2;
 }
 
 message Passkey
@@ -137,7 +150,9 @@ message PairingStatus
 message DiscoveredDevice
 {
     Address address = 1;
+    AddressType addressType = 2;
     bytes data = 3 [(bytes_size) = 32];
+    int32 rssi = 4;
     bool isScanResponse = 5;
 }
 
@@ -146,7 +161,8 @@ message DeviceDiscoveryFilter
     enum Filter
     {
         address = 0;
-        advertisingData = 1;
+        advertisingData = 1; // Filtering on contents of Manufacturer specific data
+
     }
 
     Filter filter = 1;
@@ -167,33 +183,56 @@ service GapPeripheral
 {
     option (service_id) = 32;
 
+    // Allowed states: standby
     rpc Advertise(AdvertisementMode) returns (Nothing) { option (method_id) = 1; }
+    
+    // Allowed states: advertising, connected
     rpc Standby(Nothing) returns (Nothing) { option (method_id) = 2; }
+    
     rpc SetAdvertisementData(AdvertisementData) returns (Nothing) { option (method_id) = 3; }
     rpc SetScanResponseData(AdvertisementData) returns (Nothing) { option (method_id) = 4; }
     rpc SetAllowPairing(BoolValue) returns (Nothing) { option (method_id) = 5; }
     rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 6; }
     rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 7; }
     rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 8; }
+
+    // Allowed states: advertising
     rpc GetResolvableAddress(Nothing) returns (Nothing) { option (method_id) = 9; }
+    rpc GetIdentityAddress(Nothing) returns (Nothing) { option (method_id) = 10; }
 }
 
 service GapCentral
 {
     option (service_id) = 33;
 
+    // Allowed states: standby
     rpc StartDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 1; }
+    
+    // Allowed states: standby
     rpc StopDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 2; }
+
+    // Allowed states: standby
+    // For successful connection establishment, state will follow: standby -> initiating -> connected
+    // For falied connection establishment, state will follow: standby -> initiating -> standby 
     rpc Connect(ConnectionParameters) returns (Nothing) { option (method_id) = 3; }
+
+    // Allowed states: initiating
     rpc CancelConnect(Nothing) returns (Nothing) { option (method_id) = 4; }
+
+    // Allowed states: connected
     rpc Disconnect(Nothing) returns (Nothing) { option (method_id) = 5; }
+
+    // Allowed states: connected
     rpc Pair(Nothing) returns (Nothing) { option (method_id) = 6; }
+    
     rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 7; }
     rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 8; }
     rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 9; }
     rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 10; }
     rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 11; }
     rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 12; }
+    rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; }
+    rpc IsDeviceBonded(PeerNodeParameters) returns (Nothing) { option (method_id) = 14; }
 }
 
 service GapPeripheralResponse
@@ -205,6 +244,7 @@ service GapPeripheralResponse
     rpc StateChanged(State) returns (Nothing) { option (method_id) = 3; }
     rpc ResolvableAddress(Address) returns (Nothing) { option (method_id) = 4; }
     rpc DisplayPasskey(Passkey) returns (Nothing) { option (method_id) = 5; }
+    rpc IdentityAddress(Address) returns (Nothing) { option (method_id) = 6; }
 }
 
 service GapCentralResponse
@@ -218,4 +258,7 @@ service GapCentralResponse
     rpc PairingFailed(PairingStatus) returns (Nothing) { option (method_id) = 5; }
     rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
     rpc DeviceStarted(Nothing) returns (Nothing) { option (method_id) = 7; }
+    rpc ResolvedPrivateAddress(Address) returns (Nothing) { option (method_id) = 8; }
+    rpc ResolvePrivateAddressFailed(Nothing) returns (Nothing) { option (method_id) = 9; }
+    rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 10; }
 }

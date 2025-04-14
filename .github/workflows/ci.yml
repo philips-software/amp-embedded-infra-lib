@@ -51,7 +51,7 @@ jobs:
   host_build_test_container:
     name: Host Build & Test (amp-devcontainer-cpp)
     runs-on: ubuntu-latest
-    container: ghcr.io/philips-software/amp-devcontainer-cpp:v5.5.3@sha256:9c51320e357ad7274033c34bb1b53131aad43e2f342b7aacfd03b07292d7960d # v5.5.3
+    container: ghcr.io/philips-software/amp-devcontainer-cpp:v5.6.1@sha256:04cda0c73cd01f0d97879aba7871c5118147ea0478616c49e8c0643653fbbc8b
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -74,7 +74,7 @@ jobs:
   host_build_test_clang_msvc:
     name: Host Build & Test (clang-msvc)
     runs-on: ubuntu-latest
-    container: ghcr.io/philips-software/amp-devcontainer-cpp:v5.5.3@sha256:9c51320e357ad7274033c34bb1b53131aad43e2f342b7aacfd03b07292d7960d # v5.5.3
+    container: ghcr.io/philips-software/amp-devcontainer-cpp:v5.6.1@sha256:04cda0c73cd01f0d97879aba7871c5118147ea0478616c49e8c0643653fbbc8b
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -142,7 +142,7 @@ jobs:
     strategy:
       matrix:
         gcc: ["7-2018-q2", "8-2019-q3", "9-2020-q2", "10.3-2021.10"]
-        configuration: ["RelWithDebInfo"]
+        configuration: ["RelWithDebInfo", "Debug"]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:

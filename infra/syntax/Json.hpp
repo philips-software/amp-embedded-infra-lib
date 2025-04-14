@@ -3,9 +3,11 @@
 
 #include "infra/stream/OutputStream.hpp"
 #include "infra/util/BoundedString.hpp"
+#include "infra/util/Compatibility.hpp"
 #include "infra/util/Optional.hpp"
 #include "infra/util/ReverseRange.hpp"
 #include "infra/util/Variant.hpp"
+#include <cstdint>
 
 #ifdef EMIL_HOST_BUILD
 #include <string>
@@ -293,6 +295,9 @@ namespace infra
         JsonArray GetArray(infra::BoundedConstString key);
         JsonValue GetValue(infra::BoundedConstString key);
 
+        template<class T>
+        T GetIntegerAs(infra::BoundedConstString key);
+
         infra::Optional<JsonString> GetOptionalString(infra::BoundedConstString key);
         infra::Optional<JsonFloat> GetOptionalFloat(infra::BoundedConstString key);
         infra::Optional<bool> GetOptionalBoolean(infra::BoundedConstString key);
@@ -312,6 +317,9 @@ namespace infra
         T GetValue(infra::BoundedConstString key);
         template<class T>
         infra::Optional<T> GetOptionalValue(infra::BoundedConstString key);
+
+        template<class T>
+        T ConvertValueTo(std::uint64_t value, bool negative);
 
     private:
         infra::BoundedConstString objectString;
@@ -492,7 +500,6 @@ namespace infra
         JsonValueArrayIterator() = default;
         JsonValueArrayIterator(const JsonArrayIterator& arrayIterator, const JsonArrayIterator& arrayEndIterator);
 
-    public:
         bool operator==(const JsonValueArrayIterator& other) const;
         bool operator!=(const JsonValueArrayIterator& other) const;
 
@@ -516,6 +523,43 @@ namespace infra
     bool ValidJsonObject(infra::BoundedConstString contents);
 
     ////    Implementation    ////
+
+    template<class T>
+    T JsonObject::GetIntegerAs(infra::BoundedConstString key)
+    {
+        const auto jsonValue = GetValue(key);
+
+        if (jsonValue.Is<int32_t>())
+            return ConvertValueTo<T>(std::abs(static_cast<int64_t>(jsonValue.Get<int32_t>())), jsonValue.Get<int32_t>() < 0);
+        else if (jsonValue.Is<JsonBiggerInt>())
+            return ConvertValueTo<T>(jsonValue.Get<JsonBiggerInt>().Value(), jsonValue.Get<JsonBiggerInt>().Negative());
+
+        SetError();
+        return {};
+    }
+
+    template<class T>
+    T JsonObject::ConvertValueTo(std::uint64_t value, bool negative)
+    {
+        if (negative)
+        {
+            // the offset by one (twice) is to prevent overflow when converting a uint64_t
+            // to a int64_t, where the uint64_t value is equal to the absolute of
+            // std::numeric_limits<int64_t>::min(), which is equivalent to
+            // 9223372036854775808, which can't be represented in a int64_t.
+            // the offset first reduces the 9223372036854775808 to 9223372036854775807
+            // which can be represented in a int64_t, and the second offset is to
+            // convert -9223372036854775807 back to -9223372036854775808
+            const auto signedValue = (static_cast<int64_t>(value - 1) * -1) - 1;
+            if (signedValue < 0 && infra::in_range<T>(signedValue))
+                return static_cast<T>(signedValue);
+        }
+        else if (infra::in_range<T>(value))
+            return static_cast<T>(value);
+
+        SetError();
+        return {};
+    }
 
     template<class T>
     JsonValueArrayIterator<T>::JsonValueArrayIterator(const JsonArrayIterator& arrayIterator, const JsonArrayIterator& arrayEndIterator)

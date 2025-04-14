@@ -4,6 +4,7 @@
 #include "infra/event/EventDispatcher.hpp"
 #include "infra/stream/InputStream.hpp"
 #include "infra/util/Function.hpp"
+#include "infra/util/ReallyAssert.hpp"
 #include "infra/util/WithStorage.hpp"
 #include <array>
 #include <atomic>
@@ -26,7 +27,9 @@ namespace infra
         QueueForOneReaderOneIrqWriter(infra::MemoryRange<T> buffer, const infra::Function<void()>& onDataAvailable);
 
         void AddFromInterrupt(T element);
+        void AddFromInterruptUnchecked(T element);
         void AddFromInterrupt(infra::MemoryRange<const T> data);
+        void AddFromInterruptUnchecked(infra::MemoryRange<const T> data);
 
         bool Empty() const;
         bool Full() const;
@@ -89,7 +92,13 @@ namespace infra
     template<class T>
     void QueueForOneReaderOneIrqWriter<T>::AddFromInterrupt(T element)
     {
-        assert(!Full());
+        really_assert(!Full());
+        AddFromInterruptUnchecked(element);
+    }
+
+    template<class T>
+    void QueueForOneReaderOneIrqWriter<T>::AddFromInterruptUnchecked(T element)
+    {
         *contentsEnd = element;
 
         if (contentsEnd == buffer.end() - 1)
@@ -102,6 +111,13 @@ namespace infra
 
     template<class T>
     void QueueForOneReaderOneIrqWriter<T>::AddFromInterrupt(infra::MemoryRange<const T> data)
+    {
+        really_assert(!Full());
+        AddFromInterruptUnchecked(data);
+    }
+
+    template<class T>
+    void QueueForOneReaderOneIrqWriter<T>::AddFromInterruptUnchecked(infra::MemoryRange<const T> data)
     {
         std::size_t copySize = std::min<std::size_t>(data.size(), buffer.end() - contentsEnd);
         T* begin = contentsBegin.load();

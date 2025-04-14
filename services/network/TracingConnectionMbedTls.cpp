@@ -76,6 +76,11 @@ namespace services
         allocator.OnAllocatable(std::move(callback));
     }
 
+    bool AllocatorTracingConnectionMbedTlsAdapter::NoneAllocated() const
+    {
+        return allocator.NoneAllocated();
+    }
+
     TracingConnectionFactoryMbedTls::TracingConnectionFactoryMbedTls(AllocatorTracingConnectionMbedTls& connectionAllocator, AllocatorConnectionMbedTlsListener& listenerAllocator, infra::BoundedList<ConnectionMbedTlsConnector>& connectors, MbedTlsSessionStorage& sessionStorage,
         ConnectionFactory& factory, CertificatesMbedTls& certificates, hal::SynchronousRandomDataGenerator& randomDataGenerator, Tracer& tracer, DebugLevel level, ConnectionMbedTls::CertificateValidation certificateValidation)
         : ConnectionFactoryMbedTls(allocatorAdapter, listenerAllocator, connectors, sessionStorage, factory, certificates, randomDataGenerator, certificateValidation)

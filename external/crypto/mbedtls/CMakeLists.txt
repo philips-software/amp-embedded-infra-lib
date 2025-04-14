@@ -1,7 +1,7 @@
 FetchContent_Declare(
     mbedtls
-    GIT_REPOSITORY https://github.com/Mbed-TLS/mbedtls
-    GIT_TAG 869298bffeea13b205343361b7a7daf2b210e33d # v3.2.1
+    GIT_REPOSITORY https://github.com/ccrugoPhilips/mbedtls # Mbed-TLS fork
+    GIT_TAG 3af68032234f4fb485ed2da65d9af12dde6143dc # v3.6.2 with patch
 )
 
 set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL On)
@@ -57,3 +57,6 @@ endfunction()
 
 add_mbedtls_target_properties(mbedcrypto mbedx509 mbedtls)
 set_target_properties(apidoc lib PROPERTIES FOLDER External/MbedTLS)
+
+# Without optimization bignum_core fails to compile due to lack of assembly registers
+target_compile_options(mbedcrypto PRIVATE $<$<CXX_COMPILER_ID:GNU>:$<$<CONFIG:Debug>:-O2>>)

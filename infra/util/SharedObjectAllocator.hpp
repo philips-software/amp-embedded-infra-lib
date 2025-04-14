@@ -24,6 +24,7 @@ namespace infra
 
         // If Allocate() fails, this callback will be invoked once when Allocate() can succeed the next time
         virtual void OnAllocatable(infra::AutoResetFunction<void()>&& callback) = 0;
+        virtual bool NoneAllocated() const = 0;
     };
 }
 

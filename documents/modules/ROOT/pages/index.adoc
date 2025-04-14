@@ -91,7 +91,7 @@ EXPECT_EQ(5, string.max_size());
 
 ==== infra::CyclicBuffer
 
-`infra::CyclicBuffer` transforms a given chunk of memory into a cyclic buffer. Data can be pushed into this buffer, and popped out again. With ContiguousRange(), the largest block starting at the start can be obtained. This is useful when feeding large blocks to e.g. DMA. In practise, the typedef CyclicByteBuffer will most often be used.
+`infra::CyclicBuffer` transforms a given chunk of memory into a cyclic buffer. Data can be pushed into this buffer, and popped out again. With ContiguousRange(), the largest block starting at the start can be obtained. This is useful when feeding large blocks to e.g. DMA. In practice, the typedef CyclicByteBuffer will most often be used.
 
 [source,cpp]
 ----

@@ -1,9 +1,6 @@
 #include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
-#include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/StdStringOutputStream.hpp"
-#include "infra/stream/test/StreamMock.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
-#include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/network/HttpClientImpl.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/network/test_doubles/ConnectionStub.hpp"
@@ -756,6 +753,80 @@ TEST_F(HttpClientTest, Post_request_with_large_body_is_executed)
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n")));
 }
 
+TEST_F(HttpClientTest, Put_request_with_content_size_is_executed)
+{
+    Connect();
+
+    EXPECT_CALL(client, SendStreamAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamWriter>&& writer)
+        {
+            infra::TextOutputStream::WithErrorPolicy stream(*writer);
+            stream << "data";
+        }));
+
+    client.Subject().Put("/api/thing", 4);
+    ExecuteAllActions();
+
+    EXPECT_EQ("PUT /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:4\r\n\r\ndata", connection.SentDataAsString());
+
+    EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
+    EXPECT_CALL(connection, AckReceivedMock());
+    EXPECT_CALL(client, BodyComplete());
+    client.Subject().Get("/");
+    ExecuteAllActions();
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n")));
+}
+
+TEST_F(HttpClientTest, Put_request_with_content_size_using_partial_content)
+{
+    Connect();
+
+    EXPECT_CALL(client, SendStreamAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamWriter>&& writer)
+        {
+            infra::TextOutputStream::WithErrorPolicy stream(*writer);
+            stream << "da";
+            EXPECT_CALL(client, SendStreamAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamWriter>&& writer)
+                {
+                    infra::TextOutputStream::WithErrorPolicy stream(*writer);
+                    stream << "ta";
+                }));
+        }));
+
+    client.Subject().Put("/api/thing", 4);
+    ExecuteAllActions();
+
+    EXPECT_EQ("PUT /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:4\r\n\r\ndata", connection.SentDataAsString());
+
+    EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
+    EXPECT_CALL(connection, AckReceivedMock());
+    EXPECT_CALL(client, BodyComplete());
+    client.Subject().Get("/");
+    ExecuteAllActions();
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n")));
+}
+
+TEST_F(HttpClientTest, Post_request_with_content_size_is_executed)
+{
+    Connect();
+
+    EXPECT_CALL(client, SendStreamAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamWriter>&& writer)
+        {
+            infra::TextOutputStream::WithErrorPolicy stream(*writer);
+            stream << "data";
+        }));
+
+    client.Subject().Post("/api/thing", 4);
+    ExecuteAllActions();
+
+    EXPECT_EQ("POST /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:4\r\n\r\ndata", connection.SentDataAsString());
+
+    EXPECT_CALL(client, StatusAvailable(services::HttpStatusCode::OK));
+    EXPECT_CALL(connection, AckReceivedMock());
+    EXPECT_CALL(client, BodyComplete());
+    client.Subject().Get("/");
+    ExecuteAllActions();
+    connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n")));
+}
+
 TEST_F(HttpClientTest, chunked_transfer_is_delivered_in_parts)
 {
     Connect();
@@ -957,6 +1028,14 @@ public:
         CheckContentAndRedirect("POST /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:7\r\n\r\ncontent", redirection, hostname, port);
     }
 
+    void PostWithStreamAndRedirect(infra::BoundedConstString redirection, infra::BoundedConstString hostname, uint16_t port)
+    {
+        Connect();
+        FillLimitedStream();
+        client.Subject().Post("/api/thing", 7);
+        CheckContentAndRedirect("POST /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:7\r\n\r\ncontent", redirection, hostname, port);
+    }
+
     void PostWithContentSizeAndRedirect(infra::BoundedConstString redirection, infra::BoundedConstString hostname, uint16_t port)
     {
         Connect();
@@ -969,6 +1048,14 @@ public:
     {
         Connect();
         client.Subject().Put("/api/thing", "content");
+        CheckContentAndRedirect("PUT /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:7\r\n\r\ncontent", redirection, hostname, port);
+    }
+
+    void PutWithStreamAndRedirect(infra::BoundedConstString redirection, infra::BoundedConstString hostname, uint16_t port)
+    {
+        Connect();
+        FillLimitedStream();
+        client.Subject().Put("/api/thing", 7);
         CheckContentAndRedirect("PUT /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:7\r\n\r\ncontent", redirection, hostname, port);
     }
 
@@ -1026,6 +1113,22 @@ public:
                     stream << "content";
                 }))
             .WillOnce(testing::Invoke([](infra::SharedPtr<infra::StreamWriter>&& writer) {}));
+    }
+
+    void FillLimitedStream()
+    {
+        EXPECT_CALL(client, SendStreamAvailable(testing::_))
+            .WillOnce(testing::Invoke([](infra::SharedPtr<infra::StreamWriter>&& writer)
+                {
+                    infra::TextOutputStream::WithErrorPolicy stream(*writer);
+                    stream << "content";
+                }))
+            .WillOnce(testing::Invoke([](infra::SharedPtr<infra::StreamWriter>&& writer) {}))
+            .WillOnce(testing::Invoke([](infra::SharedPtr<infra::StreamWriter>&& writer)
+                {
+                    infra::TextOutputStream::WithErrorPolicy stream(*writer);
+                    stream << "content";
+                }));
     }
 
     void ConnectionRefused()
@@ -1206,6 +1309,12 @@ TEST_F(HttpClientImplWithRedirectionTest, Post_request_with_content_size_is_forw
     CheckRedirection("POST /newpath HTTP/1.1\r\nHost:newaddress\r\nTransfer-Encoding:chunked\r\n\r\n7\r\ncontent\r\n0\r\n\r\n", "HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n");
 }
 
+TEST_F(HttpClientImplWithRedirectionTest, Post_request_with_stream_is_forwarded)
+{
+    PostWithStreamAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:http://newaddress/newpath\r\n\r\n", "newaddress", 80);
+    CheckRedirection("POST /newpath HTTP/1.1\r\nHost:newaddress\r\nContent-Length:7\r\n\r\ncontent", "HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n");
+}
+
 TEST_F(HttpClientImplWithRedirectionTest, Put_request_is_forwarded)
 {
     PutAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:http://newaddress/newpath\r\n\r\n", "newaddress", 80);
@@ -1216,6 +1325,12 @@ TEST_F(HttpClientImplWithRedirectionTest, Put_request_with_content_size_is_forwa
 {
     PutWithContentSizeAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:http://newaddress/newpath\r\n\r\n", "newaddress", 80);
     CheckRedirection("PUT /newpath HTTP/1.1\r\nHost:newaddress\r\nTransfer-Encoding:chunked\r\n\r\n7\r\ncontent\r\n0\r\n\r\n", "HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n");
+}
+
+TEST_F(HttpClientImplWithRedirectionTest, Put_request_with_stream_is_forwarded)
+{
+    PutWithStreamAndRedirect("HTTP/1.0 307 Redirect\r\nLocation:http://newaddress/newpath\r\n\r\n", "newaddress", 80);
+    CheckRedirection("PUT /newpath HTTP/1.1\r\nHost:newaddress\r\nContent-Length:7\r\n\r\ncontent", "HTTP/1.0 200 Success\r\nContent-Length:0\r\n\r\n");
 }
 
 TEST_F(HttpClientImplWithRedirectionTest, Patch_request_is_forwarded)

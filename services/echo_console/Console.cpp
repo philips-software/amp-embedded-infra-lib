@@ -388,6 +388,8 @@ namespace application
                     {
                         if (line == "list")
                             ListInterfaces();
+                        else if (line == "help")
+                            Help();
                         else
                             Process(line);
 
@@ -692,6 +694,67 @@ namespace application
         }
 
         services::GlobalTracer().Trace();
+    }
+
+    void Console::Help()
+    {
+        services::GlobalTracer().Trace() <<
+            R"(Using arguments:
+        1. Every method argument is defined as a single message in proto file. In echo console, this outmost message shall be provided unpacked.
+            Consider the below message and method:
+                message Argument
+                {
+                    int32 value1 = 1;
+                    int32 value2 = 2;
+                }
+
+                rpc Method(Argument)
+
+            The method call in echo console for value1=123 and value2=456 would be:
+                Method 123 456
+
+        2. After the top level message, every nested message needs to provided in square brackets.
+            Consider the below message and method:
+                message NestedArgument
+                {
+                    int32 value = 1;
+                }    
+
+                message TopArgument
+                {
+                    int32 value = 1;
+                    NestedArgument nested = 2;
+                }
+
+                rpc Method(Argument)
+
+            The method call in echo console for value=123 and nested.value=456 would be:
+                Method 123 [456]
+        3. Repeated arguments are provided as a list in square brackets.
+            Consider the below message and method:
+                message Argument
+                {
+                    bytes value = 1;
+                }
+
+                rpc Method(Argument)
+
+            The method call in echo console for value=[1,2,3] would be:
+                Method [1,2,3]
+        4. String arguments are provided in double quotes with special characters escaped.
+            Consider the below message and method:
+                message Argument
+                {
+                    string value = 1;
+                }
+
+                rpc Method(Argument)
+
+            The method call in echo console for value="{ "bool":true }" would be:
+                Method "{ \"bool\":true }"
+        5. Bool arguments are provided as true or false without quotes.
+        6. Enum arguments are provided as the integral enum value.
+        )";
     }
 
     void Console::ListFields(const EchoMessage& message)
