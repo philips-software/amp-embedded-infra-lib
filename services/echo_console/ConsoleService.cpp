@@ -3,16 +3,6 @@
 
 namespace services
 {
-    ConsoleService::ConsoleService(Echo& echo, uint32_t serviceId, GenericMethodDeserializerFactory& deserializerFactory)
-        : Service(echo, serviceId)
-        , methodDeserializerFactory(deserializerFactory)
-    {}
-
-    infra::SharedPtr<MethodDeserializer> ConsoleService::StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy)
-    {
-        return methodDeserializerFactory.MakeDeserializer(serviceId, methodId, size);
-    }
-
     GenericMethodSerializer::GenericMethodSerializer(infra::SharedPtr<infra::ByteInputStream>& inputStream)
         : inputStream(inputStream)
     {}

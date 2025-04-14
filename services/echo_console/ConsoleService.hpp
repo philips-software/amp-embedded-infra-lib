@@ -10,24 +10,6 @@
 
 namespace services
 {
-    class GenericMethodDeserializerFactory
-    {
-    public:
-        virtual infra::SharedPtr<MethodDeserializer> MakeDeserializer(uint32_t serviceId, uint32_t methodId, uint32_t size) = 0;
-    };
-
-    class ConsoleService
-        : public Service
-    {
-    public:
-        ConsoleService(Echo& echo, uint32_t serviceId, GenericMethodDeserializerFactory& deserializerFactory);
-
-        infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy) override;
-
-    private:
-        GenericMethodDeserializerFactory& methodDeserializerFactory;
-    };
-
     class GenericMethodSerializer
         : public MethodSerializer
     {
