@@ -42,6 +42,19 @@ TEST_F(FlashSpiTest, Construction)
     EXPECT_EQ(4096, flash.SizeOfSector(0));
 }
 
+TEST_F(FlashSpiTest, ConstructionWithConfig)
+{
+    services::FlashSpi::Config config;
+    config.nrOfSubSectors = 1024;
+    config.sizeSector = 8192;
+    config.sizeSubSector = 2048;
+    config.sizePage = 64;
+    services::FlashSpi flashConfigured{ spiMock, config };
+
+    EXPECT_EQ(1024, flashConfigured.NumberOfSectors());
+    EXPECT_EQ(2048, flashConfigured.SizeOfSector(0));
+}
+
 TEST_F(FlashSpiTest, ReadData)
 {
     std::vector<uint8_t> receiveData = { 1, 2, 3, 4 };
@@ -297,6 +310,27 @@ TEST_F(FlashSpiTest, EraseAllErasesBulk)
     EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 1 }));
 
     flash.EraseAll([this]()
+        {
+            finished.callback();
+        });
+    ExecuteAllActions();
+}
+
+TEST_F(FlashSpiTest, EraseSubSectorWhenSubSectorEqualsSector)
+{
+    services::FlashSpi::Config config;
+    config.nrOfSubSectors = 64;
+    config.sizeSector = 1024;
+    config.sizeSubSector = 1024;
+    config.sizePage = 256;
+    services::FlashSpi flashConfigured{ spiMock, config };
+
+    EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandWriteEnable), hal::SpiAction::stop));
+    EXPECT_CALL(spiMock, SendDataMock(CreateInstructionAndAddress(services::FlashSpi::commandEraseSector, 0), hal::SpiAction::stop));
+    EXPECT_CALL(spiMock, SendDataMock(CreateInstruction(services::FlashSpi::commandReadStatusRegister), hal::SpiAction::continueSession));
+    EXPECT_CALL(spiMock, ReceiveDataMock(hal::SpiAction::stop)).WillOnce(testing::Return(std::vector<uint8_t>{ 1 }));
+
+    flashConfigured.EraseSectors(0, 1, [this]()
         {
             finished.callback();
         });
