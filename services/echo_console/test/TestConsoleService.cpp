@@ -1,20 +1,22 @@
 #include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/InputStream.hpp"
+#include "infra/stream/StdVectorInputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/stream/StreamErrorPolicy.hpp"
-#include "infra/util/ConstructBin.hpp"
+#include "infra/syntax/ProtoParser.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "infra/util/SharedPtr.hpp"
 #include "protobuf/echo/Echo.hpp"
 #include "protobuf/echo/Serialization.hpp"
 #include "protobuf/echo/test_doubles/EchoSingleLoopback.hpp"
-#include "protobuf/meta_services/ServiceDiscoveryEcho.hpp"
+#include "protobuf/echo/test_doubles/ServiceStub.hpp"
 #include "services/echo_console/ConsoleService.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include <array>
 #include <cstdint>
+#include <vector>
 
 class MethodDeserializerMock
     : public services::MethodDeserializer
@@ -38,13 +40,10 @@ class ConsoleServiceProxyTest
     : public testing::Test
 {
 public:
-    services::MethodSerializerFactory::ForServices<service_discovery::ServiceDiscovery,
-        service_discovery::ServiceDiscoveryResponse>::AndProxies<service_discovery::ServiceDiscoveryProxy,
-        service_discovery::ServiceDiscoveryResponseProxy>
-        serializerFactory;
+    services::MethodSerializerFactory::OnHeap serializerFactory;
 
     application::EchoSingleLoopback echo{ serializerFactory };
-    services::ConsoleServiceProxy consoleServiceProxy{ echo };
+    services::EchoConsoleServiceProxy consoleServiceProxy{ echo };
 
     const uint8_t serviceId = 1;
     const uint8_t methodId = 2;
@@ -98,14 +97,14 @@ TEST_F(ConsoleServiceProxyTest, send_multi_part_message)
     infra::NotifyingSharedOptional<infra::ByteInputStream> reader;
     auto readerPtr = reader.Emplace(message, infra::noFail);
 
-    services::ConsoleServiceProxy consoleServiceProxySmallMessageSize{ echo, 3 };
+    services::EchoConsoleServiceProxy consoleServiceProxySmallMessageSize{ echo, 3 };
 
     EXPECT_CALL(service, StartMethod(serviceId, methodId, testing::_, testing::_)).Times(methodCount).WillRepeatedly(testing::InvokeWithoutArgs([this]
         {
             return infra::UnOwnedSharedPtr(deserializer);
         }));
 
-    EXPECT_CALL(deserializer, MethodContents(testing::_)).Times(methodCount+1).WillRepeatedly(testing::Invoke([](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+    EXPECT_CALL(deserializer, MethodContents(testing::_)).Times(methodCount + 1).WillRepeatedly(testing::Invoke([](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
         {
             reader->ExtractContiguousRange(reader->Available());
         }));
@@ -120,5 +119,81 @@ TEST_F(ConsoleServiceProxyTest, send_multi_part_message)
     consoleServiceProxySmallMessageSize.RequestSend([&consoleServiceProxySmallMessageSize, &readerPtr]()
         {
             consoleServiceProxySmallMessageSize.SendMessage(readerPtr);
+        });
+}
+
+class EchoConsoleMethodExecutionMock
+    : public services::EchoConsoleMethodExecution
+{
+public:
+    MOCK_METHOD(void, ExecuteMethod, (infra::StreamReader & data), (override));
+};
+
+class ConsoleServiceTest
+    : public testing::Test
+{
+public:
+    services::MethodSerializerFactory::OnHeap serializerFactory;
+
+    application::EchoSingleLoopback echo{ serializerFactory };
+
+    uint32_t acceptExceptServiceId = 100;
+    testing::StrictMock<EchoConsoleMethodExecutionMock> methodExecution;
+    services::EchoConsoleService consoleService{ echo, acceptExceptServiceId, methodExecution };
+    services::ServiceStubProxy serviceStubProxy{ echo };
+};
+
+TEST_F(ConsoleServiceTest, accept_service)
+{
+    EXPECT_TRUE(consoleService.AcceptsService(1));
+    EXPECT_FALSE(consoleService.AcceptsService(acceptExceptServiceId));
+}
+
+TEST_F(ConsoleServiceTest, start_method_without_args)
+{
+    EXPECT_CALL(methodExecution, ExecuteMethod(testing::_)).Times(1).WillOnce(testing::Invoke([this](infra::StreamReader& reader)
+        {
+            infra::DataInputStream::WithErrorPolicy inputStream(reader);
+            infra::ProtoParser parser(inputStream);
+
+            auto serviceId = static_cast<uint32_t>(parser.GetVarInt());
+            EXPECT_EQ(serviceId, services::ServiceStubProxy::defaultServiceId);
+
+            auto [value, methodId] = parser.GetField();
+            EXPECT_EQ(methodId, services::ServiceStubProxy::idMethodNoParameter);
+
+            echo.ServiceDone();
+        }));
+
+    serviceStubProxy.RequestSend([this]()
+        {
+            serviceStubProxy.MethodNoParameter();
+        });
+}
+
+TEST_F(ConsoleServiceTest, start_method)
+{
+    EXPECT_CALL(methodExecution, ExecuteMethod(testing::_)).Times(1).WillOnce(testing::Invoke([this](infra::StreamReader& reader)
+        {
+            infra::DataInputStream::WithErrorPolicy inputStream(reader);
+            infra::ProtoParser parser(inputStream);
+
+            auto serviceId = static_cast<uint32_t>(parser.GetVarInt());
+            EXPECT_EQ(serviceId, services::ServiceStubProxy::defaultServiceId);
+
+            auto [value, methodId] = parser.GetField();
+            EXPECT_EQ(methodId, services::ServiceStubProxy::idMethod);
+
+            auto parameters = value.Get<infra::ProtoLengthDelimited>().Parser();
+            auto [valueP, idP] = parser.GetField();
+            EXPECT_EQ(idP, 1);
+            EXPECT_EQ(valueP.Get<uint64_t>(), 123);
+
+            echo.ServiceDone();
+        }));
+
+    serviceStubProxy.RequestSend([this]()
+        {
+            serviceStubProxy.Method(123);
         });
 }

@@ -30,6 +30,7 @@ namespace application
     public:
         explicit PeerServiceDiscovererEcho(services::Echo& echo);
 
+        // Implementation of service_discovery::ServiceDiscoveryResponse
         void NoServiceSupported() override;
         void FirstServiceSupported(uint32_t id) override;
         void ServicesChanged(uint32_t startServiceId, uint32_t endServiceId) override;

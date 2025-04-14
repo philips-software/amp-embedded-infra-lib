@@ -1,4 +1,5 @@
 #include "services/echo_console/Console.hpp"
+#include "infra/stream/InputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/stream/StringInputStream.hpp"
 #include "services/tracer/GlobalTracer.hpp"
@@ -415,6 +416,39 @@ namespace application
     services::NameResolver& Console::NameResolver()
     {
         return network.NameResolver();
+    }
+
+    void Console::ExecuteMethod(infra::StreamReader& data)
+    {
+        infra::DataInputStream::WithErrorPolicy input(data, infra::softFail);
+        while (input.Available() != 0)
+        {
+            infra::ProtoParser parser(input);
+
+            auto serviceId = static_cast<uint32_t>(parser.GetVarInt());
+            auto [value, methodId] = parser.GetField();
+
+            if (input.Failed())
+                break;
+
+            for (const auto& service : root.services)
+                if (service->serviceId == serviceId)
+                {
+                    for (const auto& method : service->methods)
+                        if (method.methodId == methodId)
+                        {
+                            MethodReceived(*service, method, value.Get<infra::ProtoLengthDelimited>().Parser());
+
+                            input.Failed();
+                            return;
+                        }
+
+                    MethodNotFound(*service, methodId);
+                    return;
+                }
+
+            ServiceNotFound(serviceId, methodId);
+        }
     }
 
     void Console::DataReceived(infra::StreamReader& reader)

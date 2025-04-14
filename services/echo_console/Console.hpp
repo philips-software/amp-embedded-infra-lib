@@ -5,6 +5,7 @@
 #include "infra/syntax/ProtoFormatter.hpp"
 #include "infra/syntax/ProtoParser.hpp"
 #include "protobuf/protoc_echo_plugin/EchoObjects.hpp"
+#include "services/echo_console/ConsoleService.hpp"
 #include "services/network_instantiations/NetworkAdapter.hpp"
 #include <cstdint>
 #include <thread>
@@ -186,6 +187,7 @@ namespace application
 
     class Console
         : public infra::Subject<ConsoleObserver>
+        , public services::EchoConsoleMethodExecution
     {
     public:
         explicit Console(EchoRoot& root, bool stopOnNetworkClose);
@@ -195,6 +197,8 @@ namespace application
         services::NameResolver& NameResolver();
         void DataReceived(infra::StreamReader& reader);
         void ServicesDiscovered(infra::MemoryRange<uint32_t> services);
+
+        void ExecuteMethod(infra::StreamReader& data) override;
 
     private:
         struct Empty

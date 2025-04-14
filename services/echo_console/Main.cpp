@@ -1,4 +1,5 @@
 #include "args.hxx"
+#include "echo/ServiceDiscovery.pb.hpp"
 #include "generated/echo/TracingServiceDiscovery.pb.hpp"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "infra/stream/ByteInputStream.hpp"
@@ -174,7 +175,8 @@ private:
     infra::Optional<application::PeerServiceDiscovererEcho> peerServiceDiscoverer;
     infra::Optional<PeerServiceDiscoveryObserverTracer> peerServiceDiscoveryObserverTracer;
     infra::Optional<PeerServiceDiscoveryConsoleInteractor> peerServiceDiscoveryConsoleInteractor;
-    infra::Optional<services::ConsoleServiceProxy> consoleServiceProxy;
+    infra::Optional<services::EchoConsoleServiceProxy> consoleServiceProxy;
+    infra::Optional<services::EchoConsoleService> consoleService;
 };
 
 ConsoleClientConnection::ConsoleClientConnection(application::Console& console, services::Tracer& tracer)
@@ -198,6 +200,7 @@ void ConsoleClientConnection::Attached()
     peerServiceDiscoveryObserverTracer.Emplace(*peerServiceDiscoverer, tracer);
     peerServiceDiscoveryConsoleInteractor.Emplace(*peerServiceDiscoverer, application::ConsoleObserver::Subject());
     consoleServiceProxy.Emplace(*this);
+    consoleService.Emplace(*this, service_discovery::ServiceDiscoveryResponse::serviceId, application::ConsoleObserver::Subject());
 }
 
 void ConsoleClientConnection::Send(const std::vector<uint8_t>& message)

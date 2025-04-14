@@ -98,7 +98,7 @@ namespace services
     public:
         static constexpr uint32_t defaultServiceId = 1;
         static constexpr uint32_t idMethod = 1;
-        static const uint32_t idMethodNoParameter = 3;
+        static constexpr uint32_t idMethodNoParameter = 3;
         static constexpr uint32_t maxMessageSize = 18;
 
     public:
