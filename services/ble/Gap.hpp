@@ -230,7 +230,6 @@ namespace services
         using infra::Observer<GapPeripheralObserver, GapPeripheral>::Observer;
 
         virtual void StateChanged(GapState state) = 0;
-        virtual void ConnectionIntervalUpdated(uint16_t connMultiplierMin, uint16_t connMultiplierMax) = 0;
     };
 
     class GapPeripheral
@@ -262,7 +261,7 @@ namespace services
         virtual infra::ConstByteRange GetScanResponseData() const = 0;
         virtual void Advertise(GapAdvertisementType type, AdvertisementIntervalMultiplier multiplier) = 0;
         virtual void Standby() = 0;
-        virtual void SetConnectionInterval(uint16_t connMultiplierMin, uint16_t connMultiplierMax) = 0;
+        virtual void SetConnectionParameter(const services::GapConnectionParameters& connParam) = 0;
     };
 
     class GapPeripheralDecorator
@@ -274,7 +273,6 @@ namespace services
 
         // Implementation of GapPeripheralObserver
         void StateChanged(GapState state) override;
-        void ConnectionIntervalUpdated(uint16_t connMultiplierMin, uint16_t connMultiplierMax) override;
 
         // Implementation of GapPeripheral
         GapAddress GetAddress() const override;
@@ -286,7 +284,7 @@ namespace services
         infra::ConstByteRange GetScanResponseData() const override;
         void Advertise(GapAdvertisementType type, AdvertisementIntervalMultiplier multiplier) override;
         void Standby() override;
-        void SetConnectionInterval(uint16_t connMultiplierMin, uint16_t connMultiplierMax) override;
+        void SetConnectionParameter(const services::GapConnectionParameters& connParam) override;
     };
 
     inline GapPeripheral::AdvertisementFlags operator|(GapPeripheral::AdvertisementFlags lhs, GapPeripheral::AdvertisementFlags rhs)

@@ -30,12 +30,6 @@ namespace services
                 obs.StateChanged(GapState::connected);
                 obs.StateChanged(GapState::advertising);
             });
-
-        EXPECT_CALL(gapObserver, ConnectionIntervalUpdated(20, 40));
-        gap.NotifyObservers([](GapPeripheralObserver& obs)
-            {
-                obs.ConnectionIntervalUpdated(20, 40);
-            });
     }
 
     TEST_F(GapPeripheralDecoratorTest, forward_all_calls_to_subject)
@@ -67,7 +61,8 @@ namespace services
         EXPECT_CALL(gap, Standby());
         decorator.Standby();
 
-        EXPECT_CALL(gap, SetConnectionInterval(20, 40));
-        decorator.SetConnectionInterval(20, 40);
+        services::GapConnectionParameters connParam{ 10, 20, 30, 40 };
+        EXPECT_CALL(gap, SetConnectionParameter(connParam));
+        decorator.SetConnectionParameter(connParam);
     }
 }

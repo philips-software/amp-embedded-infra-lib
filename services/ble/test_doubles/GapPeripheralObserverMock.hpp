@@ -13,7 +13,6 @@ namespace services
 
     public:
         MOCK_METHOD(void, StateChanged, (GapState state));
-        MOCK_METHOD(void, ConnectionIntervalUpdated, (uint16_t connMultiplierMin, uint16_t connMultiplierMax));
     };
 }
 
