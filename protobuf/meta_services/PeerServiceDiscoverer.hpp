@@ -2,9 +2,7 @@
 #define PROTOBUF_ECHO_PEER_SERVICE_DISCOVERER_HPP
 
 #include "generated/echo/ServiceDiscovery.pb.hpp"
-#include "infra/util/BoundedVector.hpp"
 #include "infra/util/MemoryRange.hpp"
-#include "infra/util/Observer.hpp"
 #include "protobuf/echo/Echo.hpp"
 #include <cstdint>
 #include <tuple>

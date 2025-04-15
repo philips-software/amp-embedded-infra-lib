@@ -188,8 +188,6 @@ TEST_F(ConsoleServiceTest, start_method)
             auto [valueP, idP] = parser.GetField();
             EXPECT_EQ(idP, 1);
             EXPECT_EQ(valueP.Get<uint64_t>(), 123);
-
-            echo.ServiceDone();
         }));
 
     serviceStubProxy.RequestSend([this]()

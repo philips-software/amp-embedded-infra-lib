@@ -56,12 +56,18 @@ namespace services
 
     infra::SharedPtr<MethodDeserializer> EchoConsoleService::StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy)
     {
-        return methodDeserializer.Emplace(serviceId, methodId, size, methodExecution);
+        return methodDeserializer.Emplace(serviceId, methodId, size, *this);
     }
 
     bool EchoConsoleService::AcceptsService(uint32_t id) const
     {
         return id != acceptExcept;
+    }
+
+    void EchoConsoleService::ExecuteMethod(infra::StreamReader& data)
+    {
+        methodExecution.ExecuteMethod(data);
+        MethodDone();
     }
 
     EchoConsoleMethodSerializer::EchoConsoleMethodSerializer(infra::SharedPtr<infra::ByteInputStream>& inputStream)

@@ -4,6 +4,7 @@
 #include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/InputStream.hpp"
 #include "infra/stream/StdVectorInputStream.hpp"
+#include "infra/util/Function.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "infra/util/SharedPtr.hpp"
 #include "protobuf/echo/Echo.hpp"
@@ -39,12 +40,15 @@ namespace services
 
     class EchoConsoleService
         : public Service
+        , public EchoConsoleMethodExecution
     {
     public:
         EchoConsoleService(Echo& echo, uint32_t acceptExcept, EchoConsoleMethodExecution& methodExecution);
 
         infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy) override;
         bool AcceptsService(uint32_t id) const override;
+
+        void ExecuteMethod(infra::StreamReader& data) override;
 
     private:
         uint32_t acceptExcept;
