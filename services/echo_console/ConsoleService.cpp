@@ -6,7 +6,6 @@
 #include "protobuf/echo/Echo.hpp"
 #include "protobuf/echo/Serialization.hpp"
 #include <cstdint>
-#include <vector>
 
 namespace services
 {

@@ -205,23 +205,8 @@ void ConsoleClientConnection::Attached()
 
 void ConsoleClientConnection::Send(const std::vector<uint8_t>& message)
 {
-    // Do we need to know the serviceid, methodid and treat them differently or do we just send strings back to back?
     dataQueue.push(message);
     SendAsEcho();
-}
-
-void ConsoleClientConnection::CheckDataToBeSent()
-{
-    // if (writer != nullptr && !dataToBeSent.empty())
-    // {
-    //     infra::TextOutputStream::WithErrorPolicy stream(*writer);
-    //     std::size_t amount = std::min(stream.Available(), dataToBeSent.size());
-    //     stream << dataToBeSent.substr(0, amount);
-    //     dataToBeSent.erase(0, amount);
-
-    //     writer = nullptr;
-    //     services::ConnectionObserver::Subject().RequestSendStream(services::ConnectionObserver::Subject().MaxSendStreamSize());
-    // }
 }
 
 void ConsoleClientConnection::SendAsEcho()

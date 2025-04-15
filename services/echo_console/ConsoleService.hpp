@@ -4,7 +4,6 @@
 #include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/InputStream.hpp"
 #include "infra/stream/StdVectorInputStream.hpp"
-#include "infra/util/Function.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "infra/util/SharedPtr.hpp"
 #include "protobuf/echo/Echo.hpp"
