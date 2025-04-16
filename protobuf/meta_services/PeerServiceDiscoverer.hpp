@@ -44,6 +44,7 @@ namespace application
         uint32_t SearchRangeBegin() const;
         uint32_t SearchRangeEnd() const;
 
+
     private:
         infra::BoundedVector<uint32_t>::WithMaxSize<100> services;
         ServiceRange searchRange;
