@@ -1,0 +1,97 @@
+// BLE Direct Test Mode - according to BLE Core Specification 5.3 (Vol. 6, Part F)
+// Includes features to generate carrier waves (tones) or transmit and receive
+// BLE reference packets.
+
+syntax = "proto3";
+
+import "EchoAttributes.proto";
+
+package dtm;
+option java_package = "com.philips.emil.protobufEcho";
+option java_outer_classname = "DtmProto";
+
+// ToneParams: Input parameters to generate a carrier wave (tone)
+//   - rfChannel    : BLE channel ID (2.402 + 0.002*<rfChannel>) Ghz (Range 0x00 to 0x27)
+//   - offset       : Frequency offset for tone channel (Range: 0x00 - 0xff)
+message ToneParams
+{
+    uint32 rfChannel = 1;
+    uint32 offset = 2;
+}
+
+// TxPowerParams: Input parameter to set the transmit power
+//   - txPower      : Power amplifier output level (Range: 0x00 - 0x23)
+message TxPowerParams
+{
+    uint32 txPower = 1;
+}
+
+// RxParams: Input parameters for the receive Test
+//   - frequency    : Frequency (F - 2402)/2 (Range: 0x00 - 0x27)
+//   - phy          : 0x01 - LE 1M
+//                    0x02 - LE 2M
+//                    0x03 - LE Coded PHY S=8
+//                    0x04 - LE Coded PHY S=2
+//   - durationMs   : Duration in milliseconds
+message RxParams
+{
+    uint32 frequency = 1;
+    uint32 phy = 2;
+    uint32 durationMs = 3;
+}
+
+// TxParams: Input parameters for the transmit Test
+//   - frequency    : Frequency (F - 2402)/2 (Range: 0x00 - 0x27)
+//   - dataLength   : Length in bytes of the payload data in each packet
+//   - packetPayload: 0x00 - Pseudo random bit sequence 9
+//                    0x01 - Pattern of alternating bits 11110000
+//                    0x02 - Pattern of alternating bits 10101010
+//                    0x03 - Pseudo random bit sequence 15
+//                    0x04 - Pattern of all 1 bits
+//                    0x05 - Pattern of all 0 bits
+//                    0x06 - Pattern of alternating bits 00001111
+//                    0x07 - Pattern of alternating bits 0101
+//   - phy          : 0x01 - LE 1M
+//                    0x02 - LE 2M
+//                    0x03 - LE Coded PHY S=8
+//                    0x04 - LE Coded PHY S=2
+//   - durationMs   : Duration in milliseconds
+message TxParams
+{
+    uint32 frequency = 1;
+    uint32 dataLength = 2;
+    uint32 packetPayload = 3;
+    uint32 phy = 4;
+    uint32 durationMs = 5;
+}
+
+service Dtm
+{
+    option (service_id) = 232;
+
+    rpc StartTone(ToneParams) returns(Nothing) { option (method_id) = 1; }
+    rpc StopTone(Nothing) returns(Nothing) { option (method_id) = 2; }
+    rpc SetTxPowerLevel(TxPowerParams) returns(Nothing) { option (method_id) = 3; }
+    rpc StartRxTest(RxParams) returns(Nothing) { option (method_id) = 4; }
+    rpc StartTxTest(TxParams) returns(Nothing) { option (method_id) = 5; }
+    rpc StopTest(Nothing) returns(Nothing) { option (method_id) = 6; }
+}
+
+message Result
+{
+    bool result = 1;
+}
+
+message TestResult
+{
+    bool result = 1;
+    uint32 nrPacketsReceived = 2;
+}
+
+service DtmResponse
+{
+    option (service_id) = 233;
+
+    rpc Done(Result) returns (Nothing) { option (method_id) = 1; }
+    rpc TestCompleted(TestResult) returns (Nothing) { option (method_id) = 2; }
+}
