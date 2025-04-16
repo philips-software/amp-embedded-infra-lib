@@ -1438,7 +1438,9 @@
  * Module:  library/psa_crypto.c
  * Requires: MBEDTLS_PSA_CRYPTO_C
  */
-//#define MBEDTLS_PSA_KEY_STORE_DYNAMIC
+ #ifdef EMIL_HOST_BUILD
+ #define MBEDTLS_PSA_KEY_STORE_DYNAMIC
+ #endif
 
 /**
  * Uncomment to enable p256-m. This is an alternative implementation of
