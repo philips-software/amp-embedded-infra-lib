@@ -1,5 +1,6 @@
 #include "protobuf/meta_services/PeerServiceDiscoverer.hpp"
 #include "infra/event/EventDispatcher.hpp"
+#include "protobuf/meta_services/PeerServiceDiscoverer.hpp"
 #include "infra/util/Function.hpp"
 #include <cstdint>
 #include <limits>
