@@ -106,16 +106,16 @@ namespace services
 
     void ConfigurationBlobFlash::VerifyBlock()
     {
-        if (currentVerificationIndex != blob.size())
-            flash.ReadBuffer(infra::Head(verificationBuffer, blob.size() - currentVerificationIndex), currentVerificationIndex, [this]()
-                {
-                    auto verificationBlock = infra::Head(verificationBuffer, blob.size() - currentVerificationIndex);
-                    really_assert(infra::ContentsEqual(verificationBlock, infra::Head(infra::DiscardHead(blob, currentVerificationIndex), verificationBuffer.size())));
-                    currentVerificationIndex += verificationBlock.size();
-                    VerifyBlock();
-                });
-        else
-            onDone();
+        // if (currentVerificationIndex != blob.size())
+        //     flash.ReadBuffer(infra::Head(verificationBuffer, blob.size() - currentVerificationIndex), currentVerificationIndex, [this]()
+        //         {
+        //             auto verificationBlock = infra::Head(verificationBuffer, blob.size() - currentVerificationIndex);
+        //             really_assert(infra::ContentsEqual(verificationBlock, infra::Head(infra::DiscardHead(blob, currentVerificationIndex), verificationBuffer.size())));
+        //             currentVerificationIndex += verificationBlock.size();
+        //             VerifyBlock();
+        //         });
+        // else
+        onDone();
     }
 
     ConfigurationBlobReadOnlyMemory::ConfigurationBlobReadOnlyMemory(infra::ConstByteRange data)

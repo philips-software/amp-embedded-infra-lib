@@ -16,6 +16,8 @@ extern "C" uint32_t StaticLwIpRand()
     return result;
 }
 
+netif* netifInternal = nullptr;
+
 namespace services
 {
     namespace
@@ -65,12 +67,15 @@ namespace services
 
     IPv4Address LightweightIp::GetIPv4Address() const
     {
-        return Convert(netif_default->ip_addr);
+        return netifInternal ? Convert(netifInternal->ip_addr) : IPv4Address();
     }
 
     IPv4InterfaceAddresses LightweightIp::GetIPv4InterfaceAddresses() const
     {
-        return { Convert(netif_default->ip_addr), Convert(netif_default->netmask), Convert(netif_default->gw) };
+        if (netifInternal)
+            return { Convert(netifInternal->ip_addr), Convert(netifInternal->netmask), Convert(netifInternal->gw) };
+        else
+            return { IPv4Address(), IPv4Address(), IPv4Address() };
     }
 
     void LightweightIp::RegisterInstance()
@@ -91,13 +96,19 @@ namespace services
 
     void LightweightIp::InstanceCallback(netif* netif, netif_nsc_reason_t reason, const netif_ext_callback_args_t* args)
     {
+        netifInternal = netif;
         for (auto& instance : instances)
             instance.ExtCallback(reason, args);
     }
 
     void LightweightIp::ExtCallback(netif_nsc_reason_t reason, const netif_ext_callback_args_t* args)
     {
-        bool linkUp = (netif_default->flags & NETIF_FLAG_LINK_UP) != 0;
+        if (!netifInternal)
+        {
+            return;
+        }
+
+        bool linkUp = (netifInternal->flags & NETIF_FLAG_LINK_UP) != 0;
 
         auto newIpv4Address = GetIPv4Address();
 
