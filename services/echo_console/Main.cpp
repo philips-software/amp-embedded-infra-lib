@@ -1,9 +1,28 @@
 #include "args.hxx"
+#include "echo/ServiceDiscovery.pb.hpp"
+#include "generated/echo/TracingServiceDiscovery.pb.hpp"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
+#include "infra/stream/ByteInputStream.hpp"
+#include "infra/stream/StreamErrorPolicy.hpp"
+#include "infra/stream/StringInputStream.hpp"
+#include "infra/util/Optional.hpp"
+#include "infra/util/SharedOptional.hpp"
+#include "protobuf/echo/Serialization.hpp"
+#include "protobuf/meta_services/PeerServiceDiscoverer.hpp"
+#include "services/echo_console/ConsoleService.hpp"
+#include "services/network/TracingEchoOnConnection.hpp"
+#include "services/tracer/Tracer.hpp"
+#include <cstdint>
+#include <ostream>
+#include <queue>
+#include <vector>
+#ifdef EMIL_HAL_WINDOWS
+#include "hal/windows/UartWindows.hpp"
+#else
+#include "hal/unix/UartUnix.hpp"
+#endif
 #include "hal/generic/UartGeneric.hpp"
 #include "infra/stream/IoOutputStream.hpp"
-#include "infra/syntax/Json.hpp"
-#include "infra/util/Tokenizer.hpp"
 #include "services/echo_console/Console.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 #include "services/network/HttpClientImpl.hpp"
@@ -12,6 +31,7 @@
 #include "services/util/SesameCobs.hpp"
 #include "services/util/SesameWindowed.hpp"
 #include <deque>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 
@@ -23,7 +43,7 @@ public:
     ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial);
 
     // Implementation of ConsoleObserver
-    void Send(const std::string& message) override;
+    void Send(const std::vector<uint8_t>& message) override;
 
 private:
     // Implementation of SesameObserver
@@ -35,7 +55,7 @@ private:
     void CheckDataToBeSent();
 
 private:
-    std::deque<std::string> messagesToBeSent;
+    std::deque<std::vector<uint8_t>> messagesToBeSent;
     services::SesameCobs::WithMaxMessageSize<2048> cobs;
     services::SesameWindowed windowed{ cobs };
     bool sending = false;
@@ -47,11 +67,11 @@ ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::Buffere
     , cobs(serial)
 {}
 
-void ConsoleClientUart::Send(const std::string& message)
+void ConsoleClientUart::Send(const std::vector<uint8_t>& message)
 {
     auto size = windowed.MaxSendMessageSize();
     for (std::size_t index = 0; index < message.size(); index += size)
-        messagesToBeSent.push_back(message.substr(index, size));
+        messagesToBeSent.push_back(std::vector<uint8_t>(message.begin() + index, message.begin() + size));
     CheckDataToBeSent();
 }
 
@@ -61,7 +81,7 @@ void ConsoleClientUart::Initialized()
 void ConsoleClientUart::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
 {
     infra::DataOutputStream::WithErrorPolicy stream(*writer);
-    stream << infra::StringAsByteRange(infra::BoundedConstString(messagesToBeSent.front()));
+    stream << messagesToBeSent.front();
     writer = nullptr;
 
     messagesToBeSent.pop_front();
@@ -85,70 +105,126 @@ void ConsoleClientUart::CheckDataToBeSent()
 }
 
 class ConsoleClientConnection
-    : public services::ConnectionObserver
+    : private services::MethodSerializerFactory::OnHeap
+    , public services::TracingEchoOnConnection
     , public application::ConsoleObserver
 {
 public:
-    explicit ConsoleClientConnection(application::Console& console);
+    explicit ConsoleClientConnection(application::Console& console, services::Tracer& tracer);
 
-    // Implementation of ConnectionObserver
-    void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-    void DataReceived() override;
+    ~ConsoleClientConnection();
+
+    // ConnectionObserver
     void Attached() override;
 
     // Implementation of ConsoleObserver
-    void Send(const std::string& message) override;
+    void Send(const std::vector<uint8_t>& message) override;
+
+private:
+    class PeerServiceDiscoveryObserverTracer
+        : public application::PeerServiceDiscoveryObserver
+    {
+    public:
+        PeerServiceDiscoveryObserverTracer(application::PeerServiceDiscovererEcho& subject, services::Tracer& tracer)
+            : PeerServiceDiscoveryObserver(subject)
+            , tracer(tracer)
+        {}
+
+        // Implementation of PeerServiceDiscoveryObserver
+        void ServicesDiscovered(infra::MemoryRange<uint32_t> services) override
+        {
+            tracer.Trace() << "Services discovered: ";
+            for (auto service : services)
+                tracer.Continue() << service << " ";
+        }
+
+    private:
+        services::Tracer& tracer;
+    };
+
+    class PeerServiceDiscoveryConsoleInteractor
+        : public application::PeerServiceDiscoveryObserver
+    {
+    public:
+        PeerServiceDiscoveryConsoleInteractor(application::PeerServiceDiscovererEcho& subject, application::Console& console)
+            : PeerServiceDiscoveryObserver(subject)
+            , console(console)
+        {}
+
+        // Implementation of PeerServiceDiscoveryObserver
+        void ServicesDiscovered(infra::MemoryRange<uint32_t> services) override
+        {
+            console.ServicesDiscovered(services);
+        }
+
+    private:
+        application::Console& console;
+    };
 
 private:
     void CheckDataToBeSent();
+    void SendAsEcho();
 
 private:
-    std::string dataToBeSent;
+    services::Tracer& tracer;
+    std::queue<std::vector<uint8_t>> dataQueue;
+    infra::NotifyingSharedOptional<infra::ByteInputStream> reader;
     infra::SharedPtr<infra::StreamWriter> writer;
+    service_discovery::ServiceDiscoveryTracer serviceDiscoveryTracer;
+    service_discovery::ServiceDiscoveryResponseTracer serviceDiscoveryResponseTracer;
+    infra::Optional<application::PeerServiceDiscovererEcho> peerServiceDiscoverer;
+    infra::Optional<PeerServiceDiscoveryObserverTracer> peerServiceDiscoveryObserverTracer;
+    infra::Optional<PeerServiceDiscoveryConsoleInteractor> peerServiceDiscoveryConsoleInteractor;
+    infra::Optional<services::EchoConsoleServiceProxy> consoleServiceProxy;
+    infra::Optional<services::EchoConsoleService> consoleService;
 };
 
-ConsoleClientConnection::ConsoleClientConnection(application::Console& console)
+ConsoleClientConnection::ConsoleClientConnection(application::Console& console, services::Tracer& tracer)
     : application::ConsoleObserver(console)
-{}
-
-void ConsoleClientConnection::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+    , services::TracingEchoOnConnection(*static_cast<services::MethodSerializerFactory*>(this), services::echoErrorPolicyAbortOnMessageFormatError, tracer)
+    , serviceDiscoveryTracer(*this)
+    , serviceDiscoveryResponseTracer(*this)
+    , tracer(tracer)
 {
-    this->writer = writer;
-    writer = nullptr;
-
-    CheckDataToBeSent();
+    tracer.Trace() << "ConsoleClientConnection";
 }
 
-void ConsoleClientConnection::DataReceived()
+ConsoleClientConnection::~ConsoleClientConnection()
 {
-    auto stream = services::ConnectionObserver::Subject().ReceiveStream();
-    ConsoleObserver::Subject().DataReceived(*stream);
-    services::ConnectionObserver::Subject().AckReceived();
+    tracer.Trace() << "~ConsoleClientConnection";
 }
 
 void ConsoleClientConnection::Attached()
 {
-    services::ConnectionObserver::Subject().RequestSendStream(services::ConnectionObserver::Subject().MaxSendStreamSize());
+    peerServiceDiscoverer.Emplace(*this);
+    peerServiceDiscoveryObserverTracer.Emplace(*peerServiceDiscoverer, tracer);
+    peerServiceDiscoveryConsoleInteractor.Emplace(*peerServiceDiscoverer, application::ConsoleObserver::Subject());
+    consoleServiceProxy.Emplace(*this);
+    consoleService.Emplace(*this, service_discovery::ServiceDiscoveryResponse::serviceId, application::ConsoleObserver::Subject());
 }
 
-void ConsoleClientConnection::Send(const std::string& message)
+void ConsoleClientConnection::Send(const std::vector<uint8_t>& message)
 {
-    dataToBeSent += message;
-    CheckDataToBeSent();
+    dataQueue.push(message);
+    SendAsEcho();
 }
 
-void ConsoleClientConnection::CheckDataToBeSent()
+void ConsoleClientConnection::SendAsEcho()
 {
-    if (writer != nullptr && !dataToBeSent.empty())
-    {
-        infra::TextOutputStream::WithErrorPolicy stream(*writer);
-        std::size_t amount = std::min(stream.Available(), dataToBeSent.size());
-        stream << dataToBeSent.substr(0, amount);
-        dataToBeSent.erase(0, amount);
+    if (!consoleServiceProxy)
+        throw std::runtime_error("No console service proxy available");
 
-        writer = nullptr;
-        services::ConnectionObserver::Subject().RequestSendStream(services::ConnectionObserver::Subject().MaxSendStreamSize());
-    }
+    if (!dataQueue.empty() && reader.Allocatable())
+        consoleServiceProxy->RequestSend([this]()
+            {
+                auto inputReader = reader.Emplace(dataQueue.front(), infra::softFail);
+                reader.OnAllocatable([this]
+                    {
+                        dataQueue.pop();
+                        SendAsEcho();
+                    });
+                consoleServiceProxy->SendMessage(inputReader);
+            });
 }
 
 class ConsoleClientTcp
@@ -185,6 +261,8 @@ ConsoleClientTcp::ConsoleClientTcp(services::ConnectionFactoryWithNameResolver& 
 
 ConsoleClientTcp::~ConsoleClientTcp()
 {
+    tracer.Trace() << "~ConsoleClientTcp";
+
     if (!!consoleClientConnection)
         consoleClientConnection->services::ConnectionObserver::Subject().AbortAndDestroy();
 }
@@ -203,7 +281,7 @@ void ConsoleClientTcp::ConnectionEstablished(infra::AutoResetFunction<void(infra
 {
     tracer.Trace() << "Connection established";
     tracer.Trace();
-    createdObserver(consoleClientConnection.Emplace(console));
+    createdObserver(consoleClientConnection.Emplace(console, tracer));
 }
 
 void ConsoleClientTcp::ConnectionFailed(services::ClientConnectionObserverFactoryWithNameResolver::ConnectFailReason reason)
@@ -267,7 +345,7 @@ void ConsoleClientWebSocket::ConnectionEstablished(infra::AutoResetFunction<void
 {
     tracer.Trace() << "Connection established";
     tracer.Trace();
-    createdClientObserver(consoleClientConnection.Emplace(console));
+    createdClientObserver(consoleClientConnection.Emplace(console, tracer));
 }
 
 void ConsoleClientWebSocket::ConnectionFailed(ConnectFailReason reason)
@@ -298,7 +376,25 @@ int main(int argc, char* argv[], const char* env[])
 
         application::EchoRoot root;
 
-        for (const auto& path : paths)
+        namespace fs = std::filesystem;
+
+        std::vector<fs::path> pbFiles;
+
+        for (const fs::path path : paths)
+        {
+            if (fs::is_directory(path))
+                for (const fs::directory_entry& entry : fs::recursive_directory_iterator(path))
+                {
+                    auto path = entry.path();
+
+                    if (path.extension() == ".pb" && path.parent_path().string().rfind("/echo") != std::string::npos)
+                        pbFiles.push_back(path);
+                }
+            else if (path.extension() == ".pb")
+                pbFiles.push_back(path);
+        }
+
+        for (const auto& path : pbFiles)
         {
             std::ifstream stream(path, std::ios::binary);
             if (!stream)

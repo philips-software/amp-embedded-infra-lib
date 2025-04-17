@@ -1,4 +1,5 @@
 #include "protobuf/echo/test_doubles/ServiceStub.hpp"
+#include <cstdint>
 
 namespace services
 {
@@ -50,14 +51,9 @@ namespace services
         return value;
     }
 
-    ServiceStub::ServiceStub(Echo& echo)
-        : Service(echo)
+    ServiceStub::ServiceStub(Echo& echo, uint32_t serviceId)
+        : Service(echo, serviceId)
     {}
-
-    bool ServiceStub::AcceptsService(uint32_t id) const
-    {
-        return id == serviceId;
-    }
 
     infra::SharedPtr<MethodDeserializer> ServiceStub::StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const services::EchoErrorPolicy& errorPolicy)
     {
@@ -84,8 +80,9 @@ namespace services
         }
     }
 
-    ServiceStubProxy::ServiceStubProxy(services::Echo& echo)
+    ServiceStubProxy::ServiceStubProxy(services::Echo& echo, uint32_t serviceId)
         : services::ServiceProxy(echo, maxMessageSize)
+        , serviceId(serviceId)
     {}
 
     void ServiceStubProxy::Method(uint32_t value)
