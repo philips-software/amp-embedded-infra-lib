@@ -5,6 +5,7 @@
 #include "mbedtls/oid.h"
 #include "mbedtls/pk.h"
 #include "mbedtls/version.h"
+#include "services/util/MbedTlsRandomDataGeneratorWrapper.hpp"
 
 #if MBEDTLS_VERSION_MAJOR < 3
 #define MBEDTLS_PRIVATE(member) member
@@ -12,12 +13,6 @@
 
 namespace
 {
-    int RandomDataGeneratorWrapper(void* data, unsigned char* output, std::size_t size)
-    {
-        reinterpret_cast<hal::SynchronousRandomDataGenerator*>(data)->GenerateRandomData(infra::ByteRange(output, output + size));
-        return 0;
-    }
-
     infra::ByteRange MakeByteRange(const mbedtls_mpi& number)
     {
         return infra::ByteRange(reinterpret_cast<unsigned char*>(number.MBEDTLS_PRIVATE(p)), reinterpret_cast<unsigned char*>(number.MBEDTLS_PRIVATE(p) + number.MBEDTLS_PRIVATE(n)));
@@ -65,7 +60,7 @@ namespace services
 #if MBEDTLS_VERSION_MAJOR < 3
         result = mbedtls_pk_parse_key(&privateKey, reinterpret_cast<const unsigned char*>(key.data()), key.size(), nullptr, 0);
 #else
-        result = mbedtls_pk_parse_key(&privateKey, reinterpret_cast<const unsigned char*>(key.data()), key.size(), nullptr, 0, &RandomDataGeneratorWrapper, &randomDataGenerator);
+        result = mbedtls_pk_parse_key(&privateKey, reinterpret_cast<const unsigned char*>(key.data()), key.size(), nullptr, 0, &MbedTlsRandomDataGeneratorWrapper, &randomDataGenerator);
 #endif
         really_assert(result == 0);
     }
@@ -78,7 +73,7 @@ namespace services
 #if MBEDTLS_VERSION_MAJOR < 3
         result = mbedtls_pk_parse_key(&privateKey, reinterpret_cast<const unsigned char*>(key.begin()), key.size(), nullptr, 0);
 #else
-        result = mbedtls_pk_parse_key(&privateKey, key.begin(), key.size(), nullptr, 0, &RandomDataGeneratorWrapper, &randomDataGenerator);
+        result = mbedtls_pk_parse_key(&privateKey, key.begin(), key.size(), nullptr, 0, &MbedTlsRandomDataGeneratorWrapper, &randomDataGenerator);
 #endif
         really_assert(result == 0);
     }
@@ -101,7 +96,7 @@ namespace services
         size_t keySizeInBits = mbedtls_pk_get_bitlen(&privateKey);
         int32_t exponent = ExtractExponent(*rsaContext);
 
-        int result = mbedtls_rsa_gen_key(rsaContext, &RandomDataGeneratorWrapper, &randomDataGenerator, keySizeInBits, exponent);
+        int result = mbedtls_rsa_gen_key(rsaContext, &MbedTlsRandomDataGeneratorWrapper, &randomDataGenerator, keySizeInBits, exponent);
         really_assert(result == 0);
     }
 
@@ -218,9 +213,9 @@ namespace services
                 size_t signatureLength = 0;
 
 #if MBEDTLS_VERSION_MAJOR < 3
-                auto result = mbedtls_pk_sign(&privateKey, ownCertificate.sig_md, hash, 0, signature, &signatureLength, &RandomDataGeneratorWrapper, &randomDataGenerator);
+                auto result = mbedtls_pk_sign(&privateKey, ownCertificate.sig_md, hash, 0, signature, &signatureLength, &MbedTlsRandomDataGeneratorWrapper, &randomDataGenerator);
 #else
-                auto result = mbedtls_pk_sign(&privateKey, ownCertificate.MBEDTLS_PRIVATE(sig_md), hash, 0, signature, sizeof(signature), &signatureLength, &RandomDataGeneratorWrapper, &randomDataGenerator);
+                auto result = mbedtls_pk_sign(&privateKey, ownCertificate.MBEDTLS_PRIVATE(sig_md), hash, 0, signature, sizeof(signature), &signatureLength, &MbedTlsRandomDataGeneratorWrapper, &randomDataGenerator);
 #endif
 
                 if (result != 0)
