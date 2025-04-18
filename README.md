@@ -22,7 +22,7 @@ EmIL requires:
 - CMake 3.24 or higher.
 
 EmIL is know to build under the following configurations:
-- Windows from Visual Studio 2019 onwards.
+- Windows from Visual Studio 2022 onwards.
 - Linux from GCC 7 onwards.
 - OSX from XCode 11 and target platform 10.15 onwards.
 
