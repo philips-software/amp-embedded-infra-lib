@@ -118,7 +118,7 @@ on the peer. Furthermore, a means to secure the communication is required.
 For these purposes the SESAME protocol stack is developed.</p>
 </div>
 <div class="paragraph">
-<p>SESAME consists of several layers, first using <a href="https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing">COBS</a>
+<p>SESAME consists of several layers, first using <a href="https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing">COBS</a> (Consistent Overhead Byte Stuffing)
 to divide the stream of bytes into delimited packets,
 second a window protocol to prevent overflowing buffers,
 and third (optional) a layer that provides security.</p>
@@ -135,9 +135,15 @@ and third (optional) a layer that provides security.</p>
 <div class="sectionbody">
 <div class="paragraph">
 <p>The first layer divides the stream of bytes of the serial communication
-into a number of packets. As specified by the <a href="https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing">COBS</a>
-protocol, packets are separated by 0 bytes, and any 0 bytes in the payload
-are exchanged for non-0 bytes on the serial communication layer. Please see
+into a number of packets. The purpose of this is to present well-defined packets to higher
+layers in the SESAME stack, where those higher layers can then define packet formats.</p>
+</div>
+<div class="paragraph">
+<p>As specified by the <a href="https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing">COBS</a>
+protocol, packets are separated by 0 bytes. This means that any 0 bytes inside the payload must be
+replaced. This is done by adding a first byte to the payload, which points to the first 0 byte in
+the payload. That 0 byte is then replaced by the index of the next 0 byte, etc. If no 0 byte is
+present within 254 bytes is present then an extra overhead byte is inserted. Please see
 the <a href="https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing">COBS</a> specification
 for details.</p>
 </div>
@@ -170,9 +176,9 @@ packet types are defined:</p>
 <div class="sect2">
 <h3 id="_init"><a class="anchor" href="#_init"></a>Init</h3>
 <div class="paragraph">
-<p>Sending an Init packet initializes the protocol. An Init packet has one 16-bit unsigned parameter <code>size</code>
-which specifies the available window size, encoded in little endian order. An Init packet must be responded to with an InitResponse
-packet. Before receiving an InitResponse, a peer must assume that no window is available, so
+<p>Sending an <code>Init</code> packet initializes the protocol. An <code>Init</code> packet has one 16-bit unsigned parameter <code>size</code>
+which specifies the available window size, encoded in little endian order. An <code>Init</code> packet must be responded to with an <code>InitResponse</code>
+packet. Before receiving an <code>InitResponse</code>, a peer must assume that no window is available, so
 further packets may not be sent.</p>
 </div>
 <div class="imageblock kroki">
@@ -182,18 +188,21 @@ further packets may not be sent.</p>
 <div class="title">Figure 1. Init packet</div>
 </div>
 <div class="paragraph">
-<p>An Init packet consumes no window, and may always be sent. This results in an edge case that an
-Init packet sent at an inconvenient moment may overflow the peer&#8217;s buffer. In that case, that
-overflow must result in the peer sending an Init packet of its own. Since a sender
-has an empty buffer before sending an Init packet, that will not result in a repeated exchange of
-Init packets.</p>
+<p>An <code>Init</code> packet consumes no window, and may always be sent. This results in an edge case that an
+<code>Init</code> packet sent at an inconvenient moment may overflow the peer&#8217;s buffer. In that case, that
+overflow must result in the peer sending an <code>Init</code> packet of its own, and the peer must conclude that
+an <code>Init</code> packet has been received; it can then respond with an <code>Init</code> packet of its own, advertising
+its available window, and then reading the peer&#8217;s window size from its <code>InitResponse</code> packet. This way,
+the data lost in the overflown <code>Init</code> packet is retrieved. Since a sender
+has an empty buffer before sending an <code>Init</code> packet, that will not result in a repeated exchange of
+<code>Init</code> packets.</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_initresponse"><a class="anchor" href="#_initresponse"></a>InitResponse</h3>
 <div class="paragraph">
-<p>When an Init packet has been received, a host will clear its buffer, and advertise available buffer
-space using the InitResponse packet. Similar to the Init packet, the InitResponse packet
+<p>When an <code>Init</code> packet has been received, a host will clear its buffer, and advertise available buffer
+space using the <code>InitResponse</code> packet. Similar to the <code>Init</code> packet, the <code>InitResponse</code> packet
 has one 16-bit unsigned parameter <code>size</code> encoded in little endian which advertises available buffer size.</p>
 </div>
 <div class="imageblock kroki">
@@ -203,7 +212,7 @@ has one 16-bit unsigned parameter <code>size</code> encoded in little endian whi
 <div class="title">Figure 2. InitResponse packet</div>
 </div>
 <div class="paragraph">
-<p>An InitResponse packet consumes 5 window bytes: 3 for the packet contents, 2 for the
+<p>An <code>InitResponse</code> packet consumes 5 window bytes: 3 for the packet contents, 2 for the
 COBS layer (1 for the COBS overhead byte, one for the terminating 0).</p>
 </div>
 </div>
@@ -211,7 +220,7 @@ COBS layer (1 for the COBS overhead byte, one for the terminating 0).</p>
 <h3 id="_releasewindow"><a class="anchor" href="#_releasewindow"></a>ReleaseWindow</h3>
 <div class="paragraph">
 <p>When a host has processed incoming packets, and therefore frees up buffer space,
-it advertises the freed up space using the ReleaseWindow packet. The ReleaseWindow packet
+it advertises the freed up space using the <code>ReleaseWindow</code> packet. The <code>ReleaseWindow</code> packet
 has one 16-bit unsigned parameter <code>size</code> encoded in little endian which specifies the amount of bytes in the buffer
 freed up in addition to already known free space.</p>
 </div>
@@ -221,16 +230,11 @@ freed up in addition to already known free space.</p>
 </div>
 <div class="title">Figure 3. ReleaseWindow packet</div>
 </div>
-<div class="paragraph">
-<p>In order to avoid continuous exchanges of ReleaseWindow packets, hosts should only release
-window sizes bigger than 5. When determining the buffer size needed to exchange packets, the
-size of the biggest packet should be increased by 5 to accommodate for a ReleaseWindow packet.</p>
-</div>
 </div>
 <div class="sect2">
 <h3 id="_message"><a class="anchor" href="#_message"></a>Message</h3>
 <div class="paragraph">
-<p>Data sent by higher protocol layers are sent by Message packets. Each Message packet consumes a window
+<p>Data sent by higher protocol layers are sent by <code>Message</code> packets. Each <code>Message</code> packet consumes a window
 amount equal to the size of that packet plus the COBS overhead of that specific packet, plus
 its terminating 0.</p>
 </div>
@@ -239,6 +243,34 @@ its terminating 0.</p>
 <img src="_images/diag-44a7e6fea768804d3b097dc66093dfeaa0e0b109.svg" alt="Message packet">
 </div>
 <div class="title">Figure 4. Message packet</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_quality_of_implementation"><a class="anchor" href="#_quality_of_implementation"></a>Quality Of Implementation</h3>
+<div class="paragraph">
+<p>When implementing the Window layer, there are a few considerations:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>In order to avoid continuous exchanges of <code>ReleaseWindow</code> packets, hosts should only release
+window sizes bigger than 5. When determining the buffer size needed to exchange packets, the
+size of the biggest packet should be increased by 5 to accommodate for a <code>ReleaseWindow</code> packet.</p>
+</li>
+<li>
+<p>A sender should only send a message when enough window remains to also send a a <code>ReleaseWindow</code>
+packet. Otherwise, if both peers consume each other&#8217;s window, the protocol would enter a deadlock
+since neither peer is allowed to send a <code>ReleaseWindow</code> packet.</p>
+</li>
+<li>
+<p>If enough buffer space is available, a sender should avoid consuming the entire peer&#8217;s
+buffer with one message. This would result in the sender sending a big message, the peer
+processing that message and responding with a window release message, for which the sender had
+to wait until it sends its next message. Instead, a sender should send packets of only half the peer&#8217;s
+window size at a time. This enables the peer to process the packet, and send a window release
+while the sender is sending the next message.</p>
+</li>
+</ol>
 </div>
 </div>
 </div>
@@ -253,15 +285,15 @@ not intended to be as flexible as a protocol like TLS, for simplicity some very 
 are made regarding cryptographic schemes.</p>
 </div>
 <div class="paragraph">
-<p>Encryption and authentication is done with AES-128 in
-<a href="https://en.wikipedia.org/wiki/Galois/Counter_Mode">GCM</a> mode. AES-128-GCM requires a 128 bit
-key and an 128 bit IV. Both directions of communication require their own unique key.</p>
+<p>Encryption and authentication is done with <a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197-upd1.pdf"><code>AES-128</code></a> in
+<a href="https://en.wikipedia.org/wiki/Galois/Counter_Mode"><code>GCM</code></a> mode. <code>AES-128-GCM</code> requires a 128 bit
+key and an 128 bit Initialisation Vector (IV). Both directions of communication require their own unique key/IV pair.</p>
 </div>
 <div class="paragraph">
-<p>Each message is encrypted with AES-128-GCM with the key and IV as parameters. This results in
-a cyphertext of size equal to the size of the message, plus a 16 byte MAC. Since in GCM IVs may
+<p>Each message is encrypted with <code>AES-128-GCM</code> with the key and IV as parameters. This results in
+a cyphertext of size equal to the size of the message, plus a 16 byte MAC. Since in <code>GCM</code> IVs may
 not be reused, the IV is incremented in a specific way to avoid using the same IV twice: After
-each message, treat the IV as a 128-bit unsigned number, and add 2<sup>64</sup> to it, discarding any overflow.
+each message, treat the IV as a 128-bit unsigned Big Endian number, and add 2<sup>64</sup> to it (discarding any overflow).
 This way, the protocol can securely handle 2<sup>64</sup> messages each of size at most 2<sup>64</sup> before a
 re-negotiation of keys is necessary.</p>
 </div>
@@ -272,7 +304,7 @@ using the same key/IV pair will result in the XOR of the bit pattern of those tw
 messages to be equal to the XOR of the bit pattern of the two cyphertexts of those messages.</p>
 </div>
 <div class="paragraph">
-<p>There is one exception to that rule: If the first message sent consists of at least 128 bit of
+<p>There is one exception to that rule: If the first message sent consists of at least 128 bits of
 random data, then security is not compromised. The only information leaked is the XOR of two
 times 128 bits of random data, from which an attacker still learns nothing. One possible scheme
 of key establishment is therefore to hardcode the four Key and IV values for sending and receiving
@@ -283,8 +315,77 @@ on both hosts, and to choose random new Key/IV values right after initialization
 Windowed layer), keys are reset to their default value, and key negotiation must start over
 before other messages are sent.</p>
 </div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_symmetric_key_establishment"><a class="anchor" href="#_symmetric_key_establishment"></a>Symmetric key establishment</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Many differrent ways exist to establish which keys the peers are going to use for the Secured layer;
+which scheme to use heavily depends on the context in which SESAME is used. Two schemes are defined
+in this specification.</p>
+</div>
 <div class="sect2">
-<h3 id="_echo_on_sesame"><a class="anchor" href="#_echo_on_sesame"></a>ECHO on SESAME</h3>
+<h3 id="_key_establishment_hardcoded_keys"><a class="anchor" href="#_key_establishment_hardcoded_keys"></a>Key Establishment: Hardcoded Keys</h3>
+<div class="paragraph">
+<p>Both peers can be configured with hardcoded keys when implementers are confident that attackers
+can not extract those keys from the microcontrollers in which SESAME is implemented. A fixed key/IV
+pair is chosen for sending data from peer A to peer B, and a fixed key/IV pair is chosen for sending
+data from peer B to peer A.
+However, as indicated before, care must be taken to not send two messages under the same key. Therefore,
+before sending any other messages, each peer generates a new random key/IV pair, and uses the
+<code>ActivateNewKeyMaterial</code> method of the <code>SymmetricKeyEstablishment</code> ECHO service (see appendix) to send
+this pair to their peer. Upon reception of this method, a peer uses the presented key/IV pair for
+encryption of subsequent messages that it sends.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_key_establishment_key_negotiation_with_diffie_hellman"><a class="anchor" href="#_key_establishment_key_negotiation_with_diffie_hellman"></a>Key Establishment: Key Negotiation with Diffie-Hellman</h3>
+<div class="paragraph">
+<p>In this scheme, a host does not need to be pre-programmed with the keys used by its peer. Instead,
+the Diffie-Hellman scheme is used to have the two peers negotiate the required key/IV pairs. In order
+to withstand man-in-the-middle attacks, the key exchange messages are signed, and the signature of
+a received key exchange message is verified by the receiving party.</p>
+</div>
+<div class="paragraph">
+<p>In order to verify the signature, a party must either have the certificate of its peer, or have a root
+certificate by which the peer&#8217;s certificate&#8217;s validity is checked. In the latter case, a peer will
+use the <code>PresentCertificate</code> method of the <code>DiffieHellmanKeyEstablishment</code> ECHO service to inform its
+peer of a certificate to be used. A certificate is either presented in PEM or in DER format.
+A party will verify each certificate presented in this way by
+validating it against either one of the installed root certificates, or one of the earlier presented
+certificates.</p>
+</div>
+<div class="paragraph">
+<p>After any certificate exchange, a party will generate a new Elliptic Curve Diffie-Hellman public/private
+key pair on the 256-bit curve defined by <a href="https://doi.org/10.6028/NIST.FIPS.186-5">FIPS 186-5</a> and
+<a href="https://www.secg.org/sec1-v2.pdf">SEC1</a> (<code>SECP256R1</code>). It will then encode its public
+key (which is a point of the elliptic curve) in the 65-byte uncompressed representation as defined in
+SEC1 paragraph 2.3.3. It then uses <a href="https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-5.pdf"><code>ECDSA</code></a>
+on the same <code>SECP256R1</code> curve to compute the signature values <code>r</code> and <code>s</code>.
+After computing the public/private key and the signatures, it sends the public key and the <code>r</code> and <code>s</code> values
+using the <code>Exchange</code> method of the <code>DiffieHellmanKeyEstablishment</code> ECHO interface to its peer.</p>
+</div>
+<div class="paragraph">
+<p>Upon reception, the peer uses the received <code>r</code> and <code>s</code> signature values to check the signature of the presented public key.
+If this signature is correct, it computes the shared secret using its own private key and the peer&#8217;s public key
+using the Diffie-Hellman scheme.
+Key expansion is performed on the shared secret to generate enough material for the required key/IV pairs in this
+way: <a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-90Ar1.pdf"><code>HMAC-DRBG-SHA256</code></a> is seeded
+with the shared secret, and generates 4 times 256 bits of data. The first 256
+bits of data is Key<sub>A</sub>, the next IV<sub>A</sub>, then Key<sub>B</sub>, then IV<sub>B</sub>. Both parties perform a lexicographical compare
+of their Diffie-Hellman public keys. The party with public key that compares greater than the public key of its peer
+uses Key<sub>A</sub> and IV<sub>A</sub> for sending data, the other party uses Key<sub>B</sub> and IV<sub>B</sub> for sending data.</p>
+</div>
+<div class="paragraph">
+<p>When key exchange is done, both parties can start sending other ECHO data than the key exchange messages.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_echo_over_sesame"><a class="anchor" href="#_echo_over_sesame"></a>ECHO over SESAME</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>ECHO is used over SESAME by serializing ECHO messages, dividing those messages into a series
 of chunks suitable to send over SESAME (so the maximum buffer size advertised by the peer must
@@ -293,32 +394,58 @@ and parsed as ECHO messages. Since ECHO is able to handle a continuous stream of
 ECHO messages being concatenated do not pose any difficulties.</p>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_symmetric_key_establishment_over_echo"><a class="anchor" href="#_symmetric_key_establishment_over_echo"></a>Symmetric key establishment over ECHO</h3>
-<div class="paragraph">
-<p>Specifying the exact key negotiation scheme is outside of the scope of this specification,
-since there are many different situations which require different negotiation schemes. However,
-if a key negotiation scheme is used that results in a host communicating to its peer that
-a specific Key/IV pair is to be used, then the SymmetricKeyEstablishment ECHO service can be used.
-This service has one method ActivateNewKeyMaterial with parameters Key and IV. After receiving this
-message, a sender of that message will use those Key/IV for subsequent messages towards the receiver.
-A full key negotiation will therefore result in ActivateNewKeyMaterial invocations in both directions.</p>
-</div>
-</div>
-</div>
 </div>
 <div class="sect1">
 <h2 id="_appendix_typical_sequence"><a class="anchor" href="#_appendix_typical_sequence"></a>Appendix: Typical sequence</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>This sequence diagram shows a typical sequence of the SESAME protocol being initialized and a message
-being sent.</p>
+being sent. The Secured layer is left out in this sequence.</p>
 </div>
 <div class="imageblock kroki">
 <div class="content">
 <img src="_images/diag-f5af5a4b5404143a9c1b8dfb93a66295bd65b6d3.svg" alt="Typical sequence">
 </div>
 <div class="title">Figure 5. Typical sequence</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_appendix_implementation_in_amp_embedded_infra_lib"><a class="anchor" href="#_appendix_implementation_in_amp_embedded_infra_lib"></a>Appendix: Implementation in amp-embedded-infra-lib</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The protocol layers and key establishment schemes defined here are implemented in amp-embedded-infra-lib.
+Most of the classes are part of services/util.</p>
+</div>
+<div class="paragraph">
+<p>The classes implementing the protocol layers are:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>SesameCobs (services/util/SesameCobs.hpp)</p>
+</li>
+<li>
+<p>SesameWindowed (services/util/SesameWindowed.hpp)</p>
+</li>
+<li>
+<p>SesameSecured (services/utilSesameSecured.hpp)</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>EchoOnSesame (services/util/EchoOnSesame.hpp) places ECHO on top of SESAME without security;
+main_::EchoOnSesame&lt;max packet size&gt; (services/util/EchoInstantiation) instantiates EchoOnSesame,
+SesameCobs and SesameWindowed to form a full ECHO on SESAME stack on top of a UART.</p>
+</div>
+<div class="paragraph">
+<p>EchoOnSesameSymmetricKey (services/util/EchoOnSesameSymmetricKey.hpp) places ECHO on top of
+SESAME with security, and implements the Hardcoded Keys scheme.</p>
+</div>
+<div class="paragraph">
+<p>EchoOnSesameDiffieHellman (services/util/EchoOnSesameDiffieHellman.hpp) places ECHO on top of
+SESAME with security and implements the Diffie-Hellman scheme. This class is instantiated with
+one root certificate which is used to verify one certificate received by a peer.</p>
 </div>
 </div>
 </div>
@@ -339,11 +466,34 @@ message SymmetricKeyMaterial
     bytes iv = 2 [(bytes_size) = 16];
 }
 
+message DiffieHellmanMaterial
+{
+    // This method uses an EC Diffie-Hellman exchange over the 256-bit curve defined by FIPS 186-4 and SEC1
+    bytes publicKey = 1 [(bytes_size) = 65];
+    // The signature will be computed over the publicKey using the sender's certificate, which uses EC DSA over the same curve as the EC DH operation
+    bytes signatureR = 2 [(bytes_size) = 32];
+    bytes signatureS = 3 [(bytes_size) = 32];
+}
+
+message Certificate
+{
+    // DER-encoded X.509 certificate, signed by a CA
+    bytes certificate = 1 [(bytes_size) = 512];
+}
+
 service SymmetricKeyEstablishment
 {
     option (service_id) = 3;
 
     rpc ActivateNewKeyMaterial(SymmetricKeyMaterial) returns (Nothing) { option (method_id) = 1; }
+}
+
+service DiffieHellmanKeyEstablishment
+{
+    option (service_id) = 4;
+
+    rpc Exchange(DiffieHellmanMaterial) returns (Nothing) { option (method_id) = 1; }
+    rpc PresentCertificate(Certificate) returns (Nothing) { option (method_id) = 2; }
 }</code></pre>
 </div>
 </div>
