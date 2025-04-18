@@ -43,9 +43,10 @@ function(add_mbedtls_target_properties)
             # see https://github.com/Mbed-TLS/mbedtls/pull/6966
             # mbedtls sets the -Wdocumentation flag, which is throwing warnings
             # since clang-15
-            $<$<CXX_COMPILER_ID:Clang>:-Wno-documentation>
-            $<$<CXX_COMPILER_ID:AppleClang>:-Wno-documentation>
-            -w
+            $<$<CXX_COMPILER_ID:Clang>:-Wno-documentation -Wno-conversion>
+            $<$<CXX_COMPILER_ID:AppleClang>:-Wno-documentation -Wno-conversion>
+            $<$<CXX_COMPILER_ID:GNU>:-Wno-conversion>
+            $<$<CXX_COMPILER_ID:MSVC>:/wd4244 /wd4267>
         )
 
         target_include_directories(${target} PUBLIC
