@@ -1,7 +1,7 @@
 FetchContent_Declare(
     mbedtls
-    GIT_REPOSITORY https://github.com/ccrugoPhilips/mbedtls # Mbed-TLS fork
-    GIT_TAG 3af68032234f4fb485ed2da65d9af12dde6143dc # v3.6.2 with patch
+    GIT_REPOSITORY https://github.com/Mbed-TLS/mbedtls
+    GIT_TAG 107ea89daaefb9867ea9121002fbbdf926780e98 # v3.6.2
 )
 
 set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL On)
@@ -45,6 +45,7 @@ function(add_mbedtls_target_properties)
             # since clang-15
             $<$<CXX_COMPILER_ID:Clang>:-Wno-documentation>
             $<$<CXX_COMPILER_ID:AppleClang>:-Wno-documentation>
+            -w
         )
 
         target_include_directories(${target} PUBLIC
