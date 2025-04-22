@@ -12,14 +12,7 @@ namespace services
     WebSocketClientConnectionObserver::WebSocketClientConnectionObserver()
         : streamWriter([this]()
               {
-                  infra::WeakPtr<void> checkAlive = keepAliveWhileWriting;
-                  keepAliveWhileWriting = nullptr;
-                  if (checkAlive.lock())
-                      StreamWriterAllocatable();
-              })
-        , streamReader([this]()
-              {
-                  keepAliveWhileReading = nullptr;
+                  StreamWriterAllocatable();
               })
     {}
 
@@ -35,7 +28,6 @@ namespace services
             assert(observerStreamRequested);
             assert(requestedSendSize != infra::none);
             assert(!streamWriter);
-            keepAliveWhileWriting = Subject().ObserverPtr();
             Connection::Observer().SendStreamAvailable(streamWriter.Emplace(std::move(writer), *infra::PostAssign(requestedSendSize, infra::none)));
         }
     }
@@ -68,7 +60,6 @@ namespace services
 
     infra::SharedPtr<infra::StreamReaderWithRewinding> WebSocketClientConnectionObserver::ReceiveStream()
     {
-        keepAliveWhileReading = Subject().ObserverPtr();
         return streamReader.Emplace(*this);
     }
 
