@@ -1,5 +1,6 @@
 #include "lwip/lwip_cpp/LightweightIp.hpp"
 #include "lwip/init.h"
+#include "lwipopts.h"
 #ifndef ESP_PLATFORM
 #include "lwip/timeouts.h"
 #endif
@@ -81,7 +82,11 @@ namespace services
     void LightweightIp::RegisterInstance()
     {
         if (instances.empty())
+        {
+            LOCK_TCPIP_CORE();
             netif_add_ext_callback(&instanceCallback, &InstanceCallback);
+            UNLOCK_TCPIP_CORE();
+        }
 
         instances.push_back(*this);
     }
