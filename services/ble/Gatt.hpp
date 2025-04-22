@@ -66,6 +66,13 @@ namespace services
         constexpr inline AttAttribute::Uuid16 pnpId{ 0x2A50 };
     }
 
+    enum class GattCharacteristicOperationsResult : uint8_t
+    {
+        success = 0x00,
+        retry = 0x01,
+        error = 0x02
+    };
+
     class GattCharacteristic
     {
     public:

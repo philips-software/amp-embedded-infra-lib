@@ -46,12 +46,7 @@ namespace services
         : public infra::Subject<GattServerCharacteristicOperationsObserver>
     {
     public:
-        enum class UpdateStatus : uint8_t
-        {
-            success,
-            retry,
-            error
-        };
+        using UpdateStatus = GattCharacteristicOperationsResult;
 
         // Update 'characteristic' with 'data' towards the
         // BLE stack and, depending on the configuration of

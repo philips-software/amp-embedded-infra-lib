@@ -27,11 +27,11 @@ namespace services
         GattClientCharacteristicOperationsObserver::Subject().Write(*this, data, onDone);
     }
 
-    void GattClientCharacteristic::WriteWithoutResponse(infra::ConstByteRange data)
+    GattCharacteristicOperationsResult GattClientCharacteristic::WriteWithoutResponse(infra::ConstByteRange data)
     {
         really_assert(GattClientCharacteristicOperationsObserver::Attached());
 
-        GattClientCharacteristicOperationsObserver::Subject().WriteWithoutResponse(*this, data);
+        return GattClientCharacteristicOperationsObserver::Subject().WriteWithoutResponse(*this, data);
     }
 
     void GattClientCharacteristic::EnableNotification(const infra::Function<void(uint8_t)>& onDone)
