@@ -21,13 +21,13 @@ namespace services
             const auto& current = stack.back();
             current.second(stream);
 
+            ConsumeStack(current, available - limitedReader.Available());
+
             if (stream.Failed() || reader.Empty())
             {
                 failed = stream.Failed();
                 break;
             }
-
-            ConsumeStack(current, available - limitedReader.Available());
         }
     }
 

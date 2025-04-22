@@ -10,9 +10,32 @@ message SymmetricKeyMaterial
     bytes iv = 2 [(bytes_size) = 16];
 }
 
+message DiffieHellmanMaterial
+{
+    // This method uses an EC Diffie-Hellman exchange over the 256-bit curve defined by FIPS 186-4 and SEC1
+    bytes publicKey = 1 [(bytes_size) = 65];
+    // The signature will be computed over the publicKey using the sender's certificate, which uses EC DSA over the same curve as the EC DH operation
+    bytes signatureR = 2 [(bytes_size) = 32];
+    bytes signatureS = 3 [(bytes_size) = 32];
+}
+
+message Certificate
+{
+    // DER-encoded X.509 certificate, signed by a CA
+    bytes certificate = 1 [(bytes_size) = 512];
+}
+
 service SymmetricKeyEstablishment
 {
     option (service_id) = 3;
 
     rpc ActivateNewKeyMaterial(SymmetricKeyMaterial) returns (Nothing) { option (method_id) = 1; }
+}
+
+service DiffieHellmanKeyEstablishment
+{
+    option (service_id) = 4;
+
+    rpc Exchange(DiffieHellmanMaterial) returns (Nothing) { option (method_id) = 1; }
+    rpc PresentCertificate(Certificate) returns (Nothing) { option (method_id) = 2; }
 }
