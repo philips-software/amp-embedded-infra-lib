@@ -214,13 +214,6 @@ namespace services
         bool IsDeviceBonded(hal::MacAddress address, GapDeviceAddressType addressType) const override;
     };
 
-    class GapPeripheralIntervalController
-    {
-    public:
-        virtual void SwitchToLongInterval() = 0;
-        virtual void SwitchToUserInterval() = 0;
-    };
-
     class GapPeripheral;
 
     class GapPeripheralObserver
@@ -261,7 +254,7 @@ namespace services
         virtual infra::ConstByteRange GetScanResponseData() const = 0;
         virtual void Advertise(GapAdvertisementType type, AdvertisementIntervalMultiplier multiplier) = 0;
         virtual void Standby() = 0;
-        virtual void SetConnectionParameter(const services::GapConnectionParameters& connParam) = 0;
+        virtual void SetConnectionParameters(const services::GapConnectionParameters& connParam) = 0;
     };
 
     class GapPeripheralDecorator
@@ -284,7 +277,7 @@ namespace services
         infra::ConstByteRange GetScanResponseData() const override;
         void Advertise(GapAdvertisementType type, AdvertisementIntervalMultiplier multiplier) override;
         void Standby() override;
-        void SetConnectionParameter(const services::GapConnectionParameters& connParam) override;
+        void SetConnectionParameters(const services::GapConnectionParameters& connParam) override;
     };
 
     inline GapPeripheral::AdvertisementFlags operator|(GapPeripheral::AdvertisementFlags lhs, GapPeripheral::AdvertisementFlags rhs)

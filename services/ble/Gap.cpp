@@ -137,9 +137,9 @@ namespace services
         GapPeripheralObserver::Subject().Standby();
     }
 
-    void GapPeripheralDecorator::SetConnectionParameter(const services::GapConnectionParameters& connParam)
+    void GapPeripheralDecorator::SetConnectionParameters(const services::GapConnectionParameters& connParam)
     {
-        GapPeripheralObserver::Subject().SetConnectionParameter(connParam);
+        GapPeripheralObserver::Subject().SetConnectionParameters(connParam);
     }
 
     void GapCentralDecorator::DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered)
