@@ -1,5 +1,6 @@
 #include "lwip/lwip_cpp/DatagramLwIp.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
+#include "infra/util/ReallyAssert.hpp"
 
 namespace services
 {
@@ -278,21 +279,21 @@ namespace services
     DatagramExchangeLwIP::UdpWriter::~UdpWriter()
     {
         pbuf_realloc(buffer, bufferOffset);
-        if (!remote)
-        {
-            err_t result = udp_send(control, buffer);
-            assert(result == ERR_OK);
-        }
-        else
-        {
-            auto address = Convert(*remote).first;
-#if LWIP_IPV6 == 1
-            if (IP_GET_TYPE(address) == IPADDR_TYPE_V6)
-                ip6_addr_set_zone(&address.u_addr.ip6, netif_default->ip6_addr->u_addr.ip6.zone);
-#endif
-            err_t result = udp_sendto(control, buffer, &address, Convert(*remote).second);
-            assert(result == ERR_OK);
-        }
+        //         if (!remote)
+        //         {
+        //             err_t result = udp_send(control, buffer);
+        //             assert(result == ERR_OK);
+        //         }
+        //         else
+        //         {
+        //             auto address = Convert(*remote).first;
+        // #if LWIP_IPV6 == 1
+        //             if (IP_GET_TYPE(address) == IPADDR_TYPE_V6)
+        //                 ip6_addr_set_zone(&address.u_addr.ip6, netif_default->ip6_addr->u_addr.ip6.zone);
+        // #endif
+        //             err_t result = udp_sendto(control, buffer, &address, Convert(*remote).second);
+        //             really_assert(result == ERR_OK);
+        //         }
         pbuf_free(buffer);
     }
 
