@@ -1,6 +1,5 @@
 #include "lwip/lwip_cpp/DatagramLwIp.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
-#include "infra/util/ReallyAssert.hpp"
 
 namespace services
 {
@@ -9,18 +8,15 @@ namespace services
         ip_addr_t Convert(IPv4Address address)
         {
             ip_addr_t result IPADDR4_INIT(0);
-            IP4_ADDR(&result, address[0], address[1], address[2], address[3]);
+            IP4_ADDR(&result.u_addr.ip4, address[0], address[1], address[2], address[3]);
             return result;
         }
 
         ip_addr_t Convert(IPv6Address address)
         {
-#if LWIP_IPV6 == 1
             ip_addr_t result IPADDR6_INIT(0, 0, 0, 0);
-            IP6_ADDR(&result.addr, PP_HTONL(address[1] + (static_cast<uint32_t>(address[0]) << 16)), PP_HTONL(address[3] + (static_cast<uint32_t>(address[2]) << 16)), PP_HTONL(address[5] + (static_cast<uint32_t>(address[4]) << 16)), PP_HTONL(address[7] + (static_cast<uint32_t>(address[6]) << 16)));
+            IP6_ADDR(&result.u_addr.ip6, PP_HTONL(address[1] + (static_cast<uint32_t>(address[0]) << 16)), PP_HTONL(address[3] + (static_cast<uint32_t>(address[2]) << 16)), PP_HTONL(address[5] + (static_cast<uint32_t>(address[4]) << 16)), PP_HTONL(address[7] + (static_cast<uint32_t>(address[6]) << 16)));
             return result;
-#endif
-            return ip_addr_t();
         }
 
         std::pair<ip_addr_t, uint16_t> Convert(UdpSocket socket)
@@ -76,11 +72,10 @@ namespace services
             assert(control != nullptr);
             IPv4Address ipv4Address = remote.Get<Udpv4Socket>().first;
             ip_addr_t ipAddress IPADDR4_INIT(0);
-            IP4_ADDR(&ipAddress, ipv4Address[0], ipv4Address[1], ipv4Address[2], ipv4Address[3]);
+            IP4_ADDR(&ipAddress.u_addr.ip4, ipv4Address[0], ipv4Address[1], ipv4Address[2], ipv4Address[3]);
             err_t result = udp_connect(control, &ipAddress, remote.Get<Udpv4Socket>().second);
             assert(result == ERR_OK);
         }
-#if LWIP_IPV6 == 1
         else
         {
             control = CreateUdpPcb(IPVersions::ipv6);
@@ -92,7 +87,6 @@ namespace services
             err_t result = udp_connect(control, &ipAddress, remote.Get<Udpv6Socket>().second);
             assert(result == ERR_OK);
         }
-#endif
 
         udp_recv(control, &DatagramExchangeLwIP::StaticRecv, this);
     }
@@ -106,13 +100,12 @@ namespace services
             ip_set_option(control, SOF_BROADCAST);
             IPv4Address ipv4Address = remote.Get<Udpv4Socket>().first;
             ip_addr_t ipAddress IPADDR4_INIT(0);
-            IP4_ADDR(&ipAddress, ipv4Address[0], ipv4Address[1], ipv4Address[2], ipv4Address[3]);
+            IP4_ADDR(&ipAddress.u_addr.ip4, ipv4Address[0], ipv4Address[1], ipv4Address[2], ipv4Address[3]);
             err_t result = udp_connect(control, &ipAddress, remote.Get<Udpv4Socket>().second);
             assert(result == ERR_OK);
             result = udp_bind(control, IP4_ADDR_ANY, localPort);
             assert(result == ERR_OK);
         }
-#if LWIP_IPV6 == 1
         else
         {
             control = CreateUdpPcb(IPVersions::ipv6);
@@ -126,7 +119,7 @@ namespace services
             result = udp_bind(control, IP6_ADDR_ANY, localPort);
             assert(result == ERR_OK);
         }
-#endif
+
         udp_recv(control, &DatagramExchangeLwIP::StaticRecv, this);
     }
 
@@ -161,10 +154,8 @@ namespace services
         {
             case IPVersions::ipv4:
                 return IP4_ADDR_ANY;
-#if LWIP_IPV6 == 1
             case IPVersions::ipv6:
                 return IP6_ADDR_ANY;
-#endif
             case IPVersions::both:
                 return IP_ANY_TYPE;
             default:
@@ -182,17 +173,11 @@ namespace services
         if (HasObserver() && reader.Allocatable())
         {
             if (IP_GET_TYPE(address) == IPADDR_TYPE_V4)
-            {
                 GetObserver().DataReceived(reader.Emplace(buffer), Udpv4Socket{ IPv4Address{ ip4_addr1(ip_2_ip4(address)), ip4_addr2(ip_2_ip4(address)), ip4_addr3(ip_2_ip4(address)), ip4_addr4(ip_2_ip4(address)) }, port });
-            }
-#if LWIP_IPV6 == 1
             else
-            {
                 GetObserver().DataReceived(reader.Emplace(buffer), Udpv6Socket{ IPv6Address{ IP6_ADDR_BLOCK1(ip_2_ip6(address)), IP6_ADDR_BLOCK2(ip_2_ip6(address)), IP6_ADDR_BLOCK3(ip_2_ip6(address)), IP6_ADDR_BLOCK4(ip_2_ip6(address)),
                                                                                     IP6_ADDR_BLOCK5(ip_2_ip6(address)), IP6_ADDR_BLOCK6(ip_2_ip6(address)), IP6_ADDR_BLOCK7(ip_2_ip6(address)), IP6_ADDR_BLOCK8(ip_2_ip6(address)) },
                                                                        port });
-            }
-#endif
         }
         else
             pbuf_free(buffer);
@@ -279,21 +264,20 @@ namespace services
     DatagramExchangeLwIP::UdpWriter::~UdpWriter()
     {
         pbuf_realloc(buffer, bufferOffset);
-        //         if (!remote)
-        //         {
-        //             err_t result = udp_send(control, buffer);
-        //             assert(result == ERR_OK);
-        //         }
-        //         else
-        //         {
-        //             auto address = Convert(*remote).first;
-        // #if LWIP_IPV6 == 1
-        //             if (IP_GET_TYPE(address) == IPADDR_TYPE_V6)
-        //                 ip6_addr_set_zone(&address.u_addr.ip6, netif_default->ip6_addr->u_addr.ip6.zone);
-        // #endif
-        //             err_t result = udp_sendto(control, buffer, &address, Convert(*remote).second);
-        //             really_assert(result == ERR_OK);
-        //         }
+        if (!remote)
+        {
+            err_t result = udp_send(control, buffer);
+            assert(result == ERR_OK);
+        }
+        else
+        {
+            auto address = Convert(*remote).first;
+            if (address.type == IPADDR_TYPE_V6)
+                ip6_addr_set_zone(&address.u_addr.ip6, netif_default->ip6_addr->u_addr.ip6.zone);
+
+            err_t result = udp_sendto(control, buffer, &address, Convert(*remote).second);
+            assert(result == ERR_OK);
+        }
         pbuf_free(buffer);
     }
 

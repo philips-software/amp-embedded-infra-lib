@@ -1,5 +1,6 @@
 #include "services/network/ConnectionMbedTls.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -255,7 +256,9 @@ namespace services
     {}
 
     void ConnectionMbedTls::TlsLog(int level, const char* file, int line, const char* message)
-    {}
+    {
+        services::GlobalTracer().Trace() << file << " : " << line << " : " << message;
+    }
 
     void ConnectionMbedTls::TryAllocateSendStream()
     {

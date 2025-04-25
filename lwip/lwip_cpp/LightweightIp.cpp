@@ -1,9 +1,10 @@
 #include "lwip/lwip_cpp/LightweightIp.hpp"
 #include "lwip/init.h"
-#include "lwipopts.h"
 #ifndef ESP_PLATFORM
 #include "lwip/timeouts.h"
 #endif
+
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace
 {
@@ -26,10 +27,10 @@ namespace services
         IPv4Address Convert(ip_addr_t address)
         {
             return {
-                ip4_addr1(&address),
-                ip4_addr2(&address),
-                ip4_addr3(&address),
-                ip4_addr4(&address),
+                ip4_addr1(&address.u_addr.ip4),
+                ip4_addr2(&address.u_addr.ip4),
+                ip4_addr3(&address.u_addr.ip4),
+                ip4_addr4(&address.u_addr.ip4),
             };
         }
     }
@@ -81,11 +82,13 @@ namespace services
 
     void LightweightIp::RegisterInstance()
     {
+        services::GlobalTracer().Trace() << "******** LightweightIp::RegisterInstance *********\r\n";
+
         if (instances.empty())
         {
-            LOCK_TCPIP_CORE();
+            // LOCK_TCPIP_CORE();
             netif_add_ext_callback(&instanceCallback, &InstanceCallback);
-            UNLOCK_TCPIP_CORE();
+            // UNLOCK_TCPIP_CORE();
         }
 
         instances.push_back(*this);
@@ -93,6 +96,7 @@ namespace services
 
     void LightweightIp::DeregisterInstance()
     {
+        services::GlobalTracer().Trace() << "LightweightIp::DeregisterInstance";
         instances.erase(*this);
 
         if (instances.empty())
@@ -115,6 +119,8 @@ namespace services
 
         bool linkUp = (netifInternal->flags & NETIF_FLAG_LINK_UP) != 0;
 
+        services::GlobalTracer().Trace() << "LightweightIp::ExtCallback: " << netifInternal->name[0] << netifInternal->name[1] << " : link " << (linkUp ? "up" : "down");
+
         auto newIpv4Address = GetIPv4Address();
 
         if (!linkUp)
@@ -122,10 +128,12 @@ namespace services
 
         if ((reason & (LWIP_NSC_IPV4_SETTINGS_CHANGED | LWIP_NSC_LINK_CHANGED)) != 0 && ipv4Address != newIpv4Address)
         {
+            services::GlobalTracer().Trace() << "LightweightIp::ExtCallback: 1 : ip " << newIpv4Address;
             ipv4Address = newIpv4Address;
 
             if (ipv4Address == IPv4Address())
             {
+                services::GlobalTracer().Trace() << "LightweightIp::ExtCallback: ip lost";
                 if (connected != infra::none && !stopping)
                 {
                     stopping = true;
@@ -137,6 +145,7 @@ namespace services
             }
             else
             {
+                services::GlobalTracer().Trace() << "LightweightIp::ExtCallback: connected, with valid ip";
                 if (!stopping)
                 {
                     connected.Emplace(connectedCreator, *this);
@@ -146,10 +155,16 @@ namespace services
                     starting = true;
             }
         }
+        else
+        {
+            services::GlobalTracer().Trace() << "LightweightIp::ExtCallback: 2 : reason 0x" << infra::hex << reason << ", ip " << newIpv4Address;
+        }
     }
 
     void LightweightIp::OnStopped()
     {
+        services::GlobalTracer().Trace() << "LightweightIp::ExtCallback: OnStopped";
+
         connected = infra::none;
         stopping = false;
 

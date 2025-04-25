@@ -8,14 +8,13 @@ namespace services
     {
         IPAddress Convert(const ip_addr_t& address)
         {
-            if (IP_GET_TYPE(address) == IPADDR_TYPE_V4)
+            if (address.type == IPADDR_TYPE_V4)
                 return IPv4Address{
                     ip4_addr1(ip_2_ip4(&address)),
                     ip4_addr2(ip_2_ip4(&address)),
                     ip4_addr3(ip_2_ip4(&address)),
                     ip4_addr4(ip_2_ip4(&address))
                 };
-#if LWIP_IPV6 == 1
             else
                 return IPv6Address{
                     IP6_ADDR_BLOCK1(ip_2_ip6(&address)),
@@ -27,7 +26,6 @@ namespace services
                     IP6_ADDR_BLOCK7(ip_2_ip6(&address)),
                     IP6_ADDR_BLOCK8(ip_2_ip6(&address))
                 };
-#endif
         }
 
         tcp_ext_arg_callbacks emptyCallbacks{};
@@ -54,8 +52,8 @@ namespace services
 
         callbacks.destroy = &ConnectionLwIp::Destroy;
         callbacks.passive_open = 0;
-        // tcp_ext_arg_set_callbacks(control, 0, &callbacks);
-        // tcp_ext_arg_set(control, 0, this);
+        tcp_ext_arg_set_callbacks(control, 0, &callbacks);
+        tcp_ext_arg_set(control, 0, this);
     }
 
     ConnectionLwIp::~ConnectionLwIp()
@@ -237,7 +235,7 @@ namespace services
 
     void ConnectionLwIp::DisableCallbacks()
     {
-        // tcp_ext_arg_set_callbacks(control, 0, &emptyCallbacks);
+        tcp_ext_arg_set_callbacks(control, 0, &emptyCallbacks);
 
         tcp_arg(control, nullptr);
         tcp_recv(control, nullptr);
@@ -518,10 +516,8 @@ namespace services
             err_t err = tcp_bind(pcb, IP_ANY_TYPE, port);
         else if (versions == IPVersions::ipv4)
             err_t err = tcp_bind(pcb, IP4_ADDR_ANY, port);
-#if LWIP_IPV6 == 1
         else
             err_t err = tcp_bind(pcb, IP6_ADDR_ANY, port);
-#endif
         listenPort = tcp_listen(pcb);
         assert(listenPort != nullptr);
         tcp_accept(listenPort, &ListenerLwIp::Accept);
@@ -638,11 +634,10 @@ namespace services
         {
             IPv4Address ipv4Address = clientFactory.Address().Get<IPv4Address>();
             ip_addr_t ipAddress IPADDR4_INIT(0);
-            IP4_ADDR(&ipAddress, ipv4Address[0], ipv4Address[1], ipv4Address[2], ipv4Address[3]);
+            IP4_ADDR(&ipAddress.u_addr.ip4, ipv4Address[0], ipv4Address[1], ipv4Address[2], ipv4Address[3]);
             err_t result = tcp_connect(control, &ipAddress, clientFactory.Port(), &ConnectorLwIp::StaticConnected);
             assert(result == ERR_OK);
         }
-#if LWIP_IPV6 == 1
         else
         {
             IPv6Address ipv6Address = clientFactory.Address().Get<IPv6Address>();
@@ -651,7 +646,6 @@ namespace services
             err_t result = tcp_connect(control, &ipAddress, clientFactory.Port(), &ConnectorLwIp::StaticConnected);
             assert(result == ERR_OK);
         }
-#endif
     }
 
     ConnectorLwIp::~ConnectorLwIp()
