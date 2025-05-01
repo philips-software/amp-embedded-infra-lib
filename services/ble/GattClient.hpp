@@ -134,37 +134,8 @@ namespace services
         virtual void StartCharacteristicDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) = 0;
         virtual void StartDescriptorDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) = 0;
 
-        void StartCharacteristicDiscovery(const GattService& service)
-        {
-            StartCharacteristicDiscovery(service.Handle(), service.EndHandle());
-        }
-
-        void StartDescriptorDiscovery(const GattService& service)
-        {
-            StartDescriptorDiscovery(service.Handle(), service.EndHandle());
-        }
-    };
-
-    class GattClientDiscoveryDecorator
-        : public GattClientDiscoveryObserver
-        , public GattClientDiscovery
-    {
-    public:
-        using GattClientDiscoveryObserver::GattClientDiscoveryObserver;
-
-        // Implementation of GattClientDiscoveryObserver
-        void ServiceDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle endHandle) override;
-        void CharacteristicDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties) override;
-        void DescriptorDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle) override;
-
-        void ServiceDiscoveryComplete() override;
-        void CharacteristicDiscoveryComplete() override;
-        void DescriptorDiscoveryComplete() override;
-
-        // Implementation of GattClientDiscovery
-        void StartServiceDiscovery() override;
-        void StartCharacteristicDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) override;
-        void StartDescriptorDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) override;
+        void StartCharacteristicDiscovery(const GattService& service);
+        void StartDescriptorDiscovery(const GattService& service);
     };
 }
 
