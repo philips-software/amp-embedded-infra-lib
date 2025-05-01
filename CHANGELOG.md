@@ -7,6 +7,41 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [7.2.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v7.1.0...v7.2.0) (2025-04-28)
+
+
+### Features
+
+* Add address type and rssi to discovered device ([#822](https://github.com/philips-software/amp-embedded-infra-lib/issues/822)) ([2e0b3ec](https://github.com/philips-software/amp-embedded-infra-lib/commit/2e0b3ecac46240163795b4cdac69d48423b8de69))
+* Add AreAnyBitsSet() and AreAllBitsSet() ([#823](https://github.com/philips-software/amp-embedded-infra-lib/issues/823)) ([f83c37b](https://github.com/philips-software/amp-embedded-infra-lib/commit/f83c37bb48f733b7e7969d52a0432b98db798113))
+* Add ble dtm interface ([#844](https://github.com/philips-software/amp-embedded-infra-lib/issues/844)) ([394cf55](https://github.com/philips-software/amp-embedded-infra-lib/commit/394cf55e9fdc3c1bf104b589ba4824100975dbab))
+* Add ble dtm protobuf ([#852](https://github.com/philips-software/amp-embedded-infra-lib/issues/852)) ([587b60a](https://github.com/philips-software/amp-embedded-infra-lib/commit/587b60aafff839b3c7a98165e4cba8e54449cd62))
+* Add EchoOnSesameDiffieHellman ([#835](https://github.com/philips-software/amp-embedded-infra-lib/issues/835)) ([384a6a9](https://github.com/philips-software/amp-embedded-infra-lib/commit/384a6a94fc967f432070dbf7b784197acce78fab))
+* Add error code to GattClient operations ([#843](https://github.com/philips-software/amp-embedded-infra-lib/issues/843)) ([4b5b4eb](https://github.com/philips-software/amp-embedded-infra-lib/commit/4b5b4eb3adafb1aea164b84b19a7b8b1367fc94e))
+* Add NoneAllocated to SharedObjectAllocator ([#808](https://github.com/philips-software/amp-embedded-infra-lib/issues/808)) ([ed9ac24](https://github.com/philips-software/amp-embedded-infra-lib/commit/ed9ac24de4934f103975b71da277d13c28674746))
+* Add PulseWidthModulation hal interface ([#834](https://github.com/philips-software/amp-embedded-infra-lib/issues/834)) ([a216de3](https://github.com/philips-software/amp-embedded-infra-lib/commit/a216de39bb3eab10c736a1f62ee734e79658af1d))
+* Add sector config for external spi flash ([#848](https://github.com/philips-software/amp-embedded-infra-lib/issues/848)) ([0c71dd6](https://github.com/philips-software/amp-embedded-infra-lib/commit/0c71dd6956464953b9230a5313faf982d77c6f9e))
+* Add support to create x509 certificates ([#826](https://github.com/philips-software/amp-embedded-infra-lib/issues/826)) ([7dfa477](https://github.com/philips-software/amp-embedded-infra-lib/commit/7dfa477e696294e13d40253f9e0935cd36f4e06f))
+* Add support to resolve MAC address ([#792](https://github.com/philips-software/amp-embedded-infra-lib/issues/792)) ([3b8d1a4](https://github.com/philips-software/amp-embedded-infra-lib/commit/3b8d1a4703a6533d2dbc93322a044839b40da2d1))
+* Added configuration to enable tls 1.3  ([#820](https://github.com/philips-software/amp-embedded-infra-lib/issues/820)) ([c392d44](https://github.com/philips-software/amp-embedded-infra-lib/commit/c392d44dcd24318a15f3465e6583a002704f8d63))
+* Added GetIntegerAs to JsonObject to convert a JsonValue to a target integer width with bounds checking ([#830](https://github.com/philips-software/amp-embedded-infra-lib/issues/830)) ([c4c26e0](https://github.com/philips-software/amp-embedded-infra-lib/commit/c4c26e05d5b559757824c72830269279dc0e3796))
+* Allow stopping AdcMultiChannel measurements ([#859](https://github.com/philips-software/amp-embedded-infra-lib/issues/859)) ([c01515a](https://github.com/philips-software/amp-embedded-infra-lib/commit/c01515ad8f2e05d15c71f8887e8d6c03daea0e2b))
+* Documentation update ([#809](https://github.com/philips-software/amp-embedded-infra-lib/issues/809)) ([661a1ee](https://github.com/philips-software/amp-embedded-infra-lib/commit/661a1eeee5cc787f8ab4565c4e7e561bbdaef2a6))
+* Streamed http put and post without chunked transfer encoding ([#817](https://github.com/philips-software/amp-embedded-infra-lib/issues/817)) ([1943573](https://github.com/philips-software/amp-embedded-infra-lib/commit/1943573ebc842bba73d8d78cecda11d5dd26e130))
+* Update mbedtls from v3.2.1 to v3.6.2 ([#813](https://github.com/philips-software/amp-embedded-infra-lib/issues/813)) ([46b4fe8](https://github.com/philips-software/amp-embedded-infra-lib/commit/46b4fe8c0bc95227959cc5adf0a5f4678c791b98))
+* Updated Gap to allow connection param setting and interval change for ble internal flash ([#850](https://github.com/philips-software/amp-embedded-infra-lib/issues/850)) ([72cf794](https://github.com/philips-software/amp-embedded-infra-lib/commit/72cf794a4a253473f39fde91b021f6b394d1bfd5))
+* Updated mbedtls config file to latest ([#837](https://github.com/philips-software/amp-embedded-infra-lib/issues/837)) ([dc73dfa](https://github.com/philips-software/amp-embedded-infra-lib/commit/dc73dfaa908a649966cc4c344583c37fbb681042))
+
+
+### Bug Fixes
+
+* Keep EchoOnConnection alive while the factory is alive ([#840](https://github.com/philips-software/amp-embedded-infra-lib/issues/840)) ([3cdb0c4](https://github.com/philips-software/amp-embedded-infra-lib/commit/3cdb0c458915d17a13c97ce558b875ed1b3eeb9c))
+* Keep websocket alive while reader or writer is alive ([#839](https://github.com/philips-software/amp-embedded-infra-lib/issues/839)) ([99efc71](https://github.com/philips-software/amp-embedded-infra-lib/commit/99efc7156a78e39bb18eca263a25d129e0664185))
+* Keep websocket alive while reader or writer is alive ([#849](https://github.com/philips-software/amp-embedded-infra-lib/issues/849)) ([ff2743b](https://github.com/philips-software/amp-embedded-infra-lib/commit/ff2743bb3789c48754be58a60db3115fe56b46e4))
+* Revert "fix: keep websocket alive while reader or writer is alive ([#839](https://github.com/philips-software/amp-embedded-infra-lib/issues/839))" ([#847](https://github.com/philips-software/amp-embedded-infra-lib/issues/847)) ([eb0fa86](https://github.com/philips-software/amp-embedded-infra-lib/commit/eb0fa86e424b3c2c2735965ca576f681cb920422))
+* Services/util/SesameSecured: avoid timing attack on verifying MAC ([#818](https://github.com/philips-software/amp-embedded-infra-lib/issues/818)) ([51dca2d](https://github.com/philips-software/amp-embedded-infra-lib/commit/51dca2dd532975e17cc53e5f43521916ebb2657e))
+* Solved crash using uart linux when starting the read thread ([#832](https://github.com/philips-software/amp-embedded-infra-lib/issues/832)) ([a23f00f](https://github.com/philips-software/amp-embedded-infra-lib/commit/a23f00f0ab278d6c6dd7872f5987372f288d5cb0))
+
 ## [7.1.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v7.0.0...v7.1.0) (2025-01-15)
 
 
