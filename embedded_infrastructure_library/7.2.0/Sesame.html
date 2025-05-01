@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>SESAME (SErial Secure Adaptable Message Exchange) :: Embedded Infrastructure Library</title>
-    <link rel="canonical" href="https://philips-software.github.io/amp-embedded-infra-lib/embedded_infrastructure_library/7.1.0/Sesame.html">
+    <link rel="canonical" href="https://philips-software.github.io/amp-embedded-infra-lib/embedded_infrastructure_library/7.2.0/Sesame.html">
     <meta name="generator" content="Antora 3.1.9">
     <link rel="stylesheet" href="../../_/css/centralesans.css">
     <link rel="stylesheet" href="../../_/css/site.css">
@@ -62,7 +62,7 @@
       </div>
 </div>
   <div class="content">
-<div class="nav-container" data-component="embedded_infrastructure_library" data-version="7.1.0">
+<div class="nav-container" data-component="embedded_infrastructure_library" data-version="7.2.0">
   <aside class="nav">
     <div class="panels">
 <div class="nav-panel-menu is-active" data-panel="menu">
@@ -123,21 +123,9 @@ to divide the stream of bytes into delimited packets,
 second a window protocol to prevent overflowing buffers,
 and third (optional) a layer that provides security.</p>
 </div>
-<div class="listingblock kroki-error">
+<div class="imageblock kroki">
 <div class="content">
-<pre>@startuml
-node node [
-ECHO
-====
-Secured
-....
-Windowed
-....
-COBS
-====
-Serial Communication
-]
-@enduml</pre>
+<img src="_images/diag-ae642e19bd4f05f10c73b52619f523635545c7f5.svg" alt="Diagram">
 </div>
 </div>
 </div>
@@ -193,14 +181,11 @@ which specifies the available window size, encoded in little endian order. An <c
 packet. Before receiving an <code>InitResponse</code>, a peer must assume that no window is available, so
 further packets may not be sent.</p>
 </div>
-<div class="listingblock kroki-error">
-<div class="title">Init packet</div>
+<div class="imageblock kroki">
 <div class="content">
-<pre>(def boxes-per-row 3)
-(draw-column-headers)
-(draw-box 1)
-(draw-box "size" {:span 2})</pre>
+<img src="_images/diag-af6b8f6d3d484374fcb8f52f4518e36cbd856da4.svg" alt="Init packet">
 </div>
+<div class="title">Figure 1. Init packet</div>
 </div>
 <div class="paragraph">
 <p>An <code>Init</code> packet consumes no window, and may always be sent. This results in an edge case that an
@@ -220,14 +205,11 @@ has an empty buffer before sending an <code>Init</code> packet, that will not re
 space using the <code>InitResponse</code> packet. Similar to the <code>Init</code> packet, the <code>InitResponse</code> packet
 has one 16-bit unsigned parameter <code>size</code> encoded in little endian which advertises available buffer size.</p>
 </div>
-<div class="listingblock kroki-error">
-<div class="title">InitResponse packet</div>
+<div class="imageblock kroki">
 <div class="content">
-<pre>(def boxes-per-row 3)
-(draw-column-headers)
-(draw-box 2)
-(draw-box "size" {:span 2})</pre>
+<img src="_images/diag-4a7611f0d08d0dbc679a6b536923367f5320c5bc.svg" alt="InitResponse packet">
 </div>
+<div class="title">Figure 2. InitResponse packet</div>
 </div>
 <div class="paragraph">
 <p>An <code>InitResponse</code> packet consumes 5 window bytes: 3 for the packet contents, 2 for the
@@ -242,14 +224,11 @@ it advertises the freed up space using the <code>ReleaseWindow</code> packet. Th
 has one 16-bit unsigned parameter <code>size</code> encoded in little endian which specifies the amount of bytes in the buffer
 freed up in addition to already known free space.</p>
 </div>
-<div class="listingblock kroki-error">
-<div class="title">ReleaseWindow packet</div>
+<div class="imageblock kroki">
 <div class="content">
-<pre>(def boxes-per-row 3)
-(draw-column-headers)
-(draw-box 3)
-(draw-box "size" {:span 2})</pre>
+<img src="_images/diag-c284003e0e9883d57f06dc12da3de88d15d8519e.svg" alt="ReleaseWindow packet">
 </div>
+<div class="title">Figure 3. ReleaseWindow packet</div>
 </div>
 </div>
 <div class="sect2">
@@ -259,15 +238,11 @@ freed up in addition to already known free space.</p>
 amount equal to the size of that packet plus the COBS overhead of that specific packet, plus
 its terminating 0.</p>
 </div>
-<div class="listingblock kroki-error">
-<div class="title">Message packet</div>
+<div class="imageblock kroki">
 <div class="content">
-<pre>(def boxes-per-row 8)
-(draw-column-headers)
-(draw-box 4)
-(draw-gap "message")
-(draw-bottom)</pre>
+<img src="_images/diag-44a7e6fea768804d3b097dc66093dfeaa0e0b109.svg" alt="Message packet">
 </div>
+<div class="title">Figure 4. Message packet</div>
 </div>
 </div>
 <div class="sect2">
@@ -427,29 +402,11 @@ ECHO messages being concatenated do not pose any difficulties.</p>
 <p>This sequence diagram shows a typical sequence of the SESAME protocol being initialized and a message
 being sent. The Secured layer is left out in this sequence.</p>
 </div>
-<div class="listingblock kroki-error">
-<div class="title">Typical sequence</div>
+<div class="imageblock kroki">
 <div class="content">
-<pre>@startuml
-COBS &lt;- Windowed : Init\n01 10 00
-note right
-  16 bytes of window are advertised, which is 0x10 0x00
-end note
-[&lt;- COBS : 00 03 01 10 01 00
-note right
-  The init message is wrapped right and left with 00
-  A 03 indicates that the third byte must be replaced with 00
-  The replaced byte contained 01 pointing to the end
-end note
-[-&gt; COBS : 00 03 02 10 01 00
-COBS -&gt; Windowed : InitResponse\n02 10 00
-Windowed &lt;- Application : Message\n12 34 56 78
-COBS &lt;- Windowed : Message\n03 12 34 56 78
-[&lt;- COBS : 06 03 12 34 56 78 00
-[-&gt; COBS : 03 03 07 01 00
-COBS -&gt; Windowed : ReleaseWindow\n03 07 00
-@enduml</pre>
+<img src="_images/diag-f5af5a4b5404143a9c1b8dfb93a66295bd65b6d3.svg" alt="Typical sequence">
 </div>
+<div class="title">Figure 5. Typical sequence</div>
 </div>
 </div>
 </div>
