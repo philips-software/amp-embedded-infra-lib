@@ -29,6 +29,7 @@ namespace hal
 
     private:
         void Read();
+        void LockReadThen(const infra::Function<void()>& action);
 
     private:
         uint8_t buffer;

@@ -28,11 +28,11 @@ namespace hal
 
     UartUnix::~UartUnix()
     {
-        {
-            std::unique_lock lock(receivedDataMutex);
-            running = false;
-            receivedData = nullptr;
-        }
+        LockReadThen([this]
+            {
+                running = false;
+                receivedData = nullptr;
+            });
         if (readThread.joinable())
             readThread.join();
     }
@@ -54,10 +54,10 @@ namespace hal
     {
         running = true;
 
-        {
-            std::unique_lock lock(receivedDataMutex);
-            receivedData = dataReceived;
-        }
+        LockReadThen([this, &dataReceived]
+            {
+                receivedData = dataReceived;
+            });
 
         if (!readThread.joinable())
             readThread = std::thread([this]
@@ -70,22 +70,28 @@ namespace hal
     {
         while (running)
         {
-            {
-                std::unique_lock lock(receivedDataMutex);
-                if (!running)
-                    break;
-            }
+            LockReadThen([this]
+                {
+                    if (!running)
+                        return;
+                });
             auto range = infra::MakeByteRange(buffer);
             auto size = read(FileDescriptor(), range.begin(), range.size());
-
+            range.shrink_from_back_to(size);
             if (size < 0)
                 throw std::system_error(EFAULT, std::system_category());
 
-            {
-                std::unique_lock lock(receivedDataMutex);
-                if (running && receivedData)
-                    receivedData(infra::ConstByteRange(range.begin(), range.begin() + size));
-            }
+            LockReadThen([this, &range]
+                {
+                    if (running && receivedData)
+                        receivedData(infra::ConstByteRange(range.begin(), range.end()));
+                });
         }
+    }
+
+    void UartUnix::LockReadThen(const infra::Function<void()>& action)
+    {
+        std::unique_lock lock(receivedDataMutex);
+        action();
     }
 }
