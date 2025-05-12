@@ -122,10 +122,10 @@ namespace services
     class GattClientDecorator
     {
     public:
-        GattClientDecorator(GattClientDiscovery& discovery, GattClientCharacteristicOperations& operations)
-            : discoveryDecorator(discovery, resource)
-            , operationsDecorator(operations, resource)
-        {}
+        GattClientDecorator(GattClientDiscovery& discovery, GattClientCharacteristicOperations& operations);
+
+        services::GattClientDiscovery& Discovery();
+        services::GattClientCharacteristicOperations& CharacteristicOperations();
 
     private:
         infra::ClaimableResource resource;

@@ -202,4 +202,19 @@ namespace services
     {
         std::abort();
     }
+
+    GattClientDecorator::GattClientDecorator(services::GattClientDiscovery& discovery, services::GattClientCharacteristicOperations& operations)
+        : discoveryDecorator(discovery, resource)
+        , operationsDecorator(operations, resource)
+    {}
+
+    services::GattClientDiscovery& GattClientDecorator::Discovery()
+    {
+        return discoveryDecorator;
+    }
+
+    services::GattClientCharacteristicOperations& GattClientDecorator::CharacteristicOperations()
+    {
+        return operationsDecorator;
+    }
 }
