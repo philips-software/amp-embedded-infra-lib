@@ -26,8 +26,13 @@ target_sources(services.util PRIVATE
     EchoOnMessageCommunication.hpp
     EchoOnSesame.cpp
     EchoOnSesame.hpp
+    EchoOnSesameDiffieHellman.cpp
+    EchoOnSesameDiffieHellman.hpp
+    EchoOnSesameSymmetricKey.cpp
+    EchoOnSesameSymmetricKey.hpp
     FlashAlign.cpp
     FlashAlign.hpp
+    FlashDelegate.hpp
     FlashMultipleAccess.cpp
     FlashMultipleAccess.hpp
     FlashQuadSpi.cpp
@@ -62,6 +67,9 @@ target_sources(services.util PRIVATE
     Sesame.hpp
     SesameCobs.cpp
     SesameCobs.hpp
+    SesameCrypto.hpp
+    SesameSecured.cpp
+    SesameSecured.hpp
     SesameWindowed.cpp
     SesameWindowed.hpp
     Sha256.hpp
@@ -97,13 +105,19 @@ if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
         )
     endif()
 
+    target_compile_definitions(services.util PUBLIC
+        EMIL_USE_MBEDTLS
+    )
+
     target_sources(services.util PRIVATE
         AesMbedTls.cpp
         AesMbedTls.hpp
-        EchoOnSesameSymmetricKey.cpp
-        EchoOnSesameSymmetricKey.hpp
-        SesameSecured.cpp
-        SesameSecured.hpp
+        EchoInstantiationSecured.cpp
+        EchoInstantiationSecured.hpp
+        MbedTlsRandomDataGeneratorWrapper.cpp
+        MbedTlsRandomDataGeneratorWrapper.hpp
+        SesameCryptoMbedTls.cpp
+        SesameCryptoMbedTls.hpp
         Sha256MbedTls.cpp
         Sha256MbedTls.hpp
     )

@@ -12,7 +12,6 @@ namespace services
         BondStorageSynchronizer() = default;
         BondStorageSynchronizer(const BondStorageSynchronizer& other) = delete;
         BondStorageSynchronizer& operator=(const BondStorageSynchronizer& other) = delete;
-        virtual ~BondStorageSynchronizer() = default;
 
     public:
         virtual void UpdateBondedDevice(hal::MacAddress address) = 0;
@@ -27,7 +26,6 @@ namespace services
         BondStorage() = default;
         BondStorage(const BondStorage& other) = delete;
         BondStorage& operator=(const BondStorage& other) = delete;
-        virtual ~BondStorage() = default;
 
     public:
         virtual void BondStorageSynchronizerCreated(BondStorageSynchronizer& manager) = 0;

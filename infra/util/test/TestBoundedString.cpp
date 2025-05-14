@@ -1,6 +1,8 @@
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/ByteRange.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include <type_traits>
 
 TEST(BoundedStringTest, TestConstructedEmpty)
 {
@@ -585,6 +587,9 @@ TEST(BoundedStringTest, TestCopy)
     infra::BoundedString::WithStorage<5> string("abcde");
     EXPECT_EQ(3, string.copy(buffer, 3, 1));
     EXPECT_EQ('b', buffer[0]);
+
+    EXPECT_EQ(2, string.copy(buffer, 5, 3));
+    EXPECT_EQ('d', buffer[0]);
 }
 
 TEST(BoundedStringTest, TestResize)
@@ -698,6 +703,28 @@ TEST(BoundedStringTest, TestFindLastNotOf)
     EXPECT_EQ(3, string.find_last_not_of('e'));
 }
 
+TEST(BoundedStringTest, TestStartsWith)
+{
+    char search[] = "qwe";
+    infra::BoundedConstString startsWith = "qwerty";
+    infra::BoundedConstString endsWith = "tyrqwe";
+    infra::BoundedConstString middle = "abcqwedef";
+    EXPECT_THAT(startsWith.starts_with(search), testing::IsTrue());
+    EXPECT_THAT(endsWith.starts_with(search), testing::IsFalse());
+    EXPECT_THAT(middle.starts_with(search), testing::IsFalse());
+}
+
+TEST(BoundedStringTest, TestEndsWith)
+{
+    char search[] = "qwe";
+    infra::BoundedConstString startsWith = "qwerty";
+    infra::BoundedConstString endsWith = "tyrqwe";
+    infra::BoundedConstString middle = "abcqwedef";
+    EXPECT_THAT(startsWith.ends_with(search), testing::IsFalse());
+    EXPECT_THAT(endsWith.ends_with(search), testing::IsTrue());
+    EXPECT_THAT(middle.ends_with(search), testing::IsFalse());
+}
+
 TEST(BoundedStringTest, TestStringAsByteRange)
 {
     infra::BoundedString::WithStorage<5> string("abcde");
@@ -753,4 +780,13 @@ TEST(BoundedStringTest, TestPrintTo2)
     infra::BoundedString::WithStorage<5> string = "abc";
     infra::PrintTo(string, &stream);
     EXPECT_EQ(R"("abc")", stream.str());
+}
+
+TEST(BoundedStringTest, TestStringLiteral)
+{
+    using namespace infra::literals;
+    auto string = "abc"_s;
+    EXPECT_THAT(string, testing::Eq("abc"_s));
+
+    static_assert(std::is_same_v<decltype(string), infra::BoundedConstString>);
 }

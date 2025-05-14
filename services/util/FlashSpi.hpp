@@ -10,11 +10,24 @@
 
 namespace services
 {
+    namespace detail
+    {
+        struct FlashSpiConfig
+        {
+            uint32_t nrOfSubSectors{ 512 };
+            uint32_t sizeSector{ 65536 };
+            uint32_t sizeSubSector{ 4096 };
+            uint32_t sizePage{ 256 };
+        };
+    }
+
     class FlashSpi
         : public hal::FlashHomogeneous
         , public hal::FlashId
     {
     public:
+        using Config = detail::FlashSpiConfig;
+
         static const uint8_t commandPageProgram;
         static const uint8_t commandReadData;
         static const uint8_t commandReadStatusRegister;
@@ -24,15 +37,9 @@ namespace services
         static const uint8_t commandEraseBulk;
         static const uint8_t commandReadId;
 
-        static const uint32_t nrOfSubSectors = 512;
-
-        static const uint32_t sizeSector = 65536;
-        static const uint32_t sizeSubSector = 4096;
-        static const uint32_t sizePage = 256;
-
         static const uint8_t statusFlagWriteInProgress = 1;
 
-        explicit FlashSpi(hal::SpiMaster& spi, uint32_t numberOfSubSectors = nrOfSubSectors, uint32_t timerId = infra::systemTimerServiceId, infra::Function<void()> onInitialized = infra::emptyFunction);
+        explicit FlashSpi(hal::SpiMaster& spi, const Config& config = Config(), uint32_t timerId = infra::systemTimerServiceId, infra::Function<void()> onInitialized = infra::emptyFunction);
 
     public:
         // implement Flash
@@ -57,6 +64,7 @@ namespace services
 
     private:
         hal::SpiMaster& spi;
+        const Config config;
         infra::Sequencer sequencer;
         infra::TimerSingleShot delayTimer;
         infra::AutoResetFunction<void()> onDone;

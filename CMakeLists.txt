@@ -7,7 +7,7 @@ if (APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
 endif()
 
-project(emil LANGUAGES C CXX VERSION 6.1.0) # x-release-please-version
+project(emil LANGUAGES C CXX VERSION 7.2.0) # x-release-please-version
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
@@ -72,8 +72,10 @@ endif()
 # options.
 if (EMIL_STANDALONE AND EMIL_HOST_BUILD)
     set(EMIL_DEFAULTOPT On)
+    set(EMIL_DEFAULTOPT_INVERTED Off)
 else()
     set(EMIL_DEFAULTOPT Off)
+    set(EMIL_DEFAULTOPT_INVERTED On)
 endif()
 
 # When building EmIL by itself do not exclude any targets from all
@@ -90,7 +92,16 @@ option(EMIL_ENABLE_FUZZING "Enable building the fuzzing targets" Off)
 option(EMIL_ENABLE_DOCKER_TOOLS "Enable shift-left tools (e.g. linters, formatters) that are run using Docker" On)
 option(EMIL_GENERATE_PACKAGE_CONFIG "Enable generation of package configuration and install files" ${EMIL_HOST_BUILD})
 option(EMIL_ENABLE_TRACING "Enable Tracing" On)
-option(EMIL_BUILD_ECHO_COMPILERS "Build and install the Protobuf ECHO compilers" ${EMIL_DEFAULTOPT})
+option(EMIL_FETCH_ECHO_COMPILERS "Fetch the Protobuf ECHO compilers from GitHub" ${EMIL_DEFAULTOPT_INVERTED})
+if (NOT EMIL_FETCH_ECHO_COMPILERS)
+    set(EMIL_DEFAULTOPT_BUILD_ECHO_COMPILERS ${EMIL_DEFAULTOPT})
+else()
+    set(EMIL_DEFAULTOPT_BUILD_ECHO_COMPILERS Off)
+endif()
+option(EMIL_BUILD_ECHO_COMPILERS "Build and install the Protobuf ECHO compilers" ${EMIL_DEFAULTOPT_BUILD_ECHO_COMPILERS})
+if (EMIL_FETCH_ECHO_COMPILERS AND EMIL_BUILD_ECHO_COMPILERS)
+    message(FATAL_ERROR "Invalid combination: EMIL_FETCH_ECHO_COMPILERS AND EMIL_BUILD_ECHO_COMPILERS. Please select only one of these.")
+endif()
 
 # Enable or disable optional features.
 option(EMIL_INCLUDE_MBEDTLS "Include MbedTLS as part of EmIL" Off)

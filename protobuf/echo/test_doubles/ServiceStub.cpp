@@ -26,8 +26,8 @@ namespace services
         return value;
     }
 
-    MessageBytes::MessageBytes(const infra::BoundedVector<uint8_t>& value)
-        : value(value)
+    MessageBytes::MessageBytes(infra::ConstByteRange value)
+        : value(value.begin(), value.end())
     {}
 
     void MessageBytes::Serialize(infra::ProtoFormatter& formatter) const
@@ -97,6 +97,12 @@ namespace services
     void ServiceStubProxy::MethodNoParameter()
     {
         auto serializer = Rpc().SerializerFactory().MakeSerializer<EmptyMessage>(serviceId, idMethodNoParameter);
+        SetSerializer(serializer);
+    }
+
+    void ServiceStubProxy::MethodBytes(infra::ConstByteRange data)
+    {
+        auto serializer = Rpc().SerializerFactory().MakeSerializer<MessageBytes>(serviceId, idMethodBytes, data);
         SetSerializer(serializer);
     }
 }

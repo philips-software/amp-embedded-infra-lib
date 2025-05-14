@@ -2,8 +2,12 @@
 #define SERVICES_GAP_HPP
 
 #include "hal/interfaces/MacAddress.hpp"
+#include "infra/timer/Timer.hpp"
+#include "infra/util/BoundedVector.hpp"
+#include "infra/util/ByteRange.hpp"
 #include "infra/util/EnumCast.hpp"
 #include "infra/util/Observer.hpp"
+#include "infra/util/Optional.hpp"
 
 namespace services
 {
@@ -24,7 +28,8 @@ namespace services
         standby,
         scanning,
         advertising,
-        connected
+        connected,
+        initiating
     };
 
     enum class GapAdvertisingEventType : uint8_t
@@ -34,14 +39,6 @@ namespace services
         advScanInd,
         advNonconnInd,
         scanResponse,
-    };
-
-    enum class GapAdvertisingEventAddressType : uint8_t
-    {
-        publicDeviceAddress,
-        randomDeviceAddress,
-        publicIdentityAddress,
-        randomIdentityAddress
     };
 
     enum class GapAdvertisementDataType : uint8_t
@@ -64,15 +61,6 @@ namespace services
 
         static constexpr uint16_t connectionInitialMaxTxOctets = 251;
         static constexpr uint16_t connectionInitialMaxTxTime = 2120; // (connectionInitialMaxTxOctets + 14) * 8
-    };
-
-    struct GapAdvertisingReport
-    {
-        GapAdvertisingEventType eventType;
-        GapAdvertisingEventAddressType addressType;
-        hal::MacAddress address;
-        infra::ConstByteRange data;
-        int8_t rssi;
     };
 
     struct GapAddress
@@ -205,6 +193,7 @@ namespace services
 
         virtual std::size_t GetMaxNumberOfBonds() const = 0;
         virtual std::size_t GetNumberOfBonds() const = 0;
+        virtual bool IsDeviceBonded(hal::MacAddress address, GapDeviceAddressType addressType) const = 0;
     };
 
     class GapBondingDecorator
@@ -222,6 +211,7 @@ namespace services
         void RemoveOldestBond() override;
         std::size_t GetMaxNumberOfBonds() const override;
         std::size_t GetNumberOfBonds() const override;
+        bool IsDeviceBonded(hal::MacAddress address, GapDeviceAddressType addressType) const override;
     };
 
     class GapPeripheral;
@@ -264,6 +254,7 @@ namespace services
         virtual infra::ConstByteRange GetScanResponseData() const = 0;
         virtual void Advertise(GapAdvertisementType type, AdvertisementIntervalMultiplier multiplier) = 0;
         virtual void Standby() = 0;
+        virtual void SetConnectionParameters(const services::GapConnectionParameters& connParam) = 0;
     };
 
     class GapPeripheralDecorator
@@ -286,12 +277,22 @@ namespace services
         infra::ConstByteRange GetScanResponseData() const override;
         void Advertise(GapAdvertisementType type, AdvertisementIntervalMultiplier multiplier) override;
         void Standby() override;
+        void SetConnectionParameters(const services::GapConnectionParameters& connParam) override;
     };
 
     inline GapPeripheral::AdvertisementFlags operator|(GapPeripheral::AdvertisementFlags lhs, GapPeripheral::AdvertisementFlags rhs)
     {
         return static_cast<GapPeripheral::AdvertisementFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
     }
+
+    struct GapAdvertisingReport
+    {
+        GapAdvertisingEventType eventType;
+        GapDeviceAddressType addressType;
+        hal::MacAddress address;
+        infra::BoundedVector<uint8_t>::WithMaxSize<GapPeripheral::maxAdvertisementDataSize> data;
+        int32_t rssi;
+    };
 
     class GapCentral;
 
@@ -309,11 +310,13 @@ namespace services
         : public infra::Subject<GapCentralObserver>
     {
     public:
-        virtual void Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType) = 0;
+        virtual void Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType, infra::Duration initiatingTimeout) = 0;
+        virtual void CancelConnect() = 0;
         virtual void Disconnect() = 0;
         virtual void SetAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) = 0;
         virtual void StartDeviceDiscovery() = 0;
         virtual void StopDeviceDiscovery() = 0;
+        virtual infra::Optional<hal::MacAddress> ResolvePrivateAddress(hal::MacAddress address) const = 0;
     };
 
     class GapCentralDecorator
@@ -328,18 +331,20 @@ namespace services
         void StateChanged(GapState state) override;
 
         // Implementation of GapCentral
-        void Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType) override;
+        void Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType, infra::Duration initiatingTimeout) override;
+        void CancelConnect() override;
         void Disconnect() override;
         void SetAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) override;
         void StartDeviceDiscovery() override;
         void StopDeviceDiscovery() override;
+        infra::Optional<hal::MacAddress> ResolvePrivateAddress(hal::MacAddress address) const override;
     };
 }
 
 namespace infra
 {
     infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::GapAdvertisingEventType& eventType);
-    infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::GapAdvertisingEventAddressType& addressType);
+    infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::GapDeviceAddressType& addressType);
     infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::GapState& state);
 }
 

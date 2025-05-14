@@ -84,6 +84,11 @@ namespace services
         return GapBondingObserver::Subject().GetNumberOfBonds();
     }
 
+    bool GapBondingDecorator::IsDeviceBonded(hal::MacAddress address, GapDeviceAddressType addressType) const
+    {
+        return GapBondingObserver::Subject().IsDeviceBonded(address, addressType);
+    }
+
     void GapPeripheralDecorator::StateChanged(GapState state)
     {
         GapPeripheral::NotifyObservers([&state](auto& obs)
@@ -132,6 +137,11 @@ namespace services
         GapPeripheralObserver::Subject().Standby();
     }
 
+    void GapPeripheralDecorator::SetConnectionParameters(const services::GapConnectionParameters& connParam)
+    {
+        GapPeripheralObserver::Subject().SetConnectionParameters(connParam);
+    }
+
     void GapCentralDecorator::DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered)
     {
         GapCentralObserver::SubjectType::NotifyObservers([&deviceDiscovered](auto& obs)
@@ -148,9 +158,14 @@ namespace services
             });
     }
 
-    void GapCentralDecorator::Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType)
+    void GapCentralDecorator::Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType, infra::Duration initiatingTimeout)
     {
-        GapCentralObserver::Subject().Connect(macAddress, addressType);
+        GapCentralObserver::Subject().Connect(macAddress, addressType, initiatingTimeout);
+    }
+
+    void GapCentralDecorator::CancelConnect()
+    {
+        GapCentralObserver::Subject().CancelConnect();
     }
 
     void GapCentralDecorator::Disconnect()
@@ -171,6 +186,11 @@ namespace services
     void GapCentralDecorator::StopDeviceDiscovery()
     {
         GapCentralObserver::Subject().StopDeviceDiscovery();
+    }
+
+    infra::Optional<hal::MacAddress> GapCentralDecorator::ResolvePrivateAddress(hal::MacAddress address) const
+    {
+        return GapCentralObserver::Subject().ResolvePrivateAddress(address);
     }
 
     GapAdvertisingDataParser::GapAdvertisingDataParser(infra::ConstByteRange data)
@@ -237,16 +257,12 @@ namespace infra
         return stream;
     }
 
-    TextOutputStream& operator<<(TextOutputStream& stream, const services::GapAdvertisingEventAddressType& addressType)
+    TextOutputStream& operator<<(TextOutputStream& stream, const services::GapDeviceAddressType& addressType)
     {
-        if (addressType == services::GapAdvertisingEventAddressType::publicDeviceAddress)
+        if (addressType == services::GapDeviceAddressType::publicAddress)
             stream << "Public Device Address";
-        else if (addressType == services::GapAdvertisingEventAddressType::randomDeviceAddress)
-            stream << "Random Device Address";
-        else if (addressType == services::GapAdvertisingEventAddressType::publicIdentityAddress)
-            stream << "Public Identity Address";
         else
-            stream << "Random Identity Address";
+            stream << "Random Device Address";
 
         return stream;
     }
@@ -259,6 +275,8 @@ namespace infra
             stream << "Scanning";
         else if (state == services::GapState::advertising)
             stream << "Advertising";
+        else if (state == services::GapState::initiating)
+            stream << "Initiating";
         else
             stream << "Connected";
 

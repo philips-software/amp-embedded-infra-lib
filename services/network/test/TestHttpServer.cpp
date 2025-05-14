@@ -10,6 +10,45 @@
 #include "services/network/test_doubles/HttpServerMock.hpp"
 #include "gmock/gmock.h"
 
+TEST(HttpRequestParserTest, parser_elements)
+{
+    infra::BoundedString::WithStorage<256> request("GET a/b?query#fragment HTTP1.1\r\nkey: value\r\n\r\nbody");
+    services::HttpRequestParserImpl parser(request);
+
+    EXPECT_EQ(services::HttpVerb::get, parser.Verb());
+    EXPECT_EQ("a", parser.PathTokens().Token(0));
+    EXPECT_EQ("b", parser.PathTokens().Token(1));
+    EXPECT_EQ("value", parser.Header("key"));
+    EXPECT_EQ("query", parser.Query());
+    EXPECT_EQ("fragment", parser.Fragment());
+}
+
+TEST(HttpRequestParserTest, parser_elements_without_query)
+{
+    infra::BoundedString::WithStorage<256> request("GET a/b#fragment HTTP1.1\r\nkey: value\r\n\r\nbody");
+    services::HttpRequestParserImpl parser(request);
+
+    EXPECT_EQ(services::HttpVerb::get, parser.Verb());
+    EXPECT_EQ("a", parser.PathTokens().Token(0));
+    EXPECT_EQ("b", parser.PathTokens().Token(1));
+    EXPECT_EQ("value", parser.Header("key"));
+    EXPECT_EQ("", parser.Query());
+    EXPECT_EQ("fragment", parser.Fragment());
+}
+
+TEST(HttpRequestParserTest, parser_elements_without_fragment)
+{
+    infra::BoundedString::WithStorage<256> request("GET a/b?query HTTP1.1\r\nkey: value\r\n\r\nbody");
+    services::HttpRequestParserImpl parser(request);
+
+    EXPECT_EQ(services::HttpVerb::get, parser.Verb());
+    EXPECT_EQ("a", parser.PathTokens().Token(0));
+    EXPECT_EQ("b", parser.PathTokens().Token(1));
+    EXPECT_EQ("value", parser.Header("key"));
+    EXPECT_EQ("query", parser.Query());
+    EXPECT_EQ("", parser.Fragment());
+}
+
 class HttpServerTest
     : public testing::Test
     , public infra::ClockFixture

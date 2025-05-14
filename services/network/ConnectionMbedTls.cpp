@@ -1,6 +1,29 @@
 #include "services/network/ConnectionMbedTls.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
+#include "infra/util/ReallyAssert.hpp"
+#include "mbedtls/platform_time.h"
 #include "services/tracer/GlobalTracer.hpp"
+
+extern "C"
+{
+#ifndef EMIL_HOST_BUILD
+#ifdef MBEDTLS_PLATFORM_MS_TIME_ALT
+    mbedtls_ms_time_t mbedtls_ms_time(void)
+    {
+        return static_cast<mbedtls_ms_time_t>(std::chrono::duration_cast<std::chrono::milliseconds>(infra::Now(3).time_since_epoch()).count());
+    }
+#endif
+
+    int mbedtls_hardware_poll(void* data, unsigned char* output, size_t len, size_t* olen)
+    {
+        really_assert(services::MbedTlsAdapter::InstanceSet());
+        services::MbedTlsAdapter::Instance().RandomDataGenerator().GenerateRandomData(infra::ByteRange(output, output + len));
+        *olen = len;
+
+        return 0;
+    }
+#endif
+}
 
 namespace services
 {
@@ -804,5 +827,14 @@ namespace services
             waitingConnects.pop_front();
             connectionFactoryWithNameResolver.Connect(*this);
         }
+    }
+
+    MbedTlsAdapter::MbedTlsAdapter(hal::SynchronousRandomDataGenerator& randomDataGenerator)
+        : randomDataGenerator(randomDataGenerator)
+    {}
+
+    hal::SynchronousRandomDataGenerator& MbedTlsAdapter::RandomDataGenerator() const
+    {
+        return randomDataGenerator;
     }
 }

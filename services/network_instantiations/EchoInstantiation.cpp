@@ -21,7 +21,7 @@ namespace application
                     {
                         static hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
 
-                        auto echoClient = std::make_shared<EchoClientWebSocket>(connectionFactory, randomDataGenerator, services::HostFromUrl(target), services::PortFromUrl(target).ValueOr(80));
+                        auto echoClient = std::make_shared<EchoClientWebSocket>(connectionFactory, randomDataGenerator, target, services::PortFromUrl(target).ValueOr(80));
                         echoClient->OnDone([&, echoClient](services::Echo& echo)
                             {
                                 result = std::shared_ptr<services::Echo>(echoClient, &echo);
@@ -70,7 +70,7 @@ namespace application
                     {
                         static hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
 
-                        auto echoClient = std::make_shared<TracingEchoClientWebSocket>(connectionFactory, randomDataGenerator, services::HostFromUrl(target), services::PortFromUrl(target).ValueOr(80), tracer);
+                        auto echoClient = std::make_shared<TracingEchoClientWebSocket>(connectionFactory, randomDataGenerator, target, services::PortFromUrl(target).ValueOr(80), tracer);
                         echoClient->OnDone([&, echoClient](services::Echo& echo, services::TracingEchoOnStreams& echoTracer)
                             {
                                 resultEcho = std::shared_ptr<services::Echo>(echoClient, &echo);
@@ -136,7 +136,7 @@ namespace application
 
     void EchoClientWebSocket::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> client)>&& createdClientObserver)
     {
-        auto echoConnectionPtr = echoConnection.Emplace(serializerFactory);
+        echoConnectionPtr = echoConnection.Emplace(serializerFactory);
         createdClientObserver(echoConnectionPtr);
         onDone(*echoConnectionPtr);
     }
@@ -159,7 +159,7 @@ namespace application
 
     void TracingEchoClientWebSocket::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> client)>&& createdClientObserver)
     {
-        auto echoConnectionPtr = echoConnection.Emplace(serializerFactory, services::echoErrorPolicyAbortOnMessageFormatError, tracer);
+        echoConnectionPtr = echoConnection.Emplace(serializerFactory, services::echoErrorPolicyAbortOnMessageFormatError, tracer);
         createdClientObserver(echoConnectionPtr);
         onDone(*echoConnectionPtr, *echoConnectionPtr);
     }
@@ -188,7 +188,7 @@ namespace application
 
     void EchoClientTcp::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
     {
-        auto echoConnectionPtr = echoConnection.Emplace(serializerFactory);
+        echoConnectionPtr = echoConnection.Emplace(serializerFactory);
         createdObserver(echoConnectionPtr);
         onDone(*echoConnectionPtr);
     }
@@ -210,7 +210,7 @@ namespace application
 
     void TracingEchoClientTcp::ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)>&& createdObserver)
     {
-        auto echoConnectionPtr = echoConnection.Emplace(serializerFactory, services::echoErrorPolicyAbortOnMessageFormatError, tracer);
+        echoConnectionPtr = echoConnection.Emplace(serializerFactory, services::echoErrorPolicyAbortOnMessageFormatError, tracer);
         createdObserver(echoConnectionPtr);
         onDone(*echoConnectionPtr, *echoConnectionPtr);
     }

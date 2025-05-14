@@ -187,6 +187,23 @@ TEST(OptionalTest, TestConstruct)
     EXPECT_TRUE(*o);
 }
 
+TEST(OptionalTest, TestConstructReturn)
+{
+    struct Foo
+    {
+        int a;
+        bool b;
+        Foo* c;
+    };
+
+    Foo b{ 1, true, nullptr };
+    infra::Optional<Foo> o;
+    auto& ref = o.Emplace(std::move(b));
+    EXPECT_TRUE(ref.a == 1);
+    EXPECT_TRUE(ref.b);
+    EXPECT_TRUE(ref.c == nullptr);
+}
+
 TEST(OptionalTest, TestConstructWithInitializerList)
 {
     struct X

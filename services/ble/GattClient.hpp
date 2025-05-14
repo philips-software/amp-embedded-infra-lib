@@ -1,6 +1,7 @@
 #ifndef SERVICES_GATT_CLIENT_HPP
 #define SERVICES_GATT_CLIENT_HPP
 
+#include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/IntrusiveForwardList.hpp"
 #include "infra/util/Observer.hpp"
@@ -17,7 +18,8 @@ namespace services
     public:
         using infra::Observer<GattClientCharacteristicUpdateObserver, GattClientCharacteristicUpdate>::Observer;
 
-        virtual void UpdateReceived(infra::ConstByteRange data) = 0;
+        virtual void NotificationReceived(infra::ConstByteRange data) = 0;
+        virtual void IndicationReceived(infra::ConstByteRange data, const infra::Function<void()>& onDone) = 0;
     };
 
     class GattClientCharacteristicUpdate
@@ -32,7 +34,8 @@ namespace services
     public:
         using infra::Observer<GattClientStackUpdateObserver, GattClientCharacteristicOperations>::Observer;
 
-        virtual void UpdateReceived(AttAttribute::Handle handle, infra::ConstByteRange data) = 0;
+        virtual void NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data) = 0;
+        virtual void IndicationReceived(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone) = 0;
     };
 
     class GattClientCharacteristicOperationsObserver
@@ -42,7 +45,6 @@ namespace services
         using infra::Observer<GattClientCharacteristicOperationsObserver, GattClientCharacteristicOperations>::Observer;
 
         virtual AttAttribute::Handle CharacteristicValueHandle() const = 0;
-        virtual GattCharacteristic::PropertyFlags CharacteristicProperties() const = 0;
     };
 
     class GattClientCharacteristicOperations
@@ -50,14 +52,14 @@ namespace services
         , public infra::Subject<GattClientStackUpdateObserver>
     {
     public:
-        virtual void Read(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(const infra::ConstByteRange&)>& onRead) = 0;
-        virtual void Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void()>& onDone) = 0;
+        virtual void Read(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone) = 0;
         virtual void WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data) = 0;
 
-        virtual void EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void()>& onDone) = 0;
-        virtual void DisableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void()>& onDone) = 0;
-        virtual void EnableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void()>& onDone) = 0;
-        virtual void DisableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void()>& onDone) = 0;
+        virtual void EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void DisableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void EnableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void DisableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
     };
 
     class GattClientCharacteristic
@@ -71,21 +73,27 @@ namespace services
         GattClientCharacteristic(AttAttribute::Uuid type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties);
         GattClientCharacteristic(GattClientCharacteristicOperations& operations, AttAttribute::Uuid type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties);
 
-        virtual void Read(infra::Function<void(const infra::ConstByteRange&)> onResponse);
-        virtual void Write(infra::ConstByteRange data, infra::Function<void()> onDone);
+        virtual void Read(const infra::Function<void(const infra::ConstByteRange&)>& onResponse, const infra::Function<void(uint8_t)>& onDone);
+        virtual void Write(infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone);
         virtual void WriteWithoutResponse(infra::ConstByteRange data);
 
-        virtual void EnableNotification(infra::Function<void()> onDone);
-        virtual void DisableNotification(infra::Function<void()> onDone);
-        virtual void EnableIndication(infra::Function<void()> onDone);
-        virtual void DisableIndication(infra::Function<void()> onDone);
+        virtual void EnableNotification(const infra::Function<void(uint8_t)>& onDone);
+        virtual void DisableNotification(const infra::Function<void(uint8_t)>& onDone);
+        virtual void EnableIndication(const infra::Function<void(uint8_t)>& onDone);
+        virtual void DisableIndication(const infra::Function<void(uint8_t)>& onDone);
+
+        GattCharacteristic::PropertyFlags CharacteristicProperties() const;
 
         // Implementation of GattClientCharacteristicOperationsObserver
         AttAttribute::Handle CharacteristicValueHandle() const override;
-        GattCharacteristic::PropertyFlags CharacteristicProperties() const override;
 
         // Implementation of GattClientStackUpdateObserver
-        void UpdateReceived(AttAttribute::Handle handle, infra::ConstByteRange data) override;
+        void NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data) override;
+        void IndicationReceived(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone) override;
+
+    private:
+        infra::AutoResetFunction<void()> onIndicationDone;
+        uint32_t observers;
     };
 
     class GattClientService

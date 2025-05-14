@@ -1,5 +1,5 @@
-#ifndef SERVICES_UTIL_ECHO_INSTANTIATIONS
-#define SERVICES_UTIL_ECHO_INSTANTIATIONS
+#ifndef SERVICES_UTIL_ECHO_INSTANTIATION_HPP
+#define SERVICES_UTIL_ECHO_INSTANTIATION_HPP
 
 #ifdef EMIL_HAL_GENERIC
 #include "hal/generic/UartGeneric.hpp"
@@ -134,6 +134,20 @@ namespace main_
         {}
 
         EchoOnSerialCommunication<MessageSize> to;
+        EchoForwarder<MessageSize, MaxServices> echoForwarder;
+    };
+
+    template<std::size_t MessageSize, std::size_t MaxServices>
+    struct EchoForwarderToSesame
+    {
+        EchoForwarderToSesame(services::Echo& from, hal::SerialCommunication& toSerial, services::MethodSerializerFactory& serializerFactory)
+            : bufferedSerial(toSerial)
+            , to(bufferedSerial, serializerFactory)
+            , echoForwarder(from, to)
+        {}
+
+        hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<MessageSize> bufferedSerial;
+        EchoOnSesame<MessageSize> to;
         EchoForwarder<MessageSize, MaxServices> echoForwarder;
     };
 }

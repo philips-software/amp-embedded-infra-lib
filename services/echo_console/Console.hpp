@@ -237,6 +237,7 @@ namespace application
         void ServiceNotFound(uint32_t serviceId, uint32_t methodId) const;
         void RunEventDispatcher(bool stopOnNetworkClose);
         void ListInterfaces();
+        void Help();
         void ListFields(const EchoMessage& message);
         void Process(const std::string& line) const;
         std::pair<std::shared_ptr<const EchoService>, const EchoMethod&> SearchMethod(MethodInvocation& methodInvocation) const;

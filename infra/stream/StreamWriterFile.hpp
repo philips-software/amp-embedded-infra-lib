@@ -3,6 +3,7 @@
 
 #include "infra/stream/OutputStream.hpp"
 #include <cstdio>
+#include <fstream>
 
 namespace infra
 {
@@ -11,13 +12,12 @@ namespace infra
     {
     public:
         explicit StreamWriterFile(const char* path);
-        ~StreamWriterFile();
 
         void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy) override;
         std::size_t Available() const override;
 
     private:
-        FILE* stream;
+        std::ofstream stream;
     };
 }
 

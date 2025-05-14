@@ -26,8 +26,23 @@ namespace services
 
     void HttpRequestParserImpl::FindPath(infra::Tokenizer& tokenizer)
     {
-        path = tokenizer.Token(1);
-        pathTokens = infra::Tokenizer(path, '/');
+        auto url = tokenizer.Token(1);
+
+        auto fragmentStart = url.find('#');
+        if (fragmentStart != infra::BoundedConstString::npos)
+        {
+            fragment = url.substr(fragmentStart + 1);
+            url = url.substr(0, fragmentStart);
+        }
+
+        auto queryStart = url.find('?');
+        if (queryStart != infra::BoundedConstString::npos)
+        {
+            query = url.substr(queryStart + 1);
+            url = url.substr(0, queryStart);
+        }
+
+        pathTokens = infra::Tokenizer(url, '/');
     }
 
     bool HttpRequestParserImpl::HeadersComplete() const
@@ -48,6 +63,16 @@ namespace services
     const infra::Tokenizer& HttpRequestParserImpl::PathTokens() const
     {
         return pathTokens;
+    }
+
+    infra::BoundedConstString HttpRequestParserImpl::Query() const
+    {
+        return query;
+    }
+
+    infra::BoundedConstString HttpRequestParserImpl::Fragment() const
+    {
+        return fragment;
     }
 
     infra::BoundedConstString HttpRequestParserImpl::Header(infra::BoundedConstString name) const

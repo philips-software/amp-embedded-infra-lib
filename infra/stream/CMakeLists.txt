@@ -57,8 +57,6 @@ target_sources(infra.stream PRIVATE
     StreamErrorPolicy.hpp
     StreamManipulators.cpp
     StreamManipulators.hpp
-    StreamWriterFile.cpp
-    StreamWriterFile.hpp
     StreamWriterPrintF.cpp
     StreamWriterPrintF.hpp
     StringInputStream.cpp
@@ -66,5 +64,12 @@ target_sources(infra.stream PRIVATE
     StringOutputStream.cpp
     StringOutputStream.hpp
 )
+
+if (EMIL_HOST_BUILD)
+    target_sources(infra.stream PRIVATE
+        StreamWriterFile.cpp
+        StreamWriterFile.hpp
+    )
+endif()
 
 add_subdirectory(test)

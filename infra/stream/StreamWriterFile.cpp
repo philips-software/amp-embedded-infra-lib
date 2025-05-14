@@ -3,18 +3,14 @@
 namespace infra
 {
     StreamWriterFile::StreamWriterFile(const char* path)
-        : stream(fopen(path, "w"))
+        : stream(path, std::ios::binary)
     {}
-
-    StreamWriterFile::~StreamWriterFile()
-    {
-        fclose(stream);
-    }
 
     void StreamWriterFile::Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy)
     {
-        fwrite(range.begin(), 1, range.size(), stream);
-        fflush(stream);
+        stream.write(reinterpret_cast<const char*>(range.begin()), range.size());
+        stream.flush();
+        errorPolicy.ReportResult(!stream.fail());
     }
 
     std::size_t StreamWriterFile::Available() const

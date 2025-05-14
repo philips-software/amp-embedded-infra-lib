@@ -13,14 +13,14 @@ namespace services
         : GattCharacteristic(type, handle, valueHandle, properties)
     {}
 
-    void GattClientCharacteristic::Read(infra::Function<void(const infra::ConstByteRange&)> onResponse)
+    void GattClientCharacteristic::Read(const infra::Function<void(const infra::ConstByteRange&)>& onResponse, const infra::Function<void(uint8_t)>& onDone)
     {
         really_assert(GattClientCharacteristicOperationsObserver::Attached());
 
-        GattClientCharacteristicOperationsObserver::Subject().Read(*this, onResponse);
+        GattClientCharacteristicOperationsObserver::Subject().Read(*this, onResponse, onDone);
     }
 
-    void GattClientCharacteristic::Write(infra::ConstByteRange data, infra::Function<void()> onDone)
+    void GattClientCharacteristic::Write(infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone)
     {
         really_assert(GattClientCharacteristicOperationsObserver::Attached());
 
@@ -34,41 +34,66 @@ namespace services
         GattClientCharacteristicOperationsObserver::Subject().WriteWithoutResponse(*this, data);
     }
 
-    void GattClientCharacteristic::EnableNotification(infra::Function<void()> onDone)
+    void GattClientCharacteristic::EnableNotification(const infra::Function<void(uint8_t)>& onDone)
     {
         really_assert(GattClientCharacteristicOperationsObserver::Attached());
 
         GattClientCharacteristicOperationsObserver::Subject().EnableNotification(*this, onDone);
     }
 
-    void GattClientCharacteristic::DisableNotification(infra::Function<void()> onDone)
+    void GattClientCharacteristic::DisableNotification(const infra::Function<void(uint8_t)>& onDone)
     {
         really_assert(GattClientCharacteristicOperationsObserver::Attached());
 
         GattClientCharacteristicOperationsObserver::Subject().DisableNotification(*this, onDone);
     }
 
-    void GattClientCharacteristic::EnableIndication(infra::Function<void()> onDone)
+    void GattClientCharacteristic::EnableIndication(const infra::Function<void(uint8_t)>& onDone)
     {
         really_assert(GattClientCharacteristicOperationsObserver::Attached());
 
         GattClientCharacteristicOperationsObserver::Subject().EnableIndication(*this, onDone);
     }
 
-    void GattClientCharacteristic::DisableIndication(infra::Function<void()> onDone)
+    void GattClientCharacteristic::DisableIndication(const infra::Function<void(uint8_t)>& onDone)
     {
         really_assert(GattClientCharacteristicOperationsObserver::Attached());
 
         GattClientCharacteristicOperationsObserver::Subject().DisableIndication(*this, onDone);
     }
 
-    void GattClientCharacteristic::UpdateReceived(AttAttribute::Handle handle, infra::ConstByteRange data)
+    void GattClientCharacteristic::NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data)
     {
         if (handle == (Handle() + GattDescriptor::ClientCharacteristicConfiguration::valueHandleOffset))
             GattClientCharacteristicUpdate::SubjectType::NotifyObservers([&data](auto& obs)
                 {
-                    obs.UpdateReceived(data);
+                    obs.NotificationReceived(data);
                 });
+    }
+
+    void GattClientCharacteristic::IndicationReceived(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone)
+    {
+        if (handle == (Handle() + GattDescriptor::ClientCharacteristicConfiguration::valueHandleOffset))
+        {
+            onIndicationDone = onDone;
+            observers = 1;
+            auto indicationReceived = [this]()
+            {
+                --observers;
+                if (observers == 0)
+                    onIndicationDone();
+            };
+
+            GattClientCharacteristicUpdate::SubjectType::NotifyObservers([this, &data, &indicationReceived](auto& obs)
+                {
+                    ++observers;
+                    obs.IndicationReceived(data, indicationReceived);
+                });
+
+            indicationReceived();
+        }
+        else
+            onDone();
     }
 
     AttAttribute::Handle GattClientCharacteristic::CharacteristicValueHandle() const

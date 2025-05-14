@@ -1,7 +1,7 @@
 FetchContent_Declare(
     mbedtls
     GIT_REPOSITORY https://github.com/Mbed-TLS/mbedtls
-    GIT_TAG 869298bffeea13b205343361b7a7daf2b210e33d # v3.2.1
+    GIT_TAG 107ea89daaefb9867ea9121002fbbdf926780e98 # v3.6.2
 )
 
 set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL On)
@@ -43,8 +43,11 @@ function(add_mbedtls_target_properties)
             # see https://github.com/Mbed-TLS/mbedtls/pull/6966
             # mbedtls sets the -Wdocumentation flag, which is throwing warnings
             # since clang-15
-            $<$<CXX_COMPILER_ID:Clang>:-Wno-documentation>
-            $<$<CXX_COMPILER_ID:AppleClang>:-Wno-documentation>
+            # Warning treated as error when implicit conversion within mbedtls
+            $<$<CXX_COMPILER_ID:Clang>:-Wno-documentation -Wno-conversion>
+            $<$<CXX_COMPILER_ID:AppleClang>:-Wno-documentation -Wno-conversion>
+            $<$<CXX_COMPILER_ID:GNU>:-Wno-conversion>
+            $<$<CXX_COMPILER_ID:MSVC>:/wd4244 /wd4267>
         )
 
         target_include_directories(${target} PUBLIC
@@ -57,3 +60,6 @@ endfunction()
 
 add_mbedtls_target_properties(mbedcrypto mbedx509 mbedtls)
 set_target_properties(apidoc lib PROPERTIES FOLDER External/MbedTLS)
+
+# Without optimization bignum_core fails to compile due to lack of assembly registers
+target_compile_options(mbedcrypto PRIVATE $<$<CXX_COMPILER_ID:GNU>:$<$<CONFIG:Debug>:-O2>>)

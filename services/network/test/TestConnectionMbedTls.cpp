@@ -13,6 +13,7 @@
 #include "services/util/Sha256MbedTls.hpp"
 #include "services/util/test_doubles/ConfigurationStoreMock.hpp"
 #include "gmock/gmock.h"
+#include <algorithm>
 
 class ConnectionMbedTlsTest
     : public testing::Test
@@ -235,6 +236,63 @@ TEST_F(ConnectionMbedTlsTest, persistent_session_reopen_connection)
 
         observer1->Subject().AbortAndDestroy();
     }
+}
+
+TEST_F(ConnectionMbedTlsTest, persistent_session_fails_deserialize)
+{
+    infra::BoundedVector<network::MbedTlsPersistedSession>::WithMaxSize<1> stores;
+    testing::StrictMock<services::ConfigurationStoreInterfaceMock> configInterface;
+    services::ConfigurationStoreAccess<infra::BoundedVector<network::MbedTlsPersistedSession>> configStore{ configInterface, stores };
+    services::Sha256MbedTls sha256;
+    services::MbedTlsSessionHasher mbedTlsHasher{ sha256 };
+    services::MbedTlsSessionStoragePersistent::WithMaxSize<1> persistentStorage{ configStore, mbedTlsHasher };
+
+    infra::BoundedVector<network::MbedTlsPersistedSession>::WithMaxSize<2> newStores;
+    services::ConfigurationStoreAccess<infra::BoundedVector<network::MbedTlsPersistedSession>> newConfigStore{ configInterface, newStores };
+
+    services::ConnectionFactoryMbedTls::WithMaxConnectionsListenersAndConnectors<2, 1, 0> tlsNetworkServer(loopBackNetwork, serverCertificates, randomDataGenerator);
+    services::ConnectionFactoryMbedTls::CustomSessionStorageWithMaxConnectionsListenersAndConnectors<2, 0, 1> tlsNetworkClient(persistentStorage, loopBackNetwork, clientCertificates, randomDataGenerator);
+    infra::SharedPtr<void> listener = tlsNetworkServer.Listen(1234, serverObserverFactory);
+
+    {
+        EXPECT_CALL(clientObserverFactory, Port()).WillOnce(testing::Return(1234));
+        tlsNetworkClient.Connect(clientObserverFactory);
+
+        infra::SharedOptional<services::ConnectionObserverStub> observer1;
+        infra::SharedOptional<services::ConnectionObserverStub> observer2;
+
+        EXPECT_CALL(serverObserverFactory, ConnectionAccepted(testing::_, testing::_))
+            .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver, services::IPAddress address)
+                {
+                    createdObserver(observer1.Emplace());
+                }));
+        EXPECT_CALL(clientObserverFactory, Address());
+        EXPECT_CALL(configInterface, Write());
+        EXPECT_CALL(clientObserverFactory, ConnectionEstablished(testing::_))
+            .WillOnce(testing::Invoke([&](infra::AutoResetFunction<void(infra::SharedPtr<services::ConnectionObserver> connectionObserver)> createdObserver)
+                {
+                    createdObserver(observer2.Emplace());
+                }));
+        ExecuteAllActions();
+
+        observer1->Subject().AbortAndDestroy();
+    }
+
+    {
+        newConfigStore->emplace_back();
+        std::copy(stores.back().serializedSession.begin(), stores.back().serializedSession.end(), std::back_inserter(newConfigStore->back().serializedSession));
+        newConfigStore->emplace_back();
+        EXPECT_EQ(newConfigStore->size(), 2);
+        services::MbedTlsSessionStoragePersistent::WithMaxSize<2> newPersistentStorage{ newConfigStore, mbedTlsHasher };
+        EXPECT_EQ(newConfigStore->size(), 1);
+    }
+}
+
+TEST_F(ConnectionMbedTlsTest, mbedtls_session_fails_deserialize)
+{
+    network::MbedTlsPersistedSession persistedSession;
+    auto sessionDeserialize = services::MbedTlsSession(persistedSession);
+    EXPECT_FALSE(sessionDeserialize.IsDeserialized());
 }
 
 class ConnectionWithNameResolverMbedTlsTest
@@ -504,4 +562,11 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, persistent_session_minimal_memory_
             connection = infra::none;
         }));
     observer1->Subject().AbortAndDestroy();
+}
+
+TEST(MbedTlsAdapterTest, RandomDataGenerator)
+{
+    hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
+    services::MbedTlsAdapter mbedtlsAdapter{ randomDataGenerator };
+    EXPECT_THAT(mbedtlsAdapter.RandomDataGenerator(), testing::Ref(randomDataGenerator));
 }
