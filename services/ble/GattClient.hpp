@@ -6,7 +6,6 @@
 #include "infra/util/IntrusiveForwardList.hpp"
 #include "infra/util/Observer.hpp"
 #include "services/ble/Gatt.hpp"
-#include <array>
 
 namespace services
 {
@@ -136,6 +135,44 @@ namespace services
 
         void StartCharacteristicDiscovery(const GattService& service);
         void StartDescriptorDiscovery(const GattService& service);
+    };
+
+    class GattClient;
+
+    class GattClientObserver
+        : public infra::Observer<GattClientObserver, GattClient>
+    {
+    public:
+        using infra::Observer<GattClientObserver, GattClient>::Observer;
+
+        virtual void ServiceDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle endHandle) = 0;
+        virtual void ServiceDiscoveryComplete() = 0;
+        virtual void CharacteristicDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties) = 0;
+        virtual void CharacteristicDiscoveryComplete() = 0;
+        virtual void DescriptorDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle) = 0;
+        virtual void DescriptorDiscoveryComplete() = 0;
+
+        virtual void NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data) = 0;
+        virtual void IndicationReceived(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone) = 0;
+
+        virtual AttAttribute::Handle CharacteristicValueHandle() const = 0;
+    };
+
+    class GattClient
+        : public infra::Subject<GattClientObserver>
+    {
+    public:
+        virtual void StartServiceDiscovery() = 0;
+        virtual void StartCharacteristicDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) = 0;
+        virtual void StartDescriptorDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) = 0;
+
+        virtual void Read(const GattClientObserver& characteristic, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void Write(const GattClientObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void WriteWithoutResponse(const GattClientObserver& characteristic, infra::ConstByteRange data) = 0;
+        virtual void EnableNotification(const GattClientObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void DisableNotification(const GattClientObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void EnableIndication(const GattClientObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void DisableIndication(const GattClientObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
     };
 }
 

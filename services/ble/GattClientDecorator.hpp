@@ -4,6 +4,7 @@
 #include "infra/event/ClaimableResource.hpp"
 #include "infra/util/Function.hpp"
 #include "optional"
+#include "services/ble/Gatt.hpp"
 #include "services/ble/GattClient.hpp"
 #include <cstdint>
 #include <functional>
@@ -11,25 +12,41 @@
 
 namespace services
 {
-    class GattClientDiscoveryDecorator
+    class ClaimingGattClientAdapter
         : public GattClientDiscovery
-        , public GattClientDiscoveryObserver
+        , public GattClientCharacteristicOperations
+        , private GattClientObserver
     {
     public:
-        GattClientDiscoveryDecorator(GattClientDiscovery& discovery, infra::ClaimableResource& gattClientResource);
+        ClaimingGattClientAdapter(GattClient& gattClient);
 
         // Implementation of GattClientDiscovery
         void StartServiceDiscovery() override;
         void StartCharacteristicDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) override;
         void StartDescriptorDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) override;
 
-        // Implementation of GattClientDiscoveryObserver
+        // Implementation of GattClientCharacteristicOperations
+        void Read(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone) override;
+        void Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone) override;
+        void WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data) override;
+        void EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) override;
+        void DisableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) override;
+        void EnableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) override;
+        void DisableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) override;
+
+        // Implementation of GattClientObserver
         void ServiceDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle endHandle) override;
         void ServiceDiscoveryComplete() override;
         void CharacteristicDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties) override;
         void CharacteristicDiscoveryComplete() override;
         void DescriptorDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle) override;
         void DescriptorDiscoveryComplete() override;
+        void NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data) override;
+        void IndicationReceived(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone) override;
+        AttAttribute::Handle CharacteristicValueHandle() const override;
+
+    private:
+        void PerformDescriptorOperation();
 
     private:
         struct DiscoveredService
@@ -59,78 +76,47 @@ namespace services
             AttAttribute::Handle endHandle;
         };
 
-        std::optional<std::variant<DiscoveredService, DiscoveredCharacteristic, DiscoveredDescriptor, HandleRange>> operationContext;
-        infra::ClaimableResource::Claimer claimer;
-    };
-
-    class GattClientCharacteristicOperationsDecorator
-        : public GattClientCharacteristicOperations
-        , public GattClientCharacteristicOperationsObserver
-    {
-    public:
-        GattClientCharacteristicOperationsDecorator(GattClientCharacteristicOperations& operations, infra::ClaimableResource& gattClientResource);
-
-        // Implementation of GattClientCharacteristicOperations
-        void Read(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone) override;
-        // TODO: fix onRead argument
-
-        void Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone) override;
-        void WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data) override;
-        void EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) override;
-        void DisableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) override;
-        void EnableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) override;
-        void DisableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) override;
-
-        // Implementation of GattClientCharacteristicOperationsObserver
-        AttAttribute::Handle CharacteristicValueHandle() const override;
-
-    private:
-        void PerformDescriptorOperation();
-
-    private:
-        struct ReadContext
+        struct ReadOperation
         {
-            std::reference_wrapper<const GattClientCharacteristicOperationsObserver> characteristic;
             const infra::Function<void(const infra::ConstByteRange&)> onRead;
             const infra::Function<void(uint8_t)> onDone;
         };
 
-        struct WriteContext
+        struct WriteOperation
         {
-            std::reference_wrapper<const GattClientCharacteristicOperationsObserver> characteristic;
             infra::ConstByteRange data;
             const infra::Function<void(uint8_t)> onDone;
         };
 
-        struct WriteWithoutResponseContext
+        struct WriteWithoutResponseOperation
         {
-            std::reference_wrapper<const GattClientCharacteristicOperationsObserver> characteristic;
             infra::ConstByteRange data;
         };
 
-        struct DescriptorOperationContext
+        struct DescriptorOperation
         {
-            std::reference_wrapper<const GattClientCharacteristicOperationsObserver> characteristic;
             const infra::Function<void(uint8_t)> onDone;
-            infra::Function<void(const GattClientCharacteristicOperationsObserver&, const infra::Function<void(uint8_t)>&)> operation;
+            infra::Function<void(const infra::Function<void(uint8_t)>&)> operation;
         };
 
-        std::optional<std::variant<ReadContext, WriteContext, WriteWithoutResponseContext, DescriptorOperationContext>> operationContext;
-        infra::ClaimableResource::Claimer claimer;
-    };
+        struct CharacteristicOperation
+        {
+            using Operation = std::variant<ReadOperation, WriteOperation, WriteWithoutResponseOperation, DescriptorOperation>;
 
-    class GattClientDecorator
-    {
-    public:
-        GattClientDecorator(GattClientDiscovery& discovery, GattClientCharacteristicOperations& operations);
+            CharacteristicOperation(Operation operation, AttAttribute::Handle handle)
+                : operation(operation)
+                , handle(handle) {};
 
-        services::GattClientDiscovery& Discovery();
-        services::GattClientCharacteristicOperations& CharacteristicOperations();
+            Operation operation;
+            AttAttribute::Handle handle;
+        };
 
-    private:
+        std::optional<std::variant<DiscoveredService, DiscoveredCharacteristic, DiscoveredDescriptor, HandleRange>> discoveryContext;
+        std::optional<CharacteristicOperation> characteristicOperationContext;
+
         infra::ClaimableResource resource;
-        GattClientDiscoveryDecorator discoveryDecorator;
-        GattClientCharacteristicOperationsDecorator operationsDecorator;
+        infra::ClaimableResource::Claimer characteristicOperationsClaimer{ resource };
+        infra::ClaimableResource::Claimer discoveryClaimer{ resource };
     };
 }
 

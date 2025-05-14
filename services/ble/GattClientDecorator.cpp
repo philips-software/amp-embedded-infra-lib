@@ -1,220 +1,220 @@
 #include "services/ble/GattClientDecorator.hpp"
 #include "services/ble/Gatt.hpp"
 #include "services/ble/GattClient.hpp"
+#include <tuple>
 
 namespace services
 {
-    GattClientDiscoveryDecorator::GattClientDiscoveryDecorator(GattClientDiscovery& discovery, infra::ClaimableResource& gattClientResource)
-        : GattClientDiscoveryObserver(discovery)
-        , claimer(gattClientResource)
+    ClaimingGattClientAdapter::ClaimingGattClientAdapter(GattClient& gattClient)
+        : GattClientObserver(gattClient)
     {}
 
-    void GattClientDiscoveryDecorator::StartServiceDiscovery()
+    void ClaimingGattClientAdapter::StartServiceDiscovery()
     {
-        claimer.Claim([this]()
+        discoveryClaimer.Claim([this]()
             {
-                GattClientDiscoveryObserver::Subject().StartServiceDiscovery();
+                GattClientObserver::Subject().StartServiceDiscovery();
             });
     }
 
-    void GattClientDiscoveryDecorator::StartCharacteristicDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle)
+    void ClaimingGattClientAdapter::StartCharacteristicDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle)
     {
-        operationContext.emplace(HandleRange{ handle, endHandle });
-        claimer.Claim([this]()
+        discoveryContext.emplace(HandleRange{ handle, endHandle });
+        discoveryClaimer.Claim([this]()
             {
-                auto discoveredCharacteristic = std::get<HandleRange>(*operationContext);
-                GattClientDiscoveryObserver::Subject().StartCharacteristicDiscovery(discoveredCharacteristic.startHandle, discoveredCharacteristic.endHandle);
+                auto discoveredCharacteristic = std::get<HandleRange>(*discoveryContext);
+                GattClientObserver::Subject().StartCharacteristicDiscovery(discoveredCharacteristic.startHandle, discoveredCharacteristic.endHandle);
             });
     }
 
-    void GattClientDiscoveryDecorator::StartDescriptorDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle)
+    void ClaimingGattClientAdapter::StartDescriptorDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle)
     {
-        operationContext.emplace(HandleRange{ handle, endHandle });
-        claimer.Claim([this]()
+        discoveryContext.emplace(HandleRange{ handle, endHandle });
+        discoveryClaimer.Claim([this]()
             {
-                auto discoveredCharacteristic = std::get<HandleRange>(*operationContext);
-                GattClientDiscoveryObserver::Subject().StartDescriptorDiscovery(discoveredCharacteristic.startHandle, discoveredCharacteristic.endHandle);
+                auto discoveredCharacteristic = std::get<HandleRange>(*discoveryContext);
+                GattClientObserver::Subject().StartDescriptorDiscovery(discoveredCharacteristic.startHandle, discoveredCharacteristic.endHandle);
             });
     }
 
-    void GattClientDiscoveryDecorator::ServiceDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle endHandle)
+    void ClaimingGattClientAdapter::ServiceDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle endHandle)
     {
-        operationContext.emplace(DiscoveredService({ type, handle, endHandle }));
+        discoveryContext.emplace(DiscoveredService({ type, handle, endHandle }));
         GattClientDiscovery::NotifyObservers([this](auto& observer)
             {
-                auto discoveredService = std::get<DiscoveredService>(*operationContext);
+                auto discoveredService = std::get<DiscoveredService>(*discoveryContext);
                 observer.ServiceDiscovered(discoveredService.type.get(), discoveredService.handle, discoveredService.endHandle);
             });
     }
 
-    void GattClientDiscoveryDecorator::ServiceDiscoveryComplete()
+    void ClaimingGattClientAdapter::ServiceDiscoveryComplete()
     {
-        claimer.Release();
+        discoveryClaimer.Release();
         GattClientDiscovery::NotifyObservers([](auto& observer)
             {
                 observer.ServiceDiscoveryComplete();
             });
     }
 
-    void GattClientDiscoveryDecorator::CharacteristicDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties)
+    void ClaimingGattClientAdapter::CharacteristicDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties)
     {
-        operationContext.emplace(DiscoveredCharacteristic({ type, handle, valueHandle, properties }));
+        discoveryContext.emplace(DiscoveredCharacteristic({ type, handle, valueHandle, properties }));
         GattClientDiscovery::NotifyObservers([this](auto& observer)
             {
-                auto discoveredCharacteristic = std::get<DiscoveredCharacteristic>(*operationContext);
+                auto discoveredCharacteristic = std::get<DiscoveredCharacteristic>(*discoveryContext);
                 observer.CharacteristicDiscovered(discoveredCharacteristic.type.get(), discoveredCharacteristic.handle, discoveredCharacteristic.valueHandle, discoveredCharacteristic.properties);
             });
     }
 
-    void GattClientDiscoveryDecorator::CharacteristicDiscoveryComplete()
+    void ClaimingGattClientAdapter::CharacteristicDiscoveryComplete()
     {
-        claimer.Release();
+        discoveryClaimer.Release();
         GattClientDiscovery::NotifyObservers([](auto& observer)
             {
                 observer.CharacteristicDiscoveryComplete();
             });
     }
 
-    void GattClientDiscoveryDecorator::DescriptorDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle)
+    void ClaimingGattClientAdapter::DescriptorDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle)
     {
-        operationContext.emplace(DiscoveredDescriptor({ type, handle }));
+        discoveryContext.emplace(DiscoveredDescriptor({ type, handle }));
         GattClientDiscovery::NotifyObservers([this](auto& observer)
             {
-                auto discoveredDescriptor = std::get<DiscoveredDescriptor>(*operationContext);
+                auto discoveredDescriptor = std::get<DiscoveredDescriptor>(*discoveryContext);
                 observer.DescriptorDiscovered(discoveredDescriptor.type.get(), discoveredDescriptor.handle);
             });
     }
 
-    void GattClientDiscoveryDecorator::DescriptorDiscoveryComplete()
+    void ClaimingGattClientAdapter::DescriptorDiscoveryComplete()
     {
-        claimer.Release();
+        discoveryClaimer.Release();
         GattClientDiscovery::NotifyObservers([](auto& observer)
             {
                 observer.DescriptorDiscoveryComplete();
             });
     }
 
-    GattClientCharacteristicOperationsDecorator::GattClientCharacteristicOperationsDecorator(GattClientCharacteristicOperations& operations, infra::ClaimableResource& gattClientResource)
-        : GattClientCharacteristicOperationsObserver(operations)
-        , claimer(gattClientResource)
-    {}
-
-    void GattClientCharacteristicOperationsDecorator::Read(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone)
+    void ClaimingGattClientAdapter::Read(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone)
     {
-        operationContext.emplace(ReadContext{ characteristic, onRead, onDone });
-        claimer.Claim([this]()
+        characteristicOperationContext.emplace(ReadOperation{ onRead, onDone }, characteristic.CharacteristicValueHandle());
+        characteristicOperationsClaimer.Claim([this]()
             {
-                auto readContext = std::get<ReadContext>(*operationContext);
-                GattClientCharacteristicOperationsObserver::Subject().Read(readContext.characteristic, readContext.onRead, [this](uint8_t result)
+                auto readContext = std::get<ReadOperation>(characteristicOperationContext->operation);
+                GattClientObserver::Subject().Read(*this, readContext.onRead, [this](uint8_t result)
                     {
-                        claimer.Release();
-                        auto readContext = std::get<ReadContext>(*operationContext);
+                        characteristicOperationsClaimer.Release();
+                        auto readContext = std::get<ReadOperation>(characteristicOperationContext->operation);
                         readContext.onDone(result);
                     });
             });
     }
 
-    void GattClientCharacteristicOperationsDecorator::Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone)
+    void ClaimingGattClientAdapter::Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone)
     {
-        operationContext.emplace(WriteContext{ characteristic, data, onDone });
-        claimer.Claim([this]()
+        characteristicOperationContext.emplace(WriteOperation{ data, onDone }, characteristic.CharacteristicValueHandle());
+        characteristicOperationsClaimer.Claim([this]()
             {
-                auto writeContext = std::get<WriteContext>(*operationContext);
-                GattClientCharacteristicOperationsObserver::Subject().Write(writeContext.characteristic, writeContext.data, [this](uint8_t result)
+                auto writeContext = std::get<WriteOperation>(characteristicOperationContext->operation);
+                GattClientObserver::Subject().Write(*this, writeContext.data, [this](uint8_t result)
                     {
-                        claimer.Release();
-                        auto writeContext = std::get<WriteContext>(*operationContext);
+                        characteristicOperationsClaimer.Release();
+                        auto writeContext = std::get<WriteOperation>(characteristicOperationContext->operation);
                         writeContext.onDone(result);
                     });
             });
     }
 
-    void GattClientCharacteristicOperationsDecorator::WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data)
+    void ClaimingGattClientAdapter::WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data)
     {
-        operationContext.emplace(WriteWithoutResponseContext{ characteristic, data });
-        claimer.Claim([this]()
+        characteristicOperationContext.emplace(WriteWithoutResponseOperation{ data }, characteristic.CharacteristicValueHandle());
+        characteristicOperationsClaimer.Claim([this]()
             {
-                auto writeWithoutResponseContext = std::get<WriteWithoutResponseContext>(*operationContext);
-                GattClientCharacteristicOperationsObserver::Subject().WriteWithoutResponse(writeWithoutResponseContext.characteristic, writeWithoutResponseContext.data);
-                claimer.Release();
+                auto writeWithoutResponseContext = std::get<WriteWithoutResponseOperation>(characteristicOperationContext->operation);
+                GattClientObserver::Subject().WriteWithoutResponse(*this, writeWithoutResponseContext.data);
+                characteristicOperationsClaimer.Release();
             });
     }
 
-    void GattClientCharacteristicOperationsDecorator::EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone)
+    void ClaimingGattClientAdapter::EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone)
     {
-        operationContext.emplace(DescriptorOperationContext{ characteristic, onDone,
-            [this](const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& callback)
-            {
-                GattClientCharacteristicOperationsObserver::Subject().EnableNotification(characteristic, callback);
-            } });
+        characteristicOperationContext.emplace(DescriptorOperation{ onDone, [this](const infra::Function<void(uint8_t)>& callback)
+                                                   {
+                                                       GattClientObserver::Subject().EnableNotification(*this, callback);
+                                                   } },
+            characteristic.CharacteristicValueHandle());
 
         PerformDescriptorOperation();
     }
 
-    void GattClientCharacteristicOperationsDecorator::DisableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone)
+    void ClaimingGattClientAdapter::DisableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone)
     {
-        operationContext.emplace(DescriptorOperationContext{ characteristic, onDone,
-            [this](const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& callback)
-            {
-                GattClientCharacteristicOperationsObserver::Subject().DisableNotification(characteristic, callback);
-            } });
+        characteristicOperationContext.emplace(DescriptorOperation{ onDone,
+                                                   [this](const infra::Function<void(uint8_t)>& callback)
+                                                   {
+                                                       GattClientObserver::Subject().DisableNotification(*this, callback);
+                                                   } },
+            characteristic.CharacteristicValueHandle());
 
         PerformDescriptorOperation();
     }
 
-    void GattClientCharacteristicOperationsDecorator::EnableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone)
+    void ClaimingGattClientAdapter::EnableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone)
     {
-        operationContext.emplace(DescriptorOperationContext{ characteristic, onDone,
-            [this](const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& callback)
-            {
-                GattClientCharacteristicOperationsObserver::Subject().EnableIndication(characteristic, callback);
-            } });
+        characteristicOperationContext.emplace(DescriptorOperation{ onDone,
+                                                   [this](const infra::Function<void(uint8_t)>& callback)
+                                                   {
+                                                       GattClientObserver::Subject().EnableIndication(*this, callback);
+                                                   } },
+            characteristic.CharacteristicValueHandle());
 
         PerformDescriptorOperation();
     }
 
-    void GattClientCharacteristicOperationsDecorator::DisableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone)
+    void ClaimingGattClientAdapter::DisableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone)
     {
-        operationContext.emplace(DescriptorOperationContext{ characteristic, onDone,
-            [this](const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& callback)
-            {
-                GattClientCharacteristicOperationsObserver::Subject().DisableIndication(characteristic, callback);
-            } });
+        characteristicOperationContext.emplace(DescriptorOperation{ onDone,
+                                                   [this](const infra::Function<void(uint8_t)>& callback)
+                                                   {
+                                                       GattClientObserver::Subject().DisableIndication(*this, callback);
+                                                   } },
+            characteristic.CharacteristicValueHandle());
 
         PerformDescriptorOperation();
     }
 
-    void GattClientCharacteristicOperationsDecorator::PerformDescriptorOperation()
+    void ClaimingGattClientAdapter::PerformDescriptorOperation()
     {
-        claimer.Claim([this]()
+        characteristicOperationsClaimer.Claim([this]()
             {
-                auto descriptorOperationContext = std::get<DescriptorOperationContext>(*operationContext);
-                descriptorOperationContext.operation(descriptorOperationContext.characteristic, [this](uint8_t result)
+                auto descriptorOperationContext = std::get<DescriptorOperation>(characteristicOperationContext->operation);
+                descriptorOperationContext.operation([this](uint8_t result)
                     {
-                        claimer.Release();
-                        auto descriptorOperationContext = std::get<DescriptorOperationContext>(*operationContext);
+                        characteristicOperationsClaimer.Release();
+                        auto descriptorOperationContext = std::get<DescriptorOperation>(characteristicOperationContext->operation);
                         descriptorOperationContext.onDone(result);
                     });
             });
     }
 
-    AttAttribute::Handle GattClientCharacteristicOperationsDecorator::CharacteristicValueHandle() const
+    void ClaimingGattClientAdapter::NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data)
     {
-        std::abort();
+        infra::Subject<GattClientStackUpdateObserver>::NotifyObservers([handle, data](auto& observer)
+            {
+                observer.NotificationReceived(handle, data);
+            });
     }
 
-    GattClientDecorator::GattClientDecorator(services::GattClientDiscovery& discovery, services::GattClientCharacteristicOperations& operations)
-        : discoveryDecorator(discovery, resource)
-        , operationsDecorator(operations, resource)
-    {}
-
-    services::GattClientDiscovery& GattClientDecorator::Discovery()
+    void ClaimingGattClientAdapter::IndicationReceived(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone)
     {
-        return discoveryDecorator;
+        std::tuple<AttAttribute::Handle, infra::ConstByteRange, infra::Function<void()>> context{ handle, data, onDone };
+        infra::Subject<GattClientStackUpdateObserver>::NotifyObservers([&context](auto& observer)
+            {
+                observer.IndicationReceived(std::get<0>(context), std::get<1>(context), std::get<2>(context));
+            });
     }
 
-    services::GattClientCharacteristicOperations& GattClientDecorator::CharacteristicOperations()
+    AttAttribute::Handle ClaimingGattClientAdapter::CharacteristicValueHandle() const
     {
-        return operationsDecorator;
+        return characteristicOperationContext->handle;
     }
 }
