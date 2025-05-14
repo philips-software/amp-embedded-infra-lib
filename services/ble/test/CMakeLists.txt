@@ -17,6 +17,6 @@ target_sources(services.ble_test PRIVATE
     TestGapPeripheral.cpp
     TestGatt.cpp
     TestGattClient.cpp
-    TestGattClientDecorator.cpp
+    TestClaimingGattClientAdapter.cpp
     TestGattServer.cpp
 )

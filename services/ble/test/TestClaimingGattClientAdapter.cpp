@@ -1,12 +1,9 @@
-
-#include "infra/event/ClaimableResource.hpp"
-#include "infra/event/EventDispatcher.hpp"
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/test_helper/MemoryRangeMatcher.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
+#include "services/ble/ClaimingGattClientAdapter.hpp"
 #include "services/ble/GattClient.hpp"
-#include "services/ble/GattClientDecorator.hpp"
 #include "services/ble/test_doubles/GattClientMock.hpp"
 #include "gmock/gmock.h"
 #include <array>

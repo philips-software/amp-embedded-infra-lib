@@ -1,4 +1,4 @@
-#include "services/ble/GattClientDecorator.hpp"
+#include "services/ble/ClaimingGattClientAdapter.hpp"
 #include "services/ble/Gatt.hpp"
 #include "services/ble/GattClient.hpp"
 #include <tuple>
