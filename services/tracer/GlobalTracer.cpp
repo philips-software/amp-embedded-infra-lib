@@ -15,11 +15,6 @@ namespace services
 #endif
     }
 
-    bool TracerIsSet()
-    {
-        return globalTracerInstance != nullptr;
-    }
-
     void SetGlobalTracerInstance(Tracer& tracer)
     {
         assert(globalTracerInstance == nullptr);
