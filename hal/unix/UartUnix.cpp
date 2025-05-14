@@ -28,7 +28,11 @@ namespace hal
 
     UartUnix::~UartUnix()
     {
-        running = false;
+        {
+            std::unique_lock lock(receivedDataMutex);
+            running = false;
+            receivedData = nullptr;
+        }
         if (readThread.joinable())
             readThread.join();
     }
@@ -66,16 +70,21 @@ namespace hal
     {
         while (running)
         {
+            {
+                std::unique_lock lock(receivedDataMutex);
+                if (!running)
+                    break;
+            }
             auto range = infra::MakeByteRange(buffer);
             auto size = read(FileDescriptor(), range.begin(), range.size());
 
             if (size < 0)
                 throw std::system_error(EFAULT, std::system_category());
 
-            if (running)
             {
                 std::unique_lock lock(receivedDataMutex);
-                receivedData(infra::ConstByteRange(range.begin(), range.begin() + size));
+                if (running && receivedData)
+                    receivedData(infra::ConstByteRange(range.begin(), range.begin() + size));
             }
         }
     }
