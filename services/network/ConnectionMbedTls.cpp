@@ -2,7 +2,6 @@
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "infra/util/ReallyAssert.hpp"
 #include "mbedtls/platform_time.h"
-#include "services/tracer/GlobalTracer.hpp"
 
 extern "C"
 {
@@ -279,9 +278,7 @@ namespace services
     {}
 
     void ConnectionMbedTls::TlsLog(int level, const char* file, int line, const char* message)
-    {
-        services::GlobalTracer().Trace() << file << " : " << line << " : " << message;
-    }
+    {}
 
     void ConnectionMbedTls::TryAllocateSendStream()
     {
