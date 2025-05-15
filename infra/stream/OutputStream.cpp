@@ -92,13 +92,10 @@ namespace infra
 
     TextOutputStream& TextOutputStream::operator<<(const char* zeroTerminatedString)
     {
-        const auto len = std::strlen(zeroTerminatedString); //NOSONAR
-        OutputOptionalPadding(len);
+        infra::BoundedConstString string(zeroTerminatedString);
+        OutputOptionalPadding(string.size());
 
-        // Writer().Insert(ReinterpretCastByteRange(MakeRange(zeroTerminatedString, zeroTerminatedString + len)), ErrorPolicy());
-
-        infra::BoundedString d(zeroTerminatedString);
-        Writer().Insert(infra::StringAsByteRange(d), ErrorPolicy());
+        Writer().Insert(infra::StringAsByteRange(string), ErrorPolicy());
 
         return *this;
     }

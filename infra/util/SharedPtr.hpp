@@ -361,7 +361,7 @@ namespace infra
     template<class T>
     T* SharedPtr<T>::operator->() const
     {
-        really_assert(object != nullptr);
+        assert(object != nullptr);
         return object;
     }
 

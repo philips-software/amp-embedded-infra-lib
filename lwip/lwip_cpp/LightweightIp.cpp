@@ -18,8 +18,6 @@ extern "C" uint32_t StaticLwIpRand()
     return result;
 }
 
-netif* netifInternal = nullptr;
-
 namespace services
 {
     namespace
@@ -69,15 +67,12 @@ namespace services
 
     IPv4Address LightweightIp::GetIPv4Address() const
     {
-        return netifInternal ? Convert(netifInternal->ip_addr) : IPv4Address();
+        return Convert(netif_default->ip_addr);
     }
 
     IPv4InterfaceAddresses LightweightIp::GetIPv4InterfaceAddresses() const
     {
-        if (netifInternal)
-            return { Convert(netifInternal->ip_addr), Convert(netifInternal->netmask), Convert(netifInternal->gw) };
-        else
-            return { IPv4Address(), IPv4Address(), IPv4Address() };
+        return { Convert(netif_default->ip_addr), Convert(netif_default->netmask), Convert(netif_default->gw) };
     }
 
     void LightweightIp::RegisterInstance()
@@ -85,11 +80,7 @@ namespace services
         services::GlobalTracer().Trace() << "******** LightweightIp::RegisterInstance *********\r\n";
 
         if (instances.empty())
-        {
-            // LOCK_TCPIP_CORE();
             netif_add_ext_callback(&instanceCallback, &InstanceCallback);
-            // UNLOCK_TCPIP_CORE();
-        }
 
         instances.push_back(*this);
     }
@@ -105,21 +96,15 @@ namespace services
 
     void LightweightIp::InstanceCallback(netif* netif, netif_nsc_reason_t reason, const netif_ext_callback_args_t* args)
     {
-        netifInternal = netif;
         for (auto& instance : instances)
             instance.ExtCallback(reason, args);
     }
 
     void LightweightIp::ExtCallback(netif_nsc_reason_t reason, const netif_ext_callback_args_t* args)
     {
-        if (!netifInternal)
-        {
-            return;
-        }
+        bool linkUp = (netif_default->flags & NETIF_FLAG_LINK_UP) != 0;
 
-        bool linkUp = (netifInternal->flags & NETIF_FLAG_LINK_UP) != 0;
-
-        services::GlobalTracer().Trace() << "LightweightIp::ExtCallback: " << netifInternal->name[0] << netifInternal->name[1] << " : link " << (linkUp ? "up" : "down");
+        services::GlobalTracer().Trace() << "LightweightIp::ExtCallback: " << netif_default->name[0] << netif_default->name[1] << " : link " << (linkUp ? "up" : "down");
 
         auto newIpv4Address = GetIPv4Address();
 
