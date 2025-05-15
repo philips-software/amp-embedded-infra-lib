@@ -49,5 +49,3 @@
     } while (0)
 
 #endif
-
-#define LWIP_RAND() ((u32_t)rand())
