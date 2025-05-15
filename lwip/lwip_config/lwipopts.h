@@ -111,6 +111,8 @@
 #define TCP_RST_DEBUG LWIP_DBG_OFF
 #define LWIP_DHCP_AUTOIP_COOP_TRIES 5
 
+#endif
+
 #define LWIP_DBG_TYPES_ON (LWIP_DBG_ON | LWIP_DBG_TRACE | LWIP_DBG_STATE | LWIP_DBG_FRESH | LWIP_DBG_HALT)
 
 /* ---------- Memory options ---------- */
