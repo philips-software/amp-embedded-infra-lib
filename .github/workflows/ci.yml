@@ -79,7 +79,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
-      - run: xwin --accept-license splat --sdk-version "10.0.26100" --preserve-ms-arch-notation --include-debug-libs && mv .xwin-cache/splat/ /winsdk
+      - run: xwin --accept-license --sdk-version "10.0.26100" splat --preserve-ms-arch-notation --include-debug-libs && mv .xwin-cache/splat/ /winsdk
       - uses: hendrikmuhs/ccache-action@ed74d11c0b343532753ecead8a951bb09bb34bc9 # v1.2.14
         with:
           key: ${{ github.job }}-clang-msvc
