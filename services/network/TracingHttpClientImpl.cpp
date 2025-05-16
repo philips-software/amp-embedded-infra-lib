@@ -54,6 +54,12 @@ namespace services
         , tracer(tracer)
     {}
 
+    void TracingHttpClientImplWithRedirection::StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine)
+    {
+        tracer.Trace() << "HttpClientImplWithRedirection::StatusAvailable: " << code << " " << statusLine;
+        HttpClientImplWithRedirection::StatusAvailable(code, statusLine);
+    }
+
     void TracingHttpClientImplWithRedirection::BodyReaderAvailable(infra::SharedPtr<infra::CountingStreamReaderWithRewinding>&& bodyReader)
     {
         tracer.Trace() << "HttpClientImplWithRedirection::BodyAvailable; received response:" << infra::endl;
