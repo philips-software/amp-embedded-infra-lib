@@ -1,7 +1,6 @@
 #include "protobuf/protoc_echo_plugin/EchoObjects.hpp"
 #include "generated/EchoAttributes.pb.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
-#include "google/protobuf/stubs/strutil.h"
 #include "infra/syntax/ProtoFormatter.hpp"
 
 namespace application
@@ -12,29 +11,29 @@ namespace application
         {
             std::string namespaceString;
 
-            namespaceString = descriptor.file()->package() + "::";
+            namespaceString = std::string(descriptor.file()->package()) + "::";
             for (auto containingType = descriptor.containing_type(); containingType != nullptr; containingType = containingType->containing_type())
-                namespaceString += containingType->name() + "::";
+                namespaceString += std::string(containingType->name()) + "::";
 
-            return namespaceString + descriptor.name();
+            return namespaceString + std::string(descriptor.name());
         }
 
         std::string QualifiedName(const google::protobuf::EnumDescriptor& descriptor)
         {
             std::string namespaceString;
 
-            namespaceString = descriptor.file()->package() + "::";
+            namespaceString = std::string(descriptor.file()->package()) + "::";
             for (auto containingType = descriptor.containing_type(); containingType != nullptr; containingType = containingType->containing_type())
-                namespaceString += containingType->name() + "::";
+                namespaceString += std::string(containingType->name()) + "::";
 
-            return namespaceString + descriptor.name();
+            return namespaceString + std::string(descriptor.name());
         }
 
         std::string QualifiedDetailName(const google::protobuf::EnumDescriptor& descriptor)
         {
             std::string namespaceString;
 
-            namespaceString = descriptor.file()->package() + "::";
+            namespaceString = std::string(descriptor.file()->package()) + "::";
 
             if (descriptor.containing_type() != nullptr)
             {
@@ -44,25 +43,25 @@ namespace application
                     namespaceString += containingType->name();
             }
 
-            return namespaceString + descriptor.name();
+            return namespaceString + std::string(descriptor.name());
         }
 
         std::string QualifiedReferenceName(const google::protobuf::Descriptor& descriptor)
         {
             std::string namespaceString;
 
-            namespaceString = descriptor.file()->package() + "::";
+            namespaceString = std::string(descriptor.file()->package()) + "::";
             for (auto containingType = descriptor.containing_type(); containingType != nullptr; containingType = containingType->containing_type())
-                namespaceString += containingType->name() + "Reference::";
+                namespaceString += std::string(containingType->name()) + "Reference::";
 
-            return namespaceString + descriptor.name() + "Reference";
+            return namespaceString + std::string(descriptor.name()) + "Reference";
         }
 
         std::string QualifiedDetailName(const google::protobuf::Descriptor& descriptor)
         {
             std::string namespaceString;
 
-            namespaceString = descriptor.file()->package() + "::";
+            namespaceString = std::string(descriptor.file()->package()) + "::";
 
             if (descriptor.containing_type() != nullptr)
             {
@@ -72,14 +71,14 @@ namespace application
                     namespaceString += containingType->name();
             }
 
-            return namespaceString + descriptor.name();
+            return namespaceString + std::string(descriptor.name());
         }
 
         std::string QualifiedDetailReferenceName(const google::protobuf::Descriptor& descriptor)
         {
             std::string namespaceString;
 
-            namespaceString = descriptor.file()->package() + "::";
+            namespaceString = std::string(descriptor.file()->package()) + "::";
 
             if (descriptor.containing_type() != nullptr)
             {
@@ -89,7 +88,7 @@ namespace application
                     namespaceString += containingType->name();
             }
 
-            return namespaceString + descriptor.name() + "Reference";
+            return namespaceString + std::string(descriptor.name()) + "Reference";
         }
     }
 
@@ -107,7 +106,7 @@ namespace application
 
     std::shared_ptr<EchoField> EchoField::GenerateField(const google::protobuf::FieldDescriptor& fieldDescriptor, EchoRoot& root)
     {
-        if (fieldDescriptor.has_optional_keyword())
+/*        if (!fieldDescriptor.is_required() && !fieldDescriptor.is_repeated())
             switch (fieldDescriptor.type())
             {
                 case google::protobuf::FieldDescriptor::TYPE_INT64:
@@ -143,9 +142,9 @@ namespace application
                 case google::protobuf::FieldDescriptor::TYPE_SFIXED32:
                     return std::make_shared<EchoFieldOptional>(fieldDescriptor, std::make_shared<EchoFieldSFixed32>(fieldDescriptor));
                 default:
-                    throw UnsupportedFieldType{ fieldDescriptor.name(), fieldDescriptor.type() };
+                    throw UnsupportedFieldType{ std::string(fieldDescriptor.name()), fieldDescriptor.type() };
             }
-        else if (!fieldDescriptor.is_repeated())
+        else */if (!fieldDescriptor.is_repeated())
             switch (fieldDescriptor.type())
             {
                 case google::protobuf::FieldDescriptor::TYPE_INT64:
@@ -181,7 +180,7 @@ namespace application
                 case google::protobuf::FieldDescriptor::TYPE_SFIXED32:
                     return std::make_shared<EchoFieldSFixed32>(fieldDescriptor);
                 default:
-                    throw UnsupportedFieldType{ fieldDescriptor.name(), fieldDescriptor.type() };
+                    throw UnsupportedFieldType{ std::string(fieldDescriptor.name()), fieldDescriptor.type() };
             }
         else if (fieldDescriptor.options().GetExtension(array_size) != 0)
             switch (fieldDescriptor.type())
@@ -219,7 +218,7 @@ namespace application
                 case google::protobuf::FieldDescriptor::TYPE_SFIXED32:
                     return std::make_shared<EchoFieldRepeated>(fieldDescriptor, std::make_shared<EchoFieldSFixed32>(fieldDescriptor));
                 default:
-                    throw UnsupportedFieldType{ fieldDescriptor.name(), fieldDescriptor.type() };
+                    throw UnsupportedFieldType{ std::string(fieldDescriptor.name()), fieldDescriptor.type() };
             }
         else
             switch (fieldDescriptor.type())
@@ -257,7 +256,7 @@ namespace application
                 case google::protobuf::FieldDescriptor::TYPE_SFIXED32:
                     return std::make_shared<EchoFieldUnboundedRepeated>(fieldDescriptor, std::make_shared<EchoFieldSFixed32>(fieldDescriptor));
                 default:
-                    throw UnsupportedFieldType{ fieldDescriptor.name(), fieldDescriptor.type() };
+                    throw UnsupportedFieldType{ std::string(fieldDescriptor.name()), fieldDescriptor.type() };
             }
     }
 
@@ -271,7 +270,7 @@ namespace application
             containedInMessageName += containingType->name();
 
         for (int i = 0; i != descriptor.value_count(); ++i)
-            members.push_back(std::make_pair(descriptor.value(i)->name(), descriptor.value(i)->number()));
+            members.push_back(std::make_pair(std::string(descriptor.value(i)->name()), descriptor.value(i)->number()));
     }
 
     EchoMessage::EchoMessage(const google::protobuf::Descriptor& descriptor, EchoRoot& root)
@@ -480,7 +479,7 @@ namespace application
         , maxStringSize(descriptor.options().GetExtension(string_size))
     {
         assert(maxStringSize != 0);
-        protoReferenceType = protoType = "services::ProtoString<" + google::protobuf::SimpleItoa(maxStringSize) + ">";
+        protoReferenceType = protoType = "services::ProtoString<" + absl::StrCat(maxStringSize) + ">";
     }
 
     void EchoFieldString::Accept(EchoFieldVisitor& visitor) const
@@ -518,7 +517,7 @@ namespace application
         if (maxBytesSize == 0)
             throw UnspecifiedBytesSize{ name };
 
-        protoReferenceType = protoType = "services::ProtoBytes<" + google::protobuf::SimpleItoa(maxBytesSize) + ">";
+        protoReferenceType = protoType = "services::ProtoBytes<" + absl::StrCat(maxBytesSize) + ">";
     }
 
     void EchoFieldBytes::Accept(EchoFieldVisitor& visitor) const
@@ -606,8 +605,8 @@ namespace application
         if (maxArraySize == 0)
             throw UnspecifiedArraySize{ name };
 
-        protoType = "services::ProtoRepeated<" + google::protobuf::SimpleItoa(maxArraySize) + ", " + type->protoType + ">";
-        protoReferenceType = "services::ProtoRepeated<" + google::protobuf::SimpleItoa(maxArraySize) + ", " + type->protoReferenceType + ">";
+        protoType = "services::ProtoRepeated<" + absl::StrCat(maxArraySize) + ", " + type->protoType + ">";
+        protoReferenceType = "services::ProtoRepeated<" + absl::StrCat(maxArraySize) + ", " + type->protoReferenceType + ">";
     }
 
     void EchoFieldRepeated::Accept(EchoFieldVisitor& visitor) const
@@ -661,7 +660,7 @@ namespace application
     EchoFile::EchoFile(const google::protobuf::FileDescriptor& file, EchoRoot& root)
     {
         name = google::protobuf::compiler::cpp::StripProto(file.name());
-        packageParts = google::protobuf::Split(file.package(), ".", true);
+        packageParts = absl::StrSplit(file.package(), ".");
 
         for (int i = 0; i != file.dependency_count(); ++i)
             if (file.dependency(i)->name() != "EchoAttributes.proto")
@@ -724,7 +723,7 @@ namespace application
             if (&message->descriptor == &descriptor)
                 return message;
 
-        throw MessageNotFound{ descriptor.name() };
+        throw MessageNotFound{ std::string(descriptor.name()) };
     }
 
     std::shared_ptr<EchoEnum> EchoRoot::AddEnum(const google::protobuf::EnumDescriptor& descriptor)
@@ -744,7 +743,7 @@ namespace application
             if (&enum_->descriptor == &descriptor)
                 return enum_;
 
-        throw EnumNotFound{ descriptor.name() };
+        throw EnumNotFound{ std::string(descriptor.name()) };
     }
 
     std::shared_ptr<EchoService> EchoRoot::AddService(const google::protobuf::ServiceDescriptor& descriptor)
