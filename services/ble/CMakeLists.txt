@@ -29,6 +29,8 @@ target_sources(services.ble PRIVATE
     Gatt.hpp
     GattClient.cpp
     GattClient.hpp
+    ClaimingGattClientAdapter.cpp
+    ClaimingGattClientAdapter.hpp
     GattServer.cpp
     GattServer.hpp
     GattServerCharacteristicImpl.cpp
