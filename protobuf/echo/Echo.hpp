@@ -10,20 +10,46 @@
 #include "protobuf/echo/EchoErrorPolicy.hpp"
 #include "protobuf/echo/Proto.hpp"
 #include "protobuf/echo/Serialization.hpp"
+#include <cstdint>
 
 namespace services
 {
     class Echo;
+    class ServiceId;
     class Service;
     class ServiceProxy;
 
-    class Service
-        : public infra::Observer<Service, Echo>
+    class ServiceIdAccess
     {
     public:
-        using infra::Observer<Service, Echo>::Observer;
+        static uint32_t GetId(const ServiceId& serviceId);
+    };
 
-        virtual bool AcceptsService(uint32_t id) const = 0;
+    class ServiceId
+    {
+        friend class ServiceIdAccess;
+
+    public:
+        ServiceId(uint32_t id);
+
+        virtual bool AcceptsService(uint32_t id) const
+        {
+            return id == this->id;
+        }
+
+    public:
+        static constexpr uint32_t reservedServiceId = 0;
+
+    private:
+        const uint32_t id;
+    };
+
+    class Service
+        : public ServiceId
+        , public infra::Observer<Service, Echo>
+    {
+    public:
+        Service(Echo& echo, uint32_t serviceId);
 
         void MethodDone();
         virtual infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy) = 0;

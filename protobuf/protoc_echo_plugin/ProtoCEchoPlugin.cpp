@@ -6,6 +6,7 @@
 #include "google/protobuf/stubs/strutil.h"
 #include "infra/syntax/ProtoFormatter.hpp"
 #include <sstream>
+#include <string>
 
 namespace application
 {
@@ -1187,7 +1188,7 @@ namespace application
         auto constructors = std::make_shared<Access>("public");
         auto constructor = std::make_shared<Constructor>(service->name, "", 0);
         constructor->Parameter("services::Echo& echo");
-        constructor->Initializer("services::Service(echo)");
+        constructor->Initializer(std::string("services::Service(echo, serviceId)"));
 
         constructors->Add(constructor);
         serviceFormatter->Add(constructors);
@@ -1226,7 +1227,6 @@ namespace application
 
         auto acceptsService = std::make_shared<Function>("AcceptsService", AcceptsServiceBody(), "bool", Function::fConst | Function::fOverride);
         acceptsService->Parameter("uint32_t id");
-        functions->Add(acceptsService);
 
         auto startMethod = std::make_shared<Function>("StartMethod", StartMethodBody(), "infra::SharedPtr<services::MethodDeserializer>", Function::fOverride);
         startMethod->Parameter("uint32_t serviceId");
@@ -1267,6 +1267,7 @@ namespace application
         auto fields = std::make_shared<Access>("public");
 
         fields->Add(std::make_shared<DataMember>("serviceId", "static constexpr uint32_t", google::protobuf::SimpleItoa(service->serviceId)));
+        fields->Add(std::make_shared<StaticAssert>("serviceId != services::ServiceId::reservedServiceId", "ServiceId must not be reserved"));
 
         for (auto& method : service->methods)
             fields->Add(std::make_shared<DataMember>("id" + method.name, "static constexpr uint32_t", google::protobuf::SimpleItoa(method.methodId)));
