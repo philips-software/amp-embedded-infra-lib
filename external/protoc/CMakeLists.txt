@@ -1,5 +1,5 @@
 function(emil_fetch_protocol_buffer_compiler)
-    set(protobuf_version "21.12")
+    set(protobuf_version "31.0")
 
     if (CMAKE_HOST_WIN32)
         set(os_postfix "win32")

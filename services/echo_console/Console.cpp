@@ -73,20 +73,6 @@ namespace application
             return false;
         }
 
-        Underscore::Underscore(std::size_t index)
-            : index(index)
-        {}
-
-        bool Underscore::operator==(const Underscore&) const
-        {
-            return true;
-        }
-
-        bool Underscore::operator!=(const Underscore&) const
-        {
-            return false;
-        }
-
         LeftBrace::LeftBrace(std::size_t index)
             : index(index)
         {}
@@ -226,8 +212,6 @@ namespace application
                 return ConsoleToken::Comma(parseIndex++);
             else if (line[parseIndex] == '.')
                 return ConsoleToken::Dot(parseIndex++);
-            else if (line[parseIndex] == '_')
-                return ConsoleToken::Underscore(parseIndex++);
             else if (line[parseIndex] == '{')
                 return ConsoleToken::LeftBrace(parseIndex++);
             else if (line[parseIndex] == '}')
@@ -580,12 +564,6 @@ namespace application
                 std::cout << static_cast<int32_t>(fieldData.Get<uint32_t>());
             }
 
-            void VisitOptional(const EchoFieldOptional& field) override
-            {
-                PrintFieldVisitor visitor(fieldData, parser, console);
-                field.type->Accept(visitor);
-            }
-
             void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 PrintFieldVisitor visitor(fieldData, parser, console);
@@ -800,12 +778,6 @@ namespace application
                 services::GlobalTracer().Continue() << "sfixed32";
             }
 
-            void VisitOptional(const EchoFieldOptional& field) override
-            {
-                ListFieldVisitor visitor(console);
-                field.type->Accept(visitor);
-            }
-
             void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 ListFieldVisitor visitor(console);
@@ -971,11 +943,6 @@ namespace application
             MessageTokens::MessageTokenValue operator()(ConsoleToken::Dot value) const
             {
                 throw ConsoleExceptions::SyntaxError{ value.index };
-            }
-
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::Underscore value) const
-            {
-                return Empty{};
             }
 
             MessageTokens::MessageTokenValue operator()(ConsoleToken::LeftBrace) const
@@ -1204,15 +1171,6 @@ namespace application
                     throw ConsoleExceptions::IncorrectType{ valueIndex, "integer" };
 
                 formatter.PutVarIntField(value.Get<int64_t>(), field.number);
-            }
-
-            void VisitOptional(const EchoFieldOptional& field) override
-            {
-                if (!value.Is<Empty>())
-                {
-                    EncodeFieldVisitor visitor(value, valueIndex, formatter, methodInvocation);
-                    field.type->Accept(visitor);
-                }
             }
 
             void VisitRepeated(const EchoFieldRepeated& field) override
