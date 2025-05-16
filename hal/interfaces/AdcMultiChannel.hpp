@@ -13,8 +13,12 @@ namespace hal
         using Samples = infra::MemoryRange<const uint16_t>;
 
         virtual void Measure(const infra::Function<void(Samples)>& onDone) = 0;
+        virtual void Stop() = 0;
 
     protected:
+        AdcMultiChannel() = default;
+        AdcMultiChannel(const AdcMultiChannel& other) = delete;
+        AdcMultiChannel& operator=(const AdcMultiChannel& other) = delete;
         ~AdcMultiChannel() = default;
     };
 }

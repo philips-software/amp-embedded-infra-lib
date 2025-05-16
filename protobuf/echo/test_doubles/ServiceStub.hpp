@@ -41,7 +41,7 @@ namespace services
         template<std::size_t fieldIndex>
         using ProtoType = ProtoBytes<4>;
         template<std::size_t fieldIndex>
-        using Type = infra::BoundedVector<uint8_t>::WithMaxSize<4>;
+        using Type = infra::BoundedVector<uint8_t>::WithMaxSize<64>;
         template<std::size_t fieldIndex>
         using DecayedType = uint32_t;
         template<std::size_t fieldIndex>
@@ -49,7 +49,7 @@ namespace services
 
     public:
         MessageBytes() = default;
-        MessageBytes(const infra::BoundedVector<uint8_t>& value);
+        MessageBytes(infra::ConstByteRange value);
 
         void Serialize(infra::ProtoFormatter& formatter) const;
 
@@ -79,7 +79,7 @@ namespace services
         static const uint32_t idMethod = 1;
         static const uint32_t idMethodNoParameter = 3;
         static const uint32_t idMethodBytes = 4;
-        static const uint32_t maxMessageSize = 18;
+        static const uint32_t maxMessageSize = 78;
 
     public:
         using MethodTypeList = infra::List<Message, MessageBytes, EmptyMessage>;
@@ -94,18 +94,20 @@ namespace services
     public:
         void Method(uint32_t value);
         void MethodNoParameter();
+        void MethodBytes(infra::ConstByteRange data);
 
     public:
         static constexpr uint32_t defaultServiceId = 1;
         static constexpr uint32_t idMethod = 1;
         static constexpr uint32_t idMethodNoParameter = 3;
-        static constexpr uint32_t maxMessageSize = 18;
-
-    public:
-        using MethodTypeList = infra::List<Message, EmptyMessage>;
 
     private:
         const uint32_t serviceId;
+        static const uint32_t idMethodBytes = 4;
+        static constexpr uint32_t maxMessageSize = 78;
+
+    public:
+        using MethodTypeList = infra::List<Message, MessageBytes, EmptyMessage>;
     };
 }
 

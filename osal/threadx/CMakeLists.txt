@@ -1,7 +1,7 @@
 FetchContent_Declare(
     threadx
     GIT_REPOSITORY https://github.com/eclipse-threadx/threadx
-    GIT_TAG 07eac307405dbf09d409844e31c37b0649d6c074 # v6.4.1_rel
+    GIT_TAG 06dabb0ad0403f59889ce85eeb3d48dbd9d3759b # v6.4.2_rel
 )
 
 set(CMAKE_COMPILE_WARNING_AS_ERROR Off)
