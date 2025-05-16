@@ -34,7 +34,7 @@ if (EMIL_HOST_BUILD)
     FetchContent_MakeAvailable(protobuf)
 
     # Absl unconditionally includes CTest, so restore it to its previous value
-    set(BUILD_TESTING "${old_build_testing}" CACHE "")
+    set(BUILD_TESTING "${old_build_testing}" CACHE INTERNAL "")
 
     function(add_protobuf_target_properties)
         foreach(target ${ARGN})
