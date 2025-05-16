@@ -3,14 +3,13 @@
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
-#include "google/protobuf/stubs/strutil.h"
 #include <sstream>
 
 namespace application
 {
     namespace
     {
-        std::string UnderscoresToCamelCase(const std::string& input,
+        std::string UnderscoresToCamelCase(std::string_view input,
             bool cap_next_letter,
             bool preserve_period = true)
         {
@@ -76,7 +75,7 @@ namespace application
             for (auto containingType = descriptor.containing_type(); containingType != nullptr; containingType = containingType->containing_type())
                 namespaceString += UnderscoresToCamelCase(containingType->name(), true) + ".";
 
-            return namespaceString + descriptor.name();
+            return namespaceString + std::string(descriptor.name());
         }
     }
 
@@ -119,15 +118,15 @@ namespace application
         printer.Print(R"(        const int serviceId = $id$;
 
 )",
-            "id", google::protobuf::SimpleItoa(serviceId));
+            "id", absl::StrCat(serviceId));
 
         for (int i = 0; i != service.method_count(); ++i)
         {
             uint32_t methodId = service.method(i)->options().GetExtension(method_id);
             if (methodId == 0)
-                throw UnspecifiedMethodId{ service.name(), service.method(i)->name() };
+                throw UnspecifiedMethodId{ std::string(service.name()), std::string(service.method(i)->name()) };
 
-            printer.Print("        const int id$method$ = $id$;\n", "method", service.method(i)->name(), "id", google::protobuf::SimpleItoa(methodId));
+            printer.Print("        const int id$method$ = $id$;\n", "method", service.method(i)->name(), "id", absl::StrCat(methodId));
         }
 
         printer.Print("\n");
@@ -137,7 +136,7 @@ namespace application
         : CSharpGenerator(service, printer)
     {
         if (serviceId == 0)
-            throw UnspecifiedServiceId{ service.name() };
+            throw UnspecifiedServiceId{ std::string(service.name()) };
 
         GenerateClassHeader();
         GenerateFieldConstants();
@@ -226,7 +225,7 @@ namespace application
         : CSharpGenerator(service, printer)
     {
         if (serviceId == 0)
-            throw UnspecifiedServiceId{ service.name() };
+            throw UnspecifiedServiceId{ std::string(service.name()) };
 
         GenerateClassHeader();
         GenerateFieldConstants();
