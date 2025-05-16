@@ -5,6 +5,7 @@ if (EMIL_HOST_BUILD)
 
     target_link_libraries(protobuf.echo_attributes PUBLIC
         protobuf::libprotoc
+        protobuf::libprotobuf
     )
 
     target_compile_definitions(protobuf.echo_attributes PRIVATE
