@@ -60,6 +60,9 @@ namespace services
         void Redirecting(infra::BoundedConstString url) override;
 
     protected:
+        // Implementation of HttpHeaderParserObserver
+        void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine) override;
+
         // Implementation of HttpClientImplWithRedirection
         void BodyReaderAvailable(infra::SharedPtr<infra::CountingStreamReaderWithRewinding>&& bodyReader) override;
 
