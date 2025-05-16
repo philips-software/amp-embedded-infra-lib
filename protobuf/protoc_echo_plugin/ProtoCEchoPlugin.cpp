@@ -93,14 +93,6 @@ namespace application
                 result = "uint32_t";
             }
 
-            void VisitOptional(const EchoFieldOptional& field) override
-            {
-                std::string r;
-                StorageTypeVisitor visitor(r);
-                field.type->Accept(visitor);
-                result = "infra::Optional<" + r + ">";
-            }
-
             void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 std::string r;
@@ -147,14 +139,6 @@ namespace application
                 result = field.type->name;
             }
 
-            void VisitOptional(const EchoFieldOptional& field) override
-            {
-                std::string r;
-                ReferenceStorageTypeVisitor visitor(r);
-                field.type->Accept(visitor);
-                result = "infra::Optional<" + r + ">";
-            }
-
             void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 std::string r;
@@ -178,14 +162,6 @@ namespace application
             void VisitEnum(const EchoFieldEnum& field) override
             {
                 result = field.type->qualifiedDetailName;
-            }
-
-            void VisitOptional(const EchoFieldOptional& field) override
-            {
-                std::string r;
-                ReferenceDetailStorageTypeVisitor visitor(r);
-                field.type->Accept(visitor);
-                result = "infra::Optional<" + r + ">";
             }
 
             void VisitRepeated(const EchoFieldRepeated& field) override
@@ -283,14 +259,6 @@ namespace application
                 result = "infra::ConstByteRange";
             }
 
-            void VisitOptional(const EchoFieldOptional& field) override
-            {
-                std::string r;
-                ReferenceDetailStorageTypeVisitor visitor(r);
-                field.type->Accept(visitor);
-                result = "infra::Optional<" + r + ">";
-            }
-
             void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 std::string r;
@@ -379,11 +347,6 @@ namespace application
             }
 
             void VisitUint32(const EchoFieldUint32& field) override
-            {
-                result = field.name;
-            }
-
-            void VisitOptional(const EchoFieldOptional& field) override
             {
                 result = field.name;
             }
@@ -899,12 +862,6 @@ namespace application
 
             void VisitUint32(const EchoFieldUint32& field) override
             {}
-
-            void VisitOptional(const EchoFieldOptional& field) override
-            {
-                FieldSizeVisitor visitor(added, entities);
-                field.type->Accept(visitor);
-            }
 
             void VisitRepeated(const EchoFieldRepeated& field) override
             {

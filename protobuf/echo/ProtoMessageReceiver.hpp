@@ -49,8 +49,6 @@ namespace services
         template<class Message>
         void DeserializeField(ProtoMessage<Message>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Message& value);
         template<class ProtoType, class Type>
-        void DeserializeField(ProtoOptional<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, infra::Optional<Type>& value);
-        template<class ProtoType, class Type>
         void DeserializeField(ProtoRepeatedBase<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value) const;
         template<class ProtoType, class Type>
         void DeserializeField(ProtoUnboundedRepeated<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value) const;
@@ -151,13 +149,6 @@ namespace services
                 });
             infra::ReConstruct(value);
         }
-    }
-
-    template<class ProtoType, class Type>
-    void ProtoMessageReceiverBase::DeserializeField(ProtoOptional<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, infra::Optional<Type>& value)
-    {
-        value.Emplace();
-        DeserializeField(ProtoType(), parser, field, *value);
     }
 
     template<class ProtoType, class Type>
