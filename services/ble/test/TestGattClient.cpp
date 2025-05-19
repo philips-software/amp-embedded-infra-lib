@@ -125,10 +125,10 @@ TEST_F(GattClientCharacteristicTest, should_read_characteristic_and_callback_wit
 
     EXPECT_CALL(operations, Read(testing::Ref(characteristic), ::testing::_, testing::_))
         .WillOnce([&data, result](const services::GattClientCharacteristicOperationsObserver&, infra::Function<void(const infra::ConstByteRange&)> onResponse, infra::Function<void(uint8_t)> onDone)
-        {
-            onResponse(data);
-            onDone(result);
-        });
+            {
+                onResponse(data);
+                onDone(result);
+            });
 
     characteristic.Read(infra::MockFunction<void(const infra::ConstByteRange&)>(data), infra::MockFunction<void(uint8_t)>(result));
 }
@@ -197,70 +197,4 @@ TEST_F(GattClientCharacteristicTest, should_disable_indication_characteristic_an
             onDone(result);
         });
     characteristic.DisableIndication(infra::MockFunction<void(uint8_t)>(result));
-}
-
-namespace
-{
-    class GattClientDiscoveryDecoratorTest
-        : public testing::Test
-    {
-    public:
-        services::GattClientDiscoveryMock gattDiscovery;
-        services::GattClientDiscoveryDecorator decorator{ gattDiscovery };
-        services::GattClientDiscoveryObserverMock gattDiscoveryObserver{ decorator };
-    };
-}
-
-TEST_F(GattClientDiscoveryDecoratorTest, forward_service_discovered_event_to_observers)
-{
-    EXPECT_CALL(gattDiscoveryObserver, ServiceDiscovered(services::AttAttribute::Uuid(uuid128), 0x24, 0xAD));
-    EXPECT_CALL(gattDiscoveryObserver, ServiceDiscovered(services::AttAttribute::Uuid(uuid16), 0xDE, 0x42));
-    EXPECT_CALL(gattDiscoveryObserver, ServiceDiscoveryComplete());
-
-    gattDiscovery.NotifyObservers([](auto& obs)
-        {
-            obs.ServiceDiscovered(services::AttAttribute::Uuid(uuid128), 0x24, 0xAD);
-            obs.ServiceDiscovered(services::AttAttribute::Uuid(uuid16), 0xDE, 0x42);
-            obs.ServiceDiscoveryComplete();
-        });
-}
-
-TEST_F(GattClientDiscoveryDecoratorTest, forward_characteristics_discovered_event_to_observers)
-{
-    EXPECT_CALL(gattDiscoveryObserver, CharacteristicDiscovered(services::AttAttribute::Uuid(uuid128), 0x24, 0xAD, GattPropertyFlags::notify));
-    EXPECT_CALL(gattDiscoveryObserver, CharacteristicDiscovered(services::AttAttribute::Uuid(uuid16), 0xDE, 0x42, GattPropertyFlags::none));
-    EXPECT_CALL(gattDiscoveryObserver, CharacteristicDiscoveryComplete());
-
-    gattDiscovery.NotifyObservers([](auto& obs)
-        {
-            obs.CharacteristicDiscovered(services::AttAttribute::Uuid(uuid128), 0x24, 0xAD, GattPropertyFlags::notify);
-            obs.CharacteristicDiscovered(services::AttAttribute::Uuid(uuid16), 0xDE, 0x42, GattPropertyFlags::none);
-            obs.CharacteristicDiscoveryComplete();
-        });
-}
-
-TEST_F(GattClientDiscoveryDecoratorTest, forward_descriptors_discovered_event_to_observers)
-{
-    EXPECT_CALL(gattDiscoveryObserver, DescriptorDiscovered(services::AttAttribute::Uuid(uuid128), 0x24));
-    EXPECT_CALL(gattDiscoveryObserver, DescriptorDiscovered(services::AttAttribute::Uuid(uuid16), 0xDE));
-    EXPECT_CALL(gattDiscoveryObserver, DescriptorDiscoveryComplete());
-
-    gattDiscovery.NotifyObservers([](auto& obs)
-        {
-            obs.DescriptorDiscovered(services::AttAttribute::Uuid(uuid128), 0x24);
-            obs.DescriptorDiscovered(services::AttAttribute::Uuid(uuid16), 0xDE);
-            obs.DescriptorDiscoveryComplete();
-        });
-}
-
-TEST_F(GattClientDiscoveryDecoratorTest, forward_all_calls_to_subject)
-{
-    EXPECT_CALL(gattDiscovery, StartServiceDiscovery());
-    decorator.StartServiceDiscovery();
-
-    EXPECT_CALL(gattDiscovery, StartCharacteristicDiscovery(1, 9));
-    static_cast<services::GattClientDiscovery&>(decorator).StartCharacteristicDiscovery(services::GattService{ services::AttAttribute::Uuid(uuid16), 1, 9 });
-
-    EXPECT_CALL(gattDiscovery, StartDescriptorDiscovery(1, 9));
-    static_cast<services::GattClientDiscovery&>(decorator).StartDescriptorDiscovery(services::GattService{ services::AttAttribute::Uuid(uuid16), 1, 9 });
 }
