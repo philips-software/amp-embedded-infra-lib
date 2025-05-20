@@ -2,6 +2,30 @@
 
 namespace services
 {
+    std::pair<std::array<uint8_t, 121>, infra::BoundedVector<uint8_t>::WithMaxSize<512>> GenerateRootCertificate(hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    {
+        services::EcSecP256r1PrivateKey rootPrivateKey{ randomDataGenerator };
+        services::EcSecP256r1Certificate rootCertificate{ rootPrivateKey, "CN=Root", rootPrivateKey, "CN=Root", randomDataGenerator };
+
+        auto rootPrivateKeyDer = rootPrivateKey.Der();
+        auto rootCertificateDer = rootCertificate.Der();
+        return {
+            rootPrivateKeyDer, rootCertificateDer
+        };
+    }
+
+    std::pair<std::array<uint8_t, 121>, infra::BoundedVector<uint8_t>::WithMaxSize<512>> GenerateDeviceCertificate(const EcSecP256r1PrivateKey& issuerKey, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    {
+        services::EcSecP256r1PrivateKey devicePrivateKey{ randomDataGenerator };
+        services::EcSecP256r1Certificate deviceCertificate{ devicePrivateKey, "CN=Device", issuerKey, "CN=Root", randomDataGenerator };
+
+        auto devicePrivateKeyDer = devicePrivateKey.Der();
+        auto deviceCertificateDer = deviceCertificate.Der();
+        return {
+            devicePrivateKeyDer, deviceCertificateDer
+        };
+    }
+
     EchoOnSesameDiffieHellman::EchoOnSesameDiffieHellman(const Crypto& crypto, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy)
         : EchoOnSesame(secured, serializerFactory, errorPolicy)
         , DiffieHellmanKeyEstablishment(static_cast<services::Echo&>(*this))

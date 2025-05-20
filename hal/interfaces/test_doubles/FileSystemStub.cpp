@@ -28,8 +28,8 @@ namespace hal
         return binaryFiles[path];
     }
 
-    void FileSystemStub::WriteBinaryFile(const hal::filesystem::path& path, const std::vector<uint8_t>& contents)
+    void FileSystemStub::WriteBinaryFile(const hal::filesystem::path& path, infra::ConstByteRange contents)
     {
-        binaryFiles[path] = contents;
+        binaryFiles[path] = std::vector<uint8_t>(contents.begin(), contents.end());
     }
 }

@@ -3,6 +3,42 @@
 
 namespace services
 {
+    namespace
+    {
+        SesameSecured::KeyMaterial Convert(const sesame_security::SymmetricKeyFile& keyMaterial)
+        {
+            SesameSecured::KeyMaterial result;
+
+            infra::Copy(infra::MakeRange(keyMaterial.sendBySelf.key), infra::MakeRange(result.sendKey));
+            infra::Copy(infra::MakeRange(keyMaterial.sendBySelf.iv), infra::MakeRange(result.sendIv));
+            infra::Copy(infra::MakeRange(keyMaterial.sendByOther.key), infra::MakeRange(result.receiveKey));
+            infra::Copy(infra::MakeRange(keyMaterial.sendByOther.iv), infra::MakeRange(result.receiveIv));
+
+            return result;
+        }
+    }
+
+    sesame_security::SymmetricKeyFile GenerateSymmetricKeys(hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    {
+        sesame_security::SymmetricKeyFile keys;
+
+        keys.sendBySelf.key.resize(keys.sendBySelf.key.max_size());
+        randomDataGenerator.GenerateRandomData(infra::MakeRange(keys.sendBySelf.key));
+        keys.sendBySelf.iv.resize(keys.sendBySelf.iv.max_size());
+        randomDataGenerator.GenerateRandomData(infra::MakeRange(keys.sendBySelf.iv));
+        keys.sendByOther.key.resize(keys.sendByOther.key.max_size());
+        randomDataGenerator.GenerateRandomData(infra::MakeRange(keys.sendByOther.key));
+        keys.sendByOther.iv.resize(keys.sendByOther.iv.max_size());
+        randomDataGenerator.GenerateRandomData(infra::MakeRange(keys.sendByOther.iv));
+
+        return keys;
+    }
+
+    sesame_security::SymmetricKeyFile ReverseDirection(const sesame_security::SymmetricKeyFile& keys)
+    {
+        return{ keys.sendByOther, keys.sendBySelf };
+    }
+
     SesameSecured::SesameSecured(AesGcmEncryption& sendEncryption, AesGcmEncryption& receiveEncryption, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate,
         const KeyMaterial& keyMaterial)
         : SesameObserver(delegate)
@@ -18,6 +54,10 @@ namespace services
         SetSendKey(initialSendKey, initialSendIv);
         SetReceiveKey(initialReceiveKey, initialReceiveIv);
     }
+
+    SesameSecured::SesameSecured(AesGcmEncryption& sendEncryption, AesGcmEncryption& receiveEncryption, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial)
+        : SesameSecured(sendEncryption, receiveEncryption, sendBuffer, receiveBuffer, delegate, Convert(keyMaterial))
+    {}
 
     void SesameSecured::SetSendKey(const KeyType& newSendKey, const IvType& newSendIv)
     {
@@ -130,6 +170,10 @@ namespace services
 
 #ifdef EMIL_USE_MBEDTLS
     SesameSecured::WithCryptoMbedTls::WithCryptoMbedTls(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const KeyMaterial& keyMaterial)
+        : SesameSecured(detail::SesameSecuredMbedTlsEncryptors::sendEncryption, detail::SesameSecuredMbedTlsEncryptors::receiveEncryption, sendBuffer, receiveBuffer, delegate, keyMaterial)
+    {}
+
+    SesameSecured::WithCryptoMbedTls::WithCryptoMbedTls(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial)
         : SesameSecured(detail::SesameSecuredMbedTlsEncryptors::sendEncryption, detail::SesameSecuredMbedTlsEncryptors::receiveEncryption, sendBuffer, receiveBuffer, delegate, keyMaterial)
     {}
 #endif
