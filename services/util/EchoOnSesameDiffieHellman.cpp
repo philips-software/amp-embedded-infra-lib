@@ -2,6 +2,7 @@
 
 namespace services
 {
+#ifdef EMIL_USE_MBEDTLS
     std::pair<std::array<uint8_t, 121>, infra::BoundedVector<uint8_t>::WithMaxSize<512>> GenerateRootCertificate(hal::SynchronousRandomDataGenerator& randomDataGenerator)
     {
         services::EcSecP256r1PrivateKey rootPrivateKey{ randomDataGenerator };
@@ -25,6 +26,7 @@ namespace services
             devicePrivateKeyDer, deviceCertificateDer
         };
     }
+#endif
 
     EchoOnSesameDiffieHellman::EchoOnSesameDiffieHellman(const Crypto& crypto, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy)
         : EchoOnSesame(secured, serializerFactory, errorPolicy)
