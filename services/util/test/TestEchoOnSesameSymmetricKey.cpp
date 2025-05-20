@@ -63,8 +63,7 @@ public:
         {
             ExpectGenerationOfKeyMaterial({ 1, 2 }, { 3, 4 });
             ExpectGenerationOfKeyMaterial({ 1, 2 }, { 3, 4 });
-        }
-    };
+        } };
     sesame_security::SymmetricKeyFile keys{ services::GenerateSymmetricKeys(randomDataGenerator) };
     services::SesameSecured::WithCryptoMbedTls::WithBuffers<64> secured{ lower, keys };
     services::EchoOnSesameSymmetricKey echo{ secured, randomDataGenerator, serializerFactory, errorPolicy };

@@ -14,7 +14,6 @@ namespace services
 {
     std::pair<std::array<uint8_t, 121>, infra::BoundedVector<uint8_t>::WithMaxSize<512>> GenerateRootCertificate(hal::SynchronousRandomDataGenerator& randomDataGenerator);
     std::pair<std::array<uint8_t, 121>, infra::BoundedVector<uint8_t>::WithMaxSize<512>> GenerateDeviceCertificate(const EcSecP256r1PrivateKey& issuerKey, hal::SynchronousRandomDataGenerator& randomDataGenerator);
-        
     class EchoOnSesameDiffieHellman
         : public EchoOnSesame
         , private sesame_security::DiffieHellmanKeyEstablishment

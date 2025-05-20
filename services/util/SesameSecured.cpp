@@ -36,7 +36,7 @@ namespace services
 
     sesame_security::SymmetricKeyFile ReverseDirection(const sesame_security::SymmetricKeyFile& keys)
     {
-        return{ keys.sendByOther, keys.sendBySelf };
+        return { keys.sendByOther, keys.sendBySelf };
     }
 
     SesameSecured::SesameSecured(AesGcmEncryption& sendEncryption, AesGcmEncryption& receiveEncryption, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate,
