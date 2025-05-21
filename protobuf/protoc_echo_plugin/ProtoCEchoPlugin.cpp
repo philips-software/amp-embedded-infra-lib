@@ -3,7 +3,6 @@
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
-#include "google/protobuf/stubs/strutil.h"
 #include "infra/syntax/ProtoFormatter.hpp"
 #include <sstream>
 
@@ -51,7 +50,7 @@ namespace application
 
             void VisitString(const EchoFieldString& field) override
             {
-                result = "infra::BoundedString::WithStorage<" + google::protobuf::SimpleItoa(field.maxStringSize) + ">";
+                result = "infra::BoundedString::WithStorage<" + absl::StrCat(field.maxStringSize) + ">";
             }
 
             void VisitUnboundedString(const EchoFieldUnboundedString& field) override
@@ -81,7 +80,7 @@ namespace application
 
             void VisitBytes(const EchoFieldBytes& field) override
             {
-                result = "infra::BoundedVector<uint8_t>::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxBytesSize) + ">";
+                result = "infra::BoundedVector<uint8_t>::WithMaxSize<" + absl::StrCat(field.maxBytesSize) + ">";
             }
 
             void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
@@ -94,20 +93,12 @@ namespace application
                 result = "uint32_t";
             }
 
-            void VisitOptional(const EchoFieldOptional& field) override
-            {
-                std::string r;
-                StorageTypeVisitor visitor(r);
-                field.type->Accept(visitor);
-                result = "infra::Optional<" + r + ">";
-            }
-
             void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 std::string r;
                 StorageTypeVisitor visitor(r);
                 field.type->Accept(visitor);
-                result = "infra::BoundedVector<" + r + ">::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">";
+                result = "infra::BoundedVector<" + r + ">::WithMaxSize<" + absl::StrCat(field.maxArraySize) + ">";
             }
 
             void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
@@ -148,20 +139,12 @@ namespace application
                 result = field.type->name;
             }
 
-            void VisitOptional(const EchoFieldOptional& field) override
-            {
-                std::string r;
-                ReferenceStorageTypeVisitor visitor(r);
-                field.type->Accept(visitor);
-                result = "infra::Optional<" + r + ">";
-            }
-
             void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 std::string r;
                 ReferenceStorageTypeVisitor visitor(r);
                 field.type->Accept(visitor);
-                result = "infra::BoundedVector<" + r + ">::WithMaxSize<" + google::protobuf::SimpleItoa(field.maxArraySize) + ">";
+                result = "infra::BoundedVector<" + r + ">::WithMaxSize<" + absl::StrCat(field.maxArraySize) + ">";
             }
         };
 
@@ -179,6 +162,14 @@ namespace application
             void VisitEnum(const EchoFieldEnum& field) override
             {
                 result = field.type->qualifiedDetailName;
+            }
+
+            void VisitRepeated(const EchoFieldRepeated& field) override
+            {
+                std::string r;
+                ReferenceDetailStorageTypeVisitor visitor(r);
+                field.type->Accept(visitor);
+                result = "infra::BoundedVector<" + r + ">::WithMaxSize<" + absl::StrCat(field.maxArraySize) + ">";
             }
         };
 
@@ -268,18 +259,10 @@ namespace application
                 result = "infra::ConstByteRange";
             }
 
-            void VisitOptional(const EchoFieldOptional& field) override
-            {
-                std::string r;
-                ReferenceStorageTypeVisitor visitor(r);
-                field.type->Accept(visitor);
-                result = "infra::Optional<" + r + ">";
-            }
-
             void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 std::string r;
-                ReferenceStorageTypeVisitor visitor(r);
+                ReferenceDetailStorageTypeVisitor visitor(r);
                 field.type->Accept(visitor);
                 result = "infra::MemoryRange<const " + r + ">";
             }
@@ -364,11 +347,6 @@ namespace application
             }
 
             void VisitUint32(const EchoFieldUint32& field) override
-            {
-                result = field.name;
-            }
-
-            void VisitOptional(const EchoFieldOptional& field) override
             {
                 result = field.name;
             }
@@ -462,7 +440,7 @@ namespace application
         }
         catch (UnsupportedFieldType& exception)
         {
-            *error = "Unsupported field type " + google::protobuf::SimpleItoa(exception.type) + " of field " + exception.fieldName;
+            *error = "Unsupported field type " + absl::StrCat(exception.type) + " of field " + exception.fieldName;
             return false;
         }
         catch (UnspecifiedStringSize& exception)
@@ -549,7 +527,7 @@ namespace application
         for (auto& field : message->fields)
         {
             auto typeMapSpecialization = std::make_shared<StructTemplateSpecialization>(MessageName() + "TypeMap");
-            typeMapSpecialization->TemplateSpecialization(google::protobuf::SimpleItoa(std::distance(message->fields.data(), &field)));
+            typeMapSpecialization->TemplateSpecialization(absl::StrCat(std::distance(message->fields.data(), &field)));
             AddTypeMapProtoType(*field, *typeMapSpecialization);
             AddTypeMapType(*field, *typeMapSpecialization);
             AddTypeMapDecayedType(*field, *typeMapSpecialization);
@@ -583,7 +561,7 @@ namespace application
 
     void MessageTypeMapGenerator::AddTypeMapFieldNumber(const EchoField& field, Entities& entities) const
     {
-        entities.Add(std::make_shared<DataMember>("fieldNumber", "static const uint32_t", google::protobuf::SimpleItoa(field.number)));
+        entities.Add(std::make_shared<DataMember>("fieldNumber", "static const uint32_t", absl::StrCat(field.number)));
     }
 
     std::string MessageTypeMapGenerator::MessageName() const
@@ -712,7 +690,7 @@ namespace application
     {
         auto typeMap = std::make_shared<Access>("public");
 
-        auto numberOfFields = std::make_shared<DataMember>("numberOfFields", "static const uint32_t", google::protobuf::SimpleItoa(message->fields.size()));
+        auto numberOfFields = std::make_shared<DataMember>("numberOfFields", "static const uint32_t", absl::StrCat(message->fields.size()));
         typeMap->Add(numberOfFields);
         auto protoTypeUsing = std::make_shared<UsingTemplate>("ProtoType", "typename " + TypeMapName() + "<fieldIndex>::ProtoType");
         protoTypeUsing->TemplateParameter("std::size_t fieldIndex");
@@ -736,17 +714,17 @@ namespace application
         for (auto& field : message->fields)
         {
             auto index = std::distance(message->fields.data(), &field);
-            auto functionGet = std::make_shared<Function>("Get", "return " + field->name + ";\n", ClassName() + "::Type<" + google::protobuf::SimpleItoa(index) + ">&", 0);
-            functionGet->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
+            auto functionGet = std::make_shared<Function>("Get", "return " + field->name + ";\n", ClassName() + "::Type<" + absl::StrCat(index) + ">&", 0);
+            functionGet->Parameter("std::integral_constant<uint32_t, " + absl::StrCat(index) + ">");
             getters->Add(functionGet);
-            auto functionConstGet = std::make_shared<Function>("Get", "return " + field->name + ";\n", "const " + ClassName() + "::Type<" + google::protobuf::SimpleItoa(index) + ">&", Function::fConst);
-            functionConstGet->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
+            auto functionConstGet = std::make_shared<Function>("Get", "return " + field->name + ";\n", "const " + ClassName() + "::Type<" + absl::StrCat(index) + ">&", Function::fConst);
+            functionConstGet->Parameter("std::integral_constant<uint32_t, " + absl::StrCat(index) + ">");
             getters->Add(functionConstGet);
             std::string result;
             DecayedVisitor visitor(result);
             field->Accept(visitor);
-            auto functionConstGetDecayed = std::make_shared<Function>("GetDecayed", "return " + result + ";\n", ClassName() + "::DecayedType<" + google::protobuf::SimpleItoa(index) + ">", Function::fConst);
-            functionConstGetDecayed->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
+            auto functionConstGetDecayed = std::make_shared<Function>("GetDecayed", "return " + result + ";\n", ClassName() + "::DecayedType<" + absl::StrCat(index) + ">", Function::fConst);
+            functionConstGetDecayed->Parameter("std::integral_constant<uint32_t, " + absl::StrCat(index) + ">");
             getters->Add(functionConstGetDecayed);
         }
 
@@ -817,7 +795,7 @@ namespace application
             auto fields = std::make_shared<Access>("public");
 
             for (auto& field : message->fields)
-                fields->Add(std::make_shared<DataMember>(field->constantName, "static const uint32_t", google::protobuf::SimpleItoa(field->number)));
+                fields->Add(std::make_shared<DataMember>(field->constantName, "static const uint32_t", absl::StrCat(field->number)));
 
             classFormatter->Add(fields);
         }
@@ -855,7 +833,7 @@ namespace application
             void VisitString(const EchoFieldString& field) override
             {
                 added = true;
-                entities.Add(std::make_shared<DataMember>(field.name + "Size", "static constexpr uint32_t", google::protobuf::SimpleItoa(field.maxStringSize)));
+                entities.Add(std::make_shared<DataMember>(field.name + "Size", "static constexpr uint32_t", absl::StrCat(field.maxStringSize)));
             }
 
             void VisitUnboundedString(const EchoFieldUnboundedString& field) override
@@ -876,7 +854,7 @@ namespace application
             void VisitBytes(const EchoFieldBytes& field) override
             {
                 added = true;
-                entities.Add(std::make_shared<DataMember>(field.name + "Size", "static constexpr uint32_t", google::protobuf::SimpleItoa(field.maxBytesSize)));
+                entities.Add(std::make_shared<DataMember>(field.name + "Size", "static constexpr uint32_t", absl::StrCat(field.maxBytesSize)));
             }
 
             void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
@@ -885,16 +863,10 @@ namespace application
             void VisitUint32(const EchoFieldUint32& field) override
             {}
 
-            void VisitOptional(const EchoFieldOptional& field) override
-            {
-                FieldSizeVisitor visitor(added, entities);
-                field.type->Accept(visitor);
-            }
-
             void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 added = true;
-                entities.Add(std::make_shared<DataMember>(field.name + "Size", "static constexpr uint32_t", google::protobuf::SimpleItoa(field.maxArraySize)));
+                entities.Add(std::make_shared<DataMember>(field.name + "Size", "static constexpr uint32_t", absl::StrCat(field.maxArraySize)));
             }
 
             void VisitUnboundedRepeated(const EchoFieldUnboundedRepeated& field) override
@@ -923,7 +895,7 @@ namespace application
         if (message->MaxMessageSize() != std::nullopt)
         {
             auto fields = std::make_shared<Access>("public");
-            fields->Add(std::make_shared<DataMember>("maxMessageSize", "static const uint32_t", google::protobuf::SimpleItoa(*message->MaxMessageSize())));
+            fields->Add(std::make_shared<DataMember>("maxMessageSize", "static const uint32_t", absl::StrCat(*message->MaxMessageSize())));
             classFormatter->Add(fields);
         }
     }
@@ -1090,17 +1062,17 @@ namespace application
         for (auto& field : message->fields)
         {
             auto index = std::distance(message->fields.data(), &field);
-            auto functionGet = std::make_shared<Function>("Get", "return " + field->name + ";\n", ClassName() + "::Type<" + google::protobuf::SimpleItoa(index) + ">&", 0);
-            functionGet->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
+            auto functionGet = std::make_shared<Function>("Get", "return " + field->name + ";\n", ClassName() + "::Type<" + absl::StrCat(index) + ">&", 0);
+            functionGet->Parameter("std::integral_constant<uint32_t, " + absl::StrCat(index) + ">");
             getters->Add(functionGet);
-            auto functionConstGet = std::make_shared<Function>("Get", "return " + field->name + ";\n", ClassName() + "::Type<" + google::protobuf::SimpleItoa(index) + ">", Function::fConst);
-            functionConstGet->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
+            auto functionConstGet = std::make_shared<Function>("Get", "return " + field->name + ";\n", ClassName() + "::Type<" + absl::StrCat(index) + ">", Function::fConst);
+            functionConstGet->Parameter("std::integral_constant<uint32_t, " + absl::StrCat(index) + ">");
             getters->Add(functionConstGet);
             std::string result;
             DecayedReferenceVisitor visitor(result);
             field->Accept(visitor);
-            auto functionConstGetDecayed = std::make_shared<Function>("GetDecayed", "return " + result + ";\n", ClassName() + "::DecayedType<" + google::protobuf::SimpleItoa(index) + ">", Function::fConst);
-            functionConstGetDecayed->Parameter("std::integral_constant<uint32_t, " + google::protobuf::SimpleItoa(index) + ">");
+            auto functionConstGetDecayed = std::make_shared<Function>("GetDecayed", "return " + result + ";\n", ClassName() + "::DecayedType<" + absl::StrCat(index) + ">", Function::fConst);
+            functionConstGetDecayed->Parameter("std::integral_constant<uint32_t, " + absl::StrCat(index) + ">");
             getters->Add(functionConstGetDecayed);
         }
 
@@ -1266,12 +1238,12 @@ namespace application
     {
         auto fields = std::make_shared<Access>("public");
 
-        fields->Add(std::make_shared<DataMember>("serviceId", "static constexpr uint32_t", google::protobuf::SimpleItoa(service->serviceId)));
+        fields->Add(std::make_shared<DataMember>("serviceId", "static constexpr uint32_t", absl::StrCat(service->serviceId)));
 
         for (auto& method : service->methods)
-            fields->Add(std::make_shared<DataMember>("id" + method.name, "static constexpr uint32_t", google::protobuf::SimpleItoa(method.methodId)));
+            fields->Add(std::make_shared<DataMember>("id" + method.name, "static constexpr uint32_t", absl::StrCat(method.methodId)));
 
-        fields->Add(std::make_shared<DataMember>("maxMessageSize", "static constexpr uint32_t", google::protobuf::SimpleItoa(MaxMessageSize())));
+        fields->Add(std::make_shared<DataMember>("maxMessageSize", "static constexpr uint32_t", absl::StrCat(MaxMessageSize())));
 
         serviceFormatter->Add(fields);
         serviceProxyFormatter->Add(fields);
@@ -1401,7 +1373,7 @@ namespace application
             ParameterTypeVisitor visitor(typeName);
             field->Accept(visitor);
 
-            printer.Print("$type$ v$index$", "type", typeName, "index", google::protobuf::SimpleItoa(index));
+            printer.Print("$type$ v$index$", "type", typeName, "index", absl::StrCat(index));
         }
 
         printer.Print(R"() { $name$()",
@@ -1413,7 +1385,7 @@ namespace application
             if (index != 0)
                 printer.Print(", ");
 
-            printer.Print("v$index$", "index", google::protobuf::SimpleItoa(index));
+            printer.Print("v$index$", "index", absl::StrCat(index));
         }
 
         printer.Print(R"(); }));
@@ -1442,7 +1414,7 @@ namespace application
             else
                 printer.Print(R"(auto serializer = Rpc().SerializerFactory().MakeSerializer<services::EmptyMessage)");
 
-            printer.Print(">(serviceId, $methodId$", "methodId", google::protobuf::SimpleItoa(method.methodId));
+            printer.Print(">(serviceId, $methodId$", "methodId", absl::StrCat(method.methodId));
 
             if (method.parameter != nullptr)
                 for (const auto& field : method.parameter->fields)
@@ -1501,10 +1473,10 @@ SetSerializer(serializer);
     {
         auto fields = std::make_shared<Access>("public");
 
-        fields->Add(std::make_shared<DataMember>("serviceId", "static const uint32_t", google::protobuf::SimpleItoa(service->serviceId)));
+        fields->Add(std::make_shared<DataMember>("serviceId", "static const uint32_t", absl::StrCat(service->serviceId)));
 
         for (auto& method : service->methods)
-            fields->Add(std::make_shared<DataMember>("id" + method.name, "static const uint32_t", google::protobuf::SimpleItoa(method.methodId)));
+            fields->Add(std::make_shared<DataMember>("id" + method.name, "static const uint32_t", absl::StrCat(method.methodId)));
 
         serviceFormatter->Add(fields);
     }

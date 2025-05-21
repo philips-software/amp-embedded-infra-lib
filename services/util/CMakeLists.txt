@@ -32,6 +32,7 @@ target_sources(services.util PRIVATE
     EchoOnSesameSymmetricKey.hpp
     FlashAlign.cpp
     FlashAlign.hpp
+    FlashDelegate.hpp
     FlashMultipleAccess.cpp
     FlashMultipleAccess.hpp
     FlashQuadSpi.cpp
