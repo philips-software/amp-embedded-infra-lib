@@ -40,10 +40,18 @@ namespace services
         {
             case SecurityMode::open:
                 return "open";
-            case SecurityMode::wpa2MixedPsk:
-                return "wpa-2";
+            case SecurityMode::wep:
+                return "wep";
+            case SecurityMode::wpa:
+                return "wpa";
+            case SecurityMode::wpa2:
+                return "wpa2";
             case SecurityMode::wpa3Psk:
-                return "wpa-3";
+                return "wpa3Psk";
+            case SecurityMode::wpa2MixedPsk:
+                return "wpa2MixedPsk";
+            case SecurityMode::wpa2plus:
+                return "wpa2plus";
             default:
                 return "unknown";
         }
