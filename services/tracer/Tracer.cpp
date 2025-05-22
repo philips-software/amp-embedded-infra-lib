@@ -3,13 +3,13 @@
 namespace services
 {
 #if defined(EMIL_ENABLE_TRACING)
-    infra::TextOutputStream Tracer::Trace()
-    {
-        StartTrace();
-        InsertHeader();
-        return Continue();
-    }
-#elif defined(EMIL_DISABLE_TRACING)
+//     infra::TextOutputStream Tracer::Trace()
+//     {
+//         StartTrace();
+//         InsertHeader();
+//         return Continue();
+//     }
+// #elif defined(EMIL_DISABLE_TRACING)
     Tracer::EmptyTracing Tracer::Trace()
     {
         return EmptyTracing{};

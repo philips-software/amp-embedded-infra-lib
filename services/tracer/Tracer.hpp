@@ -18,8 +18,8 @@ namespace services
         virtual infra::TextOutputStream Continue() = 0;
 
 #if defined(EMIL_ENABLE_TRACING)
-        infra::TextOutputStream Trace();
-#elif defined(EMIL_DISABLE_TRACING)
+//         infra::TextOutputStream Trace();
+// #elif defined(EMIL_DISABLE_TRACING)
         class EmptyTracing
         {
         public:
