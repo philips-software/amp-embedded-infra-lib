@@ -237,6 +237,13 @@ namespace services
         really_assert(mbedtls_ecp_gen_key(MBEDTLS_ECP_DP_SECP256R1, mbedtls_pk_ec(context), &services::MbedTlsRandomDataGeneratorWrapper, &randomDataGenerator) == 0);
     }
 
+    EcSecP256r1PrivateKey::EcSecP256r1PrivateKey(infra::ConstByteRange key, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    {
+        mbedtls_pk_init(&context);
+        really_assert(mbedtls_pk_setup(&context, mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY)) == 0);
+        really_assert(mbedtls_pk_parse_key(&context, key.begin(), key.size(), nullptr, 0, &services::MbedTlsRandomDataGeneratorWrapper, &randomDataGenerator) == 0);
+    }
+
     EcSecP256r1PrivateKey::~EcSecP256r1PrivateKey()
     {
         mbedtls_pk_free(&context);
@@ -268,9 +275,10 @@ namespace services
     {
         mbedtls_x509write_crt_init(&dsaCertificate);
 
-        infra::BoundedConstString serial("1");
+        std::array<uint8_t, 16> serial;
+        randomDataGenerator.GenerateRandomData(infra::MakeRange(serial));
         mbedtls_x509write_crt_set_version(&dsaCertificate, MBEDTLS_X509_CRT_VERSION_3);
-        mbedtls_x509write_crt_set_serial_raw(&dsaCertificate, reinterpret_cast<unsigned char*>(const_cast<char*>(serial.data())), serial.size());
+        mbedtls_x509write_crt_set_serial_raw(&dsaCertificate, serial.data(), serial.size());
         mbedtls_x509write_crt_set_md_alg(&dsaCertificate, MBEDTLS_MD_SHA256);
         mbedtls_x509write_crt_set_validity(&dsaCertificate, "20000101000000", "21000101000000");
         mbedtls_x509write_crt_set_subject_name(&dsaCertificate, subjectName);

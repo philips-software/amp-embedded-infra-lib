@@ -91,6 +91,7 @@ namespace services
     {
     public:
         explicit EcSecP256r1PrivateKey(hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        explicit EcSecP256r1PrivateKey(infra::ConstByteRange key, hal::SynchronousRandomDataGenerator& randomDataGenerator);
         EcSecP256r1PrivateKey(const EcSecP256r1PrivateKey& other) = delete;
         EcSecP256r1PrivateKey& operator=(const EcSecP256r1PrivateKey& other) = delete;
         ~EcSecP256r1PrivateKey();

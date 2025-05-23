@@ -44,12 +44,12 @@ namespace hal
         return std::vector<uint8_t>(reinterpret_cast<const uint8_t*>(data.data()), reinterpret_cast<const uint8_t*>(data.data() + data.size()));
     }
 
-    void FileSystemGeneric::WriteBinaryFile(const hal::filesystem::path& path, const std::vector<uint8_t>& contents)
+    void FileSystemGeneric::WriteBinaryFile(const hal::filesystem::path& path, infra::ConstByteRange contents)
     {
         std::ofstream output(path, std::ios::binary);
         if (!output)
             throw CannotOpenFileException(path);
 
-        std::copy(contents.data(), (contents.data() + contents.size()), std::ostreambuf_iterator<char>(output));
+        std::copy(contents.begin(), contents.end(), std::ostreambuf_iterator<char>(output));
     }
 }

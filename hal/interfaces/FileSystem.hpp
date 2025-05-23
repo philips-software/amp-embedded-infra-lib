@@ -67,6 +67,8 @@ namespace hal
 }
 #endif
 
+#include "infra/util/ByteRange.hpp"
+
 namespace hal
 {
     struct CannotOpenFileException
@@ -88,7 +90,7 @@ namespace hal
         virtual void WriteFile(const hal::filesystem::path& path, const std::vector<std::string>& contents) = 0;
 
         virtual std::vector<uint8_t> ReadBinaryFile(const hal::filesystem::path& path) = 0;
-        virtual void WriteBinaryFile(const hal::filesystem::path& path, const std::vector<uint8_t>& contents) = 0;
+        virtual void WriteBinaryFile(const hal::filesystem::path& path, infra::ConstByteRange contents) = 0;
 
     protected:
         ~FileSystem() = default;

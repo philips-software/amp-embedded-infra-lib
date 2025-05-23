@@ -38,7 +38,7 @@ public:
             })).WillOnce(testing::Invoke([this, iv](infra::ByteRange range)
             {
                 infra::Copy(iv, range);
-            }));
+            })).RetiresOnSaturation();
         // clang-format on
     }
 
@@ -59,9 +59,13 @@ public:
     testing::StrictMock<services::EchoErrorPolicyMock> errorPolicy;
     testing::StrictMock<hal::SynchronousRandomDataGeneratorMock> randomDataGenerator;
     testing::StrictMock<services::SesameMock> lower;
-    std::array<uint8_t, services::SesameSecured::keySize> key{ 1, 2 };
-    std::array<uint8_t, services::SesameSecured::blockSize> iv{ 1, 3 };
-    services::SesameSecured::WithCryptoMbedTls::WithBuffers<64> secured{ lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
+    infra::Execute e{ [this]()
+        {
+            ExpectGenerationOfKeyMaterial({ 1, 2 }, { 3, 4 });
+            ExpectGenerationOfKeyMaterial({ 1, 2 }, { 3, 4 });
+        } };
+    sesame_security::SymmetricKeyFile keys{ services::GenerateSymmetricKeys(randomDataGenerator) };
+    services::SesameSecured::WithCryptoMbedTls::WithBuffers<64> secured{ lower, keys };
     services::EchoOnSesameSymmetricKey echo{ secured, randomDataGenerator, serializerFactory, errorPolicy };
 
     services::ServiceStubProxy serviceProxy{ echo };
