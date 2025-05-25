@@ -3,21 +3,6 @@
 
 namespace services
 {
-    namespace
-    {
-        SesameSecured::KeyMaterial Convert(const sesame_security::SymmetricKeyFile& keyMaterial)
-        {
-            SesameSecured::KeyMaterial result;
-
-            infra::Copy(infra::MakeRange(keyMaterial.sendBySelf.key), infra::MakeRange(result.sendKey));
-            infra::Copy(infra::MakeRange(keyMaterial.sendBySelf.iv), infra::MakeRange(result.sendIv));
-            infra::Copy(infra::MakeRange(keyMaterial.sendByOther.key), infra::MakeRange(result.receiveKey));
-            infra::Copy(infra::MakeRange(keyMaterial.sendByOther.iv), infra::MakeRange(result.receiveIv));
-
-            return result;
-        }
-    }
-
     sesame_security::SymmetricKeyFile GenerateSymmetricKeys(hal::SynchronousRandomDataGenerator& randomDataGenerator)
     {
         sesame_security::SymmetricKeyFile keys;
@@ -56,7 +41,7 @@ namespace services
     }
 
     SesameSecured::SesameSecured(AesGcmEncryption& sendEncryption, AesGcmEncryption& receiveEncryption, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial)
-        : SesameSecured(sendEncryption, receiveEncryption, sendBuffer, receiveBuffer, delegate, Convert(keyMaterial))
+        : SesameSecured(sendEncryption, receiveEncryption, sendBuffer, receiveBuffer, delegate, ConvertKeyMaterial(keyMaterial))
     {}
 
     void SesameSecured::SetSendKey(const KeyType& newSendKey, const IvType& newSendIv)
@@ -177,4 +162,16 @@ namespace services
         : SesameSecured(detail::SesameSecuredMbedTlsEncryptors::sendEncryption, detail::SesameSecuredMbedTlsEncryptors::receiveEncryption, sendBuffer, receiveBuffer, delegate, keyMaterial)
     {}
 #endif
+
+    SesameSecured::KeyMaterial ConvertKeyMaterial(const sesame_security::SymmetricKeyFile& keyMaterial)
+    {
+        SesameSecured::KeyMaterial result;
+
+        infra::Copy(infra::MakeRange(keyMaterial.sendBySelf.key), infra::MakeRange(result.sendKey));
+        infra::Copy(infra::MakeRange(keyMaterial.sendBySelf.iv), infra::MakeRange(result.sendIv));
+        infra::Copy(infra::MakeRange(keyMaterial.sendByOther.key), infra::MakeRange(result.receiveKey));
+        infra::Copy(infra::MakeRange(keyMaterial.sendByOther.iv), infra::MakeRange(result.receiveIv));
+
+        return result;
+    }
 }
