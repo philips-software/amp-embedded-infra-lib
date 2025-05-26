@@ -3,10 +3,13 @@
 
 namespace services
 {
-    void FillWithRandomData(infra::BoundedVector<uint8_t>& vector, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    namespace
     {
-        vector.resize(vector.max_size());
-        randomDataGenerator.GenerateRandomData(infra::MakeRange(vector));
+        void FillWithRandomData(infra::BoundedVector<uint8_t>& vector, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+        {
+            vector.resize(vector.max_size());
+            randomDataGenerator.GenerateRandomData(infra::MakeRange(vector));
+        }
     }
 
     sesame_security::SymmetricKeyFile GenerateSymmetricKeys(hal::SynchronousRandomDataGenerator& randomDataGenerator)
@@ -24,6 +27,18 @@ namespace services
     sesame_security::SymmetricKeyFile ReverseDirection(const sesame_security::SymmetricKeyFile& keys)
     {
         return { keys.sendByOther, keys.sendBySelf };
+    }
+
+    SesameSecured::KeyMaterial ConvertKeyMaterial(const sesame_security::SymmetricKeyFile& keyMaterial)
+    {
+        SesameSecured::KeyMaterial result;
+
+        infra::Copy(infra::MakeRange(keyMaterial.sendBySelf.key), infra::MakeRange(result.sendKey));
+        infra::Copy(infra::MakeRange(keyMaterial.sendBySelf.iv), infra::MakeRange(result.sendIv));
+        infra::Copy(infra::MakeRange(keyMaterial.sendByOther.key), infra::MakeRange(result.receiveKey));
+        infra::Copy(infra::MakeRange(keyMaterial.sendByOther.iv), infra::MakeRange(result.receiveIv));
+
+        return result;
     }
 
     SesameSecured::SesameSecured(AesGcmEncryption& sendEncryption, AesGcmEncryption& receiveEncryption, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate,
@@ -164,16 +179,4 @@ namespace services
         : SesameSecured(detail::SesameSecuredMbedTlsEncryptors::sendEncryption, detail::SesameSecuredMbedTlsEncryptors::receiveEncryption, sendBuffer, receiveBuffer, delegate, keyMaterial)
     {}
 #endif
-
-    SesameSecured::KeyMaterial ConvertKeyMaterial(const sesame_security::SymmetricKeyFile& keyMaterial)
-    {
-        SesameSecured::KeyMaterial result;
-
-        infra::Copy(infra::MakeRange(keyMaterial.sendBySelf.key), infra::MakeRange(result.sendKey));
-        infra::Copy(infra::MakeRange(keyMaterial.sendBySelf.iv), infra::MakeRange(result.sendIv));
-        infra::Copy(infra::MakeRange(keyMaterial.sendByOther.key), infra::MakeRange(result.receiveKey));
-        infra::Copy(infra::MakeRange(keyMaterial.sendByOther.iv), infra::MakeRange(result.receiveIv));
-
-        return result;
-    }
 }
