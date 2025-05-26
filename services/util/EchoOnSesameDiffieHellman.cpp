@@ -8,10 +8,8 @@ namespace services
         services::EcSecP256r1PrivateKey rootPrivateKey{ randomDataGenerator };
         services::EcSecP256r1Certificate rootCertificate{ rootPrivateKey, "CN=Root", rootPrivateKey, "CN=Root", randomDataGenerator };
 
-        auto rootPrivateKeyDer = rootPrivateKey.Der();
-        auto rootCertificateDer = rootCertificate.Der();
         return {
-            rootPrivateKeyDer, rootCertificateDer
+            rootPrivateKey.Der(), rootCertificate.Der()
         };
     }
 
@@ -20,10 +18,8 @@ namespace services
         services::EcSecP256r1PrivateKey devicePrivateKey{ randomDataGenerator };
         services::EcSecP256r1Certificate deviceCertificate{ devicePrivateKey, "CN=Device", issuerKey, "CN=Root", randomDataGenerator };
 
-        auto devicePrivateKeyDer = devicePrivateKey.Der();
-        auto deviceCertificateDer = deviceCertificate.Der();
         return {
-            devicePrivateKeyDer, deviceCertificateDer
+            devicePrivateKey.Der(), deviceCertificate.Der()
         };
     }
 #endif

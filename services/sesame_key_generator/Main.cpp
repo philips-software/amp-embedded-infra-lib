@@ -9,52 +9,55 @@
 #include <fstream>
 #include <iostream>
 
-hal::FileSystemGeneric fileSystem;
-
-template<class T>
-void WriteProtoFile(const T& proto, const std::string& filename)
+namespace
 {
-    infra::StdVectorOutputStream::WithStorage stream;
-    infra::ProtoFormatter formatter(stream);
-    proto.Serialize(formatter);
+    hal::FileSystemGeneric fileSystem;
 
-    fileSystem.WriteBinaryFile(filename, stream.Storage());
-}
+    template<class T>
+    void WriteProtoFile(const T& proto, const std::string& filename)
+    {
+        infra::StdVectorOutputStream::WithStorage stream;
+        infra::ProtoFormatter formatter(stream);
+        proto.Serialize(formatter);
 
-void GenerateSymmetricKeys(args::Subparser& parser, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-{
-    args::ValueFlag<std::string> file(parser, "file", "Generates two files named <file>PeerA.key and <file>PeerB.key, containing the keys for each peer.", { "output" }, args::Options::Required);
-    parser.Parse();
+        fileSystem.WriteBinaryFile(filename, stream.Storage());
+    }
 
-    auto keys = services::GenerateSymmetricKeys(randomDataGenerator);
+    void GenerateSymmetricKeys(args::Subparser& parser, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    {
+        args::ValueFlag<std::string> file(parser, "file", "Generates two files named <file>PeerA.key and <file>PeerB.key, containing the keys for each peer.", { "output" }, args::Options::Required);
+        parser.Parse();
 
-    WriteProtoFile(keys, get(file) + "PeerA.key");
-    WriteProtoFile(services::ReverseDirection(keys), get(file) + "PeerB.key");
-}
+        auto keys = services::GenerateSymmetricKeys(randomDataGenerator);
 
-void GenerateRootCertificate(args::Subparser& parser, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-{
-    args::ValueFlag<std::string> file(parser, "file", "Root certificate", { "output" }, args::Options::Required);
-    parser.Parse();
+        WriteProtoFile(keys, get(file) + "PeerA.key");
+        WriteProtoFile(services::ReverseDirection(keys), get(file) + "PeerB.key");
+    }
 
-    auto [rootPrivateKeyDer, rootCertificateDer] = services::GenerateRootCertificate(randomDataGenerator);
+    void GenerateRootCertificate(args::Subparser& parser, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    {
+        args::ValueFlag<std::string> file(parser, "file", "Root certificate", { "output" }, args::Options::Required);
+        parser.Parse();
 
-    fileSystem.WriteBinaryFile(get(file) + ".der", infra::MakeRange(rootCertificateDer));
-    fileSystem.WriteBinaryFile(get(file) + ".prv", infra::MakeRange(rootPrivateKeyDer));
-}
+        auto [rootPrivateKeyDer, rootCertificateDer] = services::GenerateRootCertificate(randomDataGenerator);
 
-void GenerateDeviceCertificate(args::Subparser& parser, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-{
-    args::ValueFlag<std::string> rootKey(parser, "file", "Root certificate private key", { "rootkey" }, args::Options::Required);
-    args::ValueFlag<std::string> output(parser, "file", "Device certificate", { "output" }, args::Options::Required);
-    parser.Parse();
+        fileSystem.WriteBinaryFile(get(file) + ".der", infra::MakeRange(rootCertificateDer));
+        fileSystem.WriteBinaryFile(get(file) + ".prv", infra::MakeRange(rootPrivateKeyDer));
+    }
 
-    auto rootCertificateKeyFile = fileSystem.ReadBinaryFile(get(rootKey));
-    services::EcSecP256r1PrivateKey rootCertificateKey(infra::MakeRange(rootCertificateKeyFile), randomDataGenerator);
-    auto [devicePrivateKeyDer, deviceCertificateDer] = services::GenerateDeviceCertificate(rootCertificateKey, randomDataGenerator);
+    void GenerateDeviceCertificate(args::Subparser& parser, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    {
+        args::ValueFlag<std::string> rootKey(parser, "file", "Root certificate private key", { "rootkey" }, args::Options::Required);
+        args::ValueFlag<std::string> output(parser, "file", "Device certificate", { "output" }, args::Options::Required);
+        parser.Parse();
 
-    fileSystem.WriteBinaryFile(get(output) + ".der", infra::MakeRange(deviceCertificateDer));
-    fileSystem.WriteBinaryFile(get(output) + ".prv", infra::MakeRange(devicePrivateKeyDer));
+        auto rootCertificateKeyFile = fileSystem.ReadBinaryFile(get(rootKey));
+        services::EcSecP256r1PrivateKey rootCertificateKey(infra::MakeRange(rootCertificateKeyFile), randomDataGenerator);
+        auto [devicePrivateKeyDer, deviceCertificateDer] = services::GenerateDeviceCertificate(rootCertificateKey, randomDataGenerator);
+
+        fileSystem.WriteBinaryFile(get(output) + ".der", infra::MakeRange(deviceCertificateDer));
+        fileSystem.WriteBinaryFile(get(output) + ".prv", infra::MakeRange(devicePrivateKeyDer));
+    }
 }
 
 int main(int argc, char* argv[], const char* env[])

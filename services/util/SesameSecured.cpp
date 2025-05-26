@@ -3,18 +3,20 @@
 
 namespace services
 {
+    void FillWithRandomData(infra::BoundedVector<uint8_t>& vector, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    {
+        vector.resize(vector.max_size());
+        randomDataGenerator.GenerateRandomData(infra::MakeRange(vector));
+    }
+
     sesame_security::SymmetricKeyFile GenerateSymmetricKeys(hal::SynchronousRandomDataGenerator& randomDataGenerator)
     {
         sesame_security::SymmetricKeyFile keys;
 
-        keys.sendBySelf.key.resize(keys.sendBySelf.key.max_size());
-        randomDataGenerator.GenerateRandomData(infra::MakeRange(keys.sendBySelf.key));
-        keys.sendBySelf.iv.resize(keys.sendBySelf.iv.max_size());
-        randomDataGenerator.GenerateRandomData(infra::MakeRange(keys.sendBySelf.iv));
-        keys.sendByOther.key.resize(keys.sendByOther.key.max_size());
-        randomDataGenerator.GenerateRandomData(infra::MakeRange(keys.sendByOther.key));
-        keys.sendByOther.iv.resize(keys.sendByOther.iv.max_size());
-        randomDataGenerator.GenerateRandomData(infra::MakeRange(keys.sendByOther.iv));
+        FillWithRandomData(keys.sendBySelf.key, randomDataGenerator);
+        FillWithRandomData(keys.sendBySelf.iv, randomDataGenerator);
+        FillWithRandomData(keys.sendByOther.key, randomDataGenerator);
+        FillWithRandomData(keys.sendByOther.iv, randomDataGenerator);
 
         return keys;
     }
