@@ -20,6 +20,21 @@ namespace services
         virtual uint32_t GetMaxNumberOfBonds() const = 0;
     };
 
+    class BondStorageSynchronizerDummy
+        : public BondStorageSynchronizer
+    {
+    public:
+        BondStorageSynchronizerDummy() = default;
+        BondStorageSynchronizerDummy(const BondStorageSynchronizer& other) = delete;
+        BondStorageSynchronizerDummy& operator=(const BondStorageSynchronizer& other) = delete;
+
+    public:
+        void UpdateBondedDevice(hal::MacAddress address) override {}
+        void RemoveBond(hal::MacAddress address) override {}
+        void RemoveAllBonds() override {}
+        uint32_t GetMaxNumberOfBonds() const override { return 0; }
+    };
+
     class BondStorage
     {
     protected:
