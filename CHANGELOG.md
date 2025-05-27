@@ -7,6 +7,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [7.3.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v7.2.0...v7.3.0) (2025-05-27)
+
+
+### Features
+
+* Add services/util/FlashDelegate ([#862](https://github.com/philips-software/amp-embedded-infra-lib/issues/862)) ([e69458d](https://github.com/philips-software/amp-embedded-infra-lib/commit/e69458d6c06144b553e1e996f4115c72af572c93))
+* Add sesame_key_generator ([#870](https://github.com/philips-software/amp-embedded-infra-lib/issues/870)) ([1c97c6f](https://github.com/philips-software/amp-embedded-infra-lib/commit/1c97c6f3ff4314c24e2f659517faee7421127c91))
+
+
+### Bug Fixes
+
+* Remove claiming from writeworesponse ([#874](https://github.com/philips-software/amp-embedded-infra-lib/issues/874)) ([9fa0a4f](https://github.com/philips-software/amp-embedded-infra-lib/commit/9fa0a4f22b3c951a6a512683282c7ea1a36ef349))
+* When detaching cancel timeout timer ([#871](https://github.com/philips-software/amp-embedded-infra-lib/issues/871)) ([d59e82d](https://github.com/philips-software/amp-embedded-infra-lib/commit/d59e82d0bea34b142cdb9c6d73704b0c61640a99))
+* When UartUnix is destroyed receivedData is still called on read thread ([#863](https://github.com/philips-software/amp-embedded-infra-lib/issues/863)) ([f3adb96](https://github.com/philips-software/amp-embedded-infra-lib/commit/f3adb96e273868d4b8b772b5135178cb0bba7c88))
+
 ## [7.2.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v7.1.0...v7.2.0) (2025-04-28)
 
 
