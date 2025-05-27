@@ -120,66 +120,13 @@ namespace services
         return characteristics;
     }
 
-    void GattClientDiscoveryDecorator::ServiceDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle endHandle)
+    void GattClientDiscovery::StartCharacteristicDiscovery(const GattService& service)
     {
-        GattClientDiscoveryObserver::SubjectType::NotifyObservers([&type, &handle, &endHandle](auto& obs)
-            {
-                obs.ServiceDiscovered(type, handle, endHandle);
-            });
+        StartCharacteristicDiscovery(service.Handle(), service.EndHandle());
     }
 
-    void GattClientDiscoveryDecorator::CharacteristicDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties)
+    void GattClientDiscovery::StartDescriptorDiscovery(const GattService& service)
     {
-        GattClientDiscoveryObserver::SubjectType::NotifyObservers([&type, &handle, &valueHandle, &properties](auto& obs)
-            {
-                obs.CharacteristicDiscovered(type, handle, valueHandle, properties);
-            });
-    }
-
-    void GattClientDiscoveryDecorator::DescriptorDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle)
-    {
-        GattClientDiscoveryObserver::SubjectType::NotifyObservers([&type, &handle](auto& obs)
-            {
-                obs.DescriptorDiscovered(type, handle);
-            });
-    }
-
-    void GattClientDiscoveryDecorator::ServiceDiscoveryComplete()
-    {
-        GattClientDiscoveryObserver::SubjectType::NotifyObservers([](auto& obs)
-            {
-                obs.ServiceDiscoveryComplete();
-            });
-    }
-
-    void GattClientDiscoveryDecorator::CharacteristicDiscoveryComplete()
-    {
-        GattClientDiscoveryObserver::SubjectType::NotifyObservers([](auto& obs)
-            {
-                obs.CharacteristicDiscoveryComplete();
-            });
-    }
-
-    void GattClientDiscoveryDecorator::DescriptorDiscoveryComplete()
-    {
-        GattClientDiscoveryObserver::SubjectType::NotifyObservers([](auto& obs)
-            {
-                obs.DescriptorDiscoveryComplete();
-            });
-    }
-
-    void GattClientDiscoveryDecorator::StartServiceDiscovery()
-    {
-        GattClientDiscoveryObserver::Subject().StartServiceDiscovery();
-    }
-
-    void GattClientDiscoveryDecorator::StartCharacteristicDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle)
-    {
-        GattClientDiscoveryObserver::Subject().StartCharacteristicDiscovery(handle, endHandle);
-    }
-
-    void GattClientDiscoveryDecorator::StartDescriptorDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle)
-    {
-        GattClientDiscoveryObserver::Subject().StartDescriptorDiscovery(handle, endHandle);
+        StartDescriptorDiscovery(service.Handle(), service.EndHandle());
     }
 }
