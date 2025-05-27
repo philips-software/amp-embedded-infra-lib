@@ -3,24 +3,20 @@
 namespace services
 {
 #ifdef EMIL_USE_MBEDTLS
-    std::pair<std::array<uint8_t, 121>, infra::BoundedVector<uint8_t>::WithMaxSize<512>> GenerateRootCertificate(hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    CertificateAndPrivateKey GenerateRootCertificate(hal::SynchronousRandomDataGenerator& randomDataGenerator)
     {
         services::EcSecP256r1PrivateKey rootPrivateKey{ randomDataGenerator };
         services::EcSecP256r1Certificate rootCertificate{ rootPrivateKey, "CN=Root", rootPrivateKey, "CN=Root", randomDataGenerator };
 
-        return {
-            rootPrivateKey.Der(), rootCertificate.Der()
-        };
+        return { rootCertificate.Der(), rootPrivateKey.Der() };
     }
 
-    std::pair<std::array<uint8_t, 121>, infra::BoundedVector<uint8_t>::WithMaxSize<512>> GenerateDeviceCertificate(const EcSecP256r1PrivateKey& issuerKey, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    CertificateAndPrivateKey GenerateDeviceCertificate(const EcSecP256r1PrivateKey& issuerKey, hal::SynchronousRandomDataGenerator& randomDataGenerator)
     {
         services::EcSecP256r1PrivateKey devicePrivateKey{ randomDataGenerator };
         services::EcSecP256r1Certificate deviceCertificate{ devicePrivateKey, "CN=Device", issuerKey, "CN=Root", randomDataGenerator };
 
-        return {
-            devicePrivateKey.Der(), deviceCertificate.Der()
-        };
+        return { deviceCertificate.Der(), devicePrivateKey.Der() };
     }
 #endif
 

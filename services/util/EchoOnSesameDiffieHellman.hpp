@@ -13,8 +13,14 @@
 namespace services
 {
 #ifdef EMIL_USE_MBEDTLS
-    std::pair<std::array<uint8_t, 121>, infra::BoundedVector<uint8_t>::WithMaxSize<512>> GenerateRootCertificate(hal::SynchronousRandomDataGenerator& randomDataGenerator);
-    std::pair<std::array<uint8_t, 121>, infra::BoundedVector<uint8_t>::WithMaxSize<512>> GenerateDeviceCertificate(const EcSecP256r1PrivateKey& issuerKey, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+    struct CertificateAndPrivateKey
+    {
+        infra::BoundedVector<uint8_t>::WithMaxSize<512> certificate;
+        std::array<uint8_t, 121> privateKey;
+    };
+
+    CertificateAndPrivateKey GenerateRootCertificate(hal::SynchronousRandomDataGenerator& randomDataGenerator);
+    CertificateAndPrivateKey GenerateDeviceCertificate(const EcSecP256r1PrivateKey& issuerKey, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 #endif
 
     class EchoOnSesameDiffieHellman
