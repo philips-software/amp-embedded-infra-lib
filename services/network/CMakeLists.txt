@@ -105,6 +105,9 @@ endif()
 
 if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
     if (NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
+        target_include_directories(services.network PUBLIC         
+            $<TARGET_PROPERTY:${EMIL_EXTERNAL_MBEDTLS_TARGET},INCLUDE_DIRECTORIES>
+        )
         target_link_libraries(services.network PUBLIC
             ${EMIL_EXTERNAL_MBEDTLS_TARGET}
         )
