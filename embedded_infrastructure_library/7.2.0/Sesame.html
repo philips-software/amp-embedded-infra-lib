@@ -481,6 +481,12 @@ message Certificate
     bytes certificate = 1 [(bytes_size) = 512];
 }
 
+message CertificatePrivateKey
+{
+    // DER-encoded private key
+    bytes privateKey = 1 [(bytes_size) = 121];
+}
+
 service SymmetricKeyEstablishment
 {
     option (service_id) = 3;
@@ -494,6 +500,12 @@ service DiffieHellmanKeyEstablishment
 
     rpc Exchange(DiffieHellmanMaterial) returns (Nothing) { option (method_id) = 1; }
     rpc PresentCertificate(Certificate) returns (Nothing) { option (method_id) = 2; }
+}
+
+message SymmetricKeyFile
+{
+    SymmetricKeyMaterial sendBySelf = 1;
+    SymmetricKeyMaterial sendByOther = 2;
 }</code></pre>
 </div>
 </div>
