@@ -2,6 +2,24 @@
 
 namespace services
 {
+#ifdef EMIL_USE_MBEDTLS
+    CertificateAndPrivateKey GenerateRootCertificate(hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    {
+        services::EcSecP256r1PrivateKey rootPrivateKey{ randomDataGenerator };
+        services::EcSecP256r1Certificate rootCertificate{ rootPrivateKey, "CN=Root", rootPrivateKey, "CN=Root", randomDataGenerator };
+
+        return { rootCertificate.Der(), rootPrivateKey.Der() };
+    }
+
+    CertificateAndPrivateKey GenerateDeviceCertificate(const EcSecP256r1PrivateKey& issuerKey, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    {
+        services::EcSecP256r1PrivateKey devicePrivateKey{ randomDataGenerator };
+        services::EcSecP256r1Certificate deviceCertificate{ devicePrivateKey, "CN=Device", issuerKey, "CN=Root", randomDataGenerator };
+
+        return { deviceCertificate.Der(), devicePrivateKey.Der() };
+    }
+#endif
+
     EchoOnSesameDiffieHellman::EchoOnSesameDiffieHellman(const Crypto& crypto, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy)
         : EchoOnSesame(secured, serializerFactory, errorPolicy)
         , DiffieHellmanKeyEstablishment(static_cast<services::Echo&>(*this))

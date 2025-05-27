@@ -12,6 +12,17 @@
 
 namespace services
 {
+#ifdef EMIL_USE_MBEDTLS
+    struct CertificateAndPrivateKey
+    {
+        infra::BoundedVector<uint8_t>::WithMaxSize<512> certificate;
+        std::array<uint8_t, 121> privateKey;
+    };
+
+    CertificateAndPrivateKey GenerateRootCertificate(hal::SynchronousRandomDataGenerator& randomDataGenerator);
+    CertificateAndPrivateKey GenerateDeviceCertificate(const EcSecP256r1PrivateKey& issuerKey, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+#endif
+
     class EchoOnSesameDiffieHellman
         : public EchoOnSesame
         , private sesame_security::DiffieHellmanKeyEstablishment

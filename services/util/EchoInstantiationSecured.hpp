@@ -18,7 +18,7 @@ namespace main_
         EchoOnSesameSecured(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::SesameSecured::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
             : cobs(serialCommunication)
             , secured(windowed, keyMaterial)
-            , echo(secured, serializerFactory, randomDataGenerator)
+            , echo(secured, randomDataGenerator, serializerFactory)
         {}
 
         ~EchoOnSesameSecured()
