@@ -3,13 +3,14 @@
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/LimitedOutputStream.hpp"
 #include "infra/util/ConstructBin.hpp"
+#include "infra/util/Optional.hpp"
 #include "infra/util/SharedOptional.hpp"
-#include "infra/util/test_helper/MockCallback.hpp"
 #include "protobuf/echo/test_doubles/EchoMock.hpp"
 #include "protobuf/echo/test_doubles/ServiceStub.hpp"
-#include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/util/EchoOnSesame.hpp"
 #include "services/util/test_doubles/SesameMock.hpp"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 namespace services
 {
@@ -270,4 +271,55 @@ TEST_F(EchoOnSesameTest, after_Reset_RequestSendMessage_is_delayed_until_Initial
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
     EXPECT_CALL(sesame, RequestSendMessage(98));
     sesame.GetObserver().Initialized();
+}
+
+TEST_F(EchoOnSesameTest, invoke_service_proxy_method_after_previous_service_proxy_was_destroyed)
+{
+    sesame.GetObserver().Initialized();
+
+    testing::StrictMock<testing::MockFunction<void(std::string)>> check;
+    EXPECT_CALL(sesame, MaxSendMessageSize).WillRepeatedly(testing::Return(1000));
+    EXPECT_CALL(sesame, RequestSendMessage)
+        .WillOnce([&check]
+            {
+                check.Call("RequestSendMessage from optional service proxy");
+            })
+        .WillOnce([&check]
+            {
+                check.Call("RequestSendMessage from service proxy");
+            });
+
+    {
+        testing::InSequence s;
+
+        EXPECT_CALL(check, Call("RequestSendMessage from optional service proxy"));
+        EXPECT_CALL(check, Call("optional service proxy destroyed"));
+        EXPECT_CALL(check, Call("RequestSendMessage from service proxy"));
+        EXPECT_CALL(check, Call("RequestSendMessage called after SendMssageStreamAvailable for destroyed optional service proxy is called"));
+    }
+
+    infra::Optional<services::ServiceStubProxy> optionalServiceProxy{ infra::inPlace, echo };
+    testing::Sequence seq;
+
+    optionalServiceProxy->RequestSend([&optionalServiceProxy]()
+        {
+            optionalServiceProxy->Method(4);
+        });
+    check.Call("optional service proxy destroyed");
+
+    optionalServiceProxy = infra::none;
+
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.Method(5);
+        });
+
+    infra::ByteOutputStreamWriter::WithStorage<128> writerToBeDiscarded;
+    sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writerToBeDiscarded));
+    ASSERT_THAT(std::vector<uint8_t>(writerToBeDiscarded.Processed().begin(), writerToBeDiscarded.Processed().end()), testing::ElementsAreArray(std::vector<uint8_t>{}));
+    check.Call("RequestSendMessage called after SendMssageStreamAvailable for destroyed optional service proxy is called");
+
+    infra::ByteOutputStreamWriter::WithStorage<128> writer;
+    sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writer));
+    EXPECT_THAT(std::vector<uint8_t>(writer.Processed().begin(), writer.Processed().end()), testing::ElementsAreArray(std::vector<uint8_t>{ 1, (1 << 3) | 2, 2, 8, 5 }));
 }
