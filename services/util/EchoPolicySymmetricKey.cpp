@@ -1,4 +1,4 @@
-#include "services/util/EchoOnSesameSymmetricKey.hpp"
+#include "services/util/EchoPolicySymmetricKey.hpp"
 
 namespace services
 {
@@ -14,26 +14,19 @@ namespace services
         }
     }
 
-    EchoOnSesameSymmetricKey::EchoOnSesameSymmetricKey(SesameSecured& secured, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy)
-        : EchoOnSesame(secured, serializerFactory, errorPolicy)
-        , SymmetricKeyEstablishment(static_cast<services::Echo&>(*this))
-        , SymmetricKeyEstablishmentProxy(static_cast<services::Echo&>(*this))
+    EchoPolicySymmetricKey::EchoPolicySymmetricKey(EchoOnSesame& echo, SesameSecured& secured, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+        : EchoOnSesameObserver(echo)
+        , SymmetricKeyEstablishment(echo)
+        , SymmetricKeyEstablishmentProxy(echo)
         , secured(secured)
         , randomDataGenerator(randomDataGenerator)
-    {}
-
-    void EchoOnSesameSymmetricKey::RequestSend(ServiceProxy& serviceProxy)
     {
-        if (initializingSending && &serviceProxy != this)
-            waitingProxies.push_back(serviceProxy);
-        else
-            EchoOnSesame::RequestSend(serviceProxy);
+        echo.SetPolicy(*this);
     }
 
-    void EchoOnSesameSymmetricKey::Initialized()
+    void EchoPolicySymmetricKey::Initialized()
     {
         initializingSending = true;
-        EchoOnSesame::Initialized();
 
         SymmetricKeyEstablishmentProxy::RequestSend([this]()
             {
@@ -47,30 +40,38 @@ namespace services
             });
     }
 
-    infra::SharedPtr<MethodSerializer> EchoOnSesameSymmetricKey::GrantSend(ServiceProxy& proxy)
+    void EchoPolicySymmetricKey::RequestSend(ServiceProxy& serviceProxy, const infra::Function<void(ServiceProxy& proxy)>& onRequest)
+    {
+        this->onRequest = onRequest;
+
+        if (initializingSending && &serviceProxy != this)
+            waitingProxies.push_back(serviceProxy);
+        else
+            onRequest(serviceProxy);
+    }
+
+    void EchoPolicySymmetricKey::GrantingSend(ServiceProxy& proxy)
     {
         if (nextKeyPair && &proxy != this)
         {
             secured.SetSendKey(nextKeyPair->first, nextKeyPair->second);
             nextKeyPair = infra::none;
         }
-
-        return EchoOnStreams::GrantSend(proxy);
     }
 
-    void EchoOnSesameSymmetricKey::ActivateNewKeyMaterial(infra::ConstByteRange key, infra::ConstByteRange iv)
+    void EchoPolicySymmetricKey::ActivateNewKeyMaterial(infra::ConstByteRange key, infra::ConstByteRange iv)
     {
         secured.SetReceiveKey(Convert<16>(key), Convert<16>(iv));
         MethodDone();
     }
 
-    void EchoOnSesameSymmetricKey::ReQueueWaitingProxies()
+    void EchoPolicySymmetricKey::ReQueueWaitingProxies()
     {
         while (!waitingProxies.empty())
         {
             auto& proxy = waitingProxies.front();
             waitingProxies.pop_front();
-            RequestSend(proxy);
+            onRequest(proxy);
         }
     }
 }

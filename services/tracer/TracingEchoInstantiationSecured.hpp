@@ -13,7 +13,8 @@ namespace main_
         TracingEchoOnSesameSecured(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::SesameSecured::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator, services::Tracer& tracer)
             : cobs(serialCommunication)
             , secured(windowed, keyMaterial)
-            , echo(serializerFactory, services::echoErrorPolicyAbortOnMessageFormatError, tracer, secured, randomDataGenerator)
+            , echo(serializerFactory, services::echoErrorPolicyAbortOnMessageFormatError, tracer)
+            , policy(echo, secured, randomDataGenerator)
         {}
 
         ~TracingEchoOnSesameSecured()
@@ -35,7 +36,8 @@ namespace main_
         services::SesameCobs::WithMaxMessageSize<MessageSize> cobs;
         services::SesameWindowed windowed{ cobs };
         services::SesameSecured::WithCryptoMbedTls::WithBuffers<MessageSize> secured;
-        services::TracingEchoOnStreamsDescendant<services::EchoOnSesameSymmetricKey> echo;
+        services::TracingEchoOnSesame echo;
+        services::EchoPolicySymmetricKey policy;
     };
 }
 

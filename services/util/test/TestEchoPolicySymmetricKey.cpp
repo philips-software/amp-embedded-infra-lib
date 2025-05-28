@@ -5,14 +5,14 @@
 #include "protobuf/echo/test_doubles/EchoMock.hpp"
 #include "protobuf/echo/test_doubles/ServiceStub.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
-#include "services/util/EchoOnSesameSymmetricKey.hpp"
+#include "services/util/EchoPolicySymmetricKey.hpp"
 #include "services/util/test_doubles/SesameMock.hpp"
 
-class EchoOnSesameSymmetricKeyTest
+class EchoPolicySymmetricKeyTest
     : public testing::Test
 {
 public:
-    EchoOnSesameSymmetricKeyTest()
+    EchoPolicySymmetricKeyTest()
     {
         EXPECT_CALL(lower, MaxSendMessageSize()).WillRepeatedly(testing::Return(100));
 
@@ -66,13 +66,14 @@ public:
         } };
     sesame_security::SymmetricKeyFile keys{ services::GenerateSymmetricKeys(randomDataGenerator) };
     services::SesameSecured::WithCryptoMbedTls::WithBuffers<64> secured{ lower, keys };
-    services::EchoOnSesameSymmetricKey echo{ secured, randomDataGenerator, serializerFactory, errorPolicy };
+    services::EchoOnSesame echo{ secured, serializerFactory, errorPolicy };
+    services::EchoPolicySymmetricKey policy{ echo, secured, randomDataGenerator };
 
     services::ServiceStubProxy serviceProxy{ echo };
     testing::StrictMock<services::ServiceStub> service{ echo };
 };
 
-TEST_F(EchoOnSesameSymmetricKeyTest, send_and_receive)
+TEST_F(EchoPolicySymmetricKeyTest, send_and_receive)
 {
     EXPECT_CALL(lower, RequestSendMessage(testing::_)).WillOnce(testing::Invoke([this]()
         {
@@ -89,7 +90,7 @@ TEST_F(EchoOnSesameSymmetricKeyTest, send_and_receive)
         });
 }
 
-TEST_F(EchoOnSesameSymmetricKeyTest, send_and_receive_large_message)
+TEST_F(EchoPolicySymmetricKeyTest, send_and_receive_large_message)
 {
     static const std::array<uint8_t, 64> bytes{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64 };
     EXPECT_CALL(lower, RequestSendMessage(testing::_)).WillOnce(testing::Invoke([this]()
@@ -111,7 +112,7 @@ TEST_F(EchoOnSesameSymmetricKeyTest, send_and_receive_large_message)
         });
 }
 
-TEST_F(EchoOnSesameSymmetricKeyTest, send_while_initializing)
+TEST_F(EchoPolicySymmetricKeyTest, send_while_initializing)
 {
     EXPECT_CALL(lower, RequestSendMessage(testing::_));
     lower.GetObserver().Initialized();

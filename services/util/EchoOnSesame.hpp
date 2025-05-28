@@ -6,9 +6,21 @@
 
 namespace services
 {
+    class EchoOnSesame;
+
+    class EchoOnSesameObserver
+        : public infra::Observer<EchoOnSesameObserver, EchoOnSesame>
+    {
+    public:
+        using infra::Observer<EchoOnSesameObserver, EchoOnSesame>::Observer;
+
+        virtual void Initialized() = 0;
+    };
+
     class EchoOnSesame
         : public EchoOnStreams
-        , public SesameObserver
+        , public infra::Subject<EchoOnSesameObserver>
+        , private SesameObserver
     {
     public:
         EchoOnSesame(Sesame& subject, services::MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);

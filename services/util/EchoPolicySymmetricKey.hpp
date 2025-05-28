@@ -1,5 +1,5 @@
-#ifndef SERVICES_ECHO_ON_SESAME_SYMMETRIC_KEY_HPP
-#define SERVICES_ECHO_ON_SESAME_SYMMETRIC_KEY_HPP
+#ifndef SERVICES_ECHO_POLICY_SYMMETRIC_KEY_HPP
+#define SERVICES_ECHO_POLICY_SYMMETRIC_KEY_HPP
 
 #include "generated/echo/SesameSecurity.pb.hpp"
 #include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"
@@ -8,23 +8,22 @@
 
 namespace services
 {
-    class EchoOnSesameSymmetricKey
-        : public EchoOnSesame
+    class EchoPolicySymmetricKey
+        : private EchoOnSesameObserver
+        , private EchoPolicy
         , private sesame_security::SymmetricKeyEstablishment
         , private sesame_security::SymmetricKeyEstablishmentProxy
     {
     public:
-        EchoOnSesameSymmetricKey(SesameSecured& secured, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
+        EchoPolicySymmetricKey(EchoOnSesame& echo, SesameSecured& secured, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
-        // Implementation of Echo
-        void RequestSend(ServiceProxy& serviceProxy) override;
-
-        // Implementation of SesameObserver
+    private:
+        // Implementation of EchoOnSesameObserver
         void Initialized() override;
 
-    protected:
-        // Implementation of EchoOnStreams
-        infra::SharedPtr<MethodSerializer> GrantSend(ServiceProxy& proxy) override;
+        // Implementation of EchoPolicy
+        virtual void RequestSend(ServiceProxy& proxy, const infra::Function<void(ServiceProxy& proxy)>& onRequest);
+        virtual void GrantingSend(ServiceProxy& proxy);
 
     private:
         // Implementation of SymmetricKeyEstablishment
@@ -35,6 +34,8 @@ namespace services
     private:
         SesameSecured& secured;
         hal::SynchronousRandomDataGenerator& randomDataGenerator;
+
+        infra::Function<void(ServiceProxy& proxy)> onRequest;
 
         bool initializingSending = true;
         infra::IntrusiveList<ServiceProxy> waitingProxies;

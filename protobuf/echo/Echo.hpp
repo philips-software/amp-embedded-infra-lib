@@ -55,6 +55,18 @@ namespace services
         infra::SharedPtr<MethodSerializer> methodSerializer;
     };
 
+    class EchoPolicy
+    {
+    public:
+        EchoPolicy() = default;
+        EchoPolicy(const EchoPolicy& other) = delete;
+        EchoPolicy& operator=(const EchoPolicy& other) = delete;
+        ~EchoPolicy() = default;
+
+        virtual void RequestSend(ServiceProxy& proxy, const infra::Function<void(ServiceProxy& proxy)>& onRequest);
+        virtual void GrantingSend(ServiceProxy& proxy);
+    };
+
     class Echo
         : public infra::Subject<Service>
     {
@@ -71,6 +83,8 @@ namespace services
     public:
         explicit EchoOnStreams(services::MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
         ~EchoOnStreams();
+
+        void SetPolicy(EchoPolicy& policy);
 
         // Implementation of Echo
         void RequestSend(ServiceProxy& serviceProxy) override;
@@ -100,8 +114,11 @@ namespace services
         void LimitedReaderDone();
 
     private:
+        static EchoPolicy defaultPolicy;
+
         services::MethodSerializerFactory& serializerFactory;
         const EchoErrorPolicy& errorPolicy;
+        EchoPolicy* policy = &defaultPolicy;
 
         infra::IntrusiveList<ServiceProxy> sendRequesters;
         ServiceProxy* sendingProxy = nullptr;

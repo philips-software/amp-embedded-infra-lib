@@ -4,7 +4,7 @@
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "infra/stream/IoOutputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
-#include "services/util/EchoOnSesameDiffieHellman.hpp"
+#include "services/util/EchoPolicyDiffieHellman.hpp"
 #include "services/util/SesameCryptoMbedTls.hpp"
 #include <fstream>
 #include <iostream>

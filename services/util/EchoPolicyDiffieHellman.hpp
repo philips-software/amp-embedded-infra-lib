@@ -1,5 +1,5 @@
-#ifndef SERVICES_ECHO_ON_SESAME_DIFFIE_HELLMAN_HPP
-#define SERVICES_ECHO_ON_SESAME_DIFFIE_HELLMAN_HPP
+#ifndef SERVICES_ECHO_POLICY_DIFFIE_HELLMAN_HPP
+#define SERVICES_ECHO_POLICY_DIFFIE_HELLMAN_HPP
 
 #include "generated/echo/SesameSecurity.pb.hpp"
 #include "infra/util/ProxyCreator.hpp"
@@ -23,8 +23,9 @@ namespace services
     CertificateAndPrivateKey GenerateDeviceCertificate(const EcSecP256r1PrivateKey& issuerKey, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 #endif
 
-    class EchoOnSesameDiffieHellman
-        : public EchoOnSesame
+    class EchoPolicyDiffieHellman
+        : private EchoOnSesameObserver
+        , private EchoPolicy
         , private sesame_security::DiffieHellmanKeyEstablishment
         , private sesame_security::DiffieHellmanKeyEstablishmentProxy
     {
@@ -41,17 +42,15 @@ namespace services
         struct WithCryptoMbedTls;
 #endif
 
-        EchoOnSesameDiffieHellman(const Crypto& crypto, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
+        EchoPolicyDiffieHellman(const Crypto& crypto, EchoOnSesame& echo, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
-        // Implementation of Echo
-        void RequestSend(ServiceProxy& serviceProxy) override;
-
+    private:
         // Implementation of SesameObserver
         void Initialized() override;
 
-    protected:
-        // Implementation of EchoOnStreams
-        infra::SharedPtr<MethodSerializer> GrantSend(ServiceProxy& proxy) override;
+        // Implementation of EchoPolicy
+        virtual void RequestSend(ServiceProxy& proxy, const infra::Function<void(ServiceProxy& proxy)>& onRequest);
+        virtual void GrantingSend(ServiceProxy& proxy);
 
         virtual void KeyExchangeSuccessful();
         virtual void KeyExchangeFailed();
@@ -69,6 +68,8 @@ namespace services
         infra::ConstByteRange dsaCertificate;
         infra::ConstByteRange rootCaCertificate;
 
+        infra::Function<void(ServiceProxy& proxy)> onRequest;
+
         bool initializingKeys = true;
         bool sentExchange = false;
         infra::Optional<std::pair<std::array<uint8_t, 16>, std::array<uint8_t, 16>>> nextKeyPair;
@@ -83,10 +84,10 @@ namespace services
     };
 
 #ifdef EMIL_USE_MBEDTLS
-    struct EchoOnSesameDiffieHellman::WithCryptoMbedTls
-        : public EchoOnSesameDiffieHellman
+    struct EchoPolicyDiffieHellman::WithCryptoMbedTls
+        : public EchoPolicyDiffieHellman
     {
-        WithCryptoMbedTls(SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange dsaCertificatePrivateKey, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
+        WithCryptoMbedTls(EchoOnSesame& echo, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange dsaCertificatePrivateKey, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
         infra::Creator<EcSecP256r1DiffieHellman, EcSecP256r1DiffieHellmanMbedTls, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)> keyExchange;
         EcSecP256r1DsaSignerMbedTls signer;

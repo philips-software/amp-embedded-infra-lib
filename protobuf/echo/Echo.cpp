@@ -4,6 +4,8 @@
 
 namespace services
 {
+    EchoPolicy EchoOnStreams::defaultPolicy;
+
     void Service::MethodDone()
     {
         Rpc().ServiceDone();
@@ -63,6 +65,14 @@ namespace services
         methodSerializer = serializer;
     }
 
+    void EchoPolicy::RequestSend(ServiceProxy& proxy, const infra::Function<void(ServiceProxy& proxy)>& onRequest)
+    {
+        onRequest(proxy);
+    }
+
+    void EchoPolicy::GrantingSend(ServiceProxy& proxy)
+    {}
+
     EchoOnStreams::EchoOnStreams(services::MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy)
         : serializerFactory(serializerFactory)
         , errorPolicy(errorPolicy)
@@ -73,12 +83,20 @@ namespace services
         limitedReaderAccess.SetAction(infra::emptyFunction);
     }
 
+    void EchoOnStreams::SetPolicy(EchoPolicy& policy)
+    {
+        this->policy = &policy;
+    }
+
     void EchoOnStreams::RequestSend(ServiceProxy& serviceProxy)
     {
-        assert(!sendRequesters.has_element(serviceProxy));
-        sendRequesters.push_back(serviceProxy);
+        policy->RequestSend(serviceProxy, [this](services::ServiceProxy& proxy)
+            {
+                assert(!sendRequesters.has_element(proxy));
+                sendRequesters.push_back(proxy);
 
-        TryGrantSend();
+                TryGrantSend();
+            });
     }
 
     void EchoOnStreams::ServiceDone()
@@ -173,7 +191,10 @@ namespace services
         else
         {
             if (methodSerializer == nullptr)
+            {
                 methodSerializer = GrantSend(*sendingProxy);
+                policy->GrantingSend(*sendingProxy);
+            }
 
             partlySent = methodSerializer->Serialize(std::move(writer));
 
