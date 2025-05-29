@@ -74,7 +74,7 @@ namespace main_
         : EchoOnSesameSecuredDiffieHellman
     {
         WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, infra::ConstByteRange dsaCertificate, infra::ConstByteRange dsaCertificatePrivateKey, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-            : EchoOnSesameSecuredDiffieHellman(cobsSendStorage, cobsReceivedMessage, securedSendBuffer, securedReceiveBuffer, serialCommunication, serializerFactory, infra::ConstByteRange dsaCertificatePrivateKey, dsaCertificate, rootCaCertificate, randomDataGenerator)
+            : EchoOnSesameSecuredDiffieHellman(cobsSendStorage, cobsReceivedMessage, securedSendBuffer, securedReceiveBuffer, serialCommunication, serializerFactory, dsaCertificatePrivateKey, dsaCertificate, rootCaCertificate, randomDataGenerator)
         {}
 
     private:
