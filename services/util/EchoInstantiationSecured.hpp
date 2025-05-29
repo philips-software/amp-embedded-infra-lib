@@ -2,9 +2,6 @@
 #define SERVICES_UTIL_ECHO_INSTANTIATION_SECURED_HPP
 
 #include "hal/interfaces/SerialCommunication.hpp"
-#include "infra/util/BoundedVector.hpp"
-#include "protobuf/echo/ServiceForwarder.hpp"
-#include "services/util/EchoOnMessageCommunication.hpp"
 #include "services/util/EchoPolicyDiffieHellman.hpp"
 #include "services/util/EchoPolicySymmetricKey.hpp"
 #include "services/util/SesameCobs.hpp"

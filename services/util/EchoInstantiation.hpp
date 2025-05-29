@@ -33,33 +33,36 @@ namespace main_
         services::EchoOnMessageCommunication echo;
     };
 
-    template<std::size_t MessageSize>
     struct EchoOnSesame
     {
-        EchoOnSesame(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory)
-            : cobs(serialCommunication)
-            , echo(windowed, serializerFactory)
-        {}
+        template<std::size_t MessageSize>
+        struct WithMessageSize;
 
-        ~EchoOnSesame()
-        {
-            cobs.Stop();
-            windowed.Stop();
-        }
+        EchoOnSesame(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory);
+        ~EchoOnSesame();
 
-        operator services::Echo&()
-        {
-            return echo;
-        }
+        operator services::Echo&();
 
-        void Reset()
-        {
-            echo.Reset();
-        }
+        void Reset();
 
-        services::SesameCobs::WithMaxMessageSize<MessageSize> cobs;
+        services::SesameCobs cobs;
         services::SesameWindowed windowed{ cobs };
         services::EchoOnSesame echo;
+    };
+
+    template<std::size_t MessageSize>
+    struct EchoOnSesame::WithMessageSize
+        : EchoOnSesame
+    {
+        WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory)
+            : EchoOnSesame(cobsSendStorage, cobsReceivedMessage, serialCommunication, serializerFactory)
+        {}
+
+    private:
+        static constexpr std::size_t encodedMessageSize = services::SesameWindowed::bufferSizeForMessage<MessageSize, services::SesameCobs::EncodedMessageSize>;
+
+        infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameCobs::sendBufferSize<MessageSize>> cobsSendStorage;
+        infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameCobs::receiveBufferSize<encodedMessageSize>> cobsReceivedMessage;
     };
 
 #ifdef EMIL_HAL_GENERIC
@@ -81,7 +84,7 @@ namespace main_
     {
         using EchoOnUartBase<MessageSize>::EchoOnUartBase;
 
-        main_::EchoOnSesame<MessageSize> echoOnSesame{ this->bufferedSerial, this->serializerFactory };
+        main_::EchoOnSesame::WithMessageSize<MessageSize> echoOnSesame{ this->bufferedSerial, this->serializerFactory };
 
         services::Echo& echo{ echoOnSesame.echo };
     };
@@ -147,7 +150,7 @@ namespace main_
         {}
 
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<MessageSize> bufferedSerial;
-        EchoOnSesame<MessageSize> to;
+        EchoOnSesame::WithMessageSize<MessageSize> to;
         EchoForwarder<MessageSize, MaxServices> echoForwarder;
     };
 }

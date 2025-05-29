@@ -49,8 +49,8 @@ namespace services
         void Initialized() override;
 
         // Implementation of EchoPolicy
-        virtual void RequestSend(ServiceProxy& proxy, const infra::Function<void(ServiceProxy& proxy)>& onRequest);
-        virtual void GrantingSend(ServiceProxy& proxy);
+        void RequestSend(ServiceProxy& proxy, const infra::Function<void(ServiceProxy& proxy)>& onRequest) override;
+        void GrantingSend(ServiceProxy& proxy) override;
 
         virtual void KeyExchangeSuccessful();
         virtual void KeyExchangeFailed();
