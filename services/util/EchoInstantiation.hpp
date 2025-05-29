@@ -60,23 +60,15 @@ namespace main_
 
 #ifdef EMIL_HAL_GENERIC
     template<std::size_t MessageSize>
-    struct EchoOnUartBase
+    struct EchoOnUart
     {
-        explicit EchoOnUartBase(infra::BoundedConstString portName)
+        explicit EchoOnUart(infra::BoundedConstString portName)
             : uart(infra::AsStdString(portName))
         {}
 
         hal::UartGeneric uart;
         services::MethodSerializerFactory::OnHeap serializerFactory;
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<MessageSize> bufferedSerial{ uart };
-    };
-
-    template<std::size_t MessageSize>
-    struct EchoOnUart
-        : EchoOnUartBase<MessageSize>
-    {
-        using EchoOnUartBase<MessageSize>::EchoOnUartBase;
-
         main_::EchoOnSesame::WithMessageSize<MessageSize> echoOnSesame{ this->bufferedSerial, this->serializerFactory };
 
         services::Echo& echo{ echoOnSesame.echo };
