@@ -60,8 +60,12 @@ namespace main_
         struct WithMessageSize;
 
         EchoOnSesameSecuredDiffieHellman(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage, infra::BoundedVector<uint8_t>& securedSendBuffer, infra::BoundedVector<uint8_t>& securedReceiveBuffer,
-            hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::EchoPolicyDiffieHellman::Crypto& crypto, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+            hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, infra::ConstByteRange dsaCertificate, infra::ConstByteRange dsaCertificatePrivateKey, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
+        infra::Creator<services::EcSecP256r1DiffieHellman, services::EcSecP256r1DiffieHellmanMbedTls, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)> keyExchange;
+        services::EcSecP256r1DsaSignerMbedTls signer;
+        infra::Creator<services::EcSecP256r1DsaVerifier, services::EcSecP256r1DsaVerifierMbedTls, void(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)> verifier;
+        services::HmacDrbgSha256MbedTls keyExpander;
         services::EchoPolicyDiffieHellman policy;
     };
 
@@ -69,13 +73,9 @@ namespace main_
     struct EchoOnSesameSecuredDiffieHellman::WithMessageSize
         : EchoOnSesameSecuredDiffieHellman
     {
-        WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::EchoPolicyDiffieHellman::Crypto& crypto, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-            : EchoOnSesameSecuredDiffieHellman(cobsSendStorage, cobsReceivedMessage, securedSendBuffer, securedReceiveBuffer, serialCommunication, serializerFactory, crypto, dsaCertificate, rootCaCertificate, randomDataGenerator)
+        WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, infra::ConstByteRange dsaCertificate, infra::ConstByteRange dsaCertificatePrivateKey, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+            : EchoOnSesameSecuredDiffieHellman(cobsSendStorage, cobsReceivedMessage, securedSendBuffer, securedReceiveBuffer, serialCommunication, serializerFactory, infra::ConstByteRange dsaCertificatePrivateKey, dsaCertificate, rootCaCertificate, randomDataGenerator)
         {}
-
-#ifdef EMIL_USE_MBEDTLS
-        struct WithCryptoMbedTls;
-#endif
 
     private:
         static constexpr std::size_t encodedMessageSize = services::SesameWindowed::bufferSizeForMessage<MessageSize, services::SesameCobs::EncodedMessageSize>;
@@ -85,22 +85,6 @@ namespace main_
         infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameSecured::encodedMessageSize<MessageSize>> securedSendBuffer;
         infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameSecured::encodedMessageSize<MessageSize>> securedReceiveBuffer;
     };
-
-#ifdef EMIL_USE_MBEDTLS
-    template<std::size_t MessageSize>
-    struct EchoOnSesameSecuredDiffieHellman::WithMessageSize<MessageSize>::WithCryptoMbedTls
-        : public EchoOnSesameSecuredDiffieHellman::WithMessageSize<MessageSize>
-    {
-        WithCryptoMbedTls(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-            : EchoOnSesameSecuredDiffieHellman::WithMessageSize<MessageSize>(serialCommunication, serializerFactory, services::EchoPolicyDiffieHellman::Crypto{ keyExchange, signer, verifier, keyExpander }, dsaCertificate, rootCaCertificate, randomDataGenerator)
-        {}
-
-        infra::Creator<services::EcSecP256r1DiffieHellman, services::EcSecP256r1DiffieHellmanMbedTls, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)> keyExchange;
-        services::EcSecP256r1DsaSignerMbedTls signer;
-        infra::Creator<services::EcSecP256r1DsaVerifier, services::EcSecP256r1DsaVerifierMbedTls, void(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)> verifier;
-        services::HmacDrbgSha256MbedTls keyExpander;
-    };
-#endif
 }
 
 #endif
