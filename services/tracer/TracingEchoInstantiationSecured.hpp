@@ -2,13 +2,13 @@
 #define SERVICES_TRACER_TRACING_ECHO_INSTANTIATION_SECURED_HPP
 
 #include "hal/interfaces/SerialCommunication.hpp"
+#include "services/tracer/Tracer.hpp"
 #include "services/util/EchoPolicyDiffieHellman.hpp"
 #include "services/util/EchoPolicySymmetricKey.hpp"
 #include "services/util/SesameCobs.hpp"
 #include "services/util/SesameSecured.hpp"
 #include "services/util/SesameWindowed.hpp"
 #include "services/util/TracingEchoOnSesame.hpp"
-#include "services/tracer/Tracer.hpp"
 
 namespace main_
 {
