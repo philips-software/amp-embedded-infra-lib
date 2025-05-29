@@ -15,9 +15,6 @@ namespace services
         , private SesameEncodedObserver
     {
     public:
-        template<std::size_t MaxMessageSize, template<std::size_t> class MessageSize>
-        static constexpr std::size_t bufferSizeForMessage = MessageSize<sizeof(Operation) + MaxMessageSize>::size * 2 + MessageSize<sizeof(PacketReleaseWindow)>::size;
-
         explicit SesameWindowed(SesameEncoded& delegate);
 
         void Stop();
@@ -86,6 +83,11 @@ namespace services
             infra::Aligned<uint8_t, infra::LittleEndian<uint16_t>> window;
         };
 
+    public:
+        template<std::size_t MaxMessageSize, template<std::size_t> class MessageSize>
+        static constexpr std::size_t bufferSizeForMessage = MessageSize<sizeof(Operation) + MaxMessageSize>::size * 2 + MessageSize<sizeof(PacketReleaseWindow)>::size;
+
+    private:
         class State
         {
         public:
