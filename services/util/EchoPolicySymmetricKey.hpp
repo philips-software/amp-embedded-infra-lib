@@ -9,16 +9,16 @@
 namespace services
 {
     class EchoPolicySymmetricKey
-        : private EchoOnSesameObserver
+        : private EchoInitializationObserver
         , private EchoPolicy
         , private sesame_security::SymmetricKeyEstablishment
         , private sesame_security::SymmetricKeyEstablishmentProxy
     {
     public:
-        EchoPolicySymmetricKey(EchoOnSesame& echo, SesameSecured& secured, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        EchoPolicySymmetricKey(EchoWithPolicy& echo, EchoInitialization& echoInitializiation, SesameSecured& secured, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
     private:
-        // Implementation of EchoOnSesameObserver
+        // Implementation of EchoInitializationObserver
         void Initialized() override;
 
         // Implementation of EchoPolicy

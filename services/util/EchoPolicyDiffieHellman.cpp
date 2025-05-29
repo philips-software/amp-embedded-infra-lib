@@ -21,7 +21,7 @@ namespace services
 #endif
 
     EchoPolicyDiffieHellman::EchoPolicyDiffieHellman(const Crypto& crypto, EchoOnSesame& echo, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-        : EchoOnSesameObserver(echo)
+        : EchoInitializationObserver(echo)
         , DiffieHellmanKeyEstablishment(echo)
         , DiffieHellmanKeyEstablishmentProxy(echo)
         , secured(secured)

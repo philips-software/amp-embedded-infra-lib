@@ -24,7 +24,7 @@ namespace services
 #endif
 
     class EchoPolicyDiffieHellman
-        : private EchoOnSesameObserver
+        : private EchoInitializationObserver
         , private EchoPolicy
         , private sesame_security::DiffieHellmanKeyEstablishment
         , private sesame_security::DiffieHellmanKeyEstablishmentProxy

@@ -67,7 +67,7 @@ public:
     sesame_security::SymmetricKeyFile keys{ services::GenerateSymmetricKeys(randomDataGenerator) };
     services::SesameSecured::WithCryptoMbedTls::WithBuffers<64> secured{ lower, keys };
     services::EchoOnSesame echo{ secured, serializerFactory, errorPolicy };
-    services::EchoPolicySymmetricKey policy{ echo, secured, randomDataGenerator };
+    services::EchoPolicySymmetricKey policy{ echo, echo, secured, randomDataGenerator };
 
     services::ServiceStubProxy serviceProxy{ echo };
     testing::StrictMock<services::ServiceStub> service{ echo };

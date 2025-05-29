@@ -1,14 +1,9 @@
 #ifndef PROTOBUF_ECHO_HPP
 #define PROTOBUF_ECHO_HPP
 
-#include "infra/stream/BufferingStreamReader.hpp"
-#include "infra/util/BoundedDeque.hpp"
-#include "infra/util/Compatibility.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/Observer.hpp"
-#include "infra/util/Optional.hpp"
 #include "protobuf/echo/EchoErrorPolicy.hpp"
-#include "protobuf/echo/Proto.hpp"
 #include "protobuf/echo/Serialization.hpp"
 
 namespace services
@@ -77,64 +72,27 @@ namespace services
         virtual services::MethodSerializerFactory& SerializerFactory() = 0;
     };
 
-    class EchoOnStreams
+    class EchoWithPolicy
         : public Echo
     {
     public:
-        explicit EchoOnStreams(services::MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
-        ~EchoOnStreams();
-
-        void SetPolicy(EchoPolicy& policy);
-
-        // Implementation of Echo
-        void RequestSend(ServiceProxy& serviceProxy) override;
-        void ServiceDone() override;
-        void CancelRequestSend(ServiceProxy& serviceProxy) override;
-        services::MethodSerializerFactory& SerializerFactory() override;
-
-    protected:
-        virtual infra::SharedPtr<MethodSerializer> GrantSend(ServiceProxy& proxy);
-        virtual infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, infra::SharedPtr<MethodDeserializer>&& deserializer);
-        virtual void RequestSendStream(std::size_t size) = 0;
-
-        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer);
-        void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
-        void ReleaseReader();
-        void Initialized();
-        virtual void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
-        virtual void ReleaseDeserializer();
-
-    private:
-        void TryGrantSend();
-
-        void DataReceived();
-        void StartReceiveMessage();
-        void ContinueReceiveMessage();
-        void StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size);
-        void LimitedReaderDone();
-
-    private:
-        static EchoPolicy defaultPolicy;
-
-        services::MethodSerializerFactory& serializerFactory;
-        const EchoErrorPolicy& errorPolicy;
-        EchoPolicy* policy = &defaultPolicy;
-
-        infra::IntrusiveList<ServiceProxy> sendRequesters;
-        ServiceProxy* sendingProxy = nullptr;
-        infra::SharedPtr<MethodSerializer> methodSerializer;
-        bool partlySent = false;
-        bool skipNextStream = false;
-
-        infra::SharedPtr<infra::StreamReaderWithRewinding> readerPtr;
-        infra::Optional<infra::LimitedStreamReaderWithRewinding> limitedReader;
-        infra::SharedPtr<MethodDeserializer> methodDeserializer;
-        infra::BoundedDeque<uint8_t>::WithMaxSize<32> receiveBuffer;
-        infra::Optional<infra::BufferingStreamReader> bufferedReader;
-        infra::AccessedBySharedPtr limitedReaderAccess;
-
-        infra::SharedOptional<MethodDeserializerDummy> deserializerDummy;
+        virtual void SetPolicy(EchoPolicy& policy) = 0;
     };
+
+    class EchoInitialization;
+
+    class EchoInitializationObserver
+        : public infra::Observer<EchoInitializationObserver, EchoInitialization>
+    {
+    public:
+        using infra::Observer<EchoInitializationObserver, EchoInitialization>::Observer;
+
+        virtual void Initialized() = 0;
+    };
+
+    class EchoInitialization
+        : public infra::Subject<EchoInitializationObserver>
+    {};
 }
 
 #endif

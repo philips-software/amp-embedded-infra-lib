@@ -17,7 +17,7 @@ namespace services
 
     void EchoOnSesame::Initialized()
     {
-        infra::Subject<EchoOnSesameObserver>::NotifyObservers([](auto& observer)
+        infra::Subject<EchoInitializationObserver>::NotifyObservers([](auto& observer)
             {
                 observer.Initialized();
             });

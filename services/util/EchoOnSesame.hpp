@@ -1,25 +1,14 @@
 #ifndef SERVICES_ECHO_ON_SESAME_HPP
 #define SERVICES_ECHO_ON_SESAME_HPP
 
-#include "protobuf/echo/Echo.hpp"
+#include "protobuf/echo/EchoOnStreams.hpp"
 #include "services/util/Sesame.hpp"
 
 namespace services
 {
-    class EchoOnSesame;
-
-    class EchoOnSesameObserver
-        : public infra::Observer<EchoOnSesameObserver, EchoOnSesame>
-    {
-    public:
-        using infra::Observer<EchoOnSesameObserver, EchoOnSesame>::Observer;
-
-        virtual void Initialized() = 0;
-    };
-
     class EchoOnSesame
         : public EchoOnStreams
-        , public infra::Subject<EchoOnSesameObserver>
+        , public EchoInitialization
         , private SesameObserver
     {
     public:
