@@ -23,11 +23,6 @@ namespace main_
             , echo(windowed, serializerFactory)
         {}
 
-        operator services::Echo&()
-        {
-            return echo;
-        }
-
         services::MessageCommunicationCobs::WithMaxMessageSize<MessageSize> cobs;
         services::MessageCommunicationWindowed::WithReceiveBuffer<MessageSize> windowed{ cobs };
         services::EchoOnMessageCommunication echo;
@@ -40,8 +35,6 @@ namespace main_
 
         EchoOnSesame(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory);
         ~EchoOnSesame();
-
-        operator services::Echo&();
 
         void Reset();
 

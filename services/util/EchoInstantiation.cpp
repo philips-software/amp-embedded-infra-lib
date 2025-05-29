@@ -13,11 +13,6 @@ namespace main_
         windowed.Stop();
     }
 
-    EchoOnSesame::operator services::Echo&()
-    {
-        return echo;
-    }
-
     void EchoOnSesame::Reset()
     {
         echo.Reset();

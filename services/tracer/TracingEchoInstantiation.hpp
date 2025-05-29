@@ -24,11 +24,6 @@ namespace main_
             windowed.Stop();
         }
 
-        operator services::Echo&()
-        {
-            return echo;
-        }
-
         void Reset()
         {
             echo.Reset();
