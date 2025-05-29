@@ -41,21 +41,25 @@ namespace main_
         services::SesameCobs cobs;
         services::SesameWindowed windowed{ cobs };
         services::EchoOnSesame echo;
+
+        template<std::size_t MessageSize>
+        struct CobsStorage
+        {
+            static constexpr std::size_t encodedMessageSize = services::SesameWindowed::bufferSizeForMessage<MessageSize, services::SesameCobs::EncodedMessageSize>;
+
+            infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameCobs::sendBufferSize<MessageSize>> cobsSendStorage;
+            infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameCobs::receiveBufferSize<encodedMessageSize>> cobsReceivedMessage;
+        };
     };
 
     template<std::size_t MessageSize>
     struct EchoOnSesame::WithMessageSize
-        : EchoOnSesame
+        : private EchoOnSesame::CobsStorage<MessageSize>
+        , EchoOnSesame
     {
         WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory)
-            : EchoOnSesame(cobsSendStorage, cobsReceivedMessage, serialCommunication, serializerFactory)
+            : EchoOnSesame(this->cobsSendStorage, this->cobsReceivedMessage, serialCommunication, serializerFactory)
         {}
-
-    private:
-        static constexpr std::size_t encodedMessageSize = services::SesameWindowed::bufferSizeForMessage<MessageSize, services::SesameCobs::EncodedMessageSize>;
-
-        infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameCobs::sendBufferSize<MessageSize>> cobsSendStorage;
-        infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameCobs::receiveBufferSize<encodedMessageSize>> cobsReceivedMessage;
     };
 
 #ifdef EMIL_HAL_GENERIC
