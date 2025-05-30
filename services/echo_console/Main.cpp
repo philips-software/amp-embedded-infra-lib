@@ -1,7 +1,9 @@
 #include "args.hxx"
+#include "hal/generic/FileSystemGeneric.hpp"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "hal/generic/UartGeneric.hpp"
 #include "infra/stream/IoOutputStream.hpp"
+#include "infra/stream/StdVectorInputStream.hpp"
 #include "infra/syntax/Json.hpp"
 #include "infra/util/Tokenizer.hpp"
 #include "services/echo_console/Console.hpp"
@@ -9,7 +11,9 @@
 #include "services/network/HttpClientImpl.hpp"
 #include "services/network/WebSocketClientConnectionObserver.hpp"
 #include "services/tracer/GlobalTracer.hpp"
+#include "services/util/EchoPolicySymmetricKey.hpp"
 #include "services/util/SesameCobs.hpp"
+#include "services/util/SesameSecured.hpp"
 #include "services/util/SesameWindowed.hpp"
 #include <deque>
 #include <fstream>
@@ -18,9 +22,10 @@
 class ConsoleClientUart
     : public application::ConsoleObserver
     , private services::SesameObserver
+    , private services::EchoInitialization
 {
 public:
-    ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial);
+    ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, const sesame_security::SymmetricKeyFile& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
     // Implementation of ConsoleObserver
     void Send(const std::string& message) override;
@@ -35,28 +40,40 @@ private:
     void CheckDataToBeSent();
 
 private:
+    application::Console& console;
     std::deque<std::string> messagesToBeSent;
     services::SesameCobs::WithMaxMessageSize<2048> cobs;
     services::SesameWindowed windowed{ cobs };
+    services::SesameSecured::WithCryptoMbedTls::WithBuffers<2048> secured;
+    services::Sesame& sesame = secured;
     bool sending = false;
-    services::SesameObserver::DelayedAttachDetach delayed{ *this, windowed };
+    services::SesameObserver::DelayedAttachDetach delayed{ *this, sesame };
+    services::EchoPolicySymmetricKey policy;
 };
 
-ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial)
+ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, const sesame_security::SymmetricKeyFile& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
     : application::ConsoleObserver(console)
+    , console(console)
     , cobs(serial)
+    , secured{ windowed, keyMaterial }
+    , policy(application::ConsoleObserver::Subject(), *this, secured, randomDataGenerator)
 {}
 
 void ConsoleClientUart::Send(const std::string& message)
 {
-    auto size = windowed.MaxSendMessageSize();
+    auto size = sesame.MaxSendMessageSize();
     for (std::size_t index = 0; index < message.size(); index += size)
         messagesToBeSent.push_back(message.substr(index, size));
     CheckDataToBeSent();
 }
 
 void ConsoleClientUart::Initialized()
-{}
+{
+    services::EchoInitialization::NotifyObservers([](auto& observer)
+        {
+            observer.Initialized();
+        });
+}
 
 void ConsoleClientUart::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
 {
@@ -80,7 +97,7 @@ void ConsoleClientUart::CheckDataToBeSent()
     if (!sending && !messagesToBeSent.empty())
     {
         sending = true;
-        windowed.RequestSendMessage(static_cast<uint16_t>(messagesToBeSent.front().size()));
+        sesame.RequestSendMessage(static_cast<uint16_t>(messagesToBeSent.front().size()));
     }
 }
 
@@ -276,6 +293,20 @@ void ConsoleClientWebSocket::ConnectionFailed(ConnectFailReason reason)
     exit(1);
 }
 
+namespace
+{
+    hal::FileSystemGeneric fileSystem;
+
+    template<class T>
+    T ReadProtoFile(const std::string& filename)
+    {
+        auto contents = fileSystem.ReadBinaryFile(filename);
+        infra::StdVectorInputStream stream{ contents };
+        infra::ProtoParser parser{ stream };
+        return T(parser);
+    }
+}
+
 int main(int argc, char* argv[], const char* env[])
 {
     infra::IoOutputStream ioOutputStream;
@@ -288,6 +319,7 @@ int main(int argc, char* argv[], const char* env[])
     args::Group arguments(parser, "Arguments:");
     args::Positional<std::string> target(arguments, "target", "COM port or hostname", args::Options::Required);
     args::Group flags(parser, "Optional flags:");
+    args::ValueFlag<std::string> symmetricKeyFile(parser, "file", "File containing the symmetric keys for SESAME encryption.", { "symmetric_keys" }, args::Options::Required);
     args::HelpFlag help(flags, "help", "Display this help menu.", { 'h', "help" });
     args::PositionalList<std::string> paths(arguments, "paths", "compiled proto files");
 
@@ -331,7 +363,8 @@ int main(int argc, char* argv[], const char* env[])
         {
             uart.Emplace(get(target));
             bufferedUart.Emplace(*uart);
-            consoleClientUart.Emplace(console, *bufferedUart);
+
+            consoleClientUart.Emplace(console, *bufferedUart, ReadProtoFile<sesame_security::SymmetricKeyFile>(get(symmetricKeyFile)), randomDataGenerator);
         }
         else if (services::SchemeFromUrl(infra::BoundedConstString(get(target))) == "ws")
             consoleClientWebSocket.Emplace(connectionFactory, console, get(target), randomDataGenerator, tracer);

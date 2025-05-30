@@ -334,13 +334,28 @@ namespace application
             return ConsoleToken::String(tokenStart, identifier);
     }
 
+    services::EchoPolicy Console::defaultPolicy;
+
     Console::Console(EchoRoot& root, bool stopOnNetworkClose)
         : root(root)
+        , serviceProxyStub(*this)
         , eventDispatcherThread([this, stopOnNetworkClose]()
               {
                   RunEventDispatcher(stopOnNetworkClose);
               })
     {}
+
+    Console::~Console()
+    {
+        if (eventDispatcherThread.joinable())
+        {
+            infra::EventDispatcher::Instance().Schedule([]()
+                {
+                    throw Quit();
+                });
+            eventDispatcherThread.join();
+        }
+    }
 
     void Console::Run()
     {
@@ -402,16 +417,36 @@ namespace application
         while (!reader.Empty())
             receivedData += infra::ByteRangeAsStdString(reader.ExtractContiguousRange(std::numeric_limits<std::size_t>::max()));
 
-        while (!receivedData.empty())
+        while (!serviceBusy && !receivedData.empty())
         {
             infra::StringInputStream data(receivedData, infra::softFail);
             infra::ProtoParser parser(data >> infra::data);
 
             auto serviceId = static_cast<uint32_t>(parser.GetVarInt());
-            auto [value, methodId] = parser.GetField();
+            auto messageStart = data.Reader().ConstructSaveMarker();
+            auto partialField = parser.GetPartialField();
+            auto size = partialField.first.Is<infra::PartialProtoLengthDelimited>() ? partialField.first.Get<infra::PartialProtoLengthDelimited>().length : 0;
+            auto partialEnd = data.Reader().ConstructSaveMarker();
+            data.Reader().Rewind(messageStart);
+            infra::ProtoParser fullParser(data >> infra::data);
+            auto [value, methodId] = fullParser.GetField();
 
             if (data.Failed())
                 break;
+
+            Echo::NotifyObservers([this, serviceId, methodId, size, &data, partialEnd](auto& service)
+                {
+                    if (service.AcceptsService(serviceId))
+                    {
+                        auto methodDeserializer = service.StartMethod(serviceId, methodId, size, services::echoErrorPolicyAbort);
+                        data.Reader().Rewind(partialEnd);
+                        infra::SharedOptional<infra::LimitedStreamReaderWithRewinding> reader;
+                        methodDeserializer->MethodContents(reader.Emplace(data.Reader(), size));
+                        assert(reader.Allocatable());
+                        serviceBusy = true;
+                        methodDeserializer->ExecuteMethod();
+                    }
+                });
 
             for (const auto& service : root.services)
                 if (service->serviceId == serviceId)
@@ -434,6 +469,38 @@ namespace application
             ServiceNotFound(serviceId, methodId);
             receivedData.erase(receivedData.begin(), receivedData.begin() + data.Reader().ConstructSaveMarker());
         }
+    }
+
+    void Console::SetPolicy(services::EchoPolicy& policy)
+    {
+        this->policy = &policy;
+    }
+
+    void Console::RequestSend(services::ServiceProxy& serviceProxy)
+    {
+        policy->GrantingSend(serviceProxy);
+        auto serializer = serviceProxy.GrantSend();
+        std::vector<uint8_t> data;
+        infra::SharedOptional<infra::StdVectorOutputStreamWriter> writer;
+        auto partlySent = serializer->Serialize(writer.Emplace(data));
+        assert(!partlySent);
+        assert(writer.Allocatable());
+        GetObserver().Send(infra::ByteRangeAsStdString(infra::MakeRange(data)));
+    }
+
+    void Console::ServiceDone()
+    {
+        serviceBusy = false;
+    }
+
+    void Console::CancelRequestSend(services::ServiceProxy& serviceProxy)
+    {
+        std::abort();
+    }
+
+    services::MethodSerializerFactory& Console::SerializerFactory()
+    {
+        return serializerFactory;
     }
 
     void Console::MethodReceived(const EchoService& service, const EchoMethod& method, infra::ProtoParser&& parser)
@@ -821,6 +888,7 @@ namespace application
                 methodInvocation.EncodeParameters(method.parameter, line.size(), formatter);
             }
 
+            policy->GrantingSend(serviceProxyStub);
             GetObserver().Send(infra::ByteRangeAsStdString(infra::MakeRange(stream.Storage())));
         }
         catch (ConsoleExceptions::SyntaxError& error)
