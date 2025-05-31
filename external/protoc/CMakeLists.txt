@@ -83,6 +83,7 @@ function(protocol_buffer_generator)
         COMMAND ${CMAKE_COMMAND} -E make_directory ${generated_dir}
         COMMAND ${EMIL_PROTOC_COMPILER_BINARY} ${protopath} --error_format=${error_format} --${PROTOGEN_GENERATOR}_out="${generated_dir}" ${absolute_input}
         MAIN_DEPENDENCY "${absolute_input}"
+        DEPENDS ${EMIL_PROTOC_COMPILER_BINARY}
     )
 
     target_sources(${PROTOGEN_TARGET} PRIVATE
