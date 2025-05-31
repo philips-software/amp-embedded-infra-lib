@@ -14,8 +14,8 @@ namespace services
         }
     }
 
-    EchoPolicySymmetricKey::EchoPolicySymmetricKey(EchoWithPolicy& echo, EchoInitialization& echoInitializiation, SesameSecured& secured, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-        : EchoInitializationObserver(echoInitializiation)
+    EchoPolicySymmetricKey::EchoPolicySymmetricKey(EchoWithPolicy& echo, EchoInitialization& echoInitialization, SesameSecured& secured, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+        : EchoInitializationObserver(echoInitialization)
         , SymmetricKeyEstablishment(echo)
         , SymmetricKeyEstablishmentProxy(echo)
         , secured(secured)
