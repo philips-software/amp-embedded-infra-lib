@@ -17,6 +17,11 @@ namespace services
 
     void EchoOnSesame::Initialized()
     {
+        infra::Subject<EchoInitializationObserver>::NotifyObservers([](auto& observer)
+            {
+                observer.Initialized();
+            });
+
         initialized = true;
 
         EchoOnStreams::Initialized();

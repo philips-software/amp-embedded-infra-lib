@@ -29,6 +29,9 @@ namespace services
         using KeyType = std::array<uint8_t, keySize>;
         using IvType = std::array<uint8_t, blockSize>;
 
+        template<std::size_t Size>
+        static constexpr std::size_t encodedMessageSize = Size + blockSize;
+
         struct KeyMaterial
         {
             KeyType sendKey;
@@ -109,7 +112,7 @@ namespace services
         , public SesameSecured
     {
         template<std::size_t Size>
-        using WithBuffers = infra::WithStorage<infra::WithStorage<WithCryptoMbedTls, infra::BoundedVector<uint8_t>::WithMaxSize<Size + blockSize>>, infra::BoundedVector<uint8_t>::WithMaxSize<Size + blockSize>>;
+        using WithBuffers = infra::WithStorage<infra::WithStorage<WithCryptoMbedTls, infra::BoundedVector<uint8_t>::WithMaxSize<encodedMessageSize<Size>>>, infra::BoundedVector<uint8_t>::WithMaxSize<encodedMessageSize<Size>>>;
 
         WithCryptoMbedTls(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const KeyMaterial& keyMaterial);
         WithCryptoMbedTls(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial);

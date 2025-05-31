@@ -1,14 +1,15 @@
 #ifndef SERVICES_ECHO_ON_SESAME_HPP
 #define SERVICES_ECHO_ON_SESAME_HPP
 
-#include "protobuf/echo/Echo.hpp"
+#include "protobuf/echo/EchoOnStreams.hpp"
 #include "services/util/Sesame.hpp"
 
 namespace services
 {
     class EchoOnSesame
         : public EchoOnStreams
-        , public SesameObserver
+        , public EchoInitialization
+        , private SesameObserver
     {
     public:
         EchoOnSesame(Sesame& subject, services::MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);

@@ -4,7 +4,7 @@
 #include "infra/stream/LimitedInputStream.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "infra/util/SharedPtr.hpp"
-#include "protobuf/echo/Echo.hpp"
+#include "protobuf/echo/EchoOnStreams.hpp"
 #include "services/network/Connection.hpp"
 
 namespace services

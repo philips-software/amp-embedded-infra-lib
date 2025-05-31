@@ -26,10 +26,10 @@ target_sources(services.util PRIVATE
     EchoOnMessageCommunication.hpp
     EchoOnSesame.cpp
     EchoOnSesame.hpp
-    EchoOnSesameDiffieHellman.cpp
-    EchoOnSesameDiffieHellman.hpp
-    EchoOnSesameSymmetricKey.cpp
-    EchoOnSesameSymmetricKey.hpp
+    EchoPolicyDiffieHellman.cpp
+    EchoPolicyDiffieHellman.hpp
+    EchoPolicySymmetricKey.cpp
+    EchoPolicySymmetricKey.hpp
     FlashAlign.cpp
     FlashAlign.hpp
     FlashDelegate.hpp

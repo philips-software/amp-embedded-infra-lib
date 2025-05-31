@@ -14,6 +14,8 @@ target_sources(protobuf.echo PRIVATE
     Echo.hpp
     EchoErrorPolicy.cpp
     EchoErrorPolicy.hpp
+    EchoOnStreams.cpp
+    EchoOnStreams.hpp
     Proto.hpp
     ProtoMessageReceiver.cpp
     ProtoMessageReceiver.hpp

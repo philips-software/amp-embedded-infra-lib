@@ -4,7 +4,7 @@
 #include "infra/stream/BoundedVectorOutputStream.hpp"
 #include "infra/util/IntrusiveForwardList.hpp"
 #include "infra/util/SharedOptional.hpp"
-#include "protobuf/echo/Echo.hpp"
+#include "protobuf/echo/EchoOnStreams.hpp"
 #include "services/tracer/Tracer.hpp"
 #include <type_traits>
 
