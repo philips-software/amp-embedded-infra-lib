@@ -478,14 +478,17 @@ namespace application
 
     void Console::RequestSend(services::ServiceProxy& serviceProxy)
     {
-        policy->GrantingSend(serviceProxy);
-        auto serializer = serviceProxy.GrantSend();
-        std::vector<uint8_t> data;
-        infra::SharedOptional<infra::StdVectorOutputStreamWriter> writer;
-        auto partlySent = serializer->Serialize(writer.Emplace(data));
-        assert(!partlySent);
-        assert(writer.Allocatable());
-        GetObserver().Send(infra::ByteRangeAsStdString(infra::MakeRange(data)));
+        infra::EventDispatcher::Instance().Schedule([this, &serviceProxy]()
+            {
+                policy->GrantingSend(serviceProxy);
+                auto serializer = serviceProxy.GrantSend(); // GrantSend may result in new requests being made, so execute this whole sequence on the event dispatcher
+                std::vector<uint8_t> data;
+                infra::SharedOptional<infra::StdVectorOutputStreamWriter> writer;
+                auto partlySent = serializer->Serialize(writer.Emplace(data));
+                assert(!partlySent);
+                assert(writer.Allocatable());
+                GetObserver().Send(infra::ByteRangeAsStdString(infra::MakeRange(data)));
+            });
     }
 
     void Console::ServiceDone()
