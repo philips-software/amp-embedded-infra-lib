@@ -30,6 +30,6 @@ namespace main_
         hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, infra::ConstByteRange dsaCertificate, infra::ConstByteRange dsaCertificatePrivateKey, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator)
         : EchoOnSesameSecured(cobsSendStorage, cobsReceivedMessage, securedSendBuffer, securedReceiveBuffer, serialCommunication, serializerFactory, services::SesameSecured::KeyMaterial{})
         , signer{ dsaCertificatePrivateKey, randomDataGenerator }
-        , policy(services::EchoPolicyDiffieHellman::Crypto{ keyExchange, signer, verifier, keyExpander }, echo, secured, dsaCertificate, rootCaCertificate, randomDataGenerator)
+        , policy(services::EchoPolicyDiffieHellman::Crypto{ keyExchange, signer, verifier, keyExpander }, echo, echo, secured, dsaCertificate, rootCaCertificate, randomDataGenerator)
     {}
 }

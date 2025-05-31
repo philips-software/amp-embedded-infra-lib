@@ -20,8 +20,8 @@ namespace services
     }
 #endif
 
-    EchoPolicyDiffieHellman::EchoPolicyDiffieHellman(const Crypto& crypto, EchoOnSesame& echo, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-        : EchoInitializationObserver(echo)
+    EchoPolicyDiffieHellman::EchoPolicyDiffieHellman(const Crypto& crypto, EchoWithPolicy& echo, EchoInitialization& echoInitialization, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+        : EchoInitializationObserver(echoInitialization)
         , DiffieHellmanKeyEstablishment(echo)
         , DiffieHellmanKeyEstablishmentProxy(echo)
         , secured(secured)
@@ -139,8 +139,8 @@ namespace services
     }
 
 #ifdef EMIL_USE_MBEDTLS
-    EchoPolicyDiffieHellman::WithCryptoMbedTls::WithCryptoMbedTls(EchoOnSesame& echo, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange dsaCertificatePrivateKey, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-        : EchoPolicyDiffieHellman(Crypto{ keyExchange, signer, verifier, keyExpander }, echo, secured, dsaCertificate, rootCaCertificate, randomDataGenerator)
+    EchoPolicyDiffieHellman::WithCryptoMbedTls::WithCryptoMbedTls(EchoWithPolicy& echo, EchoInitialization& echoInitialization, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange dsaCertificatePrivateKey, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+        : EchoPolicyDiffieHellman(Crypto{ keyExchange, signer, verifier, keyExpander }, echo, echoInitialization, secured, dsaCertificate, rootCaCertificate, randomDataGenerator)
         , signer(dsaCertificatePrivateKey, randomDataGenerator)
     {}
 #endif

@@ -15,7 +15,7 @@ namespace services
         , private sesame_security::SymmetricKeyEstablishmentProxy
     {
     public:
-        EchoPolicySymmetricKey(EchoWithPolicy& echo, EchoInitialization& echoInitializiation, SesameSecured& secured, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        EchoPolicySymmetricKey(EchoWithPolicy& echo, EchoInitialization& echoInitialization, SesameSecured& secured, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
     private:
         // Implementation of EchoInitializationObserver
