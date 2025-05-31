@@ -4,12 +4,22 @@
 #include "hal/generic/TimerServiceGeneric.hpp"
 #include "infra/syntax/ProtoFormatter.hpp"
 #include "infra/syntax/ProtoParser.hpp"
+#include "protobuf/echo/Echo.hpp"
 #include "protobuf/protoc_echo_plugin/EchoObjects.hpp"
 #include "services/network_instantiations/NetworkAdapter.hpp"
 #include <thread>
 
 namespace application
 {
+    class ServiceProxyStub
+        : public services::ServiceProxy
+    {
+    public:
+        ServiceProxyStub(services::Echo& echo)
+            : services::ServiceProxy(echo, 0)
+        {}
+    };
+
     namespace ConsoleToken
     {
         class End
@@ -173,14 +183,23 @@ namespace application
 
     class Console
         : public infra::Subject<ConsoleObserver>
+        , public services::EchoWithPolicy
     {
     public:
         explicit Console(EchoRoot& root, bool stopOnNetworkClose);
+        ~Console();
 
         void Run();
         services::ConnectionFactory& ConnectionFactory();
         services::NameResolver& NameResolver();
         void DataReceived(infra::StreamReader& reader);
+
+        // Implementation of EchoWithPolicy
+        void SetPolicy(services::EchoPolicy& policy) override;
+        void RequestSend(services::ServiceProxy& serviceProxy) override;
+        void ServiceDone() override;
+        void CancelRequestSend(services::ServiceProxy& serviceProxy) override;
+        services::MethodSerializerFactory& SerializerFactory() override;
 
     private:
         struct MessageTokens
@@ -229,7 +248,12 @@ namespace application
         std::pair<std::shared_ptr<const EchoService>, const EchoMethod&> SearchMethod(MethodInvocation& methodInvocation) const;
 
     private:
+        static services::EchoPolicy defaultPolicy;
+
+        services::MethodSerializerFactory::OnHeap serializerFactory;
         EchoRoot& root;
+        services::EchoPolicy* policy = &defaultPolicy;
+        mutable ServiceProxyStub serviceProxyStub;
         main_::NetworkAdapter network;
         hal::TimerServiceGeneric timerService{ infra::systemTimerServiceId };
         std::thread eventDispatcherThread;
@@ -240,6 +264,7 @@ namespace application
         std::condition_variable condition;
         bool processDone = false;
         std::string receivedData;
+        bool serviceBusy = false;
     };
 
     namespace ConsoleExceptions
