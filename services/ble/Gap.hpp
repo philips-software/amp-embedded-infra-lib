@@ -141,11 +141,25 @@ namespace services
             level4,
         };
 
-        virtual void Pair() = 0;
+        enum class ConnectionMode
+        {
+            legacyOnly = 0,
+            secureIfSupported = 1, // Fallback to legacy if secure is not supported
+            secureOnly = 2,
+        };
+
+        enum class ManInTheMiddleMode
+        {
+            disabled = 0,
+            enabled = 1, // Require user to act as out of band authentication
+        };
+
+        virtual void
+        Pair() = 0;
 
         virtual void AllowPairing(bool allow) = 0;
 
-        virtual void SetSecurityMode(SecurityMode mode, SecurityLevel level) = 0;
+        virtual void SetSecurityRequirements(ConnectionMode connectionMode, ManInTheMiddleMode mitmMode) = 0;
         virtual void SetIoCapabilities(IoCapabilities caps) = 0;
 
         virtual void AuthenticateWithPasskey(uint32_t passkey) = 0;
@@ -167,7 +181,7 @@ namespace services
         // Implementation of GapPairing
         void Pair() override;
         void AllowPairing(bool allow) override;
-        void SetSecurityMode(SecurityMode mode, SecurityLevel level) override;
+        void SetSecurityRequirements(ConnectionMode connectionMode, ManInTheMiddleMode mitmMode) override;
         void SetIoCapabilities(IoCapabilities caps) override;
         void AuthenticateWithPasskey(uint32_t passkey) override;
         void NumericComparisonConfirm(bool accept) override;
