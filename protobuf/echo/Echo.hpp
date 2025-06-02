@@ -56,11 +56,8 @@ namespace services
         EchoPolicy() = default;
         EchoPolicy(const EchoPolicy& other) = delete;
         EchoPolicy& operator=(const EchoPolicy& other) = delete;
-
-    protected:
         ~EchoPolicy() = default;
 
-    public:
         virtual void RequestSend(ServiceProxy& proxy, const infra::Function<void(ServiceProxy& proxy)>& onRequest);
         virtual void GrantingSend(ServiceProxy& proxy);
     };
