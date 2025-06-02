@@ -439,12 +439,12 @@ main_::EchoOnSesame&lt;max packet size&gt; (services/util/EchoInstantiation) ins
 SesameCobs and SesameWindowed to form a full ECHO on SESAME stack on top of a UART.</p>
 </div>
 <div class="paragraph">
-<p>EchoOnSesameSymmetricKey (services/util/EchoOnSesameSymmetricKey.hpp) places ECHO on top of
-SESAME with security, and implements the Hardcoded Keys scheme.</p>
+<p>EchoPolicySymmetricKey (services/util/EchoPolicySymmetricKey.hpp) adds a policy to implement the
+Hardcoded Keys scheme on top of SESAME with security.</p>
 </div>
 <div class="paragraph">
-<p>EchoOnSesameDiffieHellman (services/util/EchoOnSesameDiffieHellman.hpp) places ECHO on top of
-SESAME with security and implements the Diffie-Hellman scheme. This class is instantiated with
+<p>EchoPolicyDiffieHellman (services/util/EchoPolicyDiffieHellman.hpp) adds a policy to implement the
+Diffie-Hellman scheme on top of SESAME with security. This class is instantiated with
 one root certificate which is used to verify one certificate received by a peer.</p>
 </div>
 </div>
