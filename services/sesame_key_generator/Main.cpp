@@ -4,7 +4,7 @@
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "infra/stream/IoOutputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
-#include "services/util/EchoOnSesameDiffieHellman.hpp"
+#include "services/util/EchoPolicyDiffieHellman.hpp"
 #include "services/util/SesameCryptoMbedTls.hpp"
 #include <fstream>
 #include <iostream>
@@ -39,7 +39,7 @@ namespace
         args::ValueFlag<std::string> file(parser, "file", "Root certificate", { "output" }, args::Options::Required);
         parser.Parse();
 
-        auto [rootPrivateKeyDer, rootCertificateDer] = services::GenerateRootCertificate(randomDataGenerator);
+        auto [rootCertificateDer, rootPrivateKeyDer] = services::GenerateRootCertificate(randomDataGenerator);
 
         fileSystem.WriteBinaryFile(get(file) + ".der", infra::MakeRange(rootCertificateDer));
         fileSystem.WriteBinaryFile(get(file) + ".prv", infra::MakeRange(rootPrivateKeyDer));
@@ -53,7 +53,7 @@ namespace
 
         auto rootCertificateKeyFile = fileSystem.ReadBinaryFile(get(rootKey));
         services::EcSecP256r1PrivateKey rootCertificateKey(infra::MakeRange(rootCertificateKeyFile), randomDataGenerator);
-        auto [devicePrivateKeyDer, deviceCertificateDer] = services::GenerateDeviceCertificate(rootCertificateKey, randomDataGenerator);
+        auto [deviceCertificateDer, devicePrivateKeyDer] = services::GenerateDeviceCertificate(rootCertificateKey, randomDataGenerator);
 
         fileSystem.WriteBinaryFile(get(output) + ".der", infra::MakeRange(deviceCertificateDer));
         fileSystem.WriteBinaryFile(get(output) + ".prv", infra::MakeRange(devicePrivateKeyDer));

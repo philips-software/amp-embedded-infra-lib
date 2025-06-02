@@ -10,46 +10,49 @@
 
 namespace main_
 {
-    template<std::size_t MessageSize>
     struct TracingEchoOnSesame
     {
-        TracingEchoOnSesame(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, services::Tracer& tracer)
-            : cobs(serialCommunication)
-            , echo(serializerFactory, services::echoErrorPolicyAbortOnMessageFormatError, tracer, windowed)
-        {}
+        template<std::size_t MessageSize>
+        struct WithMessageSize;
 
-        ~TracingEchoOnSesame()
-        {
-            cobs.Stop();
-            windowed.Stop();
-        }
+        TracingEchoOnSesame(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, services::Tracer& tracer);
+        ~TracingEchoOnSesame();
 
-        operator services::Echo&()
-        {
-            return echo;
-        }
+        void Reset();
 
-        void Reset()
-        {
-            echo.Reset();
-        }
-
-        services::SesameCobs::WithMaxMessageSize<MessageSize> cobs;
+        services::SesameCobs cobs;
         services::SesameWindowed windowed{ cobs };
         services::TracingEchoOnSesame echo;
+    };
+
+    template<std::size_t MessageSize>
+    struct TracingEchoOnSesame::WithMessageSize
+        : TracingEchoOnSesame
+    {
+        WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, services::Tracer& tracer)
+            : TracingEchoOnSesame(cobsSendStorage, cobsReceivedMessage, serialCommunication, serializerFactory, tracer)
+        {}
+
+    private:
+        static constexpr std::size_t encodedMessageSize = services::SesameWindowed::bufferSizeForMessage<MessageSize, services::SesameCobs::EncodedMessageSize>;
+
+        infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameCobs::sendBufferSize<MessageSize>> cobsSendStorage;
+        infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameCobs::receiveBufferSize<encodedMessageSize>> cobsReceivedMessage;
     };
 
 #ifdef EMIL_HAL_GENERIC
     template<std::size_t MessageSize>
     struct TracingEchoOnUart
-        : EchoOnUartBase<MessageSize>
     {
-        TracingEchoOnUart(infra::BoundedConstString portName, services::Tracer& tracer)
-            : EchoOnUartBase<MessageSize>(portName)
+        TracingEchoOnUart(infra::BoundedConstString portName, services::Tracer& tracer, const hal::UartGeneric::Config& config = {})
+            : uart(infra::AsStdString(portName), config)
             , echoOnSesame(this->bufferedSerial, this->serializerFactory, tracer)
         {}
 
-        main_::TracingEchoOnSesame<MessageSize> echoOnSesame;
+        hal::UartGeneric uart;
+        services::MethodSerializerFactory::OnHeap serializerFactory;
+        hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<MessageSize> bufferedSerial{ uart };
+        main_::TracingEchoOnSesame::WithMessageSize<MessageSize> echoOnSesame;
 
         services::Echo& echo{ echoOnSesame.echo };
     };

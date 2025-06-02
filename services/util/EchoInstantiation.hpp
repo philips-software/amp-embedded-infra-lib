@@ -23,65 +23,57 @@ namespace main_
             , echo(windowed, serializerFactory)
         {}
 
-        operator services::Echo&()
-        {
-            return echo;
-        }
-
         services::MessageCommunicationCobs::WithMaxMessageSize<MessageSize> cobs;
         services::MessageCommunicationWindowed::WithReceiveBuffer<MessageSize> windowed{ cobs };
         services::EchoOnMessageCommunication echo;
     };
 
-    template<std::size_t MessageSize>
     struct EchoOnSesame
     {
-        EchoOnSesame(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory)
-            : cobs(serialCommunication)
-            , echo(windowed, serializerFactory)
-        {}
+        template<std::size_t MessageSize>
+        struct WithMessageSize;
 
-        ~EchoOnSesame()
-        {
-            cobs.Stop();
-            windowed.Stop();
-        }
+        EchoOnSesame(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory);
+        ~EchoOnSesame();
 
-        operator services::Echo&()
-        {
-            return echo;
-        }
+        void Reset();
 
-        void Reset()
-        {
-            echo.Reset();
-        }
-
-        services::SesameCobs::WithMaxMessageSize<MessageSize> cobs;
+        services::SesameCobs cobs;
         services::SesameWindowed windowed{ cobs };
         services::EchoOnSesame echo;
+
+        template<std::size_t MessageSize>
+        struct CobsStorage
+        {
+            static constexpr std::size_t encodedMessageSize = services::SesameWindowed::bufferSizeForMessage<MessageSize, services::SesameCobs::EncodedMessageSize>;
+
+            infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameCobs::sendBufferSize<MessageSize>> cobsSendStorage;
+            infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameCobs::receiveBufferSize<encodedMessageSize>> cobsReceivedMessage;
+        };
+    };
+
+    template<std::size_t MessageSize>
+    struct EchoOnSesame::WithMessageSize
+        : private EchoOnSesame::CobsStorage<MessageSize>
+        , EchoOnSesame
+    {
+        WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory)
+            : EchoOnSesame(this->cobsSendStorage, this->cobsReceivedMessage, serialCommunication, serializerFactory)
+        {}
     };
 
 #ifdef EMIL_HAL_GENERIC
     template<std::size_t MessageSize>
-    struct EchoOnUartBase
+    struct EchoOnUart
     {
-        explicit EchoOnUartBase(infra::BoundedConstString portName)
-            : uart(infra::AsStdString(portName))
+        explicit EchoOnUart(infra::BoundedConstString portName, const hal::UartGeneric::Config& config = {})
+            : uart(infra::AsStdString(portName), config)
         {}
 
         hal::UartGeneric uart;
         services::MethodSerializerFactory::OnHeap serializerFactory;
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<MessageSize> bufferedSerial{ uart };
-    };
-
-    template<std::size_t MessageSize>
-    struct EchoOnUart
-        : EchoOnUartBase<MessageSize>
-    {
-        using EchoOnUartBase<MessageSize>::EchoOnUartBase;
-
-        main_::EchoOnSesame<MessageSize> echoOnSesame{ this->bufferedSerial, this->serializerFactory };
+        main_::EchoOnSesame::WithMessageSize<MessageSize> echoOnSesame{ this->bufferedSerial, this->serializerFactory };
 
         services::Echo& echo{ echoOnSesame.echo };
     };
@@ -147,7 +139,7 @@ namespace main_
         {}
 
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<MessageSize> bufferedSerial;
-        EchoOnSesame<MessageSize> to;
+        EchoOnSesame::WithMessageSize<MessageSize> to;
         EchoForwarder<MessageSize, MaxServices> echoForwarder;
     };
 }
