@@ -44,8 +44,8 @@ namespace main_
     template<std::size_t MessageSize>
     struct TracingEchoOnUart
     {
-        TracingEchoOnUart(infra::BoundedConstString portName, services::Tracer& tracer)
-            : uart(infra::AsStdString(portName))
+        TracingEchoOnUart(infra::BoundedConstString portName, services::Tracer& tracer, const hal::UartGeneric::Config& config = {})
+            : uart(infra::AsStdString(portName), config)
             , echoOnSesame(this->bufferedSerial, this->serializerFactory, tracer)
         {}
 

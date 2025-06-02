@@ -66,8 +66,8 @@ namespace main_
     template<std::size_t MessageSize>
     struct EchoOnUart
     {
-        explicit EchoOnUart(infra::BoundedConstString portName)
-            : uart(infra::AsStdString(portName))
+        explicit EchoOnUart(infra::BoundedConstString portName, const hal::UartGeneric::Config& config = {})
+            : uart(infra::AsStdString(portName), config)
         {}
 
         hal::UartGeneric uart;
