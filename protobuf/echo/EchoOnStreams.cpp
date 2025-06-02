@@ -94,7 +94,7 @@ namespace services
 
     void EchoOnStreams::TryGrantSend()
     {
-        if (sendingProxy == nullptr && !sendRequesters.empty())
+        if (!skipNextStream && sendingProxy == nullptr && !sendRequesters.empty())
         {
             sendingProxy = &sendRequesters.front();
             sendRequesters.pop_front();

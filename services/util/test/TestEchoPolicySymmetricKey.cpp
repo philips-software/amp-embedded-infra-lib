@@ -7,6 +7,7 @@
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/util/EchoPolicySymmetricKey.hpp"
 #include "services/util/test_doubles/SesameMock.hpp"
+#include <numeric>
 
 class EchoPolicySymmetricKeyTest
     : public testing::Test
@@ -92,13 +93,14 @@ TEST_F(EchoPolicySymmetricKeyTest, send_and_receive)
 
 TEST_F(EchoPolicySymmetricKeyTest, send_and_receive_large_message)
 {
-    static const std::array<uint8_t, 64> bytes{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64 };
-    EXPECT_CALL(lower, RequestSendMessage(testing::_)).WillOnce(testing::Invoke([this]()
+    std::array<uint8_t, 64> bytes;
+    std::iota(bytes.begin(), bytes.end(), 1);
+    EXPECT_CALL(lower, RequestSendMessage(testing::_)).WillOnce(testing::Invoke([this, &bytes]()
         {
             EXPECT_CALL(lower, RequestSendMessage(testing::_));
             LoopBackData();
 
-            EXPECT_CALL(service, MethodBytes(testing::_)).WillOnce(testing::Invoke([this](const infra::BoundedVector<uint8_t>& value)
+            EXPECT_CALL(service, MethodBytes(testing::_)).WillOnce(testing::Invoke([this, &bytes](const infra::BoundedVector<uint8_t>& value)
                 {
                     EXPECT_TRUE(infra::ContentsEqual(infra::MakeRange(bytes), infra::MakeRange(value)));
                     service.MethodDone();
@@ -106,7 +108,7 @@ TEST_F(EchoPolicySymmetricKeyTest, send_and_receive_large_message)
             LoopBackData();
         }));
 
-    serviceProxy.RequestSend([this]()
+    serviceProxy.RequestSend([this, &bytes]()
         {
             serviceProxy.MethodBytes(bytes);
         });
