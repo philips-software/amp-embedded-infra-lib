@@ -15,7 +15,7 @@ namespace application
         : public services::ServiceProxy
     {
     public:
-        ServiceProxyStub(services::Echo& echo)
+        explicit ServiceProxyStub(services::Echo& echo)
             : services::ServiceProxy(echo, 0)
         {}
     };

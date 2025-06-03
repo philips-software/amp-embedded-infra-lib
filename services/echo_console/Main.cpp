@@ -26,7 +26,7 @@ class ConsoleClientUart
     , private services::EchoInitialization
 {
 public:
-    ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+    ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial);
     ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, const sesame_security::SymmetricKeyFile& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator);
     ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, infra::ConstByteRange clientCertificate, infra::ConstByteRange clientCertificatePrivateKey, infra::ConstByteRange rootCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
@@ -43,7 +43,6 @@ private:
     void CheckDataToBeSent();
 
 private:
-    application::Console& console;
     std::deque<std::string> messagesToBeSent;
     services::SesameCobs::WithMaxMessageSize<2048> cobs;
     services::SesameWindowed windowed{ cobs };
@@ -55,16 +54,14 @@ private:
     infra::Optional<services::EchoPolicyDiffieHellman::WithCryptoMbedTls> policyDiffieHellman;
 };
 
-ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial)
     : application::ConsoleObserver(console)
-    , console(console)
     , cobs(serial)
     , sesame(windowed)
 {}
 
 ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, const sesame_security::SymmetricKeyFile& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
     : application::ConsoleObserver(console)
-    , console(console)
     , cobs(serial)
     , secured{ infra::inPlace, windowed, keyMaterial }
     , sesame{ *secured }
@@ -73,7 +70,6 @@ ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::Buffere
 
 ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, infra::ConstByteRange clientCertificate, infra::ConstByteRange clientCertificatePrivateKey, infra::ConstByteRange rootCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator)
     : application::ConsoleObserver(console)
-    , console(console)
     , cobs(serial)
     , secured{ infra::inPlace, windowed, services::SesameSecured::KeyMaterial{} }
     , sesame{ *secured }
@@ -400,7 +396,7 @@ int main(int argc, char* argv[], const char* env[])
                 consoleClientUart.Emplace(console, *bufferedUart, clientCertificate, clientCertificatePrivateKey, rootCertificate, randomDataGenerator);
             }
             else
-                consoleClientUart.Emplace(console, *bufferedUart, randomDataGenerator);
+                consoleClientUart.Emplace(console, *bufferedUart);
         }
         else if (services::SchemeFromUrl(infra::BoundedConstString(get(targetHost))) == "ws")
             consoleClientWebSocket.Emplace(connectionFactory, console, get(targetHost), randomDataGenerator, tracer);

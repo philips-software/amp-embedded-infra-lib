@@ -424,8 +424,8 @@ namespace application
 
             auto serviceId = static_cast<uint32_t>(parser.GetVarInt());
             auto messageStart = data.Reader().ConstructSaveMarker();
-            auto partialField = parser.GetPartialField();
-            auto size = partialField.first.Is<infra::PartialProtoLengthDelimited>() ? partialField.first.Get<infra::PartialProtoLengthDelimited>().length : 0;
+            auto partialField = parser.GetPartialField().first;
+            auto size = partialField.Is<infra::PartialProtoLengthDelimited>() ? partialField.Get<infra::PartialProtoLengthDelimited>().length : 0;
             auto partialEnd = data.Reader().ConstructSaveMarker();
             data.Reader().Rewind(messageStart);
             infra::ProtoParser fullParser(data >> infra::data);
