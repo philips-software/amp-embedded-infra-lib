@@ -58,10 +58,14 @@ if (EMIL_INCLUDE_SEGGER_RTT)
     )
 
     target_sources(services.tracer PRIVATE
+        SerialCommunicationOnSeggerRtt.cpp
+        SerialCommunicationOnSeggerRtt.hpp
         StreamWriterOnSeggerRtt.cpp
         StreamWriterOnSeggerRtt.hpp
         TracerOnSeggerRttInfrastructure.cpp
         TracerOnSeggerRttInfrastructure.hpp
+        TracerOnSeggerRttSerialCommunicationInfrastructure.cpp
+        TracerOnSeggerRttSerialCommunicationInfrastructure.hpp
     )
 endif()
 
