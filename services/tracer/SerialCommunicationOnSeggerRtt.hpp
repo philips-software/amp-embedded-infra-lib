@@ -7,7 +7,8 @@
 
 namespace services
 {
-    class SerialCommunicationOnSeggerRtt : public hal::SerialCommunication
+    class SerialCommunicationOnSeggerRtt
+        : public hal::SerialCommunication
     {
     public:
         SerialCommunicationOnSeggerRtt(unsigned int bufferIndex = 0, infra::Duration readInterval = std::chrono::milliseconds(20));
