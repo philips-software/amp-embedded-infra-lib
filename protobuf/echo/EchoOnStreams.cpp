@@ -167,7 +167,7 @@ namespace services
         infra::DataInputStream::WithErrorPolicy stream(*bufferedReader, infra::softFail);
         infra::StreamErrorPolicy formatErrorPolicy(infra::softFail);
         infra::ProtoParser parser(stream, formatErrorPolicy);
-        uint32_t serviceId = static_cast<uint32_t>(parser.GetVarInt());
+        auto serviceId = static_cast<uint32_t>(parser.GetVarInt());
         auto [contents, methodId] = parser.GetPartialField();
 
         if (stream.Failed())
