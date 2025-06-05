@@ -122,7 +122,7 @@ namespace main_
     {
         EchoForwarderToSerialCommunication(services::Echo& from, hal::SerialCommunication& toSerial, services::MethodSerializerFactory& serializerFactory)
             : to(toSerial, serializerFactory)
-            , echoForwarder(from, to)
+            , echoForwarder(from, to.echo)
         {}
 
         EchoOnSerialCommunication<MessageSize> to;
@@ -135,7 +135,7 @@ namespace main_
         EchoForwarderToSesame(services::Echo& from, hal::SerialCommunication& toSerial, services::MethodSerializerFactory& serializerFactory)
             : bufferedSerial(toSerial)
             , to(bufferedSerial, serializerFactory)
-            , echoForwarder(from, to)
+            , echoForwarder(from, to.echo)
         {}
 
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<MessageSize> bufferedSerial;
