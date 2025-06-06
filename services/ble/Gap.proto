@@ -82,7 +82,7 @@ message SecurityRequirements {
     {
         mandatory = 0;
         optional = 1;
-        notRequired = 2;
+        disabled = 2;
     }
 
     SecureConnectionModeEnum connectionMode = 1; // TODO: check if these values are correct   

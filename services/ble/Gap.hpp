@@ -152,7 +152,7 @@ namespace services
         {
             mandatory = 0, // Expects authenticated pairing mechanism/method
             optional = 1,  // Doesn't enfornce authenticated pairing
-            notRequired = 2,
+            disabled = 2,
         };
 
         virtual void
