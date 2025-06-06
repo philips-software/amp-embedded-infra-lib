@@ -73,15 +73,16 @@ message AdvertisementType
 message SecurityRequirements { 
     enum SecureConnectionModeEnum
     {
-        legacyOnly = 0;
-        secureIfSupported = 1; // Fallback to legacy if secure is not supported
-        secureOnly = 2;
+        legacy = 0;
+        secureIfSupported = 1;
+        secure = 2;
     }
 
     enum ManInTheMiddleModeEnum
     {
-        disabled = 0;
-        enabled = 1;    // Require user to act as out of band authentication
+        mandatory = 0;
+        optional = 1;
+        notRequired = 2;
     }
 
     SecureConnectionModeEnum connectionMode = 1; // TODO: check if these values are correct   

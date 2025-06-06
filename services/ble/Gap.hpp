@@ -143,15 +143,16 @@ namespace services
 
         enum class ConnectionMode
         {
-            legacyOnly = 0,
-            secureIfSupported = 1, // Fallback to legacy if secure is not supported
-            secureOnly = 2,
+            legacy = 0,
+            secureIfSupported = 1,
+            secure = 2,
         };
 
         enum class ManInTheMiddleMode
         {
-            disabled = 0,
-            enabled = 1, // Require user to act as out of band authentication
+            mandatory = 0, // Expects authenticated pairing mechanism/method
+            optional = 1,  // Doesn't enfornce authenticated pairing
+            notRequired = 2,
         };
 
         virtual void
