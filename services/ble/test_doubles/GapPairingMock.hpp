@@ -12,7 +12,7 @@ namespace services
     public:
         MOCK_METHOD(void, Pair, ());
         MOCK_METHOD(void, AllowPairing, (bool allow));
-        MOCK_METHOD(void, SetSecurityMode, (SecurityMode mode, SecurityLevel level));
+        MOCK_METHOD(void, SetSecurityRequirements, (ConnectionMode connectionMode, ManInTheMiddleMode mitmMode));
         MOCK_METHOD(void, SetIoCapabilities, (IoCapabilities caps));
         MOCK_METHOD(void, AuthenticateWithPasskey, (uint32_t passkey));
         MOCK_METHOD(void, NumericComparisonConfirm, (bool accept));

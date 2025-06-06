@@ -36,9 +36,9 @@ namespace services
         GapPairingObserver::Subject().AllowPairing(allow);
     }
 
-    void GapPairingDecorator::SetSecurityMode(SecurityMode mode, SecurityLevel level)
+    void GapPairingDecorator::SetSecurityRequirements(ConnectionMode connectionMode, ManInTheMiddleMode mitmMode)
     {
-        GapPairingObserver::Subject().SetSecurityMode(mode, level);
+        GapPairingObserver::Subject().SetSecurityRequirements(connectionMode, mitmMode);
     }
 
     void GapPairingDecorator::SetIoCapabilities(IoCapabilities caps)
