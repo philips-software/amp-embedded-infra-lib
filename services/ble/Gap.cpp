@@ -1,4 +1,19 @@
 #include "services/ble/Gap.hpp"
+#include "infra/util/MemoryRange.hpp"
+
+namespace
+{
+    void AddHeader(infra::BoundedVector<uint8_t>& payload, uint8_t length, services::GapAdvertisementDataType type)
+    {
+        payload.push_back(length + 1);
+        payload.push_back(static_cast<uint8_t>(type));
+    }
+
+    void AddData(infra::BoundedVector<uint8_t>& payload, infra::ConstByteRange data)
+    {
+        payload.insert(payload.end(), data.begin(), data.end());
+    }
+}
 
 namespace services
 {
@@ -236,6 +251,87 @@ namespace services
         }
 
         return infra::ConstByteRange();
+    }
+
+    void GapAdvertisementFormatter::AppendFlags(GapPeripheral::AdvertisementFlags flags)
+    {
+        really_assert(payload.size() + headerSize + sizeof(flags) < payload.max_size());
+
+        auto flagsByte = static_cast<uint8_t>(flags);
+        AddHeader(payload, sizeof(flags), GapAdvertisementDataType::flags);
+        AddData(payload, infra::MakeRangeFromSingleObject(flagsByte));
+    }
+
+    void GapAdvertisementFormatter::AppendCompleteLocalName(infra::ConstByteRange name)
+    {
+        really_assert(payload.size() + name.size() + headerSize < payload.max_size() && name.size() > 0);
+
+        AddHeader(payload, name.size(), GapAdvertisementDataType::completeLocalName);
+        AddData(payload, name);
+    }
+
+    void GapAdvertisementFormatter::AppendShortenedLocalName(infra::ConstByteRange name)
+    {
+        really_assert(payload.size() + name.size() + headerSize < payload.max_size() && name.size() > 0);
+
+        AddHeader(payload, name.size(), GapAdvertisementDataType::shortenedLocalName);
+        AddData(payload, name);
+    }
+
+    void GapAdvertisementFormatter::AppendManufacturerData(uint16_t manufacturerCode, infra::ConstByteRange data)
+    {
+        really_assert(payload.size() + data.size() + headerSize + sizeof(manufacturerCode) < payload.max_size() && data.size() > 0);
+
+        AddHeader(payload, data.size() + sizeof(manufacturerCode), GapAdvertisementDataType::manufacturerSpecificData);
+        AddData(payload, infra::ReinterpretCastMemoryRange<const uint8_t>(infra::MakeRangeFromSingleObject(manufacturerCode)));
+        AddData(payload, data);
+    }
+
+    void GapAdvertisementFormatter::AppendListOfServicesUuid(infra::MemoryRange<AttAttribute::Uuid16> services)
+    {
+        really_assert(payload.size() + services.size() * sizeof(AttAttribute::Uuid16) + headerSize < payload.max_size() && !services.empty());
+
+        AddHeader(payload, services.size() * sizeof(AttAttribute::Uuid16), GapAdvertisementDataType::completeListOf16BitUuids);
+
+        for (const auto& service : services)
+            AddData(payload, infra::ReinterpretCastMemoryRange<const uint8_t>(infra::MakeRangeFromSingleObject(service)));
+    }
+
+    void GapAdvertisementFormatter::AppendListOfServicesUuid(infra::MemoryRange<AttAttribute::Uuid128> services)
+    {
+        really_assert(payload.size() + services.size() * sizeof(AttAttribute::Uuid128) + headerSize < payload.max_size() && !services.empty());
+
+        AddHeader(payload, services.size() * sizeof(AttAttribute::Uuid128), GapAdvertisementDataType::completeListOf128BitUuids);
+
+        for (auto& service : services)
+        {
+            auto serviceRange = infra::ReinterpretCastMemoryRange<uint8_t>(infra::MakeRangeFromSingleObject(service));
+            std::reverse(serviceRange.begin(), serviceRange.end());
+            AddData(payload, serviceRange);
+        }
+    }
+
+    void GapAdvertisementFormatter::AppendPublicTargetAddress(hal::MacAddress address)
+    {
+        really_assert(payload.size() + sizeof(address) + headerSize < payload.max_size());
+
+        AddHeader(payload, sizeof(address), GapAdvertisementDataType::publicTargetAddress);
+        AddData(payload, infra::ReinterpretCastMemoryRange<const uint8_t>(infra::MakeRangeFromSingleObject(address)));
+    }
+
+    void GapAdvertisementFormatter::Clear()
+    {
+        payload.clear();
+    }
+
+    infra::ConstByteRange GapAdvertisementFormatter::FormattedAdvertisementData() const
+    {
+        return infra::MakeRange(payload);
+    }
+
+    std::size_t GapAdvertisementFormatter::RemainingSpaceAvailable() const
+    {
+        return payload.max_size() - payload.size();
     }
 }
 

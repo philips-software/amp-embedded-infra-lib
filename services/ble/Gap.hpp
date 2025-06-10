@@ -8,6 +8,7 @@
 #include "infra/util/EnumCast.hpp"
 #include "infra/util/Observer.hpp"
 #include "infra/util/Optional.hpp"
+#include "services/ble/Att.hpp"
 
 namespace services
 {
@@ -45,6 +46,7 @@ namespace services
     {
         unknownType = 0x00u,
         flags = 0x01u,
+        completeListOf16BitUuids = 0x03u,
         completeListOf128BitUuids = 0x07u,
         shortenedLocalName = 0x08u,
         completeLocalName = 0x09u,
@@ -72,21 +74,6 @@ namespace services
         {
             return type == rhs.type && address == rhs.address;
         }
-    };
-
-    class GapAdvertisingDataParser
-    {
-    public:
-        explicit GapAdvertisingDataParser(infra::ConstByteRange data);
-
-        infra::ConstByteRange LocalName() const;
-        infra::ConstByteRange ManufacturerSpecificData() const;
-
-    private:
-        infra::ConstByteRange data;
-
-    private:
-        infra::ConstByteRange ParserAdvertisingData(GapAdvertisementDataType type) const;
     };
 
     class GapPairing;
@@ -284,6 +271,42 @@ namespace services
     {
         return static_cast<GapPeripheral::AdvertisementFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
     }
+
+    class GapAdvertisingDataParser
+    {
+    public:
+        explicit GapAdvertisingDataParser(infra::ConstByteRange data);
+
+        infra::ConstByteRange LocalName() const;
+        infra::ConstByteRange ManufacturerSpecificData() const;
+
+    private:
+        infra::ConstByteRange data;
+
+    private:
+        infra::ConstByteRange ParserAdvertisingData(GapAdvertisementDataType type) const;
+    };
+
+    class GapAdvertisementFormatter
+    {
+    public:
+        void AppendFlags(GapPeripheral::AdvertisementFlags flags);
+        void AppendCompleteLocalName(infra::ConstByteRange name);
+        void AppendShortenedLocalName(infra::ConstByteRange name);
+        void AppendManufacturerData(uint16_t manufacturerCode, infra::ConstByteRange data);
+        void AppendListOfServicesUuid(infra::MemoryRange<AttAttribute::Uuid16> services);
+        void AppendListOfServicesUuid(infra::MemoryRange<AttAttribute::Uuid128> services);
+        void AppendPublicTargetAddress(hal::MacAddress address);
+        void Clear();
+
+        infra::ConstByteRange FormattedAdvertisementData() const;
+        std::size_t RemainingSpaceAvailable() const;
+
+    private:
+        static constexpr std::size_t headerSize = 2;
+
+        infra::BoundedVector<uint8_t>::WithMaxSize<GapPeripheral::maxScanResponseDataSize> payload;
+    };
 
     struct GapAdvertisingReport
     {
