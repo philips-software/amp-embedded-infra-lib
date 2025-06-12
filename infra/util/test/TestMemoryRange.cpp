@@ -263,6 +263,7 @@ TEST(MemoryRangeTest, Convert)
     std::array<uint8_t, 4> range{ 1, 2, 3, 4 };
 
     EXPECT_EQ(0x04030201, infra::Convert<uint32_t>(infra::MakeRange(range)));
+    EXPECT_EQ(0x04030201, infra::Convert<uint32_t>(infra::MakeConstRange(range)));
 }
 
 TEST(MemoryRangeTest, TestCompare)
@@ -290,6 +291,16 @@ TEST(MemoryRangeTest, TestMakeRangeFromArray)
 
     EXPECT_EQ(infra::ByteRange(reinterpret_cast<uint8_t*>(&array), reinterpret_cast<uint8_t*>(&array) + 3), infra::MakeRange(array));
     EXPECT_EQ(infra::ConstByteRange(reinterpret_cast<const uint8_t*>(&constArray), reinterpret_cast<const uint8_t*>(&constArray) + 3), infra::MakeRange(constArray));
+    EXPECT_EQ(infra::ConstByteRange(reinterpret_cast<const uint8_t*>(&constArray), reinterpret_cast<const uint8_t*>(&constArray) + 3), infra::MakeConstRange(constArray));
+}
+
+TEST(MemoryRangeTest, TestMakeRangeFromVector)
+{
+    std::vector<uint8_t> container({ static_cast<uint8_t>(1), static_cast<uint8_t>(2), static_cast<uint8_t>(3) });
+
+    EXPECT_EQ(infra::ByteRange(&container.front(), &container.front() + 3), infra::MakeRange(container));
+    EXPECT_EQ(infra::ByteRange(&container.front(), &container.front() + 3), infra::MakeRange(static_cast<const std::vector<uint8_t>&>(container)));
+    EXPECT_EQ(infra::ByteRange(&container.front(), &container.front() + 3), infra::MakeConstRange(static_cast<const std::vector<uint8_t>&>(container)));
 }
 
 TEST(MemoryRangeTest, TestMakeRangeFromContainer)
@@ -298,6 +309,7 @@ TEST(MemoryRangeTest, TestMakeRangeFromContainer)
 
     EXPECT_EQ(infra::ByteRange(&container.front(), &container.front() + 3), infra::MakeRange(container));
     EXPECT_EQ(infra::ByteRange(&container.front(), &container.front() + 3), infra::MakeRange(static_cast<const infra::BoundedVector<uint8_t>&>(container)));
+    EXPECT_EQ(infra::ByteRange(&container.front(), &container.front() + 3), infra::MakeConstRange(static_cast<const infra::BoundedVector<uint8_t>&>(container)));
 }
 
 TEST(MemoryRangeTest, TestMakeVectorFromRange)
