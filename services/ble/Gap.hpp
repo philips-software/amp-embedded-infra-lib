@@ -278,7 +278,10 @@ namespace services
         explicit GapAdvertisingDataParser(infra::ConstByteRange data);
 
         infra::ConstByteRange LocalName() const;
-        infra::ConstByteRange ManufacturerSpecificData() const;
+        infra::Optional<std::pair<uint16_t, infra::ConstByteRange>> ManufacturerSpecificData() const;
+        infra::Optional<GapPeripheral::AdvertisementFlags> Flags() const;
+        infra::MemoryRange<AttAttribute::Uuid16> CompleteListOf16BitUuids() const;
+        infra::MemoryRange<AttAttribute::Uuid128> CompleteListOf128BitUuids() const;
 
     private:
         infra::ConstByteRange data;
@@ -290,9 +293,11 @@ namespace services
     class GapAdvertisementFormatter
     {
     public:
+        explicit GapAdvertisementFormatter(infra::BoundedVector<uint8_t>& payload);
+
         void AppendFlags(GapPeripheral::AdvertisementFlags flags);
-        void AppendCompleteLocalName(infra::ConstByteRange name);
-        void AppendShortenedLocalName(infra::ConstByteRange name);
+        void AppendCompleteLocalName(infra::BoundedConstString& name);
+        void AppendShortenedLocalName(infra::BoundedConstString& name);
         void AppendManufacturerData(uint16_t manufacturerCode, infra::ConstByteRange data);
         void AppendListOfServicesUuid(infra::MemoryRange<AttAttribute::Uuid16> services);
         void AppendListOfServicesUuid(infra::MemoryRange<AttAttribute::Uuid128> services);
@@ -305,7 +310,7 @@ namespace services
     private:
         static constexpr std::size_t headerSize = 2;
 
-        infra::BoundedVector<uint8_t>::WithMaxSize<GapPeripheral::maxScanResponseDataSize> payload;
+        infra::BoundedVector<uint8_t>& payload;
     };
 
     struct GapAdvertisingReport

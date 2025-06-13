@@ -1,5 +1,8 @@
 #include "services/ble/Gap.hpp"
+#include "infra/util/BoundedString.hpp"
+#include "infra/util/Endian.hpp"
 #include "infra/util/MemoryRange.hpp"
+#include "infra/util/Optional.hpp"
 
 namespace
 {
@@ -222,9 +225,59 @@ namespace services
             return localName;
     }
 
-    infra::ConstByteRange GapAdvertisingDataParser::ManufacturerSpecificData() const
+    infra::Optional<std::pair<uint16_t, infra::ConstByteRange>> GapAdvertisingDataParser::ManufacturerSpecificData() const
     {
-        return ParserAdvertisingData(GapAdvertisementDataType::manufacturerSpecificData);
+        auto data = ParserAdvertisingData(GapAdvertisementDataType::manufacturerSpecificData);
+
+        if (data.empty())
+            return infra::none;
+
+        if (data.size() < sizeof(uint16_t))
+            return infra::none;
+
+        auto manufacturerCode = infra::ReinterpretCastMemoryRange<const uint16_t>(infra::Head(data, sizeof(uint16_t))).front();
+        auto manufacturerData = infra::DiscardHead(data, sizeof(uint16_t));
+
+        return infra::MakeOptional(std::make_pair(manufacturerCode, manufacturerData));
+    }
+
+    infra::Optional<GapPeripheral::AdvertisementFlags> GapAdvertisingDataParser::Flags() const
+    {
+        auto flagsData = ParserAdvertisingData(GapAdvertisementDataType::flags);
+
+        if (flagsData.empty())
+            return infra::none;
+
+        if (flagsData.size() != 1)
+            return infra::none;
+
+        return infra::MakeOptional(static_cast<GapPeripheral::AdvertisementFlags>(flagsData[0]));
+    }
+
+    infra::MemoryRange<AttAttribute::Uuid16> GapAdvertisingDataParser::CompleteListOf16BitUuids() const
+    {
+        auto uuidData = ParserAdvertisingData(GapAdvertisementDataType::completeListOf16BitUuids);
+
+        if (uuidData.empty())
+            return infra::MemoryRange<AttAttribute::Uuid16>();
+
+        if (uuidData.size() % sizeof(AttAttribute::Uuid16) != 0)
+            return infra::MemoryRange<AttAttribute::Uuid16>();
+
+        return infra::ConstCastMemoryRange<AttAttribute::Uuid16>(infra::ReinterpretCastMemoryRange<const AttAttribute::Uuid16>(uuidData));
+    }
+
+    infra::MemoryRange<AttAttribute::Uuid128> GapAdvertisingDataParser::CompleteListOf128BitUuids() const
+    {
+        auto uuidData = ParserAdvertisingData(GapAdvertisementDataType::completeListOf128BitUuids);
+
+        if (uuidData.empty())
+            return infra::MemoryRange<AttAttribute::Uuid128>();
+
+        if (uuidData.size() % sizeof(AttAttribute::Uuid128) != 0)
+            return infra::MemoryRange<AttAttribute::Uuid128>();
+
+        return infra::ConstCastMemoryRange<AttAttribute::Uuid128>(infra::ReinterpretCastMemoryRange<const AttAttribute::Uuid128>(uuidData));
     }
 
     infra::ConstByteRange GapAdvertisingDataParser::ParserAdvertisingData(GapAdvertisementDataType type) const
@@ -253,6 +306,10 @@ namespace services
         return infra::ConstByteRange();
     }
 
+    GapAdvertisementFormatter::GapAdvertisementFormatter(infra::BoundedVector<uint8_t>& payload)
+        : payload(payload)
+    {}
+
     void GapAdvertisementFormatter::AppendFlags(GapPeripheral::AdvertisementFlags flags)
     {
         really_assert(payload.size() + headerSize + sizeof(flags) < payload.max_size());
@@ -262,20 +319,20 @@ namespace services
         AddData(payload, infra::MakeRangeFromSingleObject(flagsByte));
     }
 
-    void GapAdvertisementFormatter::AppendCompleteLocalName(infra::ConstByteRange name)
+    void GapAdvertisementFormatter::AppendCompleteLocalName(infra::BoundedConstString& name)
     {
         really_assert(payload.size() + name.size() + headerSize < payload.max_size() && name.size() > 0);
 
         AddHeader(payload, name.size(), GapAdvertisementDataType::completeLocalName);
-        AddData(payload, name);
+        AddData(payload, infra::StringAsByteRange(name));
     }
 
-    void GapAdvertisementFormatter::AppendShortenedLocalName(infra::ConstByteRange name)
+    void GapAdvertisementFormatter::AppendShortenedLocalName(infra::BoundedConstString& name)
     {
         really_assert(payload.size() + name.size() + headerSize < payload.max_size() && name.size() > 0);
 
         AddHeader(payload, name.size(), GapAdvertisementDataType::shortenedLocalName);
-        AddData(payload, name);
+        AddData(payload, infra::StringAsByteRange(name));
     }
 
     void GapAdvertisementFormatter::AppendManufacturerData(uint16_t manufacturerCode, infra::ConstByteRange data)
@@ -304,11 +361,7 @@ namespace services
         AddHeader(payload, services.size() * sizeof(AttAttribute::Uuid128), GapAdvertisementDataType::completeListOf128BitUuids);
 
         for (auto& service : services)
-        {
-            auto serviceRange = infra::ReinterpretCastMemoryRange<uint8_t>(infra::MakeRangeFromSingleObject(service));
-            std::reverse(serviceRange.begin(), serviceRange.end());
-            AddData(payload, serviceRange);
-        }
+            AddData(payload, infra::ReinterpretCastMemoryRange<uint8_t>(infra::MakeRangeFromSingleObject(service)));
     }
 
     void GapAdvertisementFormatter::AppendPublicTargetAddress(hal::MacAddress address)

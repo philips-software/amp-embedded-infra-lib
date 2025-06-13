@@ -1,3 +1,4 @@
+#include "infra/util/BoundedString.hpp"
 #include "infra/util/test_helper/MemoryRangeMatcher.hpp"
 #include "services/ble/Gap.hpp"
 #include "gmock/gmock.h"
@@ -10,7 +11,8 @@ namespace services
             : public testing::Test
         {
         public:
-            GapAdvertisementFormatter formatter;
+            infra::BoundedVector<uint8_t>::WithMaxSize<services::GapPeripheral::maxScanResponseDataSize> buffer;
+            GapAdvertisementFormatter formatter{ buffer };
         };
     }
 
@@ -45,20 +47,20 @@ namespace services
 
     TEST_F(GapAdvertisementFormatterTest, append_complete_local_name)
     {
-        std::array<uint8_t, 5> name = { 'T', 'e', 's', 't', '\0' };
-        formatter.AppendCompleteLocalName(infra::MakeByteRange(name));
+        infra::BoundedConstString name{ "Test" };
+        formatter.AppendCompleteLocalName(name);
 
         auto data = formatter.FormattedAdvertisementData();
-        EXPECT_EQ(data.size(), 7);
-        EXPECT_EQ(data[0], 6);
+        EXPECT_EQ(data.size(), 6);
+        EXPECT_EQ(data[0], 5);
         EXPECT_EQ(data[1], 0x09);
         EXPECT_THAT(infra::MakeRange(data.begin() + 2, data.end()), infra::ContentsEqual(name));
     }
 
     TEST_F(GapAdvertisementFormatterTest, append_shortened_local_name)
     {
-        std::array<uint8_t, 4> name = { 'T', 's', 't', '\0' };
-        formatter.AppendShortenedLocalName(infra::MakeByteRange(name));
+        infra::BoundedConstString name{ "Test" };
+        formatter.AppendShortenedLocalName(name);
 
         auto data = formatter.FormattedAdvertisementData();
         EXPECT_EQ(data.size(), 6);
@@ -114,7 +116,10 @@ namespace services
         EXPECT_EQ(data.size(), 18);
         EXPECT_EQ(data[0], 17);
         EXPECT_EQ(data[1], 0x07);
-        EXPECT_THAT(infra::MakeRange(data.begin() + 2, data.end()), infra::ContentsEqual(uuid128_1));
+
+        std::array<uint8_t, 16> extractedFromBigEndian = service1;
+        std::reverse(extractedFromBigEndian.begin(), extractedFromBigEndian.end());
+        EXPECT_THAT(infra::MakeRange(data.begin() + 2, data.end()), infra::ContentsEqual(extractedFromBigEndian));
     }
 
     TEST_F(GapAdvertisementFormatterTest, append_public_target_address)
@@ -139,8 +144,8 @@ namespace services
     {
         formatter.AppendFlags(GapPeripheral::AdvertisementFlags::leGeneralDiscoverableMode);
 
-        std::array<uint8_t, 4> name = { 'T', 'e', 's', 't' };
-        formatter.AppendCompleteLocalName(infra::MakeByteRange(name));
+        infra::BoundedConstString name{ "Test" };
+        formatter.AppendCompleteLocalName(name);
 
         std::array<AttAttribute::Uuid16, 1> services = { 0x1234 };
         formatter.AppendListOfServicesUuid(infra::MakeRange(services));
@@ -167,8 +172,8 @@ namespace services
         formatter.AppendFlags(GapPeripheral::AdvertisementFlags::leGeneralDiscoverableMode);
         EXPECT_EQ(formatter.RemainingSpaceAvailable(), initialSpace - 3);
 
-        std::array<uint8_t, 4> name = { 'T', 'e', 's', 't' };
-        formatter.AppendCompleteLocalName(infra::MakeByteRange(name));
+        infra::BoundedConstString name{ "Test" };
+        formatter.AppendCompleteLocalName(name);
         EXPECT_EQ(formatter.RemainingSpaceAvailable(), initialSpace - 3 - 6);
     }
 
