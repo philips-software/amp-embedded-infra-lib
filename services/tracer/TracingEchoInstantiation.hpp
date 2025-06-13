@@ -31,7 +31,7 @@ namespace main_
         , TracingEchoOnSesame
     {
         WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, services::Tracer& tracer)
-            : TracingEchoOnSesame(cobsSendStorage, cobsReceivedMessage, serialCommunication, serializerFactory, tracer)
+            : TracingEchoOnSesame(this->cobsSendStorage, this->cobsReceivedMessage, serialCommunication, serializerFactory, tracer)
         {}
     };
 
