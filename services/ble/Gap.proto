@@ -70,6 +70,25 @@ message AdvertisementType
     AdvertisementTypeEnum type = 1;
 }
 
+message SecurityRequirements { 
+    enum SecureConnectionModeEnum
+    {
+        disabledSecurity = 0;
+        optionalSecurity = 1;
+        mandatorySecurity = 2;
+    }
+
+    enum ManInTheMiddleModeEnum
+    {
+        disabled = 0;
+        optional = 1;
+        mandatory = 2;
+    }
+
+    SecureConnectionModeEnum secureConnectionMode = 1;
+    ManInTheMiddleModeEnum mitmMode = 2; 
+}
+
 message SecurityModeAndLevel
 {
     enum SecurityLevelEnum
@@ -192,7 +211,7 @@ service GapPeripheral
     rpc SetAdvertisementData(AdvertisementData) returns (Nothing) { option (method_id) = 3; }
     rpc SetScanResponseData(AdvertisementData) returns (Nothing) { option (method_id) = 4; }
     rpc SetAllowPairing(BoolValue) returns (Nothing) { option (method_id) = 5; }
-    rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 6; }
+    rpc SetSecurityRequirements(SecurityRequirements) returns (Nothing) { option (method_id) = 6; }
     rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 7; }
     rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 8; }
 
@@ -225,7 +244,7 @@ service GapCentral
     // Allowed states: connected
     rpc Pair(Nothing) returns (Nothing) { option (method_id) = 6; }
     
-    rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 7; }
+    rpc SetSecurityRequirements(SecurityRequirements) returns (Nothing) { option (method_id) = 7; }
     rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 8; }
     rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 9; }
     rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 10; }
