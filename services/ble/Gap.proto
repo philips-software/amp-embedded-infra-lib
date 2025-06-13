@@ -73,19 +73,19 @@ message AdvertisementType
 message SecurityRequirements { 
     enum SecureConnectionModeEnum
     {
-        legacy = 0;
-        secureIfSupported = 1;
-        secure = 2;
+        disabledSecurity = 0;
+        optionalSecurity = 1;
+        mandatorySecurity = 2;
     }
 
     enum ManInTheMiddleModeEnum
     {
-        mandatory = 0;
+        disabled = 0;
         optional = 1;
-        disabled = 2;
+        mandatory = 2;
     }
 
-    SecureConnectionModeEnum connectionMode = 1; // TODO: check if these values are correct   
+    SecureConnectionModeEnum secureConnectionMode = 1;
     ManInTheMiddleModeEnum mitmMode = 2; 
 }
 
