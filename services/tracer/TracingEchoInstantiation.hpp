@@ -27,17 +27,12 @@ namespace main_
 
     template<std::size_t MessageSize>
     struct TracingEchoOnSesame::WithMessageSize
-        : TracingEchoOnSesame
+        : private EchoOnSesame::CobsStorage<MessageSize>
+        , TracingEchoOnSesame
     {
         WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, services::Tracer& tracer)
             : TracingEchoOnSesame(cobsSendStorage, cobsReceivedMessage, serialCommunication, serializerFactory, tracer)
         {}
-
-    private:
-        static constexpr std::size_t encodedMessageSize = services::SesameWindowed::bufferSizeForMessage<MessageSize, services::SesameCobs::EncodedMessageSize>;
-
-        infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameCobs::sendBufferSize<MessageSize>> cobsSendStorage;
-        infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameCobs::receiveBufferSize<encodedMessageSize>> cobsReceivedMessage;
     };
 
 #ifdef EMIL_HAL_GENERIC

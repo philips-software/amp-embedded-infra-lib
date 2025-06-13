@@ -3,6 +3,7 @@
 
 #include "hal/interfaces/SerialCommunication.hpp"
 #include "services/tracer/Tracer.hpp"
+#include "services/util/EchoInstantiationSecured.hpp"
 #include "services/util/EchoPolicyDiffieHellman.hpp"
 #include "services/util/EchoPolicySymmetricKey.hpp"
 #include "services/util/SesameCobs.hpp"
@@ -40,19 +41,13 @@ namespace main_
 
     template<std::size_t MessageSize>
     struct TracingEchoOnSesameSecuredSymmetricKey::WithMessageSize
-        : TracingEchoOnSesameSecuredSymmetricKey
+        : private EchoOnSesame::CobsStorage<MessageSize>
+        , private EchoOnSesameSecured::SecuredStorage<MessageSize>
+        , TracingEchoOnSesameSecuredSymmetricKey
     {
         WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::SesameSecured::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator, services::Tracer& tracer)
             : TracingEchoOnSesameSecuredSymmetricKey(cobsSendStorage, cobsReceivedMessage, securedSendBuffer, securedReceiveBuffer, serialCommunication, serializerFactory, keyMaterial, randomDataGenerator, tracer)
         {}
-
-    private:
-        static constexpr std::size_t encodedMessageSize = services::SesameWindowed::bufferSizeForMessage<MessageSize, services::SesameCobs::EncodedMessageSize>;
-
-        infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameCobs::sendBufferSize<MessageSize>> cobsSendStorage;
-        infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameCobs::receiveBufferSize<encodedMessageSize>> cobsReceivedMessage;
-        infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameSecured::encodedMessageSize<MessageSize>> securedSendBuffer;
-        infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameSecured::encodedMessageSize<MessageSize>> securedReceiveBuffer;
     };
 
     struct TracingEchoOnSesameSecuredDiffieHellman
@@ -69,7 +64,9 @@ namespace main_
 
     template<std::size_t MessageSize>
     struct TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize
-        : TracingEchoOnSesameSecuredDiffieHellman
+        : private EchoOnSesame::CobsStorage<MessageSize>
+        , private EchoOnSesameSecured::SecuredStorage<MessageSize>
+        , TracingEchoOnSesameSecuredDiffieHellman
     {
         WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::EchoPolicyDiffieHellman::Crypto& crypto, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator, services::Tracer& tracer)
             : TracingEchoOnSesameSecuredDiffieHellman(cobsSendStorage, cobsReceivedMessage, securedSendBuffer, securedReceiveBuffer, serialCommunication, serializerFactory, crypto, dsaCertificate, rootCaCertificate, randomDataGenerator, tracer)
@@ -78,14 +75,6 @@ namespace main_
 #ifdef EMIL_USE_MBEDTLS
         struct WithCryptoMbedTls;
 #endif
-
-    private:
-        static constexpr std::size_t encodedMessageSize = services::SesameWindowed::bufferSizeForMessage<MessageSize, services::SesameCobs::EncodedMessageSize>;
-
-        infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameCobs::sendBufferSize<MessageSize>> cobsSendStorage;
-        infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameCobs::receiveBufferSize<encodedMessageSize>> cobsReceivedMessage;
-        infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameSecured::encodedMessageSize<MessageSize>> securedSendBuffer;
-        infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameSecured::encodedMessageSize<MessageSize>> securedReceiveBuffer;
     };
 
 #ifdef EMIL_USE_MBEDTLS
