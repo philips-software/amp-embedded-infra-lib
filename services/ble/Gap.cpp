@@ -319,7 +319,7 @@ namespace services
         AddData(payload, infra::MakeRangeFromSingleObject(flagsByte));
     }
 
-    void GapAdvertisementFormatter::AppendCompleteLocalName(infra::BoundedConstString& name)
+    void GapAdvertisementFormatter::AppendCompleteLocalName(const infra::BoundedConstString& name)
     {
         really_assert(payload.size() + name.size() + headerSize < payload.max_size() && name.size() > 0);
 
@@ -327,7 +327,7 @@ namespace services
         AddData(payload, infra::StringAsByteRange(name));
     }
 
-    void GapAdvertisementFormatter::AppendShortenedLocalName(infra::BoundedConstString& name)
+    void GapAdvertisementFormatter::AppendShortenedLocalName(const infra::BoundedConstString& name)
     {
         really_assert(payload.size() + name.size() + headerSize < payload.max_size() && name.size() > 0);
 

@@ -296,8 +296,8 @@ namespace services
         explicit GapAdvertisementFormatter(infra::BoundedVector<uint8_t>& payload);
 
         void AppendFlags(GapPeripheral::AdvertisementFlags flags);
-        void AppendCompleteLocalName(infra::BoundedConstString& name);
-        void AppendShortenedLocalName(infra::BoundedConstString& name);
+        void AppendCompleteLocalName(const infra::BoundedConstString& name);
+        void AppendShortenedLocalName(const infra::BoundedConstString& name);
         void AppendManufacturerData(uint16_t manufacturerCode, infra::ConstByteRange data);
         void AppendListOfServicesUuid(infra::MemoryRange<AttAttribute::Uuid16> services);
         void AppendListOfServicesUuid(infra::MemoryRange<AttAttribute::Uuid128> services);
