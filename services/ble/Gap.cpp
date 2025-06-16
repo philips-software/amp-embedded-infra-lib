@@ -1,12 +1,11 @@
 #include "services/ble/Gap.hpp"
 #include "infra/util/BoundedString.hpp"
-#include "infra/util/Endian.hpp"
 #include "infra/util/MemoryRange.hpp"
 #include "infra/util/Optional.hpp"
 
 namespace
 {
-    void AddHeader(infra::BoundedVector<uint8_t>& payload, uint8_t length, services::GapAdvertisementDataType type)
+    void AddHeader(infra::BoundedVector<uint8_t>& payload, std::size_t length, services::GapAdvertisementDataType type)
     {
         payload.push_back(length + 1);
         payload.push_back(static_cast<uint8_t>(type));
