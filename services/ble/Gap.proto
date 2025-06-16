@@ -70,7 +70,7 @@ message AdvertisementType
     AdvertisementTypeEnum type = 1;
 }
 
-message SecurityRequirements { 
+message SecureConnectionMode { 
     enum SecureConnectionModeEnum
     {
         disabledSecurity = 0;
@@ -78,6 +78,10 @@ message SecurityRequirements {
         mandatorySecurity = 2;
     }
 
+    SecureConnectionModeEnum secureConnectionMode = 1;
+}
+
+message ManInTheMiddleMode { 
     enum ManInTheMiddleModeEnum
     {
         disabled = 0;
@@ -85,8 +89,7 @@ message SecurityRequirements {
         mandatory = 2;
     }
 
-    SecureConnectionModeEnum secureConnectionMode = 1;
-    ManInTheMiddleModeEnum mitmMode = 2; 
+    ManInTheMiddleModeEnum mitmMode = 1; 
 }
 
 message SecurityModeAndLevel
@@ -211,13 +214,15 @@ service GapPeripheral
     rpc SetAdvertisementData(AdvertisementData) returns (Nothing) { option (method_id) = 3; }
     rpc SetScanResponseData(AdvertisementData) returns (Nothing) { option (method_id) = 4; }
     rpc SetAllowPairing(BoolValue) returns (Nothing) { option (method_id) = 5; }
-    rpc SetSecurityRequirements(SecurityRequirements) returns (Nothing) { option (method_id) = 6; }
     rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 7; }
     rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 8; }
 
     // Allowed states: advertising
     rpc GetResolvableAddress(Nothing) returns (Nothing) { option (method_id) = 9; }
     rpc GetIdentityAddress(Nothing) returns (Nothing) { option (method_id) = 10; }
+
+    rpc SetSecureConnectionMode(SecureConnectionMode) returns (Nothing) { option (method_id) = 11; }
+    rpc SetManInTheMiddleMode(ManInTheMiddleMode) returns (Nothing) { option (method_id) = 12; }
 }
 
 service GapCentral
@@ -244,7 +249,6 @@ service GapCentral
     // Allowed states: connected
     rpc Pair(Nothing) returns (Nothing) { option (method_id) = 6; }
     
-    rpc SetSecurityRequirements(SecurityRequirements) returns (Nothing) { option (method_id) = 7; }
     rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 8; }
     rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 9; }
     rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 10; }
@@ -252,6 +256,8 @@ service GapCentral
     rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 12; }
     rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; }
     rpc IsDeviceBonded(PeerNodeParameters) returns (Nothing) { option (method_id) = 14; }
+    rpc SetManInTheMiddleMode(ManInTheMiddleMode) returns (Nothing) { option (method_id) = 15; }
+    rpc SetSecureConnectionMode(SecureConnectionMode) returns (Nothing) { option (method_id) = 16; }
 }
 
 service GapPeripheralResponse

@@ -160,7 +160,8 @@ namespace services
 
         virtual void AllowPairing(bool allow) = 0;
 
-        virtual void SetSecurityRequirements(SecureConnectionMode connectionMode, ManInTheMiddleMode mitmMode) = 0;
+        virtual void SetManInTheMiddleMode(ManInTheMiddleMode mitmMode) = 0;
+        virtual void SetSecureConnectionMode(SecureConnectionMode connectionMode) = 0;
         virtual void SetIoCapabilities(IoCapabilities caps) = 0;
 
         virtual void AuthenticateWithPasskey(uint32_t passkey) = 0;
@@ -182,7 +183,9 @@ namespace services
         // Implementation of GapPairing
         void Pair() override;
         void AllowPairing(bool allow) override;
-        void SetSecurityRequirements(SecureConnectionMode securityMode, ManInTheMiddleMode mitmMode) override;
+
+        void SetManInTheMiddleMode(ManInTheMiddleMode mitmMode) override;
+        void SetSecureConnectionMode(SecureConnectionMode connectionMode) override;
         void SetIoCapabilities(IoCapabilities caps) override;
         void AuthenticateWithPasskey(uint32_t passkey) override;
         void NumericComparisonConfirm(bool accept) override;
