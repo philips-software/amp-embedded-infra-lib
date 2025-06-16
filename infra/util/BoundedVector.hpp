@@ -143,6 +143,8 @@ namespace infra
     MemoryRange<T> MakeRange(infra::BoundedVector<T>& container);
     template<class T>
     MemoryRange<const T> MakeRange(const infra::BoundedVector<T>& container);
+    template<class T>
+    MemoryRange<const T> MakeConstRange(const infra::BoundedVector<T>& container);
 
     //// Implementation ////
 
@@ -698,6 +700,12 @@ namespace infra
 
     template<class T>
     MemoryRange<const T> MakeRange(const infra::BoundedVector<T>& container)
+    {
+        return MemoryRange<const T>(container.begin(), container.end());
+    }
+
+    template<class T>
+    MemoryRange<const T> MakeConstRange(const infra::BoundedVector<T>& container)
     {
         return MemoryRange<const T>(container.begin(), container.end());
     }
