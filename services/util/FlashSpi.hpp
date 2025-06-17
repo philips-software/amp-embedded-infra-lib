@@ -6,6 +6,7 @@
 #include "hal/interfaces/Spi.hpp"
 #include "infra/timer/Timer.hpp"
 #include "infra/util/AutoResetFunction.hpp"
+#include "infra/util/ByteRange.hpp"
 #include "infra/util/Sequencer.hpp"
 
 namespace services
@@ -18,6 +19,7 @@ namespace services
             uint32_t sizeSector{ 65536 };
             uint32_t sizeSubSector{ 4096 };
             uint32_t sizePage{ 256 };
+            bool extendedAddressing = false;
         };
     }
 
@@ -28,12 +30,12 @@ namespace services
     public:
         using Config = detail::FlashSpiConfig;
 
-        static const uint8_t commandPageProgram;
-        static const uint8_t commandReadData;
+        static const uint8_t commandPageProgram[2];
+        static const uint8_t commandReadData[2];
+        static const uint8_t commandEraseSubSector[2];
+        static const uint8_t commandEraseSector[2];
         static const uint8_t commandReadStatusRegister;
         static const uint8_t commandWriteEnable;
-        static const uint8_t commandEraseSubSector;
-        static const uint8_t commandEraseSector;
         static const uint8_t commandEraseBulk;
         static const uint8_t commandReadId;
 
@@ -51,8 +53,6 @@ namespace services
         void ReadFlashId(infra::ByteRange buffer, infra::Function<void()> onDone) override;
 
     private:
-        std::array<uint8_t, 3> ConvertAddress(uint32_t address) const;
-
         void WriteEnable();
         void PageProgram();
         void EraseSomeSectors(uint32_t endIndex);
@@ -61,6 +61,7 @@ namespace services
         void SendEraseBulk();
         void HoldWhileWriteInProgress();
         void ReadStatusRegister();
+        infra::ConstByteRange InstructionAndAddress(const uint8_t instruction[], uint32_t address);
 
     private:
         hal::SpiMaster& spi;
@@ -74,12 +75,7 @@ namespace services
         uint32_t address = 0;
         uint32_t sectorIndex = 0;
         uint8_t statusRegister = 0;
-
-        struct InstructionAndAddress
-        {
-            uint8_t instruction = 0;
-            std::array<uint8_t, 3> address = {};
-        } instructionAndAddress;
+        std::array<uint8_t, 5> instructionAndAddressBuffer;
     };
 }
 
