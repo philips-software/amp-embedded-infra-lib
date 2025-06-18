@@ -143,16 +143,16 @@ namespace services
 
         enum class SecureConnectionMode
         {
-            disabledSecurity = 0,
-            optionalSecurity = 1,
-            mandatorySecurity = 2,
+            disabled = 0,
+            supported = 1,
+            enforced = 2,
         };
 
         enum class ManInTheMiddleMode
         {
             disabled = 0,
-            optional = 1,
-            mandatory = 2,
+            supported = 1,
+            enforced = 2,
         };
 
         virtual void

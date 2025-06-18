@@ -73,9 +73,9 @@ message AdvertisementType
 message SecureConnectionMode { 
     enum SecureConnectionModeEnum
     {
-        disabledSecurity = 0;
-        optionalSecurity = 1;
-        mandatorySecurity = 2;
+        disabled = 0;
+        supported = 1;
+        enforced = 2;
     }
 
     SecureConnectionModeEnum secureConnectionMode = 1;
@@ -85,8 +85,8 @@ message ManInTheMiddleMode {
     enum ManInTheMiddleModeEnum
     {
         disabled = 0;
-        optional = 1;
-        mandatory = 2;
+        supported = 1;
+        enforced = 2;
     }
 
     ManInTheMiddleModeEnum mitmMode = 1; 
