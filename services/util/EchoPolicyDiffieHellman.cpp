@@ -1,11 +1,29 @@
-#include "services/util/EchoOnSesameDiffieHellman.hpp"
+#include "services/util/EchoPolicyDiffieHellman.hpp"
 
 namespace services
 {
-    EchoOnSesameDiffieHellman::EchoOnSesameDiffieHellman(const Crypto& crypto, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy)
-        : EchoOnSesame(secured, serializerFactory, errorPolicy)
-        , DiffieHellmanKeyEstablishment(static_cast<services::Echo&>(*this))
-        , DiffieHellmanKeyEstablishmentProxy(static_cast<services::Echo&>(*this))
+#ifdef EMIL_USE_MBEDTLS
+    CertificateAndPrivateKey GenerateRootCertificate(hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    {
+        services::EcSecP256r1PrivateKey rootPrivateKey{ randomDataGenerator };
+        services::EcSecP256r1Certificate rootCertificate{ rootPrivateKey, "CN=Root", rootPrivateKey, "CN=Root", randomDataGenerator };
+
+        return { rootCertificate.Der(), rootPrivateKey.Der() };
+    }
+
+    CertificateAndPrivateKey GenerateDeviceCertificate(const EcSecP256r1PrivateKey& issuerKey, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    {
+        services::EcSecP256r1PrivateKey devicePrivateKey{ randomDataGenerator };
+        services::EcSecP256r1Certificate deviceCertificate{ devicePrivateKey, "CN=Device", issuerKey, "CN=Root", randomDataGenerator };
+
+        return { deviceCertificate.Der(), devicePrivateKey.Der() };
+    }
+#endif
+
+    EchoPolicyDiffieHellman::EchoPolicyDiffieHellman(const Crypto& crypto, EchoWithPolicy& echo, EchoInitialization& echoInitialization, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+        : EchoInitializationObserver(echoInitialization)
+        , DiffieHellmanKeyEstablishment(echo)
+        , DiffieHellmanKeyEstablishmentProxy(echo)
         , secured(secured)
         , randomDataGenerator(randomDataGenerator)
         , dsaCertificate(dsaCertificate)
@@ -14,20 +32,13 @@ namespace services
         , signer(crypto.signer)
         , verifierCreator(crypto.verifier)
         , keyExpander(crypto.keyExpander)
-    {}
-
-    void EchoOnSesameDiffieHellman::RequestSend(ServiceProxy& serviceProxy)
     {
-        if (initializingKeys && &serviceProxy != this)
-            waitingProxies.push_back(serviceProxy);
-        else
-            EchoOnSesame::RequestSend(serviceProxy);
+        echo.SetPolicy(*this);
     }
 
-    void EchoOnSesameDiffieHellman::Initialized()
+    void EchoPolicyDiffieHellman::Initialized()
     {
         initializingKeys = true;
-        EchoOnSesame::Initialized();
 
         keyExchange.Emplace(keyExchangeCreator, randomDataGenerator);
 
@@ -46,21 +57,29 @@ namespace services
             });
     }
 
-    infra::SharedPtr<MethodSerializer> EchoOnSesameDiffieHellman::GrantSend(ServiceProxy& proxy)
+    void EchoPolicyDiffieHellman::RequestSend(ServiceProxy& serviceProxy, const infra::Function<void(ServiceProxy& proxy)>& onRequest)
+    {
+        this->onRequest = onRequest;
+
+        if (initializingKeys && &serviceProxy != this)
+            waitingProxies.push_back(serviceProxy);
+        else
+            onRequest(serviceProxy);
+    }
+
+    void EchoPolicyDiffieHellman::GrantingSend(ServiceProxy& proxy)
     {
         if (nextKeyPair && &proxy != this)
         {
             secured.SetSendKey(nextKeyPair->first, nextKeyPair->second);
             nextKeyPair = infra::none;
         }
-
-        return EchoOnSesame::GrantSend(proxy);
     }
 
-    void EchoOnSesameDiffieHellman::KeyExchangeSuccessful()
+    void EchoPolicyDiffieHellman::KeyExchangeSuccessful()
     {}
 
-    void EchoOnSesameDiffieHellman::KeyExchangeFailed()
+    void EchoPolicyDiffieHellman::KeyExchangeFailed()
     {}
 
     template<std::size_t Size>
@@ -71,7 +90,7 @@ namespace services
         return result;
     }
 
-    void EchoOnSesameDiffieHellman::Exchange(infra::ConstByteRange otherPublicKey, infra::ConstByteRange signatureR, infra::ConstByteRange signatureS)
+    void EchoPolicyDiffieHellman::Exchange(infra::ConstByteRange otherPublicKey, infra::ConstByteRange signatureR, infra::ConstByteRange signatureS)
     {
         if (verifier == infra::none || !(*verifier)->Verify(otherPublicKey, signatureR, signatureS))
         {
@@ -102,26 +121,26 @@ namespace services
         MethodDone();
     }
 
-    void EchoOnSesameDiffieHellman::PresentCertificate(infra::ConstByteRange otherDsaCertificate)
+    void EchoPolicyDiffieHellman::PresentCertificate(infra::ConstByteRange otherDsaCertificate)
     {
         verifier.Emplace(verifierCreator, otherDsaCertificate, rootCaCertificate);
 
         MethodDone();
     }
 
-    void EchoOnSesameDiffieHellman::ReQueueWaitingProxies()
+    void EchoPolicyDiffieHellman::ReQueueWaitingProxies()
     {
         while (!waitingProxies.empty())
         {
             auto& proxy = waitingProxies.front();
             waitingProxies.pop_front();
-            RequestSend(proxy);
+            onRequest(proxy);
         }
     }
 
 #ifdef EMIL_USE_MBEDTLS
-    EchoOnSesameDiffieHellman::WithCryptoMbedTls::WithCryptoMbedTls(SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange dsaCertificatePrivateKey, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator, MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy)
-        : EchoOnSesameDiffieHellman(Crypto{ keyExchange, signer, verifier, keyExpander }, secured, dsaCertificate, rootCaCertificate, randomDataGenerator, serializerFactory, errorPolicy)
+    EchoPolicyDiffieHellman::WithCryptoMbedTls::WithCryptoMbedTls(EchoWithPolicy& echo, EchoInitialization& echoInitialization, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange dsaCertificatePrivateKey, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+        : EchoPolicyDiffieHellman(Crypto{ keyExchange, signer, verifier, keyExpander }, echo, echoInitialization, secured, dsaCertificate, rootCaCertificate, randomDataGenerator)
         , signer(dsaCertificatePrivateKey, randomDataGenerator)
     {}
 #endif

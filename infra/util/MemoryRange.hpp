@@ -73,16 +73,22 @@ namespace infra
 
     template<class T>
     MemoryRange<T> MakeRange(T* b, T* e);
+    template<class T>
+    MemoryRange<const T> MakeConstRange(const T* b, const T* e);
     template<class T, std::size_t N>
     MemoryRange<T> MakeRange(std::array<T, N>& container);
     template<class T, std::size_t N>
     MemoryRange<const T> MakeRange(const std::array<T, N>& container);
+    template<class T, std::size_t N>
+    MemoryRange<const T> MakeConstRange(const std::array<T, N>& container);
     template<class T>
     std::vector<typename std::remove_const<T>::type> MakeVector(MemoryRange<T> range);
     template<class T>
     MemoryRange<T> MakeRange(std::vector<T>& range);
     template<class T>
     MemoryRange<const T> MakeRange(const std::vector<T>& range);
+    template<class T>
+    MemoryRange<const T> MakeConstRange(const std::vector<T>& range);
     template<class T>
     MemoryRange<const T> MakeConst(infra::MemoryRange<T> range);
     template<class T>
@@ -231,7 +237,7 @@ namespace infra
     template<class U>
     bool MemoryRange<T>::operator==(const MemoryRange<U>& rhs) const
     {
-        return begin() == rhs.begin() && end() == rhs.end();
+        return (empty() && rhs.empty()) || (begin() == rhs.begin() && end() == rhs.end());
     }
 
     template<class T>
@@ -306,6 +312,12 @@ namespace infra
         return MemoryRange<T>(b, e);
     }
 
+    template<class T>
+    MemoryRange<const T> MakeRange(const T* b, const T* e)
+    {
+        return MemoryRange<const T>(b, e);
+    }
+
     template<class T, std::size_t N>
     MemoryRange<T> MakeRange(T (&data)[N])
     {
@@ -319,6 +331,12 @@ namespace infra
     }
 
     template<class T, std::size_t N>
+    MemoryRange<const T> MakeConstRange(const T (&data)[N])
+    {
+        return MemoryRange<const T>(&data[0], &data[0] + N);
+    }
+
+    template<class T, std::size_t N>
     MemoryRange<T> MakeRange(std::array<T, N>& container)
     {
         return MemoryRange<T>(container.data(), container.data() + container.size());
@@ -326,6 +344,12 @@ namespace infra
 
     template<class T, std::size_t N>
     MemoryRange<const T> MakeRange(const std::array<T, N>& container)
+    {
+        return MemoryRange<const T>(container.data(), container.data() + container.size());
+    }
+
+    template<class T, std::size_t N>
+    MemoryRange<const T> MakeConstRange(const std::array<T, N>& container)
     {
         return MemoryRange<const T>(container.data(), container.data() + container.size());
     }
@@ -344,6 +368,12 @@ namespace infra
 
     template<class T>
     MemoryRange<const T> MakeRange(const std::vector<T>& range)
+    {
+        return MemoryRange<const T>(range);
+    }
+
+    template<class T>
+    MemoryRange<const T> MakeConstRange(const std::vector<T>& range)
     {
         return MemoryRange<const T>(range);
     }

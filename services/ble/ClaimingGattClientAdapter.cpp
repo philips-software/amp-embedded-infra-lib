@@ -127,12 +127,8 @@ namespace services
     void ClaimingGattClientAdapter::WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data)
     {
         characteristicOperationContext.emplace(WriteWithoutResponseOperation{ data }, characteristic.CharacteristicValueHandle());
-        characteristicOperationsClaimer.Claim([this]()
-            {
-                auto writeWithoutResponseContext = std::get<WriteWithoutResponseOperation>(characteristicOperationContext->operation);
-                GattClientObserver::Subject().WriteWithoutResponse(*this, writeWithoutResponseContext.data);
-                characteristicOperationsClaimer.Release();
-            });
+        auto writeWithoutResponseContext = std::get<WriteWithoutResponseOperation>(characteristicOperationContext->operation);
+        GattClientObserver::Subject().WriteWithoutResponse(*this, writeWithoutResponseContext.data);
     }
 
     void ClaimingGattClientAdapter::EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone)

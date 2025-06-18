@@ -8,28 +8,28 @@
 #include "protobuf/echo/test_doubles/EchoMock.hpp"
 #include "protobuf/echo/test_doubles/ServiceStub.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
-#include "services/util/EchoOnSesameDiffieHellman.hpp"
+#include "services/util/EchoPolicyDiffieHellman.hpp"
 #include "services/util/MbedTlsRandomDataGeneratorWrapper.hpp"
 #include "services/util/test_doubles/SesameMock.hpp"
 
 namespace
 {
-    class EchoOnSesameDiffieHellmanWithCryptoMbedTlsMock
-        : public services::EchoOnSesameDiffieHellman::WithCryptoMbedTls
+    class EchoPolicyDiffieHellmanWithCryptoMbedTlsMock
+        : public services::EchoPolicyDiffieHellman::WithCryptoMbedTls
     {
     public:
-        using services::EchoOnSesameDiffieHellman::WithCryptoMbedTls::WithCryptoMbedTls;
+        using services::EchoPolicyDiffieHellman::WithCryptoMbedTls::WithCryptoMbedTls;
 
         MOCK_METHOD(void, KeyExchangeSuccessful, (), (override));
         MOCK_METHOD(void, KeyExchangeFailed, (), (override));
     };
 }
 
-class EchoOnSesameDiffieHellmanTestBase
+class EchoPolicyDiffieHellmanTestBase
     : public testing::Test
 {
 public:
-    EchoOnSesameDiffieHellmanTestBase()
+    EchoPolicyDiffieHellmanTestBase()
     {
         EXPECT_CALL(lowerLeft, MaxSendMessageSize()).WillRepeatedly(testing::Return(10000));
         EXPECT_CALL(lowerRight, MaxSendMessageSize()).WillRepeatedly(testing::Return(10000));
@@ -107,11 +107,13 @@ public:
     services::SesameSecured::WithCryptoMbedTls::WithBuffers<100> securedLeft{ lowerLeft, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
     services::SesameSecured::WithCryptoMbedTls::WithBuffers<100> securedRight{ lowerRight, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
 
+    services::CertificateAndPrivateKey rootCaCertificateMaterial{ services::GenerateRootCertificate(randomDataGenerator) };
     services::EcSecP256r1PrivateKey rootCaPrivateKey{ randomDataGenerator };
     services::EcSecP256r1Certificate rootCaCertificate{ rootCaPrivateKey, "CN=Root", rootCaPrivateKey, "CN=Root", randomDataGenerator };
     std::string rootCaCertificatePem{ infra::AsStdString(rootCaCertificate.Pem()) };
     infra::BoundedVector<uint8_t>::WithMaxSize<512> rootCaCertificateDer{ rootCaCertificate.Der() };
 
+    services::CertificateAndPrivateKey deviceCertificateMaterial{ services::GenerateDeviceCertificate(rootCaPrivateKey, randomDataGenerator) };
     services::EcSecP256r1PrivateKey privateKeyLeft{ randomDataGenerator };
     std::string privateKeyLeftPem{ infra::AsStdString(privateKeyLeft.Pem()) };
     std::array<uint8_t, 121> privateKeyLeftDer{ privateKeyLeft.Der() };
@@ -126,28 +128,30 @@ public:
     std::string certificateRightPem{ infra::AsStdString(certificateRight.Pem()) };
     infra::BoundedVector<uint8_t>::WithMaxSize<512> certificateRightDer{ certificateRight.Der() };
 
-    testing::StrictMock<EchoOnSesameDiffieHellmanWithCryptoMbedTlsMock> echoLeft{ securedLeft, infra::MakeRange(certificateLeftDer), infra::MakeRange(privateKeyLeftDer), infra::MakeRange(rootCaCertificateDer), randomDataGenerator, serializerFactoryLeft, errorPolicy };
+    services::EchoOnSesame echoOnSesameLeft{ securedLeft, serializerFactoryLeft, errorPolicy };
+    testing::StrictMock<EchoPolicyDiffieHellmanWithCryptoMbedTlsMock> echoPolicyLeft{ echoOnSesameLeft, echoOnSesameLeft, securedLeft, infra::MakeRange(certificateLeftDer), infra::MakeRange(privateKeyLeftDer), infra::MakeRange(rootCaCertificateDer), randomDataGenerator };
 };
 
-class EchoOnSesameDiffieHellmanTest
-    : public EchoOnSesameDiffieHellmanTestBase
+class EchoPolicyDiffieHellmanTest
+    : public EchoPolicyDiffieHellmanTestBase
 {
 public:
-    EchoOnSesameDiffieHellmanTest()
+    EchoPolicyDiffieHellmanTest()
     {
         Initialized();
     }
 
-    testing::StrictMock<EchoOnSesameDiffieHellmanWithCryptoMbedTlsMock> echoRight{ securedRight, infra::MakeRange(certificateRightDer), infra::MakeRange(privateKeyRightDer), infra::MakeRange(rootCaCertificateDer), randomDataGenerator, serializerFactoryRight, errorPolicy };
+    services::EchoOnSesame echoOnSesameRight{ securedRight, serializerFactoryRight, errorPolicy };
+    testing::StrictMock<EchoPolicyDiffieHellmanWithCryptoMbedTlsMock> echoPolicyRight{ echoOnSesameRight, echoOnSesameRight, securedRight, infra::MakeRange(certificateRightDer), infra::MakeRange(privateKeyRightDer), infra::MakeRange(rootCaCertificateDer), randomDataGenerator };
 
-    services::ServiceStubProxy serviceProxy{ echoLeft };
-    testing::StrictMock<services::ServiceStub> service{ echoRight };
+    services::ServiceStubProxy serviceProxy{ echoOnSesameLeft };
+    testing::StrictMock<services::ServiceStub> service{ echoOnSesameRight };
 };
 
-TEST_F(EchoOnSesameDiffieHellmanTest, send_and_receive)
+TEST_F(EchoPolicyDiffieHellmanTest, send_and_receive)
 {
-    EXPECT_CALL(echoLeft, KeyExchangeSuccessful());
-    EXPECT_CALL(echoRight, KeyExchangeSuccessful());
+    EXPECT_CALL(echoPolicyLeft, KeyExchangeSuccessful());
+    EXPECT_CALL(echoPolicyRight, KeyExchangeSuccessful());
 
     EXPECT_CALL(service, Method(5)).WillOnce(testing::Invoke([this]()
         {
@@ -174,19 +178,19 @@ namespace
     };
 }
 
-class EchoOnSesameDiffieHellmanAdversaryTest
-    : public EchoOnSesameDiffieHellmanTestBase
+class EchoPolicyDiffieHellmanAdversaryTest
+    : public EchoPolicyDiffieHellmanTestBase
 {
 public:
-    services::EchoOnSesame echoRight{ securedRight, serializerFactoryRight };
-    testing::StrictMock<DiffieHellmanKeyEstablishmentMock> keyEstablishment{ echoRight };
-    sesame_security::DiffieHellmanKeyEstablishmentProxy proxy{ echoRight };
+    services::EchoOnSesame echoPolicyRight{ securedRight, serializerFactoryRight };
+    testing::StrictMock<DiffieHellmanKeyEstablishmentMock> keyEstablishment{ echoPolicyRight };
+    sesame_security::DiffieHellmanKeyEstablishmentProxy proxy{ echoPolicyRight };
 
     services::EcSecP256r1DiffieHellmanMbedTls keyExchange{ randomDataGenerator };
     services::EcSecP256r1DsaSignerMbedTls signer{ privateKeyRightDer, randomDataGenerator };
 };
 
-TEST_F(EchoOnSesameDiffieHellmanAdversaryTest, successful_manual_implementation)
+TEST_F(EchoPolicyDiffieHellmanAdversaryTest, successful_manual_implementation)
 {
     Initialized();
 
@@ -213,12 +217,12 @@ TEST_F(EchoOnSesameDiffieHellmanAdversaryTest, successful_manual_implementation)
             keyEstablishment.MethodDone();
         }));
 
-    EXPECT_CALL(echoLeft, KeyExchangeSuccessful());
+    EXPECT_CALL(echoPolicyLeft, KeyExchangeSuccessful());
 
     ExchangeData();
 }
 
-TEST_F(EchoOnSesameDiffieHellmanAdversaryTest, self_signed_certificate_leads_to_failure)
+TEST_F(EchoPolicyDiffieHellmanAdversaryTest, self_signed_certificate_leads_to_failure)
 {
     Initialized();
 
@@ -248,12 +252,12 @@ TEST_F(EchoOnSesameDiffieHellmanAdversaryTest, self_signed_certificate_leads_to_
             keyEstablishment.MethodDone();
         }));
 
-    EXPECT_CALL(echoLeft, KeyExchangeFailed());
+    EXPECT_CALL(echoPolicyLeft, KeyExchangeFailed());
 
     ExchangeData();
 }
 
-TEST_F(EchoOnSesameDiffieHellmanAdversaryTest, signature_over_incorrect_data_leads_to_failure)
+TEST_F(EchoPolicyDiffieHellmanAdversaryTest, signature_over_incorrect_data_leads_to_failure)
 {
     Initialized();
 
@@ -282,12 +286,12 @@ TEST_F(EchoOnSesameDiffieHellmanAdversaryTest, signature_over_incorrect_data_lea
             keyEstablishment.MethodDone();
         }));
 
-    EXPECT_CALL(echoLeft, KeyExchangeFailed());
+    EXPECT_CALL(echoPolicyLeft, KeyExchangeFailed());
 
     ExchangeData();
 }
 
-TEST_F(EchoOnSesameDiffieHellmanAdversaryTest, incorrect_signature_leads_to_failure)
+TEST_F(EchoPolicyDiffieHellmanAdversaryTest, incorrect_signature_leads_to_failure)
 {
     Initialized();
 
@@ -315,12 +319,12 @@ TEST_F(EchoOnSesameDiffieHellmanAdversaryTest, incorrect_signature_leads_to_fail
             keyEstablishment.MethodDone();
         }));
 
-    EXPECT_CALL(echoLeft, KeyExchangeFailed());
+    EXPECT_CALL(echoPolicyLeft, KeyExchangeFailed());
 
     ExchangeData();
 }
 
-TEST_F(EchoOnSesameDiffieHellmanAdversaryTest, not_presenting_certificate_leads_to_failure)
+TEST_F(EchoPolicyDiffieHellmanAdversaryTest, not_presenting_certificate_leads_to_failure)
 {
     Initialized();
 
@@ -342,7 +346,7 @@ TEST_F(EchoOnSesameDiffieHellmanAdversaryTest, not_presenting_certificate_leads_
             keyEstablishment.MethodDone();
         }));
 
-    EXPECT_CALL(echoLeft, KeyExchangeFailed());
+    EXPECT_CALL(echoPolicyLeft, KeyExchangeFailed());
 
     ExchangeData();
 }

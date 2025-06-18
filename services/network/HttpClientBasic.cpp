@@ -112,6 +112,7 @@ namespace services
         if (state == State::connected)
         {
             state = State::closing;
+            timeoutTimer.Cancel();
             sharedAccess.SetAction([this]()
                 {
                     ReportError(true);

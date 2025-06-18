@@ -73,20 +73,6 @@ namespace application
             return false;
         }
 
-        Underscore::Underscore(std::size_t index)
-            : index(index)
-        {}
-
-        bool Underscore::operator==(const Underscore&) const
-        {
-            return true;
-        }
-
-        bool Underscore::operator!=(const Underscore&) const
-        {
-            return false;
-        }
-
         LeftBrace::LeftBrace(std::size_t index)
             : index(index)
         {}
@@ -226,8 +212,6 @@ namespace application
                 return ConsoleToken::Comma(parseIndex++);
             else if (line[parseIndex] == '.')
                 return ConsoleToken::Dot(parseIndex++);
-            else if (line[parseIndex] == '_')
-                return ConsoleToken::Underscore(parseIndex++);
             else if (line[parseIndex] == '{')
                 return ConsoleToken::LeftBrace(parseIndex++);
             else if (line[parseIndex] == '}')
@@ -350,13 +334,28 @@ namespace application
             return ConsoleToken::String(tokenStart, identifier);
     }
 
+    services::EchoPolicy Console::defaultPolicy;
+
     Console::Console(EchoRoot& root, bool stopOnNetworkClose)
         : root(root)
+        , serviceProxyStub(*this)
         , eventDispatcherThread([this, stopOnNetworkClose]()
               {
                   RunEventDispatcher(stopOnNetworkClose);
               })
     {}
+
+    Console::~Console()
+    {
+        if (eventDispatcherThread.joinable())
+        {
+            infra::EventDispatcher::Instance().Schedule([]()
+                {
+                    throw Quit();
+                });
+            eventDispatcherThread.join();
+        }
+    }
 
     void Console::Run()
     {
@@ -418,16 +417,36 @@ namespace application
         while (!reader.Empty())
             receivedData += infra::ByteRangeAsStdString(reader.ExtractContiguousRange(std::numeric_limits<std::size_t>::max()));
 
-        while (!receivedData.empty())
+        while (!serviceBusy && !receivedData.empty())
         {
             infra::StringInputStream data(receivedData, infra::softFail);
             infra::ProtoParser parser(data >> infra::data);
 
             auto serviceId = static_cast<uint32_t>(parser.GetVarInt());
-            auto [value, methodId] = parser.GetField();
+            auto messageStart = data.Reader().ConstructSaveMarker();
+            auto partialField = parser.GetPartialField().first;
+            auto size = partialField.Is<infra::PartialProtoLengthDelimited>() ? partialField.Get<infra::PartialProtoLengthDelimited>().length : 0;
+            auto partialEnd = data.Reader().ConstructSaveMarker();
+            data.Reader().Rewind(messageStart);
+            infra::ProtoParser fullParser(data >> infra::data);
+            auto [value, methodId] = fullParser.GetField();
 
             if (data.Failed())
                 break;
+
+            Echo::NotifyObservers([this, serviceId, methodId, size, &data, partialEnd](auto& service)
+                {
+                    if (service.AcceptsService(serviceId))
+                    {
+                        auto methodDeserializer = service.StartMethod(serviceId, methodId, size, services::echoErrorPolicyAbort);
+                        data.Reader().Rewind(partialEnd);
+                        infra::SharedOptional<infra::LimitedStreamReaderWithRewinding> reader;
+                        methodDeserializer->MethodContents(reader.Emplace(data.Reader(), size));
+                        assert(reader.Allocatable());
+                        serviceBusy = true;
+                        methodDeserializer->ExecuteMethod();
+                    }
+                });
 
             for (const auto& service : root.services)
                 if (service->serviceId == serviceId)
@@ -450,6 +469,41 @@ namespace application
             ServiceNotFound(serviceId, methodId);
             receivedData.erase(receivedData.begin(), receivedData.begin() + data.Reader().ConstructSaveMarker());
         }
+    }
+
+    void Console::SetPolicy(services::EchoPolicy& policy)
+    {
+        this->policy = &policy;
+    }
+
+    void Console::RequestSend(services::ServiceProxy& serviceProxy)
+    {
+        infra::EventDispatcher::Instance().Schedule([this, &serviceProxy]()
+            {
+                policy->GrantingSend(serviceProxy);
+                auto serializer = serviceProxy.GrantSend(); // GrantSend may result in new requests being made, so execute this whole sequence on the event dispatcher
+                std::vector<uint8_t> data;
+                infra::SharedOptional<infra::StdVectorOutputStreamWriter> writer;
+                auto partlySent = serializer->Serialize(writer.Emplace(data));
+                assert(!partlySent);
+                assert(writer.Allocatable());
+                GetObserver().Send(infra::ByteRangeAsStdString(infra::MakeRange(data)));
+            });
+    }
+
+    void Console::ServiceDone()
+    {
+        serviceBusy = false;
+    }
+
+    void Console::CancelRequestSend(services::ServiceProxy& serviceProxy)
+    {
+        std::abort();
+    }
+
+    services::MethodSerializerFactory& Console::SerializerFactory()
+    {
+        return serializerFactory;
     }
 
     void Console::MethodReceived(const EchoService& service, const EchoMethod& method, infra::ProtoParser&& parser)
@@ -578,12 +632,6 @@ namespace application
             void VisitSFixed32(const EchoFieldSFixed32& field) override
             {
                 std::cout << static_cast<int32_t>(fieldData.Get<uint32_t>());
-            }
-
-            void VisitOptional(const EchoFieldOptional& field) override
-            {
-                PrintFieldVisitor visitor(fieldData, parser, console);
-                field.type->Accept(visitor);
             }
 
             void VisitRepeated(const EchoFieldRepeated& field) override
@@ -800,12 +848,6 @@ namespace application
                 services::GlobalTracer().Continue() << "sfixed32";
             }
 
-            void VisitOptional(const EchoFieldOptional& field) override
-            {
-                ListFieldVisitor visitor(console);
-                field.type->Accept(visitor);
-            }
-
             void VisitRepeated(const EchoFieldRepeated& field) override
             {
                 ListFieldVisitor visitor(console);
@@ -849,6 +891,7 @@ namespace application
                 methodInvocation.EncodeParameters(method.parameter, line.size(), formatter);
             }
 
+            policy->GrantingSend(serviceProxyStub);
             GetObserver().Send(infra::ByteRangeAsStdString(infra::MakeRange(stream.Storage())));
         }
         catch (ConsoleExceptions::SyntaxError& error)
@@ -971,11 +1014,6 @@ namespace application
             MessageTokens::MessageTokenValue operator()(ConsoleToken::Dot value) const
             {
                 throw ConsoleExceptions::SyntaxError{ value.index };
-            }
-
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::Underscore value) const
-            {
-                return Empty{};
             }
 
             MessageTokens::MessageTokenValue operator()(ConsoleToken::LeftBrace) const
@@ -1204,15 +1242,6 @@ namespace application
                     throw ConsoleExceptions::IncorrectType{ valueIndex, "integer" };
 
                 formatter.PutVarIntField(value.Get<int64_t>(), field.number);
-            }
-
-            void VisitOptional(const EchoFieldOptional& field) override
-            {
-                if (!value.Is<Empty>())
-                {
-                    EncodeFieldVisitor visitor(value, valueIndex, formatter, methodInvocation);
-                    field.type->Accept(visitor);
-                }
             }
 
             void VisitRepeated(const EchoFieldRepeated& field) override

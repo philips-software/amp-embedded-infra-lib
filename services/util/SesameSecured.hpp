@@ -1,6 +1,7 @@
 #ifndef SERVICES_SESAME_SECURED_HPP
 #define SERVICES_SESAME_SECURED_HPP
 
+#include "generated/echo/SesameSecurity.pb.hpp"
 #include "infra/stream/BoundedVectorInputStream.hpp"
 #include "infra/stream/BoundedVectorOutputStream.hpp"
 #include "infra/stream/LimitedOutputStream.hpp"
@@ -15,6 +16,9 @@
 
 namespace services
 {
+    sesame_security::SymmetricKeyFile GenerateSymmetricKeys(hal::SynchronousRandomDataGenerator& randomDataGenerator);
+    sesame_security::SymmetricKeyFile ReverseDirection(const sesame_security::SymmetricKeyFile& keys);
+
     class SesameSecured
         : public Sesame
         , private SesameObserver
@@ -24,6 +28,9 @@ namespace services
         static constexpr std::size_t blockSize = 16;
         using KeyType = std::array<uint8_t, keySize>;
         using IvType = std::array<uint8_t, blockSize>;
+
+        template<std::size_t Size>
+        static constexpr std::size_t encodedMessageSize = Size + blockSize;
 
         struct KeyMaterial
         {
@@ -38,6 +45,7 @@ namespace services
 #endif
 
         SesameSecured(AesGcmEncryption& sendEncryption, AesGcmEncryption& receiveEncryption, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const KeyMaterial& keyMaterial);
+        SesameSecured(AesGcmEncryption& sendEncryption, AesGcmEncryption& receiveEncryption, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial);
 
         void SetSendKey(const KeyType& newSendKey, const IvType& newSendIv);
         void SetReceiveKey(const KeyType& newReceiveKey, const IvType& newReceiveIv);
@@ -104,11 +112,14 @@ namespace services
         , public SesameSecured
     {
         template<std::size_t Size>
-        using WithBuffers = infra::WithStorage<infra::WithStorage<WithCryptoMbedTls, infra::BoundedVector<uint8_t>::WithMaxSize<Size + blockSize>>, infra::BoundedVector<uint8_t>::WithMaxSize<Size + blockSize>>;
+        using WithBuffers = infra::WithStorage<infra::WithStorage<WithCryptoMbedTls, infra::BoundedVector<uint8_t>::WithMaxSize<encodedMessageSize<Size>>>, infra::BoundedVector<uint8_t>::WithMaxSize<encodedMessageSize<Size>>>;
 
         WithCryptoMbedTls(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const KeyMaterial& keyMaterial);
+        WithCryptoMbedTls(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial);
     };
 #endif
+
+    SesameSecured::KeyMaterial ConvertKeyMaterial(const sesame_security::SymmetricKeyFile& keyMaterial);
 }
 
 #endif

@@ -1,15 +1,15 @@
 #include "services/util/FlashSpi.hpp"
 #include "infra/event/EventDispatcher.hpp"
+#include "infra/util/Endian.hpp"
 
 namespace services
 {
-
-    const uint8_t FlashSpi::commandPageProgram = 0x02;
-    const uint8_t FlashSpi::commandReadData = 0x03;
+    const std::array<uint8_t, 2> FlashSpi::commandPageProgram{ 0x02, 0x12 }; // 3-byte addressing, 4-byte addressing
+    const std::array<uint8_t, 2> FlashSpi::commandReadData{ 0x03, 0x13 };
+    const std::array<uint8_t, 2> FlashSpi::commandEraseSubSector{ 0x20, 0x21 };
+    const std::array<uint8_t, 2> FlashSpi::commandEraseSector{ 0xd8, 0xdc };
     const uint8_t FlashSpi::commandReadStatusRegister = 0x05;
     const uint8_t FlashSpi::commandWriteEnable = 0x06;
-    const uint8_t FlashSpi::commandEraseSubSector = 0x20;
-    const uint8_t FlashSpi::commandEraseSector = 0xd8;
     const uint8_t FlashSpi::commandEraseBulk = 0xc7;
     const uint8_t FlashSpi::commandReadId = 0x9f;
 
@@ -57,10 +57,8 @@ namespace services
     {
         readBuffer = buffer;
         this->onDone = onDone;
-        instructionAndAddress.instruction = commandReadData;
-        instructionAndAddress.address = ConvertAddress(address);
 
-        spi.SendData(infra::MakeByteRange(instructionAndAddress), hal::SpiAction::continueSession, [this]()
+        spi.SendData(InstructionAndAddress(commandReadData, address), hal::SpiAction::continueSession, [this]()
             {
                 spi.ReceiveData(readBuffer, hal::SpiAction::stop, [this]()
                     {
@@ -113,16 +111,6 @@ namespace services
             });
     }
 
-    std::array<uint8_t, 3> FlashSpi::ConvertAddress(uint32_t address) const
-    {
-        uint32_t linearAddress = address;
-        std::array<uint8_t, 3> result;
-        result[0] = static_cast<uint8_t>(linearAddress >> 16);
-        result[1] = static_cast<uint8_t>(linearAddress >> 8);
-        result[2] = static_cast<uint8_t>(linearAddress);
-        return result;
-    }
-
     void FlashSpi::WriteEnable()
     {
         static const uint8_t command = commandWriteEnable;
@@ -138,12 +126,11 @@ namespace services
         writeBuffer = infra::Head(buffer, config.sizePage - AddressOffsetInSector(address) % config.sizePage);
         buffer.pop_front(writeBuffer.size());
 
-        instructionAndAddress.instruction = commandPageProgram;
-        instructionAndAddress.address = ConvertAddress(address);
+        auto instructionAndAddress = InstructionAndAddress(commandPageProgram, address);
 
         address += writeBuffer.size();
 
-        spi.SendData(infra::MakeByteRange(instructionAndAddress), hal::SpiAction::continueSession, [this]()
+        spi.SendData(instructionAndAddress, hal::SpiAction::continueSession, [this]()
             {
                 spi.SendData(writeBuffer, hal::SpiAction::stop, [this]()
                     {
@@ -173,10 +160,7 @@ namespace services
 
     void FlashSpi::SendEraseSubSector(uint32_t subSectorIndex)
     {
-        instructionAndAddress.instruction = commandEraseSubSector;
-        instructionAndAddress.address = ConvertAddress(AddressOfSector(subSectorIndex));
-
-        spi.SendData(infra::MakeByteRange(instructionAndAddress), hal::SpiAction::stop, [this]()
+        spi.SendData(InstructionAndAddress(commandEraseSubSector, AddressOfSector(subSectorIndex)), hal::SpiAction::stop, [this]()
             {
                 sequencer.Continue();
             });
@@ -184,10 +168,7 @@ namespace services
 
     void FlashSpi::SendEraseSector(uint32_t subSectorIndex)
     {
-        instructionAndAddress.instruction = commandEraseSector;
-        instructionAndAddress.address = ConvertAddress(AddressOfSector(subSectorIndex));
-
-        spi.SendData(infra::MakeByteRange(instructionAndAddress), hal::SpiAction::stop, [this]()
+        spi.SendData(InstructionAndAddress(commandEraseSector, AddressOfSector(subSectorIndex)), hal::SpiAction::stop, [this]()
             {
                 sequencer.Continue();
             });
@@ -195,9 +176,7 @@ namespace services
 
     void FlashSpi::SendEraseBulk()
     {
-        instructionAndAddress.instruction = commandEraseBulk;
-
-        spi.SendData(infra::MakeByteRange(instructionAndAddress.instruction), hal::SpiAction::stop, [this]()
+        spi.SendData(infra::MakeByteRange(commandEraseBulk), hal::SpiAction::stop, [this]()
             {
                 sequencer.Continue();
             });
@@ -238,5 +217,26 @@ namespace services
                         sequencer.Continue();
                     });
             });
+    }
+
+    infra::ConstByteRange FlashSpi::InstructionAndAddress(const std::array<uint8_t, 2>& instruction, uint32_t address)
+    {
+        auto addressSize = config.extendedAddressing ? 4 : 3;
+        address = infra::SwapEndian(address);
+        auto addressRange = infra::MakeByteRange(address);
+        auto addressRangeInBuffer = infra::ByteRange(instructionAndAddressBuffer.data() + 1, instructionAndAddressBuffer.data() + addressSize + 1);
+
+        if (config.extendedAddressing)
+        {
+            instructionAndAddressBuffer[0] = instruction[1];
+            std::copy(addressRange.begin(), addressRange.end(), addressRangeInBuffer.begin());
+        }
+        else
+        {
+            instructionAndAddressBuffer[0] = instruction[0];
+            std::copy(addressRange.begin() + 1, addressRange.end(), addressRangeInBuffer.begin());
+        }
+
+        return infra::ByteRange(instructionAndAddressBuffer.data(), instructionAndAddressBuffer.data() + addressSize + 1);
     }
 }

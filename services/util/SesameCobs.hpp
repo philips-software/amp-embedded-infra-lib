@@ -17,9 +17,20 @@ namespace services
     {
     public:
         template<std::size_t MaxMessageSize>
+        struct EncodedMessageSize
+        {
+            static constexpr std::size_t size = MaxMessageSize + MaxMessageSize / 254 + 2;
+        };
+
+        template<std::size_t MaxMessageSize>
+        static constexpr std::size_t sendBufferSize = MaxMessageSize;
+        template<std::size_t MaxMessageSize>
+        static constexpr std::size_t receiveBufferSize = EncodedMessageSize<MaxMessageSize>::size;
+
+        template<std::size_t MaxMessageSize>
         using WithMaxMessageSize = infra::WithStorage<infra::WithStorage<SesameCobs,
-                                                          infra::BoundedVector<uint8_t>::WithMaxSize<MaxMessageSize>>,
-            infra::BoundedDeque<uint8_t>::WithMaxSize<MaxMessageSize + MaxMessageSize / 254 + 2>>;
+                                                          infra::BoundedVector<uint8_t>::WithMaxSize<sendBufferSize<MaxMessageSize>>>,
+            infra::BoundedDeque<uint8_t>::WithMaxSize<receiveBufferSize<MaxMessageSize>>>;
 
         SesameCobs(infra::BoundedVector<uint8_t>& sendStorage, infra::BoundedDeque<uint8_t>& receivedMessage, hal::BufferedSerialCommunication& serial);
 
