@@ -4,10 +4,10 @@
 
 namespace services
 {
-    const std::array<uint8_t,2> FlashSpi::commandPageProgram{ 0x02, 0x12 }; // 3-byte addressing, 4-byte addressing
-    const std::array<uint8_t,2> FlashSpi::commandReadData{ 0x03, 0x13 };
-    const std::array<uint8_t,2> FlashSpi::commandEraseSubSector{ 0x20, 0x21 };
-    const std::array<uint8_t,2> FlashSpi::commandEraseSector{ 0xd8, 0xdc };
+    const std::array<uint8_t, 2> FlashSpi::commandPageProgram{ 0x02, 0x12 }; // 3-byte addressing, 4-byte addressing
+    const std::array<uint8_t, 2> FlashSpi::commandReadData{ 0x03, 0x13 };
+    const std::array<uint8_t, 2> FlashSpi::commandEraseSubSector{ 0x20, 0x21 };
+    const std::array<uint8_t, 2> FlashSpi::commandEraseSector{ 0xd8, 0xdc };
     const uint8_t FlashSpi::commandReadStatusRegister = 0x05;
     const uint8_t FlashSpi::commandWriteEnable = 0x06;
     const uint8_t FlashSpi::commandEraseBulk = 0xc7;
@@ -219,7 +219,7 @@ namespace services
             });
     }
 
-    infra::ConstByteRange FlashSpi::InstructionAndAddress(const std::array<uint8_t,2>& instruction, uint32_t address)
+    infra::ConstByteRange FlashSpi::InstructionAndAddress(const std::array<uint8_t, 2>& instruction, uint32_t address)
     {
         auto addressSize = config.extendedAddressing ? 4 : 3;
         address = infra::SwapEndian(address);
