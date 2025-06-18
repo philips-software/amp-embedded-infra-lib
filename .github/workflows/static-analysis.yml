@@ -47,7 +47,7 @@ jobs:
           buildPreset: "mutation-testing"
           testPreset: "mutation-testing"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"
-      - uses: philips-software/sonarqube-issue-conversion@574a39dedf13464c712b9d36be4bac33241884d8 # v1.0.1
+      - uses: philips-software/sonarqube-issue-conversion@7a8d60524dafa52eea3439587b310c81b2f2f981 # v1.1.0
         with:
           input: ${{ github.workspace }}/testresults/*.xml
           output: execution.xml
@@ -73,7 +73,7 @@ jobs:
       - uses: hendrikmuhs/ccache-action@63069e3931dedbf3b63792097479563182fe70d1 # v1.2.18
         with:
           key: ${{ github.job }}
-      - uses: github/codeql-action/init@fca7ace96b7d713c7035871441bd52efbe39e27e # v3.28.19
+      - uses: github/codeql-action/init@ce28f5bb42b7a9f2c824e633a3f6ee835bab6858 # v3.29.0
         with:
           languages: cpp
       - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
@@ -81,4 +81,4 @@ jobs:
           configurePreset: "host"
           buildPreset: "host-Debug"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"
-      - uses: github/codeql-action/analyze@fca7ace96b7d713c7035871441bd52efbe39e27e # v3.28.19
+      - uses: github/codeql-action/analyze@ce28f5bb42b7a9f2c824e633a3f6ee835bab6858 # v3.29.0
