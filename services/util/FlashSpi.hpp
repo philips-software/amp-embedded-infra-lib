@@ -30,10 +30,10 @@ namespace services
     public:
         using Config = detail::FlashSpiConfig;
 
-        static const uint8_t commandPageProgram[2];
-        static const uint8_t commandReadData[2];
-        static const uint8_t commandEraseSubSector[2];
-        static const uint8_t commandEraseSector[2];
+        static const std::array<uint8_t, 2> commandPageProgram;
+        static const std::array<uint8_t, 2> commandReadData;
+        static const std::array<uint8_t, 2> commandEraseSubSector;
+        static const std::array<uint8_t, 2> commandEraseSector;
         static const uint8_t commandReadStatusRegister;
         static const uint8_t commandWriteEnable;
         static const uint8_t commandEraseBulk;
@@ -61,7 +61,7 @@ namespace services
         void SendEraseBulk();
         void HoldWhileWriteInProgress();
         void ReadStatusRegister();
-        infra::ConstByteRange InstructionAndAddress(const uint8_t instruction[], uint32_t address);
+        infra::ConstByteRange InstructionAndAddress(const std::array<uint8_t, 2>& instruction, uint32_t address);
 
     private:
         hal::SpiMaster& spi;

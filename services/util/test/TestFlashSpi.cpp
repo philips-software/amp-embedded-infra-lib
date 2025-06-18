@@ -22,7 +22,7 @@ public:
         return std::vector<uint8_t>{ instruction };
     }
 
-    std::vector<uint8_t> CreateInstructionAndAddress(const uint8_t instruction[], uint32_t address)
+    std::vector<uint8_t> CreateInstructionAndAddress(const std::array<uint8_t, 2>& instruction, uint32_t address)
     {
         if (GetParam().extendedAddressing)
             return std::vector<uint8_t>{ instruction[1], static_cast<uint8_t>(address >> 24), static_cast<uint8_t>(address >> 16), static_cast<uint8_t>(address >> 8), static_cast<uint8_t>(address) };
@@ -30,7 +30,7 @@ public:
             return std::vector<uint8_t>{ instruction[0], static_cast<uint8_t>(address >> 16), static_cast<uint8_t>(address >> 8), static_cast<uint8_t>(address) };
     }
 
-    std::vector<uint8_t> CreateInstructionAddressAndData(const uint8_t instruction[], uint32_t address, const std::vector<uint8_t>& data)
+    std::vector<uint8_t> CreateInstructionAddressAndData(const std::array<uint8_t, 2>& instruction, uint32_t address, const std::vector<uint8_t>& data)
     {
         std::vector<uint8_t> result = CreateInstructionAndAddress(instruction, address);
         result.insert(result.end(), data.begin(), data.end());

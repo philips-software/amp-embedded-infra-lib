@@ -1,13 +1,13 @@
 #include "services/util/FlashSpi.hpp"
 #include "infra/event/EventDispatcher.hpp"
+#include "infra/util/Endian.hpp"
 
 namespace services
 {
-
-    const uint8_t FlashSpi::commandPageProgram[2] = { 0x02, 0x12 }; // 3-byte addressing, 4-byte addressing
-    const uint8_t FlashSpi::commandReadData[2] = { 0x03, 0x13 };
-    const uint8_t FlashSpi::commandEraseSubSector[2] = { 0x20, 0x21 };
-    const uint8_t FlashSpi::commandEraseSector[2] = { 0xd8, 0xdc };
+    const std::array<uint8_t,2> FlashSpi::commandPageProgram{ 0x02, 0x12 }; // 3-byte addressing, 4-byte addressing
+    const std::array<uint8_t,2> FlashSpi::commandReadData{ 0x03, 0x13 };
+    const std::array<uint8_t,2> FlashSpi::commandEraseSubSector{ 0x20, 0x21 };
+    const std::array<uint8_t,2> FlashSpi::commandEraseSector{ 0xd8, 0xdc };
     const uint8_t FlashSpi::commandReadStatusRegister = 0x05;
     const uint8_t FlashSpi::commandWriteEnable = 0x06;
     const uint8_t FlashSpi::commandEraseBulk = 0xc7;
@@ -219,24 +219,24 @@ namespace services
             });
     }
 
-    infra::ConstByteRange FlashSpi::InstructionAndAddress(const uint8_t instruction[], uint32_t address)
+    infra::ConstByteRange FlashSpi::InstructionAndAddress(const std::array<uint8_t,2>& instruction, uint32_t address)
     {
+        auto addressSize = config.extendedAddressing ? 4 : 3;
+        address = infra::SwapEndian(address);
+        auto addressRange = infra::MakeByteRange(address);
+        auto addressRangeInBuffer = infra::ByteRange(instructionAndAddressBuffer.data() + 1, instructionAndAddressBuffer.data() + addressSize + 1);
+
         if (config.extendedAddressing)
         {
             instructionAndAddressBuffer[0] = instruction[1];
-            instructionAndAddressBuffer[1] = static_cast<uint8_t>(address >> 24);
-            instructionAndAddressBuffer[2] = static_cast<uint8_t>(address >> 16);
-            instructionAndAddressBuffer[3] = static_cast<uint8_t>(address >> 8);
-            instructionAndAddressBuffer[4] = static_cast<uint8_t>(address);
-            return infra::ByteRange(instructionAndAddressBuffer.data(), instructionAndAddressBuffer.data() + 5);
+            std::copy(addressRange.begin(), addressRange.end(), addressRangeInBuffer.begin());
         }
         else
         {
             instructionAndAddressBuffer[0] = instruction[0];
-            instructionAndAddressBuffer[1] = static_cast<uint8_t>(address >> 16);
-            instructionAndAddressBuffer[2] = static_cast<uint8_t>(address >> 8);
-            instructionAndAddressBuffer[3] = static_cast<uint8_t>(address);
-            return infra::ByteRange(instructionAndAddressBuffer.data(), instructionAndAddressBuffer.data() + 4);
+            std::copy(addressRange.begin() + 1, addressRange.end(), addressRangeInBuffer.begin());
         }
+
+        return infra::ByteRange(instructionAndAddressBuffer.data(), instructionAndAddressBuffer.data() + addressSize + 1);
     }
 }
