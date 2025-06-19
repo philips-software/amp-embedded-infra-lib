@@ -1,7 +1,9 @@
 #include "args.hxx"
+#include "hal/generic/FileSystemGeneric.hpp"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "hal/generic/UartGeneric.hpp"
 #include "infra/stream/IoOutputStream.hpp"
+#include "infra/stream/StdVectorInputStream.hpp"
 #include "infra/syntax/Json.hpp"
 #include "infra/util/Tokenizer.hpp"
 #include "services/echo_console/Console.hpp"
@@ -9,7 +11,10 @@
 #include "services/network/HttpClientImpl.hpp"
 #include "services/network/WebSocketClientConnectionObserver.hpp"
 #include "services/tracer/GlobalTracer.hpp"
+#include "services/util/EchoPolicyDiffieHellman.hpp"
+#include "services/util/EchoPolicySymmetricKey.hpp"
 #include "services/util/SesameCobs.hpp"
+#include "services/util/SesameSecured.hpp"
 #include "services/util/SesameWindowed.hpp"
 #include <deque>
 #include <fstream>
@@ -18,9 +23,12 @@
 class ConsoleClientUart
     : public application::ConsoleObserver
     , private services::SesameObserver
+    , private services::EchoInitialization
 {
 public:
     ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial);
+    ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, const sesame_security::SymmetricKeyFile& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+    ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, infra::ConstByteRange clientCertificate, infra::ConstByteRange clientCertificatePrivateKey, infra::ConstByteRange rootCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
     // Implementation of ConsoleObserver
     void Send(const std::string& message) override;
@@ -38,25 +46,51 @@ private:
     std::deque<std::string> messagesToBeSent;
     services::SesameCobs::WithMaxMessageSize<2048> cobs;
     services::SesameWindowed windowed{ cobs };
+    infra::Optional<services::SesameSecured::WithCryptoMbedTls::WithBuffers<2048>> secured;
+    services::Sesame& sesame;
     bool sending = false;
-    services::SesameObserver::DelayedAttachDetach delayed{ *this, windowed };
+    services::SesameObserver::DelayedAttachDetach delayed{ *this, sesame };
+    infra::Optional<services::EchoPolicySymmetricKey> policySymmetricKey;
+    infra::Optional<services::EchoPolicyDiffieHellman::WithCryptoMbedTls> policyDiffieHellman;
 };
 
 ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial)
     : application::ConsoleObserver(console)
     , cobs(serial)
+    , sesame(windowed)
+{}
+
+ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, const sesame_security::SymmetricKeyFile& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    : application::ConsoleObserver(console)
+    , cobs(serial)
+    , secured{ infra::inPlace, windowed, keyMaterial }
+    , sesame{ *secured }
+    , policySymmetricKey{ infra::inPlace, application::ConsoleObserver::Subject(), static_cast<services::EchoInitialization&>(*this), *secured, randomDataGenerator }
+{}
+
+ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, infra::ConstByteRange clientCertificate, infra::ConstByteRange clientCertificatePrivateKey, infra::ConstByteRange rootCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    : application::ConsoleObserver(console)
+    , cobs(serial)
+    , secured{ infra::inPlace, windowed, services::SesameSecured::KeyMaterial{} }
+    , sesame{ *secured }
+    , policyDiffieHellman{ infra::inPlace, application::ConsoleObserver::Subject(), static_cast<services::EchoInitialization&>(*this), *secured, clientCertificate, clientCertificatePrivateKey, rootCertificate, randomDataGenerator }
 {}
 
 void ConsoleClientUart::Send(const std::string& message)
 {
-    auto size = windowed.MaxSendMessageSize();
+    auto size = sesame.MaxSendMessageSize();
     for (std::size_t index = 0; index < message.size(); index += size)
         messagesToBeSent.push_back(message.substr(index, size));
     CheckDataToBeSent();
 }
 
 void ConsoleClientUart::Initialized()
-{}
+{
+    services::EchoInitialization::NotifyObservers([](auto& observer)
+        {
+            observer.Initialized();
+        });
+}
 
 void ConsoleClientUart::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
 {
@@ -80,7 +114,7 @@ void ConsoleClientUart::CheckDataToBeSent()
     if (!sending && !messagesToBeSent.empty())
     {
         sending = true;
-        windowed.RequestSendMessage(static_cast<uint16_t>(messagesToBeSent.front().size()));
+        sesame.RequestSendMessage(static_cast<uint16_t>(messagesToBeSent.front().size()));
     }
 }
 
@@ -276,6 +310,20 @@ void ConsoleClientWebSocket::ConnectionFailed(ConnectFailReason reason)
     exit(1);
 }
 
+namespace
+{
+    hal::FileSystemGeneric fileSystem;
+
+    template<class T>
+    T ReadProtoFile(const std::string& filename)
+    {
+        auto contents = fileSystem.ReadBinaryFile(filename);
+        infra::StdVectorInputStream stream{ contents };
+        infra::ProtoParser parser{ stream };
+        return T(parser);
+    }
+}
+
 int main(int argc, char* argv[], const char* env[])
 {
     infra::IoOutputStream ioOutputStream;
@@ -285,8 +333,14 @@ int main(int argc, char* argv[], const char* env[])
 
     std::string toolname = argv[0];
     args::ArgumentParser parser(toolname + " is a tool to communicate with an ECHO server.");
+    args::Group target(parser, "Target:");
+    args::ValueFlag<std::string> targetPort(parser, "", "COM port", { "port" });
+    args::ValueFlag<std::string> targetHost(parser, "", "Hostname", { "host" });
     args::Group arguments(parser, "Arguments:");
-    args::Positional<std::string> target(arguments, "target", "COM port or hostname", args::Options::Required);
+    args::ValueFlag<std::string> symmetricKeyFile(arguments, "file", "File containing the symmetric keys for SESAME encryption.", { "symmetric-keys" });
+    args::ValueFlag<std::string> rootCertificateFile(arguments, "file", "File containing the root certificate for SESAME encryption with Diffie-Hellman key exchange.", { "root-certificate" });
+    args::ValueFlag<std::string> clientCertificateFile(arguments, "file", "File containing the client certificate for SESAME encryption with Diffie-Hellman key exchange.", { "client-certificate" });
+    args::ValueFlag<std::string> clientCertificatePrivateFile(arguments, "file", "File containing the client certificate private key for SESAME encryption with Diffie-Hellman key exchange.", { "client-certificate-private-key" });
     args::Group flags(parser, "Optional flags:");
     args::HelpFlag help(flags, "help", "Display this help menu.", { 'h', "help" });
     args::PositionalList<std::string> paths(arguments, "paths", "compiled proto files");
@@ -318,7 +372,7 @@ int main(int argc, char* argv[], const char* env[])
             std::cout << "Loaded " << path << std::endl;
         }
 
-        bool serialConnectionRequested = get(target).substr(0, 3) == "COM" || get(target).substr(0, 4) == "/dev";
+        bool serialConnectionRequested = !get(targetPort).empty();
         application::Console console(root, !serialConnectionRequested);
         services::ConnectionFactoryWithNameResolverImpl::WithStorage<4> connectionFactory(console.ConnectionFactory(), console.NameResolver());
         infra::Optional<ConsoleClientTcp> consoleClientTcp;
@@ -329,14 +383,25 @@ int main(int argc, char* argv[], const char* env[])
 
         if (serialConnectionRequested)
         {
-            uart.Emplace(get(target));
+            uart.Emplace(get(targetPort));
             bufferedUart.Emplace(*uart);
-            consoleClientUart.Emplace(console, *bufferedUart);
+
+            if (!get(symmetricKeyFile).empty())
+                consoleClientUart.Emplace(console, *bufferedUart, ReadProtoFile<sesame_security::SymmetricKeyFile>(get(symmetricKeyFile)), randomDataGenerator);
+            else if (!get(rootCertificateFile).empty() && !get(clientCertificateFile).empty() && !get(clientCertificatePrivateFile).empty())
+            {
+                static auto clientCertificate = fileSystem.ReadBinaryFile(get(clientCertificateFile));
+                static auto clientCertificatePrivateKey = fileSystem.ReadBinaryFile(get(clientCertificatePrivateFile));
+                static auto rootCertificate = fileSystem.ReadBinaryFile(get(rootCertificateFile));
+                consoleClientUart.Emplace(console, *bufferedUart, clientCertificate, clientCertificatePrivateKey, rootCertificate, randomDataGenerator);
+            }
+            else
+                consoleClientUart.Emplace(console, *bufferedUart);
         }
-        else if (services::SchemeFromUrl(infra::BoundedConstString(get(target))) == "ws")
-            consoleClientWebSocket.Emplace(connectionFactory, console, get(target), randomDataGenerator, tracer);
+        else if (services::SchemeFromUrl(infra::BoundedConstString(get(targetHost))) == "ws")
+            consoleClientWebSocket.Emplace(connectionFactory, console, get(targetHost), randomDataGenerator, tracer);
         else
-            consoleClientTcp.Emplace(connectionFactory, console, get(target), tracer);
+            consoleClientTcp.Emplace(connectionFactory, console, get(targetHost), tracer);
 
         console.Run();
     }

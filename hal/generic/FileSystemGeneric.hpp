@@ -13,7 +13,7 @@ namespace hal
         void WriteFile(const hal::filesystem::path& path, const std::vector<std::string>& contents) override;
 
         std::vector<uint8_t> ReadBinaryFile(const hal::filesystem::path& path) override;
-        void WriteBinaryFile(const hal::filesystem::path& path, const std::vector<uint8_t>& contents) override;
+        void WriteBinaryFile(const hal::filesystem::path& path, infra::ConstByteRange contents) override;
     };
 }
 

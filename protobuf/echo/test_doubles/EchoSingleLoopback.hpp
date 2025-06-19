@@ -4,7 +4,7 @@
 #include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/util/SharedOptional.hpp"
-#include "protobuf/echo/Echo.hpp"
+#include "protobuf/echo/EchoOnStreams.hpp"
 #include <deque>
 
 namespace application
