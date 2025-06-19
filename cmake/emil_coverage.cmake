@@ -34,7 +34,7 @@ function(emil_enable_mutation_for target)
     if (EMIL_ENABLE_MUTATION_TESTING)
         message(DEBUG "enable mutation for: ${target}")
         if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-            target_compile_options(${target} PRIVATATE
+            target_compile_options(${target} PRIVATE
                 -g -O0 -grecord-command-line -fprofile-instr-generate -fcoverage-mapping -fpass-plugin=/usr/lib/mull-ir-frontend
             )
 
