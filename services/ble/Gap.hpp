@@ -280,8 +280,8 @@ namespace services
         infra::ConstByteRange LocalName() const;
         infra::Optional<std::pair<uint16_t, infra::ConstByteRange>> ManufacturerSpecificData() const;
         infra::Optional<GapPeripheral::AdvertisementFlags> Flags() const;
-        infra::MemoryRange<AttAttribute::Uuid16> CompleteListOf16BitUuids() const;
-        infra::MemoryRange<AttAttribute::Uuid128> CompleteListOf128BitUuids() const;
+        infra::MemoryRange<const AttAttribute::Uuid16> CompleteListOf16BitUuids() const;
+        infra::MemoryRange<const AttAttribute::Uuid128> CompleteListOf128BitUuids() const;
 
     private:
         infra::ConstByteRange data;
@@ -302,7 +302,6 @@ namespace services
         void AppendListOfServicesUuid(infra::MemoryRange<AttAttribute::Uuid16> services);
         void AppendListOfServicesUuid(infra::MemoryRange<AttAttribute::Uuid128> services);
         void AppendPublicTargetAddress(hal::MacAddress address);
-        void Clear();
 
         infra::ConstByteRange FormattedAdvertisementData() const;
         std::size_t RemainingSpaceAvailable() const;

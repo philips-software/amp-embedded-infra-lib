@@ -22,16 +22,6 @@ namespace services
         EXPECT_EQ(formatter.RemainingSpaceAvailable(), GapPeripheral::maxScanResponseDataSize);
     }
 
-    TEST_F(GapAdvertisementFormatterTest, clear_resets_formatter)
-    {
-        formatter.AppendFlags(GapPeripheral::AdvertisementFlags::leGeneralDiscoverableMode);
-        EXPECT_FALSE(formatter.FormattedAdvertisementData().empty());
-
-        formatter.Clear();
-        EXPECT_THAT(formatter.FormattedAdvertisementData(), testing::IsEmpty());
-        EXPECT_EQ(formatter.RemainingSpaceAvailable(), GapPeripheral::maxScanResponseDataSize);
-    }
-
     TEST_F(GapAdvertisementFormatterTest, append_flags)
     {
         formatter.AppendFlags(GapPeripheral::AdvertisementFlags::leGeneralDiscoverableMode);
