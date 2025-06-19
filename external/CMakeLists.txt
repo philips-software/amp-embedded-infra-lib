@@ -8,3 +8,4 @@ if (EMIL_INCLUDE_SEGGER_RTT)
 endif()
 
 emil_exclude_directory_from_clang_format(.)
+emil_exclude_directory_from_coverage(.)
