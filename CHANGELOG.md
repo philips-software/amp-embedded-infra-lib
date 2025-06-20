@@ -7,6 +7,28 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [7.3.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v7.2.0...v7.3.0) (2025-06-20)
+
+
+### Features
+
+* Add MakeConstRange which returns a MemoryRange&lt;const T&gt; ([#891](https://github.com/philips-software/amp-embedded-infra-lib/issues/891)) ([72a8a2c](https://github.com/philips-software/amp-embedded-infra-lib/commit/72a8a2c67803912c9d9232b57b0d6c4998b1b0de))
+* Add secure sesame to echo console ([#877](https://github.com/philips-software/amp-embedded-infra-lib/issues/877)) ([7734960](https://github.com/philips-software/amp-embedded-infra-lib/commit/7734960b36349dedea653e5851dbf588bd3367a7))
+* Add SeggerRTT on SerialCommunication ([#886](https://github.com/philips-software/amp-embedded-infra-lib/issues/886)) ([f4de93c](https://github.com/philips-software/amp-embedded-infra-lib/commit/f4de93c71078a0d5e89ff87aa452faed57a16125))
+* Add services/util/FlashDelegate ([#862](https://github.com/philips-software/amp-embedded-infra-lib/issues/862)) ([e69458d](https://github.com/philips-software/amp-embedded-infra-lib/commit/e69458d6c06144b553e1e996f4115c72af572c93))
+* Add sesame_key_generator ([#870](https://github.com/philips-software/amp-embedded-infra-lib/issues/870)) ([1c97c6f](https://github.com/philips-software/amp-embedded-infra-lib/commit/1c97c6f3ff4314c24e2f659517faee7421127c91))
+* Automatically enable coverage for all targets excluding test targets ([#897](https://github.com/philips-software/amp-embedded-infra-lib/issues/897)) ([9607adf](https://github.com/philips-software/amp-embedded-infra-lib/commit/9607adf1d762c1e75321919bda32e4b21065c90f))
+* Extended addressing on flash spi ([#895](https://github.com/philips-software/amp-embedded-infra-lib/issues/895)) ([07b25da](https://github.com/philips-software/amp-embedded-infra-lib/commit/07b25da87812717555d17e5a5d1ee645aa6426d6))
+
+
+### Bug Fixes
+
+* Fixed race condition in EchoOnStreams ([#875](https://github.com/philips-software/amp-embedded-infra-lib/issues/875)) ([45bec54](https://github.com/philips-software/amp-embedded-infra-lib/commit/45bec543da20b544b6dbdaf1102a7d3082a4cf2e))
+* Initialize storage before using in EchoOnSesame ([#892](https://github.com/philips-software/amp-embedded-infra-lib/issues/892)) ([95a39d1](https://github.com/philips-software/amp-embedded-infra-lib/commit/95a39d18be3de1c595dbdb3b631039f4390b17dc))
+* Remove claiming from writeworesponse ([#874](https://github.com/philips-software/amp-embedded-infra-lib/issues/874)) ([9fa0a4f](https://github.com/philips-software/amp-embedded-infra-lib/commit/9fa0a4f22b3c951a6a512683282c7ea1a36ef349))
+* When detaching cancel timeout timer ([#871](https://github.com/philips-software/amp-embedded-infra-lib/issues/871)) ([d59e82d](https://github.com/philips-software/amp-embedded-infra-lib/commit/d59e82d0bea34b142cdb9c6d73704b0c61640a99))
+* When UartUnix is destroyed receivedData is still called on read thread ([#863](https://github.com/philips-software/amp-embedded-infra-lib/issues/863)) ([f3adb96](https://github.com/philips-software/amp-embedded-infra-lib/commit/f3adb96e273868d4b8b772b5135178cb0bba7c88))
+
 ## [7.2.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v7.1.0...v7.2.0) (2025-04-28)
 
 
