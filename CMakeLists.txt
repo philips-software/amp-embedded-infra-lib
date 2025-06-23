@@ -15,6 +15,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED On)
 set_directory_properties(PROPERTY USE_FOLDERS On)
 
 include(CMakePackageConfigHelpers)
+include(emil_coverage)
 include(emil_antora)
 include(emil_build_for)
 include(emil_folderize)
@@ -160,6 +161,7 @@ emil_clangformat_directories(emil DIRECTORIES .)
 
 if (EMIL_STANDALONE)
     emil_generate_antora_docs_target(antora-playbook-branch.yml)
+    emil_coverage_targets(DIRECTORIES .)
     emil_folderize_all_targets()
 endif()
 
