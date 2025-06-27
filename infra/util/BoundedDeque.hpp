@@ -156,7 +156,7 @@ namespace infra
             using pointer = value_type*;
             using reference = value_type&;
 
-            BoundedDequeIterator() = delete;
+            BoundedDequeIterator() = default;
             BoundedDequeIterator(DequeType* deque, std::size_t offset);
             template<class DequeType2, class T2>
             BoundedDequeIterator(const BoundedDequeIterator<DequeType2, T2>& other);
@@ -195,8 +195,8 @@ namespace infra
             friend class BoundedDequeIterator;
             friend DequeType;
 
-            std::size_t index;
-            DequeType* deque;
+            std::size_t index{};
+            DequeType* deque{};
         };
     }
 
