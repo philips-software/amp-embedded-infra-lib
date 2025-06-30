@@ -124,55 +124,9 @@
 <div class="sect1">
 <h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
 <div class="sectionbody">
-<div class="listingblock kroki-error">
+<div class="imageblock kroki">
 <div class="content">
-<pre>@startuml
-!theme cerulean-outline
-
-    package upgrade {
-        component bootloader
-        component pack_builder
-        component more_upgrade [
-            ...
-        ]
-    }
-
-    package protobuf {
-        component echo
-        component echo_console
-        component protoc_echo_plugin
-        component more_protobuf [
-            ...
-        ]
-    }
-
-    package services {
-        component ble
-        component cucumber
-        component network
-        component tracer
-        component util
-        component more_services [
-            ...
-        ]
-    }
-
-    package hal {
-        component interfaces
-        component synchronous_interfaces
-        component more_hal [
-            ...
-        ]
-    }
-
-    package infra {
-        component event
-        component stream
-        component syntax
-        component timer
-        component util
-    }
-@enduml</pre>
+<img src="_images/diag-ced766c6bdb8b362f5a11a5fe2e3a0bb3d4c6e23.svg" alt="Diagram">
 </div>
 </div>
 </div>
