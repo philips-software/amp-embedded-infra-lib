@@ -59,7 +59,7 @@ function(emil_generate_artifacts)
             add_custom_command(
                 TARGET ${EMIL_TARGET}
                 POST_BUILD
-                COMMAND ${EMIL_OBJ_DUMP_TOOL} -S "$<TARGET_FILE:${EMIL_TARGET}>" > "$<TARGET_FILE_DIR:${EMIL_TARGET}>/$<TARGET_FILE_BASE_NAME:${EMIL_TARGET}>.lst"
+                COMMAND ${EMIL_OBJ_DUMP_TOOL} -m arm -S "$<TARGET_FILE:${EMIL_TARGET}>" > "$<TARGET_FILE_DIR:${EMIL_TARGET}>/$<TARGET_FILE_BASE_NAME:${EMIL_TARGET}>.lst"
             )
         endif()
     endif()
