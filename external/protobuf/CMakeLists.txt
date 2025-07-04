@@ -62,5 +62,5 @@ if (EMIL_HOST_BUILD)
 
     # /MP is added by protobuf in case of MSVC, but that check is a (partial) false positive since we use the MSVC _frontend_ for clang
     # which does not support this flag
-    remove_mp(libprotobuf libprotoc)
+    remove_mp(libprotobuf libprotobuf-lite libprotoc libupb)
 endif()
