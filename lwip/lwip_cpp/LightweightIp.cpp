@@ -97,6 +97,9 @@ namespace services
 
     void LightweightIp::ExtCallback(netif_nsc_reason_t reason, const netif_ext_callback_args_t* args)
     {
+        if (netif_default == nullptr)
+            return;
+
         bool linkUp = (netif_default->flags & NETIF_FLAG_LINK_UP) != 0;
 
         auto newIpv4Address = GetIPv4Address();
