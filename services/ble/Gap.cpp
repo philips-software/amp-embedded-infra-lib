@@ -44,9 +44,9 @@ namespace services
             });
     }
 
-    void GapPairingDecorator::Pair()
+    void GapPairingDecorator::Bond()
     {
-        GapPairingObserver::Subject().Pair();
+        GapPairingObserver::Subject().Bond();
     }
 
     void GapPairingDecorator::AllowPairing(bool allow)

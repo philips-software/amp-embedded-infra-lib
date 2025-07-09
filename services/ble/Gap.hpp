@@ -143,7 +143,7 @@ namespace services
         };
 
         virtual void
-        Pair() = 0;
+        Bond() = 0;
 
         virtual void AllowPairing(bool allow) = 0;
 
@@ -168,7 +168,7 @@ namespace services
         void PairingFailed(PairingErrorType error) override;
 
         // Implementation of GapPairing
-        void Pair() override;
+        void Bond() override;
         void AllowPairing(bool allow) override;
 
         void SetManInTheMiddleMode(ManInTheMiddleMode mitmMode) override;

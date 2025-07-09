@@ -246,16 +246,22 @@ service GapCentral
     // Allowed states: connected
     rpc Disconnect(Nothing) returns (Nothing) { option (method_id) = 5; }
 
-    // Allowed states: connected
-    rpc Pair(Nothing) returns (Nothing) { option (method_id) = 6; }
+    // Allowed states: connected 
+    // This will send a pairing request if there is no bond, and will not send a pairing request when there is a bond.
+    rpc Bond(Nothing) returns (Nothing) { option (method_id) = 6; }
     
     rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 8; }
     rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 9; }
     rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 10; }
     rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 11; }
     rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 12; }
-    rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; }
+
+    // This will only succeed if Address is a private resolvable address, and if the device is bonded
+    rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; } 
+
+    // This will work with both public and random addresses
     rpc IsDeviceBonded(PeerNodeParameters) returns (Nothing) { option (method_id) = 14; }
+    
     rpc SetManInTheMiddleMode(ManInTheMiddleMode) returns (Nothing) { option (method_id) = 15; }
     rpc SetSecureConnectionMode(SecureConnectionMode) returns (Nothing) { option (method_id) = 16; }
 }
