@@ -113,7 +113,7 @@ namespace services
     {
         Match matchResult{};
         uint8_t nrStepMatches = 0;
-        uint8_t count = 0;
+        std::size_t count = 0;
 
         for (auto& step : stepList)
         {
