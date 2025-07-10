@@ -727,6 +727,27 @@ TEST(BoundedDequeTest, TestEmplaceWrapped)
     EXPECT_EQ(infra::MoveConstructible(3), deque[3]);
 }
 
+TEST(BoundedDequeTest, IteratorDefaultConstruct)
+{
+    infra::BoundedDeque<int>::iterator i;
+
+    EXPECT_EQ(infra::BoundedDeque<int>::iterator(), i);
+}
+
+TEST(BoundedDequeTest, IteratorDefaultConstructDeathOnAccess)
+{
+    struct MyType
+    {
+        int i{ 0 };
+    };
+
+    // Accessing a default-constructed iterator should trigger undefined behavior (death).
+    infra::BoundedDeque<MyType>::iterator i;
+    ASSERT_DEATH({ auto& value = *i; }, "");
+    ASSERT_DEATH({ auto value = i->i; }, "");
+    ASSERT_DEATH({ auto& value = i[0]; }, "");
+}
+
 TEST(BoundedDequeTest, IteratorCopyConstruct)
 {
     infra::BoundedDeque<int>::WithMaxSize<5> list(std::size_t(1), 4);
