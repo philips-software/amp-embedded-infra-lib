@@ -2,25 +2,12 @@
 #define SERVICES_GATT_HPP
 
 #include "infra/stream/OutputStream.hpp"
-#include "infra/util/ByteRange.hpp"
-#include "infra/util/Endian.hpp"
 #include "infra/util/EnumCast.hpp"
-#include "infra/util/Function.hpp"
 #include "infra/util/Observer.hpp"
-#include "infra/util/Variant.hpp"
-#include <array>
+#include "services/ble/Att.hpp"
 
 namespace services
 {
-    struct AttAttribute
-    {
-        using Uuid16 = uint16_t;
-        using Uuid128 = infra::BigEndian<std::array<uint8_t, 16>>;
-        using Uuid = infra::Variant<Uuid16, Uuid128>;
-
-        using Handle = uint16_t;
-    };
-
     struct GattDescriptor
     {
         struct ClientCharacteristicConfiguration

@@ -15,6 +15,7 @@ function(emil_fetch_googletest)
     FetchContent_MakeAvailable(googletest)
 
     set_target_properties(gtest gtest_main gmock gmock_main PROPERTIES FOLDER External/GoogleTest)
+    set_target_properties(gtest gtest_main gmock gmock_main PROPERTIES EXCLUDE_FROM_COVERAGE TRUE)
     mark_as_advanced(BUILD_GMOCK BUILD_GTEST BUILD_SHARED_LIBS gmock_build_tests gtest_build_samples test_build_tests gtest_disable_pthreads gtest_force_shared_crt gtest_hide_internal_symbols)
 endfunction()
 
@@ -22,31 +23,6 @@ function(emil_enable_testing)
     include(GoogleTest)
 
     emil_fetch_googletest()
-
-    if (EMIL_ENABLE_COVERAGE)
-        add_compile_options(
-            -g -O0 --coverage -fprofile-arcs -ftest-coverage -fno-inline
-            $<$<COMPILE_LANGUAGE:CXX>:-fno-elide-constructors>
-        )
-
-        if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
-            link_libraries(gcov)
-        else()
-            add_link_options(--coverage)
-        endif()
-    endif()
-
-    if (EMIL_ENABLE_MUTATION_TESTING)
-        if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-            add_compile_options(
-                -g -O0 -grecord-command-line -fprofile-instr-generate -fcoverage-mapping -fpass-plugin=/usr/lib/mull-ir-frontend
-            )
-
-            add_link_options(-fprofile-instr-generate)
-        else()
-            message(FATAL_ERROR "Mutation testing is currently only supported for Clang/LLVM; not for ${CMAKE_CXX_COMPILER_ID}")
-        endif()
-    endif()
 endfunction()
 
 function(emil_enable_fuzzing)
@@ -66,6 +42,7 @@ function(emil_add_test target)
         else()
             add_test(NAME ${target} COMMAND ${target})
         endif()
+        emil_exclude_from_coverage(${target})
     endif()
 endfunction()
 
