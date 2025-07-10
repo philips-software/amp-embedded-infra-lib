@@ -111,9 +111,9 @@ jobs:
           key: ${{ github.job }}-${{ matrix.os }}
       - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
         with:
-          configurePreset: "host-single-Debug"
-          buildPreset: "host-single-Debug"
-          testPreset: "host-single-Debug"
+          configurePreset: ${{ matrix.os == 'windows-latest' && 'host-ClangMsvc' || 'host-single-Debug' }}
+          buildPreset: ${{ matrix.os == 'windows-latest' && 'host-ClangMsvc-Debug' || 'host-single-Debug' }}
+          testPreset: ${{ matrix.os == 'windows-latest' && 'host-ClangMsvc-Debug' || 'host-single-Debug' }}
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"
       - name: Upload test logs
         if: ${{ failure() }}
