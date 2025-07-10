@@ -21,6 +21,18 @@ if (EMIL_HOST_BUILD)
         $<$<CXX_COMPILER_ID:MSVC>:/wd4116>
         # Disable warning inline used more than once
         $<$<CXX_COMPILER_ID:MSVC>:/wd4141>
+        # Increase template recursion depth and memory limit for MSVC to avoid ICE
+        $<$<CXX_COMPILER_ID:MSVC>:/constexpr:depth2048>
+        $<$<CXX_COMPILER_ID:MSVC>:/constexpr:backtrace10>
+        # Additional MSVC flags to work around internal compiler errors
+        $<$<CXX_COMPILER_ID:MSVC>:/bigobj>
+        $<$<CXX_COMPILER_ID:MSVC>:/Zm1000>
+        # Disable aggressive optimizations that can trigger ICE
+        $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CONFIG:Debug>>:/Od>
+        # Reduce template instantiation recursion to avoid ICE
+        $<$<CXX_COMPILER_ID:MSVC>:/permissive->
+        # Use parallel compilation but limit processes to avoid memory issues
+        $<$<CXX_COMPILER_ID:MSVC>:/MP4>
     )
 
     set(protobuf_BUILD_TESTS Off CACHE INTERNAL "")
