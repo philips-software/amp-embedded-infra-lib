@@ -4,6 +4,8 @@
 #include "lwip/timeouts.h"
 #endif
 
+#include "services/tracer/GlobalTracer.hpp"
+
 namespace
 {
     hal::SynchronousRandomDataGenerator* randomDataGenerator = nullptr;
@@ -106,6 +108,10 @@ namespace services
 
         if (!linkUp)
             newIpv4Address = IPv4Address();
+
+        services::GlobalTracer().Trace() << "LightweightIp::ExtCallback: reason=" << reason
+                                         << ", ipv4Address=" << newIpv4Address
+                                         << ", linkUp=" << linkUp;
 
         if ((reason & (LWIP_NSC_IPV4_SETTINGS_CHANGED | LWIP_NSC_LINK_CHANGED)) != 0 && ipv4Address != newIpv4Address)
         {

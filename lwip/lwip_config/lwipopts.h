@@ -24,6 +24,14 @@ uint32_t StaticLwIpRand();
 #define LWIP_RAND() StaticLwIpRand()
 #define MEM_ALIGNMENT 4
 #define LWIP_STATS 0
+#define LWIP_DEBUG 1
+#define ETHARP_DEBUG                    LWIP_DBG_ON
+#define NETIF_DEBUG                     LWIP_DBG_ON
+#define API_MSG_DEBUG                   LWIP_DBG_OFF
+#define INET_DEBUG                      LWIP_DBG_OFF
+#define IP_DEBUG                        LWIP_DBG_ON
+#define DHCP_DEBUG                      LWIP_DBG_ON
+#define IP6_DEBUG                       LWIP_DBG_ON
 
 #define LWIP_DNS_SECURE 0
 
