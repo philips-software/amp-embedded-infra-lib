@@ -33,6 +33,9 @@ uint32_t StaticLwIpRand();
 #define DHCP_DEBUG                      LWIP_DBG_ON
 #define IP6_DEBUG                       LWIP_DBG_ON
 
+#define MEM_SIZE        3200
+#define TCP_MSS         1460
+
 #define LWIP_DNS_SECURE 0
 
 #define MEM_SIZE 3200
