@@ -21,6 +21,10 @@ if (EMIL_HOST_BUILD)
         $<$<CXX_COMPILER_ID:MSVC>:/wd4116>
         # Disable warning inline used more than once
         $<$<CXX_COMPILER_ID:MSVC>:/wd4141>
+        # Fix for clang-cl on Windows: disable unused command line argument warning for /MP flag
+        $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CXX_COMPILER_VERSION:clang-cl>>:-Wno-unused-command-line-argument>
+        # Also disable treating this specific warning as error for clang-cl
+        $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<CXX_COMPILER_VERSION:clang-cl>>:-Wno-error=unused-command-line-argument>
     )
 
     set(protobuf_BUILD_TESTS Off CACHE INTERNAL "")
