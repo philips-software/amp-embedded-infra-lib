@@ -130,7 +130,6 @@ namespace services
 
         enum class SecureConnectionMode
         {
-            disabled = 0,
             supported = 1,
             enforced = 2,
         };
@@ -138,19 +137,15 @@ namespace services
         enum class ManInTheMiddleMode
         {
             disabled = 0,
-            supported = 1,
-            enforced = 2,
+            enforced = 1,
         };
 
         virtual void
         Pair() = 0;
 
         virtual void AllowPairing(bool allow) = 0;
-
-        virtual void SetManInTheMiddleMode(ManInTheMiddleMode mitmMode) = 0;
-        virtual void SetSecureConnectionMode(SecureConnectionMode connectionMode) = 0;
         virtual void SetIoCapabilities(IoCapabilities caps) = 0;
-
+        virtual void SetSecurityMode(SecurityMode mode, SecurityLevel level) = 0;
         virtual void AuthenticateWithPasskey(uint32_t passkey) = 0;
         virtual void NumericComparisonConfirm(bool accept) = 0;
     };
@@ -170,9 +165,7 @@ namespace services
         // Implementation of GapPairing
         void Pair() override;
         void AllowPairing(bool allow) override;
-
-        void SetManInTheMiddleMode(ManInTheMiddleMode mitmMode) override;
-        void SetSecureConnectionMode(SecureConnectionMode connectionMode) override;
+        void SetSecurityMode(SecurityMode mode, SecurityLevel level) override;
         void SetIoCapabilities(IoCapabilities caps) override;
         void AuthenticateWithPasskey(uint32_t passkey) override;
         void NumericComparisonConfirm(bool accept) override;
