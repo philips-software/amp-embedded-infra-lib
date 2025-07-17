@@ -224,6 +224,7 @@ service GapCentral
 
     // Allowed states: connected
     rpc Pair(Nothing) returns (Nothing) { option (method_id) = 6; }
+    
     rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 7; }
     rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 8; }
     rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 9; }
