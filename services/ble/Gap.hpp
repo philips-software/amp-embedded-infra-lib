@@ -128,16 +128,18 @@ namespace services
             level4,
         };
 
-        enum class SecureConnectionMode
+        // Values align with STM32 sdk ble core defs
+        enum class SecureConnectionMode : uint8_t
         {
-            supported = 1,
-            enforced = 2,
+            notSupported,
+            supported,
+            enforced,
         };
 
-        enum class ManInTheMiddleMode
+        enum class ManInTheMiddleMode : uint8_t
         {
-            disabled = 0,
-            enforced = 1,
+            disabled,
+            enforced,
         };
 
         virtual void Pair() = 0;
