@@ -15,8 +15,12 @@ namespace services
         {
             unknown = -1,
             open = 0,
+            wep,
+            wpa,
+            wpa2,
+            wpa3Psk,
             wpa2MixedPsk,
-            wpa3Psk
+            wpa2plus,
         };
 
         WiFiSecurity() = default;
