@@ -24,7 +24,7 @@ namespace services
         void InvokeError(infra::BoundedConstString& reason);
 
     private:
-        bool MatchStringArguments(uint8_t id, infra::JsonArray& arguments);
+        bool MatchStringArguments(uint32_t id, infra::JsonArray& arguments);
 
         void HandleStepMatchRequest(CucumberWireProtocolParser& parser);
         void HandleInvokeRequest(CucumberWireProtocolParser& parser);
