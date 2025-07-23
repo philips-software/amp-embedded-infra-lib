@@ -223,8 +223,9 @@ service GapCentral
     rpc Disconnect(Nothing) returns (Nothing) { option (method_id) = 5; }
 
     // Allowed states: connected 
-    // This will send a pairing request if there is no bond, and will not send a pairing request when there is a bond.
-    rpc Bond(Nothing) returns (Nothing) { option (method_id) = 6; }
+    // 1. If there is a pre-existing bond, then the connection will be encrypted.
+    // 2. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
+    rpc PairAndBond(Nothing) returns (Nothing) { option (method_id) = 6; }
     
     rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 7; }
     rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 8; }

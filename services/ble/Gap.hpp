@@ -142,7 +142,10 @@ namespace services
             enforced,
         };
 
-        virtual void Bond() = 0;
+        virtual void PairAndBond() = 0;
+        // 1. If there is a pre-existing bond, then the connection will be encrypted.
+        // 2. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
+
         virtual void AllowPairing(bool allow) = 0;
         virtual void SetSecurityMode(SecurityMode mode, SecurityLevel level) = 0;
         virtual void SetIoCapabilities(IoCapabilities caps) = 0;
@@ -163,7 +166,7 @@ namespace services
         void PairingFailed(PairingErrorType error) override;
 
         // Implementation of GapPairing
-        void Bond() override;
+        void PairAndBond() override;
         void AllowPairing(bool allow) override;
         void SetSecurityMode(SecurityMode mode, SecurityLevel level) override;
         void SetIoCapabilities(IoCapabilities caps) override;
