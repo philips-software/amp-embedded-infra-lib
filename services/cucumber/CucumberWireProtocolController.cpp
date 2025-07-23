@@ -105,7 +105,7 @@ namespace services
         connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize());
     }
 
-    bool CucumberWireProtocolController::MatchStringArguments(uint8_t id, infra::JsonArray& arguments)
+    bool CucumberWireProtocolController::MatchStringArguments(uint32_t id, infra::JsonArray& arguments)
     {
         uint8_t validStringCount = 0;
         for (const auto& string : JsonStringArray(arguments))

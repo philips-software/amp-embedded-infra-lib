@@ -40,11 +40,8 @@ namespace services
         EXPECT_CALL(gapPairing, AllowPairing(::testing::IsTrue()));
         decorator.AllowPairing(true);
 
-        EXPECT_CALL(gapPairing, SetManInTheMiddleMode(::testing::TypedEq<services::GapPairing::ManInTheMiddleMode>(services::GapPairing::ManInTheMiddleMode::disabled)));
-        decorator.SetManInTheMiddleMode(services::GapPairing::ManInTheMiddleMode::disabled);
-
-        EXPECT_CALL(gapPairing, SetSecureConnectionMode(::testing::TypedEq<services::GapPairing::SecureConnectionMode>(services::GapPairing::SecureConnectionMode::disabled)));
-        decorator.SetSecureConnectionMode(services::GapPairing::SecureConnectionMode::disabled);
+        EXPECT_CALL(gapPairing, SetSecurityMode(::testing::TypedEq<services::GapPairing::SecurityMode>(services::GapPairing::SecurityMode::mode1), ::testing::TypedEq<services::GapPairing::SecurityLevel>(services::GapPairing::SecurityLevel::level1)));
+        decorator.SetSecurityMode(services::GapPairing::SecurityMode::mode1, services::GapPairing::SecurityLevel::level1);
 
         EXPECT_CALL(gapPairing, SetIoCapabilities(::testing::TypedEq<services::GapPairing::IoCapabilities>(services::GapPairing::IoCapabilities::none)));
         decorator.SetIoCapabilities(services::GapPairing::IoCapabilities::none);
