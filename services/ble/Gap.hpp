@@ -128,29 +128,24 @@ namespace services
             level4,
         };
 
-        enum class SecureConnectionMode
+        // Values align with STM32 sdk ble core defs
+        enum class SecureConnectionMode : uint8_t
         {
-            disabled = 0,
-            supported = 1,
-            enforced = 2,
+            notSupported,
+            supported,
+            enforced,
         };
 
-        enum class ManInTheMiddleMode
+        enum class ManInTheMiddleMode : uint8_t
         {
-            disabled = 0,
-            supported = 1,
-            enforced = 2,
+            disabled,
+            enforced,
         };
 
-        virtual void
-        Bond() = 0;
-
+        virtual void Bond() = 0;
         virtual void AllowPairing(bool allow) = 0;
-
-        virtual void SetManInTheMiddleMode(ManInTheMiddleMode mitmMode) = 0;
-        virtual void SetSecureConnectionMode(SecureConnectionMode connectionMode) = 0;
+        virtual void SetSecurityMode(SecurityMode mode, SecurityLevel level) = 0;
         virtual void SetIoCapabilities(IoCapabilities caps) = 0;
-
         virtual void AuthenticateWithPasskey(uint32_t passkey) = 0;
         virtual void NumericComparisonConfirm(bool accept) = 0;
     };
@@ -170,9 +165,7 @@ namespace services
         // Implementation of GapPairing
         void Bond() override;
         void AllowPairing(bool allow) override;
-
-        void SetManInTheMiddleMode(ManInTheMiddleMode mitmMode) override;
-        void SetSecureConnectionMode(SecureConnectionMode connectionMode) override;
+        void SetSecurityMode(SecurityMode mode, SecurityLevel level) override;
         void SetIoCapabilities(IoCapabilities caps) override;
         void AuthenticateWithPasskey(uint32_t passkey) override;
         void NumericComparisonConfirm(bool accept) override;
