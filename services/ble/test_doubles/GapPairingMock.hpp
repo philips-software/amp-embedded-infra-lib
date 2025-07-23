@@ -10,7 +10,7 @@ namespace services
         : public GapPairing
     {
     public:
-        MOCK_METHOD(void, Bond, ());
+        MOCK_METHOD(void, PairAndBond, ());
         MOCK_METHOD(void, AllowPairing, (bool allow));
         MOCK_METHOD(void, SetManInTheMiddleMode, (ManInTheMiddleMode mitmMode));
         MOCK_METHOD(void, SetSecureConnectionMode, (SecureConnectionMode connectionMode));
