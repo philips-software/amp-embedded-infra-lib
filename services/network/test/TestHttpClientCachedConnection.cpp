@@ -10,16 +10,17 @@
 #include "services/network/test_doubles/HttpClientMock.hpp"
 #include "services/util/Sha256MbedTls.hpp"
 #include "gmock/gmock.h"
+#include <cstddef>
 
 class HttpClientCachedConnectionTest
     : public testing::Test
     , public infra::ClockFixture
 {
 public:
-    void ExpectHostnameAndPort(infra::BoundedConstString hostname = "host", uint16_t port = 10)
+    void ExpectHostnameAndPort(infra::BoundedConstString hostname = "host", uint16_t port = 10, std::size_t times = 2)
     {
-        EXPECT_CALL(factory, Hostname()).WillOnce(testing::Return(hostname)).RetiresOnSaturation();
-        EXPECT_CALL(factory, Port()).WillOnce(testing::Return(port)).RetiresOnSaturation();
+        EXPECT_CALL(factory, Hostname()).Times(times).WillRepeatedly(testing::Return(hostname)).RetiresOnSaturation();
+        EXPECT_CALL(factory, Port()).Times(times).WillRepeatedly(testing::Return(port)).RetiresOnSaturation();
     }
 
     void InitiateConnect(services::HttpClientObserverFactoryMock& factory, infra::BoundedConstString hostname = "host", uint16_t port = 10)
@@ -331,7 +332,7 @@ TEST_F(HttpClientCachedConnectionTest, second_request_but_for_different_host)
     EXPECT_CALL(*clientObserver, Detaching());
     clientObserver->Detach();
 
-    ExpectHostnameAndPort("host2", 10);
+    ExpectHostnameAndPort("host2", 10, 1);
     EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]()
         {
             clientSubject.Detach();
@@ -347,7 +348,7 @@ TEST_F(HttpClientCachedConnectionTest, second_request_but_for_different_port)
     EXPECT_CALL(*clientObserver, Detaching());
     clientObserver->Detach();
 
-    ExpectHostnameAndPort("host", 9);
+    ExpectHostnameAndPort("host", 9, 1);
     EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]()
         {
             clientSubject.Detach();
@@ -471,4 +472,17 @@ TEST_F(HttpClientCachedConnectionTest, Stop_while_connection_open)
         {
             onDone.callback();
         });
+}
+
+TEST_F(HttpClientCachedConnectionTest, waiting_clients_with_empty_hostname_is_dropped)
+{
+    CreateConnection(factory);
+    connector.Connect(factory2);
+    ExecuteAllActions();
+
+    EXPECT_CALL(factory2, Hostname()).WillOnce(testing::Return(""));
+    EXPECT_CALL(factory2, ConnectionFailed(services::HttpClientObserverFactory::ConnectFailReason::nameLookupFailed));
+
+    CloseConnection();
+    ExecuteAllActions();
 }

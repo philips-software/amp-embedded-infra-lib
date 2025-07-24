@@ -1,5 +1,7 @@
 #include "services/network/HttpClientCachedConnection.hpp"
 #include "infra/event/EventDispatcher.hpp"
+#include "services/network/ConnectionFactoryWithNameResolver.hpp"
+#include "services/network/HttpClient.hpp"
 
 namespace services
 {
@@ -306,10 +308,22 @@ namespace services
             clientObserverFactory = &waitingClientObserverFactories.front();
             waitingClientObserverFactories.pop_front();
 
-            if (client == infra::none || !client->HttpClientObserver::IsAttached() || !client->Idle())
-                Connect();
+            if (clientObserverFactory->Hostname().empty() || clientObserverFactory->Port() == 0)
+            {
+                clientObserverFactory->ConnectionFailed(services::HttpClientObserverFactory::ConnectFailReason::nameLookupFailed);
+                clientObserverFactory = nullptr;
+                infra::EventDispatcher::Instance().Schedule([this]()
+                    {
+                        TryConnectWaiting();
+                    });
+            }
             else
-                TryRetargetConnection();
+            {
+                if (client == infra::none || !client->HttpClientObserver::IsAttached() || !client->Idle())
+                    Connect();
+                else
+                    TryRetargetConnection();
+            }
         }
     }
 
