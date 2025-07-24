@@ -13,8 +13,6 @@ if (EMIL_HOST_BUILD)
         $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-deprecated-declarations$<SEMICOLON>-Wno-invalid-noreturn$<SEMICOLON>-Winvalid-offsetof>
         # Disable string overflow warning
         $<$<CXX_COMPILER_ID:GNU>:-Wno-stringop-overflow>
-        # Disable deprecated declarations warning
-        $<$<CXX_COMPILER_ID:GNU>:-Wno-deprecated-declarations>
         # Disable warning not all control paths return a value
         $<$<CXX_COMPILER_ID:MSVC>:/wd4715>
         # Disable warning differs in levels of indirection
