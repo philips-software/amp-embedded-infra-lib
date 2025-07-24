@@ -20,18 +20,18 @@ namespace services
         GattClientCharacteristicOperationsObserver::Subject().Read(*this, onResponse, onDone);
     }
 
-    void GattClientCharacteristic::Write(infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone)
+    void GattClientCharacteristic::Write(infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
     {
         really_assert(GattClientCharacteristicOperationsObserver::Attached());
 
         GattClientCharacteristicOperationsObserver::Subject().Write(*this, data, onDone);
     }
 
-    void GattClientCharacteristic::WriteWithoutResponse(infra::ConstByteRange data)
+    void GattClientCharacteristic::WriteWithoutResponse(infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
     {
         really_assert(GattClientCharacteristicOperationsObserver::Attached());
 
-        GattClientCharacteristicOperationsObserver::Subject().WriteWithoutResponse(*this, data);
+        GattClientCharacteristicOperationsObserver::Subject().WriteWithoutResponse(*this, data, onDone);
     }
 
     void GattClientCharacteristic::EnableNotification(const infra::Function<void(uint8_t)>& onDone)
