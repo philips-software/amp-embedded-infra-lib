@@ -128,10 +128,8 @@ namespace services
             level4,
         };
 
-        // Values align with STM32 sdk ble core defs
         enum class SecureConnectionMode : uint8_t
         {
-            notSupported,
             supported,
             enforced,
         };
