@@ -27,8 +27,8 @@ namespace services
 
         // Implementation of GattClientCharacteristicOperations
         void Read(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone) override;
-        void Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone) override;
-        void WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data) override;
+        void Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
+        void WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
         void EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) override;
         void DisableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) override;
         void EnableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) override;
@@ -85,12 +85,13 @@ namespace services
         struct WriteOperation
         {
             infra::ConstByteRange data;
-            const infra::Function<void(uint8_t)> onDone;
+            const infra::Function<void(OperationStatus)> onDone;
         };
 
         struct WriteWithoutResponseOperation
         {
             infra::ConstByteRange data;
+            const infra::Function<void(OperationStatus)> onDone;
         };
 
         struct DescriptorOperation
