@@ -3,6 +3,7 @@
 
 #include "hal/interfaces/MacAddress.hpp"
 #include "infra/timer/Timer.hpp"
+#include "infra/util/BoundedString.hpp"
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/EnumCast.hpp"
@@ -254,6 +255,10 @@ namespace services
         virtual void Advertise(GapAdvertisementType type, AdvertisementIntervalMultiplier multiplier) = 0;
         virtual void Standby() = 0;
         virtual void SetConnectionParameters(const services::GapConnectionParameters& connParam) = 0;
+
+    protected:
+        virtual void StartedAdvertising(infra::BoundedConstString functionName) {};
+        virtual void ReceivedNumberOfBondedAddresses(uint8_t numberOfBondedAddresses) {};
     };
 
     class GapPeripheralDecorator
