@@ -139,6 +139,7 @@ namespace services
         {
             disabled,
             enforced,
+            notSupported
         };
 
         virtual void Pair() = 0;

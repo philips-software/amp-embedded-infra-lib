@@ -82,6 +82,7 @@ message SecureConnectionAndManInTheMiddleMode
     {
        disabledMode = 0;
        enforcedMode = 1;
+       notSupportedMode = 2;
     }
 
     SecureConnectionModeEnum secureConnectionMode = 1;
