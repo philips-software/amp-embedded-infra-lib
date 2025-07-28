@@ -8,6 +8,7 @@ namespace services
 {
     class EchoOnMessageCommunication
         : public EchoOnStreams
+        , public EchoInitialization
         , public MessageCommunicationObserver
     {
     public:

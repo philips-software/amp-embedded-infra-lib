@@ -1,4 +1,5 @@
 #include "protobuf/echo/ServiceForwarder.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -9,6 +10,8 @@ namespace services
 
     infra::SharedPtr<MethodDeserializer> ServiceForwarderBase::StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy)
     {
+        services::GlobalTracer().Trace() << "ServiceForwarderBase::StartMethod, serviceId: " << serviceId << ", methodId: " << methodId << ", size: " << size;
+
         forwardingServiceId = serviceId;
         forwardingMethodId = methodId;
         forwardingSize = size;
@@ -26,6 +29,8 @@ namespace services
 
     void ServiceForwarderBase::MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
+        services::GlobalTracer().Trace() << "ServiceForwarderBase::MethodContents";
+
         contentsReader = std::move(reader);
         Transfer();
     }
@@ -42,6 +47,8 @@ namespace services
 
     bool ServiceForwarderBase::Serialize(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
+        services::GlobalTracer().Trace() << "ServiceForwarderBase::Serialize";
+
         contentsWriter = std::move(writer);
         auto result = processedSize + contentsWriter->Available() < forwardingSize;
         Transfer();
@@ -51,6 +58,8 @@ namespace services
 
     void ServiceForwarderBase::Transfer()
     {
+        services::GlobalTracer().Trace() << "ServiceForwarderBase::Transfer";
+
         if (!sentHeader)
         {
             if (contentsWriter == nullptr)

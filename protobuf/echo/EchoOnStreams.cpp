@@ -1,4 +1,5 @@
 #include "protobuf/echo/EchoOnStreams.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -114,6 +115,8 @@ namespace services
 
     void EchoOnStreams::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
+        services::GlobalTracer().Trace() << "EchoOnStreams::SendStreamAvailable";
+
         if (skipNextStream)
         {
             skipNextStream = false;
@@ -197,6 +200,8 @@ namespace services
 
     void EchoOnStreams::ContinueReceiveMessage()
     {
+        services::GlobalTracer().Trace() << "EchoOnStreams::ContinueReceiveMessage";
+
         limitedReader->SwitchInput(*bufferedReader);
         limitedReaderAccess.SetAction(infra::emptyFunction);
         MethodContents(limitedReaderAccess.MakeShared(*limitedReader));

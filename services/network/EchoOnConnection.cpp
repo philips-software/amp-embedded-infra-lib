@@ -1,5 +1,6 @@
 #include "services/network/EchoOnConnection.hpp"
 #include "infra/util/SharedPtr.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -32,6 +33,8 @@ namespace services
 
     void EchoOnConnection::MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
+        services::GlobalTracer().Trace() << "EchoOnConnection::MethodContents";
+
         if (forwarder.Allocatable())
         {
             forwarder.OnAllocatable(nullptr);
