@@ -129,21 +129,9 @@ namespace services
             level4,
         };
 
-        enum class SecureConnectionMode : uint8_t
-        {
-            supported,
-            enforced,
-        };
-
-        enum class ManInTheMiddleMode : uint8_t
-        {
-            disabled,
-            enforced,
-        };
-
-        virtual void PairAndBond() = 0;
         // 1. If there is a pre-existing bond, then the connection will be encrypted.
         // 2. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
+        virtual void PairAndBond() = 0;
 
         virtual void AllowPairing(bool allow) = 0;
         virtual void SetSecurityMode(SecurityMode mode, SecurityLevel level) = 0;
