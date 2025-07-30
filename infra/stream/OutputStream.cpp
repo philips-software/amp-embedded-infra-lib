@@ -357,6 +357,11 @@ namespace infra
         return stream;
     }
 
+    infra::TextOutputStream& operator<<(TextOutputStream&& stream, const AsAsciiHelper& asAsciiHelper)
+    {
+        return stream << asAsciiHelper;
+    }
+
     AsHexHelper::AsHexHelper(ConstByteRange data)
         : data(data)
     {}
