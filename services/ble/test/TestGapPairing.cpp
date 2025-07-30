@@ -34,8 +34,8 @@ namespace services
 
     TEST_F(GapPairingDecoratorTest, forward_all_calls_to_subject)
     {
-        EXPECT_CALL(gapPairing, Pair());
-        decorator.Pair();
+        EXPECT_CALL(gapPairing, PairAndBond());
+        decorator.PairAndBond();
 
         EXPECT_CALL(gapPairing, AllowPairing(::testing::IsTrue()));
         decorator.AllowPairing(true);
