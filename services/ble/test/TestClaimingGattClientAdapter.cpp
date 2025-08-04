@@ -18,7 +18,8 @@ namespace
     {
     public:
         testing::StrictMock<services::GattClientMock> gattClient;
-        services::ClaimingGattClientAdapter adapter{ gattClient };
+        testing::StrictMock<services::AttMtuExchangeMock> attMtuExchange;
+        services::ClaimingGattClientAdapter adapter{ gattClient, attMtuExchange };
         testing::StrictMock<services::GattClientCharacteristicOperationsObserverMock> characteristicsOperationsObserver{ adapter };
         testing::StrictMock<services::GattClientDiscoveryObserverMock> discoveryObserver{ adapter };
         testing::StrictMock<services::GattClientStackUpdateObserverMock> stackUpdateObserver{ adapter };

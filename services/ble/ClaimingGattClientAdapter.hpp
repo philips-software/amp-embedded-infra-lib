@@ -15,10 +15,12 @@ namespace services
     class ClaimingGattClientAdapter
         : public GattClientDiscovery
         , public GattClientCharacteristicOperations
+        , public AttMtuExchange
         , private GattClientObserver
+        , private AttMtuExchangeObserver
     {
     public:
-        ClaimingGattClientAdapter(GattClient& gattClient);
+        ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchange& attMtuExchange);
 
         // Implementation of GattClientDiscovery
         void StartServiceDiscovery() override;
@@ -34,6 +36,11 @@ namespace services
         void EnableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) override;
         void DisableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) override;
 
+        // Implementation of AttMtuExchange
+        uint16_t EffectiveMaxAttMtuSize() const override;
+        void MtuExchange() const override;
+
+    private:
         // Implementation of GattClientObserver
         void ServiceDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle endHandle) override;
         void ServiceDiscoveryComplete() override;
@@ -44,6 +51,9 @@ namespace services
         void NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data) override;
         void IndicationReceived(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone) override;
         AttAttribute::Handle CharacteristicValueHandle() const override;
+
+        // Implementation of AttMtuExchangeObserver
+        void ExchangedMaxAttMtuSize() override;
 
     private:
         void PerformDescriptorOperation();
@@ -117,6 +127,7 @@ namespace services
         infra::ClaimableResource resource;
         infra::ClaimableResource::Claimer characteristicOperationsClaimer{ resource };
         infra::ClaimableResource::Claimer discoveryClaimer{ resource };
+        infra::ClaimableResource::Claimer attMtuExchangeClaimer{ resource };
     };
 }
 

@@ -125,6 +125,7 @@ namespace services
     {
     public:
         virtual uint16_t EffectiveMaxAttMtuSize() const = 0;
+        virtual void MtuExchange() const = 0;
 
     protected:
         static constexpr uint16_t defaultMaxAttMtuSize = 23;
