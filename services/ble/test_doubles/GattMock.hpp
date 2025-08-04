@@ -13,6 +13,15 @@ namespace services
         MOCK_METHOD(uint16_t, EffectiveMaxAttMtuSize, (), (const override));
         MOCK_METHOD(void, MtuExchange, (), (override));
     };
+
+    class AttMtuExchangeObserverMock
+        : public AttMtuExchangeObserver
+    {
+    public:
+        using AttMtuExchangeObserver::AttMtuExchangeObserver;
+
+        MOCK_METHOD(void, ExchangedMaxAttMtuSize, (), (override));
+    };
 }
 
 #endif

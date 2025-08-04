@@ -24,6 +24,7 @@ namespace
         testing::StrictMock<services::GattClientCharacteristicOperationsObserverMock> characteristicsOperationsObserver{ adapter };
         testing::StrictMock<services::GattClientDiscoveryObserverMock> discoveryObserver{ adapter };
         testing::StrictMock<services::GattClientStackUpdateObserverMock> stackUpdateObserver{ adapter };
+        testing::StrictMock<services::AttMtuExchangeObserverMock> attMtuExchangeObserver{ adapter };
     };
 }
 
@@ -257,6 +258,22 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_disable_indication_characteris
     EXPECT_CALL(characteristicsOperationsObserver, CharacteristicValueHandle).WillOnce(testing::Return(handle));
     adapter.DisableIndication(characteristicsOperationsObserver, infra::MockFunction<void(uint8_t)>(result));
     ExecuteAllActions();
+}
+
+TEST_F(ClaimingGattClientAdapterTest, should_call_mtu_exchange)
+{
+    EXPECT_CALL(attMtuExchange, EffectiveMaxAttMtuSize()).WillOnce(testing::Return(200));
+    EXPECT_EQ(200, adapter.EffectiveMaxAttMtuSize());
+
+    EXPECT_CALL(attMtuExchange, MtuExchange());
+    adapter.MtuExchange();
+    ExecuteAllActions();
+
+    EXPECT_CALL(attMtuExchangeObserver, ExchangedMaxAttMtuSize());
+    attMtuExchange.NotifyObservers([](auto& observer)
+        {
+            observer.ExchangedMaxAttMtuSize();
+        });
 }
 
 TEST_F(ClaimingGattClientAdapterTest, should_block_discovery_while_characteristic_operation)
