@@ -234,5 +234,7 @@ namespace services
             {
                 observer.ExchangedMaxAttMtuSize();
             });
+
+        attMtuExchangeClaimer.Release();
     }
 }
