@@ -184,7 +184,7 @@ namespace services
         return AttMtuExchangeObserver::Subject().EffectiveMaxAttMtuSize();
     }
 
-    void ClaimingGattClientAdapter::MtuExchange() const
+    void ClaimingGattClientAdapter::MtuExchange()
     {
         attMtuExchangeClaimer.Claim([this]()
             {

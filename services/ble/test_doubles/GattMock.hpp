@@ -11,7 +11,7 @@ namespace services
     {
     public:
         MOCK_METHOD(uint16_t, EffectiveMaxAttMtuSize, (), (const override));
-        MOCK_METHOD(void, MtuExchange, (), (const override));
+        MOCK_METHOD(void, MtuExchange, (), (override));
     };
 }
 

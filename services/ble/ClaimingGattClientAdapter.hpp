@@ -38,7 +38,7 @@ namespace services
 
         // Implementation of AttMtuExchange
         uint16_t EffectiveMaxAttMtuSize() const override;
-        void MtuExchange() const override;
+        void MtuExchange() override;
 
     private:
         // Implementation of GattClientObserver
