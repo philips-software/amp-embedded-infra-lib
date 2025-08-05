@@ -254,6 +254,7 @@ namespace infra
         explicit AsAsciiHelper(infra::ConstByteRange data);
 
         friend infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const AsAsciiHelper& asAsciiHelper);
+        friend infra::TextOutputStream& operator<<(TextOutputStream&& stream, const AsAsciiHelper& asAsciiHelper);
 
     private:
         infra::ConstByteRange data;
