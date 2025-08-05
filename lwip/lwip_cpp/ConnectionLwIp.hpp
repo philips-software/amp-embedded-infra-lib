@@ -196,7 +196,7 @@ namespace services
         template<std::size_t MaxListeners, std::size_t MaxConnectors, std::size_t MaxConnections>
         using WithFixedAllocator = infra::WithStorage<infra::WithStorage<infra::WithStorage<ConnectionFactoryLwIp,
                                                                              AllocatorListenerLwIp::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxListeners>>,
-                                                          infra::BoundedList<ClientConnectionObserverFactory>::WithMaxSize<MaxConnectors>>,
+                                                          infra::BoundedList<ConnectorLwIp>::WithMaxSize<MaxConnectors>>,
             AllocatorConnectionLwIp::UsingAllocator<infra::SharedObjectAllocatorFixedSize>::WithStorage<MaxConnections>>;
 
     public:
