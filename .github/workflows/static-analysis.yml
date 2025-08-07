@@ -57,7 +57,7 @@ jobs:
           jq -s 'reduce .[] as $item ({}; . * $item)' reports/mull/*.json > reports/mull/merged-mutation.json
           jq --arg workspace "$GITHUB_WORKSPACE" -f .github/formatters/mutation-report-to-generic-issue.jq reports/mull/merged-mutation.json > mutation-sonar.json
           cp build/coverage/compile_commands.json compile_commands.json
-      - uses: sonarsource/sonarqube-scan-action@2500896589ef8f7247069a56136f8dc177c27ccf # v5.2.0
+      - uses: sonarsource/sonarqube-scan-action@8c71dc039c2dd71d3821e89a2b58ecc7fee6ced9 # v5.3.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   codeql:
@@ -73,7 +73,7 @@ jobs:
       - uses: hendrikmuhs/ccache-action@63069e3931dedbf3b63792097479563182fe70d1 # v1.2.18
         with:
           key: ${{ github.job }}
-      - uses: github/codeql-action/init@ce28f5bb42b7a9f2c824e633a3f6ee835bab6858 # v3.29.0
+      - uses: github/codeql-action/init@51f77329afa6477de8c49fc9c7046c15b9a4e79d # v3.29.5
         with:
           languages: cpp
       - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
@@ -81,4 +81,4 @@ jobs:
           configurePreset: "host"
           buildPreset: "host-Debug"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"
-      - uses: github/codeql-action/analyze@ce28f5bb42b7a9f2c824e633a3f6ee835bab6858 # v3.29.0
+      - uses: github/codeql-action/analyze@51f77329afa6477de8c49fc9c7046c15b9a4e79d # v3.29.5
