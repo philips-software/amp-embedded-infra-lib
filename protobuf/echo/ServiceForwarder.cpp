@@ -69,10 +69,13 @@ namespace services
 
         while (processedSize != forwardingSize && contentsWriter != nullptr && contentsReader != nullptr)
         {
-            auto range = contentsReader->ExtractContiguousRange(forwardingSize - processedSize);
+            auto range = contentsReader->ExtractContiguousRange(std::min<std::size_t>(forwardingSize - processedSize, contentsWriter->Available()));
+
             contentsWriter->Insert(range, errorPolicy);
             processedSize += range.size();
 
+            if (contentsWriter->Empty())
+                break;
             if (contentsReader->Empty())
                 break;
         }
