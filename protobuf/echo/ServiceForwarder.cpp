@@ -74,9 +74,7 @@ namespace services
             contentsWriter->Insert(range, errorPolicy);
             processedSize += range.size();
 
-            if (contentsWriter->Empty())
-                break;
-            if (contentsReader->Empty())
+            if (contentsWriter->Empty() || contentsReader->Empty())
                 break;
         }
 
