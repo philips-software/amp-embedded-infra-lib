@@ -112,8 +112,8 @@ namespace services
     services::CucumberStepStorage::Match CucumberStepStorage::MatchStep(infra::BoundedConstString nameToMatch)
     {
         Match matchResult{};
-        uint8_t nrStepMatches = 0;
-        uint8_t count = 0;
+        uint32_t nrStepMatches = 0;
+        uint32_t count = 0;
 
         for (auto& step : stepList)
         {
