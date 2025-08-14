@@ -11,8 +11,11 @@
 #include <cstdlib>
 #include <cstring>
 #include <limits>
-#include <ostream>
 #include <string>
+
+#ifdef EMIL_HOST_BUILD
+#include <ostream>
+#endif
 
 namespace infra
 {
