@@ -92,7 +92,7 @@ function(protocol_buffer_echo_generator target input)
         set(error_format "gcc" PARENT_SCOPE)
     endif()
 
-    emil_fetch_protocol_buffer_compiler()
+    emil_fetch_protoc()
     emil_fetch_echo_plugins()
 endfunction()
 

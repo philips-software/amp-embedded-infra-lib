@@ -10,9 +10,9 @@ if (EMIL_HOST_BUILD)
     add_compile_options(
         # Disable warning on invalid use of [[noreturn]] and on deprecation of sprintf
         # -Wno-invalid-noreturn should be removed when https://github.com/protocolbuffers/protobuf/issues/9817 is fixed
-        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-deprecated-declarations$<SEMICOLON>-Wno-invalid-noreturn$<SEMICOLON>-Winvalid-offsetof>
-        # Disable string overflow warning
-        $<$<CXX_COMPILER_ID:GNU>:-Wno-stringop-overflow>
+        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-deprecated-declarations$<SEMICOLON>-Wno-invalid-noreturn$<SEMICOLON>-Winvalid-offsetof$<SEMICOLON>-Wno-error=deprecated-declarations>
+        # Disable string overflow warning and deprecation errors
+        $<$<CXX_COMPILER_ID:GNU>:-Wno-stringop-overflow$<SEMICOLON>-Wno-error=deprecated-declarations>
         # Disable warning not all control paths return a value
         $<$<CXX_COMPILER_ID:MSVC>:/wd4715>
         # Disable warning differs in levels of indirection
@@ -36,18 +36,7 @@ if (EMIL_HOST_BUILD)
     # Do not treat warnings as errors for external dependencies (protobuf/upb)
     if(MSVC)
         # Remove /WX flag from protobuf targets to avoid treating warnings as errors
-        foreach(target libprotobuf libprotoc libprotobuf-lite)
-            if(TARGET ${target})
-                get_target_property(compile_options ${target} COMPILE_OPTIONS)
-                if(compile_options)
-                    list(REMOVE_ITEM compile_options "/WX")
-                    set_target_properties(${target} PROPERTIES COMPILE_OPTIONS "${compile_options}")
-                endif()
-            endif()
-        endforeach()
-        
-        # Also handle upb targets if they exist
-        foreach(target upb utf8_range)
+        foreach(target libprotobuf libprotoc libprotobuf-lite upb utf8_range)
             if(TARGET ${target})
                 get_target_property(compile_options ${target} COMPILE_OPTIONS)
                 if(compile_options)

@@ -10,6 +10,13 @@ if (EMIL_HOST_BUILD AND NOT EMIL_FETCH_ECHO_COMPILERS)
         infra.syntax
     )
 
+    # Disable deprecation warnings for protobuf headers to avoid build errors
+    target_compile_options(protobuf.protoc_echo_plugin_lib PRIVATE 
+        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-deprecated-declarations>
+        $<$<CXX_COMPILER_ID:GNU>:-Wno-deprecated-declarations>
+        $<$<CXX_COMPILER_ID:MSVC>:/wd4996>
+    )
+
     target_include_directories(protobuf.protoc_echo_plugin_lib PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/../../>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"

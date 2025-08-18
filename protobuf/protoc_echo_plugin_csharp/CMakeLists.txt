@@ -7,6 +7,13 @@ if (EMIL_HOST_BUILD AND NOT CMAKE_CROSSCOMPILING AND NOT EMIL_FETCH_ECHO_COMPILE
         protobuf.protoc_echo_plugin_lib
     )
 
+    # Disable deprecation warnings for protobuf headers to avoid build errors
+    target_compile_options(protobuf.protoc_echo_plugin_csharp PRIVATE 
+        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-deprecated-declarations>
+        $<$<CXX_COMPILER_ID:GNU>:-Wno-deprecated-declarations>
+        $<$<CXX_COMPILER_ID:MSVC>:/wd4996>
+    )
+
     target_sources(protobuf.protoc_echo_plugin_csharp PRIVATE
         Main.cpp
         ProtoCEchoPluginCSharp.cpp

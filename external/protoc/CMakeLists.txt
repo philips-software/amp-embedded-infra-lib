@@ -1,5 +1,5 @@
-function(emil_fetch_protocol_buffer_compiler)
-    set(protobuf_version "31.0")
+function(emil_fetch_protoc)
+    set(protobuf_version "32.0")
 
     if (CMAKE_HOST_WIN32)
         set(os_postfix "win32")
@@ -63,7 +63,7 @@ function(protocol_buffer_generator)
         endif()
     endforeach()
 
-    emil_fetch_protocol_buffer_compiler()
+    emil_fetch_protoc()
 
     set(generated_files)
     foreach(postfix_item "${PROTOGEN_GENERATED_POSTFIXES}")
