@@ -33,6 +33,31 @@ if (EMIL_HOST_BUILD)
 
     FetchContent_MakeAvailable(protobuf)
 
+    # Do not treat warnings as errors for external dependencies (protobuf/upb)
+    if(MSVC)
+        # Remove /WX flag from protobuf targets to avoid treating warnings as errors
+        foreach(target libprotobuf libprotoc libprotobuf-lite)
+            if(TARGET ${target})
+                get_target_property(compile_options ${target} COMPILE_OPTIONS)
+                if(compile_options)
+                    list(REMOVE_ITEM compile_options "/WX")
+                    set_target_properties(${target} PROPERTIES COMPILE_OPTIONS "${compile_options}")
+                endif()
+            endif()
+        endforeach()
+        
+        # Also handle upb targets if they exist
+        foreach(target upb utf8_range)
+            if(TARGET ${target})
+                get_target_property(compile_options ${target} COMPILE_OPTIONS)
+                if(compile_options)
+                    list(REMOVE_ITEM compile_options "/WX")
+                    set_target_properties(${target} PROPERTIES COMPILE_OPTIONS "${compile_options}")
+                endif()
+            endif()
+        endforeach()
+    endif()
+
     # Absl unconditionally includes CTest, so restore it to its previous value
     set(BUILD_TESTING "${old_build_testing}" CACHE INTERNAL "")
 
