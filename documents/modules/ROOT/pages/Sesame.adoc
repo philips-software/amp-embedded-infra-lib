@@ -207,6 +207,12 @@ the Diffie-Hellman scheme is used to have the two peers negotiate the required k
 to withstand man-in-the-middle attacks, the key exchange messages are signed, and the signature of
 a received key exchange message is verified by the receiving party.
 
+The messages used for exchanging the Diffie-Hellman messages and certificates are sent over ECHO. Obviously,
+symmetric keys have not yet been established at that point. The secure layer is therefore configured with
+keys and IVs that consist of all zeroes. Implementations must take care that before the keys and IVs of the
+secure layer are replaced by the result of Diffie-Hellman key exchange are the only ECHO messages exchanged
+are of the Diffie-Hellman protocol.
+
 In order to verify the signature, a party must either have the certificate of its peer, or have a root
 certificate by which the peer's certificate's validity is checked. In the latter case, a peer will
 use the `PresentCertificate` method of the `DiffieHellmanKeyEstablishment` ECHO service to inform its
