@@ -64,6 +64,12 @@ namespace services
             mbedtls_ssl_conf_alpn_protocols(&sslConfig, protos);
             // client configuration only
             mbedtls_ssl_conf_session_tickets(&sslConfig, MBEDTLS_SSL_SESSION_TICKETS_ENABLED);
+#ifdef MBEDTLS_SSL_PROTO_TLS1_3
+            mbedtls_ssl_conf_tls13_key_exchange_modes(&sslConfig,
+                MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_MODE_EPHEMERAL |
+                MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_MODE_PSK_EPHEMERAL);
+            mbedtls_ssl_conf_tls13_enable_signal_new_session_tickets(&sslConfig, MBEDTLS_SSL_TLS1_3_SIGNAL_NEW_SESSION_TICKETS_ENABLED);
+#endif
         }
     }
 
@@ -160,6 +166,19 @@ namespace services
                 receiveBuffer.resize(newBufferStart);
                 break;
             }
+#ifdef MBEDTLS_SSL_PROTO_TLS1_3
+            else if (!server && result == MBEDTLS_ERR_SSL_RECEIVED_NEW_SESSION_TICKET)
+            {
+                if (!clientSession->IsObtained())
+                    clientSession->Reinitialize();
+
+                result = clientSession->GetSession(&sslContext);
+                clientSession->Obtained();
+                assert(result == 0);
+
+                receiveBuffer.resize(newBufferStart);
+            }
+#endif
             else if (result == MBEDTLS_ERR_SSL_BAD_INPUT_DATA) // Precondition failure
             {
                 TlsReadFailure(result);
@@ -396,6 +415,7 @@ namespace services
             {
                 initialHandshake = false;
 
+#ifndef MBEDTLS_SSL_PROTO_TLS1_3
                 if (!server)
                 {
                     if (!clientSession->IsObtained())
@@ -405,6 +425,7 @@ namespace services
                     clientSession->Obtained();
                     assert(result == 0);
                 }
+#endif
             }
             else
             {
