@@ -29,7 +29,7 @@ namespace services
 
         const auto width = ReadSize(format);
         const auto lengthSpecifier = ReadLength(format);
-        ParseFormat(*format, lengthSpecifier, width, args);
+        ParseFormat(format, lengthSpecifier, width, args);
     }
 
     int TracerAdapterPrintf::ReadLength(const char*& format) const
@@ -71,14 +71,14 @@ namespace services
         return w;
     }
 
-    void TracerAdapterPrintf::ParseFormat(char format, int lengthSpecifier, const infra::Width& width, va_list* args)
+    void TracerAdapterPrintf::ParseFormat(const char*& format, int lengthSpecifier, const infra::Width& width, va_list* args)
     {
-        switch (format)
+        switch (*format)
         {
             case '\0':
                 break;
             case '%':
-                tracer.Continue() << format;
+                tracer.Continue() << *format;
                 break;
             case 'c':
                 tracer.Continue() << static_cast<const char>(va_arg(*args, int32_t));
@@ -95,6 +95,10 @@ namespace services
                     tracer.Continue() << va_arg(*args, int64_t);
                 else
                     tracer.Continue() << va_arg(*args, int32_t);
+                break;
+            case 'h':
+                format++;
+                ParseFormat(format, lengthSpecifier, width, args);
                 break;
             case 'u':
                 if (lengthSpecifier >= 2)
@@ -118,7 +122,7 @@ namespace services
             default:
                 while (lengthSpecifier-- > 0)
                     tracer.Continue() << 'l';
-                tracer.Continue() << format;
+                tracer.Continue() << *format;
                 break;
         }
     }

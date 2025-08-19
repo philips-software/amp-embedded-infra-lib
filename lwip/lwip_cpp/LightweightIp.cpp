@@ -86,9 +86,9 @@ namespace services
 
         if (instances.empty())
         {
-            // LOCK_TCPIP_CORE();
+            LOCK_TCPIP_CORE();
             netif_add_ext_callback(&instanceCallback, &InstanceCallback);
-            // UNLOCK_TCPIP_CORE();
+            UNLOCK_TCPIP_CORE();
         }
 
         instances.push_back(*this);

@@ -7,19 +7,24 @@ namespace services
         , tracer(tracer)
     {}
 
-    void TracingHttpClientImpl::DataReceived()
+    void TracingHttpClientImpl::StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine)
     {
-        tracer.Trace() << "HttpClientImpl::DataReceived; received response:" << infra::endl;
+        tracer.Trace() << "HttpClientImplWithRedirection::StatusAvailable: " << code << " " << statusLine;
+        HttpClientImpl::StatusAvailable(code, statusLine);
+    }
 
-        auto reader = ConnectionObserver::Subject().ReceiveStream();
+    void TracingHttpClientImpl::BodyReaderAvailable(infra::SharedPtr<infra::CountingStreamReaderWithRewinding>&& bodyReader)
+    {
+        tracer.Trace() << "HttpClientImpl::BodyAvailable; received response:" << infra::endl;
+
+        auto reader = bodyReader;
         infra::DataInputStream::WithErrorPolicy stream(*reader);
-
+        auto marker = reader->ConstructSaveMarker();
         while (!stream.Empty())
             tracer.Trace() << infra::ByteRangeAsString(stream.ContiguousRange());
 
-        reader = nullptr;
-
-        HttpClientImpl::DataReceived();
+        reader->Rewind(marker);
+        HttpClientImpl::BodyReaderAvailable(std::move(reader));
     }
 
     void TracingHttpClientImpl::Attached()
@@ -55,19 +60,24 @@ namespace services
         , tracer(tracer)
     {}
 
-    void TracingHttpClientImplWithRedirection::DataReceived()
+    void TracingHttpClientImplWithRedirection::StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine)
     {
-        tracer.Trace() << "HttpClientImplWithRedirection::DataReceived; received response:" << infra::endl;
+        tracer.Trace() << "HttpClientImplWithRedirection::StatusAvailable: " << code << " " << statusLine;
+        HttpClientImplWithRedirection::StatusAvailable(code, statusLine);
+    }
 
-        auto reader = ConnectionObserver::Subject().ReceiveStream();
+    void TracingHttpClientImplWithRedirection::BodyReaderAvailable(infra::SharedPtr<infra::CountingStreamReaderWithRewinding>&& bodyReader)
+    {
+        tracer.Trace() << "HttpClientImplWithRedirection::BodyAvailable; received response:" << infra::endl;
+
+        auto reader = bodyReader;
         infra::DataInputStream::WithErrorPolicy stream(*reader);
-
+        auto marker = reader->ConstructSaveMarker();
         while (!stream.Empty())
             tracer.Trace() << infra::ByteRangeAsString(stream.ContiguousRange());
 
-        reader = nullptr;
-
-        HttpClientImplWithRedirection::DataReceived();
+        reader->Rewind(marker);
+        HttpClientImplWithRedirection::BodyReaderAvailable(std::move(reader));
     }
 
     void TracingHttpClientImplWithRedirection::Attached()

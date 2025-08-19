@@ -1,5 +1,6 @@
 #include "lwip/lwip_cpp/DatagramLwIp.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
+#include "lwipopts.h"
 
 namespace services
 {
@@ -48,7 +49,7 @@ namespace services
         ip_set_option(control, SOF_BROADCAST);
         ip_set_option(control, SOF_REUSEADDR);
         err_t result = udp_bind(control, IpAddrAny(versions), port);
-        assert(result == ERR_OK);
+        really_assert(result == ERR_OK);
 
         udp_recv(control, &DatagramExchangeLwIP::StaticRecv, this);
     }
@@ -59,7 +60,7 @@ namespace services
         really_assert(control != nullptr);
         ip_set_option(control, SOF_BROADCAST);
         err_t result = udp_bind(control, IpAddrAny(versions), 0);
-        assert(result == ERR_OK);
+        really_assert(result == ERR_OK);
 
         udp_recv(control, &DatagramExchangeLwIP::StaticRecv, this);
     }
@@ -69,23 +70,23 @@ namespace services
         if (remote.Is<Udpv4Socket>())
         {
             control = CreateUdpPcb(IPVersions::ipv4);
-            assert(control != nullptr);
+            really_assert(control != nullptr);
             IPv4Address ipv4Address = remote.Get<Udpv4Socket>().first;
             ip_addr_t ipAddress IPADDR4_INIT(0);
             IP4_ADDR(&ipAddress.u_addr.ip4, ipv4Address[0], ipv4Address[1], ipv4Address[2], ipv4Address[3]);
             err_t result = udp_connect(control, &ipAddress, remote.Get<Udpv4Socket>().second);
-            assert(result == ERR_OK);
+            really_assert(result == ERR_OK);
         }
         else
         {
             control = CreateUdpPcb(IPVersions::ipv6);
-            assert(control != nullptr);
+            really_assert(control != nullptr);
             IPv6Address ipv6Address = remote.Get<Udpv6Socket>().first;
             ip_addr_t ipAddress IPADDR6_INIT(0, 0, 0, 0);
             IP6_ADDR(&ipAddress.u_addr.ip6, PP_HTONL(ipv6Address[1] + (static_cast<uint32_t>(ipv6Address[0]) << 16)), PP_HTONL(ipv6Address[3] + (static_cast<uint32_t>(ipv6Address[2]) << 16)), PP_HTONL(ipv6Address[5] + (static_cast<uint32_t>(ipv6Address[4]) << 16)), PP_HTONL(ipv6Address[7] + (static_cast<uint32_t>(ipv6Address[6]) << 16)));
             ip6_addr_set_zone(&ipAddress.u_addr.ip6, netif_default->ip6_addr->u_addr.ip6.zone);
             err_t result = udp_connect(control, &ipAddress, remote.Get<Udpv6Socket>().second);
-            assert(result == ERR_OK);
+            really_assert(result == ERR_OK);
         }
 
         udp_recv(control, &DatagramExchangeLwIP::StaticRecv, this);
@@ -96,28 +97,28 @@ namespace services
         if (remote.Is<Udpv4Socket>())
         {
             control = CreateUdpPcb(IPVersions::ipv4);
-            assert(control != nullptr);
+            really_assert(control != nullptr);
             ip_set_option(control, SOF_BROADCAST);
             IPv4Address ipv4Address = remote.Get<Udpv4Socket>().first;
             ip_addr_t ipAddress IPADDR4_INIT(0);
             IP4_ADDR(&ipAddress.u_addr.ip4, ipv4Address[0], ipv4Address[1], ipv4Address[2], ipv4Address[3]);
             err_t result = udp_connect(control, &ipAddress, remote.Get<Udpv4Socket>().second);
-            assert(result == ERR_OK);
+            really_assert(result == ERR_OK);
             result = udp_bind(control, IP4_ADDR_ANY, localPort);
-            assert(result == ERR_OK);
+            really_assert(result == ERR_OK);
         }
         else
         {
             control = CreateUdpPcb(IPVersions::ipv6);
-            assert(control != nullptr);
+            really_assert(control != nullptr);
             IPv6Address ipv6Address = remote.Get<Udpv6Socket>().first;
             ip_addr_t ipAddress IPADDR6_INIT(0, 0, 0, 0);
             IP6_ADDR(&ipAddress.u_addr.ip6, PP_HTONL(ipv6Address[1] + (static_cast<uint32_t>(ipv6Address[0]) << 16)), PP_HTONL(ipv6Address[3] + (static_cast<uint32_t>(ipv6Address[2]) << 16)), PP_HTONL(ipv6Address[5] + (static_cast<uint32_t>(ipv6Address[4]) << 16)), PP_HTONL(ipv6Address[7] + (static_cast<uint32_t>(ipv6Address[6]) << 16)));
             ip6_addr_set_zone(&ipAddress.u_addr.ip6, netif_default->ip6_addr->u_addr.ip6.zone);
             err_t result = udp_connect(control, &ipAddress, remote.Get<Udpv6Socket>().second);
-            assert(result == ERR_OK);
+            really_assert(result == ERR_OK);
             result = udp_bind(control, IP6_ADDR_ANY, localPort);
-            assert(result == ERR_OK);
+            really_assert(result == ERR_OK);
         }
 
         udp_recv(control, &DatagramExchangeLwIP::StaticRecv, this);
@@ -135,6 +136,7 @@ namespace services
 
     udp_pcb* DatagramExchangeLwIP::CreateUdpPcb(IPVersions versions) const
     {
+        LOCK_TCPIP_CORE();
         switch (versions)
         {
             case IPVersions::ipv4:
@@ -146,6 +148,7 @@ namespace services
             default:
                 std::abort();
         }
+        UNLOCK_TCPIP_CORE();
     }
 
     const ip_addr_t* DatagramExchangeLwIP::IpAddrAny(IPVersions versions) const
@@ -198,7 +201,7 @@ namespace services
         range.shrink_from_back_to(Available());
 
         u16_t numCopied = pbuf_copy_partial(buffer, range.begin(), static_cast<uint16_t>(range.size()), bufferOffset);
-        assert(numCopied == range.size());
+        really_assert(numCopied == range.size());
         bufferOffset += static_cast<uint16_t>(range.size());
     }
 
@@ -267,7 +270,7 @@ namespace services
         if (!remote)
         {
             err_t result = udp_send(control, buffer);
-            assert(result == ERR_OK);
+            really_assert(result == ERR_OK);
         }
         else
         {
@@ -276,7 +279,7 @@ namespace services
                 ip6_addr_set_zone(&address.u_addr.ip6, netif_default->ip6_addr->u_addr.ip6.zone);
 
             err_t result = udp_sendto(control, buffer, &address, Convert(*remote).second);
-            assert(result == ERR_OK);
+            really_assert(result == ERR_OK);
         }
         pbuf_free(buffer);
     }
@@ -286,7 +289,7 @@ namespace services
         errorPolicy.ReportResult(range.size() <= Available());
         range.shrink_from_back_to(Available());
         err_t result = pbuf_take_at(buffer, range.begin(), static_cast<uint16_t>(range.size()), bufferOffset);
-        assert(result == ERR_OK);
+        really_assert(result == ERR_OK);
         bufferOffset += static_cast<uint16_t>(range.size());
     }
 

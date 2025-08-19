@@ -1,5 +1,6 @@
 #include "services/network/HttpClientImpl.hpp"
 #include "infra/stream/CountingOutputStream.hpp"
+#include "infra/stream/LimitedOutputStream.hpp"
 #include "infra/stream/SavedMarkerStream.hpp"
 #include "infra/stream/StringInputStream.hpp"
 #include "infra/util/Compatibility.hpp"
@@ -45,6 +46,11 @@ namespace services
         ExecuteRequestWithContent(HttpVerb::post, requestTarget, content, headers);
     }
 
+    void HttpClientImpl::Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers)
+    {
+        ExecuteRequestWithContent(HttpVerb::post, requestTarget, contentSize, headers);
+    }
+
     void HttpClientImpl::Post(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
         ExecuteRequestWithContent(HttpVerb::post, requestTarget, headers);
@@ -53,6 +59,11 @@ namespace services
     void HttpClientImpl::Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
     {
         ExecuteRequestWithContent(HttpVerb::put, requestTarget, content, headers);
+    }
+
+    void HttpClientImpl::Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers)
+    {
+        ExecuteRequestWithContent(HttpVerb::put, requestTarget, contentSize, headers);
     }
 
     void HttpClientImpl::Put(infra::BoundedConstString requestTarget, HttpHeaders headers)
@@ -222,12 +233,18 @@ namespace services
             else
             {
                 bodyReader.Emplace(ConnectionObserver::Subject().ReceiveStream(), *contentLength);
+                auto reader = infra::MakeContainedSharedObject(bodyReader->countingReader, bodyReaderAccess.MakeShared(bodyReader));
+                BodyReaderAvailable(std::move(reader));
 
-                if (HttpClient::IsAttached())
-                    Observer().BodyAvailable(infra::MakeContainedSharedObject(bodyReader->countingReader, bodyReaderAccess.MakeShared(bodyReader)));
                 repeat = chunkedEncoding && contentLength == 0;
             }
         }
+    }
+
+    void HttpClientImpl::BodyReaderAvailable(infra::SharedPtr<infra::CountingStreamReaderWithRewinding>&& bodyReader)
+    {
+        if (HttpClient::IsAttached())
+            Observer().BodyAvailable(std::move(bodyReader));
     }
 
     void HttpClientImpl::BodyReaderDestroyed()
@@ -322,6 +339,13 @@ namespace services
     {
         request.Emplace(verb, hostname, requestTarget, content, headers);
         ConnectionObserver::Subject().RequestSendStream(std::min(request->Size(), ConnectionObserver::Subject().MaxSendStreamSize()));
+    }
+
+    void HttpClientImpl::ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, std::size_t contentSize, const HttpHeaders headers)
+    {
+        request.Emplace(verb, hostname, requestTarget, contentSize, headers);
+        nextState.Emplace<SendingStateForwardDefinedSizeStream>(*this, contentSize);
+        ConnectionObserver::Subject().RequestSendStream(request->Size());
     }
 
     void HttpClientImpl::ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, const HttpHeaders headers)
@@ -441,6 +465,48 @@ namespace services
         }
     }
 
+    HttpClientImpl::SendingStateForwardDefinedSizeStream::SendingStateForwardDefinedSizeStream(HttpClientImpl& client, std::size_t contentSize)
+        : SendingState(client)
+        , contentSize(contentSize)
+    {}
+
+    HttpClientImpl::SendingStateForwardDefinedSizeStream::SendingStateForwardDefinedSizeStream(const SendingStateForwardDefinedSizeStream& other)
+        : SendingState(other.client)
+        , contentSize(other.contentSize)
+    {
+        assert(streamWriter.Allocatable());
+        assert(other.streamWriter.Allocatable());
+    }
+
+    void HttpClientImpl::SendingStateForwardDefinedSizeStream::Activate()
+    {
+        if (contentSize != 0)
+            client.ConnectionObserver::Subject().RequestSendStream(std::min(contentSize, client.ConnectionObserver::Subject().MaxSendStreamSize()));
+        else
+            NextState();
+    }
+
+    void HttpClientImpl::SendingStateForwardDefinedSizeStream::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+    {
+        streamWriter.OnAllocatable([this]()
+            {
+                Activate();
+            });
+        client.Observer().SendStreamAvailable(streamWriter.Emplace(*this, std::move(writer)));
+    }
+
+    HttpClientImpl::SendingStateForwardDefinedSizeStream::SizeTrackingWriter::SizeTrackingWriter(SendingStateForwardDefinedSizeStream& state, infra::SharedPtr<infra::StreamWriter>&& writer)
+        : infra::LimitedStreamWriter(*writer, std::min<std::size_t>(writer->Available(), state.contentSize))
+        , state(state)
+        , writer(std::move(writer))
+        , start(infra::LimitedStreamWriter::ConstructSaveMarker())
+    {}
+
+    HttpClientImpl::SendingStateForwardDefinedSizeStream::SizeTrackingWriter::~SizeTrackingWriter()
+    {
+        state.contentSize -= infra::LimitedStreamWriter::ConstructSaveMarker() - start;
+    }
+
     HttpClientImplWithRedirection::HttpClientImplWithRedirection(infra::BoundedString redirectedUrlStorage, infra::BoundedConstString hostname, ConnectionFactoryWithNameResolver& connectionFactory)
         : HttpClientImpl(hostname)
         , redirectedUrlStorage(redirectedUrlStorage)
@@ -515,6 +581,14 @@ namespace services
         HttpClientImpl::Post(requestTarget, headers);
     }
 
+    void HttpClientImplWithRedirection::Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers)
+    {
+        if (query == infra::none)
+            query.Emplace(infra::InPlaceType<QueryPostStreamed>(), contentSize, headers);
+
+        HttpClientImpl::Post(requestTarget, contentSize, headers);
+    }
+
     void HttpClientImplWithRedirection::Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
     {
         if (query == infra::none)
@@ -529,6 +603,14 @@ namespace services
             query.Emplace(infra::InPlaceType<QueryPutChunked>(), headers);
 
         HttpClientImpl::Put(requestTarget, headers);
+    }
+
+    void HttpClientImplWithRedirection::Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers)
+    {
+        if (query == infra::none)
+            query.Emplace(infra::InPlaceType<QueryPutStreamed>(), contentSize, headers);
+
+        HttpClientImpl::Put(requestTarget, contentSize, headers);
     }
 
     void HttpClientImplWithRedirection::Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
@@ -718,6 +800,16 @@ namespace services
         client.Post(requestTarget, headers);
     }
 
+    HttpClientImplWithRedirection::QueryPostStreamed::QueryPostStreamed(std::size_t contentSize, HttpHeaders headers)
+        : headers(headers)
+        , contentSize(contentSize)
+    {}
+
+    void HttpClientImplWithRedirection::QueryPostStreamed::Execute(HttpClient& client, infra::BoundedConstString requestTarget)
+    {
+        client.Post(requestTarget, contentSize, headers);
+    }
+
     HttpClientImplWithRedirection::QueryPut::QueryPut(infra::BoundedConstString content, HttpHeaders headers)
         : content(content)
         , headers(headers)
@@ -735,6 +827,16 @@ namespace services
     void HttpClientImplWithRedirection::QueryPutChunked::Execute(HttpClient& client, infra::BoundedConstString requestTarget)
     {
         client.Put(requestTarget, headers);
+    }
+
+    HttpClientImplWithRedirection::QueryPutStreamed::QueryPutStreamed(std::size_t contentSize, HttpHeaders headers)
+        : headers(headers)
+        , contentSize(contentSize)
+    {}
+
+    void HttpClientImplWithRedirection::QueryPutStreamed::Execute(HttpClient& client, infra::BoundedConstString requestTarget)
+    {
+        client.Put(requestTarget, contentSize, headers);
     }
 
     HttpClientImplWithRedirection::QueryPatch::QueryPatch(infra::BoundedConstString content, HttpHeaders headers)
