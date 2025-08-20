@@ -2,6 +2,7 @@
 #include "infra/util/ReallyAssert.hpp"
 #include "mbedtls/ecdsa.h"
 #include "mbedtls/hmac_drbg.h"
+#include "mbedtls/sha256.h"
 #include "services/util/MbedTlsRandomDataGeneratorWrapper.hpp"
 
 namespace services
@@ -99,12 +100,17 @@ namespace services
 
     std::pair<std::array<uint8_t, 32>, std::array<uint8_t, 32>> EcSecP256r1DsaSignerMbedTls::Sign(infra::ConstByteRange data) const
     {
+        std::array<uint8_t, 32> hash;
+
+        auto result = mbedtls_sha256(data.begin(), data.size(), hash.data(), 0);
+        assert(result == 0);
+
         mbedtls_mpi r;
         mbedtls_mpi_init(&r);
         mbedtls_mpi s;
         mbedtls_mpi_init(&s);
 
-        really_assert(mbedtls_ecdsa_sign(const_cast<mbedtls_ecp_group*>(&group), &r, &s, &privateKey, data.begin(), data.size(), &MbedTlsRandomDataGeneratorWrapper, &randomDataGenerator) == 0);
+        really_assert(mbedtls_ecdsa_sign(const_cast<mbedtls_ecp_group*>(&group), &r, &s, &privateKey, hash.data(), hash.size(), &MbedTlsRandomDataGeneratorWrapper, &randomDataGenerator) == 0);
 
         auto encodedR = ConvertToBytes<32>(r);
         auto encodedS = ConvertToBytes<32>(s);
@@ -162,6 +168,11 @@ namespace services
         if (!valid)
             return false;
 
+        std::array<uint8_t, 32> hash;
+
+        auto hashResult = mbedtls_sha256(data.begin(), data.size(), hash.data(), 0);
+        assert(hashResult == 0);
+
         mbedtls_mpi r;
         mbedtls_mpi_init(&r);
         mbedtls_mpi s;
@@ -170,7 +181,7 @@ namespace services
         really_assert(mbedtls_mpi_read_binary(&r, signatureR.begin(), signatureR.size()) == 0);
         really_assert(mbedtls_mpi_read_binary(&s, signatureS.begin(), signatureS.size()) == 0);
 
-        bool result = mbedtls_ecdsa_verify(const_cast<mbedtls_ecp_group*>(&group), data.begin(), data.size(), &publicKey, &r, &s) == 0;
+        bool result = mbedtls_ecdsa_verify(const_cast<mbedtls_ecp_group*>(&group), hash.data(), hash.size(), &publicKey, &r, &s) == 0;
 
         mbedtls_mpi_free(&s);
         mbedtls_mpi_free(&r);
