@@ -1,5 +1,5 @@
-#ifndef SERVICES_GATT_MOCK_HPP
-#define SERVICES_GATT_MOCK_HPP
+#ifndef SERVICES_GATT_CLIENT_MOCK_HPP
+#define SERVICES_GATT_CLIENT_MOCK_HPP
 
 #include "services/ble/Gatt.hpp"
 #include "services/ble/GattClient.hpp"

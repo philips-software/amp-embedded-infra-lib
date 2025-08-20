@@ -5,6 +5,7 @@
 #include "services/ble/ClaimingGattClientAdapter.hpp"
 #include "services/ble/GattClient.hpp"
 #include "services/ble/test_doubles/GattClientMock.hpp"
+#include "services/ble/test_doubles/GattMock.hpp"
 #include "gmock/gmock.h"
 #include <array>
 #include <cstdint>
@@ -18,10 +19,12 @@ namespace
     {
     public:
         testing::StrictMock<services::GattClientMock> gattClient;
-        services::ClaimingGattClientAdapter adapter{ gattClient };
+        testing::StrictMock<services::AttMtuExchangeMock> attMtuExchange;
+        services::ClaimingGattClientAdapter adapter{ gattClient, attMtuExchange };
         testing::StrictMock<services::GattClientCharacteristicOperationsObserverMock> characteristicsOperationsObserver{ adapter };
         testing::StrictMock<services::GattClientDiscoveryObserverMock> discoveryObserver{ adapter };
         testing::StrictMock<services::GattClientStackUpdateObserverMock> stackUpdateObserver{ adapter };
+        testing::StrictMock<services::AttMtuExchangeObserverMock> attMtuExchangeObserver{ adapter };
     };
 }
 
@@ -54,55 +57,73 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_start_descriptor_discovery)
 
 TEST_F(ClaimingGattClientAdapterTest, should_call_service_discovered)
 {
-    const services::AttAttribute::Uuid type = services::AttAttribute::Uuid16{ 0x180D };
-    const auto handle = 0x1;
-    const auto endHandle = 0x2;
+    static const services::AttAttribute::Uuid type = services::AttAttribute::Uuid16{ 0x180D };
+    static const auto handle = 0x1;
+    static const auto endHandle = 0x2;
 
     EXPECT_CALL(discoveryObserver, ServiceDiscovered(type, handle, endHandle));
-    adapter.ServiceDiscovered(type, handle, endHandle);
+    gattClient.NotifyObservers([](auto& observer)
+        {
+            observer.ServiceDiscovered(type, handle, endHandle);
+        });
     ExecuteAllActions();
 }
 
 TEST_F(ClaimingGattClientAdapterTest, should_call_characteristic_discovered)
 {
-    const services::AttAttribute::Uuid type = services::AttAttribute::Uuid16{ 0x180D };
-    const auto handle = 0x1;
-    const auto valueHandle = 0x2;
-    const auto properties = services::GattCharacteristic::PropertyFlags::read | services::GattCharacteristic::PropertyFlags::notify;
+    static const services::AttAttribute::Uuid type = services::AttAttribute::Uuid16{ 0x180D };
+    static const auto handle = 0x1;
+    static const auto valueHandle = 0x2;
+    static const auto properties = services::GattCharacteristic::PropertyFlags::read | services::GattCharacteristic::PropertyFlags::notify;
 
     EXPECT_CALL(discoveryObserver, CharacteristicDiscovered(type, handle, valueHandle, properties));
-    adapter.CharacteristicDiscovered(type, handle, valueHandle, properties);
+    gattClient.NotifyObservers([](auto& observer)
+        {
+            observer.CharacteristicDiscovered(type, handle, valueHandle, properties);
+        });
     ExecuteAllActions();
 }
 
 TEST_F(ClaimingGattClientAdapterTest, should_call_descriptor_discovered)
 {
-    const services::AttAttribute::Uuid type = services::AttAttribute::Uuid16{ 0x180D };
-    const auto handle = 0x1;
+    static const services::AttAttribute::Uuid type = services::AttAttribute::Uuid16{ 0x180D };
+    static const auto handle = 0x1;
 
     EXPECT_CALL(discoveryObserver, DescriptorDiscovered(type, handle));
-    adapter.DescriptorDiscovered(type, handle);
+    gattClient.NotifyObservers([](auto& observer)
+        {
+            observer.DescriptorDiscovered(type, handle);
+        });
     ExecuteAllActions();
 }
 
 TEST_F(ClaimingGattClientAdapterTest, should_call_service_discovery_complete)
 {
     EXPECT_CALL(discoveryObserver, ServiceDiscoveryComplete());
-    adapter.ServiceDiscoveryComplete();
+    gattClient.NotifyObservers([](auto& observer)
+        {
+            observer.ServiceDiscoveryComplete();
+        });
     ExecuteAllActions();
 }
 
 TEST_F(ClaimingGattClientAdapterTest, should_call_characteristic_discovery_complete)
 {
     EXPECT_CALL(discoveryObserver, CharacteristicDiscoveryComplete());
-    adapter.CharacteristicDiscoveryComplete();
+    gattClient.NotifyObservers([](auto& observer)
+        {
+            observer.CharacteristicDiscoveryComplete();
+        });
     ExecuteAllActions();
 }
 
 TEST_F(ClaimingGattClientAdapterTest, should_call_descriptor_discovery_complete)
 {
     EXPECT_CALL(discoveryObserver, DescriptorDiscoveryComplete());
-    adapter.DescriptorDiscoveryComplete();
+    gattClient.NotifyObservers([](auto& observer)
+        {
+            observer.DescriptorDiscoveryComplete();
+        });
     ExecuteAllActions();
 }
 
@@ -239,6 +260,22 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_disable_indication_characteris
     ExecuteAllActions();
 }
 
+TEST_F(ClaimingGattClientAdapterTest, should_call_mtu_exchange)
+{
+    EXPECT_CALL(attMtuExchange, EffectiveMaxAttMtuSize()).WillOnce(testing::Return(200));
+    EXPECT_EQ(200, adapter.EffectiveMaxAttMtuSize());
+
+    EXPECT_CALL(attMtuExchange, MtuExchange());
+    adapter.MtuExchange();
+    ExecuteAllActions();
+
+    EXPECT_CALL(attMtuExchangeObserver, ExchangedMaxAttMtuSize());
+    attMtuExchange.NotifyObservers([](auto& observer)
+        {
+            observer.ExchangedMaxAttMtuSize();
+        });
+}
+
 TEST_F(ClaimingGattClientAdapterTest, should_block_discovery_while_characteristic_operation)
 {
     const auto handle = 0x1;
@@ -255,7 +292,10 @@ TEST_F(ClaimingGattClientAdapterTest, should_block_discovery_while_characteristi
     ExecuteAllActions();
 
     EXPECT_CALL(discoveryObserver, CharacteristicDiscoveryComplete());
-    adapter.CharacteristicDiscoveryComplete();
+    gattClient.NotifyObservers([](auto& observer)
+        {
+            observer.CharacteristicDiscoveryComplete();
+        });
 
     EXPECT_CALL(gattClient, DisableIndication(testing::_, testing::_))
         .WillOnce([handle, result](const services::GattClientObserver& observer,
@@ -269,20 +309,26 @@ TEST_F(ClaimingGattClientAdapterTest, should_block_discovery_while_characteristi
 
 TEST_F(ClaimingGattClientAdapterTest, should_forward_notification_received)
 {
-    const auto handle = 0x1;
-    const infra::ConstByteRange data = infra::MakeRange(std::array<uint8_t, 4>{ 0x01, 0x02, 0x03, 0x04 });
+    static const auto handle = 0x1;
+    static const infra::ConstByteRange data = infra::MakeRange(std::array<uint8_t, 4>{ 0x01, 0x02, 0x03, 0x04 });
 
     EXPECT_CALL(stackUpdateObserver, NotificationReceived(handle, data));
-    adapter.NotificationReceived(handle, data);
+    gattClient.NotifyObservers([](auto& observer)
+        {
+            observer.NotificationReceived(handle, data);
+        });
     ExecuteAllActions();
 }
 
 TEST_F(ClaimingGattClientAdapterTest, should_forward_indication_received)
 {
-    const auto handle = 0x1;
-    const infra::ConstByteRange data = infra::MakeRange(std::array<uint8_t, 4>{ 0x01, 0x02, 0x03, 0x04 });
+    static const auto handle = 0x1;
+    static const infra::ConstByteRange data = infra::MakeRange(std::array<uint8_t, 4>{ 0x01, 0x02, 0x03, 0x04 });
 
     EXPECT_CALL(stackUpdateObserver, IndicationReceived(handle, data, testing::_)).WillOnce(testing::InvokeArgument<2>());
-    adapter.IndicationReceived(handle, data, infra::MockFunction<void()>());
+    gattClient.NotifyObservers([](auto& observer)
+        {
+            observer.IndicationReceived(handle, data, infra::MockFunction<void()>());
+        });
     ExecuteAllActions();
 }
