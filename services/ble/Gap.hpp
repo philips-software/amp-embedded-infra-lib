@@ -8,6 +8,7 @@
 #include "infra/util/EnumCast.hpp"
 #include "infra/util/Observer.hpp"
 #include "infra/util/Optional.hpp"
+#include "services/ble/Att.hpp"
 
 namespace services
 {
@@ -45,6 +46,7 @@ namespace services
     {
         unknownType = 0x00u,
         flags = 0x01u,
+        completeListOf16BitUuids = 0x03u,
         completeListOf128BitUuids = 0x07u,
         shortenedLocalName = 0x08u,
         completeLocalName = 0x09u,
@@ -72,21 +74,6 @@ namespace services
         {
             return type == rhs.type && address == rhs.address;
         }
-    };
-
-    class GapAdvertisingDataParser
-    {
-    public:
-        explicit GapAdvertisingDataParser(infra::ConstByteRange data);
-
-        infra::ConstByteRange LocalName() const;
-        infra::ConstByteRange ManufacturerSpecificData() const;
-
-    private:
-        infra::ConstByteRange data;
-
-    private:
-        infra::ConstByteRange ParserAdvertisingData(GapAdvertisementDataType type) const;
     };
 
     class GapPairing;
@@ -158,15 +145,15 @@ namespace services
             confirm,
         };
 
-        virtual void Pair() = 0;
+        // 1. If there is a pre-existing bond, then the connection will be encrypted.
+        // 2. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
+        virtual void PairAndBond() = 0;
 
         virtual void AllowPairing(bool allow) = 0;
-
         virtual void SetSecurityMode(SecurityMode mode, SecurityLevel level) = 0;
         virtual void SetIoCapabilities(IoCapabilities caps) = 0;
         virtual void GenerateOutOfBandData() = 0;
         virtual void SetOutOfBandData(hal::MacAddress macAddress, GapDeviceAddressType addressType, OutOfBandDataType dataType, infra::ConstByteRange outOfBandData) = 0;
-
         virtual void AuthenticateWithPasskey(uint32_t passkey) = 0;
         virtual void NumericComparisonConfirm(bool accept) = 0;
     };
@@ -185,7 +172,7 @@ namespace services
         void OutOfBandDataGenerated(const OutOfBandData& outOfBandData) override;
 
         // Implementation of GapPairing
-        void Pair() override;
+        void PairAndBond() override;
         void AllowPairing(bool allow) override;
         void SetSecurityMode(SecurityMode mode, SecurityLevel level) override;
         void SetIoCapabilities(IoCapabilities caps) override;
@@ -306,6 +293,46 @@ namespace services
     {
         return static_cast<GapPeripheral::AdvertisementFlags>(infra::enum_cast(lhs) | infra::enum_cast(rhs));
     }
+
+    class GapAdvertisingDataParser
+    {
+    public:
+        explicit GapAdvertisingDataParser(infra::ConstByteRange data);
+
+        infra::ConstByteRange LocalName() const;
+        infra::Optional<std::pair<uint16_t, infra::ConstByteRange>> ManufacturerSpecificData() const;
+        infra::Optional<GapPeripheral::AdvertisementFlags> Flags() const;
+        infra::MemoryRange<const AttAttribute::Uuid16> CompleteListOf16BitUuids() const;
+        infra::MemoryRange<const AttAttribute::Uuid128> CompleteListOf128BitUuids() const;
+
+    private:
+        infra::ConstByteRange data;
+
+    private:
+        infra::ConstByteRange ParserAdvertisingData(GapAdvertisementDataType type) const;
+    };
+
+    class GapAdvertisementFormatter
+    {
+    public:
+        explicit GapAdvertisementFormatter(infra::BoundedVector<uint8_t>& payload);
+
+        void AppendFlags(GapPeripheral::AdvertisementFlags flags);
+        void AppendCompleteLocalName(const infra::BoundedConstString& name);
+        void AppendShortenedLocalName(const infra::BoundedConstString& name);
+        void AppendManufacturerData(uint16_t manufacturerCode, infra::ConstByteRange data);
+        void AppendListOfServicesUuid(infra::MemoryRange<AttAttribute::Uuid16> services);
+        void AppendListOfServicesUuid(infra::MemoryRange<AttAttribute::Uuid128> services);
+        void AppendPublicTargetAddress(hal::MacAddress address);
+
+        infra::ConstByteRange FormattedAdvertisementData() const;
+        std::size_t RemainingSpaceAvailable() const;
+
+    private:
+        static constexpr std::size_t headerSize = 2;
+
+        infra::BoundedVector<uint8_t>& payload;
+    };
 
     struct GapAdvertisingReport
     {

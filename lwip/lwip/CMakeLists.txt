@@ -1,7 +1,7 @@
 FetchContent_Declare(
     lwip
     GIT_REPOSITORY https://github.com/lwip-tcpip/lwip
-    GIT_TAG 84fde1ebbfe35b3125fc2d89b8a456cbacf148e9 # v2.2.0-rc1
+    GIT_TAG 77dcd25a72509eb83f72b033d219b1d40cd8eb95 # v2.2.1
 )
 
 FetchContent_GetProperties(lwip)

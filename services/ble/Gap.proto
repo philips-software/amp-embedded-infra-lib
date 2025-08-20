@@ -249,8 +249,10 @@ service GapCentral
     // Allowed states: connected
     rpc Disconnect(Nothing) returns (Nothing) { option (method_id) = 5; }
 
-    // Allowed states: connected
-    rpc Pair(Nothing) returns (Nothing) { option (method_id) = 6; }
+    // Allowed states: connected 
+    // 1. If there is a pre-existing bond, then the connection will be encrypted.
+    // 2. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
+    rpc PairAndBond(Nothing) returns (Nothing) { option (method_id) = 6; }
     
     rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 7; }
     rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 8; }
@@ -258,7 +260,11 @@ service GapCentral
     rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 10; }
     rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 11; }
     rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 12; }
-    rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; }
+
+    // This will only succeed if Address is a private resolvable address, and if the device is bonded
+    rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; } 
+
+    // This will work with both public and random addresses
     rpc IsDeviceBonded(PeerNodeParameters) returns (Nothing) { option (method_id) = 14; }
     rpc GenerateOutOfBandData(Nothing) returns (Nothing) { option (method_id) = 15; }
     rpc SetOutOfBandData(OutOfBandDataInput) returns (Nothing) { option (method_id) = 16; }
