@@ -1795,7 +1795,7 @@
  *
  * Comment this macro to disable support for TLS 1.2 / DTLS 1.2
  */
-//#define MBEDTLS_SSL_PROTO_TLS1_2
+#define MBEDTLS_SSL_PROTO_TLS1_2
 
 /**
  * \def MBEDTLS_SSL_PROTO_TLS1_3
