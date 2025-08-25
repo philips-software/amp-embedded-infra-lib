@@ -4,9 +4,12 @@
 #include "infra/util/MemoryRange.hpp"
 #include <cstdint>
 #include <cstring>
-#include <ostream>
 #include <string>
 #include <vector>
+
+#ifdef EMIL_HOST_BUILD
+#include <ostream>
+#endif
 
 namespace infra
 {
