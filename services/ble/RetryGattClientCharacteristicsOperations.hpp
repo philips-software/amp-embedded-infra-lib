@@ -11,7 +11,7 @@ namespace services
         , public GattClientStackUpdateObserver
     {
     public:
-        RetryGattClientCharacteristicsOperations(GattClientCharacteristicOperations& gattClient);
+        explicit RetryGattClientCharacteristicsOperations(GattClientCharacteristicOperations& gattClient);
 
         // Implementation of GattClientCharacteristicOperations
         void Read(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone) override;

@@ -118,7 +118,7 @@ namespace services
                 GattClientObserver::Subject().Write(*this, writeContext.data, [this](OperationStatus result)
                     {
                         characteristicOperationsClaimer.Release();
-                        auto writeContext = std::get<WriteOperation>(characteristicOperationContext->operation);
+                        const auto& writeContext = std::get<WriteOperation>(characteristicOperationContext->operation);
                         writeContext.onDone(result);
                     });
             });
@@ -133,7 +133,7 @@ namespace services
                 GattClientObserver::Subject().WriteWithoutResponse(*this, writeWithoutResponseContext.data, [this](OperationStatus result)
                     {
                         characteristicOperationsClaimer.Release();
-                        auto& writeWithoutResponseContext = std::get<WriteWithoutResponseOperation>(characteristicOperationContext->operation);
+                        const auto& writeWithoutResponseContext = std::get<WriteWithoutResponseOperation>(characteristicOperationContext->operation);
                         writeWithoutResponseContext.onDone(result);
                     });
             });
