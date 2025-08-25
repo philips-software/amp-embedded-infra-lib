@@ -28,10 +28,13 @@
 #include <cstddef>
 #include <cstring>
 #include <functional>
-#include <ostream>
 #include <tuple>
 #include <type_traits>
 #include <utility>
+
+#ifdef EMIL_HOST_BUILD
+#include <ostream>
+#endif
 
 #ifndef INFRA_DEFAULT_FUNCTION_EXTRA_SIZE
 #define INFRA_DEFAULT_FUNCTION_EXTRA_SIZE (2 * sizeof(void*))
