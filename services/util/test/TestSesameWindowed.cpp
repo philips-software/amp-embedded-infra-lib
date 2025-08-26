@@ -4,6 +4,7 @@
 #include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/ConstructBin.hpp"
 #include "infra/util/Endian.hpp"
+#include "services/util/SesameCobs.hpp"
 #include "services/util/SesameWindowed.hpp"
 #include "services/util/test_doubles/SesameMock.hpp"
 #include "gmock/gmock.h"
@@ -153,6 +154,7 @@ TEST_F(SesameWindowedTest, MaxSendMessageSize)
     // 4 bytes in a message expands to 1 (cobs) + 1 (operation) + 3 (message) + 1 (delimiter) = 6
     // Two of these messages plus one release window amount to 6 + 6 + 5 = 17, which is under the limit of the 18 bytes buffer of cobs
     EXPECT_EQ(3, communication.MaxSendMessageSize());
+    EXPECT_EQ(17, (services::SesameWindowed::bufferSizeForMessage<3, services::SesameCobs::EncodedMessageSize>));
 }
 
 TEST_F(SesameWindowedTest, send_message_after_initialized)
