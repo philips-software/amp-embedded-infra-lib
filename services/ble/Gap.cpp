@@ -44,7 +44,7 @@ namespace services
             });
     }
 
-    void GapPairingDecorator::OutOfBandDataGenerated(const OutOfBandData& outOfBandData)
+    void GapPairingDecorator::OutOfBandDataGenerated(const GapOutOfBandData& outOfBandData)
     {
         GapPairing::NotifyObservers([outOfBandData](auto& obs)
             {
@@ -77,9 +77,9 @@ namespace services
         GapPairingObserver::Subject().GenerateOutOfBandData();
     }
 
-    void GapPairingDecorator::SetOutOfBandData(hal::MacAddress macAddress, GapDeviceAddressType addressType, OutOfBandDataType dataType, infra::ConstByteRange outOfBandData)
+    void GapPairingDecorator::SetOutOfBandData(const services::GapOutOfBandData& outOfBandData)
     {
-        GapPairingObserver::Subject().SetOutOfBandData(macAddress, addressType, dataType, outOfBandData);
+        GapPairingObserver::Subject().SetOutOfBandData(outOfBandData);
     }
 
     void GapPairingDecorator::AuthenticateWithPasskey(uint32_t passkey)

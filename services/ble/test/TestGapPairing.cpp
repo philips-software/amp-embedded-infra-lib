@@ -35,14 +35,14 @@ namespace services
         EXPECT_CALL(gapPairingObserver, DisplayPasskey(::testing::Eq(11111), ::testing::IsTrue()));
         EXPECT_CALL(gapPairingObserver, PairingSuccessfullyCompleted());
         EXPECT_CALL(gapPairingObserver, PairingFailed(::testing::TypedEq<GapPairingObserver::PairingErrorType>(GapPairingObserver::PairingErrorType::numericComparisonFailed)));
-        EXPECT_CALL(gapPairingObserver, OutOfBandDataGenerated(OutOfBandDataContentsEqual(GapPairingObserver::OutOfBandData{ macAddress, GapDeviceAddressType::publicAddress, temporary, random, confirm })));
+        EXPECT_CALL(gapPairingObserver, OutOfBandDataGenerated(OutOfBandDataContentsEqual(services::GapOutOfBandData{ macAddress, GapDeviceAddressType::publicAddress, temporary, random, confirm })));
 
         gapPairing.NotifyObservers([this](GapPairingObserver& obs)
             {
                 obs.DisplayPasskey(11111, true);
                 obs.PairingSuccessfullyCompleted();
                 obs.PairingFailed(GapPairingObserver::PairingErrorType::numericComparisonFailed);
-                obs.OutOfBandDataGenerated(GapPairingObserver::OutOfBandData{ macAddress, GapDeviceAddressType::publicAddress, temporary, random, confirm });
+                obs.OutOfBandDataGenerated(GapOutOfBandData{ macAddress, GapDeviceAddressType::publicAddress, temporary, random, confirm });
             });
     }
 
@@ -63,8 +63,8 @@ namespace services
         EXPECT_CALL(gapPairing, GenerateOutOfBandData());
         decorator.GenerateOutOfBandData();
 
-        EXPECT_CALL(gapPairing, SetOutOfBandData(::testing::_, GapDeviceAddressType::publicAddress, GapPairing::OutOfBandDataType::random, infra::ContentsEqual(random)));
-        decorator.SetOutOfBandData(hal::MacAddress(), GapDeviceAddressType::publicAddress, GapPairing::OutOfBandDataType::random, infra::MakeByteRange(random));
+        EXPECT_CALL(gapPairing, SetOutOfBandData(OutOfBandDataContentsEqual(services::GapOutOfBandData{ hal::MacAddress(), GapDeviceAddressType::publicAddress, temporary, random, confirm })));
+        decorator.SetOutOfBandData({ hal::MacAddress(), GapDeviceAddressType::publicAddress, infra::MakeByteRange(temporary), infra::MakeByteRange(random), infra::MakeByteRange(confirm) });
 
         EXPECT_CALL(gapPairing, AuthenticateWithPasskey(::testing::Eq(11111)));
         decorator.AuthenticateWithPasskey(11111);
