@@ -15,7 +15,7 @@ namespace services
         MOCK_METHOD(void, SetSecurityMode, (SecurityMode mode, SecurityLevel level));
         MOCK_METHOD(void, SetIoCapabilities, (IoCapabilities caps));
         MOCK_METHOD(void, GenerateOutOfBandData, ());
-        MOCK_METHOD(void, SetOutOfBandData, (const services::GapOutOfBandData& outOfBandData));
+        MOCK_METHOD(void, SetOutOfBandData, (const GapOutOfBandData& outOfBandData));
         MOCK_METHOD(void, AuthenticateWithPasskey, (uint32_t passkey));
         MOCK_METHOD(void, NumericComparisonConfirm, (bool accept));
     };

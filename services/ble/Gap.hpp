@@ -146,7 +146,7 @@ namespace services
         virtual void SetSecurityMode(SecurityMode mode, SecurityLevel level) = 0;
         virtual void SetIoCapabilities(IoCapabilities caps) = 0;
         virtual void GenerateOutOfBandData() = 0;
-        virtual void SetOutOfBandData(const services::GapOutOfBandData& outOfBandData) = 0;
+        virtual void SetOutOfBandData(const GapOutOfBandData& outOfBandData) = 0;
         virtual void AuthenticateWithPasskey(uint32_t passkey) = 0;
         virtual void NumericComparisonConfirm(bool accept) = 0;
     };
@@ -170,7 +170,7 @@ namespace services
         void SetSecurityMode(SecurityMode mode, SecurityLevel level) override;
         void SetIoCapabilities(IoCapabilities caps) override;
         void GenerateOutOfBandData() override;
-        void SetOutOfBandData(const services::GapOutOfBandData& outOfBandData) override;
+        void SetOutOfBandData(const GapOutOfBandData& outOfBandData) override;
         void AuthenticateWithPasskey(uint32_t passkey) override;
         void NumericComparisonConfirm(bool accept) override;
     };

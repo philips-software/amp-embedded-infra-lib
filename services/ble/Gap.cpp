@@ -77,7 +77,7 @@ namespace services
         GapPairingObserver::Subject().GenerateOutOfBandData();
     }
 
-    void GapPairingDecorator::SetOutOfBandData(const services::GapOutOfBandData& outOfBandData)
+    void GapPairingDecorator::SetOutOfBandData(const GapOutOfBandData& outOfBandData)
     {
         GapPairingObserver::Subject().SetOutOfBandData(outOfBandData);
     }
