@@ -99,23 +99,23 @@ namespace services
         characteristicOperationContext.emplace(ReadOperation{ onRead, onDone }, characteristic.CharacteristicValueHandle());
         characteristicOperationsClaimer.Claim([this]()
             {
-                auto readContext = std::get<ReadOperation>(characteristicOperationContext->operation);
+                const auto& readContext = std::get<ReadOperation>(characteristicOperationContext->operation);
                 GattClientObserver::Subject().Read(*this, readContext.onRead, [this](uint8_t result)
                     {
                         characteristicOperationsClaimer.Release();
-                        auto readContext = std::get<ReadOperation>(characteristicOperationContext->operation);
+                        const auto& readContext = std::get<ReadOperation>(characteristicOperationContext->operation);
                         readContext.onDone(result);
                     });
             });
     }
 
-    void ClaimingGattClientAdapter::Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
+    void ClaimingGattClientAdapter::Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone)
     {
         characteristicOperationContext.emplace(WriteOperation{ data, onDone }, characteristic.CharacteristicValueHandle());
         characteristicOperationsClaimer.Claim([this]()
             {
-                auto writeContext = std::get<WriteOperation>(characteristicOperationContext->operation);
-                GattClientObserver::Subject().Write(*this, writeContext.data, [this](OperationStatus result)
+                const auto& writeContext = std::get<WriteOperation>(characteristicOperationContext->operation);
+                GattClientObserver::Subject().Write(*this, writeContext.data, [this](uint8_t result)
                     {
                         characteristicOperationsClaimer.Release();
                         const auto& writeContext = std::get<WriteOperation>(characteristicOperationContext->operation);
@@ -129,7 +129,7 @@ namespace services
         characteristicOperationContext.emplace(WriteWithoutResponseOperation{ data, onDone }, characteristic.CharacteristicValueHandle());
         characteristicOperationsClaimer.Claim([this]()
             {
-                auto writeWithoutResponseContext = std::get<WriteWithoutResponseOperation>(characteristicOperationContext->operation);
+                const auto& writeWithoutResponseContext = std::get<WriteWithoutResponseOperation>(characteristicOperationContext->operation);
                 GattClientObserver::Subject().WriteWithoutResponse(*this, writeWithoutResponseContext.data, [this](OperationStatus result)
                     {
                         characteristicOperationsClaimer.Release();

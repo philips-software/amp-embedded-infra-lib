@@ -15,7 +15,7 @@ namespace services
 
         // Implementation of GattClientCharacteristicOperations
         void Read(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone) override;
-        void Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
+        void Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone) override;
         void WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
 
         void EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) override;
@@ -29,7 +29,6 @@ namespace services
         void IndicationReceived(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone) override;
 
     private:
-        void TryWrite();
         void TryWriteWithoutResponse();
 
     private:
@@ -41,7 +40,6 @@ namespace services
         };
 
         GattClientCharacteristicOperations& gattClient;
-        std::optional<Operation> operationWrite;
         std::optional<Operation> operationWriteWithoutResponse;
     };
 }

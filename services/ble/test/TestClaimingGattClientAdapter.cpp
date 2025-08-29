@@ -133,20 +133,17 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_read_characteristic)
 TEST_F(ClaimingGattClientAdapterTest, should_call_write_characteristic)
 {
     infra::ConstByteRange data = infra::MakeRange(std::array<uint8_t, 4>{ 0x01, 0x02, 0x03, 0x04 });
-    const auto result = services::OperationStatus::success;
     const auto handle = 0x1;
+    infra::VerifyingFunction<void(uint8_t)> onDone{ 0 };
 
-    EXPECT_CALL(gattClient, Write(testing::_, infra::ByteRangeContentsEqual(data), testing::_))
-        .WillOnce([handle](const services::GattClientObserver& observer,
-                      infra::ConstByteRange data,
-                      infra::Function<void(services::OperationStatus)> onDone)
-            {
-                EXPECT_EQ(observer.CharacteristicValueHandle(), handle);
-                onDone(result);
-            });
+    EXPECT_CALL(gattClient, Write(testing::_, infra::ByteRangeContentsEqual(data), testing::_)).WillOnce([handle, data, &onDone](const services::GattClientObserver& observer, infra::ConstByteRange writeData, const infra::Function<void(uint8_t)>& onWriteDone)
+        {
+            EXPECT_EQ(observer.CharacteristicValueHandle(), handle);
+            onWriteDone(0);
+        });
 
     EXPECT_CALL(characteristicsOperationsObserver, CharacteristicValueHandle).WillOnce(testing::Return(handle));
-    adapter.Write(characteristicsOperationsObserver, data, infra::MockFunction<void(services::OperationStatus)>(result));
+    adapter.Write(characteristicsOperationsObserver, data, onDone);
     ExecuteAllActions();
 }
 

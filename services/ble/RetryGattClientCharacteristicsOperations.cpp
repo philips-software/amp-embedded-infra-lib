@@ -13,10 +13,9 @@ namespace services
         gattClient.Read(characteristic, onRead, onDone);
     }
 
-    void RetryGattClientCharacteristicsOperations::Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
+    void RetryGattClientCharacteristicsOperations::Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone)
     {
-        operationWrite.emplace(Operation{ characteristic, data, onDone });
-        TryWrite();
+        gattClient.Write(characteristic, data, onDone);
     }
 
     void RetryGattClientCharacteristicsOperations::WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
@@ -59,25 +58,6 @@ namespace services
         infra::Subject<GattClientStackUpdateObserver>::NotifyObservers([&context](auto& observer)
             {
                 observer.IndicationReceived(std::get<0>(context), std::get<1>(context), std::get<2>(context));
-            });
-    }
-
-    void RetryGattClientCharacteristicsOperations::TryWrite()
-    {
-        gattClient.Write(operationWrite->characteristic, operationWrite->data, [this](OperationStatus result)
-            {
-                if (result == OperationStatus::retry)
-                {
-                    infra::EventDispatcher::Instance().Schedule([this]()
-                        {
-                            TryWrite();
-                        });
-                }
-                else
-                {
-                    operationWrite->onDone(result);
-                    operationWrite = std::nullopt;
-                }
             });
     }
 

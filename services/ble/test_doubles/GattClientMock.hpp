@@ -41,7 +41,7 @@ namespace services
     {
     public:
         MOCK_METHOD(void, Read, (const GattClientCharacteristicOperationsObserver&, const infra::Function<void(const infra::ConstByteRange&)>&, const infra::Function<void(uint8_t)>&), (override));
-        MOCK_METHOD(void, Write, (const GattClientCharacteristicOperationsObserver&, infra::ConstByteRange, const infra::Function<void(services::OperationStatus)>&), (override));
+        MOCK_METHOD(void, Write, (const GattClientCharacteristicOperationsObserver&, infra::ConstByteRange, const infra::Function<void(uint8_t)>&), (override));
         MOCK_METHOD(void, WriteWithoutResponse, (const GattClientCharacteristicOperationsObserver&, infra::ConstByteRange, const infra::Function<void(services::OperationStatus)>&), (override));
 
         MOCK_METHOD(void, EnableNotification, (const GattClientCharacteristicOperationsObserver&, const infra::Function<void(uint8_t)>&), (override));
@@ -100,7 +100,7 @@ namespace services
         MOCK_METHOD(void, StartDescriptorDiscovery, (AttAttribute::Handle handle, AttAttribute::Handle endHandle), (override));
 
         MOCK_METHOD(void, Read, (const GattClientObserver& characteristic, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone), (override));
-        MOCK_METHOD(void, Write, (const GattClientObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone), (override));
+        MOCK_METHOD(void, Write, (const GattClientObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone), (override));
         MOCK_METHOD(void, WriteWithoutResponse, (const GattClientObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone), (override));
         MOCK_METHOD(void, EnableNotification, (const GattClientObserver& characteristic, const infra::Function<void(uint8_t)>& onDone), (override));
         MOCK_METHOD(void, DisableNotification, (const GattClientObserver& characteristic, const infra::Function<void(uint8_t)>& onDone), (override));

@@ -18,7 +18,7 @@ namespace services
         MOCK_METHOD(void, StartCharacteristicDiscovery, (AttAttribute::Handle handle, AttAttribute::Handle endHandle), (override));
         MOCK_METHOD(void, StartDescriptorDiscovery, (AttAttribute::Handle handle, AttAttribute::Handle endHandle), (override));
         MOCK_METHOD(void, Read, (const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone), (override));
-        MOCK_METHOD(void, Write, (const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone), (override));
+        MOCK_METHOD(void, Write, (const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone), (override));
         MOCK_METHOD(void, WriteWithoutResponse, (const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone), (override));
         MOCK_METHOD(void, EnableNotification, (const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone), (override));
         MOCK_METHOD(void, DisableNotification, (const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone), (override));

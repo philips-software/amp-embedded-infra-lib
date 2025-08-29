@@ -133,14 +133,14 @@ TEST_F(GattClientCharacteristicTest, should_read_characteristic_and_callback_wit
 
 TEST_F(GattClientCharacteristicTest, should_write_characteristic_and_callback)
 {
-    const auto result = services::OperationStatus::success;
     const auto data = infra::MakeStringByteRange("string");
+    infra::VerifyingFunction<void(uint8_t)> onDone{ 0 };
 
-    EXPECT_CALL(operations, Write(testing::Ref(characteristic), infra::ByteRangeContentsEqual(data), ::testing::_)).WillOnce([result](const services::GattClientCharacteristicOperationsObserver&, infra::ConstByteRange, infra::Function<void(services::OperationStatus)> onDone)
+    EXPECT_CALL(operations, Write(testing::Ref(characteristic), infra::ByteRangeContentsEqual(data), testing::_)).WillOnce([&data](const services::GattClientCharacteristicOperationsObserver&, infra::ConstByteRange, infra::Function<void(uint8_t)> onDone)
         {
-            onDone(result);
+            onDone(0);
         });
-    characteristic.Write(data, infra::MockFunction<void(services::OperationStatus)>(result));
+    characteristic.Write(data, onDone);
 }
 
 TEST_F(GattClientCharacteristicTest, should_write_without_response_characteristic)

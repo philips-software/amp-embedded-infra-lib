@@ -44,63 +44,11 @@ TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_read_characteri
 
 TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_write_characteristic)
 {
-    infra::VerifyingFunction<void(services::OperationStatus)> callback(services::OperationStatus::success);
-    infra::Function<void(services::OperationStatus)> onDoneMock;
+    EXPECT_CALL(adapter, Write(testing::Ref(characteristicsOperationsObserver), testing::ElementsAreArray(data), testing::Ref(onDoneMock)));
 
-    EXPECT_CALL(adapter, Write(testing::Ref(characteristicsOperationsObserver), testing::ElementsAreArray(data), testing::_))
-        .WillOnce(testing::SaveArg<2>(&onDoneMock));
-
-    retryAdapter.Write(characteristicsOperationsObserver, data, callback);
-    onDoneMock(services::OperationStatus::success);
-}
-
-TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_write_characteristic_and_error)
-{
-    infra::VerifyingFunction<void(services::OperationStatus)> callback(services::OperationStatus::error);
-
-    EXPECT_CALL(adapter, Write(testing::Ref(characteristicsOperationsObserver), testing::ElementsAreArray(data), testing::_))
-        .WillOnce(testing::SaveArg<2>(&onWriteDoneMock));
-
-    retryAdapter.Write(characteristicsOperationsObserver, data, callback);
-    onWriteDoneMock(services::OperationStatus::error);
-}
-
-TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_write_characteristic_with_retry)
-{
-    infra::VerifyingFunction<void(services::OperationStatus)> callback(services::OperationStatus::success);
-
-    EXPECT_CALL(adapter, Write(testing::Ref(characteristicsOperationsObserver), testing::ElementsAreArray(data), testing::_))
-        .WillRepeatedly(testing::SaveArg<2>(&onWriteDoneMock));
-
-    retryAdapter.Write(characteristicsOperationsObserver, data, callback);
-    onWriteDoneMock(services::OperationStatus::retry);
-    onWriteDoneMock(services::OperationStatus::retry);
-    onWriteDoneMock(services::OperationStatus::success);
-    ExecuteAllActions();
-}
-
-TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_write_characteristic_with_retry_and_error)
-{
-    infra::VerifyingFunction<void(services::OperationStatus)> callback(services::OperationStatus::error);
-
-    EXPECT_CALL(adapter, Write(testing::Ref(characteristicsOperationsObserver), testing::ElementsAreArray(data), testing::_))
-        .WillRepeatedly(testing::SaveArg<2>(&onWriteDoneMock));
-
-    retryAdapter.Write(characteristicsOperationsObserver, data, callback);
-    onWriteDoneMock(services::OperationStatus::retry);
-    onWriteDoneMock(services::OperationStatus::error);
-    ExecuteAllActions();
-}
-
-TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_write_without_response_characteristic)
-{
-    infra::VerifyingFunction<void(services::OperationStatus)> callback(services::OperationStatus::success);
-
-    EXPECT_CALL(adapter, WriteWithoutResponse(testing::Ref(characteristicsOperationsObserver), testing::ElementsAreArray(data), testing::_))
-        .WillOnce(testing::SaveArg<2>(&onWriteDoneMock));
-
-    retryAdapter.WriteWithoutResponse(characteristicsOperationsObserver, data, callback);
-    onWriteDoneMock(services::OperationStatus::success);
+    retryAdapter.Write(characteristicsOperationsObserver,
+        data,
+        onDoneMock);
 }
 
 TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_write_without_response_characteristic_and_error)

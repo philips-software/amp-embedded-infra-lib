@@ -20,7 +20,7 @@ namespace services
         GattClientCharacteristicOperationsObserver::Subject().Read(*this, onResponse, onDone);
     }
 
-    void GattClientCharacteristic::Write(infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
+    void GattClientCharacteristic::Write(infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone)
     {
         really_assert(GattClientCharacteristicOperationsObserver::Attached());
 
