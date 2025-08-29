@@ -133,13 +133,14 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_read_characteristic)
 TEST_F(ClaimingGattClientAdapterTest, should_call_write_characteristic)
 {
     infra::ConstByteRange data = infra::MakeRange(std::array<uint8_t, 4>{ 0x01, 0x02, 0x03, 0x04 });
+    const auto result = 123;
     const auto handle = 0x1;
-    infra::VerifyingFunction<void(uint8_t)> onDone{ 0 };
+    infra::VerifyingFunction<void(uint8_t)> onDone{ result };
 
-    EXPECT_CALL(gattClient, Write(testing::_, infra::ByteRangeContentsEqual(data), testing::_)).WillOnce([handle, data, &onDone](const services::GattClientObserver& observer, infra::ConstByteRange writeData, const infra::Function<void(uint8_t)>& onWriteDone)
+    EXPECT_CALL(gattClient, Write(testing::_, infra::ByteRangeContentsEqual(data), testing::_)).WillOnce([handle, data, result, &onDone](const services::GattClientObserver& observer, infra::ConstByteRange writeData, const infra::Function<void(uint8_t)>& onWriteDone)
         {
             EXPECT_EQ(observer.CharacteristicValueHandle(), handle);
-            onWriteDone(0);
+            onWriteDone(result);
         });
 
     EXPECT_CALL(characteristicsOperationsObserver, CharacteristicValueHandle).WillOnce(testing::Return(handle));
