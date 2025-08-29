@@ -24,9 +24,7 @@ TEST(GattClientTest, characteristic_implementation_supports_different_uuid_lengt
     service.AddCharacteristic(characteristicDefinitionB);
 
     EXPECT_EQ(0x42, characteristicDefinitionA.Type().Get<services::AttAttribute::Uuid16>());
-    EXPECT_EQ((infra::BigEndian<std::array<uint8_t, 16>>{ { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-                  0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10 } }),
-        characteristicDefinitionB.Type().Get<services::AttAttribute::Uuid128>());
+    EXPECT_EQ(uuid128, characteristicDefinitionB.Type().Get<services::AttAttribute::Uuid128>());
 }
 
 TEST(GattClientTest, characteristic_implementation_supports_different_properties)
@@ -45,7 +43,7 @@ TEST(GattClientTest, characteristic_implementation_supports_different_properties
 TEST(GattClientTest, characteristic_implementation_is_added_to_service)
 {
     services::GattClientService service(uuid16, 0x1, 0x9);
-    services::GattClientCharacteristic characteristicDefinitionA{ services::AttAttribute::Uuid16(0x42), 0x2, 0x3, GattPropertyFlags::write };
+    services::GattClientCharacteristic characteristicDefinitionA{ uuid16, 0x2, 0x3, GattPropertyFlags::write };
     services::GattClientCharacteristic characteristicDefinitionB{ services::AttAttribute::Uuid16(0x84), 0x4, 0x5, GattPropertyFlags::none };
 
     service.AddCharacteristic(characteristicDefinitionA);
@@ -135,22 +133,27 @@ TEST_F(GattClientCharacteristicTest, should_read_characteristic_and_callback_wit
 
 TEST_F(GattClientCharacteristicTest, should_write_characteristic_and_callback)
 {
-    const auto result = 0;
     const auto data = infra::MakeStringByteRange("string");
+    infra::VerifyingFunction<void(uint8_t)> onDone{ 0 };
 
-    EXPECT_CALL(operations, Write(testing::Ref(characteristic), infra::ByteRangeContentsEqual(data), ::testing::_)).WillOnce([result](const services::GattClientCharacteristicOperationsObserver&, infra::ConstByteRange, infra::Function<void(uint8_t)> onDone)
+    EXPECT_CALL(operations, Write(testing::Ref(characteristic), infra::ByteRangeContentsEqual(data), testing::_)).WillOnce([&data](const services::GattClientCharacteristicOperationsObserver&, infra::ConstByteRange, infra::Function<void(uint8_t)> onDone)
         {
-            onDone(result);
+            onDone(0);
         });
-    characteristic.Write(data, infra::MockFunction<void(uint8_t)>(result));
+    characteristic.Write(data, onDone);
 }
 
 TEST_F(GattClientCharacteristicTest, should_write_without_response_characteristic)
 {
     const auto data = infra::MakeStringByteRange("string");
+    infra::VerifyingFunction<void(services::OperationStatus)> onWriteWithoutResponse{ services::OperationStatus::success };
+    auto result = services::OperationStatus::success;
 
-    EXPECT_CALL(operations, WriteWithoutResponse(testing::Ref(characteristic), infra::ByteRangeContentsEqual(data)));
-    characteristic.WriteWithoutResponse(data);
+    EXPECT_CALL(operations, WriteWithoutResponse(testing::Ref(characteristic), infra::ByteRangeContentsEqual(data), testing::_)).WillOnce([result](const services::GattClientCharacteristicOperationsObserver&, infra::ConstByteRange, infra::Function<void(services::OperationStatus)> onDone)
+        {
+            onDone(result);
+        });
+    characteristic.WriteWithoutResponse(data, onWriteWithoutResponse);
 }
 
 TEST_F(GattClientCharacteristicTest, should_enable_notification_characteristic_and_callback)
