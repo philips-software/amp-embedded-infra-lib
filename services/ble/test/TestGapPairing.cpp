@@ -27,7 +27,7 @@ namespace services
 
     MATCHER_P(OutOfBandDataContentsEqual, x, negation ? "Contents not equal" : "Contents are equal")
     {
-        return x.macAddress == arg.macAddress && x.addressType == arg.addressType && infra::ContentsEqual(x.temporaryKey, arg.temporaryKey) && infra::ContentsEqual(x.randomData, arg.randomData) && infra::ContentsEqual(x.confirmData, arg.confirmData);
+        return x.macAddress == arg.macAddress && x.addressType == arg.addressType && infra::ContentsEqual(x.randomData, arg.randomData) && infra::ContentsEqual(x.confirmData, arg.confirmData);
     }
 
     TEST_F(GapPairingDecoratorTest, forward_all_events_to_observers)

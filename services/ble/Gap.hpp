@@ -80,7 +80,6 @@ namespace services
     {
         hal::MacAddress macAddress;
         GapDeviceAddressType addressType;
-        infra::ConstByteRange temporaryKey;
         infra::ConstByteRange randomData;
         infra::ConstByteRange confirmData;
     };
