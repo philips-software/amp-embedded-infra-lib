@@ -390,19 +390,16 @@ namespace services
         , nameServers(resolver.nameServers.begin(), resolver.nameServers.end())
         , currentNameServer(nameServers.begin() + resolver.currentNameServer)
     {
-        services::GlobalTracer().Trace() << "ActiveLookup::ActiveLookup";
         ResolveNextAttempt();
     }
 
     bool DnsResolver::ActiveLookup::IsResolving(NameResolverResult& resolving) const
     {
-        services::GlobalTracer().Trace() << "ActiveLookup::IsResolving";
         return &resolving == &this->resolving;
     }
 
     void DnsResolver::ActiveLookup::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from)
     {
-        services::GlobalTracer().Trace() << "ActiveLookup::DataReceived";
         this->reader = std::move(reader); // The SharedPtr towards the reader is saved in the ActiveLookup object, so that it is destroyed before datagramExchange is destroyed
         ReplyParser replyParser(*this->reader, hostname);
 
@@ -417,7 +414,6 @@ namespace services
 
     void DnsResolver::ActiveLookup::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
-        services::GlobalTracer().Trace() << "ActiveLookup::SendStreamAvailable";
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
 
         DnsRecordHeader header{ queryId, DnsRecordHeader::flagsRecursionDesired, 1, 0, 0, 0 };
@@ -436,8 +432,6 @@ namespace services
 
     void DnsResolver::ActiveLookup::ResolveNextAttempt()
     {
-        services::GlobalTracer().Trace() << "ActiveLookup::ResolveNextAttempt";
-
         if (resolveAttempts == maxAttempts)
             resolver.NameLookupFailed(resolving);
         else
@@ -451,8 +445,6 @@ namespace services
 
     void DnsResolver::ActiveLookup::ResolveRecursion()
     {
-        services::GlobalTracer().Trace() << "ActiveLookup::ResolveRecursion";
-
         ++recursions;
 
         if (recursions == maxRecursions)
@@ -463,14 +455,11 @@ namespace services
 
     void DnsResolver::ActiveLookup::ResolveAttempt()
     {
-        services::GlobalTracer().Trace() << "ActiveLookup::ResolveAttempt";
-
         datagramExchange->RequestSendStream(QuerySize(), DnsUdpSocket());
     }
 
     void DnsResolver::ActiveLookup::SelectNextNameServer()
     {
-        services::GlobalTracer().Trace() << "ActiveLookup::SelectNextNameServer";
         ++currentNameServer;
         if (currentNameServer == nameServers.end())
             currentNameServer = nameServers.begin();
@@ -478,8 +467,6 @@ namespace services
 
     void DnsResolver::ActiveLookup::TryFindAnswer(ReplyParser& replyParser)
     {
-        services::GlobalTracer().Trace() << "ActiveLookup::TryFindAnswer";
-
         auto answer = replyParser.ReadAnswerRecords();
         if (answer != infra::none)
             resolver.NameLookupSuccess(resolving, answer->first, answer->second);
@@ -489,8 +476,6 @@ namespace services
 
     void DnsResolver::ActiveLookup::TryFindRecursiveNameServer(ReplyParser& replyParser)
     {
-        services::GlobalTracer().Trace() << "ActiveLookup::TryFindRecursiveNameServer";
-
         TryNewNameServers(replyParser);
 
         if (replyParser.Recurse())
@@ -501,8 +486,6 @@ namespace services
 
     void DnsResolver::ActiveLookup::TryNewNameServers(ReplyParser& replyParser)
     {
-        services::GlobalTracer().Trace() << "ActiveLookup::TryNewNameServers";
-
         decltype(nameServers) newRecursiveDnsServers;
         replyParser.ReadNameServers(newRecursiveDnsServers);
 
@@ -515,15 +498,11 @@ namespace services
 
     UdpSocket DnsResolver::ActiveLookup::DnsUdpSocket() const
     {
-        services::GlobalTracer().Trace() << "ActiveLookup::DnsUdpSocket";
-
         return MakeUdpSocket(*currentNameServer, 53);
     }
 
     std::size_t DnsResolver::ActiveLookup::QuerySize() const
     {
-        services::GlobalTracer().Trace() << "ActiveLookup::QuerySize";
-
         infra::BoundedConstString hostnameCopy = hostname;
         std::size_t hostnameSize = 1;
 

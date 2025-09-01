@@ -57,6 +57,8 @@ target_sources(services.util PRIVATE
     MessageCommunicationWindowed.hpp
     RepeatingButton.cpp
     RepeatingButton.hpp
+    SC16IS7xx.cpp
+    SC16IS7xx.hpp
     SerialCommunicationLoopback.cpp
     SerialCommunicationLoopback.hpp
     Sesame.hpp
