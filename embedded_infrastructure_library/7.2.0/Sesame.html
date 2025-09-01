@@ -348,6 +348,13 @@ to withstand man-in-the-middle attacks, the key exchange messages are signed, an
 a received key exchange message is verified by the receiving party.</p>
 </div>
 <div class="paragraph">
+<p>The messages used for exchanging the Diffie-Hellman messages and certificates are sent over ECHO. Obviously,
+symmetric keys have not yet been established at that point. The secure layer is therefore configured with
+keys and IVs that consist of all zeroes. Implementations must take care that before the keys and IVs of the
+secure layer are replaced by the result of Diffie-Hellman key exchange are the only ECHO messages exchanged
+are of the Diffie-Hellman protocol.</p>
+</div>
+<div class="paragraph">
 <p>In order to verify the signature, a party must either have the certificate of its peer, or have a root
 certificate by which the peer&#8217;s certificate&#8217;s validity is checked. In the latter case, a peer will
 use the <code>PresentCertificate</code> method of the <code>DiffieHellmanKeyEstablishment</code> ECHO service to inform its
@@ -367,12 +374,12 @@ After computing the public/private key and the signatures, it sends the public k
 using the <code>Exchange</code> method of the <code>DiffieHellmanKeyEstablishment</code> ECHO interface to its peer.</p>
 </div>
 <div class="paragraph">
-<p>Upon reception, the peer uses the received <code>r</code> and <code>s</code> signature values to check the signature of the presented public key.
-If this signature is correct, it computes the shared secret using its own private key and the peer&#8217;s public key
-using the Diffie-Hellman scheme.
+<p>Upon reception, the peer uses the public key included in the received certificate to check the signature <code>r</code> and <code>s</code>
+of the presented public key. If this signature is correct, it computes the shared secret using its own private key
+and the peer&#8217;s public key using the Diffie-Hellman scheme.
 Key expansion is performed on the shared secret to generate enough material for the required key/IV pairs in this
 way: <a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-90Ar1.pdf"><code>HMAC-DRBG-SHA256</code></a> is seeded
-with the shared secret, and generates 4 times 256 bits of data. The first 256
+with the shared secret, and generates 4 times 128 bits of data. The first 128
 bits of data is Key<sub>A</sub>, the next IV<sub>A</sub>, then Key<sub>B</sub>, then IV<sub>B</sub>. Both parties perform a lexicographical compare
 of their Diffie-Hellman public keys. The party with public key that compares greater than the public key of its peer
 uses Key<sub>A</sub> and IV<sub>A</sub> for sending data, the other party uses Key<sub>B</sub> and IV<sub>B</sub> for sending data.</p>
