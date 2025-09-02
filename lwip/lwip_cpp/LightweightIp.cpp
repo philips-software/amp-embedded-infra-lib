@@ -1,5 +1,6 @@
 #include "lwip/lwip_cpp/LightweightIp.hpp"
 #include "lwip/init.h"
+#include "services/network/Address.hpp"
 #ifndef ESP_PLATFORM
 #include "lwip/timeouts.h"
 #endif
@@ -20,14 +21,41 @@ namespace services
 {
     namespace
     {
-        IPv4Address Convert(ip_addr_t address)
+        IPv4Address Convert(const ip4_addr_t& address)
         {
             return {
-                ip4_addr1(&address.u_addr.ip4),
-                ip4_addr2(&address.u_addr.ip4),
-                ip4_addr3(&address.u_addr.ip4),
-                ip4_addr4(&address.u_addr.ip4),
+                ip4_addr1(&address),
+                ip4_addr2(&address),
+                ip4_addr3(&address),
+                ip4_addr4(&address),
             };
+        }
+
+        IPv6Address Convert(const ip6_addr_t& address)
+        {
+            return {
+                IP6_ADDR_BLOCK1(&address),
+                IP6_ADDR_BLOCK2(&address),
+                IP6_ADDR_BLOCK3(&address),
+                IP6_ADDR_BLOCK4(&address),
+                IP6_ADDR_BLOCK5(&address),
+                IP6_ADDR_BLOCK6(&address),
+                IP6_ADDR_BLOCK7(&address),
+                IP6_ADDR_BLOCK8(&address)
+            };
+        }
+
+        IPAddress Convert(const ip_addr_t& address)
+        {
+            switch (address.type)
+            {
+                case IPADDR_TYPE_V4:
+                    return Convert(address.u_addr.ip4);
+                case IPADDR_TYPE_V6:
+                    return Convert(address.u_addr.ip6);
+                default:
+                    return {};
+            }
         }
     }
 
@@ -65,12 +93,20 @@ namespace services
 
     IPv4Address LightweightIp::GetIPv4Address() const
     {
-        return Convert(netif_default->ip_addr);
+        return Convert(netif_default->ip_addr.u_addr.ip4);
     }
 
     IPv4InterfaceAddresses LightweightIp::GetIPv4InterfaceAddresses() const
     {
-        return { Convert(netif_default->ip_addr), Convert(netif_default->netmask), Convert(netif_default->gw) };
+        return { Convert(netif_default->ip_addr.u_addr.ip4), Convert(netif_default->netmask.u_addr.ip4), Convert(netif_default->gw.u_addr.ip4) };
+    }
+
+    IPv6Address LightweightIp::LinkLocalAddress() const
+    {
+        for (const auto& address : netif_default->ip6_addr)
+            if (ip6_addr_islinklocal(&address.u_addr.ip6))
+                return Convert(address.u_addr.ip6);
+        return {};
     }
 
     void LightweightIp::RegisterInstance()
