@@ -109,7 +109,7 @@ message AdvertisementMode
 
 message AdvertisementData
 {
-    bytes data = 1 [(bytes_size) = 31];
+    bytes data = 1 [(bytes_size) = 28]; //Don't add flags data, method adds flags data internally with the flag bits 'LE General Discoverable Mode' and 'BR/EDR Not Supported' enabled.
 }
 
 message PeerNodeParameters
