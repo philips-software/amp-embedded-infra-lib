@@ -5,8 +5,9 @@
 
 namespace services
 {
-    ClaimingGattClientAdapter::ClaimingGattClientAdapter(GattClient& gattClient)
+    ClaimingGattClientAdapter::ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchange& attMtuExchange)
         : GattClientObserver(gattClient)
+        , AttMtuExchangeObserver(attMtuExchange)
     {}
 
     void ClaimingGattClientAdapter::StartServiceDiscovery()
@@ -178,6 +179,19 @@ namespace services
         PerformDescriptorOperation();
     }
 
+    uint16_t ClaimingGattClientAdapter::EffectiveMaxAttMtuSize() const
+    {
+        return AttMtuExchangeObserver::Subject().EffectiveMaxAttMtuSize();
+    }
+
+    void ClaimingGattClientAdapter::MtuExchange()
+    {
+        attMtuExchangeClaimer.Claim([this]()
+            {
+                AttMtuExchangeObserver::Subject().MtuExchange();
+            });
+    }
+
     void ClaimingGattClientAdapter::PerformDescriptorOperation()
     {
         characteristicOperationsClaimer.Claim([this]()
@@ -212,5 +226,15 @@ namespace services
     AttAttribute::Handle ClaimingGattClientAdapter::CharacteristicValueHandle() const
     {
         return characteristicOperationContext->handle;
+    }
+
+    void ClaimingGattClientAdapter::ExchangedMaxAttMtuSize()
+    {
+        infra::Subject<AttMtuExchangeObserver>::NotifyObservers([](auto& observer)
+            {
+                observer.ExchangedMaxAttMtuSize();
+            });
+
+        attMtuExchangeClaimer.Release();
     }
 }
