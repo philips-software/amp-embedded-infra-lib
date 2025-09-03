@@ -127,9 +127,63 @@ namespace services
 
     void ClaimingGattClientAdapter::WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data)
     {
-        characteristicOperationContext.emplace(WriteWithoutResponseOperation{ data }, characteristic.CharacteristicValueHandle());
-        auto writeWithoutResponseContext = std::get<WriteWithoutResponseOperation>(characteristicOperationContext->operation);
-        GattClientObserver::Subject().WriteWithoutResponse(*this, writeWithoutResponseContext.data);
+        struct ValueHandleProvider
+            : public GattClientObserver
+        {
+            explicit ValueHandleProvider(AttAttribute::Handle handle)
+                : handle(handle)
+            {}
+
+            void ServiceDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle endHandle) override
+            {
+                std::abort();
+            }
+
+            void ServiceDiscoveryComplete() override
+            {
+                std::abort();
+            }
+
+            void CharacteristicDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties) override
+            {
+                std::abort();
+            }
+
+            void CharacteristicDiscoveryComplete() override
+            {
+                std::abort();
+            }
+
+            void DescriptorDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle) override
+            {
+                std::abort();
+            }
+
+            void DescriptorDiscoveryComplete() override
+            {
+                std::abort();
+            }
+
+            void NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data) override
+            {
+                std::abort();
+            }
+
+            void IndicationReceived(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone) override
+            {
+                std::abort();
+            }
+
+            AttAttribute::Handle CharacteristicValueHandle() const override
+            {
+                return handle;
+            }
+
+            AttAttribute::Handle handle;
+        };
+
+        ValueHandleProvider handleProvider{ characteristic.CharacteristicValueHandle() };
+        GattClientObserver::Subject().WriteWithoutResponse(handleProvider, data);
     }
 
     void ClaimingGattClientAdapter::EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone)
