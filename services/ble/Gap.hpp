@@ -76,6 +76,14 @@ namespace services
         }
     };
 
+    struct GapOutOfBandData
+    {
+        hal::MacAddress macAddress;
+        GapDeviceAddressType addressType;
+        infra::ConstByteRange randomData;
+        infra::ConstByteRange confirmData;
+    };
+
     class GapPairing;
 
     class GapPairingObserver
@@ -99,6 +107,7 @@ namespace services
         virtual void DisplayPasskey(int32_t passkey, bool numericComparison) = 0;
         virtual void PairingSuccessfullyCompleted() = 0;
         virtual void PairingFailed(PairingErrorType error) = 0;
+        virtual void OutOfBandDataGenerated(const GapOutOfBandData& outOfBandData) = 0;
     };
 
     class GapPairing
@@ -135,6 +144,8 @@ namespace services
         virtual void AllowPairing(bool allow) = 0;
         virtual void SetSecurityMode(SecurityMode mode, SecurityLevel level) = 0;
         virtual void SetIoCapabilities(IoCapabilities caps) = 0;
+        virtual void GenerateOutOfBandData() = 0;
+        virtual void SetOutOfBandData(const GapOutOfBandData& outOfBandData) = 0;
         virtual void AuthenticateWithPasskey(uint32_t passkey) = 0;
         virtual void NumericComparisonConfirm(bool accept) = 0;
     };
@@ -150,12 +161,15 @@ namespace services
         void DisplayPasskey(int32_t passkey, bool numericComparison) override;
         void PairingSuccessfullyCompleted() override;
         void PairingFailed(PairingErrorType error) override;
+        void OutOfBandDataGenerated(const GapOutOfBandData& outOfBandData) override;
 
         // Implementation of GapPairing
         void PairAndBond() override;
         void AllowPairing(bool allow) override;
         void SetSecurityMode(SecurityMode mode, SecurityLevel level) override;
         void SetIoCapabilities(IoCapabilities caps) override;
+        void GenerateOutOfBandData() override;
+        void SetOutOfBandData(const GapOutOfBandData& outOfBandData) override;
         void AuthenticateWithPasskey(uint32_t passkey) override;
         void NumericComparisonConfirm(bool accept) override;
     };
