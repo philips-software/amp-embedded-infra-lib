@@ -9,6 +9,13 @@
 
 namespace services
 {
+    enum class OperationStatus : uint8_t
+    {
+        success,
+        retry,
+        error
+    };
+
     class GattClientCharacteristicUpdate;
 
     class GattClientCharacteristicUpdateObserver
@@ -53,7 +60,7 @@ namespace services
     public:
         virtual void Read(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone) = 0;
         virtual void Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone) = 0;
-        virtual void WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data) = 0;
+        virtual void WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) = 0;
 
         virtual void EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
         virtual void DisableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
@@ -74,7 +81,7 @@ namespace services
 
         virtual void Read(const infra::Function<void(const infra::ConstByteRange&)>& onResponse, const infra::Function<void(uint8_t)>& onDone);
         virtual void Write(infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone);
-        virtual void WriteWithoutResponse(infra::ConstByteRange data);
+        virtual void WriteWithoutResponse(infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone);
 
         virtual void EnableNotification(const infra::Function<void(uint8_t)>& onDone);
         virtual void DisableNotification(const infra::Function<void(uint8_t)>& onDone);
@@ -168,7 +175,7 @@ namespace services
 
         virtual void Read(const GattClientObserver& characteristic, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone) = 0;
         virtual void Write(const GattClientObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone) = 0;
-        virtual void WriteWithoutResponse(const GattClientObserver& characteristic, infra::ConstByteRange data) = 0;
+        virtual void WriteWithoutResponse(const GattClientObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) = 0;
         virtual void EnableNotification(const GattClientObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
         virtual void DisableNotification(const GattClientObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
         virtual void EnableIndication(const GattClientObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
