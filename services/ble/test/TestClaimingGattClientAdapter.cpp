@@ -176,12 +176,7 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_write_without_response_charact
     infra::ConstByteRange data = infra::MakeRange(std::array<uint8_t, 4>{ 0x01, 0x02, 0x03, 0x04 });
     const auto handle = 0x1;
 
-    EXPECT_CALL(gattClient, WriteWithoutResponse(testing::_, infra::ByteRangeContentsEqual(data)))
-        .WillOnce([handle](const services::GattClientObserver& observer,
-                      infra::ConstByteRange data)
-            {
-                EXPECT_EQ(observer.CharacteristicValueHandle(), handle);
-            });
+    EXPECT_CALL(gattClient, WriteWithoutResponse(handle, infra::ByteRangeContentsEqual(data)));
 
     EXPECT_CALL(characteristicsOperationsObserver, CharacteristicValueHandle).WillOnce(testing::Return(handle));
     adapter.WriteWithoutResponse(characteristicsOperationsObserver, data);
