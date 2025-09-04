@@ -221,11 +221,6 @@ namespace services
             });
     }
 
-    AttAttribute::Handle ClaimingGattClientAdapter::CharacteristicValueHandle() const
-    {
-        return characteristicOperationContext->handle;
-    }
-
     void ClaimingGattClientAdapter::ExchangedMaxAttMtuSize()
     {
         infra::Subject<AttMtuExchangeObserver>::NotifyObservers([](auto& observer)

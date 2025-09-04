@@ -154,8 +154,6 @@ namespace services
 
         virtual void NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data) = 0;
         virtual void IndicationReceived(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone) = 0;
-
-        virtual AttAttribute::Handle CharacteristicValueHandle() const = 0;
     };
 
     class GattClient

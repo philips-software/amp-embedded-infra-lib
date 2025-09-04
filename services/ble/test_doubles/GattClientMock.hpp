@@ -88,7 +88,6 @@ namespace services
         MOCK_METHOD(void, DescriptorDiscoveryComplete, (), (override));
         MOCK_METHOD(void, NotificationReceived, (AttAttribute::Handle handle, infra::ConstByteRange data), (override));
         MOCK_METHOD(void, IndicationReceived, (AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone), (override));
-        MOCK_METHOD(AttAttribute::Handle, CharacteristicValueHandle, (), (const, override));
     };
 
     class GattClientMock
