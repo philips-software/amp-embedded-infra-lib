@@ -50,7 +50,6 @@ namespace services
         void DescriptorDiscoveryComplete() override;
         void NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data) override;
         void IndicationReceived(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone) override;
-        AttAttribute::Handle CharacteristicValueHandle() const override;
 
         // Implementation of AttMtuExchangeObserver
         void ExchangedMaxAttMtuSize() override;
@@ -115,7 +114,7 @@ namespace services
 
             CharacteristicOperation(Operation operation, AttAttribute::Handle handle)
                 : operation(operation)
-                , handle(handle){};
+                , handle(handle) {};
 
             Operation operation;
             AttAttribute::Handle handle;
