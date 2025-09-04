@@ -166,13 +166,13 @@ namespace services
         virtual void StartCharacteristicDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) = 0;
         virtual void StartDescriptorDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) = 0;
 
-        virtual void Read(const GattClientObserver& characteristic, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone) = 0;
-        virtual void Write(const GattClientObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void Read(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone) = 0;
         virtual void WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data) = 0;
-        virtual void EnableNotification(const GattClientObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
-        virtual void DisableNotification(const GattClientObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
-        virtual void EnableIndication(const GattClientObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
-        virtual void DisableIndication(const GattClientObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void EnableNotification(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void DisableNotification(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void DisableIndication(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) = 0;
     };
 }
 

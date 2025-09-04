@@ -99,13 +99,13 @@ namespace services
         MOCK_METHOD(void, StartCharacteristicDiscovery, (AttAttribute::Handle handle, AttAttribute::Handle endHandle), (override));
         MOCK_METHOD(void, StartDescriptorDiscovery, (AttAttribute::Handle handle, AttAttribute::Handle endHandle), (override));
 
-        MOCK_METHOD(void, Read, (const GattClientObserver& characteristic, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone), (override));
-        MOCK_METHOD(void, Write, (const GattClientObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone), (override));
+        MOCK_METHOD(void, Read, (AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone), (override));
+        MOCK_METHOD(void, Write, (AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone), (override));
         MOCK_METHOD(void, WriteWithoutResponse, (AttAttribute::Handle handle, infra::ConstByteRange data), (override));
-        MOCK_METHOD(void, EnableNotification, (const GattClientObserver& characteristic, const infra::Function<void(uint8_t)>& onDone), (override));
-        MOCK_METHOD(void, DisableNotification, (const GattClientObserver& characteristic, const infra::Function<void(uint8_t)>& onDone), (override));
-        MOCK_METHOD(void, EnableIndication, (const GattClientObserver& characteristic, const infra::Function<void(uint8_t)>& onDone), (override));
-        MOCK_METHOD(void, DisableIndication, (const GattClientObserver& characteristic, const infra::Function<void(uint8_t)>& onDone), (override));
+        MOCK_METHOD(void, EnableNotification, (AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone), (override));
+        MOCK_METHOD(void, DisableNotification, (AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone), (override));
+        MOCK_METHOD(void, EnableIndication, (AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone), (override));
+        MOCK_METHOD(void, DisableIndication, (AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone), (override));
     };
 }
 

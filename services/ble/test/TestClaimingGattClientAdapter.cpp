@@ -134,11 +134,11 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_read_characteristic)
     const auto handle = 0x1;
 
     EXPECT_CALL(gattClient, Read(testing::_, testing::_, testing::_))
-        .WillOnce([&readResult, handle, result](const services::GattClientObserver& observer,
+        .WillOnce([&readResult, handle, result](services::AttAttribute::Handle passedHandle,
                       infra::Function<void(const infra::ConstByteRange&)> onRead,
                       infra::Function<void(uint8_t)> onDone)
             {
-                EXPECT_EQ(observer.CharacteristicValueHandle(), handle);
+                EXPECT_EQ(passedHandle, handle);
 
                 onRead(readResult);
                 onDone(result);
@@ -158,11 +158,11 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_write_characteristic)
     const auto handle = 0x1;
 
     EXPECT_CALL(gattClient, Write(testing::_, infra::ByteRangeContentsEqual(data), testing::_))
-        .WillOnce([handle](const services::GattClientObserver& observer,
+        .WillOnce([handle](services::AttAttribute::Handle passedHandle,
                       infra::ConstByteRange data,
                       infra::Function<void(uint8_t)> onDone)
             {
-                EXPECT_EQ(observer.CharacteristicValueHandle(), handle);
+                EXPECT_EQ(passedHandle, handle);
                 onDone(123);
             });
 
@@ -189,10 +189,10 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_enable_notification_characteri
     const auto handle = 0x1;
 
     EXPECT_CALL(gattClient, EnableNotification(testing::_, testing::_))
-        .WillOnce([handle, result](const services::GattClientObserver& observer,
+        .WillOnce([handle, result](services::AttAttribute::Handle passedHandle,
                       infra::Function<void(uint8_t)> onDone)
             {
-                EXPECT_EQ(observer.CharacteristicValueHandle(), handle);
+                EXPECT_EQ(passedHandle, handle);
                 onDone(result);
             });
 
@@ -207,10 +207,10 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_disable_notification_character
     const auto handle = 0x1;
 
     EXPECT_CALL(gattClient, DisableNotification(testing::_, testing::_))
-        .WillOnce([handle, result](const services::GattClientObserver& observer,
+        .WillOnce([handle, result](services::AttAttribute::Handle passedHandle,
                       infra::Function<void(uint8_t)> onDone)
             {
-                EXPECT_EQ(observer.CharacteristicValueHandle(), handle);
+                EXPECT_EQ(passedHandle, handle);
                 onDone(result);
             });
 
@@ -225,10 +225,10 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_enable_indication_characterist
     const auto handle = 0x1;
 
     EXPECT_CALL(gattClient, EnableIndication(testing::_, testing::_))
-        .WillOnce([handle, result](const services::GattClientObserver& observer,
+        .WillOnce([handle, result](services::AttAttribute::Handle passedHandle,
                       infra::Function<void(uint8_t)> onDone)
             {
-                EXPECT_EQ(observer.CharacteristicValueHandle(), handle);
+                EXPECT_EQ(passedHandle, handle);
                 onDone(result);
             });
 
@@ -243,10 +243,10 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_disable_indication_characteris
     const auto handle = 0x1;
 
     EXPECT_CALL(gattClient, DisableIndication(testing::_, testing::_))
-        .WillOnce([handle, result](const services::GattClientObserver& observer,
+        .WillOnce([handle, result](services::AttAttribute::Handle passedHandle,
                       infra::Function<void(uint8_t)> onDone)
             {
-                EXPECT_EQ(observer.CharacteristicValueHandle(), handle);
+                EXPECT_EQ(passedHandle, handle);
                 onDone(result);
             });
 
@@ -293,10 +293,10 @@ TEST_F(ClaimingGattClientAdapterTest, should_block_discovery_while_characteristi
         });
 
     EXPECT_CALL(gattClient, DisableIndication(testing::_, testing::_))
-        .WillOnce([handle, result](const services::GattClientObserver& observer,
+        .WillOnce([handle, result](services::AttAttribute::Handle passedHandle,
                       infra::Function<void(uint8_t)> onDone)
             {
-                EXPECT_EQ(observer.CharacteristicValueHandle(), handle);
+                EXPECT_EQ(passedHandle, handle);
                 onDone(result);
             });
     ExecuteAllActions();

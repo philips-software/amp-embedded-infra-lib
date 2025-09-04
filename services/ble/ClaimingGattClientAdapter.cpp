@@ -101,7 +101,7 @@ namespace services
         characteristicOperationsClaimer.Claim([this]()
             {
                 auto readContext = std::get<ReadOperation>(characteristicOperationContext->operation);
-                GattClientObserver::Subject().Read(*this, readContext.onRead, [this](uint8_t result)
+                GattClientObserver::Subject().Read(characteristicOperationContext->handle, readContext.onRead, [this](uint8_t result)
                     {
                         characteristicOperationsClaimer.Release();
                         auto readContext = std::get<ReadOperation>(characteristicOperationContext->operation);
@@ -116,7 +116,7 @@ namespace services
         characteristicOperationsClaimer.Claim([this]()
             {
                 auto writeContext = std::get<WriteOperation>(characteristicOperationContext->operation);
-                GattClientObserver::Subject().Write(*this, writeContext.data, [this](uint8_t result)
+                GattClientObserver::Subject().Write(characteristicOperationContext->handle, writeContext.data, [this](uint8_t result)
                     {
                         characteristicOperationsClaimer.Release();
                         auto writeContext = std::get<WriteOperation>(characteristicOperationContext->operation);
@@ -134,7 +134,7 @@ namespace services
     {
         characteristicOperationContext.emplace(DescriptorOperation{ onDone, [this](const infra::Function<void(uint8_t)>& callback)
                                                    {
-                                                       GattClientObserver::Subject().EnableNotification(*this, callback);
+                                                       GattClientObserver::Subject().EnableNotification(characteristicOperationContext->handle, callback);
                                                    } },
             characteristic.CharacteristicValueHandle());
 
@@ -146,7 +146,7 @@ namespace services
         characteristicOperationContext.emplace(DescriptorOperation{ onDone,
                                                    [this](const infra::Function<void(uint8_t)>& callback)
                                                    {
-                                                       GattClientObserver::Subject().DisableNotification(*this, callback);
+                                                       GattClientObserver::Subject().DisableNotification(characteristicOperationContext->handle, callback);
                                                    } },
             characteristic.CharacteristicValueHandle());
 
@@ -158,7 +158,7 @@ namespace services
         characteristicOperationContext.emplace(DescriptorOperation{ onDone,
                                                    [this](const infra::Function<void(uint8_t)>& callback)
                                                    {
-                                                       GattClientObserver::Subject().EnableIndication(*this, callback);
+                                                       GattClientObserver::Subject().EnableIndication(characteristicOperationContext->handle, callback);
                                                    } },
             characteristic.CharacteristicValueHandle());
 
@@ -170,7 +170,7 @@ namespace services
         characteristicOperationContext.emplace(DescriptorOperation{ onDone,
                                                    [this](const infra::Function<void(uint8_t)>& callback)
                                                    {
-                                                       GattClientObserver::Subject().DisableIndication(*this, callback);
+                                                       GattClientObserver::Subject().DisableIndication(characteristicOperationContext->handle, callback);
                                                    } },
             characteristic.CharacteristicValueHandle());
 
