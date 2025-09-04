@@ -332,3 +332,31 @@ TEST_F(ClaimingGattClientAdapterTest, should_forward_indication_received)
         });
     ExecuteAllActions();
 }
+
+TEST_F(ClaimingGattClientAdapterTest, can_write_without_response_while_awaiting_read)
+{
+    const infra::ConstByteRange readResult = infra::MakeRange(std::array<uint8_t, 4>{ 0x01, 0x02, 0x03, 0x04 });
+    const auto result = 123;
+    const auto handle = 0x1;
+
+    infra::Function<void(const infra::ConstByteRange&)> onRead;
+    infra::Function<void(uint8_t)> onDone;
+
+    EXPECT_CALL(gattClient, Read(testing::_, testing::_, testing::_))
+        .WillOnce(::testing::DoAll(::testing::SaveArg<1>(&onRead), ::testing::SaveArg<2>(&onDone)));
+    EXPECT_CALL(gattClient, WriteWithoutResponse(testing::_, testing::_));
+    EXPECT_CALL(characteristicsOperationsObserver, CharacteristicValueHandle).WillRepeatedly(testing::Return(handle));
+
+    adapter.Read(characteristicsOperationsObserver,
+        infra::MockFunction<void(const infra::ConstByteRange&)>(readResult),
+        infra::MockFunction<void(uint8_t)>(result));
+
+    ExecuteAllActions();
+
+    adapter.WriteWithoutResponse(characteristicsOperationsObserver, infra::MakeRange(std::array<uint8_t, 1>({ 42 })));
+
+    onRead(readResult);
+    onDone(result);
+
+    ExecuteAllActions();
+}
