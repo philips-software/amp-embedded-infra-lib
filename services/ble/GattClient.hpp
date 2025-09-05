@@ -37,34 +37,23 @@ namespace services
         virtual void IndicationReceived(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone) = 0;
     };
 
-    class GattClientCharacteristicOperationsObserver
-        : public infra::Observer<GattClientCharacteristicOperationsObserver, GattClientCharacteristicOperations>
-    {
-    public:
-        using infra::Observer<GattClientCharacteristicOperationsObserver, GattClientCharacteristicOperations>::Observer;
-
-        virtual AttAttribute::Handle CharacteristicValueHandle() const = 0;
-    };
-
     class GattClientCharacteristicOperations
-        : public infra::Subject<GattClientCharacteristicOperationsObserver>
-        , public infra::Subject<GattClientStackUpdateObserver>
+        : public infra::Subject<GattClientStackUpdateObserver>
     {
     public:
-        virtual void Read(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone) = 0;
-        virtual void Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone) = 0;
-        virtual void WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data) = 0;
+        virtual void Read(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data) = 0;
 
-        virtual void EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
-        virtual void DisableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
-        virtual void EnableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
-        virtual void DisableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void EnableNotification(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void DisableNotification(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void DisableIndication(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) = 0;
     };
 
     class GattClientCharacteristic
         : public infra::IntrusiveForwardList<GattClientCharacteristic>::NodeType
         , public GattCharacteristic
-        , public GattClientCharacteristicOperationsObserver
         , public GattClientCharacteristicUpdate
         , protected GattClientStackUpdateObserver
     {
@@ -82,15 +71,14 @@ namespace services
         virtual void DisableIndication(const infra::Function<void(uint8_t)>& onDone);
 
         GattCharacteristic::PropertyFlags CharacteristicProperties() const;
-
-        // Implementation of GattClientCharacteristicOperationsObserver
-        AttAttribute::Handle CharacteristicValueHandle() const override;
+        AttAttribute::Handle CharacteristicValueHandle() const;
 
         // Implementation of GattClientStackUpdateObserver
         void NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data) override;
         void IndicationReceived(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone) override;
 
     private:
+        GattClientCharacteristicOperations* operations{ nullptr };
         infra::AutoResetFunction<void()> onIndicationDone;
         uint32_t observers;
     };

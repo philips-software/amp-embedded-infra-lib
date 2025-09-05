@@ -123,8 +123,8 @@ TEST_F(GattClientCharacteristicTest, should_read_characteristic_and_callback_wit
     const auto result = 0;
     const auto data = infra::MakeStringByteRange("string");
 
-    EXPECT_CALL(operations, Read(testing::Ref(characteristic), ::testing::_, testing::_))
-        .WillOnce([&data, result](const services::GattClientCharacteristicOperationsObserver&, infra::Function<void(const infra::ConstByteRange&)> onResponse, infra::Function<void(uint8_t)> onDone)
+    EXPECT_CALL(operations, Read(characteristicValueHandle, ::testing::_, testing::_))
+        .WillOnce([&data, result](services::AttAttribute::Handle, infra::Function<void(const infra::ConstByteRange&)> onResponse, infra::Function<void(uint8_t)> onDone)
             {
                 onResponse(data);
                 onDone(result);
@@ -138,7 +138,7 @@ TEST_F(GattClientCharacteristicTest, should_write_characteristic_and_callback)
     const auto result = 0;
     const auto data = infra::MakeStringByteRange("string");
 
-    EXPECT_CALL(operations, Write(testing::Ref(characteristic), infra::ByteRangeContentsEqual(data), ::testing::_)).WillOnce([result](const services::GattClientCharacteristicOperationsObserver&, infra::ConstByteRange, infra::Function<void(uint8_t)> onDone)
+    EXPECT_CALL(operations, Write(characteristicValueHandle, infra::ByteRangeContentsEqual(data), ::testing::_)).WillOnce([result](services::AttAttribute::Handle, infra::ConstByteRange, infra::Function<void(uint8_t)> onDone)
         {
             onDone(result);
         });
@@ -149,7 +149,7 @@ TEST_F(GattClientCharacteristicTest, should_write_without_response_characteristi
 {
     const auto data = infra::MakeStringByteRange("string");
 
-    EXPECT_CALL(operations, WriteWithoutResponse(testing::Ref(characteristic), infra::ByteRangeContentsEqual(data)));
+    EXPECT_CALL(operations, WriteWithoutResponse(characteristicValueHandle, infra::ByteRangeContentsEqual(data)));
     characteristic.WriteWithoutResponse(data);
 }
 
@@ -157,7 +157,7 @@ TEST_F(GattClientCharacteristicTest, should_enable_notification_characteristic_a
 {
     const auto result = 0;
 
-    EXPECT_CALL(operations, EnableNotification(testing::Ref(characteristic), ::testing::_)).WillOnce([result](const services::GattClientCharacteristicOperationsObserver&, infra::Function<void(uint8_t)> onDone)
+    EXPECT_CALL(operations, EnableNotification(characteristicValueHandle, ::testing::_)).WillOnce([result](services::AttAttribute::Handle, infra::Function<void(uint8_t)> onDone)
         {
             onDone(result);
         });
@@ -169,7 +169,7 @@ TEST_F(GattClientCharacteristicTest, should_disable_notification_characteristic_
 {
     const auto result = 0;
 
-    EXPECT_CALL(operations, DisableNotification(testing::Ref(characteristic), ::testing::_)).WillOnce([result](const services::GattClientCharacteristicOperationsObserver&, infra::Function<void(uint8_t)> onDone)
+    EXPECT_CALL(operations, DisableNotification(characteristicValueHandle, ::testing::_)).WillOnce([result](services::AttAttribute::Handle, infra::Function<void(uint8_t)> onDone)
         {
             onDone(result);
         });
@@ -181,7 +181,7 @@ TEST_F(GattClientCharacteristicTest, should_enable_indication_characteristic_and
 {
     const auto result = 0;
 
-    EXPECT_CALL(operations, EnableIndication(testing::Ref(characteristic), ::testing::_)).WillOnce([result](const services::GattClientCharacteristicOperationsObserver&, infra::Function<void(uint8_t)> onDone)
+    EXPECT_CALL(operations, EnableIndication(characteristicValueHandle, ::testing::_)).WillOnce([result](services::AttAttribute::Handle, infra::Function<void(uint8_t)> onDone)
         {
             onDone(result);
         });
@@ -192,7 +192,7 @@ TEST_F(GattClientCharacteristicTest, should_disable_indication_characteristic_an
 {
     const auto result = 0;
 
-    EXPECT_CALL(operations, DisableIndication(testing::Ref(characteristic), ::testing::_)).WillOnce([result](const services::GattClientCharacteristicOperationsObserver&, infra::Function<void(uint8_t)> onDone)
+    EXPECT_CALL(operations, DisableIndication(characteristicValueHandle, ::testing::_)).WillOnce([result](services::AttAttribute::Handle, infra::Function<void(uint8_t)> onDone)
         {
             onDone(result);
         });
