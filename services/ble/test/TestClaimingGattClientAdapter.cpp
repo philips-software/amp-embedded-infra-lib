@@ -324,7 +324,7 @@ TEST_F(ClaimingGattClientAdapterTest, can_write_without_response_while_awaiting_
     const infra::ConstByteRange readResult = infra::MakeRange(std::array<uint8_t, 4>{ 0x01, 0x02, 0x03, 0x04 });
     const auto result = 123;
     const auto handle = 0x1;
-    const auto handleWrite = 0x1;
+    const auto handleWrite = 0x2;
 
     infra::Function<void(const infra::ConstByteRange&)> onRead;
     infra::Function<void(uint8_t)> onDone;
