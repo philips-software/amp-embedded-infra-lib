@@ -36,6 +36,8 @@ target_sources(services.ble PRIVATE
     GattServer.hpp
     GattServerCharacteristicImpl.cpp
     GattServerCharacteristicImpl.hpp
+    RetryGattClientCharacteristicsOperations.cpp
+    RetryGattClientCharacteristicsOperations.hpp
 )
 
 add_subdirectory(test)

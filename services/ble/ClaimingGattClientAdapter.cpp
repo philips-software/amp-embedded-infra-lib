@@ -100,11 +100,11 @@ namespace services
         characteristicOperationContext.emplace(ReadOperation{ onRead, onDone }, characteristic.CharacteristicValueHandle());
         characteristicOperationsClaimer.Claim([this]()
             {
-                auto readContext = std::get<ReadOperation>(characteristicOperationContext->operation);
+                const auto& readContext = std::get<ReadOperation>(characteristicOperationContext->operation);
                 GattClientObserver::Subject().Read(*this, readContext.onRead, [this](uint8_t result)
                     {
                         characteristicOperationsClaimer.Release();
-                        auto readContext = std::get<ReadOperation>(characteristicOperationContext->operation);
+                        const auto& readContext = std::get<ReadOperation>(characteristicOperationContext->operation);
                         readContext.onDone(result);
                     });
             });
@@ -115,21 +115,26 @@ namespace services
         characteristicOperationContext.emplace(WriteOperation{ data, onDone }, characteristic.CharacteristicValueHandle());
         characteristicOperationsClaimer.Claim([this]()
             {
-                auto writeContext = std::get<WriteOperation>(characteristicOperationContext->operation);
+                const auto& writeContext = std::get<WriteOperation>(characteristicOperationContext->operation);
                 GattClientObserver::Subject().Write(*this, writeContext.data, [this](uint8_t result)
                     {
                         characteristicOperationsClaimer.Release();
-                        auto writeContext = std::get<WriteOperation>(characteristicOperationContext->operation);
+                        const auto& writeContext = std::get<WriteOperation>(characteristicOperationContext->operation);
                         writeContext.onDone(result);
                     });
             });
     }
 
-    void ClaimingGattClientAdapter::WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data)
+    void ClaimingGattClientAdapter::WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
     {
-        characteristicOperationContext.emplace(WriteWithoutResponseOperation{ data }, characteristic.CharacteristicValueHandle());
-        auto writeWithoutResponseContext = std::get<WriteWithoutResponseOperation>(characteristicOperationContext->operation);
-        GattClientObserver::Subject().WriteWithoutResponse(*this, writeWithoutResponseContext.data);
+        characteristicOperationContext.emplace(WriteWithoutResponseOperation{ data, onDone }, characteristic.CharacteristicValueHandle());
+        const auto& writeWithoutResponseContext = std::get<WriteWithoutResponseOperation>(characteristicOperationContext->operation);
+        GattClientObserver::Subject().WriteWithoutResponse(*this, writeWithoutResponseContext.data, [this](OperationStatus result)
+            {
+                characteristicOperationsClaimer.Release();
+                const auto& writeWithoutResponseContext = std::get<WriteWithoutResponseOperation>(characteristicOperationContext->operation);
+                writeWithoutResponseContext.onDone(result);
+            });
     }
 
     void ClaimingGattClientAdapter::EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone)
