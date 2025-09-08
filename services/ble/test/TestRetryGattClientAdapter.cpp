@@ -70,8 +70,11 @@ TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_write_without_r
 
     retryAdapter.WriteWithoutResponse(characteristicsOperationsObserver, data, callback);
     onWriteDoneMock(services::OperationStatus::retry);
+    ExecuteAllActions();
     onWriteDoneMock(services::OperationStatus::retry);
+    ExecuteAllActions();
     onWriteDoneMock(services::OperationStatus::retry);
+    ExecuteAllActions();
     onWriteDoneMock(services::OperationStatus::success);
     ExecuteAllActions();
 }
@@ -85,7 +88,9 @@ TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_write_without_r
 
     retryAdapter.WriteWithoutResponse(characteristicsOperationsObserver, data, callback);
     onWriteDoneMock(services::OperationStatus::retry);
+    ExecuteAllActions();
     onWriteDoneMock(services::OperationStatus::retry);
+    ExecuteAllActions();
     onWriteDoneMock(services::OperationStatus::error);
     ExecuteAllActions();
 }
