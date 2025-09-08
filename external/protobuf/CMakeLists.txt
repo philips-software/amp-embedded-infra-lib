@@ -10,11 +10,9 @@ if (EMIL_HOST_BUILD)
     add_compile_options(
         # Disable warning on invalid use of [[noreturn]] and on deprecation of sprintf
         # -Wno-invalid-noreturn should be removed when https://github.com/protocolbuffers/protobuf/issues/9817 is fixed
-        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-deprecated-declarations$<SEMICOLON>-Wno-invalid-noreturn$<SEMICOLON>-Winvalid-offsetof>
+        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-invalid-noreturn$<SEMICOLON>-Winvalid-offsetof>
         # Disable string overflow warning
         $<$<CXX_COMPILER_ID:GNU>:-Wno-stringop-overflow>
-        # Disable warnings about weak() being deprecated
-        $<$<CXX_COMPILER_ID:GNU>:-Wno-deprecated-declarations>
         # Disable warning not all control paths return a value
         $<$<CXX_COMPILER_ID:MSVC>:/wd4715>
         # Disable warning differs in levels of indirection
@@ -48,6 +46,10 @@ if (EMIL_HOST_BUILD)
                 # Disable warning-as-error for these targets completely
                 # This should be re-evaluated when https://github.com/protocolbuffers/protobuf/issues/9817 is fixed
                 set_target_properties(${target} PROPERTIES COMPILE_WARNING_AS_ERROR Off)
+            endif()
+            if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang" OR ${CMAKE_CXX_COMPILER_ID} MATCHES "AppleClang")
+                # Disable warnings about weak() being deprecated
+                target_compile_options(${target} PUBLIC -Wno-deprecated-declarations)
             endif()
         endforeach()
     endfunction()
