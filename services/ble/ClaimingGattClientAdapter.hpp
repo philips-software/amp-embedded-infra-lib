@@ -15,10 +15,12 @@ namespace services
     class ClaimingGattClientAdapter
         : public GattClientDiscovery
         , public GattClientCharacteristicOperations
+        , public AttMtuExchange
         , private GattClientObserver
+        , private AttMtuExchangeObserver
     {
     public:
-        ClaimingGattClientAdapter(GattClient& gattClient);
+        ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchange& attMtuExchange);
 
         // Implementation of GattClientDiscovery
         void StartServiceDiscovery() override;
@@ -28,12 +30,17 @@ namespace services
         // Implementation of GattClientCharacteristicOperations
         void Read(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone) override;
         void Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone) override;
-        void WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data) override;
+        void WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
         void EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) override;
         void DisableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) override;
         void EnableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) override;
         void DisableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone) override;
 
+        // Implementation of AttMtuExchange
+        uint16_t EffectiveMaxAttMtuSize() const override;
+        void MtuExchange() override;
+
+    private:
         // Implementation of GattClientObserver
         void ServiceDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle endHandle) override;
         void ServiceDiscoveryComplete() override;
@@ -44,6 +51,9 @@ namespace services
         void NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data) override;
         void IndicationReceived(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone) override;
         AttAttribute::Handle CharacteristicValueHandle() const override;
+
+        // Implementation of AttMtuExchangeObserver
+        void ExchangedMaxAttMtuSize() override;
 
     private:
         void PerformDescriptorOperation();
@@ -91,6 +101,7 @@ namespace services
         struct WriteWithoutResponseOperation
         {
             infra::ConstByteRange data;
+            const infra::Function<void(OperationStatus)> onDone;
         };
 
         struct DescriptorOperation
@@ -105,7 +116,7 @@ namespace services
 
             CharacteristicOperation(Operation operation, AttAttribute::Handle handle)
                 : operation(operation)
-                , handle(handle){};
+                , handle(handle) {};
 
             Operation operation;
             AttAttribute::Handle handle;
@@ -117,6 +128,7 @@ namespace services
         infra::ClaimableResource resource;
         infra::ClaimableResource::Claimer characteristicOperationsClaimer{ resource };
         infra::ClaimableResource::Claimer discoveryClaimer{ resource };
+        infra::ClaimableResource::Claimer attMtuExchangeClaimer{ resource };
     };
 }
 
