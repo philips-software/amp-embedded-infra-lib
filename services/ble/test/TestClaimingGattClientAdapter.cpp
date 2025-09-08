@@ -346,7 +346,7 @@ TEST_F(ClaimingGattClientAdapterTest, can_write_without_response_while_awaiting_
 
     ExecuteAllActions();
 
-    adapter.WriteWithoutResponse(handleWrite, infra::MakeRange(std::array<uint8_t, 1>({ 42 })));
+    adapter.WriteWithoutResponse(handleWrite, infra::MakeRange(std::array<uint8_t, 1>({ 42 })), infra::MockFunction<void(services::OperationStatus)>(services::OperationStatus::success));
 
     onRead(readResult);
     onDone(result);

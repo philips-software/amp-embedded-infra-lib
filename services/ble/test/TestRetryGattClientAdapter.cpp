@@ -34,7 +34,7 @@ TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_read_characteri
 
     EXPECT_CALL(adapter, Read(handle, testing::Ref(onReadMock), testing::Ref(onDoneMock)));
 
-    retryAdapter.Read(characteristicsOperationsObserver,
+    retryAdapter.Read(handle,
         onReadMock,
         onDoneMock);
 }
