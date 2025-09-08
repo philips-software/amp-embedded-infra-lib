@@ -6,10 +6,8 @@
 #include "services/ble/RetryGattClientCharacteristicsOperations.hpp"
 #include "services/ble/test_doubles/ClaimingGattClientAdapterMock.hpp"
 #include "services/ble/test_doubles/GattClientMock.hpp"
+#include "services/ble/test_doubles/GattMock.hpp"
 #include "gmock/gmock.h"
-#include <array>
-#include <cstdint>
-#include <gtest/gtest.h>
 
 namespace
 {
@@ -19,7 +17,8 @@ namespace
     {
     public:
         services::GattClientMock gattClient;
-        testing::StrictMock<services::ClaimingGattClientAdapterMock> adapter{ gattClient };
+        services::AttMtuExchangeMock attMtuExchange;
+        testing::StrictMock<services::ClaimingGattClientAdapterMock> adapter{ gattClient, attMtuExchange };
         testing::StrictMock<services::RetryGattClientCharacteristicsOperations> retryAdapter{ adapter };
         testing::StrictMock<services::GattClientCharacteristicOperationsObserverMock> characteristicsOperationsObserver{ retryAdapter };
         testing::StrictMock<services::GattClientStackUpdateObserverMock> stackUpdateObserver{ retryAdapter };

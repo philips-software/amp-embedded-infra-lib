@@ -10,8 +10,8 @@ namespace services
         : public ClaimingGattClientAdapter
     {
     public:
-        ClaimingGattClientAdapterMock(GattClient& gattClient)
-            : ClaimingGattClientAdapter(gattClient)
+        ClaimingGattClientAdapterMock(GattClient& gattClient, AttMtuExchange& attMtuExchange)
+            : ClaimingGattClientAdapter(gattClient, attMtuExchange)
         {}
 
         MOCK_METHOD(void, StartServiceDiscovery, (), (override));
