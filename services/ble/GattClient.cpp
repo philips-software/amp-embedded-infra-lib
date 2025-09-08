@@ -28,11 +28,11 @@ namespace services
         operations->Write(valueHandle, data, onDone);
     }
 
-    void GattClientCharacteristic::WriteWithoutResponse(infra::ConstByteRange data)
+    void GattClientCharacteristic::WriteWithoutResponse(infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
     {
         really_assert(operations != nullptr);
 
-        operations->WriteWithoutResponse(valueHandle, data);
+        operations->WriteWithoutResponse(valueHandle, data, onDone);
     }
 
     void GattClientCharacteristic::EnableNotification(const infra::Function<void(uint8_t)>& onDone)

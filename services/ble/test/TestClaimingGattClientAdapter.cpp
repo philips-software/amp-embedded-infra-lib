@@ -2,6 +2,7 @@
 #include "infra/util/Function.hpp"
 #include "infra/util/test_helper/MemoryRangeMatcher.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
+#include "services/ble/Att.hpp"
 #include "services/ble/ClaimingGattClientAdapter.hpp"
 #include "services/ble/GattClient.hpp"
 #include "services/ble/test_doubles/GattClientMock.hpp"
@@ -154,17 +155,15 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_write_characteristic)
     infra::ConstByteRange data = infra::MakeRange(std::array<uint8_t, 4>{ 0x01, 0x02, 0x03, 0x04 });
     const auto result = 123;
     const auto handle = 0x1;
+    infra::VerifyingFunction<void(uint8_t)> onDone{ result };
 
-    EXPECT_CALL(gattClient, Write(handle, infra::ByteRangeContentsEqual(data), testing::_))
-        .WillOnce([handle](services::AttAttribute::Handle passedHandle,
-                      infra::ConstByteRange data,
-                      infra::Function<void(uint8_t)> onDone)
-            {
-                EXPECT_EQ(passedHandle, handle);
-                onDone(123);
-            });
+    EXPECT_CALL(gattClient, Write(handle, infra::ByteRangeContentsEqual(data), testing::_)).WillOnce([handle, data, result, &onDone](services::AttAttribute::Handle passedHandle, infra::ConstByteRange writeData, const infra::Function<void(uint8_t)>& onWriteDone)
+        {
+            EXPECT_EQ(passedHandle, handle);
+            onWriteDone(result);
+        });
 
-    adapter.Write(handle, data, infra::MockFunction<void(uint8_t)>(result));
+    adapter.Write(handle, data, onDone);
     ExecuteAllActions();
 }
 
@@ -172,10 +171,18 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_write_without_response_charact
 {
     infra::ConstByteRange data = infra::MakeRange(std::array<uint8_t, 4>{ 0x01, 0x02, 0x03, 0x04 });
     const auto handle = 0x1;
+    infra::VerifyingFunction<void(services::OperationStatus)> onWriteWithoutResponse{ services::OperationStatus::success };
 
-    EXPECT_CALL(gattClient, WriteWithoutResponse(handle, infra::ByteRangeContentsEqual(data)));
+    EXPECT_CALL(gattClient, WriteWithoutResponse(testing::_, infra::ByteRangeContentsEqual(data), testing::_))
+        .WillOnce([handle](services::AttAttribute::Handle passedHandle,
+                      infra::ConstByteRange data,
+                      const infra::Function<void(services::OperationStatus)>& onDone)
+            {
+                EXPECT_EQ(passedHandle, handle);
+                onDone(services::OperationStatus::success);
+            });
 
-    adapter.WriteWithoutResponse(handle, data);
+    adapter.WriteWithoutResponse(handle, data, onWriteWithoutResponse);
     ExecuteAllActions();
 }
 
@@ -331,7 +338,7 @@ TEST_F(ClaimingGattClientAdapterTest, can_write_without_response_while_awaiting_
 
     EXPECT_CALL(gattClient, Read(handle, testing::_, testing::_))
         .WillOnce(::testing::DoAll(::testing::SaveArg<1>(&onRead), ::testing::SaveArg<2>(&onDone)));
-    EXPECT_CALL(gattClient, WriteWithoutResponse(handleWrite, testing::_));
+    EXPECT_CALL(gattClient, WriteWithoutResponse(handleWrite, testing::_, testing::_)).WillOnce(::testing::InvokeArgument<2>(services::OperationStatus::success));
 
     adapter.Read(handle,
         infra::MockFunction<void(const infra::ConstByteRange&)>(readResult),

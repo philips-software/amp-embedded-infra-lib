@@ -33,7 +33,7 @@ namespace services
     public:
         MOCK_METHOD(void, Read, (AttAttribute::Handle, const infra::Function<void(const infra::ConstByteRange&)>&, const infra::Function<void(uint8_t)>&), (override));
         MOCK_METHOD(void, Write, (AttAttribute::Handle, infra::ConstByteRange, const infra::Function<void(uint8_t)>&), (override));
-        MOCK_METHOD(void, WriteWithoutResponse, (AttAttribute::Handle, infra::ConstByteRange), (override));
+        MOCK_METHOD(void, WriteWithoutResponse, (AttAttribute::Handle, infra::ConstByteRange, const infra::Function<void(services::OperationStatus)>&), (override));
 
         MOCK_METHOD(void, EnableNotification, (AttAttribute::Handle, const infra::Function<void(uint8_t)>&), (override));
         MOCK_METHOD(void, DisableNotification, (AttAttribute::Handle, const infra::Function<void(uint8_t)>&), (override));
@@ -91,7 +91,7 @@ namespace services
 
         MOCK_METHOD(void, Read, (AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone), (override));
         MOCK_METHOD(void, Write, (AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone), (override));
-        MOCK_METHOD(void, WriteWithoutResponse, (AttAttribute::Handle handle, infra::ConstByteRange data), (override));
+        MOCK_METHOD(void, WriteWithoutResponse, (AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone), (override));
         MOCK_METHOD(void, EnableNotification, (AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone), (override));
         MOCK_METHOD(void, DisableNotification, (AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone), (override));
         MOCK_METHOD(void, EnableIndication, (AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone), (override));

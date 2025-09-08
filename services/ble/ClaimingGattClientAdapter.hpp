@@ -30,7 +30,7 @@ namespace services
         // Implementation of GattClientCharacteristicOperations
         void Read(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone) override;
         void Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone) override;
-        void WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data) override;
+        void WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
         void EnableNotification(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) override;
         void DisableNotification(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) override;
         void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) override;
@@ -97,11 +97,6 @@ namespace services
             const infra::Function<void(uint8_t)> onDone;
         };
 
-        struct WriteWithoutResponseOperation
-        {
-            infra::ConstByteRange data;
-        };
-
         struct DescriptorOperation
         {
             const infra::Function<void(uint8_t)> onDone;
@@ -110,7 +105,7 @@ namespace services
 
         struct CharacteristicOperation
         {
-            using Operation = std::variant<ReadOperation, WriteOperation, WriteWithoutResponseOperation, DescriptorOperation>;
+            using Operation = std::variant<ReadOperation, WriteOperation, DescriptorOperation>;
 
             CharacteristicOperation(Operation operation, AttAttribute::Handle handle)
                 : operation(operation)
@@ -122,6 +117,7 @@ namespace services
 
         std::optional<std::variant<DiscoveredService, DiscoveredCharacteristic, DiscoveredDescriptor, HandleRange>> discoveryContext;
         std::optional<CharacteristicOperation> characteristicOperationContext;
+        infra::Function<void(OperationStatus)> onWriteWithoutResponseDone;
 
         infra::ClaimableResource resource;
         infra::ClaimableResource::Claimer characteristicOperationsClaimer{ resource };

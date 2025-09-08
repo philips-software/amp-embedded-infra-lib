@@ -9,6 +9,13 @@
 
 namespace services
 {
+    enum class OperationStatus : uint8_t
+    {
+        success,
+        retry,
+        error
+    };
+
     class GattClientCharacteristicUpdate;
 
     class GattClientCharacteristicUpdateObserver
@@ -43,7 +50,7 @@ namespace services
     public:
         virtual void Read(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone) = 0;
         virtual void Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone) = 0;
-        virtual void WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data) = 0;
+        virtual void WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) = 0;
 
         virtual void EnableNotification(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) = 0;
         virtual void DisableNotification(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) = 0;
@@ -63,7 +70,7 @@ namespace services
 
         virtual void Read(const infra::Function<void(const infra::ConstByteRange&)>& onResponse, const infra::Function<void(uint8_t)>& onDone);
         virtual void Write(infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone);
-        virtual void WriteWithoutResponse(infra::ConstByteRange data);
+        virtual void WriteWithoutResponse(infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone);
 
         virtual void EnableNotification(const infra::Function<void(uint8_t)>& onDone);
         virtual void DisableNotification(const infra::Function<void(uint8_t)>& onDone);
@@ -154,7 +161,7 @@ namespace services
 
         virtual void Read(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone) = 0;
         virtual void Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone) = 0;
-        virtual void WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data) = 0;
+        virtual void WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) = 0;
         virtual void EnableNotification(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) = 0;
         virtual void DisableNotification(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) = 0;
         virtual void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) = 0;
