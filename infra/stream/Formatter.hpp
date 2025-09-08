@@ -155,7 +155,7 @@ namespace infra
 
         friend TextOutputStream& operator<<(TextOutputStream& stream, FormatHelper& f)
         {
-            FormatWorker(stream, f->format, f->formatters);
+            FormatWorker(stream, f.format, f.formatters);
             return stream;
         }
 

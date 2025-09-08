@@ -109,7 +109,7 @@ message AdvertisementMode
 
 message AdvertisementData
 {
-    bytes data = 1 [(bytes_size) = 31];
+    bytes data = 1 [(bytes_size) = 28]; //Don't add flags data, method adds flags data internally with the flag bits 'LE General Discoverable Mode' and 'BR/EDR Not Supported' enabled.
 }
 
 message PeerNodeParameters
@@ -146,6 +146,14 @@ message PairingStatus
 
     Error error = 1;
 };
+
+message OutOfBandData
+{
+    Address address = 1;
+    AddressType addressType = 2;
+    bytes randomData = 3 [(bytes_size) = 16];
+    bytes confirmData = 4 [(bytes_size) = 16];
+}
 
 message DiscoveredDevice
 {
@@ -199,6 +207,9 @@ service GapPeripheral
     // Allowed states: advertising
     rpc GetResolvableAddress(Nothing) returns (Nothing) { option (method_id) = 9; }
     rpc GetIdentityAddress(Nothing) returns (Nothing) { option (method_id) = 10; }
+
+    rpc GenerateOutOfBandData(Nothing) returns (Nothing) { option (method_id) = 11; }
+    rpc SetOutOfBandData(OutOfBandData) returns (Nothing) { option (method_id) = 12; }
 }
 
 service GapCentral
@@ -239,6 +250,8 @@ service GapCentral
 
     // This will work with both public and random addresses
     rpc IsDeviceBonded(PeerNodeParameters) returns (Nothing) { option (method_id) = 14; }
+    rpc GenerateOutOfBandData(Nothing) returns (Nothing) { option (method_id) = 15; }
+    rpc SetOutOfBandData(OutOfBandData) returns (Nothing) { option (method_id) = 16; }
 }
 
 service GapPeripheralResponse
@@ -251,6 +264,7 @@ service GapPeripheralResponse
     rpc ResolvableAddress(Address) returns (Nothing) { option (method_id) = 4; }
     rpc DisplayPasskey(Passkey) returns (Nothing) { option (method_id) = 5; }
     rpc IdentityAddress(Address) returns (Nothing) { option (method_id) = 6; }
+    rpc OutOfBandDataGenerated(OutOfBandData) returns (Nothing) { option (method_id) = 7; }
 }
 
 service GapCentralResponse
@@ -267,4 +281,5 @@ service GapCentralResponse
     rpc ResolvedPrivateAddress(Address) returns (Nothing) { option (method_id) = 8; }
     rpc ResolvePrivateAddressFailed(Nothing) returns (Nothing) { option (method_id) = 9; }
     rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 10; }
+    rpc OutOfBandDataGenerated(OutOfBandData) returns (Nothing) { option (method_id) = 11; }
 }
