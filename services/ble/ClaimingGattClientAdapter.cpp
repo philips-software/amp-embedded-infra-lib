@@ -95,13 +95,13 @@ namespace services
             });
     }
 
-    void ClaimingGattClientAdapter::Read(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone)
+    void ClaimingGattClientAdapter::Read(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone)
     {
-        characteristicOperationContext.emplace(ReadOperation{ onRead, onDone }, characteristic.CharacteristicValueHandle());
+        characteristicOperationContext.emplace(ReadOperation{ onRead, onDone }, handle);
         characteristicOperationsClaimer.Claim([this]()
             {
                 const auto& readContext = std::get<ReadOperation>(characteristicOperationContext->operation);
-                GattClientObserver::Subject().Read(*this, readContext.onRead, [this](uint8_t result)
+                GattClientObserver::Subject().Read(characteristicOperationContext->handle, readContext.onRead, [this](uint8_t result)
                     {
                         characteristicOperationsClaimer.Release();
                         const auto& readContext = std::get<ReadOperation>(characteristicOperationContext->operation);
@@ -110,13 +110,13 @@ namespace services
             });
     }
 
-    void ClaimingGattClientAdapter::Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone)
+    void ClaimingGattClientAdapter::Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone)
     {
-        characteristicOperationContext.emplace(WriteOperation{ data, onDone }, characteristic.CharacteristicValueHandle());
+        characteristicOperationContext.emplace(WriteOperation{ data, onDone }, handle);
         characteristicOperationsClaimer.Claim([this]()
             {
                 const auto& writeContext = std::get<WriteOperation>(characteristicOperationContext->operation);
-                GattClientObserver::Subject().Write(*this, writeContext.data, [this](uint8_t result)
+                GattClientObserver::Subject().Write(characteristicOperationContext->handle, writeContext.data, [this](uint8_t result)
                     {
                         characteristicOperationsClaimer.Release();
                         const auto& writeContext = std::get<WriteOperation>(characteristicOperationContext->operation);
@@ -125,61 +125,54 @@ namespace services
             });
     }
 
-    void ClaimingGattClientAdapter::WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
+    void ClaimingGattClientAdapter::WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
     {
-        characteristicOperationContext.emplace(WriteWithoutResponseOperation{ data, onDone }, characteristic.CharacteristicValueHandle());
-        const auto& writeWithoutResponseContext = std::get<WriteWithoutResponseOperation>(characteristicOperationContext->operation);
-        GattClientObserver::Subject().WriteWithoutResponse(*this, writeWithoutResponseContext.data, [this](OperationStatus result)
-            {
-                characteristicOperationsClaimer.Release();
-                const auto& writeWithoutResponseContext = std::get<WriteWithoutResponseOperation>(characteristicOperationContext->operation);
-                writeWithoutResponseContext.onDone(result);
-            });
+        GattClientObserver::Subject().WriteWithoutResponse(handle, data, onDone);
     }
 
-    void ClaimingGattClientAdapter::EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone)
+    void ClaimingGattClientAdapter::EnableNotification(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone)
     {
         characteristicOperationContext.emplace(DescriptorOperation{ onDone, [this](const infra::Function<void(uint8_t)>& callback)
                                                    {
-                                                       GattClientObserver::Subject().EnableNotification(*this, callback);
+                                                       GattClientObserver::Subject().EnableNotification(characteristicOperationContext->handle, callback);
                                                    } },
-            characteristic.CharacteristicValueHandle());
+            handle);
 
         PerformDescriptorOperation();
     }
 
-    void ClaimingGattClientAdapter::DisableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone)
+    void ClaimingGattClientAdapter::DisableNotification(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone)
     {
         characteristicOperationContext.emplace(DescriptorOperation{ onDone,
                                                    [this](const infra::Function<void(uint8_t)>& callback)
                                                    {
-                                                       GattClientObserver::Subject().DisableNotification(*this, callback);
+                                                       GattClientObserver::Subject().DisableNotification(characteristicOperationContext->handle, callback);
                                                    } },
-            characteristic.CharacteristicValueHandle());
+            handle);
 
         PerformDescriptorOperation();
     }
 
-    void ClaimingGattClientAdapter::EnableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone)
+    void ClaimingGattClientAdapter::EnableIndication(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone)
     {
         characteristicOperationContext.emplace(DescriptorOperation{ onDone,
                                                    [this](const infra::Function<void(uint8_t)>& callback)
                                                    {
-                                                       GattClientObserver::Subject().EnableIndication(*this, callback);
+                                                       GattClientObserver::Subject().EnableIndication(characteristicOperationContext->handle, callback);
                                                    } },
-            characteristic.CharacteristicValueHandle());
+            handle);
 
         PerformDescriptorOperation();
     }
 
-    void ClaimingGattClientAdapter::DisableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone)
+    void ClaimingGattClientAdapter::DisableIndication(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone)
     {
         characteristicOperationContext.emplace(DescriptorOperation{ onDone,
                                                    [this](const infra::Function<void(uint8_t)>& callback)
                                                    {
-                                                       GattClientObserver::Subject().DisableIndication(*this, callback);
+                                                       GattClientObserver::Subject().DisableIndication(characteristicOperationContext->handle, callback);
                                                    } },
-            characteristic.CharacteristicValueHandle());
+            handle);
 
         PerformDescriptorOperation();
     }
@@ -226,11 +219,6 @@ namespace services
             {
                 observer.IndicationReceived(std::get<0>(context), std::get<1>(context), std::get<2>(context));
             });
-    }
-
-    AttAttribute::Handle ClaimingGattClientAdapter::CharacteristicValueHandle() const
-    {
-        return characteristicOperationContext->handle;
     }
 
     void ClaimingGattClientAdapter::ExchangedMaxAttMtuSize()

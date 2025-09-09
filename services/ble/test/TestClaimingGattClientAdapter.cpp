@@ -2,6 +2,7 @@
 #include "infra/util/Function.hpp"
 #include "infra/util/test_helper/MemoryRangeMatcher.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
+#include "services/ble/Att.hpp"
 #include "services/ble/ClaimingGattClientAdapter.hpp"
 #include "services/ble/GattClient.hpp"
 #include "services/ble/test_doubles/GattClientMock.hpp"
@@ -21,7 +22,6 @@ namespace
         testing::StrictMock<services::GattClientMock> gattClient;
         testing::StrictMock<services::AttMtuExchangeMock> attMtuExchange;
         services::ClaimingGattClientAdapter adapter{ gattClient, attMtuExchange };
-        testing::StrictMock<services::GattClientCharacteristicOperationsObserverMock> characteristicsOperationsObserver{ adapter };
         testing::StrictMock<services::GattClientDiscoveryObserverMock> discoveryObserver{ adapter };
         testing::StrictMock<services::GattClientStackUpdateObserverMock> stackUpdateObserver{ adapter };
         testing::StrictMock<services::AttMtuExchangeObserverMock> attMtuExchangeObserver{ adapter };
@@ -133,19 +133,18 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_read_characteristic)
     const auto result = 123;
     const auto handle = 0x1;
 
-    EXPECT_CALL(gattClient, Read(testing::_, testing::_, testing::_))
-        .WillOnce([&readResult, handle, result](const services::GattClientObserver& observer,
+    EXPECT_CALL(gattClient, Read(handle, testing::_, testing::_))
+        .WillOnce([&readResult, handle, result](services::AttAttribute::Handle passedHandle,
                       infra::Function<void(const infra::ConstByteRange&)> onRead,
                       infra::Function<void(uint8_t)> onDone)
             {
-                EXPECT_EQ(observer.CharacteristicValueHandle(), handle);
+                EXPECT_EQ(passedHandle, handle);
 
                 onRead(readResult);
                 onDone(result);
             });
 
-    EXPECT_CALL(characteristicsOperationsObserver, CharacteristicValueHandle).WillOnce(testing::Return(handle));
-    adapter.Read(characteristicsOperationsObserver,
+    adapter.Read(handle,
         infra::MockFunction<void(const infra::ConstByteRange&)>(readResult),
         infra::MockFunction<void(uint8_t)>(result));
     ExecuteAllActions();
@@ -158,14 +157,13 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_write_characteristic)
     const auto handle = 0x1;
     infra::VerifyingFunction<void(uint8_t)> onDone{ result };
 
-    EXPECT_CALL(gattClient, Write(testing::_, infra::ByteRangeContentsEqual(data), testing::_)).WillOnce([handle, data, result, &onDone](const services::GattClientObserver& observer, infra::ConstByteRange writeData, const infra::Function<void(uint8_t)>& onWriteDone)
+    EXPECT_CALL(gattClient, Write(handle, infra::ByteRangeContentsEqual(data), testing::_)).WillOnce([handle, data, result, &onDone](services::AttAttribute::Handle passedHandle, infra::ConstByteRange writeData, const infra::Function<void(uint8_t)>& onWriteDone)
         {
-            EXPECT_EQ(observer.CharacteristicValueHandle(), handle);
+            EXPECT_EQ(passedHandle, handle);
             onWriteDone(result);
         });
 
-    EXPECT_CALL(characteristicsOperationsObserver, CharacteristicValueHandle).WillOnce(testing::Return(handle));
-    adapter.Write(characteristicsOperationsObserver, data, onDone);
+    adapter.Write(handle, data, onDone);
     ExecuteAllActions();
 }
 
@@ -176,16 +174,15 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_write_without_response_charact
     infra::VerifyingFunction<void(services::OperationStatus)> onWriteWithoutResponse{ services::OperationStatus::success };
 
     EXPECT_CALL(gattClient, WriteWithoutResponse(testing::_, infra::ByteRangeContentsEqual(data), testing::_))
-        .WillOnce([handle](const services::GattClientObserver& observer,
+        .WillOnce([handle](services::AttAttribute::Handle passedHandle,
                       infra::ConstByteRange data,
                       const infra::Function<void(services::OperationStatus)>& onDone)
             {
-                EXPECT_EQ(observer.CharacteristicValueHandle(), handle);
+                EXPECT_EQ(passedHandle, handle);
                 onDone(services::OperationStatus::success);
             });
 
-    EXPECT_CALL(characteristicsOperationsObserver, CharacteristicValueHandle).WillOnce(testing::Return(handle));
-    adapter.WriteWithoutResponse(characteristicsOperationsObserver, data, onWriteWithoutResponse);
+    adapter.WriteWithoutResponse(handle, data, onWriteWithoutResponse);
     ExecuteAllActions();
 }
 
@@ -194,16 +191,15 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_enable_notification_characteri
     const auto result = 123;
     const auto handle = 0x1;
 
-    EXPECT_CALL(gattClient, EnableNotification(testing::_, testing::_))
-        .WillOnce([handle, result](const services::GattClientObserver& observer,
+    EXPECT_CALL(gattClient, EnableNotification(handle, testing::_))
+        .WillOnce([handle, result](services::AttAttribute::Handle passedHandle,
                       infra::Function<void(uint8_t)> onDone)
             {
-                EXPECT_EQ(observer.CharacteristicValueHandle(), handle);
+                EXPECT_EQ(passedHandle, handle);
                 onDone(result);
             });
 
-    EXPECT_CALL(characteristicsOperationsObserver, CharacteristicValueHandle).WillOnce(testing::Return(handle));
-    adapter.EnableNotification(characteristicsOperationsObserver, infra::MockFunction<void(uint8_t)>(result));
+    adapter.EnableNotification(handle, infra::MockFunction<void(uint8_t)>(result));
     ExecuteAllActions();
 }
 
@@ -212,16 +208,15 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_disable_notification_character
     const auto result = 123;
     const auto handle = 0x1;
 
-    EXPECT_CALL(gattClient, DisableNotification(testing::_, testing::_))
-        .WillOnce([handle, result](const services::GattClientObserver& observer,
+    EXPECT_CALL(gattClient, DisableNotification(handle, testing::_))
+        .WillOnce([handle, result](services::AttAttribute::Handle passedHandle,
                       infra::Function<void(uint8_t)> onDone)
             {
-                EXPECT_EQ(observer.CharacteristicValueHandle(), handle);
+                EXPECT_EQ(passedHandle, handle);
                 onDone(result);
             });
 
-    EXPECT_CALL(characteristicsOperationsObserver, CharacteristicValueHandle).WillOnce(testing::Return(handle));
-    adapter.DisableNotification(characteristicsOperationsObserver, infra::MockFunction<void(uint8_t)>(result));
+    adapter.DisableNotification(handle, infra::MockFunction<void(uint8_t)>(result));
     ExecuteAllActions();
 }
 
@@ -230,16 +225,15 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_enable_indication_characterist
     const auto result = 123;
     const auto handle = 0x1;
 
-    EXPECT_CALL(gattClient, EnableIndication(testing::_, testing::_))
-        .WillOnce([handle, result](const services::GattClientObserver& observer,
+    EXPECT_CALL(gattClient, EnableIndication(handle, testing::_))
+        .WillOnce([handle, result](services::AttAttribute::Handle passedHandle,
                       infra::Function<void(uint8_t)> onDone)
             {
-                EXPECT_EQ(observer.CharacteristicValueHandle(), handle);
+                EXPECT_EQ(passedHandle, handle);
                 onDone(result);
             });
 
-    EXPECT_CALL(characteristicsOperationsObserver, CharacteristicValueHandle).WillOnce(testing::Return(handle));
-    adapter.EnableIndication(characteristicsOperationsObserver, infra::MockFunction<void(uint8_t)>(result));
+    adapter.EnableIndication(handle, infra::MockFunction<void(uint8_t)>(result));
     ExecuteAllActions();
 }
 
@@ -248,16 +242,15 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_disable_indication_characteris
     const auto result = 123;
     const auto handle = 0x1;
 
-    EXPECT_CALL(gattClient, DisableIndication(testing::_, testing::_))
-        .WillOnce([handle, result](const services::GattClientObserver& observer,
+    EXPECT_CALL(gattClient, DisableIndication(handle, testing::_))
+        .WillOnce([handle, result](services::AttAttribute::Handle passedHandle,
                       infra::Function<void(uint8_t)> onDone)
             {
-                EXPECT_EQ(observer.CharacteristicValueHandle(), handle);
+                EXPECT_EQ(passedHandle, handle);
                 onDone(result);
             });
 
-    EXPECT_CALL(characteristicsOperationsObserver, CharacteristicValueHandle).WillOnce(testing::Return(handle));
-    adapter.DisableIndication(characteristicsOperationsObserver, infra::MockFunction<void(uint8_t)>(result));
+    adapter.DisableIndication(handle, infra::MockFunction<void(uint8_t)>(result));
     ExecuteAllActions();
 }
 
@@ -288,8 +281,7 @@ TEST_F(ClaimingGattClientAdapterTest, should_block_discovery_while_characteristi
 
     const auto result = 123;
 
-    EXPECT_CALL(characteristicsOperationsObserver, CharacteristicValueHandle).WillOnce(testing::Return(handle));
-    adapter.DisableIndication(characteristicsOperationsObserver, infra::MockFunction<void(uint8_t)>(result));
+    adapter.DisableIndication(handle, infra::MockFunction<void(uint8_t)>(result));
     ExecuteAllActions();
 
     EXPECT_CALL(discoveryObserver, CharacteristicDiscoveryComplete());
@@ -298,11 +290,11 @@ TEST_F(ClaimingGattClientAdapterTest, should_block_discovery_while_characteristi
             observer.CharacteristicDiscoveryComplete();
         });
 
-    EXPECT_CALL(gattClient, DisableIndication(testing::_, testing::_))
-        .WillOnce([handle, result](const services::GattClientObserver& observer,
+    EXPECT_CALL(gattClient, DisableIndication(handle, testing::_))
+        .WillOnce([handle, result](services::AttAttribute::Handle passedHandle,
                       infra::Function<void(uint8_t)> onDone)
             {
-                EXPECT_EQ(observer.CharacteristicValueHandle(), handle);
+                EXPECT_EQ(passedHandle, handle);
                 onDone(result);
             });
     ExecuteAllActions();
@@ -331,5 +323,33 @@ TEST_F(ClaimingGattClientAdapterTest, should_forward_indication_received)
         {
             observer.IndicationReceived(handle, data, infra::MockFunction<void()>());
         });
+    ExecuteAllActions();
+}
+
+TEST_F(ClaimingGattClientAdapterTest, can_write_without_response_while_awaiting_read)
+{
+    const infra::ConstByteRange readResult = infra::MakeRange(std::array<uint8_t, 4>{ 0x01, 0x02, 0x03, 0x04 });
+    const auto result = 123;
+    const auto handle = 0x1;
+    const auto handleWrite = 0x2;
+
+    infra::Function<void(const infra::ConstByteRange&)> onRead;
+    infra::Function<void(uint8_t)> onDone;
+
+    EXPECT_CALL(gattClient, Read(handle, testing::_, testing::_))
+        .WillOnce(::testing::DoAll(::testing::SaveArg<1>(&onRead), ::testing::SaveArg<2>(&onDone)));
+    EXPECT_CALL(gattClient, WriteWithoutResponse(handleWrite, testing::_, testing::_)).WillOnce(::testing::InvokeArgument<2>(services::OperationStatus::success));
+
+    adapter.Read(handle,
+        infra::MockFunction<void(const infra::ConstByteRange&)>(readResult),
+        infra::MockFunction<void(uint8_t)>(result));
+
+    ExecuteAllActions();
+
+    adapter.WriteWithoutResponse(handleWrite, infra::MakeRange(std::array<uint8_t, 1>({ 42 })), infra::MockFunction<void(services::OperationStatus)>(services::OperationStatus::success));
+
+    onRead(readResult);
+    onDone(result);
+
     ExecuteAllActions();
 }

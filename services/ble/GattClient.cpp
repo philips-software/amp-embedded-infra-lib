@@ -1,11 +1,12 @@
 #include "services/ble/GattClient.hpp"
+#include "infra/util/ReallyAssert.hpp"
 
 namespace services
 {
     GattClientCharacteristic::GattClientCharacteristic(GattClientCharacteristicOperations& operations, AttAttribute::Uuid type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties)
         : GattClientCharacteristic(type, handle, valueHandle, properties)
     {
-        GattClientCharacteristicOperationsObserver::Attach(operations);
+        this->operations = &operations;
         GattClientStackUpdateObserver::Attach(operations);
     }
 
@@ -15,51 +16,51 @@ namespace services
 
     void GattClientCharacteristic::Read(const infra::Function<void(const infra::ConstByteRange&)>& onResponse, const infra::Function<void(uint8_t)>& onDone)
     {
-        really_assert(GattClientCharacteristicOperationsObserver::Attached());
+        really_assert(operations != nullptr);
 
-        GattClientCharacteristicOperationsObserver::Subject().Read(*this, onResponse, onDone);
+        operations->Read(valueHandle, onResponse, onDone);
     }
 
     void GattClientCharacteristic::Write(infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone)
     {
-        really_assert(GattClientCharacteristicOperationsObserver::Attached());
+        really_assert(operations != nullptr);
 
-        GattClientCharacteristicOperationsObserver::Subject().Write(*this, data, onDone);
+        operations->Write(valueHandle, data, onDone);
     }
 
     void GattClientCharacteristic::WriteWithoutResponse(infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
     {
-        really_assert(GattClientCharacteristicOperationsObserver::Attached());
+        really_assert(operations != nullptr);
 
-        GattClientCharacteristicOperationsObserver::Subject().WriteWithoutResponse(*this, data, onDone);
+        operations->WriteWithoutResponse(valueHandle, data, onDone);
     }
 
     void GattClientCharacteristic::EnableNotification(const infra::Function<void(uint8_t)>& onDone)
     {
-        really_assert(GattClientCharacteristicOperationsObserver::Attached());
+        really_assert(operations != nullptr);
 
-        GattClientCharacteristicOperationsObserver::Subject().EnableNotification(*this, onDone);
+        operations->EnableNotification(valueHandle, onDone);
     }
 
     void GattClientCharacteristic::DisableNotification(const infra::Function<void(uint8_t)>& onDone)
     {
-        really_assert(GattClientCharacteristicOperationsObserver::Attached());
+        really_assert(operations != nullptr);
 
-        GattClientCharacteristicOperationsObserver::Subject().DisableNotification(*this, onDone);
+        operations->DisableNotification(valueHandle, onDone);
     }
 
     void GattClientCharacteristic::EnableIndication(const infra::Function<void(uint8_t)>& onDone)
     {
-        really_assert(GattClientCharacteristicOperationsObserver::Attached());
+        really_assert(operations != nullptr);
 
-        GattClientCharacteristicOperationsObserver::Subject().EnableIndication(*this, onDone);
+        operations->EnableIndication(valueHandle, onDone);
     }
 
     void GattClientCharacteristic::DisableIndication(const infra::Function<void(uint8_t)>& onDone)
     {
-        really_assert(GattClientCharacteristicOperationsObserver::Attached());
+        really_assert(operations != nullptr);
 
-        GattClientCharacteristicOperationsObserver::Subject().DisableIndication(*this, onDone);
+        operations->DisableIndication(valueHandle, onDone);
     }
 
     void GattClientCharacteristic::NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data)

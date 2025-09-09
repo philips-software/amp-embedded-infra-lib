@@ -1,6 +1,5 @@
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/util/Function.hpp"
-#include "infra/util/test_helper/MemoryRangeMatcher.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "services/ble/GattClient.hpp"
 #include "services/ble/RetryGattClientCharacteristicsOperations.hpp"
@@ -20,7 +19,6 @@ namespace
         services::AttMtuExchangeMock attMtuExchange;
         testing::StrictMock<services::ClaimingGattClientAdapterMock> adapter{ gattClient, attMtuExchange };
         testing::StrictMock<services::RetryGattClientCharacteristicsOperations> retryAdapter{ adapter };
-        testing::StrictMock<services::GattClientCharacteristicOperationsObserverMock> characteristicsOperationsObserver{ retryAdapter };
         testing::StrictMock<services::GattClientStackUpdateObserverMock> stackUpdateObserver{ retryAdapter };
 
         const uint16_t handle = 0x1;
@@ -34,18 +32,18 @@ TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_read_characteri
 {
     infra::Function<void(const infra::ConstByteRange&)> onReadMock;
 
-    EXPECT_CALL(adapter, Read(testing::Ref(characteristicsOperationsObserver), testing::Ref(onReadMock), testing::Ref(onDoneMock)));
+    EXPECT_CALL(adapter, Read(handle, testing::Ref(onReadMock), testing::Ref(onDoneMock)));
 
-    retryAdapter.Read(characteristicsOperationsObserver,
+    retryAdapter.Read(handle,
         onReadMock,
         onDoneMock);
 }
 
 TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_write_characteristic)
 {
-    EXPECT_CALL(adapter, Write(testing::Ref(characteristicsOperationsObserver), testing::ElementsAreArray(data), testing::Ref(onDoneMock)));
+    EXPECT_CALL(adapter, Write(handle, testing::ElementsAreArray(data), testing::Ref(onDoneMock)));
 
-    retryAdapter.Write(characteristicsOperationsObserver,
+    retryAdapter.Write(handle,
         data,
         onDoneMock);
 }
@@ -54,10 +52,10 @@ TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_write_without_r
 {
     infra::VerifyingFunction<void(services::OperationStatus)> callback(services::OperationStatus::error);
 
-    EXPECT_CALL(adapter, WriteWithoutResponse(testing::Ref(characteristicsOperationsObserver), testing::ElementsAreArray(data), testing::_))
+    EXPECT_CALL(adapter, WriteWithoutResponse(handle, testing::ElementsAreArray(data), testing::_))
         .WillOnce(testing::SaveArg<2>(&onWriteDoneMock));
 
-    retryAdapter.WriteWithoutResponse(characteristicsOperationsObserver, data, callback);
+    retryAdapter.WriteWithoutResponse(handle, data, callback);
     onWriteDoneMock(services::OperationStatus::error);
 }
 
@@ -65,10 +63,10 @@ TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_write_without_r
 {
     infra::VerifyingFunction<void(services::OperationStatus)> callback(services::OperationStatus::success);
 
-    EXPECT_CALL(adapter, WriteWithoutResponse(testing::Ref(characteristicsOperationsObserver), testing::ElementsAreArray(data), testing::_))
+    EXPECT_CALL(adapter, WriteWithoutResponse(handle, testing::ElementsAreArray(data), testing::_))
         .WillRepeatedly(testing::SaveArg<2>(&onWriteDoneMock));
 
-    retryAdapter.WriteWithoutResponse(characteristicsOperationsObserver, data, callback);
+    retryAdapter.WriteWithoutResponse(handle, data, callback);
     onWriteDoneMock(services::OperationStatus::retry);
     ExecuteAllActions();
     onWriteDoneMock(services::OperationStatus::retry);
@@ -83,10 +81,10 @@ TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_write_without_r
 {
     infra::VerifyingFunction<void(services::OperationStatus)> callback(services::OperationStatus::error);
 
-    EXPECT_CALL(adapter, WriteWithoutResponse(testing::Ref(characteristicsOperationsObserver), testing::ElementsAreArray(data), testing::_))
+    EXPECT_CALL(adapter, WriteWithoutResponse(handle, testing::ElementsAreArray(data), testing::_))
         .WillRepeatedly(testing::SaveArg<2>(&onWriteDoneMock));
 
-    retryAdapter.WriteWithoutResponse(characteristicsOperationsObserver, data, callback);
+    retryAdapter.WriteWithoutResponse(handle, data, callback);
     onWriteDoneMock(services::OperationStatus::retry);
     ExecuteAllActions();
     onWriteDoneMock(services::OperationStatus::retry);
@@ -97,30 +95,30 @@ TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_write_without_r
 
 TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_enable_notification_characteristic)
 {
-    EXPECT_CALL(adapter, EnableNotification(testing::Ref(characteristicsOperationsObserver), testing::Ref(onDoneMock)));
+    EXPECT_CALL(adapter, EnableNotification(handle, testing::Ref(onDoneMock)));
 
-    retryAdapter.EnableNotification(characteristicsOperationsObserver, onDoneMock);
+    retryAdapter.EnableNotification(handle, onDoneMock);
 }
 
 TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_disable_notification_characteristic)
 {
-    EXPECT_CALL(adapter, DisableNotification(testing::Ref(characteristicsOperationsObserver), testing::Ref(onDoneMock)));
+    EXPECT_CALL(adapter, DisableNotification(handle, testing::Ref(onDoneMock)));
 
-    retryAdapter.DisableNotification(characteristicsOperationsObserver, onDoneMock);
+    retryAdapter.DisableNotification(handle, onDoneMock);
 }
 
 TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_enable_indication_characteristic)
 {
-    EXPECT_CALL(adapter, EnableIndication(testing::Ref(characteristicsOperationsObserver), testing::Ref(onDoneMock)));
+    EXPECT_CALL(adapter, EnableIndication(handle, testing::Ref(onDoneMock)));
 
-    retryAdapter.EnableIndication(characteristicsOperationsObserver, onDoneMock);
+    retryAdapter.EnableIndication(handle, onDoneMock);
 }
 
 TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_disable_indication_characteristic)
 {
-    EXPECT_CALL(adapter, DisableIndication(testing::Ref(characteristicsOperationsObserver), testing::Ref(onDoneMock)));
+    EXPECT_CALL(adapter, DisableIndication(handle, testing::Ref(onDoneMock)));
 
-    retryAdapter.DisableIndication(characteristicsOperationsObserver, onDoneMock);
+    retryAdapter.DisableIndication(handle, onDoneMock);
 }
 
 TEST_F(RetryGattClientCharacteristicsOperationsTest, should_forward_notification_received)

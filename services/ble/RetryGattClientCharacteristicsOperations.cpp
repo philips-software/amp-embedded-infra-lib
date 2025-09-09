@@ -8,40 +8,40 @@ namespace services
         , gattClient(gattClient)
     {}
 
-    void RetryGattClientCharacteristicsOperations::Read(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone)
+    void RetryGattClientCharacteristicsOperations::Read(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone)
     {
-        gattClient.Read(characteristic, onRead, onDone);
+        gattClient.Read(handle, onRead, onDone);
     }
 
-    void RetryGattClientCharacteristicsOperations::Write(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone)
+    void RetryGattClientCharacteristicsOperations::Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone)
     {
-        gattClient.Write(characteristic, data, onDone);
+        gattClient.Write(handle, data, onDone);
     }
 
-    void RetryGattClientCharacteristicsOperations::WriteWithoutResponse(const GattClientCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
+    void RetryGattClientCharacteristicsOperations::WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
     {
-        operationWriteWithoutResponse.emplace(Operation{ characteristic, data, onDone });
+        operationWriteWithoutResponse.emplace(Operation{ handle, data, onDone });
         TryWriteWithoutResponse();
     }
 
-    void RetryGattClientCharacteristicsOperations::EnableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone)
+    void RetryGattClientCharacteristicsOperations::EnableNotification(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone)
     {
-        gattClient.EnableNotification(characteristic, onDone);
+        gattClient.EnableNotification(handle, onDone);
     }
 
-    void RetryGattClientCharacteristicsOperations::DisableNotification(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone)
+    void RetryGattClientCharacteristicsOperations::DisableNotification(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone)
     {
-        gattClient.DisableNotification(characteristic, onDone);
+        gattClient.DisableNotification(handle, onDone);
     }
 
-    void RetryGattClientCharacteristicsOperations::EnableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone)
+    void RetryGattClientCharacteristicsOperations::EnableIndication(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone)
     {
-        gattClient.EnableIndication(characteristic, onDone);
+        gattClient.EnableIndication(handle, onDone);
     }
 
-    void RetryGattClientCharacteristicsOperations::DisableIndication(const GattClientCharacteristicOperationsObserver& characteristic, const infra::Function<void(uint8_t)>& onDone)
+    void RetryGattClientCharacteristicsOperations::DisableIndication(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone)
     {
-        gattClient.DisableIndication(characteristic, onDone);
+        gattClient.DisableIndication(handle, onDone);
     }
 
     void RetryGattClientCharacteristicsOperations::NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data)
@@ -63,7 +63,7 @@ namespace services
 
     void RetryGattClientCharacteristicsOperations::TryWriteWithoutResponse()
     {
-        gattClient.WriteWithoutResponse(operationWriteWithoutResponse->characteristic, operationWriteWithoutResponse->data, [this](OperationStatus result)
+        gattClient.WriteWithoutResponse(operationWriteWithoutResponse->handle, operationWriteWithoutResponse->data, [this](OperationStatus result)
             {
                 if (result == OperationStatus::retry)
                 {
