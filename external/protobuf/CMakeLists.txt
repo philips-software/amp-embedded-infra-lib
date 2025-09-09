@@ -10,7 +10,7 @@ if (EMIL_HOST_BUILD)
     add_compile_options(
         # Disable warning on invalid use of [[noreturn]] and on deprecation of sprintf
         # -Wno-invalid-noreturn should be removed when https://github.com/protocolbuffers/protobuf/issues/9817 is fixed
-        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-deprecated-declarations$<SEMICOLON>-Wno-invalid-noreturn$<SEMICOLON>-Winvalid-offsetof>
+        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-deprecated-declarations$<SEMICOLON>-Wno-invalid-noreturn$<SEMICOLON>-Wno-invalid-offsetof>
         # Disable string overflow warning
         $<$<CXX_COMPILER_ID:GNU>:-Wno-stringop-overflow>
         # Disable warning not all control paths return a value
@@ -48,5 +48,19 @@ if (EMIL_HOST_BUILD)
         endforeach()
     endfunction()
 
+    function(remove_mp)
+        foreach(target ${ARGN})
+            get_target_property(all_options ${target} COMPILE_OPTIONS)
+            if(all_options)
+                list(REMOVE_ITEM all_options "/MP")
+                set_target_properties(${target} PROPERTIES COMPILE_OPTIONS "${all_options}")
+            endif()
+        endforeach()
+    endfunction()
+
     add_protobuf_target_properties(libprotobuf libprotoc)
+
+    # /MP is added by protobuf in case of MSVC, but that check is a (partial) false positive since we use the MSVC _frontend_ for clang
+    # which does not support this flag
+    remove_mp(libprotobuf libprotobuf-lite libprotoc libupb)
 endif()
