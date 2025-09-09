@@ -2,7 +2,7 @@ if (EMIL_HOST_BUILD)
     FetchContent_Declare(
         protobuf
         GIT_REPOSITORY https://github.com/protocolbuffers/protobuf
-        GIT_TAG 3d4adad5c4c4e6a6f9f038769b8c90716065b0e4 # v31.0
+        GIT_TAG 4fbd1111a292d04746c732573025e3251de0bb9c # v32.0
     )
 
     set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL On)
@@ -10,7 +10,7 @@ if (EMIL_HOST_BUILD)
     add_compile_options(
         # Disable warning on invalid use of [[noreturn]] and on deprecation of sprintf
         # -Wno-invalid-noreturn should be removed when https://github.com/protocolbuffers/protobuf/issues/9817 is fixed
-        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-deprecated-declarations$<SEMICOLON>-Wno-invalid-noreturn$<SEMICOLON>-Winvalid-offsetof>
+        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-invalid-noreturn$<SEMICOLON>-Winvalid-offsetof>
         # Disable string overflow warning
         $<$<CXX_COMPILER_ID:GNU>:-Wno-stringop-overflow>
         # Disable warning not all control paths return a value
@@ -21,6 +21,8 @@ if (EMIL_HOST_BUILD)
         $<$<CXX_COMPILER_ID:MSVC>:/wd4116>
         # Disable warning inline used more than once
         $<$<CXX_COMPILER_ID:MSVC>:/wd4141>
+        # Disable warning Operands are different enum types
+        $<$<CXX_COMPILER_ID:MSVC>:/wd5287>
     )
 
     set(protobuf_BUILD_TESTS Off CACHE INTERNAL "")
@@ -44,6 +46,10 @@ if (EMIL_HOST_BUILD)
                 # Disable warning-as-error for these targets completely
                 # This should be re-evaluated when https://github.com/protocolbuffers/protobuf/issues/9817 is fixed
                 set_target_properties(${target} PROPERTIES COMPILE_WARNING_AS_ERROR Off)
+            endif()
+            if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang" OR ${CMAKE_CXX_COMPILER_ID} MATCHES "AppleClang")
+                # Disable warnings about weak() being deprecated
+                target_compile_options(${target} PUBLIC -Wno-deprecated-declarations)
             endif()
         endforeach()
     endfunction()

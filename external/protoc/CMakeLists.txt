@@ -1,5 +1,6 @@
 function(emil_fetch_protocol_buffer_compiler)
-    set(protobuf_version "31.0")
+    set(protobuf_tag "32.0")
+    set(protobuf_version "32.0")
 
     if (CMAKE_HOST_WIN32)
         set(os_postfix "win32")
@@ -14,7 +15,7 @@ function(emil_fetch_protocol_buffer_compiler)
     endif()
 
     FetchContent_Declare(protoc
-        URL https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_version}/protoc-${protobuf_version}-${os_postfix}.zip
+        URL https://github.com/protocolbuffers/protobuf/releases/download/v${protobuf_tag}/protoc-${protobuf_version}-${os_postfix}.zip
     )
     FetchContent_MakeAvailable(protoc)
 
