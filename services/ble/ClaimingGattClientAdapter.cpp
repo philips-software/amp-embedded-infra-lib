@@ -127,11 +127,7 @@ namespace services
 
     void ClaimingGattClientAdapter::WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
     {
-        onWriteWithoutResponseDone = onDone;
-        GattClientObserver::Subject().WriteWithoutResponse(handle, data, [this](OperationStatus result)
-            {
-                onWriteWithoutResponseDone(result);
-            });
+        GattClientObserver::Subject().WriteWithoutResponse(handle, data, onDone);
     }
 
     void ClaimingGattClientAdapter::EnableNotification(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone)

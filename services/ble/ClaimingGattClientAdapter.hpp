@@ -117,7 +117,6 @@ namespace services
 
         std::optional<std::variant<DiscoveredService, DiscoveredCharacteristic, DiscoveredDescriptor, HandleRange>> discoveryContext;
         std::optional<CharacteristicOperation> characteristicOperationContext;
-        infra::Function<void(OperationStatus)> onWriteWithoutResponseDone;
 
         infra::ClaimableResource resource;
         infra::ClaimableResource::Claimer characteristicOperationsClaimer{ resource };
