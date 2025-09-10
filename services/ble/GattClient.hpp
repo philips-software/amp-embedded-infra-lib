@@ -48,14 +48,14 @@ namespace services
         : public infra::Subject<GattClientStackUpdateObserver>
     {
     public:
-        virtual void Read(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone) = 0;
-        virtual void Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void Read(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone) = 0;
+        virtual void Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) = 0;
         virtual void WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) = 0;
 
-        virtual void EnableNotification(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) = 0;
-        virtual void DisableNotification(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) = 0;
-        virtual void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) = 0;
-        virtual void DisableIndication(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void EnableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
+        virtual void DisableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
+        virtual void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
+        virtual void DisableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
     };
 
     class GattClientCharacteristic
@@ -68,14 +68,14 @@ namespace services
         GattClientCharacteristic(AttAttribute::Uuid type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties);
         GattClientCharacteristic(GattClientCharacteristicOperations& operations, AttAttribute::Uuid type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties);
 
-        virtual void Read(const infra::Function<void(const infra::ConstByteRange&)>& onResponse, const infra::Function<void(uint8_t)>& onDone);
-        virtual void Write(infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone);
+        virtual void Read(const infra::Function<void(const infra::ConstByteRange&)>& onResponse, const infra::Function<void(OperationStatus)>& onDone);
+        virtual void Write(infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone);
         virtual void WriteWithoutResponse(infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone);
 
-        virtual void EnableNotification(const infra::Function<void(uint8_t)>& onDone);
-        virtual void DisableNotification(const infra::Function<void(uint8_t)>& onDone);
-        virtual void EnableIndication(const infra::Function<void(uint8_t)>& onDone);
-        virtual void DisableIndication(const infra::Function<void(uint8_t)>& onDone);
+        virtual void EnableNotification(const infra::Function<void(OperationStatus)>& onDone);
+        virtual void DisableNotification(const infra::Function<void(OperationStatus)>& onDone);
+        virtual void EnableIndication(const infra::Function<void(OperationStatus)>& onDone);
+        virtual void DisableIndication(const infra::Function<void(OperationStatus)>& onDone);
 
         GattCharacteristic::PropertyFlags CharacteristicProperties() const;
         AttAttribute::Handle CharacteristicValueHandle() const;
@@ -113,11 +113,11 @@ namespace services
         using infra::Observer<GattClientDiscoveryObserver, GattClientDiscovery>::Observer;
 
         virtual void ServiceDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle endHandle) = 0;
-        virtual void ServiceDiscoveryComplete() = 0;
+        virtual void ServiceDiscoveryComplete(OperationStatus status) = 0;
         virtual void CharacteristicDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties) = 0;
-        virtual void CharacteristicDiscoveryComplete() = 0;
+        virtual void CharacteristicDiscoveryComplete(OperationStatus status) = 0;
         virtual void DescriptorDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle) = 0;
-        virtual void DescriptorDiscoveryComplete() = 0;
+        virtual void DescriptorDiscoveryComplete(OperationStatus status) = 0;
     };
 
     class GattClientDiscovery
@@ -141,11 +141,11 @@ namespace services
         using infra::Observer<GattClientObserver, GattClient>::Observer;
 
         virtual void ServiceDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle endHandle) = 0;
-        virtual void ServiceDiscoveryComplete() = 0;
+        virtual void ServiceDiscoveryComplete(OperationStatus status) = 0;
         virtual void CharacteristicDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties) = 0;
-        virtual void CharacteristicDiscoveryComplete() = 0;
+        virtual void CharacteristicDiscoveryComplete(OperationStatus status) = 0;
         virtual void DescriptorDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle) = 0;
-        virtual void DescriptorDiscoveryComplete() = 0;
+        virtual void DescriptorDiscoveryComplete(OperationStatus status) = 0;
 
         virtual void NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data) = 0;
         virtual void IndicationReceived(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone) = 0;
@@ -159,14 +159,19 @@ namespace services
         virtual void StartCharacteristicDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) = 0;
         virtual void StartDescriptorDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) = 0;
 
-        virtual void Read(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone) = 0;
-        virtual void Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void Read(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone) = 0;
+        virtual void Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) = 0;
         virtual void WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) = 0;
-        virtual void EnableNotification(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) = 0;
-        virtual void DisableNotification(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) = 0;
-        virtual void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) = 0;
-        virtual void DisableIndication(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) = 0;
+        virtual void EnableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
+        virtual void DisableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
+        virtual void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
+        virtual void DisableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
     };
+}
+
+namespace infra
+{
+    infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::OperationStatus& status);
 }
 
 #endif
