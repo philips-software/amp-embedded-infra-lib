@@ -30,4 +30,11 @@ target_sources(crypto.micro_ecc PRIVATE
     ${microecc_SOURCE_DIR}/uECC.h
 )
 
+if(CMAKE_C_COMPILER_ID STREQUAL "TIClang")
+    set_source_files_properties(
+        ${microecc_SOURCE_DIR}/uECC.c
+        PROPERTIES COMPILE_OPTIONS -O0
+    )
+endif()
+
 emil_exclude_from_clang_format(crypto.micro_ecc)
