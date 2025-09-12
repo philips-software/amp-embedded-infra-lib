@@ -14,14 +14,14 @@ namespace services
         : GattCharacteristic(type, handle, valueHandle, properties)
     {}
 
-    void GattClientCharacteristic::Read(const infra::Function<void(const infra::ConstByteRange&)>& onResponse, const infra::Function<void(uint8_t)>& onDone)
+    void GattClientCharacteristic::Read(const infra::Function<void(const infra::ConstByteRange&)>& onResponse, const infra::Function<void(OperationStatus)>& onDone)
     {
         really_assert(operations != nullptr);
 
         operations->Read(valueHandle, onResponse, onDone);
     }
 
-    void GattClientCharacteristic::Write(infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone)
+    void GattClientCharacteristic::Write(infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
     {
         really_assert(operations != nullptr);
 
@@ -35,28 +35,28 @@ namespace services
         operations->WriteWithoutResponse(valueHandle, data, onDone);
     }
 
-    void GattClientCharacteristic::EnableNotification(const infra::Function<void(uint8_t)>& onDone)
+    void GattClientCharacteristic::EnableNotification(const infra::Function<void(OperationStatus)>& onDone)
     {
         really_assert(operations != nullptr);
 
         operations->EnableNotification(valueHandle, onDone);
     }
 
-    void GattClientCharacteristic::DisableNotification(const infra::Function<void(uint8_t)>& onDone)
+    void GattClientCharacteristic::DisableNotification(const infra::Function<void(OperationStatus)>& onDone)
     {
         really_assert(operations != nullptr);
 
         operations->DisableNotification(valueHandle, onDone);
     }
 
-    void GattClientCharacteristic::EnableIndication(const infra::Function<void(uint8_t)>& onDone)
+    void GattClientCharacteristic::EnableIndication(const infra::Function<void(OperationStatus)>& onDone)
     {
         really_assert(operations != nullptr);
 
         operations->EnableIndication(valueHandle, onDone);
     }
 
-    void GattClientCharacteristic::DisableIndication(const infra::Function<void(uint8_t)>& onDone)
+    void GattClientCharacteristic::DisableIndication(const infra::Function<void(OperationStatus)>& onDone)
     {
         really_assert(operations != nullptr);
 
@@ -129,5 +129,26 @@ namespace services
     void GattClientDiscovery::StartDescriptorDiscovery(const GattService& service)
     {
         StartDescriptorDiscovery(service.Handle(), service.EndHandle());
+    }
+}
+
+namespace infra
+{
+    infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::OperationStatus& status)
+    {
+        switch (status)
+        {
+            case services::OperationStatus::success:
+                stream << "success";
+                break;
+            case services::OperationStatus::retry:
+                stream << "retry";
+                break;
+            case services::OperationStatus::error:
+                stream << "error";
+                break;
+        }
+
+        return stream;
     }
 }
