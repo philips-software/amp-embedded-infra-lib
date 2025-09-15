@@ -1,4 +1,5 @@
 #include "infra/event/test_helper/EventDispatcherFixture.hpp"
+#include "infra/stream/StringOutputStream.hpp"
 #include "infra/util/test_helper/MemoryRangeMatcher.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "services/ble/Att.hpp"
@@ -53,6 +54,36 @@ TEST(GattClientTest, characteristic_implementation_is_added_to_service)
     EXPECT_EQ(0x84, service.Characteristics().front().Type().Get<services::AttAttribute::Uuid16>());
 }
 
+TEST(GattClientTest, OperationStatusSuccess)
+{
+    infra::StringOutputStream::WithStorage<32> stream;
+    services::OperationStatus status = services::OperationStatus::success;
+
+    stream << status;
+
+    EXPECT_EQ("success", stream.Storage());
+}
+
+TEST(GattClientTest, OperationStatusRetry)
+{
+    infra::StringOutputStream::WithStorage<32> stream;
+    services::OperationStatus status = services::OperationStatus::retry;
+
+    stream << status;
+
+    EXPECT_EQ("retry", stream.Storage());
+}
+
+TEST(GattClientTest, OperationStatusError)
+{
+    infra::StringOutputStream::WithStorage<32> stream;
+    services::OperationStatus status = services::OperationStatus::error;
+
+    stream << status;
+
+    EXPECT_EQ("error", stream.Storage());
+}
+
 class GattClientCharacteristicTest
     : public testing::Test
     , public infra::EventDispatcherFixture
@@ -73,6 +104,8 @@ public:
     services::GattClientService service;
     services::GattClientCharacteristic characteristic;
     testing::StrictMock<services::GattClientCharacteristicUpdateObserverMock> gattUpdateObserver;
+
+    testing::StrictMock<services::GattClientDiscoveryMock> discovery;
 };
 
 TEST_F(GattClientCharacteristicTest, receives_valid_notification_should_notify_observers)
@@ -201,4 +234,22 @@ TEST_F(GattClientCharacteristicTest, should_disable_indication_characteristic_an
 
     infra::VerifyingFunction<void(services::OperationStatus)> onDone{ result };
     characteristic.DisableIndication(onDone);
+}
+
+TEST_F(GattClientCharacteristicTest, should_enable_start_characteristic_discovery_callback)
+{
+    const services::AttAttribute::Handle handle = 0x1;
+    const services::AttAttribute::Handle endHandle = 0x9;
+
+    EXPECT_CALL(discovery, StartCharacteristicDiscovery(handle, endHandle));
+    discovery.GattClientDiscovery::StartCharacteristicDiscovery(service);
+}
+
+TEST_F(GattClientCharacteristicTest, should_enable_start_descriptor_discovery_callback)
+{
+    const services::AttAttribute::Handle handle = 0x1;
+    const services::AttAttribute::Handle endHandle = 0x9;
+
+    EXPECT_CALL(discovery, StartDescriptorDiscovery(handle, endHandle));
+    discovery.GattClientDiscovery::StartDescriptorDiscovery(service);
 }
