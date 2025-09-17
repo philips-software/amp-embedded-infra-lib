@@ -39,6 +39,7 @@ namespace services
     void EchoPolicyDiffieHellman::Initialized()
     {
         initializingKeys = true;
+        nextKeyPair = infra::none;
 
         keyExchange.Emplace(keyExchangeCreator, randomDataGenerator);
 
@@ -51,7 +52,6 @@ namespace services
                         auto encodedDhPublicKey = (*keyExchange)->PublicKey();
                         auto [r, s] = signer.Sign(encodedDhPublicKey);
 
-                        sentExchange = true;
                         DiffieHellmanKeyEstablishmentProxy::Exchange(encodedDhPublicKey, r, s);
                     });
             });

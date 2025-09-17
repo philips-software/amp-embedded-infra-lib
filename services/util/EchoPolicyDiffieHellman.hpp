@@ -71,7 +71,6 @@ namespace services
         infra::Function<void(ServiceProxy& proxy)> onRequest;
 
         bool initializingKeys = true;
-        bool sentExchange = false;
         infra::Optional<std::pair<std::array<uint8_t, 16>, std::array<uint8_t, 16>>> nextKeyPair;
         infra::IntrusiveList<ServiceProxy> waitingProxies;
 
