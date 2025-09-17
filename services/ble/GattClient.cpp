@@ -120,16 +120,6 @@ namespace services
     {
         return characteristics;
     }
-
-    void GattClientDiscovery::StartCharacteristicDiscovery(const GattService& service)
-    {
-        StartCharacteristicDiscovery(service.Handle(), service.EndHandle());
-    }
-
-    void GattClientDiscovery::StartDescriptorDiscovery(const GattService& service)
-    {
-        StartDescriptorDiscovery(service.Handle(), service.EndHandle());
-    }
 }
 
 namespace infra

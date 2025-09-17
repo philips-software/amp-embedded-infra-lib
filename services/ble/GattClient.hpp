@@ -127,9 +127,6 @@ namespace services
         virtual void StartServiceDiscovery() = 0;
         virtual void StartCharacteristicDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) = 0;
         virtual void StartDescriptorDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) = 0;
-
-        void StartCharacteristicDiscovery(const GattService& service);
-        void StartDescriptorDiscovery(const GattService& service);
     };
 
     class GattClient;
