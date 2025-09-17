@@ -8,12 +8,12 @@ namespace services
         , gattClient(gattClient)
     {}
 
-    void RetryGattClientCharacteristicsOperations::Read(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone)
+    void RetryGattClientCharacteristicsOperations::Read(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone)
     {
         gattClient.Read(handle, onRead, onDone);
     }
 
-    void RetryGattClientCharacteristicsOperations::Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone)
+    void RetryGattClientCharacteristicsOperations::Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
     {
         gattClient.Write(handle, data, onDone);
     }
@@ -24,22 +24,22 @@ namespace services
         TryWriteWithoutResponse();
     }
 
-    void RetryGattClientCharacteristicsOperations::EnableNotification(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone)
+    void RetryGattClientCharacteristicsOperations::EnableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone)
     {
         gattClient.EnableNotification(handle, onDone);
     }
 
-    void RetryGattClientCharacteristicsOperations::DisableNotification(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone)
+    void RetryGattClientCharacteristicsOperations::DisableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone)
     {
         gattClient.DisableNotification(handle, onDone);
     }
 
-    void RetryGattClientCharacteristicsOperations::EnableIndication(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone)
+    void RetryGattClientCharacteristicsOperations::EnableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone)
     {
         gattClient.EnableIndication(handle, onDone);
     }
 
-    void RetryGattClientCharacteristicsOperations::DisableIndication(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone)
+    void RetryGattClientCharacteristicsOperations::DisableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone)
     {
         gattClient.DisableIndication(handle, onDone);
     }
