@@ -60,6 +60,7 @@ namespace services
         // on unrecoverable failure (i.e. BLE stack indicates an issue
         // with updating or sending data).
         virtual UpdateStatus Update(const GattServerCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data) const = 0;
+        virtual void AddDescriptor(const GattServerCharacteristicOperationsObserver& characteristic, const AttAttribute::Uuid& uuid, infra::ConstByteRange data) = 0;
     };
 
     class GattServerCharacteristic
@@ -88,6 +89,8 @@ namespace services
         PermissionFlags Permissions() const;
         uint16_t ValueLength() const;
         uint8_t GetAttributeCount() const;
+
+        virtual void AddDescriptor(const AttAttribute::Uuid& uuid, infra::ConstByteRange data) = 0;
 
     protected:
         PermissionFlags permissions;
