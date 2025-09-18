@@ -1,19 +1,27 @@
 #include "upgrade/boot_loader/PackUpgrader.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 #include <cstring>
 
 namespace application
 {
     PackUpgrader::PackUpgrader(hal::SynchronousFlash& upgradePackFlash)
         : upgradePackFlash(upgradePackFlash)
-    {}
+    {
+        services::GlobalTracer().Trace() << "PackUpgrader:: ctor";
+    }
 
     void PackUpgrader::UpgradeFromImages(infra::MemoryRange<ImageUpgrader*> imageUpgraders)
     {
+        services::GlobalTracer().Trace() << "PackUpgrader:: UpgradeFromImages";
+
         UpgradePackHeaderPrologue headerPrologue;
         upgradePackFlash.ReadBuffer(infra::MakeByteRange(headerPrologue), address);
         address += sizeof(UpgradePackHeaderPrologue);
 
         bool sanity = headerPrologue.magic == upgradePackMagic;
+
+        services::GlobalTracer().Trace() << "PackUpgrader:: UpgradeFromImages, sanity? " << sanity;
+
         if (!sanity)
             return;
 
@@ -51,6 +59,8 @@ namespace application
         UpgradePackHeaderEpilogue headerEpilogue;
         upgradePackFlash.ReadBuffer(infra::MakeByteRange(headerEpilogue), imageAddress);
         imageAddress += sizeof(UpgradePackHeaderEpilogue);
+
+        services::GlobalTracer().Trace() << "PackUpgrader:: HasImage, number of images: " << headerEpilogue.numberOfImages;
 
         for (std::size_t imageIndex = 0; imageIndex != headerEpilogue.numberOfImages; ++imageIndex)
         {
@@ -106,32 +116,44 @@ namespace application
         upgradePackFlash.ReadBuffer(infra::MakeByteRange(imageHeader), imageAddress);
         imageAddress += imageHeader.lengthOfHeaderAndImage;
 
+        services::GlobalTracer().Trace() << "PackUpgrader:: IsImage? " << (std::strncmp(imageHeader.targetName.data(), imageName, imageHeader.targetName.size()) == 0);
+
         return std::strncmp(imageHeader.targetName.data(), imageName, imageHeader.targetName.size()) == 0;
     }
 
     void PackUpgrader::MarkAsDeployStarted()
     {
+        services::GlobalTracer().Trace() << "PackUpgrader:: MarkAsDeployStarted";
+
         WriteStatus(UpgradePackStatus::deployStarted);
     }
 
     void PackUpgrader::MarkAsDeployed()
     {
+        services::GlobalTracer().Trace() << "PackUpgrader:: MarkAsDeployed";
+
         WriteStatus(UpgradePackStatus::deployed);
     }
 
     void PackUpgrader::MarkAsError(uint32_t errorCode)
     {
+        services::GlobalTracer().Trace() << "PackUpgrader:: MarkAsError";
+
         WriteStatus(UpgradePackStatus::invalid);
         WriteError(errorCode);
     }
 
     void PackUpgrader::WriteStatus(UpgradePackStatus status)
     {
+        services::GlobalTracer().Trace() << "PackUpgrader:: WriteStatus: " << static_cast<uint8_t>(status);
+
         upgradePackFlash.WriteBuffer(infra::MakeByteRange(status), 0);
     }
 
     void PackUpgrader::WriteError(uint32_t errorCode)
     {
+        services::GlobalTracer().Trace() << "PackUpgrader:: WriteError: " << errorCode;
+
         upgradePackFlash.WriteBuffer(infra::MakeByteRange(errorCode), 4);
     }
 }
