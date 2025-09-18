@@ -4,6 +4,7 @@
 #include "services/ble/GattClient.hpp"
 #include "services/ble/RetryGattClientCharacteristicsOperations.hpp"
 #include "services/ble/test_doubles/ClaimingGattClientAdapterMock.hpp"
+#include "services/ble/test_doubles/GapCentralMock.hpp"
 #include "services/ble/test_doubles/GattClientMock.hpp"
 #include "services/ble/test_doubles/GattMock.hpp"
 #include "gmock/gmock.h"
@@ -17,7 +18,8 @@ namespace
     public:
         services::GattClientMock gattClient;
         services::AttMtuExchangeMock attMtuExchange;
-        testing::StrictMock<services::ClaimingGattClientAdapterMock> adapter{ gattClient, attMtuExchange };
+        services::GapCentralMock gapCentral;
+        testing::StrictMock<services::ClaimingGattClientAdapterMock> adapter{ gattClient, attMtuExchange, gapCentral };
         testing::StrictMock<services::RetryGattClientCharacteristicsOperations> retryAdapter{ adapter };
         testing::StrictMock<services::GattClientStackUpdateObserverMock> stackUpdateObserver{ retryAdapter };
 

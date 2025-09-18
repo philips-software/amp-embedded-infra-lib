@@ -5,6 +5,7 @@
 #include "services/ble/Att.hpp"
 #include "services/ble/ClaimingGattClientAdapter.hpp"
 #include "services/ble/GattClient.hpp"
+#include "services/ble/test_doubles/GapCentralMock.hpp"
 #include "services/ble/test_doubles/GattClientMock.hpp"
 #include "services/ble/test_doubles/GattMock.hpp"
 #include "gmock/gmock.h"
@@ -21,7 +22,8 @@ namespace
     public:
         testing::StrictMock<services::GattClientMock> gattClient;
         testing::StrictMock<services::AttMtuExchangeMock> attMtuExchange;
-        services::ClaimingGattClientAdapter adapter{ gattClient, attMtuExchange };
+        testing::StrictMock<services::GapCentralMock> gapCentral;
+        services::ClaimingGattClientAdapter adapter{ gattClient, attMtuExchange, gapCentral };
         testing::StrictMock<services::GattClientDiscoveryObserverMock> discoveryObserver{ adapter };
         testing::StrictMock<services::GattClientStackUpdateObserverMock> stackUpdateObserver{ adapter };
         testing::StrictMock<services::AttMtuExchangeObserverMock> attMtuExchangeObserver{ adapter };
@@ -351,5 +353,21 @@ TEST_F(ClaimingGattClientAdapterTest, can_write_without_response_while_awaiting_
     onRead(readResult);
     onDone(result);
 
+    ExecuteAllActions();
+}
+
+TEST_F(ClaimingGattClientAdapterTest, should_release_claimer_when_disconnected)
+{
+    EXPECT_CALL(attMtuExchange, EffectiveMaxAttMtuSize()).WillOnce(testing::Return(200));
+    EXPECT_EQ(200, adapter.EffectiveMaxAttMtuSize());
+
+    EXPECT_CALL(attMtuExchange, MtuExchange());
+    adapter.MtuExchange();
+    ExecuteAllActions();
+
+    gapCentral.ChangeState(services::GapState::standby);
+
+    EXPECT_CALL(attMtuExchange, MtuExchange());
+    adapter.MtuExchange();
     ExecuteAllActions();
 }
