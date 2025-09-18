@@ -292,10 +292,13 @@ namespace services
     {
         auto appearanceData = ParserAdvertisingData(GapAdvertisementDataType::appearance);
 
-        if (appearanceData.size() != sizeof(uint16_t))
+        infra::ByteInputStream stream(appearanceData, infra::softFail);
+        auto appearance = stream.Extract<uint16_t>();
+
+        if (stream.Failed())
             return infra::none;
 
-        return infra::MakeOptional(*reinterpret_cast<const uint16_t*>(appearanceData.begin()));
+        return infra::MakeOptional(appearance);
     }
 
     infra::ConstByteRange GapAdvertisingDataParser::ParserAdvertisingData(GapAdvertisementDataType type) const
