@@ -182,4 +182,20 @@ namespace services
         EXPECT_EQ(data[3], 0x00);
         EXPECT_EQ(data[4], 0xFF);
     }
+
+    TEST_F(GapAdvertisementFormatterTest, append_appearance)
+    {
+        uint16_t keyboardAppearance = 0x03C1;
+
+        formatter.AppendAppearance(keyboardAppearance);
+
+        auto data = formatter.FormattedAdvertisementData();
+        EXPECT_EQ(data.size(), 4);
+        EXPECT_EQ(data[0], 3);
+        EXPECT_EQ(data[1], 0x19);
+        EXPECT_EQ(data[2], 0xC1);
+        EXPECT_EQ(data[3], 0x03);
+
+        EXPECT_EQ(formatter.RemainingSpaceAvailable(), GapPeripheral::maxScanResponseDataSize - 4);
+    }
 }
