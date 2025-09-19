@@ -93,6 +93,7 @@ namespace services
             void SendingMethod(uint32_t serviceId, uint32_t methodId, infra::ProtoLengthDelimited& contents) const;
             const ServiceTracer* FindService(uint32_t serviceId) const;
             void SerializationDone();
+            bool TraceOneMessage();
 
         private:
             class TracingWriter

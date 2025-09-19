@@ -51,6 +51,7 @@ namespace services
         shortenedLocalName = 0x08u,
         completeLocalName = 0x09u,
         publicTargetAddress = 0x17u,
+        appearance = 0x19u,
         manufacturerSpecificData = 0xffu
     };
 
@@ -296,6 +297,7 @@ namespace services
         infra::Optional<GapPeripheral::AdvertisementFlags> Flags() const;
         infra::MemoryRange<const AttAttribute::Uuid16> CompleteListOf16BitUuids() const;
         infra::MemoryRange<const AttAttribute::Uuid128> CompleteListOf128BitUuids() const;
+        infra::Optional<uint16_t> Appearance() const;
 
     private:
         infra::ConstByteRange data;
@@ -316,6 +318,7 @@ namespace services
         void AppendListOfServicesUuid(infra::MemoryRange<AttAttribute::Uuid16> services);
         void AppendListOfServicesUuid(infra::MemoryRange<AttAttribute::Uuid128> services);
         void AppendPublicTargetAddress(hal::MacAddress address);
+        void AppendAppearance(uint16_t appearance);
 
         infra::ConstByteRange FormattedAdvertisementData() const;
         std::size_t RemainingSpaceAvailable() const;
