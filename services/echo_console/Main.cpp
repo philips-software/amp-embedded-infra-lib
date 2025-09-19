@@ -393,7 +393,7 @@ int main(int argc, char* argv[], const char* env[])
                 static auto clientCertificate = fileSystem.ReadBinaryFile(get(clientCertificateFile));
                 static auto clientCertificatePrivateKey = fileSystem.ReadBinaryFile(get(clientCertificatePrivateFile));
                 static auto rootCertificate = fileSystem.ReadBinaryFile(get(rootCertificateFile));
-                consoleClientUart.Emplace(console, *bufferedUart, services::EchoPolicyDiffieHellman::KeyMaterial{ clientCertificate, clientCertificatePrivateKey, rootCertificate } , randomDataGenerator);
+                consoleClientUart.Emplace(console, *bufferedUart, services::EchoPolicyDiffieHellman::KeyMaterial{ clientCertificate, clientCertificatePrivateKey, rootCertificate }, randomDataGenerator);
             }
             else
                 consoleClientUart.Emplace(console, *bufferedUart);
