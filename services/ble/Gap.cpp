@@ -288,6 +288,19 @@ namespace services
         return infra::ConstCastMemoryRange<AttAttribute::Uuid128>(infra::ReinterpretCastMemoryRange<const AttAttribute::Uuid128>(uuidData));
     }
 
+    infra::Optional<uint16_t> GapAdvertisingDataParser::Appearance() const
+    {
+        auto appearanceData = ParserAdvertisingData(GapAdvertisementDataType::appearance);
+
+        infra::ByteInputStream stream(appearanceData, infra::softFail);
+        auto appearance = stream.Extract<uint16_t>();
+
+        if (stream.Failed())
+            return infra::none;
+
+        return infra::MakeOptional(appearance);
+    }
+
     infra::ConstByteRange GapAdvertisingDataParser::ParserAdvertisingData(GapAdvertisementDataType type) const
     {
         const uint8_t lengthOffset = 0;
@@ -378,6 +391,14 @@ namespace services
 
         AddHeader(payload, sizeof(address), GapAdvertisementDataType::publicTargetAddress);
         AddData(payload, infra::ReinterpretCastMemoryRange<const uint8_t>(infra::MakeRangeFromSingleObject(address)));
+    }
+
+    void GapAdvertisementFormatter::AppendAppearance(uint16_t appearance)
+    {
+        really_assert(sizeof(appearance) + headerSize <= RemainingSpaceAvailable());
+
+        AddHeader(payload, sizeof(appearance), GapAdvertisementDataType::appearance);
+        AddData(payload, infra::ReinterpretCastMemoryRange<const uint8_t>(infra::MakeRangeFromSingleObject(appearance)));
     }
 
     infra::ConstByteRange GapAdvertisementFormatter::FormattedAdvertisementData() const
