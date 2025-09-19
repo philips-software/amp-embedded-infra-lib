@@ -38,6 +38,13 @@ namespace services
             HmacDrbgSha256& keyExpander;
         };
 
+        struct KeyMaterial
+        {
+            infra::ConstByteRange dsaCertificate;
+            infra::ConstByteRange dsaCertificatePrivateKey;
+            infra::ConstByteRange rootCaCertificate;
+        };
+
 #ifdef EMIL_USE_MBEDTLS
         struct WithCryptoMbedTls;
 #endif
@@ -86,7 +93,7 @@ namespace services
     struct EchoPolicyDiffieHellman::WithCryptoMbedTls
         : public EchoPolicyDiffieHellman
     {
-        WithCryptoMbedTls(EchoWithPolicy& echo, EchoInitialization& echoInitialization, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange dsaCertificatePrivateKey, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        WithCryptoMbedTls(EchoWithPolicy& echo, EchoInitialization& echoInitialization, SesameSecured& secured, const EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
         infra::Creator<EcSecP256r1DiffieHellman, EcSecP256r1DiffieHellmanMbedTls, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)> keyExchange;
         EcSecP256r1DsaSignerMbedTls signer;

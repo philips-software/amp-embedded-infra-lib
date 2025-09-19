@@ -28,7 +28,7 @@ class ConsoleClientUart
 public:
     ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial);
     ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, const sesame_security::SymmetricKeyFile& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator);
-    ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, infra::ConstByteRange clientCertificate, infra::ConstByteRange clientCertificatePrivateKey, infra::ConstByteRange rootCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+    ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
     // Implementation of ConsoleObserver
     void Send(const std::string& message) override;
@@ -68,12 +68,12 @@ ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::Buffere
     , policySymmetricKey{ infra::inPlace, application::ConsoleObserver::Subject(), static_cast<services::EchoInitialization&>(*this), *secured, randomDataGenerator }
 {}
 
-ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, infra::ConstByteRange clientCertificate, infra::ConstByteRange clientCertificatePrivateKey, infra::ConstByteRange rootCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
     : application::ConsoleObserver(console)
     , cobs(serial)
     , secured{ infra::inPlace, windowed, services::SesameSecured::KeyMaterial{} }
     , sesame{ *secured }
-    , policyDiffieHellman{ infra::inPlace, application::ConsoleObserver::Subject(), static_cast<services::EchoInitialization&>(*this), *secured, clientCertificate, clientCertificatePrivateKey, rootCertificate, randomDataGenerator }
+    , policyDiffieHellman{ infra::inPlace, application::ConsoleObserver::Subject(), static_cast<services::EchoInitialization&>(*this), *secured, keyMaterial, randomDataGenerator }
 {}
 
 void ConsoleClientUart::Send(const std::string& message)
@@ -393,7 +393,7 @@ int main(int argc, char* argv[], const char* env[])
                 static auto clientCertificate = fileSystem.ReadBinaryFile(get(clientCertificateFile));
                 static auto clientCertificatePrivateKey = fileSystem.ReadBinaryFile(get(clientCertificatePrivateFile));
                 static auto rootCertificate = fileSystem.ReadBinaryFile(get(rootCertificateFile));
-                consoleClientUart.Emplace(console, *bufferedUart, clientCertificate, clientCertificatePrivateKey, rootCertificate, randomDataGenerator);
+                consoleClientUart.Emplace(console, *bufferedUart, services::EchoPolicyDiffieHellman::KeyMaterial{ clientCertificate, clientCertificatePrivateKey, rootCertificate }, randomDataGenerator);
             }
             else
                 consoleClientUart.Emplace(console, *bufferedUart);
