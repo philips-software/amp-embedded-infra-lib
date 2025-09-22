@@ -1,4 +1,5 @@
 #include "protobuf/echo/Echo.hpp"
+#include "infra/util/ReallyAssert.hpp"
 
 namespace services
 {
@@ -35,6 +36,9 @@ namespace services
 
     void ServiceProxy::RequestSend(infra::Function<void()> onGranted, uint32_t requestedSize)
     {
+        really_assert(!inFlightRequest);
+        inFlightRequest = true;
+
         this->onGranted = onGranted;
         currentRequestedSize = requestedSize;
         echo.RequestSend(*this);
@@ -42,6 +46,7 @@ namespace services
 
     infra::SharedPtr<MethodSerializer> ServiceProxy::GrantSend()
     {
+        inFlightRequest = false;
         onGranted();
         return std::move(methodSerializer);
     }
