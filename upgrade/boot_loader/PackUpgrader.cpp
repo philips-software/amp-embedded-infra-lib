@@ -12,6 +12,7 @@ namespace application
 
     void PackUpgrader::UpgradeFromImages(infra::MemoryRange<ImageUpgrader*> imageUpgraders)
     {
+        services::GlobalTracer().Trace() << "PackUpgrader:: UpgradeFromImages, imageUpgraders begin: " << reinterpret_cast<uint32_t>(imageUpgraders.begin()) << ", end: " << reinterpret_cast<uint32_t>(imageUpgraders.end());
         services::GlobalTracer().Trace() << "PackUpgrader:: UpgradeFromImages, address: " << address;
 
         UpgradePackHeaderPrologue headerPrologue;
