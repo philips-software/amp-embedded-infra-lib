@@ -12,14 +12,14 @@ namespace application
 
     void PackUpgrader::UpgradeFromImages(infra::MemoryRange<ImageUpgrader*> imageUpgraders)
     {
-        services::GlobalTracer().Trace() << "PackUpgrader:: UpgradeFromImages, imageUpgraders begin: " << reinterpret_cast<uint32_t>(imageUpgraders.begin()) << ", end: " << reinterpret_cast<uint32_t>(imageUpgraders.end());
+        services::GlobalTracer().Trace() << "PackUpgrader:: UpgradeFromImages, imageUpgraders begin: " << reinterpret_cast<uintptr_t>(imageUpgraders.begin()) << ", end: " << reinterpret_cast<uintptr_t>(imageUpgraders.end());
         services::GlobalTracer().Trace() << "PackUpgrader:: UpgradeFromImages, address: " << address;
 
         UpgradePackHeaderPrologue headerPrologue;
         upgradePackFlash.ReadBuffer(infra::MakeByteRange(headerPrologue), address);
         address += sizeof(UpgradePackHeaderPrologue);
 
-        services::GlobalTracer().Trace() << "PackUpgrader:: UpgradeFromImages, UpgradePackHeaderPrologue address: " << infra::hex << reinterpret_cast<uint32_t>(&headerPrologue);
+        services::GlobalTracer().Trace() << "PackUpgrader:: UpgradeFromImages, UpgradePackHeaderPrologue address: " << infra::hex << reinterpret_cast<uintptr_t>(&headerPrologue);
 
         services::GlobalTracer().Trace() << "errorCode: " << headerPrologue.errorCode;
         services::GlobalTracer().Trace() << "magic: " << headerPrologue.magic[0] << " " << headerPrologue.magic[1] << " " << headerPrologue.magic[2];
