@@ -48,16 +48,29 @@ namespace application
                     break;
 
                 ram.shrink_from_back_to(imageSize);
+
                 upgradePackFlash.ReadBuffer(ram, address);
 
+                services::GlobalTracer().Trace() << "SecondStageToRamLoader:: read buffer, address: 0x" << infra::hex << address;
+
                 if (decryptor.DecryptAndAuthenticate(ram))
+                {
+                    services::GlobalTracer().Trace() << "SecondStageToRamLoader:: DecryptAndAuthenticate? TRUE";
                     return true;
+                }
                 else
+                {
+                    services::GlobalTracer().Trace() << "SecondStageToRamLoader:: DecryptAndAuthenticate? FALSE";
                     break;
+                }
             }
 
             address += imageHeader.lengthOfHeaderAndImage;
+
+            services::GlobalTracer().Trace() << "SecondStageToRamLoader:: increment address " << address;
         }
+
+        services::GlobalTracer().Trace() << "SecondStageToRamLoader:: mark as error  upgradeErrorCodeNoOrIncorrectSecondStageFound";
 
         MarkAsError(upgradeErrorCodeNoOrIncorrectSecondStageFound);
 
