@@ -12,11 +12,19 @@ namespace application
 
     void PackUpgrader::UpgradeFromImages(infra::MemoryRange<ImageUpgrader*> imageUpgraders)
     {
-        services::GlobalTracer().Trace() << "PackUpgrader:: UpgradeFromImages";
+        services::GlobalTracer().Trace() << "PackUpgrader:: UpgradeFromImages, address: " << address;
 
         UpgradePackHeaderPrologue headerPrologue;
         upgradePackFlash.ReadBuffer(infra::MakeByteRange(headerPrologue), address);
         address += sizeof(UpgradePackHeaderPrologue);
+
+        services::GlobalTracer().Trace() << "PackUpgrader:: UpgradeFromImages, UpgradePackHeaderPrologue address: " << infra::hex << reinterpret_cast<uint32_t>(&headerPrologue);
+
+        services::GlobalTracer().Trace() << "PackUpgrader:: UpgradeFromImages, UpgradePackHeaderPrologue errorCode: " << headerPrologue.errorCode;
+        services::GlobalTracer().Trace() << "PackUpgrader:: UpgradeFromImages, UpgradePackHeaderPrologue magic: " << headerPrologue.magic[0] << " " << headerPrologue.magic[1] << " " << headerPrologue.magic[2];
+        services::GlobalTracer().Trace() << "PackUpgrader:: UpgradeFromImages, UpgradePackHeaderPrologue: signatureLength" << headerPrologue.signatureLength;
+        services::GlobalTracer().Trace() << "PackUpgrader:: UpgradeFromImages, UpgradePackHeaderPrologue: signedContentsLength" << headerPrologue.signedContentsLength;
+        services::GlobalTracer().Trace() << "PackUpgrader:: UpgradeFromImages, UpgradePackHeaderPrologue: signatureMethod" << headerPrologue.signatureMethod;
 
         bool sanity = headerPrologue.magic == upgradePackMagic;
 
