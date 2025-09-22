@@ -150,6 +150,18 @@ namespace services
         EXPECT_TRUE(infra::ContentsEqual(infra::MakeRange(payloadParser), manufacturerSpecificData->second));
     }
 
+    TEST(GapAdvertisingDataParserTest, get_appearance_value)
+    {
+        const std::array<uint8_t, 4> data = { 0x03, 0x19, 0xC1, 0x03 };
+
+        services::GapAdvertisingDataParser parser(infra::MakeConstByteRange(data));
+
+        auto appearance = parser.Appearance();
+
+        ASSERT_TRUE(appearance);
+        EXPECT_EQ(0x03C1, *appearance);
+    }
+
     TEST(GapAdvertisingDataParserTest, useful_info_after_first_ad_structure)
     {
         const std::array<uint8_t, 21> data{ { 0x02, 0x01, 0x06, 0x08, 0x09, 0x70, 0x68, 0x69, 0x6C, 0x69, 0x70, 0x73, 0x02, 0x0a, 0x08, 0x05, 0xff, 0xaa, 0xbb, 0xcc, 0xdd } };
