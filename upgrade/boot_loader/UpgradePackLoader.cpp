@@ -28,6 +28,13 @@ namespace application
 
         services::GlobalTracer().Trace() << "UpgradePackLoader:: Load - IsSane? " << isSane;
 
+        services::GlobalTracer().Trace() << "UpgradePackLoader:: Load - headerPrologue.status " << headerPrologue.status;
+        services::GlobalTracer().Trace() << "UpgradePackLoader:: Load - headerPrologue.errorCode " << headerPrologue.errorCode;
+        services::GlobalTracer().Trace() << "UpgradePackLoader:: Load - headerPrologue.magic " << headerPrologue.magic[0] << " " << headerPrologue.magic[1] << " " << headerPrologue.magic[2];
+        services::GlobalTracer().Trace() << "UpgradePackLoader:: Load - headerPrologue.signatureLength " << headerPrologue.signatureLength;
+        services::GlobalTracer().Trace() << "UpgradePackLoader:: Load - headerPrologue.signatureMethod " << headerPrologue.signatureMethod;
+        services::GlobalTracer().Trace() << "UpgradePackLoader:: Load - headerPrologue.signedContentsLength " << headerPrologue.signedContentsLength;
+
         if (!isSane)
             return false;
 
@@ -39,6 +46,24 @@ namespace application
         UpgradePackHeaderEpilogue headerEpilogue;
         upgradePackFlash.ReadBuffer(infra::MakeByteRange(headerEpilogue), address);
         address += sizeof(UpgradePackHeaderEpilogue);
+
+        services::GlobalTracer().Trace() << "UpgradePackLoader:: Load - headerEpilogue.headerVersion " << headerEpilogue.headerVersion;
+        services::GlobalTracer().Trace() << "UpgradePackLoader:: Load - headerEpilogue.headerLength " << headerEpilogue.headerLength;
+        services::GlobalTracer().Trace() << "UpgradePackLoader:: Load - headerEpilogue.numberOfImages " << headerEpilogue.numberOfImages;
+        services::GlobalTracer().Trace() << "UpgradePackLoader:: Load - headerEpilogue.componentVersion " << headerEpilogue.componentVersion;
+
+        std::size_t index = 0;
+
+        while (headerEpilogue.productName[index] != '\0')
+            services::GlobalTracer().Trace() << "UpgradePackLoader:: Load - headerEpilogue.productName " << headerEpilogue.productName[index++];
+
+        index = 0;
+        while (headerEpilogue.productVersion[index] != '\0')
+            services::GlobalTracer().Trace() << "UpgradePackLoader:: Load - headerEpilogue.productName " << headerEpilogue.productVersion[index++];
+
+        index = 0;
+        while (headerEpilogue.componentName[index] != '\0')
+            services::GlobalTracer().Trace() << "UpgradePackLoader:: Load - headerEpilogue.productName " << headerEpilogue.componentName[index++];
 
         if (headerEpilogue.headerVersion != 1)
         {

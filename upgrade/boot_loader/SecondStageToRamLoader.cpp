@@ -56,6 +56,19 @@ namespace application
                 if (decryptor.DecryptAndAuthenticate(ram))
                 {
                     services::GlobalTracer().Trace() << "SecondStageToRamLoader:: DecryptAndAuthenticate? TRUE";
+
+                    // Print RAM content in rows of 16 bytes
+                    for (std::size_t i = 0; i < ram.size(); i += 16)
+                    {
+                        auto tracer = services::GlobalTracer().Trace();
+                        tracer << "SecondStageToRamLoader::";
+
+                        for (std::size_t j = 0; j < 16 && (i + j) < ram.size(); ++j)
+                        {
+                            tracer << " 0x" << infra::hex << static_cast<uint32_t>(ram[i + j]);
+                        }
+                    }
+
                     return true;
                 }
                 else
