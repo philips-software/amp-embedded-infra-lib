@@ -139,9 +139,9 @@ namespace services
     }
 
 #ifdef EMIL_USE_MBEDTLS
-    EchoPolicyDiffieHellman::WithCryptoMbedTls::WithCryptoMbedTls(EchoWithPolicy& echo, EchoInitialization& echoInitialization, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange dsaCertificatePrivateKey, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-        : EchoPolicyDiffieHellman(Crypto{ keyExchange, signer, verifier, keyExpander }, echo, echoInitialization, secured, dsaCertificate, rootCaCertificate, randomDataGenerator)
-        , signer(dsaCertificatePrivateKey, randomDataGenerator)
+    EchoPolicyDiffieHellman::WithCryptoMbedTls::WithCryptoMbedTls(EchoWithPolicy& echo, EchoInitialization& echoInitialization, SesameSecured& secured, const EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+        : EchoPolicyDiffieHellman(Crypto{ keyExchange, signer, verifier, keyExpander }, echo, echoInitialization, secured, keyMaterial.dsaCertificate, keyMaterial.rootCaCertificate, randomDataGenerator)
+        , signer(keyMaterial.dsaCertificatePrivateKey, randomDataGenerator)
     {}
 #endif
 }
