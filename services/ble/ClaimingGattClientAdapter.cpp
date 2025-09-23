@@ -5,9 +5,10 @@
 
 namespace services
 {
-    ClaimingGattClientAdapter::ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchange& attMtuExchange)
+    ClaimingGattClientAdapter::ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchange& attMtuExchange, GapCentral& gapCentral)
         : GattClientObserver(gattClient)
         , AttMtuExchangeObserver(attMtuExchange)
+        , GapCentralObserver(gapCentral)
     {}
 
     void ClaimingGattClientAdapter::StartServiceDiscovery()
@@ -229,5 +230,19 @@ namespace services
             });
 
         attMtuExchangeClaimer.Release();
+    }
+
+    void ClaimingGattClientAdapter::DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered)
+    {
+    }
+
+    void ClaimingGattClientAdapter::StateChanged(GapState state)
+    {
+        if (state == GapState::standby)
+        {
+            discoveryClaimer.Release();
+            characteristicOperationsClaimer.Release();
+            attMtuExchangeClaimer.Release();
+        }
     }
 }
