@@ -130,7 +130,7 @@ TEST_F(GattServerCharacteristicTest, should_add_descriptor_to_list_with_16_bit_u
     services::AttAttribute::Uuid16 descriptorUuid{ 0x2908 }; // Report Reference Descriptor UUID
     std::array<uint8_t, 2> descriptorData{ 0x01, 0x01 };     // Report ID = 1, Report Type = Input (1)
 
-    services::GattServerCharacteristicDescriptor descriptor(descriptorUuid, infra::MakeConstByteRange(descriptorData));
+    services::GattServerDescriptor descriptor(descriptorUuid, infra::MakeConstByteRange(descriptorData));
     characteristic.AddDescriptor(descriptor);
 
     // Verify descriptor is in the list
@@ -145,11 +145,38 @@ TEST_F(GattServerCharacteristicTest, should_add_descriptor_to_list_with_128_bit_
         0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10 } };
     std::array<uint8_t, 4> descriptorData{ 0xAA, 0xBB, 0xCC, 0xDD };
 
-    services::GattServerCharacteristicDescriptor descriptor(descriptorUuid, infra::MakeConstByteRange(descriptorData));
+    services::GattServerDescriptor descriptor(descriptorUuid, infra::MakeConstByteRange(descriptorData));
     characteristic.AddDescriptor(descriptor);
 
     // Verify descriptor is in the list
     auto& descriptors = characteristic.Descriptors();
     EXPECT_EQ(std::distance(descriptors.begin(), descriptors.end()), 1);
     EXPECT_TRUE(descriptors.begin()->Uuid().Is<services::AttAttribute::Uuid128>());
+}
+
+TEST_F(GattServerCharacteristicTest, should_add_descriptor_with_default_access_flags)
+{
+    services::AttAttribute::Uuid16 descriptorUuid{ 0x2908 };
+    std::array<uint8_t, 2> descriptorData{ 0x01, 0x02 };
+
+    services::GattServerDescriptor descriptor(descriptorUuid, infra::MakeConstByteRange(descriptorData));
+    characteristic.AddDescriptor(descriptor);
+
+    auto& descriptors = characteristic.Descriptors();
+    EXPECT_EQ(descriptors.begin()->Access(), services::GattServerDescriptor::AccessFlags::readOnly);
+}
+
+TEST_F(GattServerCharacteristicTest, should_add_descriptor_with_custom_access_flags)
+{
+    services::AttAttribute::Uuid16 descriptorUuid{ 0x2908 };
+    std::array<uint8_t, 2> descriptorData{ 0x01, 0x02 };
+
+    services::GattServerDescriptor descriptor(descriptorUuid,
+        services::GattServerDescriptor::AccessFlags::readWrite,
+        infra::MakeConstByteRange(descriptorData));
+    characteristic.AddDescriptor(descriptor);
+
+    // Verify custom access flag is set
+    auto& descriptors = characteristic.Descriptors();
+    EXPECT_EQ(descriptors.begin()->Access(), services::GattServerDescriptor::AccessFlags::readWrite);
 }

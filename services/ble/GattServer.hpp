@@ -65,17 +65,29 @@ namespace services
     // Forward declaration
     class GattServerCharacteristicOperations;
 
-    class GattServerCharacteristicDescriptor
-        : public infra::IntrusiveForwardList<GattServerCharacteristicDescriptor>::NodeType
+    class GattServerDescriptor
+        : public infra::IntrusiveForwardList<GattServerDescriptor>::NodeType
+        , public GattDescriptor
     {
     public:
-        explicit GattServerCharacteristicDescriptor(const AttAttribute::Uuid& uuid, infra::ConstByteRange data);
+        enum class AccessFlags : uint8_t
+        {
+            readOnly = 0x01u,
+            writeReqOnly = 0x02u,
+            readWrite = 0x03u,
+            writeWithoutResponse = 0x04u,
+            writeAny = 0x0Eu
+        };
 
-        const AttAttribute::Uuid& Uuid() const;
+        GattServerDescriptor() = default;
+        explicit GattServerDescriptor(const AttAttribute::Uuid& type, infra::ConstByteRange data);
+        GattServerDescriptor(const AttAttribute::Uuid& uuid, const AccessFlags& access, infra::ConstByteRange data);
+
         infra::ConstByteRange Data() const;
+        AccessFlags Access() const;
 
     private:
-        AttAttribute::Uuid uuid;
+        AccessFlags access = AccessFlags::readOnly;
         infra::ConstByteRange data;
     };
 
@@ -106,13 +118,14 @@ namespace services
         uint16_t ValueLength() const;
         uint8_t GetAttributeCount() const;
 
-        void AddDescriptor(GattServerCharacteristicDescriptor& descriptor);
-        const infra::IntrusiveForwardList<GattServerCharacteristicDescriptor>& Descriptors() const;
+        void AddDescriptor(GattServerDescriptor& descriptor);
+        infra::IntrusiveForwardList<GattServerDescriptor>& Descriptors();
+        const infra::IntrusiveForwardList<GattServerDescriptor>& Descriptors() const;
 
     protected:
         PermissionFlags permissions;
         uint16_t valueLength;
-        infra::IntrusiveForwardList<GattServerCharacteristicDescriptor> descriptors;
+        infra::IntrusiveForwardList<GattServerDescriptor> descriptors;
     };
 
     class GattServerService
