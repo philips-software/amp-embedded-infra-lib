@@ -19,8 +19,24 @@ namespace services
     sesame_security::SymmetricKeyFile GenerateSymmetricKeys(hal::SynchronousRandomDataGenerator& randomDataGenerator);
     sesame_security::SymmetricKeyFile ReverseDirection(const sesame_security::SymmetricKeyFile& keys);
 
+    class IntegritySubject;
+
+    class IntegrityObserver
+        : public infra::Observer<IntegrityObserver, IntegritySubject>
+    {
+    public:
+        using infra::Observer<IntegrityObserver, IntegritySubject>::Observer;
+
+        virtual void IntegrityCheckFailed() = 0;
+    };
+
+    class IntegritySubject
+        : public infra::Subject<IntegrityObserver>
+    {};
+
     class SesameSecured
         : public Sesame
+        , public IntegritySubject
         , private SesameObserver
     {
     public:

@@ -71,6 +71,7 @@ public:
     testing::StrictMock<services::SesameMock> lower;
     services::SesameSecured::WithCryptoMbedTls::WithBuffers<64> secured{ lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
     testing::StrictMock<services::SesameObserverMock> upper{ secured };
+    testing::StrictMock<services::IntegrityObserverMock> integrityObserver{ secured };
 
     infra::SharedOptional<infra::StdVectorInputStreamReader> reader;
     std::vector<uint8_t> sentData;
@@ -162,6 +163,7 @@ TEST_F(SesameSecuredTest, damaged_message_does_not_propagate)
 
     sentData[7] = 7;
 
+    EXPECT_CALL(integrityObserver, IntegrityCheckFailed());
     EXPECT_CALL(upper, ReceivedMessage(testing::_)).Times(0);
     ReceivedMessage(sentData);
 }
