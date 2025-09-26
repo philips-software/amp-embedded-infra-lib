@@ -188,14 +188,12 @@ further packets may not be sent.</p>
 <div class="title">Figure 1. Init packet</div>
 </div>
 <div class="paragraph">
-<p>An <code>Init</code> packet consumes no window, and may always be sent. This results in an edge case that an
-<code>Init</code> packet sent at an inconvenient moment may overflow the peer&#8217;s buffer. In that case, that
-overflow must result in the peer sending an <code>Init</code> packet of its own, and the peer must conclude that
-an <code>Init</code> packet has been received; it can then respond with an <code>Init</code> packet of its own, advertising
-its available window, and then reading the peer&#8217;s window size from its <code>InitResponse</code> packet. This way,
-the data lost in the overflown <code>Init</code> packet is retrieved. Since a sender
-has an empty buffer before sending an <code>Init</code> packet, that will not result in a repeated exchange of
-<code>Init</code> packets.</p>
+<p>An <code>Init</code> packet consumes no window, and may always be sent. This results in an edge case resulting in an overflow,
+which works like this: Peer A sends an <code>Init</code> packet at an inconvenient moment. That packet may overflow peer B&#8217;s buffer.
+In that case, that overflow must result in peer B concluding that an <code>Init</code> packet has been received; it can then respond
+with an <code>Init</code> packet of its own, advertising its available window, and then reading peer A&#8217;s window size from its
+<code>InitResponse</code> packet. This way, the data lost in the overflown <code>Init</code> packet is retrieved. Since a sender has an empty
+buffer before sending an <code>Init</code> packet, that will not result in a repeated exchange of <code>Init</code> packets.</p>
 </div>
 </div>
 <div class="sect2">
