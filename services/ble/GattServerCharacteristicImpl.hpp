@@ -19,9 +19,6 @@ namespace services
         // Implementation of GattServerCharacteristicUpdate
         void Update(infra::ConstByteRange data, infra::Function<void()> onDone) override;
 
-        // Implementation of GattServerCharacteristic
-        void AddDescriptor(const AttAttribute::Uuid& uuid, infra::ConstByteRange data) override;
-
         // Implementation of GattServerCharacteristicOperationsObserver
         AttAttribute::Handle ServiceHandle() const override;
         AttAttribute::Handle CharacteristicHandle() const override;

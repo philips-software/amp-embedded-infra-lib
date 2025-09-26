@@ -36,7 +36,6 @@ namespace services
         MOCK_METHOD(AttAttribute::Handle, ServiceHandle, (), (const));
         MOCK_METHOD(AttAttribute::Handle, CharacteristicHandle, (), (const));
         MOCK_METHOD(void, Update, (infra::ConstByteRange data, infra::Function<void()> onDone));
-        MOCK_METHOD(void, AddDescriptor, (const AttAttribute::Uuid& uuid, infra::ConstByteRange data));
     };
 }
 

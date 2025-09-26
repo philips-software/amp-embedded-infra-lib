@@ -32,14 +32,6 @@ namespace services
         UpdateValue();
     }
 
-    void GattServerCharacteristicImpl::AddDescriptor(const AttAttribute::Uuid& uuid, infra::ConstByteRange data)
-    {
-        really_assert(GattServerCharacteristicOperationsObserver::Attached());
-
-        auto& operations = GattServerCharacteristicOperationsObserver::Subject();
-        operations.AddDescriptor(*this, uuid, data);
-    }
-
     AttAttribute::Handle GattServerCharacteristicImpl::ServiceHandle() const
     {
         return service.Handle();
