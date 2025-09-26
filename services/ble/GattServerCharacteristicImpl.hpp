@@ -1,6 +1,7 @@
 #ifndef SERVICES_GATT_CHARACTERISTIC_IMPL_HPP
 #define SERVICES_GATT_CHARACTERISTIC_IMPL_HPP
 
+#include "infra/util/ByteRange.hpp"
 #include "infra/util/Optional.hpp"
 #include "services/ble/GattServer.hpp"
 
@@ -15,7 +16,7 @@ namespace services
         GattServerCharacteristicImpl(GattServerService& service, const AttAttribute::Uuid& type, uint16_t valueLength, PropertyFlags properties, PermissionFlags permissions);
         ~GattServerCharacteristicImpl();
 
-        // Implementation of GattServerCharacteristic
+        // Implementation of GattServerCharacteristicUpdate
         void Update(infra::ConstByteRange data, infra::Function<void()> onDone) override;
 
         // Implementation of GattServerCharacteristicOperationsObserver
