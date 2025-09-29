@@ -180,3 +180,32 @@ TEST_F(GattServerCharacteristicTest, should_add_descriptor_with_custom_access_fl
     auto& descriptors = characteristic.Descriptors();
     EXPECT_EQ(descriptors.begin()->Access(), services::GattServerDescriptor::AccessFlags::readWrite);
 }
+
+TEST(GattServerServiceTest, should_calculate_attribute_count_with_characteristics_and_descriptors)
+{
+    services::GattServerService service{ uuid16 };
+
+    uint8_t serviceOnlyCount = service.GetAttributeCount();
+    EXPECT_EQ(serviceOnlyCount, 1);
+
+    services::GattServerCharacteristicImpl char1{ service, uuid16, 16 };
+    uint8_t oneCharCount = service.GetAttributeCount();
+    EXPECT_EQ(oneCharCount, 2);
+
+    services::GattServerCharacteristicImpl char2{ service, services::AttAttribute::Uuid16{ 0x2A4D }, 32 };
+    services::AttAttribute::Uuid16 descriptorUuid1{ 0x2908 };
+    services::AttAttribute::Uuid16 descriptorUuid2{ 0x2902 };
+    std::array<uint8_t, 2> descriptorData{ 0x01, 0x01 };
+
+    services::GattServerDescriptor desc1(descriptorUuid1, infra::MakeConstByteRange(descriptorData));
+    services::GattServerDescriptor desc2(descriptorUuid2, infra::MakeConstByteRange(descriptorData));
+
+    char2.AddDescriptor(desc1);
+    char2.AddDescriptor(desc2);
+
+    uint8_t finalCount = service.GetAttributeCount();
+    EXPECT_EQ(finalCount, 5);
+
+    const auto& descriptors = char2.Descriptors();
+    EXPECT_EQ(std::distance(descriptors.begin(), descriptors.end()), 2);
+}
