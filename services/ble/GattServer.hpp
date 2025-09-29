@@ -62,9 +62,6 @@ namespace services
         virtual UpdateStatus Update(const GattServerCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data) const = 0;
     };
 
-    // Forward declaration
-    class GattServerCharacteristicOperations;
-
     class GattServerDescriptor
         : public infra::IntrusiveForwardList<GattServerDescriptor>::NodeType
         , public GattDescriptor
