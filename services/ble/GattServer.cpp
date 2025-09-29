@@ -51,7 +51,10 @@ namespace services
 
         uint8_t descriptorCount = 0;
         for (const auto& descriptor : descriptors)
+        {
+            (void)descriptor;
             ++descriptorCount;
+        }
 
         return baseAttributeCount + descriptorCount;
     }
