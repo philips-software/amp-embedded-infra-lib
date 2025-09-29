@@ -136,7 +136,7 @@ TEST_F(GattServerCharacteristicTest, should_add_descriptor_to_list_with_16_bit_u
     // Verify descriptor is in the list
     auto& descriptors = characteristic.Descriptors();
     EXPECT_EQ(std::distance(descriptors.begin(), descriptors.end()), 1);
-    EXPECT_EQ(descriptors.begin()->Uuid().Get<services::AttAttribute::Uuid16>(), 0x2908);
+    EXPECT_EQ(descriptors.begin()->Type().Get<services::AttAttribute::Uuid16>(), 0x2908);
 }
 
 TEST_F(GattServerCharacteristicTest, should_add_descriptor_to_list_with_128_bit_uuid)
@@ -151,7 +151,7 @@ TEST_F(GattServerCharacteristicTest, should_add_descriptor_to_list_with_128_bit_
     // Verify descriptor is in the list
     auto& descriptors = characteristic.Descriptors();
     EXPECT_EQ(std::distance(descriptors.begin(), descriptors.end()), 1);
-    EXPECT_TRUE(descriptors.begin()->Uuid().Is<services::AttAttribute::Uuid128>());
+    EXPECT_TRUE(descriptors.begin()->Type().Is<services::AttAttribute::Uuid128>());
 }
 
 TEST_F(GattServerCharacteristicTest, should_add_descriptor_with_default_access_flags)
