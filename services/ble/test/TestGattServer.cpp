@@ -186,13 +186,16 @@ TEST(GattServerServiceTest, should_calculate_attribute_count_with_characteristic
     services::GattServerService service{ uuid16 };
 
     uint8_t serviceOnlyCount = service.GetAttributeCount();
-    EXPECT_EQ(serviceOnlyCount, 1);
+    EXPECT_EQ(serviceOnlyCount, 1); // Service declaration
 
     services::GattServerCharacteristicImpl char1{ service, uuid16, 16 };
     uint8_t oneCharCount = service.GetAttributeCount();
-    EXPECT_EQ(oneCharCount, 2);
+    EXPECT_EQ(oneCharCount, 3); // Service + characteristic (declaration + value)
 
     services::GattServerCharacteristicImpl char2{ service, services::AttAttribute::Uuid16{ 0x2A4D }, 32 };
+    uint8_t twoCharCount = service.GetAttributeCount();
+    EXPECT_EQ(twoCharCount, 5); // Service + 2 characteristics (each has declaration + value)
+
     services::AttAttribute::Uuid16 descriptorUuid1{ 0x2908 };
     services::AttAttribute::Uuid16 descriptorUuid2{ 0x2902 };
     std::array<uint8_t, 2> descriptorData{ 0x01, 0x01 };
@@ -204,7 +207,7 @@ TEST(GattServerServiceTest, should_calculate_attribute_count_with_characteristic
     char2.AddDescriptor(desc2);
 
     uint8_t finalCount = service.GetAttributeCount();
-    EXPECT_EQ(finalCount, 5);
+    EXPECT_EQ(finalCount, 7); // Service + 2 characteristics + 2 descriptors
 
     const auto& descriptors = char2.Descriptors();
     EXPECT_EQ(std::distance(descriptors.begin(), descriptors.end()), 2);
