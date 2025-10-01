@@ -2,6 +2,26 @@
 
 namespace services
 {
+    GattServerDescriptor::GattServerDescriptor(const AttAttribute::Uuid& type, infra::ConstByteRange data)
+        : GattServerDescriptor(type, AccessFlags::readOnly, data)
+    {}
+
+    GattServerDescriptor::GattServerDescriptor(const AttAttribute::Uuid& type, const AccessFlags& access, infra::ConstByteRange data)
+        : GattDescriptor(type, 0)
+        , access(access)
+        , data(data)
+    {}
+
+    infra::ConstByteRange GattServerDescriptor::Data() const
+    {
+        return data;
+    }
+
+    GattServerDescriptor::AccessFlags GattServerDescriptor::Access() const
+    {
+        return access;
+    }
+
     GattServerCharacteristic::GattServerCharacteristic(const AttAttribute::Uuid& type, const PropertyFlags& properties, const PermissionFlags& permissions, uint16_t valueLength)
         : GattCharacteristic(type, 0, 0, properties)
         , permissions(permissions)
@@ -23,10 +43,35 @@ namespace services
         constexpr uint8_t attributeCountWithoutCCCD = 2;
         constexpr uint8_t attributeCountWithCCCD = 3;
 
+        uint8_t baseAttributeCount;
         if ((properties & (GattCharacteristic::PropertyFlags::notify | GattCharacteristic::PropertyFlags::indicate)) == GattCharacteristic::PropertyFlags::none)
-            return attributeCountWithoutCCCD;
+            baseAttributeCount = attributeCountWithoutCCCD;
         else
-            return attributeCountWithCCCD;
+            baseAttributeCount = attributeCountWithCCCD;
+
+        uint8_t descriptorCount = 0;
+        for (const auto& descriptor : descriptors)
+        {
+            (void)descriptor;
+            ++descriptorCount;
+        }
+
+        return baseAttributeCount + descriptorCount;
+    }
+
+    void GattServerCharacteristic::AddDescriptor(GattServerDescriptor& descriptor)
+    {
+        descriptors.push_front(descriptor);
+    }
+
+    infra::IntrusiveForwardList<GattServerDescriptor>& GattServerCharacteristic::Descriptors()
+    {
+        return descriptors;
+    }
+
+    const infra::IntrusiveForwardList<GattServerDescriptor>& GattServerCharacteristic::Descriptors() const
+    {
+        return descriptors;
     }
 
     GattServerService::GattServerService(const AttAttribute::Uuid& type)
