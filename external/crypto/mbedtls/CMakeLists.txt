@@ -47,9 +47,9 @@ function(add_mbedtls_target_properties)
             $<$<CXX_COMPILER_ID:AppleClang>:-Wno-documentation -Wno-conversion>
             # Warning treated as error when implicit conversion within mbedtls
             $<$<CXX_COMPILER_ID:GNU>:-Wno-conversion>
-            # Warning treated as error when uninitialized const pointer within mbedtls
-            # since clang-22
+            # Warnings treated as error since clang-22
             $<$<CXX_COMPILER_ID:Clang>:-Wno-uninitialized-const-pointer>
+            $<$<CXX_COMPILER_ID:Clang>:-Wno-unterminated-string-initialization>
             $<$<CXX_COMPILER_ID:MSVC>:/wd4244 /wd4267>
         )
 
