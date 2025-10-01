@@ -43,10 +43,13 @@ function(add_mbedtls_target_properties)
             # see https://github.com/Mbed-TLS/mbedtls/pull/6966
             # mbedtls sets the -Wdocumentation flag, which is throwing warnings
             # since clang-15
-            # Warning treated as error when implicit conversion within mbedtls
             $<$<CXX_COMPILER_ID:Clang>:-Wno-documentation -Wno-conversion>
             $<$<CXX_COMPILER_ID:AppleClang>:-Wno-documentation -Wno-conversion>
+            # Warning treated as error when implicit conversion within mbedtls
             $<$<CXX_COMPILER_ID:GNU>:-Wno-conversion>
+            # Warnings treated as error since clang-22
+            $<$<CXX_COMPILER_ID:Clang>:$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,22.0.0>:-Wno-uninitialized-const-pointer>>
+            $<$<CXX_COMPILER_ID:Clang>:$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,22.0.0>:-Wno-unterminated-string-initialization>>
             $<$<CXX_COMPILER_ID:MSVC>:/wd4244 /wd4267>
         )
 
