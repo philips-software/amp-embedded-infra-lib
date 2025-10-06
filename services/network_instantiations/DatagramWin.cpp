@@ -226,7 +226,7 @@ namespace services
         assert(streamWriter.Allocatable());
         if (!sendBuffer && requestedSendSize != 0)
         {
-            sendBuffer.Emplace(requestedSendSize, 0);
+            sendBuffer.emplace(requestedSendSize, 0);
             requestedSendSize = 0;
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<DatagramWin>& object)
                 {
