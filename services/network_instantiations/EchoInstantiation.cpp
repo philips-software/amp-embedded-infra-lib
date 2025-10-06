@@ -112,7 +112,7 @@ namespace application
               [this](std::optional<services::HttpClientWebSocketInitiation>& value, services::WebSocketClientObserverFactory& clientObserverFactory,
                   services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)
               {
-                  value.Emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
+                  value.emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
               })
         , webSocketFactory(randomDataGenerator, { httpClientInitiationCreator })
     {
