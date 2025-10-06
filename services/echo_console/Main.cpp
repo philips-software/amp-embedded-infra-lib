@@ -330,11 +330,13 @@ int main(int argc, char* argv[], const char* env[])
     services::TracerToStream tracer(ioOutputStream);
     services::SetGlobalTracerInstance(tracer);
     hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
+    const uint32_t baudrateDefault = 115200;
 
     std::string toolname = argv[0];
     args::ArgumentParser parser(toolname + " is a tool to communicate with an ECHO server.");
     args::Group target(parser, "Target:");
     args::ValueFlag<std::string> targetPort(parser, "", "COM port", { "port" });
+    args::ValueFlag<uint32_t> baudrateOptional(parser, "baudrate", "COM Port communication baudrate. (default used: " + std::to_string(baudrateDefault) + ")", { 'b', "baudrate" });
     args::ValueFlag<std::string> targetHost(parser, "", "Hostname", { "host" });
     args::Group arguments(parser, "Arguments:");
     args::ValueFlag<std::string> symmetricKeyFile(arguments, "file", "File containing the symmetric keys for SESAME encryption.", { "symmetric-keys" });
@@ -383,7 +385,9 @@ int main(int argc, char* argv[], const char* env[])
 
         if (serialConnectionRequested)
         {
-            uart.Emplace(get(targetPort));
+            auto actualBaudrate = (baudrateOptional) ? get(baudrateOptional) : baudrateDefault;
+            hal::UartGeneric::Config config = { actualBaudrate };
+            uart.Emplace(get(targetPort), config);
             bufferedUart.Emplace(*uart);
 
             if (!get(symmetricKeyFile).empty())
