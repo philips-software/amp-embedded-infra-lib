@@ -11,7 +11,7 @@ class QueueForOneReaderOneIrqWriterTest
 public:
     infra::MockCallback<void()> callback;
     std::array<uint8_t, 5> buffer;
-    infra::Optional<infra::QueueForOneReaderOneIrqWriter<uint8_t>> queue;
+    std::optional<infra::QueueForOneReaderOneIrqWriter<uint8_t>> queue;
 };
 
 TEST_F(QueueForOneReaderOneIrqWriterTest, add_element)

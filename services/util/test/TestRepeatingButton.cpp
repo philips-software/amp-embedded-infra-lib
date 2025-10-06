@@ -9,7 +9,7 @@ class RepeatingButtonFixtureBase
     , public infra::ClockFixture
 {
 public:
-    infra::Optional<services::RepeatingButton> repeatingButton;
+    std::optional<services::RepeatingButton> repeatingButton;
     services::RepeatingButton::Config config;
     hal::GpioPinStub button;
     infra::MockCallback<void()> callback;

@@ -48,7 +48,7 @@ TEST(JsonObjectNavigatorTest, optional_object_navigator_token_not_exeist)
     infra::JsonObjectNavigator objectNavigator(object);
     infra::JsonOptionalObjectNavigatorToken nonSub{ "nonSub" };
 
-    EXPECT_EQ(infra::none, objectNavigator / nonSub / infra::JsonBoolNavigatorToken{ "nested" });
+    EXPECT_EQ(std::nullopt, objectNavigator / nonSub / infra::JsonBoolNavigatorToken{ "nested" });
 }
 
 TEST(JsonObjectNavigatorTest, optional_object_navigator_token_exeist)

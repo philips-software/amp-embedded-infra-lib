@@ -472,7 +472,7 @@ TEST_F(ConfigurationStoreTest, during_Lock_Write_is_held)
 {
     DontRecover();
 
-    infra::Optional<services::ConfigurationStoreBase::LockGuard> lock(infra::inPlace, configurationStore.Lock());
+    std::optional<services::ConfigurationStoreBase::LockGuard> lock(std::in_place, configurationStore.Lock());
     configurationStore.Write();
 
     infra::Function<void()> onWriteDone;
@@ -483,7 +483,7 @@ TEST_F(ConfigurationStoreTest, during_Lock_Write_is_held)
             formatter.PutFixed32(1);
         }));
     EXPECT_CALL(configurationBlob1, Write(4, testing::_)).WillOnce(testing::SaveArg<1>(&onWriteDone));
-    lock = infra::none;
+    lock.reset();
 }
 
 TEST_F(ConfigurationStoreTest, onDone_is_called_when_done)
@@ -817,7 +817,7 @@ public:
     hal::FlashStub flashFactoryDefault{ 1, 32 };
     hal::FlashStub flashBlob1{ 1, 32 };
     hal::FlashStub flashBlob2{ 1, 32 };
-    infra::Optional<services::FactoryDefaultConfigurationStore<Data>::WithBlobs<>> configurationStore;
+    std::optional<services::FactoryDefaultConfigurationStore<Data>::WithBlobs<>> configurationStore;
 };
 
 TEST_F(FactoryDefaultConfigurationStoreIntegrationTest, start_with_empty_flash_results_in_load_default)
@@ -1090,7 +1090,7 @@ public:
         0x02, 0x01, 0x08, 0x07, 0x06, 0x05, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff } };
     hal::FlashStub flashBlob1;
     hal::FlashStub flashBlob2;
-    infra::Optional<services::FactoryDefaultConfigurationStore<Data>::WithReadOnlyDefaultAndBlobs<>> configurationStore;
+    std::optional<services::FactoryDefaultConfigurationStore<Data>::WithReadOnlyDefaultAndBlobs<>> configurationStore;
 };
 
 TEST_F(FactoryDefaultConfigurationStoreReadOnlyMemoryIntegrationTest, factory_default_is_recovered_but_blobs_are_corrupt)

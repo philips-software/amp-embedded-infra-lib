@@ -41,7 +41,7 @@ namespace services
         , tracer(tracer)
         , receiveBuffer(receiveBuffer)
         , scenarioRequestHandler(scenarioRequestHandler)
-        , connectionCreator([this](infra::Optional<TracingCucumberWireProtocolConnectionObserver>& value, services::IPAddress address)
+        , connectionCreator([this](std::optional<TracingCucumberWireProtocolConnectionObserver>& value, services::IPAddress address)
               {
                   this->tracer.Trace() << "CucumberWireProtocolServer connection accepted from: " << address;
                   this->receiveBuffer.clear();

@@ -60,14 +60,14 @@ namespace services
         really_assert(readerPtr == nullptr);
 
         readerPtr = std::move(reader);
-        bufferedReader.Emplace(receiveBuffer, *readerPtr);
+        bufferedReader.emplace(receiveBuffer, *readerPtr);
         DataReceived();
     }
 
     void EchoOnStreams::ReleaseReader()
     {
         limitedReaderAccess.SetAction(infra::emptyFunction);
-        bufferedReader = infra::none;
+        bufferedReader.reset();
         readerPtr = nullptr;
     }
 
@@ -81,9 +81,9 @@ namespace services
         }
 
         limitedReaderAccess.SetAction(infra::emptyFunction);
-        bufferedReader = infra::none;
+        bufferedReader.reset();
         readerPtr = nullptr;
-        limitedReader = infra::none;
+        limitedReader.reset();
         ReleaseDeserializer();
     }
 
@@ -142,21 +142,21 @@ namespace services
 
     void EchoOnStreams::DataReceived()
     {
-        if (limitedReader != infra::none && readerPtr != nullptr)
+        if (limitedReader != std::nullopt && readerPtr != nullptr)
             ContinueReceiveMessage();
 
         while (readerPtr != nullptr && methodDeserializer == nullptr && !limitedReaderAccess.Referenced())
         {
-            if (limitedReader == infra::none)
+            if (limitedReader == std::nullopt)
                 StartReceiveMessage();
 
-            if (limitedReader != infra::none && readerPtr != nullptr)
+            if (limitedReader != std::nullopt && readerPtr != nullptr)
                 ContinueReceiveMessage();
         }
 
         if (readerPtr != nullptr && readerPtr->Empty() && !limitedReaderAccess.Referenced())
         {
-            bufferedReader = infra::none;
+            bufferedReader.reset();
             readerPtr = nullptr;
         }
     }
@@ -175,14 +175,14 @@ namespace services
             // bufferedReader is rewound to the start, so that the remainder of the reader is buffered. When readerPtr is set to nullptr,
             // any data present in reader is not repeated the next time
             bufferedReader->Rewind(start);
-            bufferedReader = infra::none;
+            bufferedReader.reset();
             readerPtr = nullptr;
         }
         else if (formatErrorPolicy.Failed() || !contents.Is<infra::PartialProtoLengthDelimited>())
             errorPolicy.MessageFormatError();
         else
         {
-            limitedReader.Emplace(*bufferedReader, contents.Get<infra::PartialProtoLengthDelimited>().length);
+            limitedReader.emplace(*bufferedReader, contents.Get<infra::PartialProtoLengthDelimited>().length);
             StartMethod(serviceId, methodId, contents.Get<infra::PartialProtoLengthDelimited>().length);
 
             if (formatErrorPolicy.Failed())
@@ -235,7 +235,7 @@ namespace services
     {
         if (limitedReader->LimitReached())
         {
-            limitedReader = infra::none;
+            limitedReader.reset();
             if (methodDeserializer->Failed())
             {
                 errorPolicy.MessageFormatError();

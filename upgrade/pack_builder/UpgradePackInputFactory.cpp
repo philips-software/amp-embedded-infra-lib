@@ -13,7 +13,7 @@ namespace application
         , imageSecurity(imageSecurity)
     {}
 
-    std::unique_ptr<Input> UpgradePackInputFactory::CreateInput(const std::string& targetName, const std::string& fileName, infra::Optional<uint32_t> address)
+    std::unique_ptr<Input> UpgradePackInputFactory::CreateInput(const std::string& targetName, const std::string& fileName, std::optional<uint32_t> address)
     {
         if (std::any_of(targets.CmdTargets().cbegin(), targets.CmdTargets().cend(), [&targetName](const auto& string)
                 {

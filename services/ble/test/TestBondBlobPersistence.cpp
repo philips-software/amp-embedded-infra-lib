@@ -40,7 +40,7 @@ public:
     services::ConfigurationStoreAccess<infra::ByteRange> flashStorageAccess{ configurationStore, flashStorageRange };
     std::array<uint8_t, 3> ramStorage{ 0, 0, 0 };
 
-    infra::Optional<services::BondBlobPersistence> bondBlobPersistence;
+    std::optional<services::BondBlobPersistence> bondBlobPersistence;
 };
 
 TEST_F(BondBlobPersistenceTest, construct_updates_ram_with_flash_storage)

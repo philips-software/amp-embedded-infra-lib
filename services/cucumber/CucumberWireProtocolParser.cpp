@@ -62,7 +62,7 @@ namespace services
         if (++iterator != input.end())
             scenarioTags.Emplace(std::move(iterator->Get<infra::JsonObject>()));
         else
-            scenarioTags = infra::none;
+            scenarioTags.reset();
         requestType = RequestType::BeginScenario;
     }
 

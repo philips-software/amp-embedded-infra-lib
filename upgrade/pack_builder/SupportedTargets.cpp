@@ -66,7 +66,7 @@ namespace application
         if (order)
         {
             targets.order[*order].emplace_back(target);
-            order = infra::none;
+            order.reset();
         }
     }
 

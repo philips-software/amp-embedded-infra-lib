@@ -122,7 +122,7 @@ namespace services
 
     void DnsHostnamePartsStream::ConsumeStream()
     {
-        reader.Rewind(finalPosition.ValueOr(this->streamPosition));
+        reader.Rewind(finalPosition.value_or(this->streamPosition));
     }
 
     void DnsHostnamePartsStream::StreamWithoutTermination(infra::TextOutputStream& stream) const

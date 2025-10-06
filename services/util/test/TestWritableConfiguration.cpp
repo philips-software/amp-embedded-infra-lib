@@ -54,7 +54,7 @@ public:
 
     hal::FlashStub flash{ 1, 16 };
     services::Sha256MbedTls sha256;
-    infra::Optional<services::FlashReadingWritableConfiguration<DataProxy, DataProxy>> configuration;
+    std::optional<services::FlashReadingWritableConfiguration<DataProxy, DataProxy>> configuration;
 
     testing::StrictMock<Data> data;
 };
@@ -124,7 +124,7 @@ public:
 
     hal::FlashStub flash{ 1, 16 };
     services::Sha256MbedTls sha256;
-    infra::Optional<services::MemoryMappedWritableConfiguration<DataProxy, DataProxy>> configuration;
+    std::optional<services::MemoryMappedWritableConfiguration<DataProxy, DataProxy>> configuration;
 
     testing::StrictMock<Data> data;
 };

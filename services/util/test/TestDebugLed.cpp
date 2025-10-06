@@ -8,7 +8,7 @@ class DebugLedTestBase
     , public infra::ClockFixture
 {
 public:
-    infra::Optional<services::DebugLed> debugLed;
+    std::optional<services::DebugLed> debugLed;
     hal::GpioPinSpy led;
 };
 

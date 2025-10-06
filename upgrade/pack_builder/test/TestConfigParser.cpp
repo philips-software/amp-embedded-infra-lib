@@ -38,7 +38,7 @@ class TestConfigParser
     : public testing::Test
 {
 public:
-    infra::Optional<infra::JsonObject> configJson;
+    std::optional<infra::JsonObject> configJson;
 };
 
 TEST_F(TestConfigParser, parse_config_file_with_missing_required_key_throws_exception)
@@ -59,7 +59,7 @@ TEST_F(TestConfigParser, parse_config_file_with_missing_required_key_throws_exce
 TEST_F(TestConfigParser, GetComponents_returns_empty_component_list_when_components_object_is_empty)
 {
     configJson.Emplace(R"({ "components": {} })");
-    std::vector<std::tuple<std::string, std::string, infra::Optional<uint32_t>>> emptyComponentsList;
+    std::vector<std::tuple<std::string, std::string, std::optional<uint32_t>>> emptyComponentsList;
 
     application::UpgradePackConfigParser parser(*configJson);
     EXPECT_EQ(emptyComponentsList, parser.GetComponents());
@@ -134,8 +134,8 @@ TEST_F(TestConfigParser, GetComponents_returns_component_list_when_components_ob
     configJson.Emplace(R"({ "components": { "component": "path" } })");
     application::UpgradePackConfigParser parser(*configJson);
 
-    std::vector<std::tuple<std::string, std::string, infra::Optional<uint32_t>>> componentsList;
-    componentsList.push_back(std::make_tuple("component", "path", infra::none));
+    std::vector<std::tuple<std::string, std::string, std::optional<uint32_t>>> componentsList;
+    componentsList.push_back(std::make_tuple("component", "path", std::nullopt));
 
     EXPECT_EQ(componentsList, parser.GetComponents());
 }
@@ -145,9 +145,9 @@ TEST_F(TestConfigParser, GetComponents_returns_component_list_when_components_ob
     configJson.Emplace(R"({ "components": { "component": { "path": "path.bin", "address": "0123abcd" } } })");
     application::UpgradePackConfigParser parser(*configJson);
 
-    std::vector<std::tuple<std::string, std::string, infra::Optional<uint32_t>>> componentsList;
+    std::vector<std::tuple<std::string, std::string, std::optional<uint32_t>>> componentsList;
     uint32_t address = 0x0123abcd;
-    componentsList.push_back(std::make_tuple("component", "path.bin", infra::MakeOptional(address)));
+    componentsList.push_back(std::make_tuple("component", "path.bin", std::make_optional(address)));
 
     EXPECT_EQ(componentsList, parser.GetComponents());
 }
@@ -157,13 +157,13 @@ TEST_F(TestConfigParser, GetComponents_returns_component_list_when_components_ob
     configJson.Emplace(infra::BoundedConstString(completeConfig.c_str()));
     application::UpgradePackConfigParser parser(*configJson);
 
-    std::vector<std::tuple<std::string, std::string, infra::Optional<uint32_t>>> componentsList;
-    componentsList.push_back(std::make_tuple("boot1st", "first_stage_bootloader.bin", infra::none));
-    componentsList.push_back(std::make_tuple("lut", "look_up_table.bin", infra::none));
+    std::vector<std::tuple<std::string, std::string, std::optional<uint32_t>>> componentsList;
+    componentsList.push_back(std::make_tuple("boot1st", "first_stage_bootloader.bin", std::nullopt));
+    componentsList.push_back(std::make_tuple("lut", "look_up_table.bin", std::nullopt));
     uint32_t blobAddress = 0x01234abc;
-    componentsList.push_back(std::make_tuple("blob", "blob.bin", infra::MakeOptional(blobAddress)));
+    componentsList.push_back(std::make_tuple("blob", "blob.bin", std::make_optional(blobAddress)));
     uint32_t filesysAddress = 0x56789def;
-    componentsList.push_back(std::make_tuple("filesys", "filesystem.bin", infra::MakeOptional(filesysAddress)));
+    componentsList.push_back(std::make_tuple("filesys", "filesystem.bin", std::make_optional(filesysAddress)));
 
     EXPECT_EQ(componentsList, parser.GetComponents());
 }

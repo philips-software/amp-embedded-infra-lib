@@ -18,7 +18,7 @@ public:
 
     testing::StrictMock<hal::SpiAsynchronousMock> spiMock;
     hal::GpioPinStub chipSelect;
-    infra::Optional<services::SpiMasterWithChipSelect> spi;
+    std::optional<services::SpiMasterWithChipSelect> spi;
 };
 
 TEST_F(SpiMasterWithChipSelectTest, ChipSelectStartsHigh)

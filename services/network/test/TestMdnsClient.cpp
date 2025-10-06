@@ -291,16 +291,16 @@ public:
 
     void DestructAllQueries()
     {
-        queryA = infra::none;
-        queryAaaa = infra::none;
-        queryPtr = infra::none;
-        queryTxt = infra::none;
-        querySrv = infra::none;
+        queryA.reset();
+        queryAaaa.reset();
+        queryPtr.reset();
+        queryTxt.reset();
+        querySrv.reset();
     }
 
     void DestructQueryPtr()
     {
-        queryPtr = infra::none;
+        queryPtr.reset();
     }
 
     testing::StrictMock<services::MulticastMock> multicast;
@@ -389,11 +389,11 @@ public:
         }
     };
 
-    infra::Optional<services::MdnsQueryImpl> queryA;
-    infra::Optional<services::MdnsQueryImpl> queryAaaa;
-    infra::Optional<services::MdnsQueryImpl> queryPtr;
-    infra::Optional<services::MdnsQueryImpl> queryTxt;
-    infra::Optional<services::MdnsQueryImpl> querySrv;
+    std::optional<services::MdnsQueryImpl> queryA;
+    std::optional<services::MdnsQueryImpl> queryAaaa;
+    std::optional<services::MdnsQueryImpl> queryPtr;
+    std::optional<services::MdnsQueryImpl> queryTxt;
+    std::optional<services::MdnsQueryImpl> querySrv;
 };
 
 TEST_F(MdnsClientTest, query_asking_starts_active_query)

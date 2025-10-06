@@ -173,18 +173,18 @@ namespace services
         };
 
     protected:
-        infra::Optional<HttpRequestFormatter> request;
-        infra::Optional<HttpHeaderParser> response;
+        std::optional<HttpRequestFormatter> request;
+        std::optional<HttpHeaderParser> response;
 
     private:
         infra::BoundedConstString hostname;
         HttpStatusCode statusCode = HttpStatusCode::OK;
-        infra::Optional<uint32_t> contentLength;
+        std::optional<uint32_t> contentLength;
         bool headerParsingDone = false;
         bool headerParsingError = false;
         bool chunkedEncoding = false;
         bool firstChunk = true;
-        infra::Optional<BodyReader> bodyReader;
+        std::optional<BodyReader> bodyReader;
         infra::AccessedBySharedPtr bodyReaderAccess;
         infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
         infra::PolymorphicVariant<SendingState, SendingStateRequest, SendingStateForwardSendStream, SendingStateForwardDefinedSizeStream> sendingState;
@@ -315,7 +315,7 @@ namespace services
     private:
         void Redirect();
         void RedirectFailed();
-        infra::Optional<uint16_t> PortFromScheme(infra::BoundedConstString scheme) const;
+        std::optional<uint16_t> PortFromScheme(infra::BoundedConstString scheme) const;
 
     private:
         class Query
@@ -503,7 +503,7 @@ namespace services
 
         bool redirecting = false;
         bool connecting = false;
-        infra::Optional<infra::PolymorphicVariant<Query, QueryGet, QueryHead, QueryConnect, QueryOptions, QueryPost, QueryPostStreamed, QueryPostChunked, QueryPut, QueryPutStreamed, QueryPutChunked, QueryPatch, QueryPatchChunked, QueryDelete>> query;
+        std::optional<infra::PolymorphicVariant<Query, QueryGet, QueryHead, QueryConnect, QueryOptions, QueryPost, QueryPostStreamed, QueryPostChunked, QueryPut, QueryPutStreamed, QueryPutChunked, QueryPatch, QueryPatchChunked, QueryDelete>> query;
     };
 
     ////    Implementation    ////

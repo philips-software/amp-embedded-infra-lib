@@ -25,7 +25,7 @@ namespace services
         void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
     protected:
-        virtual infra::Optional<DnsEntry> FindAnswer(infra::BoundedConstString hostname) = 0;
+        virtual std::optional<DnsEntry> FindAnswer(infra::BoundedConstString hostname) = 0;
 
         infra::MemoryRange<const DnsEntry> Entries() const;
 
@@ -59,8 +59,8 @@ namespace services
     private:
         infra::SharedPtr<services::DatagramExchange> datagramExchange;
         infra::MemoryRange<const DnsEntry> dnsEntries;
-        infra::Optional<QuestionParser> question;
-        infra::Optional<DnsEntry> answer;
+        std::optional<QuestionParser> question;
+        std::optional<DnsEntry> answer;
     };
 
     class DnsServerImpl
@@ -70,7 +70,7 @@ namespace services
         using DnsServer::DnsServer;
 
     protected:
-        infra::Optional<DnsEntry> FindAnswer(infra::BoundedConstString hostname) override;
+        std::optional<DnsEntry> FindAnswer(infra::BoundedConstString hostname) override;
     };
 }
 

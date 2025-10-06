@@ -137,7 +137,7 @@ namespace services
             return;
         }
 
-        sendBuffer = infra::none;
+        sendBuffer.reset();
         TryAllocateSendStream();
         UpdateEventFlags();
     }

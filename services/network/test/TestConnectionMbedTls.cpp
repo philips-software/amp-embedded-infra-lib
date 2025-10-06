@@ -310,7 +310,7 @@ public:
     testing::StrictMock<services::ConnectionFactoryWithNameResolverMock> network;
     hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
     services::CertificatesMbedTls clientCertificates;
-    infra::Optional<services::ConnectionWithHostnameMock> connection;
+    std::optional<services::ConnectionWithHostnameMock> connection;
 };
 
 TEST_F(ConnectionWithNameResolverMbedTlsTest, cancel_connection)
@@ -354,7 +354,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, create_connection)
     ExecuteAllActions();
     EXPECT_CALL(*connection, AbortAndDestroy).WillOnce(testing::Invoke([this]()
         {
-            connection = infra::none;
+            connection.reset();
         }));
     observer1->Subject().AbortAndDestroy();
 }
@@ -389,7 +389,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, reopen_connection)
     ExecuteAllActions();
     EXPECT_CALL(*connection, AbortAndDestroy).WillOnce(testing::Invoke([this]()
         {
-            connection = infra::none;
+            connection.reset();
         }));
     observer1->Subject().AbortAndDestroy();
 
@@ -417,7 +417,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, reopen_connection)
 
     EXPECT_CALL(*connection, AbortAndDestroy).WillOnce(testing::Invoke([this]()
         {
-            connection = infra::none;
+            connection.reset();
         }));
     observer1->Subject().AbortAndDestroy();
 }
@@ -459,7 +459,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, persistent_session_reopen_connecti
     ExecuteAllActions();
     EXPECT_CALL(*connection, AbortAndDestroy).WillOnce(testing::Invoke([this]()
         {
-            connection = infra::none;
+            connection.reset();
         }));
     observer1->Subject().AbortAndDestroy();
 
@@ -487,7 +487,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, persistent_session_reopen_connecti
 
     EXPECT_CALL(*connection, AbortAndDestroy).WillOnce(testing::Invoke([this]()
         {
-            connection = infra::none;
+            connection.reset();
         }));
     observer1->Subject().AbortAndDestroy();
 }
@@ -529,7 +529,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, persistent_session_minimal_memory_
     ExecuteAllActions();
     EXPECT_CALL(*connection, AbortAndDestroy).WillOnce(testing::Invoke([this]()
         {
-            connection = infra::none;
+            connection.reset();
         }));
     observer1->Subject().AbortAndDestroy();
 
@@ -559,7 +559,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, persistent_session_minimal_memory_
 
     EXPECT_CALL(*connection, AbortAndDestroy).WillOnce(testing::Invoke([this]()
         {
-            connection = infra::none;
+            connection.reset();
         }));
     observer1->Subject().AbortAndDestroy();
 }

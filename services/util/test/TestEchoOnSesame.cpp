@@ -298,7 +298,7 @@ TEST_F(EchoOnSesameTest, invoke_service_proxy_method_after_previous_service_prox
         EXPECT_CALL(check, Call("RequestSendMessage called after SendMssageStreamAvailable for destroyed optional service proxy is called"));
     }
 
-    infra::Optional<services::ServiceStubProxy> optionalServiceProxy{ infra::inPlace, echo };
+    std::optional<services::ServiceStubProxy> optionalServiceProxy{, echo };
     testing::Sequence seq;
 
     optionalServiceProxy->RequestSend([&optionalServiceProxy]()
@@ -307,7 +307,7 @@ TEST_F(EchoOnSesameTest, invoke_service_proxy_method_after_previous_service_prox
         });
     check.Call("optional service proxy destroyed");
 
-    optionalServiceProxy = infra::none;
+    optionalServiceProxy.reset();
 
     serviceProxy.RequestSend([this]()
         {
