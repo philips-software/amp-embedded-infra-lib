@@ -48,6 +48,7 @@ namespace services
         infra::AutoResetFunction<void()> onGranted;
         uint32_t currentRequestedSize = 0;
         infra::SharedPtr<MethodSerializer> methodSerializer;
+        bool inFlightRequest = false;
     };
 
     class EchoPolicy
