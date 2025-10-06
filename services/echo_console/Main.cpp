@@ -385,7 +385,7 @@ int main(int argc, char* argv[], const char* env[])
 
         if (serialConnectionRequested)
         {
-            auto actualBaudrate = (baudrateOptional) ? get(baudrateOptional) : baudrateDefault;
+            auto actualBaudrate = baudrateOptional ? get(baudrateOptional) : baudrateDefault;
             hal::UartGeneric::Config config = { actualBaudrate };
             uart.Emplace(get(targetPort), config);
             bufferedUart.Emplace(*uart);
