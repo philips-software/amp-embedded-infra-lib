@@ -417,7 +417,7 @@ namespace infra
     {
         emplaceFunction = [](std::optional<U>& object, ConstructionArgs... args)
         {
-            object.Emplace(args...);
+            object.emplace(args...);
         };
     }
 
