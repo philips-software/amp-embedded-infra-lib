@@ -53,14 +53,6 @@
     </Expand>
   </Type>
 
-  <Type Name="std::optional&lt;*&gt;">
-    <DisplayString Condition="initialized == false">empty</DisplayString>
-    <DisplayString>{*(($T1*)&amp;data)}</DisplayString>
-    <Expand>
-      <Item Condition="initialized" Name="[data]">*(($T1*)&amp;data)</Item>
-    </Expand>
-  </Type>
-
   <Type Name="infra::Variant&lt;*&gt;">
     <DisplayString Condition="dataIndex == 0">{*($T1*)&amp;data}</DisplayString>
     <DisplayString Condition="dataIndex == 1" Optional="true">{*($T2*)&amp;data}</DisplayString>
