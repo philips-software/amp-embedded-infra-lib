@@ -757,8 +757,21 @@ namespace application
 
             The method call in echo console for value="{ "bool":true }" would be:
                 Method "{ \"bool\":true }"
-        5. Bool arguments are provided as true or false without quotes.
-        6. Enum arguments are provided as the integral enum value.
+        5. Primitive types mapping table:
+            +-----------------+-----------------+-------------------------------------+
+            | Proto Type      | Token Type      | Example Input                       |
+            +-----------------+-----------------+-------------------------------------+
+            | int32, int64    | Integer         | 42, -123, 0xFF                      |
+            | uint32, uint64  | Integer         | 42, 255, 0xFF                       |
+            | fixed32/64      | Integer         | 42, 0xDEADBEEF                      |
+            | sfixed32/64     | Integer         | -42, 123                            |
+            | bool            | Boolean         | true, false                         |
+            | string          | String          | "hello", identifier                 |
+            | bytes           | Array[Integer]  | [1, 2, 3, 255]                      |
+            | enum            | Integer         | 0, 1, 2                             |
+            | repeated        | Array           | [elem1, elem2, elem3]               |
+            | message         | Braced Values   | { field1_val field2_val }           |
+            +-----------------+-----------------+-------------------------------------+
         )";
     }
 

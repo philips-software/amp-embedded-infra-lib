@@ -124,3 +124,91 @@ TEST_F(GattServerCharacteristicTest, should_update_characteristic_and_retry_upda
         });
     ExecuteAllActions();
 }
+
+TEST_F(GattServerCharacteristicTest, should_add_descriptor_to_list_with_16_bit_uuid)
+{
+    services::AttAttribute::Uuid16 descriptorUuid{ 0x2908 }; // Report Reference Descriptor UUID
+    std::array<uint8_t, 2> descriptorData{ 0x01, 0x01 };     // Report ID = 1, Report Type = Input (1)
+
+    services::GattServerDescriptor descriptor(descriptorUuid, infra::MakeConstByteRange(descriptorData));
+    characteristic.AddDescriptor(descriptor);
+
+    // Verify descriptor is in the list
+    auto& descriptors = characteristic.Descriptors();
+    EXPECT_EQ(std::distance(descriptors.begin(), descriptors.end()), 1);
+    EXPECT_EQ(descriptors.begin()->Type().Get<services::AttAttribute::Uuid16>(), 0x2908);
+}
+
+TEST_F(GattServerCharacteristicTest, should_add_descriptor_to_list_with_128_bit_uuid)
+{
+    services::AttAttribute::Uuid128 descriptorUuid{ { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+        0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10 } };
+    std::array<uint8_t, 4> descriptorData{ 0xAA, 0xBB, 0xCC, 0xDD };
+
+    services::GattServerDescriptor descriptor(descriptorUuid, infra::MakeConstByteRange(descriptorData));
+    characteristic.AddDescriptor(descriptor);
+
+    // Verify descriptor is in the list
+    auto& descriptors = characteristic.Descriptors();
+    EXPECT_EQ(std::distance(descriptors.begin(), descriptors.end()), 1);
+    EXPECT_TRUE(descriptors.begin()->Type().Is<services::AttAttribute::Uuid128>());
+}
+
+TEST_F(GattServerCharacteristicTest, should_add_descriptor_with_default_access_flags)
+{
+    services::AttAttribute::Uuid16 descriptorUuid{ 0x2908 };
+    std::array<uint8_t, 2> descriptorData{ 0x01, 0x02 };
+
+    services::GattServerDescriptor descriptor(descriptorUuid, infra::MakeConstByteRange(descriptorData));
+    characteristic.AddDescriptor(descriptor);
+
+    auto& descriptors = characteristic.Descriptors();
+    EXPECT_EQ(descriptors.begin()->Access(), services::GattServerDescriptor::AccessFlags::readOnly);
+}
+
+TEST_F(GattServerCharacteristicTest, should_add_descriptor_with_custom_access_flags)
+{
+    services::AttAttribute::Uuid16 descriptorUuid{ 0x2908 };
+    std::array<uint8_t, 2> descriptorData{ 0x01, 0x02 };
+
+    services::GattServerDescriptor descriptor(descriptorUuid,
+        services::GattServerDescriptor::AccessFlags::readWrite,
+        infra::MakeConstByteRange(descriptorData));
+    characteristic.AddDescriptor(descriptor);
+
+    // Verify custom access flag is set
+    auto& descriptors = characteristic.Descriptors();
+    EXPECT_EQ(descriptors.begin()->Access(), services::GattServerDescriptor::AccessFlags::readWrite);
+}
+
+TEST(GattServerServiceTest, should_calculate_attribute_count_with_characteristics_and_descriptors)
+{
+    services::GattServerService service{ uuid16 };
+
+    uint8_t serviceOnlyCount = service.GetAttributeCount();
+    EXPECT_EQ(serviceOnlyCount, 1); // Service declaration
+
+    services::GattServerCharacteristicImpl char1{ service, uuid16, 16 };
+    uint8_t oneCharCount = service.GetAttributeCount();
+    EXPECT_EQ(oneCharCount, 3); // Service + characteristic (declaration + value)
+
+    services::GattServerCharacteristicImpl char2{ service, services::AttAttribute::Uuid16{ 0x2A4D }, 32 };
+    uint8_t twoCharCount = service.GetAttributeCount();
+    EXPECT_EQ(twoCharCount, 5); // Service + 2 characteristics (each has declaration + value)
+
+    services::AttAttribute::Uuid16 descriptorUuid1{ 0x2908 };
+    services::AttAttribute::Uuid16 descriptorUuid2{ 0x2902 };
+    std::array<uint8_t, 2> descriptorData{ 0x01, 0x01 };
+
+    services::GattServerDescriptor desc1(descriptorUuid1, infra::MakeConstByteRange(descriptorData));
+    services::GattServerDescriptor desc2(descriptorUuid2, infra::MakeConstByteRange(descriptorData));
+
+    char2.AddDescriptor(desc1);
+    char2.AddDescriptor(desc2);
+
+    uint8_t finalCount = service.GetAttributeCount();
+    EXPECT_EQ(finalCount, 7); // Service + 2 characteristics + 2 descriptors
+
+    const auto& descriptors = char2.Descriptors();
+    EXPECT_EQ(std::distance(descriptors.begin(), descriptors.end()), 2);
+}

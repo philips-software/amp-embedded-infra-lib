@@ -73,14 +73,12 @@ further packets may not be sent.
 (draw-box "size" {:span 2})
 ----
 
-An `Init` packet consumes no window, and may always be sent. This results in an edge case that an
-`Init` packet sent at an inconvenient moment may overflow the peer's buffer. In that case, that
-overflow must result in the peer sending an `Init` packet of its own, and the peer must conclude that
-an `Init` packet has been received; it can then respond with an `Init` packet of its own, advertising
-its available window, and then reading the peer's window size from its `InitResponse` packet. This way,
-the data lost in the overflown `Init` packet is retrieved. Since a sender
-has an empty buffer before sending an `Init` packet, that will not result in a repeated exchange of
-`Init` packets.
+An `Init` packet consumes no window, and may always be sent. This results in an edge case resulting in an overflow,
+which works like this: Peer A sends an `Init` packet at an inconvenient moment. That packet may overflow peer B's buffer.
+In that case, that overflow must result in peer B concluding that an `Init` packet has been received; it can then respond
+with an `Init` packet of its own, advertising its available window, and then reading peer A's window size from its
+`InitResponse` packet. This way, the data lost in the overflown `Init` packet is retrieved. Since a sender has an empty
+buffer before sending an `Init` packet, that will not result in a repeated exchange of `Init` packets.
 
 === InitResponse
 
