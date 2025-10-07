@@ -1,6 +1,7 @@
 #include "infra/syntax/XmlFormatter.hpp"
 #include "infra/syntax/EscapeCharacterHelper.hpp"
 #include "infra/util/Optional.hpp"
+#include <optional>
 #include <utility>
 
 namespace infra
@@ -55,7 +56,7 @@ namespace infra
 
     XmlTagFormatter::~XmlTagFormatter()
     {
-        if (stream.has_value())
+        if (stream == std::nullopt)
             return;
 
         if (empty)
