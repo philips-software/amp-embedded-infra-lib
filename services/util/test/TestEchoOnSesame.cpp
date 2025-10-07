@@ -11,6 +11,7 @@
 #include "services/util/test_doubles/SesameMock.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include <utility>
 
 namespace services
 {
@@ -298,7 +299,7 @@ TEST_F(EchoOnSesameTest, invoke_service_proxy_method_after_previous_service_prox
         EXPECT_CALL(check, Call("RequestSendMessage called after SendMssageStreamAvailable for destroyed optional service proxy is called"));
     }
 
-    std::optional<services::ServiceStubProxy> optionalServiceProxy{, echo };
+    std::optional<services::ServiceStubProxy> optionalServiceProxy{ std::in_place, echo };
     testing::Sequence seq;
 
     optionalServiceProxy->RequestSend([&optionalServiceProxy]()

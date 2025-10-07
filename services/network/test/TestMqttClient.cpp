@@ -20,7 +20,7 @@ public:
             services::ConnectionStub::RequestSendStream(sendSize);
         else
         {
-            this->sendSize.Emplace(sendSize);
+            this->sendSize.emplace(sendSize);
             RequestSendStreamMock(sendSize);
         }
     }

@@ -63,17 +63,17 @@ ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::Buffere
 ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, const sesame_security::SymmetricKeyFile& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
     : application::ConsoleObserver(console)
     , cobs(serial)
-    , secured{, windowed, keyMaterial }
+    , secured{ std::in_place, windowed, keyMaterial }
     , sesame{ *secured }
-    , policySymmetricKey{, application::ConsoleObserver::Subject(), static_cast<services::EchoInitialization&>(*this), *secured, randomDataGenerator }
+    , policySymmetricKey{ std::in_place, application::ConsoleObserver::Subject(), static_cast<services::EchoInitialization&>(*this), *secured, randomDataGenerator }
 {}
 
 ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
     : application::ConsoleObserver(console)
     , cobs(serial)
-    , secured{, windowed, services::SesameSecured::KeyMaterial{} }
+    , secured{ std::in_place, windowed, services::SesameSecured::KeyMaterial{} }
     , sesame{ *secured }
-    , policyDiffieHellman{, application::ConsoleObserver::Subject(), static_cast<services::EchoInitialization&>(*this), *secured, keyMaterial, randomDataGenerator }
+    , policyDiffieHellman{ std::in_place, application::ConsoleObserver::Subject(), static_cast<services::EchoInitialization&>(*this), *secured, keyMaterial, randomDataGenerator }
 {}
 
 void ConsoleClientUart::Send(const std::string& message)
@@ -278,7 +278,7 @@ ConsoleClientWebSocket::ConsoleClientWebSocket(services::ConnectionFactoryWithNa
           [this](std::optional<services::HttpClientWebSocketInitiation>& value, services::WebSocketClientObserverFactory& clientObserverFactory,
               services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)
           {
-              value.Emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
+              value.emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
           })
     , webSocketFactory(randomDataGenerator, { httpClientInitiationCreator })
     , tracer(tracer)
@@ -383,25 +383,25 @@ int main(int argc, char* argv[], const char* env[])
 
         if (serialConnectionRequested)
         {
-            uart.Emplace(get(targetPort));
-            bufferedUart.Emplace(*uart);
+            uart.emplace(get(targetPort));
+            bufferedUart.emplace(*uart);
 
             if (!get(symmetricKeyFile).empty())
-                consoleClientUart.Emplace(console, *bufferedUart, ReadProtoFile<sesame_security::SymmetricKeyFile>(get(symmetricKeyFile)), randomDataGenerator);
+                consoleClientUart.emplace(console, *bufferedUart, ReadProtoFile<sesame_security::SymmetricKeyFile>(get(symmetricKeyFile)), randomDataGenerator);
             else if (!get(rootCertificateFile).empty() && !get(clientCertificateFile).empty() && !get(clientCertificatePrivateFile).empty())
             {
                 static auto clientCertificate = fileSystem.ReadBinaryFile(get(clientCertificateFile));
                 static auto clientCertificatePrivateKey = fileSystem.ReadBinaryFile(get(clientCertificatePrivateFile));
                 static auto rootCertificate = fileSystem.ReadBinaryFile(get(rootCertificateFile));
-                consoleClientUart.Emplace(console, *bufferedUart, services::EchoPolicyDiffieHellman::KeyMaterial{ clientCertificate, clientCertificatePrivateKey, rootCertificate }, randomDataGenerator);
+                consoleClientUart.emplace(console, *bufferedUart, services::EchoPolicyDiffieHellman::KeyMaterial{ clientCertificate, clientCertificatePrivateKey, rootCertificate }, randomDataGenerator);
             }
             else
-                consoleClientUart.Emplace(console, *bufferedUart);
+                consoleClientUart.emplace(console, *bufferedUart);
         }
         else if (services::SchemeFromUrl(infra::BoundedConstString(get(targetHost))) == "ws")
-            consoleClientWebSocket.Emplace(connectionFactory, console, get(targetHost), randomDataGenerator, tracer);
+            consoleClientWebSocket.emplace(connectionFactory, console, get(targetHost), randomDataGenerator, tracer);
         else
-            consoleClientTcp.Emplace(connectionFactory, console, get(targetHost), tracer);
+            consoleClientTcp.emplace(connectionFactory, console, get(targetHost), tracer);
 
         console.Run();
     }

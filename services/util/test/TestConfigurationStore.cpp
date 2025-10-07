@@ -775,7 +775,7 @@ class FactoryDefaultConfigurationStoreIntegrationTest
 public:
     void ConstructConfigurationStore()
     {
-        configurationStore.Emplace(
+        configurationStore.emplace(
             flashFactoryDefault, flashBlob1, flashBlob2, sha256, [this]()
             {
                 OnLoadFactoryDefault();
@@ -1053,7 +1053,7 @@ public:
 
     void ConstructConfigurationStore()
     {
-        configurationStore.Emplace(factoryDefault, flashBlob1, flashBlob2, sha256, [this](bool isFactoryDefault)
+        configurationStore.emplace(factoryDefault, flashBlob1, flashBlob2, sha256, [this](bool isFactoryDefault)
             {
                 OnRecovered(isFactoryDefault);
             });

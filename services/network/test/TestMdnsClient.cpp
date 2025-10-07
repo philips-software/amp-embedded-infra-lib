@@ -237,33 +237,33 @@ public:
 
     void QueryA(infra::Function<void(infra::ConstByteRange data)>& callback)
     {
-        queryA.Emplace(client, services::DnsType::dnsTypeA, "_instance", callback);
+        queryA.emplace(client, services::DnsType::dnsTypeA, "_instance", callback);
     }
 
     void QueryAaaa(infra::Function<void(infra::ConstByteRange data)>& callback)
     {
-        queryAaaa.Emplace(client, services::DnsType::dnsTypeAAAA, "_instance", callback);
+        queryAaaa.emplace(client, services::DnsType::dnsTypeAAAA, "_instance", callback);
         queryAaaa->SetIpVersion(services::IPVersions::ipv6);
     }
 
     void QueryPtr(infra::Function<void(infra::ConstByteRange data)>& callback)
     {
-        queryPtr.Emplace(client, services::DnsType::dnsTypePtr, "_service", "_protocol", callback);
+        queryPtr.emplace(client, services::DnsType::dnsTypePtr, "_service", "_protocol", callback);
     }
 
     void QueryPtr(infra::Function<void(infra::ConstByteRange data)>& callback, infra::Function<void(infra::BoundedString hostname, services::DnsRecordPayload payload, infra::ConstByteRange data)>& additionalRecordsCallback)
     {
-        queryPtr.Emplace(client, services::DnsType::dnsTypePtr, "_service", "_protocol", callback, additionalRecordsCallback);
+        queryPtr.emplace(client, services::DnsType::dnsTypePtr, "_service", "_protocol", callback, additionalRecordsCallback);
     }
 
     void QueryTxt(infra::Function<void(infra::ConstByteRange data)>& callback)
     {
-        queryTxt.Emplace(client, services::DnsType::dnsTypeTxt, "_instance", "_service", "_protocol", callback);
+        queryTxt.emplace(client, services::DnsType::dnsTypeTxt, "_instance", "_service", "_protocol", callback);
     }
 
     void QuerySrv(infra::Function<void(infra::ConstByteRange data)>& callback)
     {
-        querySrv.Emplace(client, services::DnsType::dnsTypeSrv, "_instance", "_service", "_protocol", callback);
+        querySrv.emplace(client, services::DnsType::dnsTypeSrv, "_instance", "_service", "_protocol", callback);
     }
 
     void ConstructAllQueries()

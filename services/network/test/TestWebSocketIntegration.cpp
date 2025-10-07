@@ -58,7 +58,7 @@ TEST_F(WebSocketIntegrationTest, create_connection)
         [&clientConnector](std::optional<services::HttpClientWebSocketInitiation>& value, services::WebSocketClientObserverFactory& clientObserverFactory,
             services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)
         {
-            value.Emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
+            value.emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
         });
     services::WebSocketClientFactorySingleConnection webSocketClientFactory(randomDataGenerator, { httpClientInitiationCreator });
 
@@ -146,7 +146,7 @@ TEST_F(WebSocketIntegrationTest, create_connection_failed)
         [&clientConnector](std::optional<services::HttpClientWebSocketInitiation>& value, services::WebSocketClientObserverFactory& clientObserverFactory,
             services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)
         {
-            value.Emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
+            value.emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
         });
     services::WebSocketClientFactorySingleConnection webSocketClientFactory(randomDataGenerator, { httpClientInitiationCreator });
 

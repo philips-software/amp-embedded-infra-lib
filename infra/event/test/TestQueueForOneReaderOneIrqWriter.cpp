@@ -16,7 +16,7 @@ public:
 
 TEST_F(QueueForOneReaderOneIrqWriterTest, add_element)
 {
-    queue.Emplace(buffer, [this]()
+    queue.emplace(buffer, [this]()
         {
             queue->Get();
             callback.callback();
@@ -33,7 +33,7 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, add_element)
 
 TEST_F(QueueForOneReaderOneIrqWriterTest, add_range)
 {
-    queue.Emplace(buffer, [this]()
+    queue.emplace(buffer, [this]()
         {
             while (!queue->Empty())
                 queue->Get();
@@ -48,7 +48,7 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, add_range)
 
 TEST_F(QueueForOneReaderOneIrqWriterTest, consume_1_before_get)
 {
-    queue.Emplace(buffer, [this]() {});
+    queue.emplace(buffer, [this]() {});
 
     queue->AddFromInterrupt(0);
     queue->AddFromInterrupt(1);
@@ -59,7 +59,7 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, consume_1_before_get)
 
 TEST_F(QueueForOneReaderOneIrqWriterTest, get_without_consume_using_array_operator)
 {
-    queue.Emplace(buffer, [this]() {});
+    queue.emplace(buffer, [this]() {});
 
     std::array<uint8_t, 4> data = { { 0, 1, 2, 3 } };
     queue->AddFromInterrupt(data);
@@ -76,7 +76,7 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, get_without_consume_using_array_operat
 
 TEST_F(QueueForOneReaderOneIrqWriterTest, get_ContiguousRange)
 {
-    queue.Emplace(buffer, [this]() {});
+    queue.emplace(buffer, [this]() {});
 
     EXPECT_TRUE(queue->ContiguousRange().empty());
 
@@ -89,7 +89,7 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, get_ContiguousRange)
 
 TEST_F(QueueForOneReaderOneIrqWriterTest, get_ContiguousRange_while_queue_is_wrapped)
 {
-    queue.Emplace(buffer, [this]() {});
+    queue.emplace(buffer, [this]() {});
 
     std::array<uint8_t, 3> data = { { 0, 1, 2 } };
     queue->AddFromInterrupt(data);
@@ -108,7 +108,7 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, get_ContiguousRange_while_queue_is_wra
 
 TEST_F(QueueForOneReaderOneIrqWriterTest, get_ContiguousRange_with_offset)
 {
-    queue.Emplace(buffer, [this]() {});
+    queue.emplace(buffer, [this]() {});
 
     std::array<uint8_t, 3> data = { { 0, 1, 2 } };
     queue->AddFromInterrupt(data);
@@ -123,7 +123,7 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, get_ContiguousRange_with_offset)
 
 TEST_F(QueueForOneReaderOneIrqWriterTest, get_ContiguousRange_with_offset_while_queue_is_wrapped)
 {
-    queue.Emplace(buffer, [this]() {});
+    queue.emplace(buffer, [this]() {});
 
     std::array<uint8_t, 3> data = { { 0, 1, 2 } };
     queue->AddFromInterrupt(data);
@@ -142,7 +142,7 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, get_ContiguousRange_with_offset_while_
 
 TEST_F(QueueForOneReaderOneIrqWriterTest, Size)
 {
-    queue.Emplace(buffer, [this]() {});
+    queue.emplace(buffer, [this]() {});
     std::array<uint8_t, 4> full = { { 3, 1, 2, 4 } };
     std::array<uint8_t, 1> data1 = { { 7 } };
     std::array<uint8_t, 2> data2 = { { 5, 1 } };
@@ -169,13 +169,13 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, Size)
 
 TEST_F(QueueForOneReaderOneIrqWriterTest, EmptySize)
 {
-    queue.Emplace(buffer, [this]() {});
+    queue.emplace(buffer, [this]() {});
     EXPECT_EQ(sizeof(buffer) - 1, queue->EmptySize());
 }
 
 TEST_F(QueueForOneReaderOneIrqWriterTest, StreamReader)
 {
-    queue.Emplace(buffer, [this]() {});
+    queue.emplace(buffer, [this]() {});
     std::array<uint8_t, 4> full = { { 1, 2, 3, 4 } };
     queue->AddFromInterrupt(full);
 

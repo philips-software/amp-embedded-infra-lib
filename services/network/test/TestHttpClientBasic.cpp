@@ -56,7 +56,7 @@ public:
             EXPECT_CALL(httpClientConnector, Connect(testing::_)).WillOnce(infra::SaveRef<0>(&httpClientObserverFactory));
         } };
     infra::BoundedString::WithStorage<64> url{ "https://hostname/path" };
-    std::optional<testing::StrictMock<HttpClientBasicMock>> controller{, url, 443, httpClientConnector };
+    std::optional<testing::StrictMock<HttpClientBasicMock>> controller{ std::in_place, url, 443, httpClientConnector };
     testing::StrictMock<infra::MockCallback<void()>> onStopped;
     testing::StrictMock<services::HttpClientMock> httpClient;
 };

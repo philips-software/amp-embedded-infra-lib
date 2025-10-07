@@ -335,7 +335,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, create_connection)
         {
             EXPECT_EQ("something", clientObserverFactory.Hostname());
             EXPECT_EQ(1234, clientObserverFactory.Port());
-            connection.Emplace();
+            connection.emplace();
             EXPECT_CALL(*connection, RequestSendStream(0));
             EXPECT_CALL(*connection, MaxSendStreamSize).WillOnce(testing::Return(0));
             clientObserverFactory.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> observer)
@@ -370,7 +370,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, reopen_connection)
         {
             EXPECT_EQ("something", clientObserverFactory.Hostname());
             EXPECT_EQ(1234, clientObserverFactory.Port());
-            connection.Emplace();
+            connection.emplace();
             EXPECT_CALL(*connection, RequestSendStream(0));
             EXPECT_CALL(*connection, MaxSendStreamSize).WillOnce(testing::Return(0));
             clientObserverFactory.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> observer)
@@ -397,7 +397,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, reopen_connection)
         {
             EXPECT_EQ("something", clientObserverFactory.Hostname());
             EXPECT_EQ(1234, clientObserverFactory.Port());
-            connection.Emplace();
+            connection.emplace();
             EXPECT_CALL(*connection, RequestSendStream(0));
             EXPECT_CALL(*connection, MaxSendStreamSize).WillOnce(testing::Return(0));
             clientObserverFactory.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> observer)
@@ -440,7 +440,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, persistent_session_reopen_connecti
         {
             EXPECT_EQ("something", clientObserverFactory.Hostname());
             EXPECT_EQ(1234, clientObserverFactory.Port());
-            connection.Emplace();
+            connection.emplace();
             EXPECT_CALL(*connection, RequestSendStream(0));
             EXPECT_CALL(*connection, MaxSendStreamSize).WillOnce(testing::Return(0));
             clientObserverFactory.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> observer)
@@ -467,7 +467,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, persistent_session_reopen_connecti
         {
             EXPECT_EQ("something", clientObserverFactory.Hostname());
             EXPECT_EQ(1234, clientObserverFactory.Port());
-            connection.Emplace();
+            connection.emplace();
             EXPECT_CALL(*connection, RequestSendStream(0));
             EXPECT_CALL(*connection, MaxSendStreamSize).WillOnce(testing::Return(0));
             clientObserverFactory.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> observer)
@@ -510,7 +510,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, persistent_session_minimal_memory_
         {
             EXPECT_EQ("something", clientObserverFactory.Hostname());
             EXPECT_EQ(1234, clientObserverFactory.Port());
-            connection.Emplace();
+            connection.emplace();
             EXPECT_CALL(*connection, RequestSendStream(0));
             EXPECT_CALL(*connection, MaxSendStreamSize).WillOnce(testing::Return(0));
             clientObserverFactory.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> observer)
@@ -539,7 +539,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, persistent_session_minimal_memory_
         {
             EXPECT_EQ("something2", clientObserverFactory.Hostname());
             EXPECT_EQ(1234, clientObserverFactory.Port());
-            connection.Emplace();
+            connection.emplace();
             EXPECT_CALL(*connection, RequestSendStream(0));
             EXPECT_CALL(*connection, MaxSendStreamSize).WillOnce(testing::Return(0));
             clientObserverFactory.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> observer)

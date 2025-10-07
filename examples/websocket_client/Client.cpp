@@ -163,7 +163,7 @@ int main(int argc, const char* argv[], const char* env[])
         static infra::Creator<services::Stoppable, services::HttpClientWebSocketInitiation, void(services::WebSocketClientObserverFactory & clientObserverFactory, services::HttpClientWebSocketInitiationResult & result, hal::SynchronousRandomDataGenerator & randomDataGenerator)> httpClientInitiationCreator{ [](std::optional<services::HttpClientWebSocketInitiation>& value, services::WebSocketClientObserverFactory& clientObserverFactory,
                                                                                                                                                                                                                                                                                                                         services::HttpClientWebSocketInitiationResult& result, hal::SynchronousRandomDataGenerator& randomDataGenerator)
             {
-                value.Emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
+                value.emplace(clientObserverFactory, clientConnector, result, randomDataGenerator);
             } };
         static services::WebSocketClientFactorySingleConnection webSocketFactory{ randomDataGenerator, { httpClientInitiationCreator } };
 
