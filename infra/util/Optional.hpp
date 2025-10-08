@@ -238,6 +238,7 @@ namespace infra
     {
         if (initialized)
         {
+            initialized = false;
             data.Destruct();
         }
     }
