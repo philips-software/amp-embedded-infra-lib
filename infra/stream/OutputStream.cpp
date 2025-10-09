@@ -1,4 +1,5 @@
 #include "infra/stream/OutputStream.hpp"
+#include "infra/util/BoundedString.hpp"
 #include <cmath>
 #include <limits>
 
@@ -91,9 +92,11 @@ namespace infra
 
     TextOutputStream& TextOutputStream::operator<<(const char* zeroTerminatedString)
     {
-        const auto len = std::strlen(zeroTerminatedString); //NOSONAR
-        OutputOptionalPadding(len);
-        Writer().Insert(ReinterpretCastByteRange(MakeRange(zeroTerminatedString, zeroTerminatedString + len)), ErrorPolicy());
+        infra::BoundedConstString string(zeroTerminatedString);
+        OutputOptionalPadding(string.size());
+
+        Writer().Insert(infra::StringAsByteRange(string), ErrorPolicy());
+
         return *this;
     }
 

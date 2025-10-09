@@ -16,7 +16,7 @@
 
 namespace services
 {
-#ifdef ESP_PLATFORM
+#if defined(ESP_PLATFORM) || defined(TI_PLATFORM)
     static const uint32_t tcpSndBuf = 2 * TCP_MSS;
     static const uint32_t tcpSndQueueLen = ((4 * (tcpSndBuf) + (TCP_MSS - 1)) / (TCP_MSS));
     static const uint32_t tcpWnd = (4 * TCP_MSS);
