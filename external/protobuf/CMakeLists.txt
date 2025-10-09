@@ -55,5 +55,5 @@ if (EMIL_HOST_BUILD)
         endforeach()
     endfunction()
 
-    add_protobuf_target_properties(libprotobuf libprotoc)
+    add_protobuf_target_properties(libprotobuf libprotoc libupb)
 endif()
