@@ -20,10 +20,10 @@ if (EMIL_HOST_BUILD)
         $<$<CXX_COMPILER_ID:MSVC>:/wd4141>
         # Disable warning Operands are different enum types
         $<$<CXX_COMPILER_ID:MSVC>:/wd5287>
-        # Disable warning for unused multiple process flag on clang-cl
-        $<$<AND:$<CXX_COMPILER_FRONTEND_VARIANT:MSVC>,$<CXX_COMPILER_ID:Clang>>:-Wno-unused-command-line-argument>
-        # Disable warning for invalid offset on clang-cl
-        $<$<AND:$<CXX_COMPILER_FRONTEND_VARIANT:MSVC>,$<CXX_COMPILER_ID:Clang>>:-Wno-invalid-offsetof>
+        # Disable warning for unused multiple process flag on clang-cl version 22
+        $<$<AND:$<CXX_COMPILER_FRONTEND_VARIANT:MSVC>,$<CXX_COMPILER_ID:Clang>:$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,22.0.0>:-Wno-unused-command-line-argument>>
+        # Disable warning for invalid offset on clang-cl version 22
+        $<$<AND:$<CXX_COMPILER_FRONTEND_VARIANT:MSVC>,$<CXX_COMPILER_ID:Clang>:$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,22.0.0>:-Wno-invalid-offsetof>>
     )
 
     set(protobuf_BUILD_TESTS Off CACHE INTERNAL "")
