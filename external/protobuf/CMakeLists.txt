@@ -20,10 +20,6 @@ if (EMIL_HOST_BUILD)
         $<$<CXX_COMPILER_ID:MSVC>:/wd4141>
         # Disable warning Operands are different enum types
         $<$<CXX_COMPILER_ID:MSVC>:/wd5287>
-        # Disable warning for unused multiple process flag on clang-cl version 22
-        $<$<AND:$<CXX_COMPILER_FRONTEND_VARIANT:MSVC>,$<CXX_COMPILER_ID:Clang>:$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,22.0.0>:-Wno-unused-command-line-argument>>
-        # Disable warning for invalid offset on clang-cl version 22
-        $<$<AND:$<CXX_COMPILER_FRONTEND_VARIANT:MSVC>,$<CXX_COMPILER_ID:Clang>:$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,22.0.0>:-Wno-invalid-offsetof>>
     )
 
     set(protobuf_BUILD_TESTS Off CACHE INTERNAL "")
@@ -51,6 +47,10 @@ if (EMIL_HOST_BUILD)
             if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang" OR ${CMAKE_CXX_COMPILER_ID} MATCHES "AppleClang")
                 # Disable warnings about weak() being deprecated
                 target_compile_options(${target} PUBLIC -Wno-deprecated-declarations)
+            endif()
+            if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang" AND "${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" MATCHES "MSVC")
+                # unused-command-line-argument: /MP option is set by the library when building with MSVC, but the flag has no effect on clang-cl 
+                target_compile_options(${target} PUBLIC -Wno-unused-command-line-argument -Wno-invalid-offsetof)
             endif()
         endforeach()
     endfunction()
