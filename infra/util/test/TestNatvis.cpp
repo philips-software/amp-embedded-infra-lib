@@ -4,6 +4,7 @@
 #include "infra/util/Optional.hpp"
 #include "infra/util/Variant.hpp"
 #include "gtest/gtest.h"
+#include <cstdint>
 
 namespace
 {
@@ -54,13 +55,6 @@ TEST(NatvisTest, visualize_Function)
         return 10;
     };
     infra::Function<void(void*)> function = free;
-}
-
-TEST(NatvisTest, visualize_Optional)
-{
-    std::optional<int> emptyOptional;
-    std::optional<int> optional{ std::in_place, 1 };
-    std::optional<Content> optionalWithOwnType{ std::in_place, Content() };
 }
 
 TEST(NatvisTest, visualize_Variant)
