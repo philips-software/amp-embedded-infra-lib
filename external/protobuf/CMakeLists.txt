@@ -8,9 +8,6 @@ if (EMIL_HOST_BUILD)
     set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL On)
 
     add_compile_options(
-        # Disable warning on invalid use of [[noreturn]] and on deprecation of sprintf
-        # -Wno-invalid-noreturn should be removed when https://github.com/protocolbuffers/protobuf/issues/9817 is fixed
-        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-invalid-noreturn$<SEMICOLON>-Winvalid-offsetof>
         # Disable string overflow warning
         $<$<CXX_COMPILER_ID:GNU>:-Wno-stringop-overflow>
         # Disable warning not all control paths return a value
@@ -23,6 +20,10 @@ if (EMIL_HOST_BUILD)
         $<$<CXX_COMPILER_ID:MSVC>:/wd4141>
         # Disable warning Operands are different enum types
         $<$<CXX_COMPILER_ID:MSVC>:/wd5287>
+        # Disable warning for unused multiple process flag on clang-cl
+        $<$<AND:$<CXX_COMPILER_FRONTEND_VARIANT:MSVC>,$<CXX_COMPILER_ID:Clang>>:-Wno-unused-command-line-argument>
+        # Disable warning for invalid offset on clang-cl
+        $<$<AND:$<CXX_COMPILER_FRONTEND_VARIANT:MSVC>,$<CXX_COMPILER_ID:Clang>>:-Wno-invalid-offsetof>
     )
 
     set(protobuf_BUILD_TESTS Off CACHE INTERNAL "")
