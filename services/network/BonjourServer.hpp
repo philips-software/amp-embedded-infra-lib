@@ -25,6 +25,8 @@ namespace services
         {
         public:
             Answer(BonjourServer& server, uint16_t queryId, infra::StreamWriter& writer, uint16_t answersCount, uint16_t additionalRecordsCount);
+            Answer(const Answer&) = delete;
+            Answer& operator=(const Answer&) = delete;
 
             uint16_t Answers() const;
             uint16_t AdditionalRecords() const;

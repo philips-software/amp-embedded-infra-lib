@@ -37,6 +37,8 @@ namespace services
         {
         public:
             explicit QuestionParser(infra::StreamReaderWithRewinding& reader);
+            QuestionParser(const QuestionParser&) = delete;
+            QuestionParser& operator=(const QuestionParser&) = delete;
 
             bool RequestIncludesOneQuestion() const;
             bool IsValid() const;
