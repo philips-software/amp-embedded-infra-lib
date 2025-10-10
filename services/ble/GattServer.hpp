@@ -62,6 +62,32 @@ namespace services
         virtual UpdateStatus Update(const GattServerCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data) const = 0;
     };
 
+    class GattServerDescriptor
+        : public infra::IntrusiveForwardList<GattServerDescriptor>::NodeType
+        , public GattDescriptor
+    {
+    public:
+        enum class AccessFlags : uint8_t
+        {
+            readOnly = 0x01u,
+            writeReqOnly = 0x02u,
+            readWrite = 0x03u,
+            writeWithoutResponse = 0x04u,
+            writeAny = 0x0Eu
+        };
+
+        GattServerDescriptor() = default;
+        explicit GattServerDescriptor(const AttAttribute::Uuid& type, infra::ConstByteRange data);
+        GattServerDescriptor(const AttAttribute::Uuid& uuid, const AccessFlags& access, infra::ConstByteRange data);
+
+        infra::ConstByteRange Data() const;
+        AccessFlags Access() const;
+
+    private:
+        AccessFlags access = AccessFlags::readOnly;
+        infra::ConstByteRange data;
+    };
+
     class GattServerCharacteristic
         : public infra::IntrusiveForwardList<GattServerCharacteristic>::NodeType
         , public GattCharacteristic
@@ -89,9 +115,14 @@ namespace services
         uint16_t ValueLength() const;
         uint8_t GetAttributeCount() const;
 
+        void AddDescriptor(GattServerDescriptor& descriptor);
+        infra::IntrusiveForwardList<GattServerDescriptor>& Descriptors();
+        const infra::IntrusiveForwardList<GattServerDescriptor>& Descriptors() const;
+
     protected:
         PermissionFlags permissions;
         uint16_t valueLength;
+        infra::IntrusiveForwardList<GattServerDescriptor> descriptors;
     };
 
     class GattServerService

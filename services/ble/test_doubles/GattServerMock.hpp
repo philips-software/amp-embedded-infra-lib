@@ -19,6 +19,7 @@ namespace services
     {
     public:
         MOCK_METHOD(UpdateStatus, Update, (const services::GattServerCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data), (const));
+        MOCK_METHOD(void, AddDescriptor, (const GattServerCharacteristicOperationsObserver& characteristic, const AttAttribute::Uuid& uuid, infra::ConstByteRange data));
     };
 
     class GattServerCharacteristicUpdateMock
