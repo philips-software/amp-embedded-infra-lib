@@ -209,7 +209,7 @@ TEST(Asn1ObjectFormatter, add_empty_optional)
     infra::ByteOutputStream::WithStorage<2> stream;
     infra::Asn1Formatter formatter(stream);
 
-    formatter.AddOptional<uint32_t>(infra::none);
+    formatter.AddOptional<uint32_t>(std::nullopt);
 
     ASSERT_THAT(stream.Storage(), testing::ElementsAre(0x05, 0x00));
 }
@@ -219,7 +219,7 @@ TEST(Asn1ObjectFormatter, add_non_empty_optional)
     infra::ByteOutputStream::WithStorage<3> stream;
     infra::Asn1Formatter formatter(stream);
 
-    infra::Optional<uint8_t> value(infra::inPlace, 0xAB);
+    std::optional<uint8_t> value(std::in_place, 0xAB);
     formatter.AddOptional<uint8_t>(value);
 
     ASSERT_THAT(stream.Storage(), testing::ElementsAre(0x02, 0x01, 0xAB));

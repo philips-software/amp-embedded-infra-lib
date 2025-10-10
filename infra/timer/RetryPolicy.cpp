@@ -17,16 +17,16 @@ namespace infra
             if (infra::Now() >= retryAfterMaximumDelay)
             {
                 retryAfterMaximumDelay += maximumDelay;
-                *retryDelay = InitialDelay(false);
+                retryDelay = InitialDelay(false);
             }
             else
             {
                 *retryDelay *= 2;
 
                 if (infra::Now() + *retryDelay >= retryAfterMaximumDelay)
-                    *retryDelay = retryAfterMaximumDelay - infra::Now();
+                    retryDelay = retryAfterMaximumDelay - infra::Now();
                 else if (!intermittentFailure && InitialDelay(false) > *retryDelay)
-                    *retryDelay = InitialDelay(false);
+                    retryDelay = InitialDelay(false);
             }
         }
         else
@@ -40,7 +40,7 @@ namespace infra
 
     void RetryPolicyExponentialBackoff::Reset()
     {
-        retryDelay = infra::none;
+        retryDelay.reset();
     }
 
     infra::Duration RetryPolicyExponentialBackoff::InitialDelay(bool intermittentFailure) const

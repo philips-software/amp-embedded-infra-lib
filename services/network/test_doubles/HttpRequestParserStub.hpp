@@ -78,9 +78,9 @@ namespace services
             return body;
         }
 
-        infra::Optional<uint32_t> ContentLength() const override
+        std::optional<uint32_t> ContentLength() const override
         {
-            return infra::MakeOptional(contentLength);
+            return std::make_optional(contentLength);
         }
 
         HttpVerb verb;

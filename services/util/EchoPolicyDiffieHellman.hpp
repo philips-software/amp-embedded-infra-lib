@@ -78,14 +78,14 @@ namespace services
         infra::Function<void(ServiceProxy& proxy)> onRequest;
 
         bool initializingKeys = true;
-        infra::Optional<std::pair<std::array<uint8_t, 16>, std::array<uint8_t, 16>>> nextKeyPair;
+        std::optional<std::pair<std::array<uint8_t, 16>, std::array<uint8_t, 16>>> nextKeyPair;
         infra::IntrusiveList<ServiceProxy> waitingProxies;
 
         infra::CreatorBase<EcSecP256r1DiffieHellman, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)>& keyExchangeCreator;
-        infra::Optional<infra::ProxyCreator<EcSecP256r1DiffieHellman, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)>> keyExchange;
+        std::optional<infra::ProxyCreator<EcSecP256r1DiffieHellman, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)>> keyExchange;
         EcSecP256r1DsaSigner& signer;
         infra::CreatorBase<EcSecP256r1DsaVerifier, void(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)>& verifierCreator;
-        infra::Optional<infra::ProxyCreator<EcSecP256r1DsaVerifier, void(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)>> verifier;
+        std::optional<infra::ProxyCreator<EcSecP256r1DsaVerifier, void(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)>> verifier;
         HmacDrbgSha256& keyExpander;
     };
 

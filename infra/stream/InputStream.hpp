@@ -167,7 +167,7 @@ namespace infra
         void ReadAsHex(uint64_t& v);
 
         bool isDecimal = true;
-        infra::Optional<std::size_t> width;
+        std::optional<std::size_t> width;
     };
 
     class FromHexHelper

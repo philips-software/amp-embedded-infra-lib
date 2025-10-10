@@ -21,7 +21,7 @@ namespace services
 
     void SesameCobs::RequestSendMessage(std::size_t size)
     {
-        assert(sendReqestedSize == infra::none);
+        assert(sendReqestedSize == std::nullopt);
         sendReqestedSize = size;
 
         CheckReadyToSendUserData();
@@ -58,7 +58,7 @@ namespace services
         receiveSizeEncoded = 0;
         currentMessageSize = 0;
         receivedDataReader.OnAllocatable([]() {});
-        sendReqestedSize = infra::none;
+        sendReqestedSize.reset();
 
         if (sendingUserData)
             resetting = true;
@@ -170,8 +170,8 @@ namespace services
 
     void SesameCobs::CheckReadyToSendUserData()
     {
-        if (!sendingUserData && sendReqestedSize != infra::none)
-            SesameEncoded::GetObserver().SendMessageStreamAvailable(sendStream.Emplace(infra::inPlace, sendStorage, *std::exchange(sendReqestedSize, infra::none)));
+        if (!sendingUserData && sendReqestedSize != std::nullopt)
+            SesameEncoded::GetObserver().SendMessageStreamAvailable(sendStream.Emplace(infra::inPlace, sendStorage, *std::exchange(sendReqestedSize, std::nullopt)));
     }
 
     void SesameCobs::SendStreamFilled()

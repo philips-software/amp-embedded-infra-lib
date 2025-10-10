@@ -241,7 +241,7 @@ namespace services
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
         stream << Operation::message;
 
-        communication.requestedSendMessageSize = infra::none;
+        communication.requestedSendMessageSize.reset();
         communication.GetObserver().SendMessageStreamAvailable(std::move(writer));
     }
 

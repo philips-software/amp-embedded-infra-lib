@@ -138,11 +138,11 @@ namespace hal
         auto result = SetupDiGetDevicePropertyKeys(deviceInformationSet, &deviceInfo, keys.data(), keys.size(), &keysCount, 0);
         assert(result == TRUE);
 
-        infra::Optional<std::string> deviceDescription;
-        infra::Optional<std::string> friendlyName;
-        infra::Optional<std::string> physicalDeviceObjectName;
-        infra::Optional<std::string> matchingDeviceId;
-        infra::Optional<std::vector<std::string>> hardwareIds;
+        std::optional<std::string> deviceDescription;
+        std::optional<std::string> friendlyName;
+        std::optional<std::string> physicalDeviceObjectName;
+        std::optional<std::string> matchingDeviceId;
+        std::optional<std::vector<std::string>> hardwareIds;
 
         for (const DEVPROPKEY& key : keys)
         {

@@ -39,7 +39,7 @@ namespace services
 
         bool initializingSending = true;
         infra::IntrusiveList<ServiceProxy> waitingProxies;
-        infra::Optional<std::pair<std::array<uint8_t, 16>, std::array<uint8_t, 16>>> nextKeyPair;
+        std::optional<std::pair<std::array<uint8_t, 16>, std::array<uint8_t, 16>>> nextKeyPair;
     };
 }
 

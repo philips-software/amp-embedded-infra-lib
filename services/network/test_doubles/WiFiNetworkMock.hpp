@@ -28,7 +28,7 @@ namespace services
     {
     public:
         MOCK_METHOD2(ScanForNetworkDetails, void(infra::BoundedConstString, services::WiFiNetworkScanNetworkForDetailsResultObserver& observer));
-        MOCK_METHOD3(ScanNetworks, void(int32_t numOfProbsPerChannel, infra::Optional<infra::Duration> waitTimePerChannelActive, services::WiFiNetworkScanNetworksResultObserver& observer));
+        MOCK_METHOD3(ScanNetworks, void(int32_t numOfProbsPerChannel, std::optional<infra::Duration> waitTimePerChannelActive, services::WiFiNetworkScanNetworksResultObserver& observer));
     };
 
     class WiFiNetworkJoinResultObserverMock

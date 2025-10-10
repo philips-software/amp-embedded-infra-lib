@@ -34,7 +34,7 @@ namespace services
         virtual void SendingInitResponse(uint16_t newWindow) {}
         virtual void SendingReleaseWindow(uint16_t deltaWindow) {}
         virtual void SendingMessage(infra::StreamWriter& writer) {}
-        virtual void SettingOperational(infra::Optional<std::size_t> requestedSize, uint16_t releasedWindow, uint16_t otherWindow) {}
+        virtual void SettingOperational(std::optional<std::size_t> requestedSize, uint16_t releasedWindow, uint16_t otherWindow) {}
 
         // clang-format on
 
@@ -168,7 +168,7 @@ namespace services
         uint16_t releasedWindow{ 0 };
         bool sendInitResponse{ false };
         bool sending = false;
-        infra::Optional<std::size_t> requestedSendMessageSize;
+        std::optional<std::size_t> requestedSendMessageSize;
         infra::PolymorphicVariant<State, StateSendingInit, StateSendingInitResponse, StateOperational, StateSendingMessage, StateSendingReleaseWindow> state;
     };
 }

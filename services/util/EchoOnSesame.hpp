@@ -29,7 +29,7 @@ namespace services
         void ProcessMessage();
 
     private:
-        infra::Optional<std::size_t> requestedSize;
+        std::optional<std::size_t> requestedSize;
         bool initialized = false;
     };
 }

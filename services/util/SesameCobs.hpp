@@ -67,7 +67,7 @@ namespace services
         uint8_t FindDelimiter() const;
 
     private:
-        infra::Optional<std::size_t> sendReqestedSize;
+        std::optional<std::size_t> sendReqestedSize;
         bool sendingFirstPacket = true;
         bool sendingUserData = false;
         bool resetting = false;

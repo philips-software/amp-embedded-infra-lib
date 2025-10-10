@@ -155,7 +155,7 @@ namespace services
         uint32_t streamPosition;
         infra::DataInputStream::WithErrorPolicy stream;
         infra::BoundedString::WithStorage<63> label;
-        infra::Optional<std::size_t> finalPosition;
+        std::optional<std::size_t> finalPosition;
     };
 
     template<std::size_t S>

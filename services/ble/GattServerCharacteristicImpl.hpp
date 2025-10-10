@@ -35,7 +35,7 @@ namespace services
 
     private:
         GattServerService& service;
-        infra::Optional<UpdateContext> updateContext;
+        std::optional<UpdateContext> updateContext;
     };
 }
 

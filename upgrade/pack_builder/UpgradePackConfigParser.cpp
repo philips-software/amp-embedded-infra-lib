@@ -17,12 +17,12 @@ namespace application
                 throw ParseException("ConfigParser error: required key " + key + " missing");
     }
 
-    std::pair<std::string, infra::Optional<uint32_t>> UpgradePackConfigParser::ExtractDataFromObjectComponent(const std::string& key, infra::JsonObject& value)
+    std::pair<std::string, std::optional<uint32_t>> UpgradePackConfigParser::ExtractDataFromObjectComponent(const std::string& key, infra::JsonObject& value)
     {
         auto jsonStringpath = value.GetOptionalString("path");
         auto jsonStringAddress = value.GetOptionalString("address");
 
-        if (jsonStringpath == infra::none || jsonStringAddress == infra::none)
+        if (jsonStringpath == std::nullopt || jsonStringAddress == std::nullopt)
             throw ParseException(std::string("ConfigParser error: object component '" + key + "' does not contain both the 'path' and 'address' key"));
 
         auto stdStringAddress = jsonStringAddress->ToStdString();
@@ -37,21 +37,21 @@ namespace application
         if (stream.Failed() || !stream.Empty())
             throw ParseException(std::string("ConfigParser error: object component '" + key + "' contains key 'address' with invalid string value"));
 
-        return std::make_pair(jsonStringpath->ToStdString(), infra::MakeOptional(address));
+        return std::make_pair(jsonStringpath->ToStdString(), std::make_optional(address));
     }
 
-    std::vector<std::tuple<std::string, std::string, infra::Optional<uint32_t>>> UpgradePackConfigParser::GetComponents()
+    std::vector<std::tuple<std::string, std::string, std::optional<uint32_t>>> UpgradePackConfigParser::GetComponents()
     {
         auto components = json.GetOptionalObject("components");
 
-        if (components == infra::none)
+        if (components == std::nullopt)
             throw ParseException(std::string("ConfigParser error: components list should be an object"));
 
-        std::vector<std::tuple<std::string, std::string, infra::Optional<uint32_t>>> result;
+        std::vector<std::tuple<std::string, std::string, std::optional<uint32_t>>> result;
 
         for (infra::JsonObjectIterator it = components->begin(); it != components->end(); ++it)
             if (it->value.Is<infra::JsonString>())
-                result.push_back(std::make_tuple(it->key.ToStdString(), it->value.Get<infra::JsonString>().ToStdString(), infra::none));
+                result.push_back(std::make_tuple(it->key.ToStdString(), it->value.Get<infra::JsonString>().ToStdString(), std::nullopt));
             else if (it->value.Is<infra::JsonObject>())
             {
                 auto component = it->value.Get<infra::JsonObject>();
@@ -73,8 +73,8 @@ namespace application
         if (!json.HasKey("options"))
             return result;
 
-        infra::Optional<infra::JsonObject> options = json.GetOptionalObject("options");
-        if (options == infra::none)
+        std::optional<infra::JsonObject> options = json.GetOptionalObject("options");
+        if (options == std::nullopt)
             throw ParseException(std::string("ConfigParser error: options list should be an object"));
 
         for (infra::JsonObjectIterator it = options->begin(); it != options->end(); ++it)
@@ -93,7 +93,7 @@ namespace application
         if (!json.HasKey("upgrade_configuration"))
             throw ParseException("ConfigParser error: requested key upgrade_configuration is missing");
 
-        if (json.GetOptionalObject("upgrade_configuration") == infra::none)
+        if (json.GetOptionalObject("upgrade_configuration") == std::nullopt)
             throw ParseException("ConfigParser error: upgrade_configuration should be an object");
         else
             return json.GetObject("upgrade_configuration");
@@ -103,7 +103,7 @@ namespace application
     {
         if (json.HasKey("output_filename"))
         {
-            if (json.GetOptionalString("output_filename") == infra::none)
+            if (json.GetOptionalString("output_filename") == std::nullopt)
                 throw ParseException(std::string("ConfigParser error: output filename should be a string"));
             else
                 return json.GetString("output_filename").ToStdString();
@@ -116,7 +116,7 @@ namespace application
     {
         if (json.HasKey("upgrade_keys"))
         {
-            if (json.GetOptionalString("upgrade_keys") == infra::none)
+            if (json.GetOptionalString("upgrade_keys") == std::nullopt)
                 throw ParseException(std::string("ConfigParser error: upgrade_keys should be a string"));
             else
                 return json.GetString("upgrade_keys").ToStdString();
@@ -130,7 +130,7 @@ namespace application
         auto upgradeConfiguration = GetUpgradeConfiguration();
         if (upgradeConfiguration.HasKey("product_name"))
         {
-            if (upgradeConfiguration.GetOptionalString("product_name") == infra::none)
+            if (upgradeConfiguration.GetOptionalString("product_name") == std::nullopt)
                 throw ParseException(std::string("ConfigParser error: upgrade_configuration/product_name should be a string"));
             else
                 return upgradeConfiguration.GetString("product_name").ToStdString();
@@ -144,7 +144,7 @@ namespace application
         auto upgradeConfiguration = GetUpgradeConfiguration();
         if (upgradeConfiguration.HasKey("product_version"))
         {
-            if (upgradeConfiguration.GetOptionalString("product_version") == infra::none)
+            if (upgradeConfiguration.GetOptionalString("product_version") == std::nullopt)
                 throw ParseException(std::string("ConfigParser error: upgrade_configuration/product_version should be a string"));
             else
                 return upgradeConfiguration.GetString("product_version").ToStdString();
@@ -158,7 +158,7 @@ namespace application
         auto upgradeConfiguration = GetUpgradeConfiguration();
         if (upgradeConfiguration.HasKey("component_name"))
         {
-            if (upgradeConfiguration.GetOptionalString("component_name") == infra::none)
+            if (upgradeConfiguration.GetOptionalString("component_name") == std::nullopt)
                 throw ParseException(std::string("ConfigParser error: upgrade_configuration/component_name should be a string"));
             else
                 return upgradeConfiguration.GetString("component_name").ToStdString();
@@ -172,7 +172,7 @@ namespace application
         auto upgradeConfiguration = GetUpgradeConfiguration();
         if (upgradeConfiguration.HasKey("component_version"))
         {
-            if (upgradeConfiguration.GetOptionalInteger("component_version") == infra::none)
+            if (upgradeConfiguration.GetOptionalInteger("component_version") == std::nullopt)
                 throw ParseException(std::string("ConfigParser error: upgrade_configuration/component_version should be an integer"));
             else
                 return upgradeConfiguration.GetInteger("component_version");

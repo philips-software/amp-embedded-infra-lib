@@ -4,6 +4,7 @@
 #include "infra/util/Optional.hpp"
 #include "infra/util/Variant.hpp"
 #include "gtest/gtest.h"
+#include <cstdint>
 
 namespace
 {
@@ -56,13 +57,6 @@ TEST(NatvisTest, visualize_Function)
     infra::Function<void(void*)> function = free;
 }
 
-TEST(NatvisTest, visualize_Optional)
-{
-    infra::Optional<int> emptyOptional;
-    infra::Optional<int> optional{ infra::inPlace, 1 };
-    infra::Optional<Content> optionalWithOwnType{ infra::inPlace, Content() };
-}
-
 TEST(NatvisTest, visualize_Variant)
 {
     infra::Variant<int, char, bool> emptyVariant;
@@ -84,5 +78,5 @@ TEST(NatvisTest, visualize_PolymorphicVariant)
 */
 TEST(NatvisTest, visualize_types_from_anonymous_namespace)
 {
-    infra::Optional<AnonymousContent> anonymousOptional{ infra::inPlace, AnonymousContent() };
+    std::optional<AnonymousContent> anonymousOptional{ std::in_place, AnonymousContent() };
 }

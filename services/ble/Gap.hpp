@@ -293,11 +293,11 @@ namespace services
         explicit GapAdvertisingDataParser(infra::ConstByteRange data);
 
         infra::ConstByteRange LocalName() const;
-        infra::Optional<std::pair<uint16_t, infra::ConstByteRange>> ManufacturerSpecificData() const;
-        infra::Optional<GapPeripheral::AdvertisementFlags> Flags() const;
+        std::optional<std::pair<uint16_t, infra::ConstByteRange>> ManufacturerSpecificData() const;
+        std::optional<GapPeripheral::AdvertisementFlags> Flags() const;
         infra::MemoryRange<const AttAttribute::Uuid16> CompleteListOf16BitUuids() const;
         infra::MemoryRange<const AttAttribute::Uuid128> CompleteListOf128BitUuids() const;
-        infra::Optional<uint16_t> Appearance() const;
+        std::optional<uint16_t> Appearance() const;
 
     private:
         infra::ConstByteRange data;
@@ -360,7 +360,7 @@ namespace services
         virtual void SetAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) = 0;
         virtual void StartDeviceDiscovery() = 0;
         virtual void StopDeviceDiscovery() = 0;
-        virtual infra::Optional<hal::MacAddress> ResolvePrivateAddress(hal::MacAddress address) const = 0;
+        virtual std::optional<hal::MacAddress> ResolvePrivateAddress(hal::MacAddress address) const = 0;
     };
 
     class GapCentralDecorator
@@ -381,7 +381,7 @@ namespace services
         void SetAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) override;
         void StartDeviceDiscovery() override;
         void StopDeviceDiscovery() override;
-        infra::Optional<hal::MacAddress> ResolvePrivateAddress(hal::MacAddress address) const override;
+        std::optional<hal::MacAddress> ResolvePrivateAddress(hal::MacAddress address) const override;
     };
 }
 

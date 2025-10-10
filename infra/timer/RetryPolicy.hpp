@@ -34,7 +34,7 @@ namespace infra
     private:
         infra::Duration maximumDelay;
         infra::TimePoint retryAfterMaximumDelay;
-        infra::Optional<infra::Duration> retryDelay;
+        std::optional<infra::Duration> retryDelay;
     };
 
     class RetryPolicyFixedInterval

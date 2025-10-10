@@ -12,7 +12,7 @@ public:
     FlashQuadSpiCypressFllTest()
         : flash(spiStub, onInitialized)
     {
-        EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandEnterQpi), {}, {}, 0 },
+        EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ std::make_optional(services::FlashQuadSpiCypressFll::commandEnterQpi), {}, {}, 0 },
                                  infra::ConstByteRange(), hal::QuadSpi::Lines::SingleSpeed()));
 
         ForwardTime(std::chrono::milliseconds(100));
@@ -28,9 +28,9 @@ public:
 };
 
 #define EXPECT_ENABLE_WRITE() EXPECT_CALL(spiStub, SendDataMock( \
-                                                       hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandWriteEnable), {}, {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()))
+                                                       hal::QuadSpi::Header{ std::make_optional(services::FlashQuadSpiCypressFll::commandWriteEnable), {}, {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()))
 #define EXPECT_POLL_WRITE_DONE() EXPECT_CALL(spiStub, PollStatusMock( \
-                                                          hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandReadStatusRegister), {}, {}, 0 }, 1, 0, 1, hal::QuadSpi::Lines::QuadSpeed()))
+                                                          hal::QuadSpi::Header{ std::make_optional(services::FlashQuadSpiCypressFll::commandReadStatusRegister), {}, {}, 0 }, 1, 0, 1, hal::QuadSpi::Lines::QuadSpeed()))
 
 TEST_F(FlashQuadSpiCypressFllTest, Construction)
 {
@@ -41,7 +41,7 @@ TEST_F(FlashQuadSpiCypressFllTest, Construction)
 TEST_F(FlashQuadSpiCypressFllTest, ReadData)
 {
     std::array<uint8_t, 4> receiveData = { 1, 2, 3, 4 };
-    EXPECT_CALL(spiStub, ReceiveDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandReadData), hal::QuadSpi::AddressToVector(0, 4), {}, 8 }, hal::QuadSpi::Lines::QuadSpeed()))
+    EXPECT_CALL(spiStub, ReceiveDataMock(hal::QuadSpi::Header{ std::make_optional(services::FlashQuadSpiCypressFll::commandReadData), hal::QuadSpi::AddressToVector(0, 4), {}, 8 }, hal::QuadSpi::Lines::QuadSpeed()))
         .WillOnce(testing::Return(infra::MakeByteRange(receiveData)));
     EXPECT_CALL(finished, callback());
 
@@ -58,7 +58,7 @@ TEST_F(FlashQuadSpiCypressFllTest, ReadData)
 TEST_F(FlashQuadSpiCypressFllTest, ReadDataAtNonZeroAddress)
 {
     std::array<uint8_t, 4> receiveData = { 1, 2, 3, 4 };
-    EXPECT_CALL(spiStub, ReceiveDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandReadData), hal::QuadSpi::AddressToVector(0x123456 << 8, 4), {}, 8 }, hal::QuadSpi::Lines::QuadSpeed()))
+    EXPECT_CALL(spiStub, ReceiveDataMock(hal::QuadSpi::Header{ std::make_optional(services::FlashQuadSpiCypressFll::commandReadData), hal::QuadSpi::AddressToVector(0x123456 << 8, 4), {}, 8 }, hal::QuadSpi::Lines::QuadSpeed()))
         .WillOnce(testing::Return(infra::MakeByteRange(receiveData)));
     EXPECT_CALL(finished, callback());
 
@@ -76,7 +76,7 @@ TEST_F(FlashQuadSpiCypressFllTest, WriteData)
 {
     const std::array<uint8_t, 4> sendData = { 1, 2, 3, 4 };
     EXPECT_ENABLE_WRITE();
-    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandPageProgram), hal::QuadSpi::AddressToVector(0, 3), {}, 0 }, infra::MakeByteRange(sendData), hal::QuadSpi::Lines::QuadSpeed()));
+    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ std::make_optional(services::FlashQuadSpiCypressFll::commandPageProgram), hal::QuadSpi::AddressToVector(0, 3), {}, 0 }, infra::MakeByteRange(sendData), hal::QuadSpi::Lines::QuadSpeed()));
     EXPECT_POLL_WRITE_DONE();
 
     flash.WriteBuffer(sendData, 0, [this]()
@@ -90,7 +90,7 @@ TEST_F(FlashQuadSpiCypressFllTest, WriteDataFinishesOnFlagPoll)
 {
     const std::array<uint8_t, 4> sendData = { 1, 2, 3, 4 };
     EXPECT_ENABLE_WRITE();
-    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandPageProgram), hal::QuadSpi::AddressToVector(0, 3), {}, 0 }, infra::MakeByteRange(sendData), hal::QuadSpi::Lines::QuadSpeed()));
+    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ std::make_optional(services::FlashQuadSpiCypressFll::commandPageProgram), hal::QuadSpi::AddressToVector(0, 3), {}, 0 }, infra::MakeByteRange(sendData), hal::QuadSpi::Lines::QuadSpeed()));
     EXPECT_POLL_WRITE_DONE();
 
     flash.WriteBuffer(sendData, 0, [this]()
@@ -108,7 +108,7 @@ TEST_F(FlashQuadSpiCypressFllTest, WriteDataAtNonZeroAddress)
 {
     const std::array<uint8_t, 4> sendData = { 1, 2, 3, 4 };
     EXPECT_ENABLE_WRITE();
-    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandPageProgram), hal::QuadSpi::AddressToVector(0x123456, 3), {}, 0 }, infra::MakeByteRange(sendData), hal::QuadSpi::Lines::QuadSpeed()));
+    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ std::make_optional(services::FlashQuadSpiCypressFll::commandPageProgram), hal::QuadSpi::AddressToVector(0x123456, 3), {}, 0 }, infra::MakeByteRange(sendData), hal::QuadSpi::Lines::QuadSpeed()));
     EXPECT_POLL_WRITE_DONE();
 
     flash.WriteBuffer(sendData, 0 + 0x123456, infra::emptyFunction);
@@ -119,7 +119,7 @@ TEST_F(FlashQuadSpiCypressFllTest, WhenPageBoundaryIsCrossedFirstPartIsWritten)
 {
     const std::array<uint8_t, 4> sendData = { 1, 2, 3, 4 };
     EXPECT_ENABLE_WRITE();
-    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandPageProgram), hal::QuadSpi::AddressToVector(254, 3), {}, 0 }, infra::MakeRange(sendData.data(), sendData.data() + 2), hal::QuadSpi::Lines::QuadSpeed()));
+    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ std::make_optional(services::FlashQuadSpiCypressFll::commandPageProgram), hal::QuadSpi::AddressToVector(254, 3), {}, 0 }, infra::MakeRange(sendData.data(), sendData.data() + 2), hal::QuadSpi::Lines::QuadSpeed()));
     EXPECT_POLL_WRITE_DONE();
 
     flash.WriteBuffer(sendData, 0 + 254, infra::emptyFunction);
@@ -132,10 +132,10 @@ TEST_F(FlashQuadSpiCypressFllTest, WhenPageBoundaryIsCrossedSecondPartIsWritten)
 
     const std::array<uint8_t, 6> sendData = { 1, 2, 3, 4, 5, 6 };
     EXPECT_ENABLE_WRITE();
-    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandPageProgram), hal::QuadSpi::AddressToVector(254, 3), {}, 0 }, infra::MakeRange(sendData.data(), sendData.data() + 2), hal::QuadSpi::Lines::QuadSpeed()));
+    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ std::make_optional(services::FlashQuadSpiCypressFll::commandPageProgram), hal::QuadSpi::AddressToVector(254, 3), {}, 0 }, infra::MakeRange(sendData.data(), sendData.data() + 2), hal::QuadSpi::Lines::QuadSpeed()));
     EXPECT_POLL_WRITE_DONE();
     EXPECT_ENABLE_WRITE();
-    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandPageProgram), hal::QuadSpi::AddressToVector(256, 3), {}, 0 }, infra::MakeRange(sendData.data() + 2, sendData.data() + 6), hal::QuadSpi::Lines::QuadSpeed()));
+    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ std::make_optional(services::FlashQuadSpiCypressFll::commandPageProgram), hal::QuadSpi::AddressToVector(256, 3), {}, 0 }, infra::MakeRange(sendData.data() + 2, sendData.data() + 6), hal::QuadSpi::Lines::QuadSpeed()));
     EXPECT_POLL_WRITE_DONE();
 
     flash.WriteBuffer(sendData, 0 + 254, infra::emptyFunction);
@@ -146,7 +146,7 @@ TEST_F(FlashQuadSpiCypressFllTest, WhenPageBoundaryIsCrossedSecondPartIsWritten)
 TEST_F(FlashQuadSpiCypressFllTest, EraseFirstSector)
 {
     EXPECT_ENABLE_WRITE();
-    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandEraseSector), hal::QuadSpi::AddressToVector(0, 3), {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()));
+    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ std::make_optional(services::FlashQuadSpiCypressFll::commandEraseSector), hal::QuadSpi::AddressToVector(0, 3), {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()));
     EXPECT_POLL_WRITE_DONE();
 
     flash.EraseSector(0, [this]()
@@ -159,7 +159,7 @@ TEST_F(FlashQuadSpiCypressFllTest, EraseFirstSector)
 TEST_F(FlashQuadSpiCypressFllTest, EraseFirstSectorFinishesOnFlagPoll)
 {
     EXPECT_ENABLE_WRITE();
-    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandEraseSector), hal::QuadSpi::AddressToVector(0, 3), {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()));
+    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ std::make_optional(services::FlashQuadSpiCypressFll::commandEraseSector), hal::QuadSpi::AddressToVector(0, 3), {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()));
     EXPECT_POLL_WRITE_DONE();
 
     flash.EraseSector(0, [this]()
@@ -176,7 +176,7 @@ TEST_F(FlashQuadSpiCypressFllTest, EraseFirstSectorFinishesOnFlagPoll)
 TEST_F(FlashQuadSpiCypressFllTest, EraseSecondSector)
 {
     EXPECT_ENABLE_WRITE();
-    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandEraseSector), hal::QuadSpi::AddressToVector(4096, 3), {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()));
+    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ std::make_optional(services::FlashQuadSpiCypressFll::commandEraseSector), hal::QuadSpi::AddressToVector(4096, 3), {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()));
     EXPECT_POLL_WRITE_DONE();
 
     flash.EraseSector(1, [this]()
@@ -189,7 +189,7 @@ TEST_F(FlashQuadSpiCypressFllTest, EraseSecondSector)
 TEST_F(FlashQuadSpiCypressFllTest, EraseMultipleErasesSubSector)
 {
     EXPECT_ENABLE_WRITE();
-    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandEraseSector), hal::QuadSpi::AddressToVector(0, 3), {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()));
+    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ std::make_optional(services::FlashQuadSpiCypressFll::commandEraseSector), hal::QuadSpi::AddressToVector(0, 3), {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()));
     EXPECT_POLL_WRITE_DONE();
 
     flash.EraseSectors(0, 1, [this]()
@@ -204,10 +204,10 @@ TEST_F(FlashQuadSpiCypressFllTest, EraseMultipleErasesTwoSectors)
     testing::InSequence s;
 
     EXPECT_ENABLE_WRITE();
-    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandEraseSector), hal::QuadSpi::AddressToVector(0, 3), {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()));
+    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ std::make_optional(services::FlashQuadSpiCypressFll::commandEraseSector), hal::QuadSpi::AddressToVector(0, 3), {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()));
     EXPECT_POLL_WRITE_DONE();
     EXPECT_ENABLE_WRITE();
-    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandEraseSector), hal::QuadSpi::AddressToVector(4096, 3), {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()));
+    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ std::make_optional(services::FlashQuadSpiCypressFll::commandEraseSector), hal::QuadSpi::AddressToVector(4096, 3), {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()));
     EXPECT_POLL_WRITE_DONE();
 
     flash.EraseSectors(0, 2, [this]()
@@ -221,7 +221,7 @@ TEST_F(FlashQuadSpiCypressFllTest, EraseMultipleErasesTwoSectors)
 TEST_F(FlashQuadSpiCypressFllTest, EraseMultipleErasesBlock)
 {
     EXPECT_ENABLE_WRITE();
-    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandEraseBlock), hal::QuadSpi::AddressToVector(0, 3), {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()));
+    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ std::make_optional(services::FlashQuadSpiCypressFll::commandEraseBlock), hal::QuadSpi::AddressToVector(0, 3), {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()));
     EXPECT_POLL_WRITE_DONE();
 
     flash.EraseSectors(0, 16, [this]()
@@ -235,13 +235,13 @@ TEST_F(FlashQuadSpiCypressFllTest, EraseMultipleErasesSectorsAndBlock)
 {
     testing::InSequence s;
     EXPECT_ENABLE_WRITE();
-    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandEraseSector), hal::QuadSpi::AddressToVector(61440, 3), {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()));
+    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ std::make_optional(services::FlashQuadSpiCypressFll::commandEraseSector), hal::QuadSpi::AddressToVector(61440, 3), {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()));
     EXPECT_POLL_WRITE_DONE();
     EXPECT_ENABLE_WRITE();
-    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandEraseBlock), hal::QuadSpi::AddressToVector(65536, 3), {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()));
+    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ std::make_optional(services::FlashQuadSpiCypressFll::commandEraseBlock), hal::QuadSpi::AddressToVector(65536, 3), {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()));
     EXPECT_POLL_WRITE_DONE();
     EXPECT_ENABLE_WRITE();
-    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandEraseSector), hal::QuadSpi::AddressToVector(131072, 3), {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()));
+    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ std::make_optional(services::FlashQuadSpiCypressFll::commandEraseSector), hal::QuadSpi::AddressToVector(131072, 3), {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()));
     EXPECT_POLL_WRITE_DONE();
 
     flash.EraseSectors(15, 33, [this]()
@@ -256,7 +256,7 @@ TEST_F(FlashQuadSpiCypressFllTest, EraseMultipleErasesSectorsAndBlock)
 TEST_F(FlashQuadSpiCypressFllTest, EraseAllErasesChip)
 {
     EXPECT_ENABLE_WRITE();
-    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ infra::MakeOptional(services::FlashQuadSpiCypressFll::commandEraseChip), {}, {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()));
+    EXPECT_CALL(spiStub, SendDataMock(hal::QuadSpi::Header{ std::make_optional(services::FlashQuadSpiCypressFll::commandEraseChip), {}, {}, 0 }, infra::ConstByteRange(), hal::QuadSpi::Lines::QuadSpeed()));
     EXPECT_POLL_WRITE_DONE();
 
     flash.EraseAll([this]()

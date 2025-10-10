@@ -255,7 +255,7 @@ namespace services
         bufferOffset = static_cast<uint16_t>(marker);
     }
 
-    DatagramExchangeLwIP::UdpWriter::UdpWriter(udp_pcb* control, pbuf* buffer, infra::Optional<UdpSocket> remote)
+    DatagramExchangeLwIP::UdpWriter::UdpWriter(udp_pcb* control, pbuf* buffer, std::optional<UdpSocket> remote)
         : control(control)
         , buffer(buffer)
         , remote(remote)
@@ -311,17 +311,17 @@ namespace services
 
     void DatagramExchangeLwIP::StateIdle::RequestSendStream(std::size_t sendSize)
     {
-        StateWaitingForBuffer& state = datagramExchange.state.Emplace<StateWaitingForBuffer>(datagramExchange, sendSize, infra::none);
+        StateWaitingForBuffer& state = datagramExchange.state.Emplace<StateWaitingForBuffer>(datagramExchange, sendSize, std::nullopt);
         state.TryAllocateBuffer();
     }
 
     void DatagramExchangeLwIP::StateIdle::RequestSendStream(std::size_t sendSize, UdpSocket remote)
     {
-        StateWaitingForBuffer& state = datagramExchange.state.Emplace<StateWaitingForBuffer>(datagramExchange, sendSize, infra::MakeOptional(remote));
+        StateWaitingForBuffer& state = datagramExchange.state.Emplace<StateWaitingForBuffer>(datagramExchange, sendSize, std::make_optional(remote));
         state.TryAllocateBuffer();
     }
 
-    DatagramExchangeLwIP::StateWaitingForBuffer::StateWaitingForBuffer(DatagramExchangeLwIP& datagramExchange, std::size_t sendSize, infra::Optional<UdpSocket> remote)
+    DatagramExchangeLwIP::StateWaitingForBuffer::StateWaitingForBuffer(DatagramExchangeLwIP& datagramExchange, std::size_t sendSize, std::optional<UdpSocket> remote)
         : datagramExchange(datagramExchange)
         , sendSize(sendSize)
         , remote(remote)
@@ -335,10 +335,10 @@ namespace services
     {
         pbuf* buffer = pbuf_alloc(PBUF_TRANSPORT, static_cast<uint16_t>(sendSize), PBUF_POOL);
         if (buffer != nullptr)
-            datagramExchange.state.Emplace<StateBufferAllocated>(datagramExchange, buffer, infra::Optional<UdpSocket>(remote));
+            datagramExchange.state.Emplace<StateBufferAllocated>(datagramExchange, buffer, std::optional<UdpSocket>(remote));
     }
 
-    DatagramExchangeLwIP::StateBufferAllocated::StateBufferAllocated(DatagramExchangeLwIP& datagramExchange, pbuf* buffer, infra::Optional<UdpSocket> remote)
+    DatagramExchangeLwIP::StateBufferAllocated::StateBufferAllocated(DatagramExchangeLwIP& datagramExchange, pbuf* buffer, std::optional<UdpSocket> remote)
         : datagramExchange(datagramExchange)
         , stream([this]()
               {

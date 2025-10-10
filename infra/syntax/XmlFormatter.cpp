@@ -1,5 +1,8 @@
 #include "infra/syntax/XmlFormatter.hpp"
 #include "infra/syntax/EscapeCharacterHelper.hpp"
+#include "infra/util/Optional.hpp"
+#include <optional>
+#include <utility>
 
 namespace infra
 {
@@ -34,7 +37,7 @@ namespace infra
     }
 
     XmlFormatter::XmlFormatter(infra::TextOutputStream& stream)
-        : stream(infra::inPlace, stream.Writer(), infra::noFail)
+        : stream(std::in_place, stream.Writer(), infra::noFail)
     {
         *this->stream << R"(<?xml version="1.0" encoding="ISO-8859-1" ?>)";
     }
@@ -45,7 +48,7 @@ namespace infra
     }
 
     XmlTagFormatter::XmlTagFormatter(infra::TextOutputStream& stream, const char* tagName)
-        : stream(infra::inPlace, stream.Writer(), infra::noFail)
+        : stream(std::in_place, stream.Writer(), infra::noFail)
         , tagName(tagName)
     {
         *this->stream << "<" << tagName;
@@ -53,7 +56,7 @@ namespace infra
 
     XmlTagFormatter::~XmlTagFormatter()
     {
-        if (stream == infra::none)
+        if (stream == std::nullopt)
             return;
 
         if (empty)
@@ -65,13 +68,14 @@ namespace infra
     XmlTagFormatter::XmlTagFormatter(XmlTagFormatter&& other) noexcept
         : stream(other.stream)
     {
-        other.stream = infra::none;
+        stream.emplace(*other.stream);
+        other.stream.reset();
     }
 
     XmlTagFormatter& XmlTagFormatter::operator=(XmlTagFormatter&& other) noexcept
     {
-        stream = other.stream;
-        other.stream = infra::none;
+        stream.emplace(*other.stream);
+        other.stream.reset();
 
         return *this;
     }

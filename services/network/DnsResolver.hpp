@@ -53,7 +53,7 @@ namespace services
             bool AnswerIsForCurrentQuery(UdpSocket from, const IPAddress& currentNameServer, uint16_t queryId) const;
             bool Error() const;
             bool Recurse() const;
-            infra::Optional<std::pair<IPAddress, infra::TimePoint>> ReadAnswerRecords();
+            std::optional<std::pair<IPAddress, infra::TimePoint>> ReadAnswerRecords();
             void ReadNameServers(infra::BoundedVector<IPAddress>& recursiveDnsServers);
 
         private:
@@ -61,7 +61,7 @@ namespace services
             void ReadAdditionalRecords(infra::BoundedVector<IPAddress>& recursiveDnsServers, uint32_t nameServerPosition);
             infra::Variant<Answer, CName, NoAnswer> ReadAnswer();
             void DiscardAnswer();
-            infra::Optional<IPAddress> ReadNameServer(std::size_t nameServerPosition, std::size_t numNameServers);
+            std::optional<IPAddress> ReadNameServer(std::size_t nameServerPosition, std::size_t numNameServers);
             bool ReadAndMatchHostname();
             bool ReadAndMatchHostnameParts(DnsHostnameParts& hostnameParts);
             bool ReadAndMatchReferenceHostname(uint8_t offsetHigh, DnsHostnameParts& hostnameParts);
@@ -135,7 +135,7 @@ namespace services
         infra::MemoryRange<const IPAddress> nameServers;
         std::size_t currentNameServer = 0;
         infra::IntrusiveList<NameResolverResult> waiting;
-        infra::Optional<ActiveLookup> activeLookup;
+        std::optional<ActiveLookup> activeLookup;
     };
 }
 

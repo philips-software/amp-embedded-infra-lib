@@ -84,7 +84,7 @@ namespace application
     private:
         SupportedTargets targets;
         bool mandatory{ false };
-        infra::Optional<uint8_t> order;
+        std::optional<uint8_t> order;
     };
 }
 

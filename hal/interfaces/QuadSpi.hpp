@@ -14,7 +14,7 @@ namespace hal
     public:
         struct Header
         {
-            infra::Optional<uint8_t> instruction;
+            std::optional<uint8_t> instruction;
             infra::BoundedVector<uint8_t>::WithMaxSize<4> address;
             infra::BoundedVector<uint8_t>::WithMaxSize<4> alternate;
             uint8_t nofDummyCycles;

@@ -310,7 +310,7 @@ public:
     testing::StrictMock<services::ConnectionFactoryWithNameResolverMock> network;
     hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
     services::CertificatesMbedTls clientCertificates;
-    infra::Optional<services::ConnectionWithHostnameMock> connection;
+    std::optional<services::ConnectionWithHostnameMock> connection;
 };
 
 TEST_F(ConnectionWithNameResolverMbedTlsTest, cancel_connection)
@@ -335,7 +335,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, create_connection)
         {
             EXPECT_EQ("something", clientObserverFactory.Hostname());
             EXPECT_EQ(1234, clientObserverFactory.Port());
-            connection.Emplace();
+            connection.emplace();
             EXPECT_CALL(*connection, RequestSendStream(0));
             EXPECT_CALL(*connection, MaxSendStreamSize).WillOnce(testing::Return(0));
             clientObserverFactory.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> observer)
@@ -354,7 +354,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, create_connection)
     ExecuteAllActions();
     EXPECT_CALL(*connection, AbortAndDestroy).WillOnce(testing::Invoke([this]()
         {
-            connection = infra::none;
+            connection.reset();
         }));
     observer1->Subject().AbortAndDestroy();
 }
@@ -370,7 +370,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, reopen_connection)
         {
             EXPECT_EQ("something", clientObserverFactory.Hostname());
             EXPECT_EQ(1234, clientObserverFactory.Port());
-            connection.Emplace();
+            connection.emplace();
             EXPECT_CALL(*connection, RequestSendStream(0));
             EXPECT_CALL(*connection, MaxSendStreamSize).WillOnce(testing::Return(0));
             clientObserverFactory.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> observer)
@@ -389,7 +389,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, reopen_connection)
     ExecuteAllActions();
     EXPECT_CALL(*connection, AbortAndDestroy).WillOnce(testing::Invoke([this]()
         {
-            connection = infra::none;
+            connection.reset();
         }));
     observer1->Subject().AbortAndDestroy();
 
@@ -397,7 +397,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, reopen_connection)
         {
             EXPECT_EQ("something", clientObserverFactory.Hostname());
             EXPECT_EQ(1234, clientObserverFactory.Port());
-            connection.Emplace();
+            connection.emplace();
             EXPECT_CALL(*connection, RequestSendStream(0));
             EXPECT_CALL(*connection, MaxSendStreamSize).WillOnce(testing::Return(0));
             clientObserverFactory.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> observer)
@@ -417,7 +417,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, reopen_connection)
 
     EXPECT_CALL(*connection, AbortAndDestroy).WillOnce(testing::Invoke([this]()
         {
-            connection = infra::none;
+            connection.reset();
         }));
     observer1->Subject().AbortAndDestroy();
 }
@@ -440,7 +440,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, persistent_session_reopen_connecti
         {
             EXPECT_EQ("something", clientObserverFactory.Hostname());
             EXPECT_EQ(1234, clientObserverFactory.Port());
-            connection.Emplace();
+            connection.emplace();
             EXPECT_CALL(*connection, RequestSendStream(0));
             EXPECT_CALL(*connection, MaxSendStreamSize).WillOnce(testing::Return(0));
             clientObserverFactory.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> observer)
@@ -459,7 +459,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, persistent_session_reopen_connecti
     ExecuteAllActions();
     EXPECT_CALL(*connection, AbortAndDestroy).WillOnce(testing::Invoke([this]()
         {
-            connection = infra::none;
+            connection.reset();
         }));
     observer1->Subject().AbortAndDestroy();
 
@@ -467,7 +467,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, persistent_session_reopen_connecti
         {
             EXPECT_EQ("something", clientObserverFactory.Hostname());
             EXPECT_EQ(1234, clientObserverFactory.Port());
-            connection.Emplace();
+            connection.emplace();
             EXPECT_CALL(*connection, RequestSendStream(0));
             EXPECT_CALL(*connection, MaxSendStreamSize).WillOnce(testing::Return(0));
             clientObserverFactory.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> observer)
@@ -487,7 +487,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, persistent_session_reopen_connecti
 
     EXPECT_CALL(*connection, AbortAndDestroy).WillOnce(testing::Invoke([this]()
         {
-            connection = infra::none;
+            connection.reset();
         }));
     observer1->Subject().AbortAndDestroy();
 }
@@ -510,7 +510,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, persistent_session_minimal_memory_
         {
             EXPECT_EQ("something", clientObserverFactory.Hostname());
             EXPECT_EQ(1234, clientObserverFactory.Port());
-            connection.Emplace();
+            connection.emplace();
             EXPECT_CALL(*connection, RequestSendStream(0));
             EXPECT_CALL(*connection, MaxSendStreamSize).WillOnce(testing::Return(0));
             clientObserverFactory.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> observer)
@@ -529,7 +529,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, persistent_session_minimal_memory_
     ExecuteAllActions();
     EXPECT_CALL(*connection, AbortAndDestroy).WillOnce(testing::Invoke([this]()
         {
-            connection = infra::none;
+            connection.reset();
         }));
     observer1->Subject().AbortAndDestroy();
 
@@ -539,7 +539,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, persistent_session_minimal_memory_
         {
             EXPECT_EQ("something2", clientObserverFactory.Hostname());
             EXPECT_EQ(1234, clientObserverFactory.Port());
-            connection.Emplace();
+            connection.emplace();
             EXPECT_CALL(*connection, RequestSendStream(0));
             EXPECT_CALL(*connection, MaxSendStreamSize).WillOnce(testing::Return(0));
             clientObserverFactory.ConnectionEstablished([this](infra::SharedPtr<services::ConnectionObserver> observer)
@@ -559,7 +559,7 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, persistent_session_minimal_memory_
 
     EXPECT_CALL(*connection, AbortAndDestroy).WillOnce(testing::Invoke([this]()
         {
-            connection = infra::none;
+            connection.reset();
         }));
     observer1->Subject().AbortAndDestroy();
 }

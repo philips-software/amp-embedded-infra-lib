@@ -43,7 +43,7 @@ namespace infra
         void Deallocate(void* control) override;
 
     private:
-        infra::Optional<T> object;
+        std::optional<T> object;
         detail::SharedPtrControl control;
         bool allocatable = true;
     };
@@ -91,7 +91,7 @@ namespace infra
     {
         assert(allocatable);
         allocatable = false;
-        object.Emplace(std::forward<Args>(args)...);
+        object.emplace(std::forward<Args>(args)...);
         return SharedPtr<T>(&control, &*object);
     }
 
@@ -146,7 +146,7 @@ namespace infra
     template<class T>
     void SharedOptional<T>::Destruct(const void* object)
     {
-        this->object = infra::none;
+        this->object.reset();
     }
 
     template<class T>

@@ -75,7 +75,7 @@ namespace services
         hal::MacAddress macAddress;
         Config config;
         netif netInterface;
-        infra::Optional<LightweightIpOverEthernet> ethernetStack;
+        std::optional<LightweightIpOverEthernet> ethernetStack;
     };
 }
 

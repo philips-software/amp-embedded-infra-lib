@@ -47,7 +47,7 @@ namespace main_
 
         TargetAndFiles requestedTargets;
         for (auto& target : targets)
-            requestedTargets.emplace_back(target.Name(), args::get(target), infra::none);
+            requestedTargets.emplace_back(target.Name(), args::get(target), std::nullopt);
 
         try
         {

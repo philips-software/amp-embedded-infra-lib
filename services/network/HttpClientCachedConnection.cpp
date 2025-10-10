@@ -215,7 +215,7 @@ namespace services
         {
             clientPtr.SetAction(onDone);
 
-            if (client != infra::none && client->HttpClientObserver::IsAttached() && !client->detaching)
+            if (client != std::nullopt && client->HttpClientObserver::IsAttached() && !client->detaching)
                 client->HttpClientObserver::Subject().CloseConnection();
         }
     }
@@ -235,7 +235,7 @@ namespace services
         assert(clientObserverFactory != nullptr);
         // createdObserver is stored temporarily (until it is invoked) inside the client, so that if the lambda passed to ConnectionEstablished
         // is discarded instead of used, then createdObserver is discarded automatically as well.
-        client.Emplace(*this, std::move(createdObserver));
+        client.emplace(*this, std::move(createdObserver));
 
         clientObserverFactory->ConnectionEstablished([httpClientPtr = clientPtr.MakeShared(*client)](infra::SharedPtr<HttpClientObserver> observer)
             {
@@ -270,7 +270,7 @@ namespace services
 
     void HttpClientCachedConnectionConnector::Connect()
     {
-        if (client != infra::none && client->HttpClientObserver::IsAttached())
+        if (client != std::nullopt && client->HttpClientObserver::IsAttached())
             client->HttpClientObserver::Subject().CloseConnection();
 
         hostAndPortHash = GenerateHostAndPortHash(*clientObserverFactory);
@@ -279,7 +279,7 @@ namespace services
 
     void HttpClientCachedConnectionConnector::DetachingObserver()
     {
-        if (clientObserverFactory == nullptr && client != infra::none && !disconnectTimer.Armed())
+        if (clientObserverFactory == nullptr && client != std::nullopt && !disconnectTimer.Armed())
             disconnectTimer.Start(disconnectTimeout, [this]()
                 {
                     DisconnectTimeout();
@@ -293,20 +293,20 @@ namespace services
 
     void HttpClientCachedConnectionConnector::DisconnectTimeout()
     {
-        if (client != infra::none && !client->HttpClient::IsAttached() && client->HttpClientObserver::IsAttached())
+        if (client != std::nullopt && !client->HttpClient::IsAttached() && client->HttpClientObserver::IsAttached())
             client->HttpClientObserver::Subject().CloseConnection();
     };
 
     void HttpClientCachedConnectionConnector::TryConnectWaiting()
     {
-        if (clientObserverFactory == nullptr && (client == infra::none || !client->HttpClient::IsAttached()) && !waitingClientObserverFactories.empty())
+        if (clientObserverFactory == nullptr && (client == std::nullopt || !client->HttpClient::IsAttached()) && !waitingClientObserverFactories.empty())
         {
             disconnectTimer.Cancel();
 
             clientObserverFactory = &waitingClientObserverFactories.front();
             waitingClientObserverFactories.pop_front();
 
-            if (client == infra::none || !client->HttpClientObserver::IsAttached() || !client->Idle())
+            if (client == std::nullopt || !client->HttpClientObserver::IsAttached() || !client->Idle())
                 Connect();
             else
                 TryRetargetConnection();
@@ -323,7 +323,7 @@ namespace services
 
     void HttpClientCachedConnectionConnector::ClientPtrExpired()
     {
-        if (client != infra::none && client->HttpClient::IsAttached() && !client->detachingObserver)
+        if (client != std::nullopt && client->HttpClient::IsAttached() && !client->detachingObserver)
             client->HttpClient::Detach();
 
         TryConnectWaiting();

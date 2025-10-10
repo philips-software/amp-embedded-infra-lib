@@ -149,7 +149,7 @@ namespace services
 
             if (ipv4Address == IPv4Address())
             {
-                if (connected != infra::none && !stopping)
+                if (connected != std::nullopt && !stopping)
                 {
                     stopping = true;
                     (*connected)->Stop([this]()
@@ -162,7 +162,7 @@ namespace services
             {
                 if (!stopping)
                 {
-                    connected.Emplace(connectedCreator, *this);
+                    connected.emplace(connectedCreator, *this);
                     starting = false;
                 }
                 else
@@ -173,12 +173,12 @@ namespace services
 
     void LightweightIp::OnStopped()
     {
-        connected = infra::none;
+        connected.reset();
         stopping = false;
 
         if (starting)
         {
-            connected.Emplace(connectedCreator, *this);
+            connected.emplace(connectedCreator, *this);
             starting = false;
         }
     }

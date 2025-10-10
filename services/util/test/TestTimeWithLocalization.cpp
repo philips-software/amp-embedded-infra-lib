@@ -29,27 +29,27 @@ public:
     void CheckValidDuration(infra::Duration expected, infra::BoundedConstString string)
     {
         auto duration = services::TimeWithLocalization::DurationFromString(string);
-        EXPECT_NE(infra::none, duration);
+        EXPECT_NE(std::nullopt, duration);
         EXPECT_EQ(expected, *duration);
     }
 
     void CheckInvalidDuration(infra::BoundedConstString string)
     {
         auto duration = services::TimeWithLocalization::DurationFromString(string);
-        EXPECT_EQ(infra::none, duration);
+        EXPECT_EQ(std::nullopt, duration);
     }
 
     void CheckValidTimePoint(infra::TimePoint expected, infra::BoundedConstString string)
     {
         auto timePoint = services::TimeWithLocalization::TimePointFromString(string);
-        EXPECT_NE(infra::none, timePoint);
+        EXPECT_NE(std::nullopt, timePoint);
         EXPECT_EQ(expected, *timePoint);
     }
 
     void CheckInvalidTimePoint(infra::BoundedConstString string)
     {
         auto timePoint = services::TimeWithLocalization::TimePointFromString(string);
-        EXPECT_EQ(infra::none, timePoint);
+        EXPECT_EQ(std::nullopt, timePoint);
     }
 
     services::TimeWithLocalization time;
@@ -107,7 +107,7 @@ TEST_F(TimeWithLocalizationTest, GetOffsetFromTimeString)
     EXPECT_EQ("+59:59", services::TimeWithLocalization::OffsetFromTimeString("1970-01-01T00:00:00+59:59"));
     EXPECT_EQ("-01:01", services::TimeWithLocalization::OffsetFromTimeString("1970-01-01T00:00:00-01:01"));
     EXPECT_EQ("-00:00", services::TimeWithLocalization::OffsetFromTimeString("1970-01-01T00:00:00-00:00"));
-    EXPECT_EQ(infra::none, services::TimeWithLocalization::OffsetFromTimeString("1970-01-01T00:00:00"));
+    EXPECT_EQ(std::nullopt, services::TimeWithLocalization::OffsetFromTimeString("1970-01-01T00:00:00"));
 }
 
 TEST_F(TimeWithLocalizationTest, GetOffsetValues)
