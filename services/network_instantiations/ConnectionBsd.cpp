@@ -19,6 +19,10 @@ namespace services
     ConnectionBsd::ConnectionBsd(EventDispatcherWithNetwork& network, int socket)
         : network(network)
         , socket(socket)
+        , streamReader([this]()
+              {
+                  keepAliveForReader = nullptr;
+              })
     {
         SetNonBlocking(socket);
     }
@@ -49,6 +53,7 @@ namespace services
 
     infra::SharedPtr<infra::StreamReaderWithRewinding> ConnectionBsd::ReceiveStream()
     {
+        keepAliveForReader = SharedFromThis();
         return streamReader.Emplace(*this);
     }
 
