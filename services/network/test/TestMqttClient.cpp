@@ -20,7 +20,7 @@ public:
             services::ConnectionStub::RequestSendStream(sendSize);
         else
         {
-            this->sendSize.Emplace(sendSize);
+            this->sendSize.emplace(sendSize);
             RequestSendStreamMock(sendSize);
         }
     }
@@ -28,7 +28,7 @@ public:
     void ScheduleGrantSendStream()
     {
         services::ConnectionStub::RequestSendStream(*sendSize);
-        sendSize = infra::none;
+        sendSize.reset();
     }
 
     void AutoSendStreamAvailableEnabled(bool newValue)
@@ -40,7 +40,7 @@ public:
 
 private:
     bool autoSendStreamAvailable = true;
-    infra::Optional<std::size_t> sendSize;
+    std::optional<std::size_t> sendSize;
 };
 
 class MqttClientTest
