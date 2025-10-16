@@ -55,6 +55,7 @@ set_source_files_properties(
     TestOptional.cpp PROPERTIES COMPILE_FLAGS
     $<$<CXX_COMPILER_ID:GNU>:-Wno-deprecated-declarations>
     $<$<CXX_COMPILER_ID:Clang>:-Wno-deprecated-declarations>
+    $<$<CXX_COMPILER_ID:AppleClang>:-Wno-deprecated-declarations>
     $<$<CXX_COMPILER_ID:MSVC>:/wd4996>
 )
 
