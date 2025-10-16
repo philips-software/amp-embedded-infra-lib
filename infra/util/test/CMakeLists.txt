@@ -53,10 +53,10 @@ target_sources(infra.util_test PRIVATE
 
 set_source_files_properties(
     TestOptional.cpp PROPERTIES COMPILE_FLAGS
-    $<$<CXX_COMPILER_ID:GNU>:-Wno-deprecated-declarations>
-    $<$<CXX_COMPILER_ID:Clang>:-Wno-deprecated-declarations>
-    $<$<CXX_COMPILER_ID:AppleClang>:-Wno-deprecated-declarations>
-    $<$<CXX_COMPILER_ID:MSVC>:/wd4996>
+    "$<$<CXX_COMPILER_ID:GNU>:-Wno-deprecated-declarations>
+     $<$<CXX_COMPILER_ID:Clang>:-Wno-deprecated-declarations>
+     $<$<CXX_COMPILER_ID:AppleClang>:-Wno-deprecated-declarations>
+     $<$<CXX_COMPILER_ID:MSVC>:/wd4996>"
 )
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
