@@ -51,6 +51,11 @@ target_sources(infra.util_test PRIVATE
     TestVariant.cpp
 )
 
+set_source_files_properties(
+    TestOptional.cpp PROPERTIES COMPILE_FLAGS
+    "$<$<CXX_COMPILER_ID:GNU>:-Wno-deprecated-declarations>$<$<CXX_COMPILER_ID:Clang>:-Wno-deprecated-declarations>$<$<CXX_COMPILER_ID:AppleClang>:-Wno-deprecated-declarations>$<$<CXX_COMPILER_ID:MSVC>:/wd4996>"
+)
+
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # Workaround for false positive on stringop overflow
     set_source_files_properties(TestBoundedVector.cpp PROPERTIES COMPILE_FLAGS -Wno-stringop-overflow)

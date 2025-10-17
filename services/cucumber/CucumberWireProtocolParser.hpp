@@ -26,7 +26,7 @@ namespace services
         infra::JsonObject nameToMatch;
         uint32_t invokeId;
         infra::JsonArray invokeArguments;
-        infra::Optional<infra::JsonObject> scenarioTags;
+        std::optional<infra::JsonObject> scenarioTags;
 
         void ParseRequest(infra::BoundedConstString inputString);
         bool Valid(infra::BoundedConstString inputString);

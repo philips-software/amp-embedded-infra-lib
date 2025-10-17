@@ -55,7 +55,7 @@ namespace services
         if (nextKeyPair && &proxy != this)
         {
             secured.SetSendKey(nextKeyPair->first, nextKeyPair->second);
-            nextKeyPair = infra::none;
+            nextKeyPair.reset();
         }
     }
 

@@ -39,9 +39,9 @@ namespace services
     void EchoPolicyDiffieHellman::Initialized()
     {
         initializingKeys = true;
-        nextKeyPair = infra::none;
+        nextKeyPair.reset();
 
-        keyExchange.Emplace(keyExchangeCreator, randomDataGenerator);
+        keyExchange.emplace(keyExchangeCreator, randomDataGenerator);
 
         DiffieHellmanKeyEstablishmentProxy::RequestSend([this]()
             {
@@ -72,7 +72,7 @@ namespace services
         if (nextKeyPair && &proxy != this)
         {
             secured.SetSendKey(nextKeyPair->first, nextKeyPair->second);
-            nextKeyPair = infra::none;
+            nextKeyPair.reset();
         }
     }
 
@@ -92,7 +92,7 @@ namespace services
 
     void EchoPolicyDiffieHellman::Exchange(infra::ConstByteRange otherPublicKey, infra::ConstByteRange signatureR, infra::ConstByteRange signatureS)
     {
-        if (verifier == infra::none || !(*verifier)->Verify(otherPublicKey, signatureR, signatureS))
+        if (verifier == std::nullopt || !(*verifier)->Verify(otherPublicKey, signatureR, signatureS))
         {
             KeyExchangeFailed();
             return;
@@ -123,7 +123,7 @@ namespace services
 
     void EchoPolicyDiffieHellman::PresentCertificate(infra::ConstByteRange otherDsaCertificate)
     {
-        verifier.Emplace(verifierCreator, otherDsaCertificate, rootCaCertificate);
+        verifier.emplace(verifierCreator, otherDsaCertificate, rootCaCertificate);
 
         MethodDone();
     }

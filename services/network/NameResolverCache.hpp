@@ -53,7 +53,7 @@ namespace services
         };
 
     private:
-        infra::Optional<CacheEntry> SearchCache(NameResolverResult& result) const;
+        std::optional<CacheEntry> SearchCache(NameResolverResult& result) const;
         std::array<uint8_t, 16> Hash(infra::BoundedConstString name) const;
         void TryResolveNext();
         void NameLookupSuccess(NameResolverResult& result, IPAddress address, infra::TimePoint validUntil);
@@ -70,7 +70,7 @@ namespace services
         infra::Duration minimumTtl;
 
         infra::IntrusiveList<NameResolverResult> waiting;
-        infra::Optional<ActiveLookup> activeLookup;
+        std::optional<ActiveLookup> activeLookup;
 
         infra::TimerSingleShot cleanupTimer;
     };

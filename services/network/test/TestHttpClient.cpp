@@ -1,11 +1,13 @@
 #include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
 #include "infra/stream/StdStringOutputStream.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
+#include "services/network/Http.hpp"
 #include "services/network/HttpClientImpl.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/network/test_doubles/ConnectionStub.hpp"
 #include "services/network/test_doubles/HttpClientMock.hpp"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 TEST(HttpTest, parse_components_from_url)
 {
@@ -90,6 +92,69 @@ INSTANTIATE_TEST_SUITE_P(HttpStatusMessageTest, HttpStatusMessageFormattingTest,
         HttpStatusCodeWithString{ services::HttpStatusCode::ServiceUnavailable, "ServiceUnavailable" },
         HttpStatusCodeWithString{ services::HttpStatusCode::GatewayTimeOut, "GatewayTimeOut" },
         HttpStatusCodeWithString{ services::HttpStatusCode::HttpVersionNotSupported, "HttpVersionNotSupported" }));
+
+struct HttpStatusCodeAndString
+{
+    std::string string;
+    services::HttpStatusCode code;
+};
+
+class HttpStatusMessageParsingTest
+    : public testing::TestWithParam<HttpStatusCodeAndString>
+{
+public:
+    infra::StdStringOutputStream::WithStorage stream;
+};
+
+TEST_P(HttpStatusMessageParsingTest, read_formatted_HttpStatusCode_from_string)
+{
+    const auto parameter = GetParam();
+    EXPECT_THAT(services::HttpStatusCodeFromString(parameter.string), testing::Eq(parameter.code));
+}
+
+INSTANTIATE_TEST_SUITE_P(HttpStatusMessageTest, HttpStatusMessageParsingTest,
+    testing::Values(
+        HttpStatusCodeAndString{ "100", services::HttpStatusCode::Continue },
+        HttpStatusCodeAndString{ "101", services::HttpStatusCode::SwitchingProtocols },
+        HttpStatusCodeAndString{ "200", services::HttpStatusCode::OK },
+        HttpStatusCodeAndString{ "201", services::HttpStatusCode::Created },
+        HttpStatusCodeAndString{ "202", services::HttpStatusCode::Accepted },
+        HttpStatusCodeAndString{ "203", services::HttpStatusCode::NonAuthorativeInformation },
+        HttpStatusCodeAndString{ "204", services::HttpStatusCode::NoContent },
+        HttpStatusCodeAndString{ "205", services::HttpStatusCode::ResetContent },
+        HttpStatusCodeAndString{ "206", services::HttpStatusCode::PartialContent },
+        HttpStatusCodeAndString{ "300", services::HttpStatusCode::MultipleChoices },
+        HttpStatusCodeAndString{ "301", services::HttpStatusCode::MovedPermanently },
+        HttpStatusCodeAndString{ "302", services::HttpStatusCode::Found },
+        HttpStatusCodeAndString{ "303", services::HttpStatusCode::SeeOther },
+        HttpStatusCodeAndString{ "304", services::HttpStatusCode::NotModified },
+        HttpStatusCodeAndString{ "305", services::HttpStatusCode::UseProxy },
+        HttpStatusCodeAndString{ "307", services::HttpStatusCode::TemporaryRedirect },
+        HttpStatusCodeAndString{ "308", services::HttpStatusCode::PermanentRedirect },
+        HttpStatusCodeAndString{ "400", services::HttpStatusCode::BadRequest },
+        HttpStatusCodeAndString{ "401", services::HttpStatusCode::Unauthorized },
+        HttpStatusCodeAndString{ "402", services::HttpStatusCode::PaymentRequired },
+        HttpStatusCodeAndString{ "403", services::HttpStatusCode::Forbidden },
+        HttpStatusCodeAndString{ "404", services::HttpStatusCode::NotFound },
+        HttpStatusCodeAndString{ "405", services::HttpStatusCode::MethodNotAllowed },
+        HttpStatusCodeAndString{ "406", services::HttpStatusCode::NotAcceptable },
+        HttpStatusCodeAndString{ "407", services::HttpStatusCode::ProxyAuthenticationRequired },
+        HttpStatusCodeAndString{ "408", services::HttpStatusCode::RequestTimeOut },
+        HttpStatusCodeAndString{ "409", services::HttpStatusCode::Conflict },
+        HttpStatusCodeAndString{ "410", services::HttpStatusCode::Gone },
+        HttpStatusCodeAndString{ "411", services::HttpStatusCode::LengthRequired },
+        HttpStatusCodeAndString{ "412", services::HttpStatusCode::PreconditionFailed },
+        HttpStatusCodeAndString{ "413", services::HttpStatusCode::RequestEntityTooLarge },
+        HttpStatusCodeAndString{ "414", services::HttpStatusCode::RequestUriTooLarge },
+        HttpStatusCodeAndString{ "415", services::HttpStatusCode::UnsupportedMediaType },
+        HttpStatusCodeAndString{ "416", services::HttpStatusCode::RequestRangeNotSatisfiable },
+        HttpStatusCodeAndString{ "417", services::HttpStatusCode::ExpectationFailed },
+        HttpStatusCodeAndString{ "500", services::HttpStatusCode::InternalServerError },
+        HttpStatusCodeAndString{ "501", services::HttpStatusCode::NotImplemented },
+        HttpStatusCodeAndString{ "502", services::HttpStatusCode::BadGateway },
+        HttpStatusCodeAndString{ "503", services::HttpStatusCode::ServiceUnavailable },
+        HttpStatusCodeAndString{ "504", services::HttpStatusCode::GatewayTimeOut },
+        HttpStatusCodeAndString{ "505", services::HttpStatusCode::HttpVersionNotSupported }));
 
 class HttpClientTest
     : public testing::Test

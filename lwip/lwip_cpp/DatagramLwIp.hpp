@@ -60,7 +60,7 @@ namespace services
             : public infra::StreamWriter
         {
         public:
-            UdpWriter(udp_pcb* control, pbuf* buffer, infra::Optional<UdpSocket> remote);
+            UdpWriter(udp_pcb* control, pbuf* buffer, std::optional<UdpSocket> remote);
             ~UdpWriter();
 
             void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
@@ -69,7 +69,7 @@ namespace services
         private:
             udp_pcb* control;
             pbuf* buffer;
-            infra::Optional<UdpSocket> remote;
+            std::optional<UdpSocket> remote;
             uint16_t bufferOffset = 0;
         };
 
@@ -99,14 +99,14 @@ namespace services
             : public StateBase
         {
         public:
-            StateWaitingForBuffer(DatagramExchangeLwIP& datagramExchange, std::size_t sendSize, infra::Optional<UdpSocket> remote);
+            StateWaitingForBuffer(DatagramExchangeLwIP& datagramExchange, std::size_t sendSize, std::optional<UdpSocket> remote);
 
             void TryAllocateBuffer();
 
         private:
             DatagramExchangeLwIP& datagramExchange;
             std::size_t sendSize;
-            infra::Optional<UdpSocket> remote;
+            std::optional<UdpSocket> remote;
             infra::TimerRepeating allocateTimer;
         };
 
@@ -114,7 +114,7 @@ namespace services
             : public StateBase
         {
         public:
-            StateBufferAllocated(DatagramExchangeLwIP& datagramExchange, pbuf* buffer, infra::Optional<UdpSocket> remote);
+            StateBufferAllocated(DatagramExchangeLwIP& datagramExchange, pbuf* buffer, std::optional<UdpSocket> remote);
             ~StateBufferAllocated() override;
 
         private:
