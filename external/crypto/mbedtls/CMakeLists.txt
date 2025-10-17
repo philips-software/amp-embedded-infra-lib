@@ -39,6 +39,11 @@ function(add_mbedtls_target_properties)
             MBEDTLS_CONFIG_FILE="mbedtls/mbedtls_emil_config.h"
         )
 
+        # Required for CC35XX, depends on mbedtls_hardware_poll from ConnectionMbedTls.cpp defined in services.network library
+        target_link_libraries(${target} PRIVATE
+            services.network
+        )
+
         target_compile_options(${target} PUBLIC
             # see https://github.com/Mbed-TLS/mbedtls/pull/6966
             # mbedtls sets the -Wdocumentation flag, which is throwing warnings

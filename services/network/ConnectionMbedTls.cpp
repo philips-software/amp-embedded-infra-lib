@@ -68,7 +68,7 @@ namespace services
             mbedtls_ssl_conf_tls13_key_exchange_modes(&sslConfig,
                 MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_MODE_EPHEMERAL |
                     MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_MODE_PSK_EPHEMERAL);
-            mbedtls_ssl_conf_tls13_enable_signal_new_session_tickets(&sslConfig, MBEDTLS_SSL_TLS1_3_SIGNAL_NEW_SESSION_TICKETS_ENABLED);
+            mbedtls_ssl_conf_tls13_enable_signal_new_session_tickets(&sslConfig, MBEDTLS_SSL_TLS1_3_NEW_SESSION_TICKET);
 #endif
         }
     }
