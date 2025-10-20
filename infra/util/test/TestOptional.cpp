@@ -1,5 +1,6 @@
 #include "infra/util/Optional.hpp"
 #include "gtest/gtest.h"
+#include <optional>
 
 namespace infra
 {
@@ -242,16 +243,16 @@ TEST(OptionalTest, TestMakeOptional)
 
 TEST(OptionalTest, TestTransformOptional)
 {
-    infra::Optional<bool> o = infra::MakeOptional(true);
-    infra::Optional<bool> empty;
-    EXPECT_EQ(infra::MakeOptional(5), infra::TransformOptional(infra::MakeOptional(true), [](bool value)
-                                          {
-                                              return 5;
-                                          }));
-    EXPECT_EQ(infra::none, infra::TransformOptional(empty, [](bool value)
-                               {
-                                   return 5;
-                               }));
+    std::optional<bool> o = std::make_optional(true);
+    std::optional<bool> empty;
+    EXPECT_EQ(std::make_optional(5), infra::TransformOptional(std::make_optional(true), [](bool value)
+                                         {
+                                             return 5;
+                                         }));
+    EXPECT_EQ(std::nullopt, infra::TransformOptional(empty, [](bool value)
+                                {
+                                    return 5;
+                                }));
 }
 
 TEST(OptionalTest, ValueOrGivesStoredWhenAvailable)

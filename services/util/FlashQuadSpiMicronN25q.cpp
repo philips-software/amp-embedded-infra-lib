@@ -49,14 +49,14 @@ namespace services
 
     void FlashQuadSpiMicronN25q::ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
-        const hal::QuadSpi::Header header{ infra::MakeOptional(commandReadData), ConvertAddress(address), {}, 10 };
+        const hal::QuadSpi::Header header{ std::make_optional(commandReadData), ConvertAddress(address), {}, 10 };
 
         spi.ReceiveData(header, buffer, hal::QuadSpi::Lines::QuadSpeed(), onDone);
     }
 
     void FlashQuadSpiMicronN25q::WriteEnableSingleSpeed()
     {
-        static const hal::QuadSpi::Header writeEnableHeader{ infra::MakeOptional(commandWriteEnable), {}, {}, 0 };
+        static const hal::QuadSpi::Header writeEnableHeader{ std::make_optional(commandWriteEnable), {}, {}, 0 };
         spi.SendData(writeEnableHeader, {}, hal::QuadSpi::Lines::SingleSpeed(), [this]()
             {
                 sequencer.Continue();
@@ -65,7 +65,7 @@ namespace services
 
     void FlashQuadSpiMicronN25q::SwitchToQuadSpeed()
     {
-        static const hal::QuadSpi::Header writeVolatileRegisterHeader{ infra::MakeOptional(commandWriteEnhancedVolatileRegister), {}, {}, 0 };
+        static const hal::QuadSpi::Header writeVolatileRegisterHeader{ std::make_optional(commandWriteEnhancedVolatileRegister), {}, {}, 0 };
         spi.SendData(writeVolatileRegisterHeader, infra::MakeByteRange(volatileRegisterForQuadSpeed), hal::QuadSpi::Lines::SingleSpeed(), [this]()
             {
                 sequencer.Continue();
@@ -74,7 +74,7 @@ namespace services
 
     void FlashQuadSpiMicronN25q::WriteEnable()
     {
-        static const hal::QuadSpi::Header writeEnableHeader{ infra::MakeOptional(commandWriteEnable), {}, {}, 0 };
+        static const hal::QuadSpi::Header writeEnableHeader{ std::make_optional(commandWriteEnable), {}, {}, 0 };
         spi.SendData(writeEnableHeader, {}, hal::QuadSpi::Lines::QuadSpeed(), [this]()
             {
                 sequencer.Continue();
@@ -102,7 +102,7 @@ namespace services
 
     void FlashQuadSpiMicronN25q::SendEraseSubSector(uint32_t subSectorIndex)
     {
-        hal::QuadSpi::Header eraseSubSectorHeader{ infra::MakeOptional(commandEraseSubSector), ConvertAddress(AddressOfSector(subSectorIndex)), {}, 0 };
+        hal::QuadSpi::Header eraseSubSectorHeader{ std::make_optional(commandEraseSubSector), ConvertAddress(AddressOfSector(subSectorIndex)), {}, 0 };
         spi.SendData(eraseSubSectorHeader, {}, hal::QuadSpi::Lines::QuadSpeed(), [this]()
             {
                 sequencer.Continue();
@@ -111,7 +111,7 @@ namespace services
 
     void FlashQuadSpiMicronN25q::SendEraseSector(uint32_t subSectorIndex)
     {
-        hal::QuadSpi::Header eraseSectorHeader{ infra::MakeOptional(commandEraseSector), ConvertAddress(AddressOfSector(subSectorIndex)), {}, 0 };
+        hal::QuadSpi::Header eraseSectorHeader{ std::make_optional(commandEraseSector), ConvertAddress(AddressOfSector(subSectorIndex)), {}, 0 };
         spi.SendData(eraseSectorHeader, {}, hal::QuadSpi::Lines::QuadSpeed(), [this]()
             {
                 sequencer.Continue();
@@ -120,7 +120,7 @@ namespace services
 
     void FlashQuadSpiMicronN25q::SendEraseBulk()
     {
-        static const hal::QuadSpi::Header eraseBulkHeader{ infra::MakeOptional(commandEraseBulk), {}, {}, 0 };
+        static const hal::QuadSpi::Header eraseBulkHeader{ std::make_optional(commandEraseBulk), {}, {}, 0 };
         spi.SendData(eraseBulkHeader, {}, hal::QuadSpi::Lines::QuadSpeed(), [this]()
             {
                 sequencer.Continue();
@@ -129,7 +129,7 @@ namespace services
 
     void FlashQuadSpiMicronN25q::HoldWhileWriteInProgress()
     {
-        static const hal::QuadSpi::Header pollWriteInProgressHeader{ infra::MakeOptional(commandReadStatusRegister), {}, {}, 0 };
+        static const hal::QuadSpi::Header pollWriteInProgressHeader{ std::make_optional(commandReadStatusRegister), {}, {}, 0 };
         spi.PollStatus(pollWriteInProgressHeader, 1, 0, statusFlagWriteInProgress, hal::QuadSpi::Lines::QuadSpeed(), [this]()
             {
                 sequencer.Continue();

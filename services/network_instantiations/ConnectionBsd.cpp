@@ -9,7 +9,10 @@ namespace
 {
     void SetNonBlocking(int fileDescriptor)
     {
-        if (fcntl(fileDescriptor, F_SETFL, fcntl(fileDescriptor, F_GETFL, 0) | O_NONBLOCK) == -1)
+        auto status_flags = fcntl(fileDescriptor, F_GETFL, 0);
+        if (status_flags == -1)
+            std::abort();
+        if (fcntl(fileDescriptor, F_SETFL, status_flags | O_NONBLOCK) == -1)
             std::abort();
     }
 }

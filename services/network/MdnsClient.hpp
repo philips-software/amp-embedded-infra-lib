@@ -143,7 +143,7 @@ namespace services
         Multicast& multicast;
         IPVersions versions;
         infra::SharedPtr<DatagramExchange> datagramExchange;
-        infra::Optional<ActiveMdnsQuery> activeMdnsQuery;
+        std::optional<ActiveMdnsQuery> activeMdnsQuery;
         infra::IntrusiveList<MdnsQuery> queries;
         size_t lastWaitingQueryPosition = 0;
     };

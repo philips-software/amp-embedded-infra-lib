@@ -17,7 +17,7 @@
 
 #include "infra/util/StaticStorage.hpp"
 #include <cassert>
-#include <memory>
+#include <optional>
 #include <type_traits>
 
 namespace infra
@@ -33,11 +33,11 @@ namespace infra
     class Optional
     {
     public:
-        constexpr Optional() = default;
+        [[deprecated("Use std::optional instead")]] constexpr Optional() = default;
 
-        Optional(const Optional& other);
-        Optional(Optional&& other) noexcept;
-        Optional(None);
+        [[deprecated("Use std::optional instead")]] Optional(const Optional& other);
+        [[deprecated("Use std::optional instead")]] Optional(Optional&& other) noexcept;
+        [[deprecated("Use std::optional instead")]] Optional(None);
         template<class U>
         explicit Optional(const Optional<U>& other);
         template<class... Args>
@@ -120,10 +120,10 @@ namespace infra
     };
 
     template<class T>
-    Optional<typename std::decay<T>::type> MakeOptional(T&& value);
+    [[deprecated("Use std::optional instead")]] Optional<typename std::decay<T>::type> MakeOptional(T&& value);
 
     template<class T, class F>
-    auto TransformOptional(const infra::Optional<T>& value, F transformation) -> infra::Optional<decltype(transformation(*value))>;
+    auto TransformOptional(const std::optional<T>& value, F transformation) -> std::optional<decltype(transformation(*value))>;
 
     template<class T, std::size_t ExtraSize>
     class OptionalForPolymorphicObjects
@@ -422,12 +422,12 @@ namespace infra
     }
 
     template<class T, class F>
-    auto TransformOptional(const infra::Optional<T>& value, F transformation) -> infra::Optional<decltype(transformation(*value))>
+    auto TransformOptional(const std::optional<T>& value, F transformation) -> std::optional<decltype(transformation(*value))>
     {
-        if (value != infra::none)
-            return infra::MakeOptional(transformation(*value));
+        if (value != std::nullopt)
+            return std::make_optional(transformation(*value));
         else
-            return infra::none;
+            return std::nullopt;
     }
 
     template<class T, std::size_t ExtraSize>

@@ -224,7 +224,7 @@ namespace services
         GapCentralObserver::Subject().StopDeviceDiscovery();
     }
 
-    infra::Optional<hal::MacAddress> GapCentralDecorator::ResolvePrivateAddress(hal::MacAddress address) const
+    std::optional<hal::MacAddress> GapCentralDecorator::ResolvePrivateAddress(hal::MacAddress address) const
     {
         return GapCentralObserver::Subject().ResolvePrivateAddress(address);
     }
@@ -243,29 +243,29 @@ namespace services
             return localName;
     }
 
-    infra::Optional<std::pair<uint16_t, infra::ConstByteRange>> GapAdvertisingDataParser::ManufacturerSpecificData() const
+    std::optional<std::pair<uint16_t, infra::ConstByteRange>> GapAdvertisingDataParser::ManufacturerSpecificData() const
     {
         infra::ByteInputStream stream(ParserAdvertisingData(GapAdvertisementDataType::manufacturerSpecificData), infra::softFail);
         auto manufacturerCode = stream.Extract<uint16_t>();
         auto manufacturerData = stream.Reader().Remaining();
 
         if (stream.Failed())
-            return infra::none;
+            return std::nullopt;
 
-        return infra::MakeOptional(std::make_pair(manufacturerCode, manufacturerData));
+        return std::make_optional(std::make_pair(manufacturerCode, manufacturerData));
     }
 
-    infra::Optional<GapPeripheral::AdvertisementFlags> GapAdvertisingDataParser::Flags() const
+    std::optional<GapPeripheral::AdvertisementFlags> GapAdvertisingDataParser::Flags() const
     {
         auto flagsData = ParserAdvertisingData(GapAdvertisementDataType::flags);
 
         if (flagsData.empty())
-            return infra::none;
+            return std::nullopt;
 
         if (flagsData.size() != 1)
-            return infra::none;
+            return std::nullopt;
 
-        return infra::MakeOptional(static_cast<GapPeripheral::AdvertisementFlags>(flagsData[0]));
+        return std::make_optional(static_cast<GapPeripheral::AdvertisementFlags>(flagsData[0]));
     }
 
     infra::MemoryRange<const AttAttribute::Uuid16> GapAdvertisingDataParser::CompleteListOf16BitUuids() const
@@ -288,7 +288,7 @@ namespace services
         return infra::ConstCastMemoryRange<AttAttribute::Uuid128>(infra::ReinterpretCastMemoryRange<const AttAttribute::Uuid128>(uuidData));
     }
 
-    infra::Optional<uint16_t> GapAdvertisingDataParser::Appearance() const
+    std::optional<uint16_t> GapAdvertisingDataParser::Appearance() const
     {
         auto appearanceData = ParserAdvertisingData(GapAdvertisementDataType::appearance);
 
@@ -296,9 +296,9 @@ namespace services
         auto appearance = stream.Extract<uint16_t>();
 
         if (stream.Failed())
-            return infra::none;
+            return std::nullopt;
 
-        return infra::MakeOptional(appearance);
+        return std::make_optional(appearance);
     }
 
     infra::ConstByteRange GapAdvertisingDataParser::ParserAdvertisingData(GapAdvertisementDataType type) const

@@ -59,10 +59,10 @@ namespace services
         bool skipNextStream = false;
 
         infra::SharedPtr<infra::StreamReaderWithRewinding> readerPtr;
-        infra::Optional<infra::LimitedStreamReaderWithRewinding> limitedReader;
+        std::optional<infra::LimitedStreamReaderWithRewinding> limitedReader;
         infra::SharedPtr<MethodDeserializer> methodDeserializer;
         infra::BoundedDeque<uint8_t>::WithMaxSize<32> receiveBuffer;
-        infra::Optional<infra::BufferingStreamReader> bufferedReader;
+        std::optional<infra::BufferingStreamReader> bufferedReader;
         infra::AccessedBySharedPtr limitedReaderAccess;
 
         infra::SharedOptional<MethodDeserializerDummy> deserializerDummy;

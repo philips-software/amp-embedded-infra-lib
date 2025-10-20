@@ -19,7 +19,7 @@ namespace hal
         virtual bool SetTxPowerLevel(uint8_t txPower) = 0;
         virtual bool StartRxTest(uint8_t frequency, uint8_t phy) = 0;
         virtual bool StartTxTest(uint8_t frequency, uint8_t dataLength, uint8_t packetPayload, uint8_t phy) = 0;
-        virtual infra::Optional<uint16_t> StopTest() = 0; // In case of error returns infra::none.
+        virtual std::optional<uint16_t> StopTest() = 0; // In case of error returns std::nullopt.
     };
 }
 
