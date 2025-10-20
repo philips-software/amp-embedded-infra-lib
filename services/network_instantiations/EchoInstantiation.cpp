@@ -44,7 +44,7 @@ namespace application
                             });
                     },
                     std::chrono::seconds(10)))
-                throw std::runtime_error("Couldn't open websocket connection");
+                throw std::runtime_error("Couldn't open tcp connection");
         }
         else
             throw std::runtime_error("Don't know how to open " + target);
@@ -95,7 +95,7 @@ namespace application
                             });
                     },
                     std::chrono::seconds(10)))
-                throw std::runtime_error("Couldn't open websocket connection");
+                throw std::runtime_error("Couldn't open tcp connection");
         }
         else
             throw std::runtime_error("Don't know how to open " + target);
