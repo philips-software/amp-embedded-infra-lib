@@ -16,7 +16,15 @@ namespace services
         MOCK_METHOD(void, SetAddress, (hal::MacAddress macAddress, GapDeviceAddressType addressType));
         MOCK_METHOD(void, StartDeviceDiscovery, ());
         MOCK_METHOD(void, StopDeviceDiscovery, ());
-        MOCK_METHOD(infra::Optional<hal::MacAddress>, ResolvePrivateAddress, (hal::MacAddress address), (const));
+        MOCK_METHOD(std::optional<hal::MacAddress>, ResolvePrivateAddress, (hal::MacAddress address), (const));
+
+        void ChangeState(GapState newState)
+        {
+            NotifyObservers([newState](auto& observer)
+                {
+                    observer.StateChanged(newState);
+                });
+        }
     };
 }
 

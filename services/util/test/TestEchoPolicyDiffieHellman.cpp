@@ -129,7 +129,7 @@ public:
     infra::BoundedVector<uint8_t>::WithMaxSize<512> certificateRightDer{ certificateRight.Der() };
 
     services::EchoOnSesame echoOnSesameLeft{ securedLeft, serializerFactoryLeft, errorPolicy };
-    testing::StrictMock<EchoPolicyDiffieHellmanWithCryptoMbedTlsMock> echoPolicyLeft{ echoOnSesameLeft, echoOnSesameLeft, securedLeft, infra::MakeRange(certificateLeftDer), infra::MakeRange(privateKeyLeftDer), infra::MakeRange(rootCaCertificateDer), randomDataGenerator };
+    testing::StrictMock<EchoPolicyDiffieHellmanWithCryptoMbedTlsMock> echoPolicyLeft{ echoOnSesameLeft, echoOnSesameLeft, securedLeft, services::EchoPolicyDiffieHellman::KeyMaterial{ infra::MakeRange(certificateLeftDer), infra::MakeRange(privateKeyLeftDer), infra::MakeRange(rootCaCertificateDer) }, randomDataGenerator };
 };
 
 class EchoPolicyDiffieHellmanTest
@@ -142,7 +142,7 @@ public:
     }
 
     services::EchoOnSesame echoOnSesameRight{ securedRight, serializerFactoryRight, errorPolicy };
-    testing::StrictMock<EchoPolicyDiffieHellmanWithCryptoMbedTlsMock> echoPolicyRight{ echoOnSesameRight, echoOnSesameRight, securedRight, infra::MakeRange(certificateRightDer), infra::MakeRange(privateKeyRightDer), infra::MakeRange(rootCaCertificateDer), randomDataGenerator };
+    testing::StrictMock<EchoPolicyDiffieHellmanWithCryptoMbedTlsMock> echoPolicyRight{ echoOnSesameRight, echoOnSesameRight, securedRight, services::EchoPolicyDiffieHellman::KeyMaterial{ infra::MakeRange(certificateRightDer), infra::MakeRange(privateKeyRightDer), infra::MakeRange(rootCaCertificateDer) }, randomDataGenerator };
 
     services::ServiceStubProxy serviceProxy{ echoOnSesameLeft };
     testing::StrictMock<services::ServiceStub> service{ echoOnSesameRight };

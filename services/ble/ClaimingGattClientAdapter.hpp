@@ -4,6 +4,7 @@
 #include "infra/event/ClaimableResource.hpp"
 #include "infra/util/Function.hpp"
 #include "optional"
+#include "services/ble/Gap.hpp"
 #include "services/ble/Gatt.hpp"
 #include "services/ble/GattClient.hpp"
 #include <cstdint>
@@ -18,9 +19,10 @@ namespace services
         , public AttMtuExchange
         , private GattClientObserver
         , private AttMtuExchangeObserver
+        , private GapCentralObserver
     {
     public:
-        ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchange& attMtuExchange);
+        ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchange& attMtuExchange, GapCentral& gapCentral);
 
         // Implementation of GattClientDiscovery
         void StartServiceDiscovery() override;
@@ -53,6 +55,10 @@ namespace services
 
         // Implementation of AttMtuExchangeObserver
         void ExchangedMaxAttMtuSize() override;
+
+        // Implementation of GapCentralObserver
+        void DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered) override;
+        void StateChanged(GapState state) override;
 
     private:
         void PerformDescriptorOperation();

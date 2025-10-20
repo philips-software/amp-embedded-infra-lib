@@ -571,7 +571,7 @@ TEST(JsonObjectTest, get_none_when_optional_string_is_absent)
 {
     infra::JsonObject object(R"({ })");
 
-    EXPECT_EQ(infra::none, object.GetOptionalString("key"));
+    EXPECT_EQ(std::nullopt, object.GetOptionalString("key"));
     EXPECT_FALSE(object.Error());
 }
 
@@ -587,7 +587,7 @@ TEST(JsonObjectTest, get_none_when_optional_boolean_is_absent)
 {
     infra::JsonObject object(R"({ })");
 
-    EXPECT_EQ(infra::none, object.GetOptionalBoolean("key"));
+    EXPECT_EQ(std::nullopt, object.GetOptionalBoolean("key"));
     EXPECT_FALSE(object.Error());
 }
 
@@ -595,7 +595,7 @@ TEST(JsonObjectTest, get_none_when_optional_boolean_is_absent_but_key_is_present
 {
     infra::JsonObject object(R"({ "key" : "value" })");
 
-    EXPECT_EQ(infra::none, object.GetOptionalBoolean("key"));
+    EXPECT_EQ(std::nullopt, object.GetOptionalBoolean("key"));
     EXPECT_FALSE(object.Error());
 }
 
@@ -611,7 +611,7 @@ TEST(JsonObjectTest, get_none_when_optional_object_is_absent)
 {
     infra::JsonObject object(R"({ })");
 
-    EXPECT_EQ(infra::none, object.GetOptionalObject("key"));
+    EXPECT_EQ(std::nullopt, object.GetOptionalObject("key"));
     EXPECT_FALSE(object.Error());
 }
 
@@ -619,7 +619,7 @@ TEST(JsonObjectTest, get_none_when_optional_array_is_absent)
 {
     infra::JsonObject object(R"({ })");
 
-    EXPECT_EQ(infra::none, object.GetOptionalArray("key"));
+    EXPECT_EQ(std::nullopt, object.GetOptionalArray("key"));
     EXPECT_FALSE(object.Error());
 }
 

@@ -38,6 +38,13 @@ namespace services
             HmacDrbgSha256& keyExpander;
         };
 
+        struct KeyMaterial
+        {
+            infra::ConstByteRange dsaCertificate;
+            infra::ConstByteRange dsaCertificatePrivateKey;
+            infra::ConstByteRange rootCaCertificate;
+        };
+
 #ifdef EMIL_USE_MBEDTLS
         struct WithCryptoMbedTls;
 #endif
@@ -71,15 +78,14 @@ namespace services
         infra::Function<void(ServiceProxy& proxy)> onRequest;
 
         bool initializingKeys = true;
-        bool sentExchange = false;
-        infra::Optional<std::pair<std::array<uint8_t, 16>, std::array<uint8_t, 16>>> nextKeyPair;
+        std::optional<std::pair<std::array<uint8_t, 16>, std::array<uint8_t, 16>>> nextKeyPair;
         infra::IntrusiveList<ServiceProxy> waitingProxies;
 
         infra::CreatorBase<EcSecP256r1DiffieHellman, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)>& keyExchangeCreator;
-        infra::Optional<infra::ProxyCreator<EcSecP256r1DiffieHellman, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)>> keyExchange;
+        std::optional<infra::ProxyCreator<EcSecP256r1DiffieHellman, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)>> keyExchange;
         EcSecP256r1DsaSigner& signer;
         infra::CreatorBase<EcSecP256r1DsaVerifier, void(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)>& verifierCreator;
-        infra::Optional<infra::ProxyCreator<EcSecP256r1DsaVerifier, void(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)>> verifier;
+        std::optional<infra::ProxyCreator<EcSecP256r1DsaVerifier, void(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)>> verifier;
         HmacDrbgSha256& keyExpander;
     };
 
@@ -87,7 +93,7 @@ namespace services
     struct EchoPolicyDiffieHellman::WithCryptoMbedTls
         : public EchoPolicyDiffieHellman
     {
-        WithCryptoMbedTls(EchoWithPolicy& echo, EchoInitialization& echoInitialization, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange dsaCertificatePrivateKey, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        WithCryptoMbedTls(EchoWithPolicy& echo, EchoInitialization& echoInitialization, SesameSecured& secured, const EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
         infra::Creator<EcSecP256r1DiffieHellman, EcSecP256r1DiffieHellmanMbedTls, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)> keyExchange;
         EcSecP256r1DsaSignerMbedTls signer;

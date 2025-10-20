@@ -185,6 +185,7 @@ namespace services
         netif_set_up(&netInterface);
         netif_set_default(&netInterface);
 
+        really_assert(config.hostName.Storage()[config.hostName.size() - 1] == '\0');
         netif_set_hostname(&netInterface, config.hostName.Storage().data());
         netif_set_ip6_autoconfig_enabled(&netInterface, 1);
 
@@ -207,12 +208,12 @@ namespace services
 
     void LightweightIpOverEthernetFactory::Create(hal::EthernetMac& ethernet)
     {
-        ethernetStack.Emplace(ethernet, netInterface);
+        ethernetStack.emplace(ethernet, netInterface);
     }
 
     void LightweightIpOverEthernetFactory::Destroy()
     {
-        ethernetStack = infra::none;
+        ethernetStack.reset();
     }
 
     hal::MacAddress LightweightIpOverEthernetFactory::MacAddress() const

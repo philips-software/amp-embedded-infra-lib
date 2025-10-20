@@ -81,10 +81,10 @@ namespace services
         decorator.StopDeviceDiscovery();
 
         hal::MacAddress mac = { 0x00, 0x1A, 0x7D, 0xDA, 0x71, 0x13 };
-        EXPECT_CALL(gap, ResolvePrivateAddress(mac)).WillOnce(testing::Return(infra::none));
-        EXPECT_EQ(decorator.ResolvePrivateAddress(mac), infra::none);
+        EXPECT_CALL(gap, ResolvePrivateAddress(mac)).WillOnce(testing::Return(std::nullopt));
+        EXPECT_EQ(decorator.ResolvePrivateAddress(mac), std::nullopt);
 
-        EXPECT_CALL(gap, ResolvePrivateAddress(mac)).WillOnce(testing::Return(infra::MakeOptional(mac)));
+        EXPECT_CALL(gap, ResolvePrivateAddress(mac)).WillOnce(testing::Return(std::make_optional(mac)));
         EXPECT_EQ(decorator.ResolvePrivateAddress(mac), mac);
     }
 
@@ -148,6 +148,18 @@ namespace services
         EXPECT_TRUE(manufacturerSpecificData);
         EXPECT_EQ(0xbbaa, manufacturerSpecificData->first);
         EXPECT_TRUE(infra::ContentsEqual(infra::MakeRange(payloadParser), manufacturerSpecificData->second));
+    }
+
+    TEST(GapAdvertisingDataParserTest, get_appearance_value)
+    {
+        const std::array<uint8_t, 4> data = { 0x03, 0x19, 0xC1, 0x03 };
+
+        services::GapAdvertisingDataParser parser(infra::MakeConstByteRange(data));
+
+        auto appearance = parser.Appearance();
+
+        ASSERT_TRUE(appearance);
+        EXPECT_EQ(0x03C1, *appearance);
     }
 
     TEST(GapAdvertisingDataParserTest, useful_info_after_first_ad_structure)

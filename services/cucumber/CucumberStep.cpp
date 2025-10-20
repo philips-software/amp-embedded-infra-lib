@@ -45,7 +45,7 @@ namespace services
 
     bool CucumberStepArguments::ContainsTableArgument(infra::BoundedConstString fieldName) const
     {
-        return GetTableArgument(fieldName) != infra::none;
+        return GetTableArgument(fieldName) != std::nullopt;
     }
 
     infra::JsonArray CucumberStepArguments::GetTable() const
@@ -55,7 +55,7 @@ namespace services
         return argumentIterator->Get<infra::JsonArray>();
     }
 
-    infra::Optional<infra::JsonString> CucumberStepArguments::GetTableArgument(infra::BoundedConstString fieldName) const
+    std::optional<infra::JsonString> CucumberStepArguments::GetTableArgument(infra::BoundedConstString fieldName) const
     {
         infra::JsonArrayIterator argumentIterator(invokeArguments->begin());
         SkipOverStringArguments(argumentIterator);
@@ -67,9 +67,9 @@ namespace services
                     infra::JsonArrayIterator collumnIterator = rowIterator->Get<infra::JsonArray>().begin();
                     ++collumnIterator;
                     if (collumnIterator != rowIterator->Get<infra::JsonArray>().end())
-                        return infra::MakeOptional(collumnIterator->Get<infra::JsonString>());
+                        return std::make_optional(collumnIterator->Get<infra::JsonString>());
                 }
-        return infra::none;
+        return std::nullopt;
     }
 
     bool CucumberStepArguments::HasStringArguments() const
@@ -79,7 +79,7 @@ namespace services
 
     bool CucumberStepArguments::ContainsStringArgument(uint8_t index) const
     {
-        return GetStringArgument(index) != infra::none;
+        return GetStringArgument(index) != std::nullopt;
     }
 
     uint16_t CucumberStepArguments::NrArguments() const
@@ -121,7 +121,7 @@ namespace services
         return nrFields;
     }
 
-    infra::Optional<infra::JsonString> CucumberStepArguments::GetStringArgument(uint8_t argumentNumber) const
+    std::optional<infra::JsonString> CucumberStepArguments::GetStringArgument(uint8_t argumentNumber) const
     {
         if (invokeArguments->begin() != invokeArguments->end())
         {
@@ -133,12 +133,12 @@ namespace services
                 ++argumentCount;
             }
             if (argumentCount == argumentNumber)
-                return infra::MakeOptional(argumentIterator->Get<infra::JsonString>());
+                return std::make_optional(argumentIterator->Get<infra::JsonString>());
         }
-        return infra::none;
+        return std::nullopt;
     }
 
-    infra::Optional<uint32_t> CucumberStepArguments::GetUIntegerArgument(uint8_t argumentNumber) const
+    std::optional<uint32_t> CucumberStepArguments::GetUIntegerArgument(uint8_t argumentNumber) const
     {
         auto optionalStringArgument = GetStringArgument(argumentNumber);
 
@@ -149,13 +149,13 @@ namespace services
             infra::StringInputStream stream(stringArgument);
             uint32_t argument;
             stream >> argument;
-            return infra::MakeOptional(argument);
+            return std::make_optional(argument);
         }
 
-        return infra::none;
+        return std::nullopt;
     }
 
-    infra::Optional<bool> CucumberStepArguments::GetBooleanArgument(uint8_t argumentNumber) const
+    std::optional<bool> CucumberStepArguments::GetBooleanArgument(uint8_t argumentNumber) const
     {
         auto optionalStringArgument = GetStringArgument(argumentNumber);
 
@@ -163,10 +163,10 @@ namespace services
         {
             infra::BoundedString::WithStorage<5> stringArgument;
             optionalStringArgument->ToString(stringArgument);
-            return infra::MakeOptional(stringArgument == "true");
+            return std::make_optional(stringArgument == "true");
         }
 
-        return infra::none;
+        return std::nullopt;
     }
 
     void CucumberStepProgress::Success()
