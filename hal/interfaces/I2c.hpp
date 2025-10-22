@@ -10,7 +10,9 @@ namespace hal
     {
         complete,
         partialComplete,
-        busError
+        busError,
+        arbitrationLost,
+        deviceNotFound
     };
 
     enum class Action
