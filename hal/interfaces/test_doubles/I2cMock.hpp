@@ -6,6 +6,15 @@
 
 namespace hal
 {
+    class I2cErrorPolicyMock
+        : public hal::I2cErrorPolicy
+    {
+    public:
+        MOCK_METHOD(void, DeviceNotFound, (), (override));
+        MOCK_METHOD(void, BusError, (), (override));
+        MOCK_METHOD(void, ArbitrationLost, (), (override));
+    };
+
     class I2cMasterMock
         : public hal::I2cMaster
     {
@@ -14,9 +23,11 @@ namespace hal
             infra::Function<void(hal::Result, uint32_t numberOfBytesSent)> onSent) override;
         void ReceiveData(hal::I2cAddress address, infra::ByteRange data, hal::Action nextAction,
             infra::Function<void(hal::Result)> onReceived) override;
+        MOCK_METHOD(void, SetErrorPolicy, (hal::I2cErrorPolicy & policy), (override));
+        MOCK_METHOD(void, ResetErrorPolicy, (), (override));
 
-        MOCK_METHOD3(SendDataMock, void(hal::I2cAddress address, hal::Action nextAction, std::vector<uint8_t> data));
-        MOCK_METHOD2(ReceiveDataMock, std::vector<uint8_t>(hal::I2cAddress address, hal::Action nextAction));
+        MOCK_METHOD(void, SendDataMock, (hal::I2cAddress address, hal::Action nextAction, std::vector<uint8_t> data));
+        MOCK_METHOD(std::vector<uint8_t>, ReceiveDataMock, (hal::I2cAddress address, hal::Action nextAction));
     };
 
     class I2cMasterMockWithoutAutomaticDone
@@ -27,9 +38,11 @@ namespace hal
             infra::Function<void(hal::Result, uint32_t numberOfBytesSent)> onSent) override;
         void ReceiveData(hal::I2cAddress address, infra::ByteRange data, hal::Action nextAction,
             infra::Function<void(hal::Result)> onReceived) override;
+        MOCK_METHOD(void, SetErrorPolicy, (hal::I2cErrorPolicy & policy), (override));
+        MOCK_METHOD(void, ResetErrorPolicy, (), (override));
 
-        MOCK_METHOD3(SendDataMock, void(hal::I2cAddress address, hal::Action nextAction, std::vector<uint8_t> data));
-        MOCK_METHOD2(ReceiveDataMock, std::vector<uint8_t>(hal::I2cAddress address, hal::Action nextAction));
+        MOCK_METHOD(void, SendDataMock, (hal::I2cAddress address, hal::Action nextAction, std::vector<uint8_t> data));
+        MOCK_METHOD(std::vector<uint8_t>, ReceiveDataMock, (hal::I2cAddress address, hal::Action nextAction));
 
         infra::Function<void(hal::Result, uint32_t numberOfBytesSent)> onSent;
         infra::Function<void(hal::Result)> onReceived;
@@ -39,12 +52,12 @@ namespace hal
         : public hal::I2cSlave
     {
     public:
-        MOCK_METHOD2(AddSlave, void(uint8_t address, infra::Function<void(DataDirection)> onAddressed));
-        MOCK_METHOD2(SendData, void(infra::ConstByteRange data, infra::Function<void(Result, uint32_t numberOfBytesSent)> onSent));
-        MOCK_METHOD3(ReceiveData, void(infra::ByteRange data, bool lastOfSession, infra::Function<void(Result, uint32_t numberOfBytesReceived)> onReceived));
+        MOCK_METHOD(void, AddSlave, (uint8_t address, infra::Function<void(DataDirection)> onAddressed));
+        MOCK_METHOD(void, SendData, (infra::ConstByteRange data, infra::Function<void(Result, uint32_t numberOfBytesSent)> onSent));
+        MOCK_METHOD(void, ReceiveData, (infra::ByteRange data, bool lastOfSession, infra::Function<void(Result, uint32_t numberOfBytesReceived)> onReceived));
 
-        MOCK_METHOD1(RemoveSlave, void(uint8_t address));
-        MOCK_METHOD0(StopTransceiving, void());
+        MOCK_METHOD(void, RemoveSlave, (uint8_t address));
+        MOCK_METHOD(void, StopTransceiving, ());
     };
 }
 

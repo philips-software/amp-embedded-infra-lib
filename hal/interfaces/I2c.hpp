@@ -39,6 +39,20 @@ namespace hal
         uint16_t address;
     };
 
+    class I2cErrorPolicy
+    {
+    protected:
+        I2cErrorPolicy() = default;
+        I2cErrorPolicy(const I2cErrorPolicy& other) = delete;
+        I2cErrorPolicy& operator=(const I2cErrorPolicy& other) = delete;
+        ~I2cErrorPolicy() = default;
+
+    public:
+        virtual void DeviceNotFound() = 0;
+        virtual void BusError() = 0;
+        virtual void ArbitrationLost() = 0;
+    };
+
     class I2cMaster
     {
     public:
@@ -52,6 +66,8 @@ namespace hal
     public:
         virtual void SendData(I2cAddress address, infra::ConstByteRange data, Action nextAction, infra::Function<void(Result, uint32_t numberOfBytesSent)> onSent) = 0;
         virtual void ReceiveData(I2cAddress address, infra::ByteRange data, Action nextAction, infra::Function<void(Result)> onReceived) = 0;
+        virtual void SetErrorPolicy(I2cErrorPolicy& policy) = 0;
+        virtual void ResetErrorPolicy() = 0;
     };
 
     class I2cSlave
