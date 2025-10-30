@@ -1,7 +1,7 @@
 #include "hal/interfaces/test_doubles/FlashMock.hpp"
+#include "hal/interfaces/test_doubles/SleepableMock.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "services/util/SleepAfterOperationFlashDecorator.hpp"
-#include "services/util/test_doubles/SleepableMock.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
@@ -21,7 +21,7 @@ namespace services
         }
 
         ::testing::StrictMock<hal::CleanFlashMock> flash;
-        ::testing::StrictMock<SleepableMock> sleepable;
+        ::testing::StrictMock<hal::SleepableMock> sleepable;
         SleepAfterOperationFlashDecorator decorator{ flash, sleepable };
 
         std::array<uint8_t, 32> dummyArray;

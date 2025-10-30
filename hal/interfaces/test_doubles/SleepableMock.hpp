@@ -1,8 +1,8 @@
+#include "hal/interfaces/Sleepable.hpp"
 #include "infra/util/Function.hpp"
-#include "services/util/Sleepable.hpp"
 #include "gmock/gmock.h"
 
-namespace services
+namespace hal
 {
     class SleepableMock : public Sleepable
     {

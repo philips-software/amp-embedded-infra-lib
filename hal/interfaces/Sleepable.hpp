@@ -1,9 +1,9 @@
-#ifndef SERVICES_SLEEPABLE_HPP
-#define SERVICES_SLEEPABLE_HPP
+#ifndef HAL_SLEEPABLE_HPP
+#define HAL_SLEEPABLE_HPP
 
 #include "infra/util/Function.hpp"
 
-namespace services
+namespace hal
 {
     class Sleepable
     {

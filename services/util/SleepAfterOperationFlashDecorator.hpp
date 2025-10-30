@@ -3,10 +3,13 @@
 #include "hal/interfaces/Flash.hpp"
 #include "infra/util/Variant.hpp"
 
-namespace services
+namespace hal
 {
     class Sleepable;
+}
 
+namespace services
+{
     template<class T>
     class SleepAfterOperationFlashDecoratorBase;
 
@@ -17,7 +20,7 @@ namespace services
     class SleepAfterOperationFlashDecoratorBase : public hal::FlashBase<T>
     {
     public:
-        explicit SleepAfterOperationFlashDecoratorBase(hal::FlashBase<T>& flash, services::Sleepable& sleepable);
+        explicit SleepAfterOperationFlashDecoratorBase(hal::FlashBase<T>& flash, hal::Sleepable& sleepable);
 
         T NumberOfSectors() const override;
         uint32_t SizeOfSector(T sectorIndex) const override;
@@ -32,7 +35,7 @@ namespace services
 
     private:
         hal::FlashBase<T>& flash;
-        services::Sleepable& sleepable;
+        hal::Sleepable& sleepable;
 
         struct WriteBufferContext
         {

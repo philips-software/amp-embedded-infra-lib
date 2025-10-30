@@ -1,11 +1,11 @@
 #include "services/util/SleepAfterOperationFlashDecorator.hpp"
-#include "services/util/Sleepable.hpp"
+#include "hal/interfaces/Sleepable.hpp"
 #include <cstdint>
 
 namespace services
 {
     template<typename T>
-    SleepAfterOperationFlashDecoratorBase<T>::SleepAfterOperationFlashDecoratorBase(hal::FlashBase<T>& flash, services::Sleepable& sleepable)
+    SleepAfterOperationFlashDecoratorBase<T>::SleepAfterOperationFlashDecoratorBase(hal::FlashBase<T>& flash, hal::Sleepable& sleepable)
         : flash(flash)
         , sleepable(sleepable)
     {}
