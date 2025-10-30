@@ -41,11 +41,11 @@ namespace services
         addressOrIndex = address;
         this->onDone = onDone;
 
-        sleepable.Sleep([this]
+        sleepable.Wake([this]
             {
                 flash.WriteBuffer(this->buffer.Get<infra::ConstByteRange>(), addressOrIndex, [this]
                     {
-                        sleepable.Wake(this->onDone);
+                        sleepable.Sleep(this->onDone);
                     });
             });
     }

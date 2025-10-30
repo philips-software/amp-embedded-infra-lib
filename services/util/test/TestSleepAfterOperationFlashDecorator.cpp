@@ -61,9 +61,9 @@ namespace services
         auto buffer = infra::MakeConstByteRange(dummyArray);
 
         ::testing::InSequence inSequenceEnabler;
-        EXPECT_CALL(sleepable, Sleep(::testing::_));
-        EXPECT_CALL(flash, WriteBuffer(buffer, address, ::testing::_));
         EXPECT_CALL(sleepable, Wake(::testing::_));
+        EXPECT_CALL(flash, WriteBuffer(buffer, address, ::testing::_));
+        EXPECT_CALL(sleepable, Sleep(::testing::_));
 
         infra::VerifyingFunction<void()> onDone;
         decorator.WriteBuffer(buffer, address, onDone);
