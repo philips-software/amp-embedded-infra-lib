@@ -1,14 +1,12 @@
 #ifndef SERVICES_SLEEP_AFTER_OPERATION_FLASH_DECORATOR
 #define SERVICES_SLEEP_AFTER_OPERATION_FLASH_DECORATOR
 #include "hal/interfaces/Flash.hpp"
+#include "infra/util/Variant.hpp"
 
 namespace services
 {
     class Sleepable;
-}
 
-namespace services
-{
     template<class T>
     class SleepAfterOperationFlashDecoratorBase;
 
@@ -35,6 +33,10 @@ namespace services
     private:
         hal::FlashBase<T>& flash;
         services::Sleepable& sleepable;
+
+        infra::Variant<infra::ByteRange, infra::ConstByteRange> buffer;
+        infra::Function<void()> onDone;
+        T addressOrIndex;
     };
 }
 #endif

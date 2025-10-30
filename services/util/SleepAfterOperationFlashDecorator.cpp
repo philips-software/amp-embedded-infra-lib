@@ -1,4 +1,5 @@
 #include "services/util/SleepAfterOperationFlashDecorator.hpp"
+#include "services/util/Sleepable.hpp"
 #include <cstdint>
 
 namespace services
@@ -35,7 +36,19 @@ namespace services
 
     template<typename T>
     void SleepAfterOperationFlashDecoratorBase<T>::WriteBuffer(infra::ConstByteRange buffer, T address, infra::Function<void()> onDone)
-    {}
+    {
+        this->buffer = buffer;
+        addressOrIndex = address;
+        this->onDone = onDone;
+
+        sleepable.Sleep([this]
+            {
+                flash.WriteBuffer(this->buffer.Get<infra::ConstByteRange>(), addressOrIndex, [this]
+                    {
+                        sleepable.Wake(this->onDone);
+                    });
+            });
+    }
 
     template<typename T>
     void SleepAfterOperationFlashDecoratorBase<T>::ReadBuffer(infra::ByteRange buffer, T address, infra::Function<void()> onDone)
