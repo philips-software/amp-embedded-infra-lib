@@ -10,6 +10,7 @@ target_sources(services.util_test_doubles PRIVATE
     ConfigurationStoreMock.hpp
     MessageCommunicationMock.hpp
     SesameMock.hpp
+    SleepableMock.hpp
     StoppableMock.hpp
     WritableConfigurationMock.hpp
 )
