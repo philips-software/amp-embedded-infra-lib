@@ -37,13 +37,13 @@ namespace services
     template<typename T>
     void SleepAfterOperationFlashDecoratorBase<T>::WriteBuffer(infra::ConstByteRange buffer, T address, infra::Function<void()> onDone)
     {
-        this->buffer = buffer;
-        addressOrIndex = address;
+        context = WriteBufferContext{ buffer, address };
         this->onDone = onDone;
 
         sleepable.Wake([this]
             {
-                flash.WriteBuffer(this->buffer.Get<infra::ConstByteRange>(), addressOrIndex, [this]
+                auto& context = this->context.template Get<WriteBufferContext>();
+                flash.WriteBuffer(context.buffer, context.address, [this]
                     {
                         sleepable.Sleep(this->onDone);
                     });
@@ -52,11 +52,35 @@ namespace services
 
     template<typename T>
     void SleepAfterOperationFlashDecoratorBase<T>::ReadBuffer(infra::ByteRange buffer, T address, infra::Function<void()> onDone)
-    {}
+    {
+        context = ReadBufferContext{ buffer, address };
+        this->onDone = onDone;
+
+        sleepable.Wake([this]
+            {
+                auto& context = this->context.template Get<ReadBufferContext>();
+                flash.ReadBuffer(context.buffer, context.address, [this]
+                    {
+                        sleepable.Sleep(this->onDone);
+                    });
+            });
+    }
 
     template<typename T>
     void SleepAfterOperationFlashDecoratorBase<T>::EraseSectors(T beginIndex, T endIndex, infra::Function<void()> onDone)
-    {}
+    {
+        context = EraseSectorsContext{ beginIndex, endIndex };
+        this->onDone = onDone;
+
+        sleepable.Wake([this]
+            {
+                auto& context = this->context.template Get<EraseSectorsContext>();
+                flash.EraseSectors(context.beginIndex, context.endIndex, [this]
+                    {
+                        sleepable.Sleep(this->onDone);
+                    });
+            });
+    }
 
     template class SleepAfterOperationFlashDecoratorBase<uint32_t>;
     template class SleepAfterOperationFlashDecoratorBase<uint64_t>;

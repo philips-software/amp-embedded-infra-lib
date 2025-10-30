@@ -34,9 +34,26 @@ namespace services
         hal::FlashBase<T>& flash;
         services::Sleepable& sleepable;
 
-        infra::Variant<infra::ByteRange, infra::ConstByteRange> buffer;
+        struct WriteBufferContext
+        {
+            infra::ConstByteRange buffer;
+            T address;
+        };
+
+        struct ReadBufferContext
+        {
+            infra::ByteRange buffer;
+            T address;
+        };
+
+        struct EraseSectorsContext
+        {
+            T beginIndex;
+            T endIndex;
+        };
+
+        infra::Variant<WriteBufferContext, ReadBufferContext, EraseSectorsContext> context;
         infra::Function<void()> onDone;
-        T addressOrIndex;
     };
 }
 #endif

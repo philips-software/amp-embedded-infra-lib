@@ -68,4 +68,32 @@ namespace services
         infra::VerifyingFunction<void()> onDone;
         decorator.WriteBuffer(buffer, address, onDone);
     }
+
+    TEST_F(SleepAfterOperationFlashDecoratorTest, read_buffer_does_wake_read_sleep)
+    {
+        uint32_t address = 42;
+        auto buffer = infra::MakeByteRange(dummyArray);
+
+        ::testing::InSequence inSequenceEnabler;
+        EXPECT_CALL(sleepable, Wake(::testing::_));
+        EXPECT_CALL(flash, ReadBuffer(buffer, address, ::testing::_));
+        EXPECT_CALL(sleepable, Sleep(::testing::_));
+
+        infra::VerifyingFunction<void()> onDone;
+        decorator.ReadBuffer(buffer, address, onDone);
+    }
+
+    TEST_F(SleepAfterOperationFlashDecoratorTest, erase_sectors_does_wake_erase_sleep)
+    {
+        uint32_t beginIndex = 2;
+        uint32_t endIndex = 5;
+
+        ::testing::InSequence inSequenceEnabler;
+        EXPECT_CALL(sleepable, Wake(::testing::_));
+        EXPECT_CALL(flash, EraseSectors(beginIndex, endIndex, ::testing::_));
+        EXPECT_CALL(sleepable, Sleep(::testing::_));
+
+        infra::VerifyingFunction<void()> onDone;
+        decorator.EraseSectors(beginIndex, endIndex, onDone);
+    }
 }
