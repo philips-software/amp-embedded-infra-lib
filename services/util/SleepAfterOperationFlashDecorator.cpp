@@ -18,19 +18,19 @@ namespace services
     template<typename T>
     uint32_t SleepAfterOperationFlashDecoratorBase<T>::SizeOfSector(T sectorIndex) const
     {
-        return uint32_t();
+        return flash.SizeOfSector(sectorIndex);
     }
 
     template<typename T>
     T SleepAfterOperationFlashDecoratorBase<T>::SectorOfAddress(T address) const
     {
-        return T();
+        return flash.SectorOfAddress(address);
     }
 
     template<typename T>
     T SleepAfterOperationFlashDecoratorBase<T>::AddressOfSector(T sectorIndex) const
     {
-        return T();
+        return flash.AddressOfSector(sectorIndex);
     }
 
     template<typename T>
