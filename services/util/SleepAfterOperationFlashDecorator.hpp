@@ -1,5 +1,6 @@
 #ifndef SERVICES_SLEEP_AFTER_OPERATION_FLASH_DECORATOR
 #define SERVICES_SLEEP_AFTER_OPERATION_FLASH_DECORATOR
+
 #include "hal/interfaces/Flash.hpp"
 #include "infra/util/Variant.hpp"
 
