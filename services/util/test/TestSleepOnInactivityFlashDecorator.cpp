@@ -34,10 +34,10 @@ namespace services
             ForwardTime(std::chrono::milliseconds(timeoutMs + 1));
         }
 
-        static constexpr int timeoutMs = 1;
+        static constexpr int timeoutMs = 5;
         testing::StrictMock<hal::CleanFlashMockBase<T>> flash;
         testing::StrictMock<hal::SleepableMock> sleepable;
-        SleepOnInactivityFlashDecoratorBase<T> decorator{ flash, sleepable };
+        SleepOnInactivityFlashDecoratorBase<T> decorator{ flash, sleepable, std::chrono::milliseconds(timeoutMs) };
 
         std::array<uint8_t, 32> dummyArray;
     };
