@@ -1,41 +1,41 @@
-#include "services/util/SleepAfterOperationFlashDecorator.hpp"
 #include "hal/interfaces/Sleepable.hpp"
+#include "services/util/SleepOnInactivityFlashDecorator.hpp"
 #include <cstdint>
 
 namespace services
 {
     template<typename T>
-    SleepAfterOperationFlashDecoratorBase<T>::SleepAfterOperationFlashDecoratorBase(hal::FlashBase<T>& flash, hal::Sleepable& sleepable)
+    SleepOnInactivityFlashDecoratorBase<T>::SleepOnInactivityFlashDecoratorBase(hal::FlashBase<T>& flash, hal::Sleepable& sleepable)
         : flash(flash)
         , sleepable(sleepable)
     {}
 
     template<typename T>
-    T SleepAfterOperationFlashDecoratorBase<T>::NumberOfSectors() const
+    T SleepOnInactivityFlashDecoratorBase<T>::NumberOfSectors() const
     {
         return flash.NumberOfSectors();
     }
 
     template<typename T>
-    uint32_t SleepAfterOperationFlashDecoratorBase<T>::SizeOfSector(T sectorIndex) const
+    uint32_t SleepOnInactivityFlashDecoratorBase<T>::SizeOfSector(T sectorIndex) const
     {
         return flash.SizeOfSector(sectorIndex);
     }
 
     template<typename T>
-    T SleepAfterOperationFlashDecoratorBase<T>::SectorOfAddress(T address) const
+    T SleepOnInactivityFlashDecoratorBase<T>::SectorOfAddress(T address) const
     {
         return flash.SectorOfAddress(address);
     }
 
     template<typename T>
-    T SleepAfterOperationFlashDecoratorBase<T>::AddressOfSector(T sectorIndex) const
+    T SleepOnInactivityFlashDecoratorBase<T>::AddressOfSector(T sectorIndex) const
     {
         return flash.AddressOfSector(sectorIndex);
     }
 
     template<typename T>
-    void SleepAfterOperationFlashDecoratorBase<T>::WriteBuffer(infra::ConstByteRange buffer, T address, infra::Function<void()> onDone)
+    void SleepOnInactivityFlashDecoratorBase<T>::WriteBuffer(infra::ConstByteRange buffer, T address, infra::Function<void()> onDone)
     {
         context = WriteBufferContext{ buffer, address };
         this->onDone = onDone;
@@ -51,7 +51,7 @@ namespace services
     }
 
     template<typename T>
-    void SleepAfterOperationFlashDecoratorBase<T>::ReadBuffer(infra::ByteRange buffer, T address, infra::Function<void()> onDone)
+    void SleepOnInactivityFlashDecoratorBase<T>::ReadBuffer(infra::ByteRange buffer, T address, infra::Function<void()> onDone)
     {
         context = ReadBufferContext{ buffer, address };
         this->onDone = onDone;
@@ -67,7 +67,7 @@ namespace services
     }
 
     template<typename T>
-    void SleepAfterOperationFlashDecoratorBase<T>::EraseSectors(T beginIndex, T endIndex, infra::Function<void()> onDone)
+    void SleepOnInactivityFlashDecoratorBase<T>::EraseSectors(T beginIndex, T endIndex, infra::Function<void()> onDone)
     {
         context = EraseSectorsContext{ beginIndex, endIndex };
         this->onDone = onDone;
@@ -82,6 +82,6 @@ namespace services
             });
     }
 
-    template class SleepAfterOperationFlashDecoratorBase<uint32_t>;
-    template class SleepAfterOperationFlashDecoratorBase<uint64_t>;
+    template class SleepOnInactivityFlashDecoratorBase<uint32_t>;
+    template class SleepOnInactivityFlashDecoratorBase<uint64_t>;
 }

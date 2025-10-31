@@ -13,41 +13,44 @@ namespace services
     const uint8_t FlashSpi::commandEraseBulk = 0xc7;
     const uint8_t FlashSpi::commandReadId = 0x9f;
 
-    FlashSpi::FlashSpi(hal::SpiMaster& spi, const Config& config, uint32_t timerId, infra::Function<void()> onInitialized)
+    FlashSpi::FlashSpi(hal::SpiMaster& spi, const Config& config, uint32_t timerId)
         : hal::FlashHomogeneous(config.nrOfSubSectors, config.sizeSubSector)
         , spi(spi)
         , config(config)
         , delayTimer(timerId)
-    {
-        onInitialized();
-    }
+    {}
 
     void FlashSpi::WriteBuffer(infra::ConstByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
         this->onDone = onDone;
         this->buffer = buffer;
         this->address = address;
-        sequencer.Load([this]()
+
+        flashOperationClaimer.Claim([this]()
             {
-                sequencer.While([this]()
+                sequencer.Load([this]()
                     {
-                        return !this->buffer.empty();
-                    });
-                sequencer.Step([this]()
-                    {
-                        WriteEnable();
-                    });
-                sequencer.Step([this]()
-                    {
-                        PageProgram();
-                    });
-                HoldWhileWriteInProgress();
-                sequencer.EndWhile();
-                sequencer.Execute([this]()
-                    {
-                        infra::EventDispatcher::Instance().Schedule([this]()
+                        sequencer.While([this]()
                             {
-                                this->onDone();
+                                return !this->buffer.empty();
+                            });
+                        sequencer.Step([this]()
+                            {
+                                WriteEnable();
+                            });
+                        sequencer.Step([this]()
+                            {
+                                PageProgram();
+                            });
+                        HoldWhileWriteInProgress();
+                        sequencer.EndWhile();
+                        sequencer.Execute([this]()
+                            {
+                                infra::EventDispatcher::Instance().Schedule([this]()
+                                    {
+                                        flashOperationClaimer.Release();
+                                        this->onDone();
+                                    });
                             });
                     });
             });
@@ -58,11 +61,15 @@ namespace services
         readBuffer = buffer;
         this->onDone = onDone;
 
-        spi.SendData(InstructionAndAddress(commandReadData, address), hal::SpiAction::continueSession, [this]()
+        flashOperationClaimer.Claim([this, address]()
             {
-                spi.ReceiveData(readBuffer, hal::SpiAction::stop, [this]()
+                spi.SendData(InstructionAndAddress(commandReadData, address), hal::SpiAction::continueSession, [this]()
                     {
-                        this->onDone();
+                        spi.ReceiveData(readBuffer, hal::SpiAction::stop, [this]()
+                            {
+                                flashOperationClaimer.Release();
+                                this->onDone();
+                            });
                     });
             });
     }
@@ -71,27 +78,32 @@ namespace services
     {
         this->onDone = onDone;
         sectorIndex = beginIndex;
-        sequencer.Load([this, endIndex]()
+
+        flashOperationClaimer.Claim([this, endIndex]()
             {
-                sequencer.While([this, endIndex]()
+                sequencer.Load([this, endIndex]()
                     {
-                        return sectorIndex != endIndex;
-                    });
-                sequencer.Step([this]()
-                    {
-                        WriteEnable();
-                    });
-                sequencer.Step([this, endIndex]()
-                    {
-                        EraseSomeSectors(endIndex);
-                    });
-                HoldWhileWriteInProgress();
-                sequencer.EndWhile();
-                sequencer.Execute([this]()
-                    {
-                        infra::EventDispatcher::Instance().Schedule([this]()
+                        sequencer.While([this, endIndex]()
                             {
-                                this->onDone();
+                                return sectorIndex != endIndex;
+                            });
+                        sequencer.Step([this]()
+                            {
+                                WriteEnable();
+                            });
+                        sequencer.Step([this, endIndex]()
+                            {
+                                EraseSomeSectors(endIndex);
+                            });
+                        HoldWhileWriteInProgress();
+                        sequencer.EndWhile();
+                        sequencer.Execute([this]()
+                            {
+                                infra::EventDispatcher::Instance().Schedule([this]()
+                                    {
+                                        flashOperationClaimer.Release();
+                                        this->onDone();
+                                    });
                             });
                     });
             });
@@ -102,11 +114,15 @@ namespace services
         this->onDone = onDone;
         readBuffer = buffer;
 
-        spi.SendData(infra::MakeByteRange(commandReadId), hal::SpiAction::continueSession, [this]()
+        flashIdClaimer.Claim([this]()
             {
-                spi.ReceiveData(readBuffer, hal::SpiAction::stop, [this]()
+                spi.SendData(infra::MakeByteRange(commandReadId), hal::SpiAction::continueSession, [this]()
                     {
-                        this->onDone();
+                        spi.ReceiveData(readBuffer, hal::SpiAction::stop, [this]()
+                            {
+                                flashIdClaimer.Release();
+                                this->onDone();
+                            });
                     });
             });
     }

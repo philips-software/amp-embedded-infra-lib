@@ -12,16 +12,16 @@ namespace hal
 namespace services
 {
     template<class T>
-    class SleepAfterOperationFlashDecoratorBase;
+    class SleepOnInactivityFlashDecoratorBase;
 
-    using SleepAfterOperationFlashDecorator = SleepAfterOperationFlashDecoratorBase<uint32_t>;
-    using SleepAfterOperationFlashDecorator64 = SleepAfterOperationFlashDecoratorBase<uint64_t>;
+    using SleepOnInactivityFlashDecorator = SleepOnInactivityFlashDecoratorBase<uint32_t>;
+    using SleepOnInactivityFlashDecorator64 = SleepOnInactivityFlashDecoratorBase<uint64_t>;
 
     template<typename T>
-    class SleepAfterOperationFlashDecoratorBase : public hal::FlashBase<T>
+    class SleepOnInactivityFlashDecoratorBase : public hal::FlashBase<T>
     {
     public:
-        explicit SleepAfterOperationFlashDecoratorBase(hal::FlashBase<T>& flash, hal::Sleepable& sleepable);
+        explicit SleepOnInactivityFlashDecoratorBase(hal::FlashBase<T>& flash, hal::Sleepable& sleepable);
 
         T NumberOfSectors() const override;
         uint32_t SizeOfSector(T sectorIndex) const override;

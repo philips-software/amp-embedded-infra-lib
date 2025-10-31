@@ -4,6 +4,7 @@
 #include "hal/interfaces/FlashHomogeneous.hpp"
 #include "hal/interfaces/FlashId.hpp"
 #include "hal/interfaces/Spi.hpp"
+#include "infra/event/ClaimableResource.hpp"
 #include "infra/timer/Timer.hpp"
 #include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/ByteRange.hpp"
@@ -41,7 +42,7 @@ namespace services
 
         static const uint8_t statusFlagWriteInProgress = 1;
 
-        explicit FlashSpi(hal::SpiMaster& spi, const Config& config = Config(), uint32_t timerId = infra::systemTimerServiceId, infra::Function<void()> onInitialized = infra::emptyFunction);
+        FlashSpi(hal::SpiMaster& spi, const Config& config = Config(), uint32_t timerId = infra::systemTimerServiceId);
 
     public:
         // implement Flash
@@ -63,10 +64,15 @@ namespace services
         void ReadStatusRegister();
         infra::ConstByteRange InstructionAndAddress(const std::array<uint8_t, 2>& instruction, uint32_t address);
 
+    protected:
+        infra::ClaimableResource resource;
+        infra::Sequencer sequencer;
+
     private:
         hal::SpiMaster& spi;
+        infra::ClaimableResource::Claimer flashOperationClaimer{ resource };
+        infra::ClaimableResource::Claimer flashIdClaimer{ resource };
         const Config config;
-        infra::Sequencer sequencer;
         infra::TimerSingleShot delayTimer;
         infra::AutoResetFunction<void()> onDone;
         infra::ConstByteRange buffer;

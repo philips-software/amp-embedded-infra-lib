@@ -4,6 +4,7 @@
 #include "hal/interfaces/Flash.hpp"
 #include "infra/util/AutoResetFunction.hpp"
 #include "gmock/gmock.h"
+#include <tiff.h>
 
 namespace hal
 {

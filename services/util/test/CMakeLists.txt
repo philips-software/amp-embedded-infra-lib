@@ -45,7 +45,7 @@ target_sources(services.util_test PRIVATE
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestSesameSecured.cpp>
     TestSesameWindowed.cpp
     TestSignalLed.cpp
-    TestSleepAfterOperationFlashDecorator.cpp
+    TestSleepOnInactivityFlashDecorator.cpp
     TestSpiMasterWithChipSelect.cpp
     TestSpiMultipleAccess.cpp
     TestTerminal.cpp
