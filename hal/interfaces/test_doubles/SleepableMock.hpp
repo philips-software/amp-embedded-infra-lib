@@ -4,7 +4,8 @@
 
 namespace hal
 {
-    class SleepableMock : public Sleepable
+    class SleepableMock
+        : public Sleepable
     {
     public:
         MOCK_METHOD(void, Sleep, (const infra::Function<void()>&));
