@@ -2,7 +2,10 @@
 #define SERVICES_SLEEP_AFTER_OPERATION_FLASH_DECORATOR
 
 #include "hal/interfaces/Flash.hpp"
+#include "infra/timer/Timer.hpp"
+#include "infra/util/Function.hpp"
 #include "infra/util/Variant.hpp"
+#include <chrono>
 
 namespace hal
 {
@@ -21,7 +24,7 @@ namespace services
     class SleepOnInactivityFlashDecoratorBase : public hal::FlashBase<T>
     {
     public:
-        explicit SleepOnInactivityFlashDecoratorBase(hal::FlashBase<T>& flash, hal::Sleepable& sleepable);
+        SleepOnInactivityFlashDecoratorBase(hal::FlashBase<T>& flash, hal::Sleepable& sleepable, infra::Duration inactivityTimeout = std::chrono::milliseconds(1));
 
         T NumberOfSectors() const override;
         uint32_t SizeOfSector(T sectorIndex) const override;
@@ -35,6 +38,9 @@ namespace services
         void EraseSectors(T beginIndex, T endIndex, infra::Function<void()> onDone) override;
 
     private:
+        void ScheduleSleep();
+        void EnsureAwakeAndExecute(const infra::Function<void()>& operation);
+
         hal::FlashBase<T>& flash;
         hal::Sleepable& sleepable;
 
@@ -58,6 +64,8 @@ namespace services
 
         infra::Variant<WriteBufferContext, ReadBufferContext, EraseSectorsContext> context;
         infra::Function<void()> onDone;
+        infra::Duration inactivityTimeout;
+        infra::TimerSingleShot inactivityTimer;
     };
 }
 

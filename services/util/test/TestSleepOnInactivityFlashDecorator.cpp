@@ -26,6 +26,7 @@ namespace services
 
             EXPECT_CALL(sleepable, Sleep(testing::_));
             Timeout();
+            testing::Mock::VerifyAndClearExpectations(&sleepable);
         }
 
         void Timeout()
@@ -80,9 +81,9 @@ namespace services
         testing::InSequence inSequenceEnabler;
         EXPECT_CALL(this->sleepable, Wake(testing::_));
         EXPECT_CALL(this->flash, WriteBuffer(buffer, address, testing::_));
+        infra::VerifyingFunction<void()> onDone;
         EXPECT_CALL(this->sleepable, Sleep(testing::_));
 
-        infra::VerifyingFunction<void()> onDone;
         this->decorator.WriteBuffer(buffer, address, onDone);
         this->Timeout();
     }
@@ -95,9 +96,9 @@ namespace services
         testing::InSequence inSequenceEnabler;
         EXPECT_CALL(this->sleepable, Wake(testing::_));
         EXPECT_CALL(this->flash, ReadBuffer(buffer, address, testing::_));
+        infra::VerifyingFunction<void()> onDone;
         EXPECT_CALL(this->sleepable, Sleep(testing::_));
 
-        infra::VerifyingFunction<void()> onDone;
         this->decorator.ReadBuffer(buffer, address, onDone);
         this->Timeout();
     }
@@ -110,9 +111,9 @@ namespace services
         testing::InSequence inSequenceEnabler;
         EXPECT_CALL(this->sleepable, Wake(testing::_));
         EXPECT_CALL(this->flash, EraseSectors(beginIndex, endIndex, testing::_));
+        infra::VerifyingFunction<void()> onDone;
         EXPECT_CALL(this->sleepable, Sleep(testing::_));
 
-        infra::VerifyingFunction<void()> onDone;
         this->decorator.EraseSectors(beginIndex, endIndex, onDone);
         this->Timeout();
     }
@@ -122,12 +123,22 @@ namespace services
         testing::InSequence inSequenceEnabler;
         EXPECT_CALL(this->sleepable, Wake(testing::_));
         EXPECT_CALL(this->flash, EraseSectors(1, 2, testing::_));
+        infra::VerifyingFunction<void()> onDone;
         EXPECT_CALL(this->flash, EraseSectors(3, 4, testing::_));
+        infra::VerifyingFunction<void()> onDone2;
         EXPECT_CALL(this->sleepable, Sleep(testing::_));
 
-        infra::VerifyingFunction<void()> onDone;
         this->decorator.EraseSectors(1, 2, onDone);
-        this->decorator.EraseSectors(3, 4, onDone);
+        this->decorator.EraseSectors(3, 4, onDone2);
         this->Timeout();
+    }
+
+    TYPED_TEST(SleepOnInactivityFlashDecoratorTest, no_timeout_no_sleep)
+    {
+        testing::InSequence inSequenceEnabler;
+        EXPECT_CALL(this->sleepable, Wake(testing::_));
+        EXPECT_CALL(this->flash, EraseSectors(testing::_, testing::_, testing::_));
+
+        this->decorator.EraseSectors(1, 2, infra::emptyFunction);
     }
 }

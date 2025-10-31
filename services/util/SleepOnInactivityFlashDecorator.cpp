@@ -1,14 +1,17 @@
-#include "hal/interfaces/Sleepable.hpp"
 #include "services/util/SleepOnInactivityFlashDecorator.hpp"
+#include "hal/interfaces/Sleepable.hpp"
 #include <cstdint>
 
 namespace services
 {
     template<typename T>
-    SleepOnInactivityFlashDecoratorBase<T>::SleepOnInactivityFlashDecoratorBase(hal::FlashBase<T>& flash, hal::Sleepable& sleepable)
+    SleepOnInactivityFlashDecoratorBase<T>::SleepOnInactivityFlashDecoratorBase(hal::FlashBase<T>& flash, hal::Sleepable& sleepable, infra::Duration inactivityTimeout)
         : flash(flash)
         , sleepable(sleepable)
-    {}
+        , inactivityTimeout(inactivityTimeout)
+    {
+        ScheduleSleep();
+    }
 
     template<typename T>
     T SleepOnInactivityFlashDecoratorBase<T>::NumberOfSectors() const
@@ -40,12 +43,13 @@ namespace services
         context = WriteBufferContext{ buffer, address };
         this->onDone = onDone;
 
-        sleepable.Wake([this]
+        EnsureAwakeAndExecute([this]
             {
                 auto& context = this->context.template Get<WriteBufferContext>();
                 flash.WriteBuffer(context.buffer, context.address, [this]
                     {
-                        sleepable.Sleep(this->onDone);
+                        ScheduleSleep();
+                        this->onDone();
                     });
             });
     }
@@ -56,12 +60,13 @@ namespace services
         context = ReadBufferContext{ buffer, address };
         this->onDone = onDone;
 
-        sleepable.Wake([this]
+        EnsureAwakeAndExecute([this]
             {
                 auto& context = this->context.template Get<ReadBufferContext>();
                 flash.ReadBuffer(context.buffer, context.address, [this]
                     {
-                        sleepable.Sleep(this->onDone);
+                        ScheduleSleep();
+                        this->onDone();
                     });
             });
     }
@@ -72,14 +77,35 @@ namespace services
         context = EraseSectorsContext{ beginIndex, endIndex };
         this->onDone = onDone;
 
-        sleepable.Wake([this]
+        EnsureAwakeAndExecute([this]
             {
                 auto& context = this->context.template Get<EraseSectorsContext>();
                 flash.EraseSectors(context.beginIndex, context.endIndex, [this]
                     {
-                        sleepable.Sleep(this->onDone);
+                        ScheduleSleep();
+                        this->onDone();
                     });
             });
+    }
+
+    template<typename T>
+    void SleepOnInactivityFlashDecoratorBase<T>::ScheduleSleep()
+    {
+        inactivityTimer.Start(inactivityTimeout, [this]
+            {
+                sleepable.Sleep(infra::emptyFunction);
+            });
+    }
+
+    template<typename T>
+    void SleepOnInactivityFlashDecoratorBase<T>::EnsureAwakeAndExecute(const infra::Function<void()>& operation)
+    {
+        auto armed = inactivityTimer.Armed();
+        inactivityTimer.Cancel();
+        if (armed)
+            operation();
+        else
+            sleepable.Wake(operation);
     }
 
     template class SleepOnInactivityFlashDecoratorBase<uint32_t>;
