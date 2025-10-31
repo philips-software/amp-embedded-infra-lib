@@ -8,7 +8,8 @@
 namespace services
 {
     template<typename T>
-    class SleepAfterOperationFlashDecoratorTest : public testing::Test
+    class SleepAfterOperationFlashDecoratorTest
+        : public testing::Test
     {
     public:
         SleepAfterOperationFlashDecoratorTest()
