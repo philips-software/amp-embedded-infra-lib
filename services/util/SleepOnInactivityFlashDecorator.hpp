@@ -3,7 +3,7 @@
 
 #include "hal/interfaces/Flash.hpp"
 #include "infra/timer/Timer.hpp"
-#include "infra/util/Function.hpp"
+#include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/Variant.hpp"
 #include <chrono>
 
@@ -63,7 +63,7 @@ namespace services
         };
 
         infra::Variant<WriteBufferContext, ReadBufferContext, EraseSectorsContext> context;
-        infra::Function<void()> onDone;
+        infra::AutoResetFunction<void()> onDone;
         infra::Duration inactivityTimeout;
         infra::TimerSingleShot inactivityTimer;
     };
