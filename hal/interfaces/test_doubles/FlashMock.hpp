@@ -33,20 +33,27 @@ namespace hal
         infra::AutoResetFunction<void()> done;
     };
 
-    class CleanFlashMock
-        : public hal::Flash
+    template<typename T>
+    class CleanFlashMockBase;
+
+    using CleanFlashMock = CleanFlashMockBase<uint32_t>;
+    using CleanFlashMock64 = CleanFlashMockBase<uint64_t>;
+
+    template<typename T>
+    class CleanFlashMockBase
+        : public hal::FlashBase<T>
     {
     public:
-        CleanFlashMock() = default;
-        CleanFlashMock(uint32_t numberOfSectors, uint32_t sizeOfEachSector);
+        CleanFlashMockBase() = default;
+        CleanFlashMockBase(uint32_t numberOfSectors, uint32_t sizeOfEachSector);
 
-        MOCK_CONST_METHOD0(NumberOfSectors, uint32_t());
-        MOCK_CONST_METHOD1(SizeOfSector, uint32_t(uint32_t sectorIndex));
-        MOCK_CONST_METHOD1(SectorOfAddress, uint32_t(uint32_t address));
-        MOCK_CONST_METHOD1(AddressOfSector, uint32_t(uint32_t sectorIndex));
-        MOCK_METHOD3(WriteBuffer, void(infra::ConstByteRange buffer, uint32_t address, infra::Function<void()> onDone));
-        MOCK_METHOD3(ReadBuffer, void(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone));
-        MOCK_METHOD3(EraseSectors, void(uint32_t beginIndex, uint32_t endIndex, infra::Function<void()> onDone));
+        MOCK_CONST_METHOD0(NumberOfSectors, T());
+        MOCK_CONST_METHOD1(SizeOfSector, uint32_t(T sectorIndex));
+        MOCK_CONST_METHOD1(SectorOfAddress, T(T address));
+        MOCK_CONST_METHOD1(AddressOfSector, T(T sectorIndex));
+        MOCK_METHOD3(WriteBuffer, void(infra::ConstByteRange buffer, T address, infra::Function<void()> onDone));
+        MOCK_METHOD3(ReadBuffer, void(infra::ByteRange buffer, T address, infra::Function<void()> onDone));
+        MOCK_METHOD3(EraseSectors, void(T beginIndex, T endIndex, infra::Function<void()> onDone));
     };
 }
 

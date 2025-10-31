@@ -51,17 +51,21 @@ namespace hal
         eraseSectorsMock(beginIndex, endIndex);
     }
 
-    CleanFlashMock::CleanFlashMock(uint32_t numberOfSectors, uint32_t sizeOfEachSector)
+    template<typename T>
+    CleanFlashMockBase<T>::CleanFlashMockBase(uint32_t numberOfSectors, uint32_t sizeOfEachSector)
     {
         EXPECT_CALL(*this, NumberOfSectors()).WillRepeatedly(testing::Return(numberOfSectors));
         EXPECT_CALL(*this, SizeOfSector(testing::_)).WillRepeatedly(testing::Return(sizeOfEachSector));
-        EXPECT_CALL(*this, SectorOfAddress(testing::_)).WillRepeatedly(testing::Invoke([sizeOfEachSector](uint32_t address)
+        EXPECT_CALL(*this, SectorOfAddress(testing::_)).WillRepeatedly(testing::Invoke([sizeOfEachSector](T address)
             {
                 return address % sizeOfEachSector;
             }));
-        EXPECT_CALL(*this, AddressOfSector(testing::_)).WillRepeatedly(testing::Invoke([sizeOfEachSector](uint32_t sectorIndex)
+        EXPECT_CALL(*this, AddressOfSector(testing::_)).WillRepeatedly(testing::Invoke([sizeOfEachSector](T sectorIndex)
             {
                 return sectorIndex * sizeOfEachSector;
             }));
     }
+
+    template class CleanFlashMockBase<uint32_t>;
+    template class CleanFlashMockBase<uint64_t>;
 }
