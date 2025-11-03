@@ -261,11 +261,6 @@ namespace services
         return resource;
     }
 
-    infra::Sequencer& FlashSpi::Sequencer()
-    {
-        return sequencer;
-    }
-
     hal::SpiMaster& FlashSpi::Spi()
     {
         return spi;
