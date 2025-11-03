@@ -65,14 +65,16 @@ namespace services
         infra::ConstByteRange InstructionAndAddress(const std::array<uint8_t, 2>& instruction, uint32_t address);
 
     protected:
-        infra::ClaimableResource resource;
-        infra::Sequencer sequencer;
+        infra::ClaimableResource& Resource();
+        infra::Sequencer& Sequencer();
 
     private:
         hal::SpiMaster& spi;
+        infra::ClaimableResource resource;
         infra::ClaimableResource::Claimer flashOperationClaimer{ resource };
         infra::ClaimableResource::Claimer flashIdClaimer{ resource };
         const Config config;
+        infra::Sequencer sequencer;
         infra::TimerSingleShot delayTimer;
         infra::AutoResetFunction<void()> onDone;
         infra::ConstByteRange buffer;

@@ -255,4 +255,14 @@ namespace services
 
         return infra::ByteRange(instructionAndAddressBuffer.data(), instructionAndAddressBuffer.data() + addressSize + 1);
     }
+
+    infra::ClaimableResource& FlashSpi::Resource()
+    {
+        return resource;
+    }
+
+    infra::Sequencer& FlashSpi::Sequencer()
+    {
+        return sequencer;
+    }
 }
