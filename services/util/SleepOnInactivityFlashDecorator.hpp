@@ -24,7 +24,7 @@ namespace services
     class SleepOnInactivityFlashDecoratorBase : public hal::FlashBase<T>
     {
     public:
-        SleepOnInactivityFlashDecoratorBase(hal::FlashBase<T>& flash, hal::Sleepable& sleepable, infra::Duration inactivityTimeout = std::chrono::milliseconds(1));
+        SleepOnInactivityFlashDecoratorBase(hal::FlashBase<T>& flash, hal::Sleepable& sleepable, infra::Duration inactivityTimeout = std::chrono::milliseconds(100));
 
         T NumberOfSectors() const override;
         uint32_t SizeOfSector(T sectorIndex) const override;
