@@ -15,7 +15,7 @@ namespace services
         static constexpr uint8_t commandDeepPowerDown = 0xB9;
         static constexpr uint8_t commandReleaseFromDeepPowerDown = 0xAB;
 
-        SleepableFlashSpi(hal::SpiMaster& spi, const Config& config = Config(), uint32_t timerId = infra::systemTimerServiceId);
+        explicit SleepableFlashSpi(hal::SpiMaster& spi, const Config& config = Config(), uint32_t timerId = infra::systemTimerServiceId);
 
         void Sleep(const infra::Function<void()>& onDone) override;
         void Wake(const infra::Function<void()>& onDone) override;
