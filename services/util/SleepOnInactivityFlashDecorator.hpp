@@ -4,8 +4,8 @@
 #include "hal/interfaces/Flash.hpp"
 #include "infra/timer/Timer.hpp"
 #include "infra/util/AutoResetFunction.hpp"
-#include "infra/util/Variant.hpp"
 #include <chrono>
+#include <variant>
 
 namespace hal
 {
@@ -62,7 +62,7 @@ namespace services
             T endIndex;
         };
 
-        infra::Variant<WriteBufferContext, ReadBufferContext, EraseSectorsContext> context;
+        std::variant<WriteBufferContext, ReadBufferContext, EraseSectorsContext> context;
         infra::AutoResetFunction<void()> onDone;
         infra::Duration inactivityTimeout;
         infra::TimerSingleShot inactivityTimer;

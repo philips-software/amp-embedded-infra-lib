@@ -45,7 +45,7 @@ namespace services
 
         EnsureAwakeAndExecute([this]
             {
-                auto& context = this->context.template Get<WriteBufferContext>();
+                auto& context = std::get<WriteBufferContext>(this->context);
                 flash.WriteBuffer(context.buffer, context.address, [this]
                     {
                         ScheduleSleep();
@@ -62,7 +62,7 @@ namespace services
 
         EnsureAwakeAndExecute([this]
             {
-                auto& context = this->context.template Get<ReadBufferContext>();
+                auto& context = std::get<ReadBufferContext>(this->context);
                 flash.ReadBuffer(context.buffer, context.address, [this]
                     {
                         ScheduleSleep();
@@ -79,7 +79,7 @@ namespace services
 
         EnsureAwakeAndExecute([this]
             {
-                auto& context = this->context.template Get<EraseSectorsContext>();
+                auto& context = std::get<EraseSectorsContext>(this->context);
                 flash.EraseSectors(context.beginIndex, context.endIndex, [this]
                     {
                         ScheduleSleep();
