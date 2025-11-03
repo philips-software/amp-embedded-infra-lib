@@ -265,4 +265,9 @@ namespace services
     {
         return sequencer;
     }
+
+    hal::SpiMaster& FlashSpi::Spi()
+    {
+        return spi;
+    }
 }

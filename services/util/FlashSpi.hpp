@@ -67,6 +67,7 @@ namespace services
     protected:
         infra::ClaimableResource& Resource();
         infra::Sequencer& Sequencer();
+        hal::SpiMaster& Spi();
 
     private:
         hal::SpiMaster& spi;
