@@ -72,7 +72,7 @@ namespace services
         hal::SpiMaster& spi;
         infra::ClaimableResource resource;
         infra::ClaimableResource::Claimer::WithSize<sizeof(void*) + sizeof(std::function<void()>) + sizeof(infra::ByteRange) + sizeof(uint32_t)> flashOperationClaimer{ resource };
-        infra::ClaimableResource::Claimer::WithSize<sizeof(void*)> flashIdClaimer{ resource };
+        infra::ClaimableResource::Claimer::WithSize<sizeof(void*) + sizeof(std::function<void()>) + sizeof(infra::ByteRange)> flashIdClaimer{ resource };
         const Config config;
         infra::Sequencer sequencer;
         infra::TimerSingleShot delayTimer;

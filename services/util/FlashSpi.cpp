@@ -22,12 +22,11 @@ namespace services
 
     void FlashSpi::WriteBuffer(infra::ConstByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
-        this->onDone = onDone;
-        this->buffer = buffer;
-        this->address = address;
-
-        flashOperationClaimer.Claim([this]()
+        flashOperationClaimer.Claim([this, buffer, address, onDone]()
             {
+                this->onDone = onDone;
+                this->buffer = buffer;
+                this->address = address;
                 sequencer.Load([this]()
                     {
                         sequencer.While([this]()
@@ -58,11 +57,10 @@ namespace services
 
     void FlashSpi::ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
-        readBuffer = buffer;
-        this->onDone = onDone;
-
-        flashOperationClaimer.Claim([this, address]()
+        flashOperationClaimer.Claim([this, buffer, address, onDone]()
             {
+                this->onDone = onDone;
+                readBuffer = buffer;
                 spi.SendData(InstructionAndAddress(commandReadData, address), hal::SpiAction::continueSession, [this]()
                     {
                         spi.ReceiveData(readBuffer, hal::SpiAction::stop, [this]()
@@ -76,11 +74,10 @@ namespace services
 
     void FlashSpi::EraseSectors(uint32_t beginIndex, uint32_t endIndex, infra::Function<void()> onDone)
     {
-        this->onDone = onDone;
-        sectorIndex = beginIndex;
-
-        flashOperationClaimer.Claim([this, endIndex]()
+        flashOperationClaimer.Claim([this, beginIndex, endIndex, onDone]()
             {
+                this->onDone = onDone;
+                sectorIndex = beginIndex;
                 sequencer.Load([this, endIndex]()
                     {
                         sequencer.While([this, endIndex]()
@@ -111,11 +108,10 @@ namespace services
 
     void FlashSpi::ReadFlashId(infra::ByteRange buffer, infra::Function<void()> onDone)
     {
-        this->onDone = onDone;
-        readBuffer = buffer;
-
-        flashIdClaimer.Claim([this]()
+        flashIdClaimer.Claim([this, buffer, onDone]()
             {
+                this->onDone = onDone;
+                readBuffer = buffer;
                 spi.SendData(infra::MakeByteRange(commandReadId), hal::SpiAction::continueSession, [this]()
                     {
                         spi.ReceiveData(readBuffer, hal::SpiAction::stop, [this]()
