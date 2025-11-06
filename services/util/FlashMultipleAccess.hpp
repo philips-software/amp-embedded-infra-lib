@@ -8,7 +8,7 @@
 #include "services/util/FlashDelegate.hpp"
 
 #ifndef SERVICES_FLASH_MULTIPLE_ACCESS_FUNCTION_EXTRA_SIZE
-#define SERVICES_FLASH_MULTIPLE_ACCESS_FUNCTION_EXTRA_SIZE (sizeof(LargestLambdaCapture))
+#define SERVICES_FLASH_MULTIPLE_ACCESS_FUNCTION_EXTRA_SIZE (sizeof(services::FlashMultipleAccess::LargestLambdaCapture))
 #endif
 
 namespace services
