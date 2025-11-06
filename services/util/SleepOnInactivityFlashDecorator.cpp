@@ -1,40 +1,17 @@
 #include "services/util/SleepOnInactivityFlashDecorator.hpp"
 #include "hal/interfaces/Sleepable.hpp"
+#include "services/util/FlashDelegate.hpp"
 #include <cstdint>
 
 namespace services
 {
     template<typename T>
     SleepOnInactivityFlashDecoratorBase<T>::SleepOnInactivityFlashDecoratorBase(hal::FlashBase<T>& flash, hal::Sleepable& sleepable, infra::Duration inactivityTimeout)
-        : flash(flash)
+        : FlashDelegateBase<T>(flash)
         , sleepable(sleepable)
         , inactivityTimeout(inactivityTimeout)
     {
         ScheduleSleep();
-    }
-
-    template<typename T>
-    T SleepOnInactivityFlashDecoratorBase<T>::NumberOfSectors() const
-    {
-        return flash.NumberOfSectors();
-    }
-
-    template<typename T>
-    uint32_t SleepOnInactivityFlashDecoratorBase<T>::SizeOfSector(T sectorIndex) const
-    {
-        return flash.SizeOfSector(sectorIndex);
-    }
-
-    template<typename T>
-    T SleepOnInactivityFlashDecoratorBase<T>::SectorOfAddress(T address) const
-    {
-        return flash.SectorOfAddress(address);
-    }
-
-    template<typename T>
-    T SleepOnInactivityFlashDecoratorBase<T>::AddressOfSector(T sectorIndex) const
-    {
-        return flash.AddressOfSector(sectorIndex);
     }
 
     template<typename T>
@@ -46,7 +23,7 @@ namespace services
         EnsureAwakeAndExecute([this]
             {
                 auto& context = std::get<WriteBufferContext>(this->context);
-                flash.WriteBuffer(context.buffer, context.address, [this]
+                FlashDelegateBase<T>::WriteBuffer(context.buffer, context.address, [this]
                     {
                         ScheduleSleep();
                         this->onDone();
@@ -63,7 +40,7 @@ namespace services
         EnsureAwakeAndExecute([this]
             {
                 auto& context = std::get<ReadBufferContext>(this->context);
-                flash.ReadBuffer(context.buffer, context.address, [this]
+                FlashDelegateBase<T>::ReadBuffer(context.buffer, context.address, [this]
                     {
                         ScheduleSleep();
                         this->onDone();
@@ -80,7 +57,7 @@ namespace services
         EnsureAwakeAndExecute([this]
             {
                 auto& context = std::get<EraseSectorsContext>(this->context);
-                flash.EraseSectors(context.beginIndex, context.endIndex, [this]
+                FlashDelegateBase<T>::EraseSectors(context.beginIndex, context.endIndex, [this]
                     {
                         ScheduleSleep();
                         this->onDone();
