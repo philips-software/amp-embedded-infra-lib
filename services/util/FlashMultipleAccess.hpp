@@ -4,10 +4,11 @@
 #include "hal/interfaces/Flash.hpp"
 #include "infra/event/ClaimableResource.hpp"
 #include "infra/util/AutoResetFunction.hpp"
+#include "infra/util/ByteRange.hpp"
 #include "services/util/FlashDelegate.hpp"
 
 #ifndef SERVICES_FLASH_MULTIPLE_ACCESS_FUNCTION_EXTRA_SIZE
-#define SERVICES_FLASH_MULTIPLE_ACCESS_FUNCTION_EXTRA_SIZE (INFRA_DEFAULT_FUNCTION_EXTRA_SIZE + (8 * sizeof(void*)))
+#define SERVICES_FLASH_MULTIPLE_ACCESS_FUNCTION_EXTRA_SIZE (sizeof(LargestLambdaCapture))
 #endif
 
 namespace services
@@ -36,6 +37,14 @@ namespace services
 
     private:
         FlashMultipleAccessMaster& master;
+
+        struct LargestLambdaCapture
+        {
+            void* thisPtr;
+            infra::ByteRange buffer;
+            uint32_t address;
+        };
+
         infra::ClaimableResource::Claimer::WithSize<SERVICES_FLASH_MULTIPLE_ACCESS_FUNCTION_EXTRA_SIZE> claimer;
         infra::AutoResetFunction<void()> onDone;
     };
