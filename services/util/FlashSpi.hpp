@@ -71,8 +71,16 @@ namespace services
     private:
         hal::SpiMaster& spi;
         infra::ClaimableResource resource;
-        infra::ClaimableResource::Claimer::WithSize<sizeof(void*) + sizeof(std::function<void()>) + sizeof(infra::ByteRange) + sizeof(uint32_t)> flashOperationClaimer{ resource };
-        infra::ClaimableResource::Claimer::WithSize<sizeof(void*) + sizeof(std::function<void()>) + sizeof(infra::ByteRange)> flashIdClaimer{ resource };
+
+        struct LargestLambdaCapture
+        {
+            void* thisPtr;
+            infra::Function<void()> onDone;
+            infra::ByteRange buffer;
+        };
+
+        infra::ClaimableResource::Claimer::WithSize<sizeof(LargestLambdaCapture)> flashOperationClaimer{ resource };
+        infra::ClaimableResource::Claimer::WithSize<sizeof(LargestLambdaCapture)> flashIdClaimer{ resource };
         const Config config;
         infra::Sequencer sequencer;
         infra::TimerSingleShot delayTimer;

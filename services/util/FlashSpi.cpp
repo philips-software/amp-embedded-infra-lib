@@ -22,11 +22,12 @@ namespace services
 
     void FlashSpi::WriteBuffer(infra::ConstByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
-        flashOperationClaimer.Claim([this, buffer, address, onDone]()
+        this->address = address;
+
+        flashOperationClaimer.Claim([this, buffer, onDone]()
             {
                 this->onDone = onDone;
                 this->buffer = buffer;
-                this->address = address;
                 sequencer.Load([this]()
                     {
                         sequencer.While([this]()
@@ -57,11 +58,13 @@ namespace services
 
     void FlashSpi::ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
-        flashOperationClaimer.Claim([this, buffer, address, onDone]()
+        this->address = address;
+
+        flashOperationClaimer.Claim([this, buffer, onDone]()
             {
                 this->onDone = onDone;
                 readBuffer = buffer;
-                spi.SendData(InstructionAndAddress(commandReadData, address), hal::SpiAction::continueSession, [this]()
+                spi.SendData(InstructionAndAddress(commandReadData, this->address), hal::SpiAction::continueSession, [this]()
                     {
                         spi.ReceiveData(readBuffer, hal::SpiAction::stop, [this]()
                             {
@@ -74,10 +77,11 @@ namespace services
 
     void FlashSpi::EraseSectors(uint32_t beginIndex, uint32_t endIndex, infra::Function<void()> onDone)
     {
-        flashOperationClaimer.Claim([this, beginIndex, endIndex, onDone]()
+        sectorIndex = beginIndex;
+
+        flashOperationClaimer.Claim([this, endIndex, onDone]()
             {
                 this->onDone = onDone;
-                sectorIndex = beginIndex;
                 sequencer.Load([this, endIndex]()
                     {
                         sequencer.While([this, endIndex]()
