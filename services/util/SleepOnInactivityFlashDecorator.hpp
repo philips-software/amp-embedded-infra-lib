@@ -1,16 +1,12 @@
 #ifndef SERVICES_SLEEP_AFTER_OPERATION_FLASH_DECORATOR
 #define SERVICES_SLEEP_AFTER_OPERATION_FLASH_DECORATOR
 
+#include "hal/interfaces/Sleepable.hpp"
 #include "infra/timer/Timer.hpp"
 #include "infra/util/AutoResetFunction.hpp"
 #include "services/util/FlashDelegate.hpp"
 #include <chrono>
 #include <variant>
-
-namespace hal
-{
-    class Sleepable;
-}
 
 namespace services
 {
