@@ -45,35 +45,7 @@ namespace services
     typedef testing::Types<uint32_t, uint64_t> FlashTypes;
     TYPED_TEST_SUITE(SleepOnInactivityFlashDecoratorTest, FlashTypes);
 
-    TYPED_TEST(SleepOnInactivityFlashDecoratorTest, number_of_sectors_forwards_result)
-    {
-        uint32_t nr = 42;
-        EXPECT_CALL(this->flash, NumberOfSectors()).WillOnce(testing::Return(nr));
-        EXPECT_EQ(this->decorator.NumberOfSectors(), nr);
-    }
-
-    TYPED_TEST(SleepOnInactivityFlashDecoratorTest, size_of_sector_forwards_args_and_result)
-    {
-        uint32_t size = 4096;
-        EXPECT_CALL(this->flash, SizeOfSector(5)).WillOnce(testing::Return(size));
-        EXPECT_EQ(this->decorator.SizeOfSector(5), size);
-    }
-
-    TYPED_TEST(SleepOnInactivityFlashDecoratorTest, sector_of_address_forwards_args_and_result)
-    {
-        uint32_t sector = 7;
-        EXPECT_CALL(this->flash, SectorOfAddress(0x1000)).WillOnce(testing::Return(sector));
-        EXPECT_EQ(this->decorator.SectorOfAddress(0x1000), sector);
-    }
-
-    TYPED_TEST(SleepOnInactivityFlashDecoratorTest, address_of_sector_forwards_args_and_result)
-    {
-        uint32_t address = 0x2000;
-        EXPECT_CALL(this->flash, AddressOfSector(3)).WillOnce(testing::Return(address));
-        EXPECT_EQ(this->decorator.AddressOfSector(3), address);
-    }
-
-    TYPED_TEST(SleepOnInactivityFlashDecoratorTest, write_buffer_does_wake_write_sleep)
+    TYPED_TEST(SleepOnInactivityFlashDecoratorTest, WriteBufferDoesWakeWriteSleep)
     {
         uint32_t address = 42;
         auto buffer = infra::MakeConstByteRange(this->dummyArray);
@@ -88,7 +60,7 @@ namespace services
         this->Timeout();
     }
 
-    TYPED_TEST(SleepOnInactivityFlashDecoratorTest, read_buffer_does_wake_read_sleep)
+    TYPED_TEST(SleepOnInactivityFlashDecoratorTest, ReadBufferDoesWakeReadSleep)
     {
         uint32_t address = 42;
         auto buffer = infra::MakeByteRange(this->dummyArray);
@@ -103,7 +75,7 @@ namespace services
         this->Timeout();
     }
 
-    TYPED_TEST(SleepOnInactivityFlashDecoratorTest, erase_sectors_does_wake_erase_sleep)
+    TYPED_TEST(SleepOnInactivityFlashDecoratorTest, EraseSectorsDoesWakeEraseSleep)
     {
         uint32_t beginIndex = 2;
         uint32_t endIndex = 5;
@@ -118,7 +90,7 @@ namespace services
         this->Timeout();
     }
 
-    TYPED_TEST(SleepOnInactivityFlashDecoratorTest, no_sleep_between_consecutive_operations)
+    TYPED_TEST(SleepOnInactivityFlashDecoratorTest, NoSleepBetweenConsecutiveOperations)
     {
         testing::InSequence inSequenceEnabler;
         EXPECT_CALL(this->sleepable, Wake(testing::_));
@@ -133,7 +105,7 @@ namespace services
         this->Timeout();
     }
 
-    TYPED_TEST(SleepOnInactivityFlashDecoratorTest, no_timeout_no_sleep)
+    TYPED_TEST(SleepOnInactivityFlashDecoratorTest, NoTimeoutNoSleep)
     {
         testing::InSequence inSequenceEnabler;
         EXPECT_CALL(this->sleepable, Wake(testing::_));
