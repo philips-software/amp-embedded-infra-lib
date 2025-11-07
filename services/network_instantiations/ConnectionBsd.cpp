@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace
 {
@@ -32,7 +33,7 @@ namespace services
 
     ConnectionBsd::~ConnectionBsd()
     {
-        if (socket != 0)
+        if (Connected())
         {
             int result = close(socket);
             if (result == -1)
@@ -94,6 +95,11 @@ namespace services
         Attach(connectionObserver);
     }
 
+    bool ConnectionBsd::Connected() const
+    {
+        return socket != 0;
+    }
+
     void ConnectionBsd::Receive()
     {
         while (!receiveBuffer.full())
@@ -118,6 +124,7 @@ namespace services
             }
             else
             {
+                socket = 0;
                 ResetOwnership();
                 return;
             }
@@ -139,6 +146,8 @@ namespace services
                     ResetOwnership();
                 return;
             }
+
+            services::GlobalTracer().Trace() << "=== Sent: " << sent;
 
             sendBuffer.erase(sendBuffer.begin(), sendBuffer.begin() + sent);
         } while (sent != 0 && !sendBuffer.empty());
@@ -163,7 +172,11 @@ namespace services
 
     void ConnectionBsd::ResetOwnership()
     {
-        Detach();
+        if (IsAttached())
+        {
+            services::GlobalTracer().Trace() << "=== ResetOwnership";
+            Detach();
+        }
         self = nullptr;
     }
 
