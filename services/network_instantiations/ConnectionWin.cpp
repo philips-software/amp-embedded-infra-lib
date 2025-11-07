@@ -82,6 +82,11 @@ namespace services
         Attach(connectionObserver);
     }
 
+    bool ConnectionWin::Connected() const
+    {
+        return socket != 0;
+    }
+
     void ConnectionWin::Receive()
     {
         while (!receiveBuffer.full())

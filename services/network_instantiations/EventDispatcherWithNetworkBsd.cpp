@@ -2,7 +2,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include "services/tracer/GlobalTracer.hpp"
 
 namespace
 {
@@ -169,7 +168,6 @@ namespace services
 
         for (auto& connector : connectors)
         {
-            services::GlobalTracer().Trace() << "=== Adding connect descriptor";
             AddFileDescriptorToSet(connector.connectSocket, writeFileDescriptors);
             AddFileDescriptorToSet(connector.connectSocket, exceptFileDescriptors);
         }
@@ -182,16 +180,8 @@ namespace services
         {
             if (infra::SharedPtr<ConnectionBsd> connection = weakConnection)
             {
-                if (!connection->receiveBuffer.full())
-                {
-                    services::GlobalTracer().Trace() << "=== Adding read descriptor";
-                    AddFileDescriptorToSet(connection->socket, readFileDescriptors);
-                }
-                if (!connection->sendBuffer.empty())
-                {
-                    services::GlobalTracer().Trace() << "=== Adding write descriptor";
-                    AddFileDescriptorToSet(connection->socket, writeFileDescriptors);
-                }
+                AddFileDescriptorToSet(connection->socket, readFileDescriptors);
+                AddFileDescriptorToSet(connection->socket, writeFileDescriptors);
             }
         }
 
@@ -206,20 +196,13 @@ namespace services
                 AddFileDescriptorToSet(datagram->socket, readFileDescriptors);
                 AddFileDescriptorToSet(datagram->socket, writeFileDescriptors);
             }
-
         }
-        services::GlobalTracer().Trace() << "=== select";
 
         int result = 0;
         do
         {
             result = select(numberOfFileDescriptors + 1, &readFileDescriptors, &writeFileDescriptors, &exceptFileDescriptors, nullptr);
-            if (result == -1)
-                services::GlobalTracer().Trace() << "=== Select error";
-
         } while (result == -1 && errno == EINTR);
-
-        services::GlobalTracer().Trace() << "=== Done selecting: " << result;
 
         if (result == -1)
             std::abort();
@@ -229,8 +212,6 @@ namespace services
             char dummy;
             if (read(wakeUpEvent[0], &dummy, 1) == -1)
             {
-                services::GlobalTracer().Trace() << "=== Wake up event " << result;
-                
                 if (errno == EAGAIN)
                     break;
                 else
@@ -248,15 +229,9 @@ namespace services
             ++index;
 
             if (FD_ISSET(connector.connectSocket, &writeFileDescriptors))
-            {
-                services::GlobalTracer().Trace() << "=== Connector event";
                 connector.Connected();
-            }
             else if (FD_ISSET(connector.connectSocket, &exceptFileDescriptors))
-            {
-                services::GlobalTracer().Trace() << "=== Connector failed event";
                 connector.Failed();
-            }
         }
 
         for (auto& weakConnection : connections)
@@ -264,15 +239,9 @@ namespace services
             if (infra::SharedPtr<ConnectionBsd> connection = weakConnection)
             {
                 if (FD_ISSET(connection->socket, &readFileDescriptors))
-                {
-                    services::GlobalTracer().Trace() << "=== Receive event";
                     connection->Receive();
-                }
                 if (FD_ISSET(connection->socket, &writeFileDescriptors))
-                {
-                    services::GlobalTracer().Trace() << "=== Send event";
                     connection->Send();
-                }
             }
         }
 
@@ -290,10 +259,7 @@ namespace services
         connections.remove_if([](const infra::WeakPtr<ConnectionBsd>& connection)
             {
                 auto connectionPtr = connection.lock();
-                auto result = connectionPtr == nullptr || !connectionPtr->Connected();
-                if (result)
-                    services::GlobalTracer().Trace() << "=== Removing connection";
-                return result;
+                return connectionPtr == nullptr || !connectionPtr->Connected();
             });
         datagrams.remove_if([](const infra::WeakPtr<DatagramBsd>& datagram)
             {
