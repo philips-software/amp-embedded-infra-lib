@@ -16,7 +16,7 @@ namespace services
         : public hal::FlashBase<T>
     {
     public:
-        explicit FlashDelegateBase(hal::Flash& delegate);
+        explicit FlashDelegateBase(hal::FlashBase<T>& delegate);
 
         T NumberOfSectors() const override;
         uint32_t SizeOfSector(T sectorIndex) const override;
@@ -27,13 +27,13 @@ namespace services
         void EraseSectors(T beginIndex, T endIndex, infra::Function<void()> onDone) override;
 
     private:
-        hal::Flash& delegate;
+        hal::FlashBase<T>& delegate;
     };
 
     //// Implementation ////
 
     template<class T>
-    FlashDelegateBase<T>::FlashDelegateBase(hal::Flash& delegate)
+    FlashDelegateBase<T>::FlashDelegateBase(hal::FlashBase<T>& delegate)
         : delegate(delegate)
     {}
 
