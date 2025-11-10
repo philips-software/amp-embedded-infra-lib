@@ -1,12 +1,12 @@
 add_executable(examples.versioning.c
-    main.c
+    Main.c
 )
 
 add_version_header_dependency(examples.versioning.c generated.version_header)
 
 
 add_executable(examples.versioning.cpp
-    main.cpp
+    Main.cpp
 )
 
 target_link_libraries(examples.versioning.cpp PRIVATE
