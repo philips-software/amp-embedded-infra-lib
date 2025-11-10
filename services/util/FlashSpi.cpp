@@ -13,41 +13,44 @@ namespace services
     const uint8_t FlashSpi::commandEraseBulk = 0xc7;
     const uint8_t FlashSpi::commandReadId = 0x9f;
 
-    FlashSpi::FlashSpi(hal::SpiMaster& spi, const Config& config, uint32_t timerId, infra::Function<void()> onInitialized)
+    FlashSpi::FlashSpi(hal::SpiMaster& spi, const Config& config, uint32_t timerId)
         : hal::FlashHomogeneous(config.nrOfSubSectors, config.sizeSubSector)
         , spi(spi)
         , config(config)
         , delayTimer(timerId)
-    {
-        onInitialized();
-    }
+    {}
 
     void FlashSpi::WriteBuffer(infra::ConstByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
-        this->onDone = onDone;
-        this->buffer = buffer;
         this->address = address;
-        sequencer.Load([this]()
+
+        flashOperationClaimer.Claim([this, buffer, onDone]()
             {
-                sequencer.While([this]()
+                this->onDone = onDone;
+                this->buffer = buffer;
+                sequencer.Load([this]()
                     {
-                        return !this->buffer.empty();
-                    });
-                sequencer.Step([this]()
-                    {
-                        WriteEnable();
-                    });
-                sequencer.Step([this]()
-                    {
-                        PageProgram();
-                    });
-                HoldWhileWriteInProgress();
-                sequencer.EndWhile();
-                sequencer.Execute([this]()
-                    {
-                        infra::EventDispatcher::Instance().Schedule([this]()
+                        sequencer.While([this]()
                             {
-                                this->onDone();
+                                return !this->buffer.empty();
+                            });
+                        sequencer.Step([this]()
+                            {
+                                WriteEnable();
+                            });
+                        sequencer.Step([this]()
+                            {
+                                PageProgram();
+                            });
+                        HoldWhileWriteInProgress();
+                        sequencer.EndWhile();
+                        sequencer.Execute([this]()
+                            {
+                                infra::EventDispatcher::Instance().Schedule([this]()
+                                    {
+                                        flashOperationClaimer.Release();
+                                        this->onDone();
+                                    });
                             });
                     });
             });
@@ -55,43 +58,53 @@ namespace services
 
     void FlashSpi::ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
-        readBuffer = buffer;
-        this->onDone = onDone;
+        this->address = address;
 
-        spi.SendData(InstructionAndAddress(commandReadData, address), hal::SpiAction::continueSession, [this]()
+        flashOperationClaimer.Claim([this, buffer, onDone]()
             {
-                spi.ReceiveData(readBuffer, hal::SpiAction::stop, [this]()
+                this->onDone = onDone;
+                readBuffer = buffer;
+                spi.SendData(InstructionAndAddress(commandReadData, this->address), hal::SpiAction::continueSession, [this]()
                     {
-                        this->onDone();
+                        spi.ReceiveData(readBuffer, hal::SpiAction::stop, [this]()
+                            {
+                                flashOperationClaimer.Release();
+                                this->onDone();
+                            });
                     });
             });
     }
 
     void FlashSpi::EraseSectors(uint32_t beginIndex, uint32_t endIndex, infra::Function<void()> onDone)
     {
-        this->onDone = onDone;
         sectorIndex = beginIndex;
-        sequencer.Load([this, endIndex]()
+
+        flashOperationClaimer.Claim([this, endIndex, onDone]()
             {
-                sequencer.While([this, endIndex]()
+                this->onDone = onDone;
+                sequencer.Load([this, endIndex]()
                     {
-                        return sectorIndex != endIndex;
-                    });
-                sequencer.Step([this]()
-                    {
-                        WriteEnable();
-                    });
-                sequencer.Step([this, endIndex]()
-                    {
-                        EraseSomeSectors(endIndex);
-                    });
-                HoldWhileWriteInProgress();
-                sequencer.EndWhile();
-                sequencer.Execute([this]()
-                    {
-                        infra::EventDispatcher::Instance().Schedule([this]()
+                        sequencer.While([this, endIndex]()
                             {
-                                this->onDone();
+                                return sectorIndex != endIndex;
+                            });
+                        sequencer.Step([this]()
+                            {
+                                WriteEnable();
+                            });
+                        sequencer.Step([this, endIndex]()
+                            {
+                                EraseSomeSectors(endIndex);
+                            });
+                        HoldWhileWriteInProgress();
+                        sequencer.EndWhile();
+                        sequencer.Execute([this]()
+                            {
+                                infra::EventDispatcher::Instance().Schedule([this]()
+                                    {
+                                        flashOperationClaimer.Release();
+                                        this->onDone();
+                                    });
                             });
                     });
             });
@@ -99,14 +112,17 @@ namespace services
 
     void FlashSpi::ReadFlashId(infra::ByteRange buffer, infra::Function<void()> onDone)
     {
-        this->onDone = onDone;
-        readBuffer = buffer;
-
-        spi.SendData(infra::MakeByteRange(commandReadId), hal::SpiAction::continueSession, [this]()
+        flashIdClaimer.Claim([this, buffer, onDone]()
             {
-                spi.ReceiveData(readBuffer, hal::SpiAction::stop, [this]()
+                this->onDone = onDone;
+                readBuffer = buffer;
+                spi.SendData(infra::MakeByteRange(commandReadId), hal::SpiAction::continueSession, [this]()
                     {
-                        this->onDone();
+                        spi.ReceiveData(readBuffer, hal::SpiAction::stop, [this]()
+                            {
+                                flashIdClaimer.Release();
+                                this->onDone();
+                            });
                     });
             });
     }
@@ -238,5 +254,15 @@ namespace services
         }
 
         return infra::ByteRange(instructionAndAddressBuffer.data(), instructionAndAddressBuffer.data() + addressSize + 1);
+    }
+
+    infra::ClaimableResource& FlashSpi::Resource()
+    {
+        return resource;
+    }
+
+    hal::SpiMaster& FlashSpi::Spi()
+    {
+        return spi;
     }
 }

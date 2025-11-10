@@ -75,6 +75,10 @@ target_sources(services.util PRIVATE
     Sha256.hpp
     SignalLed.cpp
     SignalLed.hpp
+    SleepableFlashSpi.cpp
+    SleepableFlashSpi.hpp
+    SleepOnInactivityFlashDecorator.cpp
+    SleepOnInactivityFlashDecorator.hpp
     SpiMasterWithChipSelect.cpp
     SpiMasterWithChipSelect.hpp
     SpiMultipleAccess.cpp
