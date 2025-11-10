@@ -11,6 +11,17 @@ if (GIT_FOUND)
         ERROR_QUIET)
 endif()
 
+if (VERSION_SEMVER)
+    string(REGEX REPLACE "^v" "" CLEAN_SEMVER "${VERSION_SEMVER}")
+    if(CLEAN_SEMVER MATCHES "^([0-9]+)\\.([0-9]+)\\.([0-9]+)(-.*)?$")
+        set(VERSION_MAJOR ${CMAKE_MATCH_1})
+        set(VERSION_MINOR ${CMAKE_MATCH_2})
+        set(VERSION_PATCH ${CMAKE_MATCH_3})
+    else()
+        message(WARNING "Tag '${CLEAN_SEMVER}' does not match semver format")
+    endif()
+endif()
+
 set(${CMAKE_PROJECT_NAME}_VERSION_STRING ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
 if (${CMAKE_PROJECT_NAME}_VERSION_GIT_SHA)
