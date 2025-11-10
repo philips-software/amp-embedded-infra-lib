@@ -58,8 +58,8 @@
     <li><a href="index.html">amp-embedded-infra-lib</a></li>
   </ul>
 </nav>
-      <div class="edit-this-page"><a href="https://github.com/philips-software/amp-embedded-infra-lib/edit/main/documents/modules/ROOT/pages/index.adoc">Edit this page</a></div>
-      </div>
+      <div class="edit-this-page"><a href="file:///home/runner/work/amp-embedded-infra-lib/amp-embedded-infra-lib/documents/modules/ROOT/pages/index.adoc">Edit this page</a></div>
+  </div>
 </div>
   <div class="content">
 <div class="nav-container" data-component="embedded_infrastructure_library" data-version="7.2.0">
@@ -124,55 +124,9 @@
 <div class="sect1">
 <h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
 <div class="sectionbody">
-<div class="listingblock kroki-error">
+<div class="imageblock kroki">
 <div class="content">
-<pre>@startuml
-!theme cerulean-outline
-
-    package upgrade {
-        component bootloader
-        component pack_builder
-        component more_upgrade [
-            ...
-        ]
-    }
-
-    package protobuf {
-        component echo
-        component echo_console
-        component protoc_echo_plugin
-        component more_protobuf [
-            ...
-        ]
-    }
-
-    package services {
-        component ble
-        component cucumber
-        component network
-        component tracer
-        component util
-        component more_services [
-            ...
-        ]
-    }
-
-    package hal {
-        component interfaces
-        component synchronous_interfaces
-        component more_hal [
-            ...
-        ]
-    }
-
-    package infra {
-        component event
-        component stream
-        component syntax
-        component timer
-        component util
-    }
-@enduml</pre>
+<img src="_images/diag-03b06b8a97f321e39d695607347c02381d8d9784.svg" alt="Diagram">
 </div>
 </div>
 </div>
