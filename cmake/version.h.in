@@ -14,6 +14,9 @@
 #include <cstdint>
 #else
 #include <stdint.h>
+
+#define IF_CONSTEXPR
+#define EMIL_MAYBE_UNUSED
 #endif
 
 #define ${CMAKE_PROJECT_NAME}_generated_VERSION         "${${CMAKE_PROJECT_NAME}_VERSION_STRING}"
@@ -34,9 +37,9 @@ namespace ${CMAKE_PROJECT_NAME}
         static const char* VERSION_FULL EMIL_MAYBE_UNUSED    = ${CMAKE_PROJECT_NAME}_generated_VERSION_FULL;
         static const char* VERSION_GIT_SHA EMIL_MAYBE_UNUSED = ${CMAKE_PROJECT_NAME}_generated_VERSION_GIT_SHA;
 
-        static constexpr uint16_t VERSION_MAJOR              = ${CMAKE_PROJECT_NAME}_generated_VERSION_MAJOR;
-        static constexpr uint16_t VERSION_MINOR              = ${CMAKE_PROJECT_NAME}_generated_VERSION_MINOR;
-        static constexpr uint16_t VERSION_PATCH              = ${CMAKE_PROJECT_NAME}_generated_VERSION_PATCH;
+        static IF_CONSTEXPR uint16_t VERSION_MAJOR              = ${CMAKE_PROJECT_NAME}_generated_VERSION_MAJOR;
+        static IF_CONSTEXPR uint16_t VERSION_MINOR              = ${CMAKE_PROJECT_NAME}_generated_VERSION_MINOR;
+        static IF_CONSTEXPR uint16_t VERSION_PATCH              = ${CMAKE_PROJECT_NAME}_generated_VERSION_PATCH;
 #ifdef __cplusplus
     }
 }

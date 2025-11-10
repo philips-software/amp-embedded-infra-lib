@@ -1,6 +1,7 @@
 #include "generated/Version.h"
+#include <stdio.h>
 
 int main()
 {
-    return emil_generated_VERSION_MAJOR;
+    printf("%s", VERSION_FULL);
 }

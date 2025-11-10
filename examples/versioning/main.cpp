@@ -1,6 +1,7 @@
 #include "generated/Version.h"
+#include <iostream>
 
 int main()
 {
-    return emil_generated_VERSION_MAJOR;
+    std::cout << emil::generated::VERSION_FULL << std::flush;
 }
