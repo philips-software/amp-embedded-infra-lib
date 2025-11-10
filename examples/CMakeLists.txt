@@ -6,6 +6,7 @@ if (EMIL_HOST_BUILD)
     add_subdirectory(serial_output)
     add_subdirectory(sntp)
     add_subdirectory(threading)
+    add_subdirectory(versioning)
 
     if (EMIL_INCLUDE_MBEDTLS)
         add_subdirectory(https)
