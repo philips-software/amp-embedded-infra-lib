@@ -18,7 +18,7 @@ if (VERSION_SEMVER)
         set(VERSION_MINOR ${CMAKE_MATCH_2})
         set(VERSION_PATCH ${CMAKE_MATCH_3})
     else()
-        message(WARNING "Tag '${CLEAN_SEMVER}' does not match semver format")
+        message(FATAL_ERROR "Tag '${CLEAN_SEMVER}' does not match semver format")
     endif()
 endif()
 
