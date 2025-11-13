@@ -57,8 +57,6 @@ namespace hal
     class ChipSelectSubject : public infra::Subject<ChipSelectObserver>
     {
     public:
-        using Subject::Subject;
-
         virtual void EnableChipSelectInterrupt() = 0;
         virtual void DisableChipSelectInterrupt() = 0;
     };
