@@ -54,7 +54,8 @@ namespace hal
         virtual void OnDeselected() = 0;
     };
 
-    class ChipSelectSubject : public infra::Subject<ChipSelectObserver>
+    class ChipSelectSubject
+        : public infra::Subject<ChipSelectObserver>
     {
     public:
         virtual void EnableChipSelectInterrupt() = 0;
