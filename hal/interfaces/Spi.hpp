@@ -50,8 +50,8 @@ namespace hal
     public:
         using infra::SingleObserver<ChipSelectObserver, ChipSelectSubject>::SingleObserver;
 
-        virtual void OnSelected() = 0;
-        virtual void OnDeselected() = 0;
+        virtual void OnSelectedOnInterrupt() = 0;
+        virtual void OnDeselectedOnInterrupt() = 0;
     };
 
     class ChipSelectSubject
