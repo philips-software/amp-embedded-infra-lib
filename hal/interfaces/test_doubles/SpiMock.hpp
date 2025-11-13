@@ -56,6 +56,14 @@ namespace hal
         MOCK_METHOD0(EndSession, void());
     };
 
+    class ChipSelectObserverMock
+        : public ChipSelectObserver
+    {
+    public:
+        MOCK_METHOD(void, OnSelectedOnInterrupt, (), (override));
+        MOCK_METHOD(void, OnDeselectedOnInterrupt, (), (override));
+    };
+
     class ChipSelectSubjectMock
         : public ChipSelectSubject
     {
