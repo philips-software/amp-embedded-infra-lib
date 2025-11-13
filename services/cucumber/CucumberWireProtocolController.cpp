@@ -125,7 +125,7 @@ namespace services
     {
         invokeInfo.successful = false;
         services::CucumberContext::Instance().TimeoutTimer().Cancel();
-        invokeInfo.failReason = reason;
+        invokeInfo.failReason.assign(reason);
 
         connectionObserver.Subject().RequestSendStream(connectionObserver.Subject().MaxSendStreamSize());
     }
