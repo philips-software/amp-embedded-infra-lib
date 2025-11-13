@@ -103,7 +103,7 @@ namespace services
         if (controller.invokeInfo.successful)
             CreateSuccessMessage(stream);
         else
-            CreateFailureMessage(stream, "Invoke Failed", *controller.invokeInfo.failReason);
+            CreateFailureMessage(stream, "Invoke Failed", controller.invokeInfo.failReason);
     }
 
     void CucumberWireProtocolFormatter::FormatSnippetResponse(infra::TextOutputStream::WithErrorPolicy& stream)
