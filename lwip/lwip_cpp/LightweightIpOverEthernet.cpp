@@ -63,6 +63,7 @@ namespace services
         {
             frameSize -= end->len;
             end = end->next;
+            end->tot_len = frameSize;
         }
 
         assert(end != nullptr);
