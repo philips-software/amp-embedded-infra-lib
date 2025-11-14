@@ -19,36 +19,24 @@ namespace infra
 }
 #endif
 
-#ifdef NDEBUG
 #ifdef EMIL_HOST_BUILD
-#define really_assert(condition)                                       \
-    if (!(condition))                                                  \
-    {                                                                  \
-        infra::HandleAssertionFailure(#condition, __FILE__, __LINE__); \
-    }                                                                  \
-    else                                                               \
-        for (; false;)
+#define INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition) \
+    infra::HandleAssertionFailure(#condition, __FILE__, __LINE__)
 #else
-#define really_assert(condition) \
-    if (!(condition))            \
-    {                            \
-        std::abort();            \
-    }                            \
-    else                         \
-        for (; false;)
+#define INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition) \
+    std::abort()
 #endif
-#else
-#ifdef EMIL_HOST_BUILD
-#define really_assert(condition)                                       \
-    if (!(condition))                                                  \
-    {                                                                  \
-        infra::HandleAssertionFailure(#condition, __FILE__, __LINE__); \
-    }                                                                  \
-    else                                                               \
+
+#ifdef NDEBUG
+#define really_assert(condition)                     \
+    if (!(condition))                                \
+    {                                                \
+        INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition); \
+    }                                                \
+    else                                             \
         for (; false;)
 #else
 #define really_assert(condition) assert(condition)
-#endif
 #endif
 
 #endif
