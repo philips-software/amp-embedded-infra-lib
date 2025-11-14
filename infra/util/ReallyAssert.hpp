@@ -28,13 +28,14 @@ namespace infra
 #endif
 
 #ifdef NDEBUG
-#define really_assert(condition)                     \
-    if (!(condition))                                \
-    {                                                \
-        INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition); \
-    }                                                \
-    else                                             \
-        for (; false;)
+#define really_assert(condition)                         \
+    do                                                   \
+    {                                                    \
+        if (!(condition))                                \
+        {                                                \
+            INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition); \
+        }                                                \
+    } while (0)
 #else
 #define really_assert(condition) assert(condition)
 #endif
