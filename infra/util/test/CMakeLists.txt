@@ -39,6 +39,7 @@ target_sources(infra.util_test PRIVATE
     TestOptional.cpp
     TestPolymorphicVariant.cpp
     TestProxyCreator.cpp
+    TestReallyAssert.cpp
     TestReferenceCountedSingleton.cpp
     TestSequencer.cpp
     TestSharedObjectAllocatorFixedSize.cpp
