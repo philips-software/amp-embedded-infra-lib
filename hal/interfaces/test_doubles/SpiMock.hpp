@@ -2,10 +2,8 @@
 #define HAL_SPI_MOCK_HPP
 
 #include "hal/interfaces/Spi.hpp"
-#include "infra/util/AutoResetFunction.hpp"
 #include "gmock/gmock.h"
 #include <cstdint>
-#include <utility>
 #include <vector>
 
 namespace hal
@@ -56,6 +54,22 @@ namespace hal
     public:
         MOCK_METHOD0(StartSession, void());
         MOCK_METHOD0(EndSession, void());
+    };
+
+    class ChipSelectObserverMock
+        : public ChipSelectObserver
+    {
+    public:
+        MOCK_METHOD(void, OnSelectedOnInterrupt, (), (override));
+        MOCK_METHOD(void, OnDeselectedOnInterrupt, (), (override));
+    };
+
+    class ChipSelectSubjectMock
+        : public ChipSelectSubject
+    {
+    public:
+        MOCK_METHOD(void, EnableChipSelectInterrupt, (), (override));
+        MOCK_METHOD(void, DisableChipSelectInterrupt, (), (override));
     };
 }
 

@@ -11,7 +11,7 @@ namespace application
     class InputFactory
     {
     public:
-        virtual std::unique_ptr<Input> CreateInput(const std::string& targetName, const std::string& fileName, infra::Optional<uint32_t> address) = 0;
+        virtual std::unique_ptr<Input> CreateInput(const std::string& targetName, const std::string& fileName, std::optional<uint32_t> address) = 0;
 
     protected:
         ~InputFactory() = default;

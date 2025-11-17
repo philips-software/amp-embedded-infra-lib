@@ -69,17 +69,21 @@ message Descriptr
     Handle handle = 2;
 }
 
-// Value 0 indicates success
-// Any non-zero value indicates an error. The actual meaning of the error code is platform specific.
-// For ST-based platforms error codes are defined in "Status error codes" section of ST application note AN5270
-message GattResult
-{
-    uint32 value = 1;
-}
-
 message ReadResult
 {
     CharacteristicData data = 1;
+}
+
+enum OperationStatus
+{
+    success = 0;
+    retry = 1;
+    error = 2;
+}
+
+message OperationResult
+{
+    OperationStatus value = 1;
 }
 
 service GattClient
@@ -127,7 +131,7 @@ service GattClientResponse
     rpc ReadResponse(ReadResult) returns (Nothing) { option (method_id) = 8; }
 
     // Called after completion of characteristic operations with response: Read, Write, Enable/Disable Notification/Indication
-    rpc CharacteristicOperationComplete(GattResult) returns (Nothing) { option (method_id) = 9; }
+    rpc CharacteristicOperationComplete(OperationResult) returns (Nothing) { option (method_id) = 9; }
 
     rpc IndicationReceived(CharacteristicData) returns (Nothing) { option (method_id) = 10; }
     rpc NotificationReceived(CharacteristicData) returns (Nothing) { option (method_id) = 11; }

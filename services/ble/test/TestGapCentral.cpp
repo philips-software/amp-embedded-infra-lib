@@ -81,10 +81,10 @@ namespace services
         decorator.StopDeviceDiscovery();
 
         hal::MacAddress mac = { 0x00, 0x1A, 0x7D, 0xDA, 0x71, 0x13 };
-        EXPECT_CALL(gap, ResolvePrivateAddress(mac)).WillOnce(testing::Return(infra::none));
-        EXPECT_EQ(decorator.ResolvePrivateAddress(mac), infra::none);
+        EXPECT_CALL(gap, ResolvePrivateAddress(mac)).WillOnce(testing::Return(std::nullopt));
+        EXPECT_EQ(decorator.ResolvePrivateAddress(mac), std::nullopt);
 
-        EXPECT_CALL(gap, ResolvePrivateAddress(mac)).WillOnce(testing::Return(infra::MakeOptional(mac)));
+        EXPECT_CALL(gap, ResolvePrivateAddress(mac)).WillOnce(testing::Return(std::make_optional(mac)));
         EXPECT_EQ(decorator.ResolvePrivateAddress(mac), mac);
     }
 

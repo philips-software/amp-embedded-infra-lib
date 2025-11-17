@@ -49,10 +49,10 @@ namespace services
 
         bool ContainsTableArgument(infra::BoundedConstString fieldName) const;
         infra::JsonArray GetTable() const;
-        infra::Optional<infra::JsonString> GetTableArgument(infra::BoundedConstString fieldName) const;
-        infra::Optional<infra::JsonString> GetStringArgument(uint8_t argumentNumber) const;
-        infra::Optional<uint32_t> GetUIntegerArgument(uint8_t argumentNumber) const;
-        infra::Optional<bool> GetBooleanArgument(uint8_t argumentNumber) const;
+        std::optional<infra::JsonString> GetTableArgument(infra::BoundedConstString fieldName) const;
+        std::optional<infra::JsonString> GetStringArgument(uint8_t argumentNumber) const;
+        std::optional<uint32_t> GetUIntegerArgument(uint8_t argumentNumber) const;
+        std::optional<bool> GetBooleanArgument(uint8_t argumentNumber) const;
         bool ContainsStringArgument(uint8_t index) const;
 
     protected:

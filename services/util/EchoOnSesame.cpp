@@ -10,7 +10,7 @@ namespace services
     void EchoOnSesame::Reset()
     {
         initialized = false;
-        requestedSize = infra::none;
+        requestedSize.reset();
         ReleaseReader();
         SesameObserver::Subject().Reset();
     }
@@ -26,8 +26,8 @@ namespace services
 
         EchoOnStreams::Initialized();
 
-        if (requestedSize != infra::none)
-            RequestSendStream(*std::exchange(requestedSize, infra::none));
+        if (requestedSize != std::nullopt)
+            RequestSendStream(*std::exchange(requestedSize, std::nullopt));
     }
 
     void EchoOnSesame::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)

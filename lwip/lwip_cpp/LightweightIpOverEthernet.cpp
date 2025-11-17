@@ -1,9 +1,9 @@
 #include "lwip/lwip_cpp/LightweightIpOverEthernet.hpp"
-#include "infra/event/EventDispatcher.hpp"
 #include "lwip/dhcp.h"
 #include "lwip/ethip6.h"
 #include "lwip/igmp.h"
 #include "netif/etharp.h"
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 
@@ -63,6 +63,7 @@ namespace services
         {
             frameSize -= end->len;
             end = end->next;
+            end->tot_len = frameSize;
         }
 
         assert(end != nullptr);
@@ -153,16 +154,19 @@ namespace services
         sending = true;
         pbuf* buffer = currentSendFrames.front();
 
+        uint16_t remaining = buffer->tot_len;
         while (true)
         {
-            bool lastOfFrame = buffer->tot_len == buffer->len;
+            bool lastOfFrame = remaining == buffer->len;
 
             Subject().SendBuffer(infra::ConstByteRange(static_cast<const uint8_t*>(buffer->payload), static_cast<const uint8_t*>(buffer->payload) + buffer->len), lastOfFrame);
 
-            if (lastOfFrame)
-                break;
+            remaining -= buffer->len;
 
             buffer = buffer->next;
+
+            if (lastOfFrame || buffer == nullptr)
+                break;
         }
     }
 
@@ -185,6 +189,7 @@ namespace services
         netif_set_up(&netInterface);
         netif_set_default(&netInterface);
 
+        really_assert(config.hostName.Storage()[config.hostName.size() - 1] == '\0');
         netif_set_hostname(&netInterface, config.hostName.Storage().data());
         netif_set_ip6_autoconfig_enabled(&netInterface, 1);
 
@@ -207,12 +212,12 @@ namespace services
 
     void LightweightIpOverEthernetFactory::Create(hal::EthernetMac& ethernet)
     {
-        ethernetStack.Emplace(ethernet, netInterface);
+        ethernetStack.emplace(ethernet, netInterface);
     }
 
     void LightweightIpOverEthernetFactory::Destroy()
     {
-        ethernetStack = infra::none;
+        ethernetStack.reset();
     }
 
     hal::MacAddress LightweightIpOverEthernetFactory::MacAddress() const

@@ -30,13 +30,13 @@ namespace services
         void StartDescriptorDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) override;
 
         // Implementation of GattClientCharacteristicOperations
-        void Read(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(uint8_t)>& onDone) override;
-        void Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(uint8_t)>& onDone) override;
+        void Read(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone) override;
+        void Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
         void WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
-        void EnableNotification(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) override;
-        void DisableNotification(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) override;
-        void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) override;
-        void DisableIndication(AttAttribute::Handle handle, const infra::Function<void(uint8_t)>& onDone) override;
+        void EnableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
+        void DisableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
+        void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
+        void DisableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
 
         // Implementation of AttMtuExchange
         uint16_t EffectiveMaxAttMtuSize() const override;
@@ -45,11 +45,11 @@ namespace services
     private:
         // Implementation of GattClientObserver
         void ServiceDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle endHandle) override;
-        void ServiceDiscoveryComplete() override;
+        void ServiceDiscoveryComplete(OperationStatus status) override;
         void CharacteristicDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties) override;
-        void CharacteristicDiscoveryComplete() override;
+        void CharacteristicDiscoveryComplete(OperationStatus status) override;
         void DescriptorDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle) override;
-        void DescriptorDiscoveryComplete() override;
+        void DescriptorDiscoveryComplete(OperationStatus status) override;
         void NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data) override;
         void IndicationReceived(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone) override;
 
@@ -94,19 +94,19 @@ namespace services
         struct ReadOperation
         {
             const infra::Function<void(const infra::ConstByteRange&)> onRead;
-            const infra::Function<void(uint8_t)> onDone;
+            const infra::Function<void(OperationStatus)> onDone;
         };
 
         struct WriteOperation
         {
             infra::ConstByteRange data;
-            const infra::Function<void(uint8_t)> onDone;
+            const infra::Function<void(OperationStatus)> onDone;
         };
 
         struct DescriptorOperation
         {
-            const infra::Function<void(uint8_t)> onDone;
-            infra::Function<void(const infra::Function<void(uint8_t)>&)> operation;
+            const infra::Function<void(OperationStatus)> onDone;
+            infra::Function<void(const infra::Function<void(OperationStatus)>&)> operation;
         };
 
         struct CharacteristicOperation
@@ -115,7 +115,7 @@ namespace services
 
             CharacteristicOperation(Operation operation, AttAttribute::Handle handle)
                 : operation(operation)
-                , handle(handle) {};
+                , handle(handle){};
 
             Operation operation;
             AttAttribute::Handle handle;

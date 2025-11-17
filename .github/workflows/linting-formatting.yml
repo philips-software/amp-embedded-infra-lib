@@ -26,22 +26,22 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: oxsecurity/megalinter/flavors/c_cpp@e08c2b05e3dbc40af4c23f41172ef1e068a7d651 # v8.8.0
+      - uses: oxsecurity/megalinter/flavors/c_cpp@62c799d895af9bcbca5eacfebca29d527f125a57 # v9.1.0
         env:
           APPLY_FIXES: all
           VALIDATE_ALL_CODEBASE: true
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: git diff
-      - uses: github/codeql-action/upload-sarif@2d92b76c45b91eb80fc44c74ce3fce0ee94e8f9d # v3.29.5
+      - uses: github/codeql-action/upload-sarif@014f16e7ab1402f30e7c3329d33797e7948572db # v4.31.3
         if: ${{ success() || failure() }}
         with:
           sarif_file: megalinter-reports/megalinter-report.sarif
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         if: ${{ success() || failure() }}
         with:
           name: linter
           path: |
             megalinter-reports
-      - uses: reviewdog/action-suggester@3d5391db5affb50a46eb4629e908a4e2c5dd20b2 # v1.22.0
+      - uses: reviewdog/action-suggester@aa38384ceb608d00f84b4690cacc83a5aba307ff # v1.24.0
         with:
           tool_name: MegaLinter

@@ -175,7 +175,7 @@ namespace services
         // ScanForNetworkDetails eventually results in either NetworkDetailsAvailable or NetworkDetailsUnavailable
         virtual void ScanForNetworkDetails(infra::BoundedConstString ssid, WiFiNetworkScanNetworkForDetailsResultObserver& observer) = 0;
         // ScanNetworks eventually results in NetworksFound
-        virtual void ScanNetworks(int32_t numOfProbesPerChannel, infra::Optional<infra::Duration> waitTimePerChannelActive, WiFiNetworkScanNetworksResultObserver& observer) = 0;
+        virtual void ScanNetworks(int32_t numOfProbesPerChannel, std::optional<infra::Duration> waitTimePerChannelActive, WiFiNetworkScanNetworksResultObserver& observer) = 0;
     };
 
     class NetworkPingResultsObserver

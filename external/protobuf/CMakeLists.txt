@@ -8,9 +8,6 @@ if (EMIL_HOST_BUILD)
     set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL On)
 
     add_compile_options(
-        # Disable warning on invalid use of [[noreturn]] and on deprecation of sprintf
-        # -Wno-invalid-noreturn should be removed when https://github.com/protocolbuffers/protobuf/issues/9817 is fixed
-        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:-Wno-invalid-noreturn$<SEMICOLON>-Winvalid-offsetof>
         # Disable string overflow warning
         $<$<CXX_COMPILER_ID:GNU>:-Wno-stringop-overflow>
         # Disable warning not all control paths return a value
@@ -51,8 +48,12 @@ if (EMIL_HOST_BUILD)
                 # Disable warnings about weak() being deprecated
                 target_compile_options(${target} PUBLIC -Wno-deprecated-declarations)
             endif()
+            if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang" AND "${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" MATCHES "MSVC")
+                # unused-command-line-argument: /MP option is set by the library when building with MSVC, but the flag has no effect on clang-cl 
+                target_compile_options(${target} PUBLIC -Wno-unused-command-line-argument -Wno-invalid-offsetof)
+            endif()
         endforeach()
     endfunction()
 
-    add_protobuf_target_properties(libprotobuf libprotoc)
+    add_protobuf_target_properties(libprotobuf libprotoc libupb)
 endif()

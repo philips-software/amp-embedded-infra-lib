@@ -34,7 +34,7 @@ namespace hal
         bool state = false;
         bool input = true;
 
-        infra::Optional<std::pair<infra::Function<void()>, InterruptTrigger>> triggerOnChange;
+        std::optional<std::pair<infra::Function<void()>, InterruptTrigger>> triggerOnChange;
     };
 
     struct PinChange

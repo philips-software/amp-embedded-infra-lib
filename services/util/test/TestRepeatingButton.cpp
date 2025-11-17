@@ -9,7 +9,7 @@ class RepeatingButtonFixtureBase
     , public infra::ClockFixture
 {
 public:
-    infra::Optional<services::RepeatingButton> repeatingButton;
+    std::optional<services::RepeatingButton> repeatingButton;
     services::RepeatingButton::Config config;
     hal::GpioPinStub button;
     infra::MockCallback<void()> callback;
@@ -21,7 +21,7 @@ class RepeatingButtonFixture
 public:
     RepeatingButtonFixture()
     {
-        repeatingButton.Emplace(
+        repeatingButton.emplace(
             button, [this]()
             {
                 callback.callback();
@@ -95,7 +95,7 @@ TEST_F(RepeatingButtonFixtureBase, NonDefaultTimings)
     config.debounceDuration = std::chrono::milliseconds(20);
     config.initialDelay = std::chrono::seconds(2);
     config.successiveDelay = std::chrono::seconds(1);
-    repeatingButton.Emplace(
+    repeatingButton.emplace(
         button, [this]()
         {
             callback.callback();

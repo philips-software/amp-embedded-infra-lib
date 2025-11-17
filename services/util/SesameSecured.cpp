@@ -136,7 +136,13 @@ namespace services
             numSame += computedMac[i] == receivedMac[i];
 
         if (numSame != computedMac.size())
+        {
+            IntegritySubject::NotifyObservers([](auto& observer)
+                {
+                    observer.IntegrityCheckFailed();
+                });
             return;
+        }
 
         IncreaseIv(receiveIv);
 
