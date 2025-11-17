@@ -2,15 +2,6 @@ set(${CMAKE_PROJECT_NAME}_VERSION_STRING "")
 set(${CMAKE_PROJECT_NAME}_VERSION_STRING_FULL "")
 set(${CMAKE_PROJECT_NAME}_VERSION_GIT_SHA)
 
-find_package(Git QUIET)
-
-if (GIT_FOUND)
-    execute_process(COMMAND ${GIT_EXECUTABLE} -C ${PROJECT_SOURCE_DIR} rev-parse --short @{0}
-        OUTPUT_VARIABLE ${CMAKE_PROJECT_NAME}_VERSION_GIT_SHA
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-        ERROR_QUIET)
-endif()
-
 if (VERSION_SEMVER)
     string(REGEX REPLACE "^v" "" CLEAN_SEMVER "${VERSION_SEMVER}")
     if(CLEAN_SEMVER MATCHES "^([0-9]+)\\.([0-9]+)\\.([0-9]+)(-.*)?$")
@@ -20,6 +11,17 @@ if (VERSION_SEMVER)
     else()
         message(FATAL_ERROR "Tag '${CLEAN_SEMVER}' does not match semver format")
     endif()
+else()
+    message(FATAL_ERROR "missing VERSION_SEMVER variable")
+endif()
+
+find_package(Git QUIET)
+
+if (GIT_FOUND)
+    execute_process(COMMAND ${GIT_EXECUTABLE} -C ${PROJECT_SOURCE_DIR} rev-parse --short @{0}
+        OUTPUT_VARIABLE ${CMAKE_PROJECT_NAME}_VERSION_GIT_SHA
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET)
 endif()
 
 set(${CMAKE_PROJECT_NAME}_VERSION_STRING ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
