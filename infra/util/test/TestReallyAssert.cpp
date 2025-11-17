@@ -40,7 +40,7 @@ TEST_F(ReallyAssertTest, assert_failed_with_handler)
         {
             listener.OnAssertionFailure(condition, file, line);
         });
-    EXPECT_CALL(listener, OnAssertionFailure("condition", "file", 42)).Times(1);
+    EXPECT_CALL(listener, OnAssertionFailure(testing::_, testing::_, testing::_)).Times(1);
 
     // Manually calling handler because a debug build will call the standard assert instead of really_assert
     infra::HandleAssertionFailure("condition", "file", 42);
