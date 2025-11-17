@@ -10,12 +10,10 @@ namespace infra
         customHandler = handler;
     }
 
-    [[noreturn]] void HandleAssertionFailure(const char* condition, const char* file, int line)
+    void HandleAssertionFailure(const char* condition, const char* file, int line)
     {
         if (customHandler)
             customHandler(condition, file, line);
-
-        std::abort();
     }
 }
 #endif

@@ -15,7 +15,7 @@ namespace infra
 
     void RegisterAssertionFailureHandler(AssertionFailureHandler handler);
 
-    [[noreturn]] void HandleAssertionFailure(const char* condition, const char* file, int line);
+    void HandleAssertionFailure(const char* condition, const char* file, int line);
 }
 #endif
 
@@ -34,6 +34,7 @@ namespace infra
         if (!(condition))                                \
         {                                                \
             INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition); \
+            std::abort();                                \
         }                                                \
     } while (0)
 #else
