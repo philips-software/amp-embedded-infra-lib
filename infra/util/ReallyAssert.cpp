@@ -7,7 +7,7 @@ namespace infra
 
     void RegisterAssertionFailureHandler(AssertionFailureHandler handler)
     {
-        customHandler = handler;
+        customHandler = std::move(handler);
     }
 
     void HandleAssertionFailure(const char* condition, const char* file, int line)
