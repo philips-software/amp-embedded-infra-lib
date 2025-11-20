@@ -44,6 +44,24 @@ namespace hal
         virtual void ResetCommunicationConfigurator() = 0;
     };
 
+    class ChipSelectObserver
+        : public infra::SingleObserver<ChipSelectObserver, class ChipSelectSubject>
+    {
+    public:
+        using infra::SingleObserver<ChipSelectObserver, ChipSelectSubject>::SingleObserver;
+
+        virtual void OnSelectedOnInterrupt() = 0;
+        virtual void OnDeselectedOnInterrupt() = 0;
+    };
+
+    class ChipSelectSubject
+        : public infra::Subject<ChipSelectObserver>
+    {
+    public:
+        virtual void EnableChipSelectInterrupt() = 0;
+        virtual void DisableChipSelectInterrupt() = 0;
+    };
+
     class SpiSlave
     {
     protected:

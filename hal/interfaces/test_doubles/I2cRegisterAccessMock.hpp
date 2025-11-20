@@ -15,8 +15,10 @@ namespace hal
         void ReceiveData(hal::I2cAddress address, infra::ByteRange data, hal::Action nextAction,
             infra::Function<void(hal::Result)> onReceived) override;
 
-        MOCK_METHOD1(ReadRegisterMock, std::vector<uint8_t>(uint8_t dataRegister));
-        MOCK_METHOD2(WriteRegisterMock, void(uint8_t dataRegister, const std::vector<uint8_t>& data));
+        MOCK_METHOD(std::vector<uint8_t>, ReadRegisterMock, (uint8_t dataRegister));
+        MOCK_METHOD(void, WriteRegisterMock, (uint8_t dataRegister, const std::vector<uint8_t>& data));
+        MOCK_METHOD(void, SetErrorPolicy, (hal::I2cErrorPolicy & policy), (override));
+        MOCK_METHOD(void, ResetErrorPolicy, (), (override));
 
     private:
         bool sending = true;

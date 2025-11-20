@@ -18,6 +18,16 @@ namespace services
         master.ReceiveData(address, data, nextAction, onReceived);
     }
 
+    void I2cMultipleAccessMaster::SetErrorPolicy(hal::I2cErrorPolicy& policy)
+    {
+        master.SetErrorPolicy(policy);
+    }
+
+    void I2cMultipleAccessMaster::ResetErrorPolicy()
+    {
+        master.ResetErrorPolicy();
+    }
+
     I2cMultipleAccess::I2cMultipleAccess(I2cMultipleAccessMaster& master)
         : master(master)
         , claimer(master)
@@ -38,6 +48,11 @@ namespace services
 
     void I2cMultipleAccess::SendDataOnClaimed(hal::I2cAddress address, infra::ConstByteRange data, hal::Action nextAction)
     {
+        if (errorPolicy != nullptr)
+            master.SetErrorPolicy(*errorPolicy);
+        else
+            master.ResetErrorPolicy();
+
         master.SendData(address, data, nextAction, [this, nextAction](hal::Result result, uint32_t numberOfBytesSent)
             {
                 if (nextAction == hal::Action::stop)
@@ -60,11 +75,26 @@ namespace services
 
     void I2cMultipleAccess::ReceiveDataOnClaimed(hal::I2cAddress address, infra::ByteRange data, hal::Action nextAction)
     {
+        if (errorPolicy != nullptr)
+            master.SetErrorPolicy(*errorPolicy);
+        else
+            master.ResetErrorPolicy();
+
         master.ReceiveData(address, data, nextAction, [this, nextAction](hal::Result result)
             {
                 if (nextAction == hal::Action::stop)
                     claimer.Release();
                 this->onReceived(result);
             });
+    }
+
+    void I2cMultipleAccess::SetErrorPolicy(hal::I2cErrorPolicy& policy)
+    {
+        errorPolicy = &policy;
+    }
+
+    void I2cMultipleAccess::ResetErrorPolicy()
+    {
+        errorPolicy = nullptr;
     }
 }

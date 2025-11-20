@@ -16,7 +16,7 @@ namespace services
         struct InvokeInfo
         {
             bool successful;
-            std::optional<infra::BoundedConstString> failReason;
+            infra::BoundedString::WithStorage<256> failReason;
         };
 
         void HandleRequest(CucumberWireProtocolParser& parser);

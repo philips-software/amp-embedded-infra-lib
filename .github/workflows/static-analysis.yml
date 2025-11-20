@@ -18,9 +18,9 @@ jobs:
   sonar:
     name: SonarCloud
     runs-on: ubuntu-latest
-    container: ghcr.io/philips-software/amp-devcontainer-cpp:v6.5.0@sha256:ee6fc072861425a6492b13a588afe3b5d09c038f3335ff6e707fd70416edf932 # v6.5.0
+    container: ghcr.io/philips-software/amp-devcontainer-cpp:v6.5.3@sha256:80f10547f74b39a5b9643e53de240ed0d482b6ee03ecabb6695d4e47dd6baa08 # v6.5.3
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           fetch-depth: 0 # Disable shallow clone to enable blame information
           persist-credentials: false
@@ -63,17 +63,17 @@ jobs:
   codeql:
     name: CodeQL
     runs-on: ubuntu-latest
-    container: ghcr.io/philips-software/amp-devcontainer-cpp:v6.5.0@sha256:ee6fc072861425a6492b13a588afe3b5d09c038f3335ff6e707fd70416edf932 # v6.5.0
+    container: ghcr.io/philips-software/amp-devcontainer-cpp:v6.5.3@sha256:80f10547f74b39a5b9643e53de240ed0d482b6ee03ecabb6695d4e47dd6baa08 # v6.5.3
     permissions:
       security-events: write
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           persist-credentials: false
       - uses: hendrikmuhs/ccache-action@bfa03e1de4d7f7c3e80ad9109feedd05c4f5a716 # v1.2.19
         with:
           key: ${{ github.job }}
-      - uses: github/codeql-action/init@3599b3baa15b485a2e49ef411a7a4bb2452e7f93 # v3.29.5
+      - uses: github/codeql-action/init@e12f0178983d466f2f6028f5cc7a6d786fd97f4b # v4.31.4
         with:
           languages: cpp
       - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
@@ -81,4 +81,4 @@ jobs:
           configurePreset: "host"
           buildPreset: "host-Debug"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"
-      - uses: github/codeql-action/analyze@3599b3baa15b485a2e49ef411a7a4bb2452e7f93 # v3.29.5
+      - uses: github/codeql-action/analyze@e12f0178983d466f2f6028f5cc7a6d786fd97f4b # v4.31.4
