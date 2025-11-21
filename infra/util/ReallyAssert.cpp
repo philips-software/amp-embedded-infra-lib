@@ -1,4 +1,4 @@
-#include "ReallyAssert.hpp"
+#include "infra/util/ReallyAssert.hpp"
 
 #ifdef EMIL_HOST_BUILD
 namespace infra
@@ -7,7 +7,7 @@ namespace infra
 
     void RegisterAssertionFailureHandler(AssertionFailureHandler handler)
     {
-        customHandler = handler;
+        customHandler = std::move(handler);
     }
 
     void HandleAssertionFailure(const char* condition, const char* file, int line)
