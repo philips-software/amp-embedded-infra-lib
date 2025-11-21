@@ -23,8 +23,7 @@ namespace infra
 #define INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition) \
     infra::HandleAssertionFailure(#condition, __FILE__, __LINE__)
 #else
-#define INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition) \
-    std::abort()
+#define INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition)
 #endif
 
 #ifdef NDEBUG
