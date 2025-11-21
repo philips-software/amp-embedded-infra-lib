@@ -112,6 +112,7 @@ namespace services
         infra::IntrusiveForwardList<GattServerCharacteristic> characteristics;
     };
 
+    // GattServer will automatically add Gatt service with Service Changed Characteristic
     class GattServer
     {
     public:
@@ -120,6 +121,7 @@ namespace services
         GattServer& operator=(const GattServer& other) = delete;
         virtual ~GattServer() = default;
 
+        // service argument can be destructed after method returns
         virtual void AddService(GattServerService& service) = 0;
     };
 

@@ -235,6 +235,7 @@ namespace services
         virtual void StateChanged(GapState state) = 0;
     };
 
+    // GapPeripheral will automatically add Gap service with Device Name and Appearance Characteristics
     class GapPeripheral
         : public infra::Subject<GapPeripheralObserver>
     {
