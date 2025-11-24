@@ -15,6 +15,7 @@ set(CMAKE_TRY_COMPILE_CONFIGURATION Release)
 if(DEFINED ENV{WINDOWS_SDK_ROOT})
     set(WINDOWS_SDK_ROOT "$ENV{WINDOWS_SDK_ROOT}" CACHE PATH "Path to a Windows SDK and CRT installation set from environment variable")
 else()
+    message(VERBOSE "using default for WINDOWS_SDK_ROOT; to override, set the WINDOWS_SDK_ROOT environment variable")
     set(WINDOWS_SDK_ROOT "/winsdk" CACHE PATH "Path to a Windows SDK and CRT installation")
 endif()
 
