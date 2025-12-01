@@ -1,6 +1,7 @@
 #ifdef EMIL_HOST_BUILD
 #include "infra/stream/IoOutputStream.hpp"
 #endif
+#include "infra/util/ReallyAssert.hpp"
 #include "services/tracer/Tracer.hpp"
 
 namespace services
@@ -28,7 +29,7 @@ namespace services
             return tracerDummy;
 #endif
 
-        assert(globalTracerInstance != nullptr);
+        really_assert(globalTracerInstance != nullptr);
         return *globalTracerInstance;
     }
 }
