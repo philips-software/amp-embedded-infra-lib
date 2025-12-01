@@ -151,7 +151,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Install GNU Arm Embedded Toolchain ${{ matrix.gcc }}
-        uses: carlosperate/arm-none-eabi-gcc-action@8fef7ef8d847a80ae13af8dc08690d1dda844874 # v1.11.0
+        uses: carlosperate/arm-none-eabi-gcc-action@4c88c61a77a39a33a7722d24a4e8b2c573f766c9 # v1.11.1
         with:
           release: ${{ matrix.gcc }}
       - run: sudo apt-get update && sudo apt-get install ninja-build
@@ -176,7 +176,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Install GNU Arm Embedded Toolchain 10.3-2021.10
-        uses: carlosperate/arm-none-eabi-gcc-action@8fef7ef8d847a80ae13af8dc08690d1dda844874 # v1.11.0
+        uses: carlosperate/arm-none-eabi-gcc-action@4c88c61a77a39a33a7722d24a4e8b2c573f766c9 # v1.11.1
         with:
           release: "10.3-2021.10"
       - run: sudo apt-get update && sudo apt-get install ninja-build
@@ -200,7 +200,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Install GNU Arm Embedded Toolchain 10.3-2021.10
-        uses: carlosperate/arm-none-eabi-gcc-action@8fef7ef8d847a80ae13af8dc08690d1dda844874 # v1.11.0
+        uses: carlosperate/arm-none-eabi-gcc-action@4c88c61a77a39a33a7722d24a4e8b2c573f766c9 # v1.11.1
         with:
           release: "10.3-2021.10"
       - run: sudo apt-get update && sudo apt-get install ninja-build
