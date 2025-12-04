@@ -18,12 +18,12 @@ namespace
     {
     public:
         testing::StrictMock<services::GattClientMock> gattClient;
-        testing::StrictMock<services::AttMtuExchangeMock> attMtuExchange;
+        testing::StrictMock<services::AttMtuExchangeReceiverMock> attMtuExchange;
         testing::StrictMock<services::GapCentralMock> gapCentral;
         services::ClaimingGattClientAdapter adapter{ gattClient, attMtuExchange, gapCentral };
         testing::StrictMock<services::GattClientDiscoveryObserverMock> discoveryObserver{ adapter };
         testing::StrictMock<services::GattClientStackUpdateObserverMock> stackUpdateObserver{ adapter };
-        testing::StrictMock<services::AttMtuExchangeObserverMock> attMtuExchangeObserver{ adapter };
+        testing::StrictMock<services::AttMtuExchangeReceiverObserverMock> attMtuExchangeObserver{ adapter };
 
         static constexpr services::AttAttribute::Handle handle = 0x1;
         static constexpr services::AttAttribute::Handle endHandle = 0x2;
@@ -94,7 +94,7 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_mtu_exchange)
     EXPECT_CALL(attMtuExchange, EffectiveMaxAttMtuSize()).WillOnce(testing::Return(200));
     EXPECT_EQ(200, adapter.EffectiveMaxAttMtuSize());
 
-    EXPECT_CALL(attMtuExchange, MtuExchange());
+    EXPECT_CALL(gattClient, MtuExchange());
     adapter.MtuExchange();
     ExecuteAllActions();
 
@@ -161,13 +161,13 @@ TEST_F(ClaimingGattClientAdapterTest, should_release_claimer_when_disconnected)
     EXPECT_CALL(attMtuExchange, EffectiveMaxAttMtuSize()).WillOnce(testing::Return(200));
     EXPECT_EQ(200, adapter.EffectiveMaxAttMtuSize());
 
-    EXPECT_CALL(attMtuExchange, MtuExchange());
+    EXPECT_CALL(gattClient, MtuExchange());
     adapter.MtuExchange();
     ExecuteAllActions();
 
     gapCentral.ChangeState(services::GapState::standby);
 
-    EXPECT_CALL(attMtuExchange, MtuExchange());
+    EXPECT_CALL(gattClient, MtuExchange());
     adapter.MtuExchange();
     ExecuteAllActions();
 }

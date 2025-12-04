@@ -10,7 +10,7 @@ namespace services
         : public ClaimingGattClientAdapter
     {
     public:
-        ClaimingGattClientAdapterMock(GattClient& gattClient, AttMtuExchange& attMtuExchange, GapCentral& gapCentral)
+        ClaimingGattClientAdapterMock(GattClient& gattClient, AttMtuExchangeReceiver& attMtuExchange, GapCentral& gapCentral)
             : ClaimingGattClientAdapter(gattClient, attMtuExchange, gapCentral)
         {}
 
