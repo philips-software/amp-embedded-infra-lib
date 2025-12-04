@@ -109,23 +109,22 @@ namespace services
         AttAttribute::Handle endHandle;
     };
 
-    class AttMtuExchange;
+    class AttMtuExchangeReceiver;
 
-    class AttMtuExchangeObserver
-        : public infra::Observer<AttMtuExchangeObserver, AttMtuExchange>
+    class AttMtuExchangeReceiverObserver
+        : public infra::Observer<AttMtuExchangeReceiverObserver, AttMtuExchangeReceiver>
     {
     public:
-        using infra::Observer<AttMtuExchangeObserver, AttMtuExchange>::Observer;
+        using infra::Observer<AttMtuExchangeReceiverObserver, AttMtuExchangeReceiver>::Observer;
 
         virtual void ExchangedMaxAttMtuSize() = 0;
     };
 
-    class AttMtuExchange
-        : public infra::Subject<AttMtuExchangeObserver>
+    class AttMtuExchangeReceiver
+        : public infra::Subject<AttMtuExchangeReceiverObserver>
     {
     public:
         virtual uint16_t EffectiveMaxAttMtuSize() const = 0;
-        virtual void MtuExchange() = 0;
 
     protected:
         static constexpr uint16_t defaultMaxAttMtuSize = 23;

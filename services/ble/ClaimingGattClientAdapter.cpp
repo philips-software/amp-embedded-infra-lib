@@ -5,9 +5,9 @@
 
 namespace services
 {
-    ClaimingGattClientAdapter::ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchange& attMtuExchange, GapCentral& gapCentral)
+    ClaimingGattClientAdapter::ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchangeReceiver& attMtuExchangeReceiver, GapCentral& gapCentral)
         : GattClientObserver(gattClient)
-        , AttMtuExchangeObserver(attMtuExchange)
+        , AttMtuExchangeReceiverObserver(attMtuExchangeReceiver)
         , GapCentralObserver(gapCentral)
     {}
 
@@ -180,14 +180,14 @@ namespace services
 
     uint16_t ClaimingGattClientAdapter::EffectiveMaxAttMtuSize() const
     {
-        return AttMtuExchangeObserver::Subject().EffectiveMaxAttMtuSize();
+        return AttMtuExchangeReceiverObserver::Subject().EffectiveMaxAttMtuSize();
     }
 
     void ClaimingGattClientAdapter::MtuExchange()
     {
         attMtuExchangeClaimer.Claim([this]()
             {
-                AttMtuExchangeObserver::Subject().MtuExchange();
+                GattClientObserver::Subject().MtuExchange();
             });
     }
 
@@ -224,7 +224,7 @@ namespace services
 
     void ClaimingGattClientAdapter::ExchangedMaxAttMtuSize()
     {
-        infra::Subject<AttMtuExchangeObserver>::NotifyObservers([](auto& observer)
+        infra::Subject<AttMtuExchangeReceiverObserver>::NotifyObservers([](auto& observer)
             {
                 observer.ExchangedMaxAttMtuSize();
             });
