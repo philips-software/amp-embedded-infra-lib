@@ -16,20 +16,21 @@ namespace services
     class ClaimingGattClientAdapter
         : public GattClientDiscovery
         , public GattClientCharacteristicOperations
-        , public AttMtuExchange
+        , public GattClient
+        , public AttMtuExchangeReceiver
         , private GattClientObserver
-        , private AttMtuExchangeObserver
+        , private AttMtuExchangeReceiverObserver
         , private GapCentralObserver
     {
     public:
-        ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchange& attMtuExchange, GapCentral& gapCentral);
+        ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchangeReceiver& attMtuExchangeReceiver, GapCentral& gapCentral);
 
-        // Implementation of GattClientDiscovery
+        // Implementation of GattClient (via GattClientDiscovery)
         void StartServiceDiscovery() override;
         void StartCharacteristicDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) override;
         void StartDescriptorDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) override;
 
-        // Implementation of GattClientCharacteristicOperations
+        // Implementation of GattClient (via GattClientCharacteristicOperations)
         void Read(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone) override;
         void Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
         void WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
@@ -38,9 +39,11 @@ namespace services
         void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
         void DisableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
 
-        // Implementation of AttMtuExchange
-        uint16_t EffectiveMaxAttMtuSize() const override;
+        // Implementation of GattClient
         void MtuExchange() override;
+
+        // Implementation of AttMtuExchangeReceiver
+        uint16_t EffectiveMaxAttMtuSize() const override;
 
     private:
         // Implementation of GattClientObserver
@@ -53,7 +56,7 @@ namespace services
         void NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data) override;
         void IndicationReceived(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone) override;
 
-        // Implementation of AttMtuExchangeObserver
+        // Implementation of AttMtuExchangeReceiverObserver
         void ExchangedMaxAttMtuSize() override;
 
         // Implementation of GapCentralObserver
@@ -115,7 +118,7 @@ namespace services
 
             CharacteristicOperation(Operation operation, AttAttribute::Handle handle)
                 : operation(operation)
-                , handle(handle){};
+                , handle(handle) {};
 
             Operation operation;
             AttAttribute::Handle handle;
