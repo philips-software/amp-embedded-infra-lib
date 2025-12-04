@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ghcr.io/philips-software/amp-devcontainer-cpp:v6.6.1@sha256:9ba2d20db24a646edd6ea7a8a075e76239ce63d1542cc823242e680901e792f9 # v6.6.1
     steps:
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           fetch-depth: 0 # Disable shallow clone to enable blame information
           persist-credentials: false
@@ -67,13 +67,13 @@ jobs:
     permissions:
       security-events: write
     steps:
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           persist-credentials: false
       - uses: hendrikmuhs/ccache-action@5ebbd400eff9e74630f759d94ddd7b6c26299639 # v1.2.20
         with:
           key: ${{ github.job }}
-      - uses: github/codeql-action/init@fdbfb4d2750291e159f0156def62b853c2798ca2 # v4.31.5
+      - uses: github/codeql-action/init@fe4161a26a8629af62121b670040955b330f9af2 # v4.31.6
         with:
           languages: cpp
       - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
@@ -81,4 +81,4 @@ jobs:
           configurePreset: "host"
           buildPreset: "host-Debug"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"
-      - uses: github/codeql-action/analyze@fdbfb4d2750291e159f0156def62b853c2798ca2 # v4.31.5
+      - uses: github/codeql-action/analyze@fe4161a26a8629af62121b670040955b330f9af2 # v4.31.6
