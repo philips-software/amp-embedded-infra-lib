@@ -39,7 +39,7 @@ namespace services
         void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
         void DisableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
 
-        // Implementation of GattClient GattClientMtuExchange
+        // Implementation of GattClientMtuExchange
         void MtuExchange() override;
 
         // Implementation of AttMtuExchange
