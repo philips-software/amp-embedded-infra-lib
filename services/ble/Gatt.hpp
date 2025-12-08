@@ -109,19 +109,19 @@ namespace services
         AttAttribute::Handle endHandle;
     };
 
-    class AttMtuExchangeReceiver;
+    class AttMtuExchange;
 
-    class AttMtuExchangeReceiverObserver
-        : public infra::Observer<AttMtuExchangeReceiverObserver, AttMtuExchangeReceiver>
+    class AttMtuExchangeObserver
+        : public infra::Observer<AttMtuExchangeObserver, AttMtuExchange>
     {
     public:
-        using infra::Observer<AttMtuExchangeReceiverObserver, AttMtuExchangeReceiver>::Observer;
+        using infra::Observer<AttMtuExchangeObserver, AttMtuExchange>::Observer;
 
         virtual void ExchangedMaxAttMtuSize() = 0;
     };
 
-    class AttMtuExchangeReceiver
-        : public infra::Subject<AttMtuExchangeReceiverObserver>
+    class AttMtuExchange
+        : public infra::Subject<AttMtuExchangeObserver>
     {
     public:
         virtual uint16_t EffectiveMaxAttMtuSize() const = 0;

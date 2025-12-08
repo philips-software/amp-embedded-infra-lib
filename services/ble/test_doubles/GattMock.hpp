@@ -7,17 +7,17 @@
 namespace services
 {
     class AttMtuExchangeReceiverMock
-        : public AttMtuExchangeReceiver
+        : public AttMtuExchange
     {
     public:
         MOCK_METHOD(uint16_t, EffectiveMaxAttMtuSize, (), (const override));
     };
 
     class AttMtuExchangeReceiverObserverMock
-        : public AttMtuExchangeReceiverObserver
+        : public AttMtuExchangeObserver
     {
     public:
-        using AttMtuExchangeReceiverObserver::AttMtuExchangeReceiverObserver;
+        using AttMtuExchangeObserver::AttMtuExchangeReceiverObserver;
 
         MOCK_METHOD(void, ExchangedMaxAttMtuSize, (), (override));
     };

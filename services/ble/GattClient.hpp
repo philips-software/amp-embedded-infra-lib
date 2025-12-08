@@ -129,6 +129,12 @@ namespace services
         virtual void StartDescriptorDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) = 0;
     };
 
+    class GattClientMtuExchange
+    {
+    public:
+        virtual void MtuExchange() = 0;
+    };
+
     class GattClient;
 
     class GattClientObserver

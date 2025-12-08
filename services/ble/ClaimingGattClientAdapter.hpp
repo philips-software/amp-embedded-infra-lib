@@ -16,14 +16,14 @@ namespace services
     class ClaimingGattClientAdapter
         : public GattClientDiscovery
         , public GattClientCharacteristicOperations
-        , public GattClient
-        , public AttMtuExchangeReceiver
+        , public AttMtuExchange
         , private GattClientObserver
-        , private AttMtuExchangeReceiverObserver
+        , private AttMtuExchangeObserver
         , private GapCentralObserver
+        , private GattClientMtuExchange
     {
     public:
-        ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchangeReceiver& attMtuExchangeReceiver, GapCentral& gapCentral);
+        ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchange& attMtuExchangeReceiver, GapCentral& gapCentral);
 
         // Implementation of GattClient (via GattClientDiscovery)
         void StartServiceDiscovery() override;
@@ -39,7 +39,7 @@ namespace services
         void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
         void DisableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
 
-        // Implementation of GattClient
+        // Implementation of GattClient (via GattClientMtuExchange)
         void MtuExchange() override;
 
         // Implementation of AttMtuExchangeReceiver
