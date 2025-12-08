@@ -23,7 +23,7 @@ namespace services
         , private GattClientMtuExchange
     {
     public:
-        ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchange& AttMtuExchange, GapCentral& gapCentral);
+        ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchange& attMtuExchange, GapCentral& gapCentral);
 
         // Implementation of GattClient (via GattClientDiscovery)
         void StartServiceDiscovery() override;

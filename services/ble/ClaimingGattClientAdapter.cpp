@@ -5,9 +5,9 @@
 
 namespace services
 {
-    ClaimingGattClientAdapter::ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchange& AttMtuExchange, GapCentral& gapCentral)
+    ClaimingGattClientAdapter::ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchange& attMtuExchange, GapCentral& gapCentral)
         : GattClientObserver(gattClient)
-        , AttMtuExchangeObserver(AttMtuExchange)
+        , AttMtuExchangeObserver(attMtuExchange)
         , GapCentralObserver(gapCentral)
     {}
 
