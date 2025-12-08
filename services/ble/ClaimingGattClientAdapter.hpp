@@ -25,12 +25,12 @@ namespace services
     public:
         ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchange& attMtuExchange, GapCentral& gapCentral);
 
-        // Implementation of GattClient (via GattClientDiscovery)
+        // Implementation of GattClientDiscovery
         void StartServiceDiscovery() override;
         void StartCharacteristicDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) override;
         void StartDescriptorDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) override;
 
-        // Implementation of GattClient (via GattClientCharacteristicOperations)
+        // Implementation of GattClientCharacteristicOperations
         void Read(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone) override;
         void Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
         void WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
@@ -39,7 +39,7 @@ namespace services
         void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
         void DisableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
 
-        // Implementation of GattClient (via GattClientMtuExchange)
+        // Implementation of GattClient GattClientMtuExchange
         void MtuExchange() override;
 
         // Implementation of AttMtuExchange
