@@ -156,6 +156,7 @@ namespace services
 
     class GattClient
         : public infra::Subject<GattClientObserver>
+        , public GattClientMtuExchange
     {
     public:
         virtual void StartServiceDiscovery() = 0;
@@ -169,7 +170,8 @@ namespace services
         virtual void DisableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
         virtual void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
         virtual void DisableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
-        virtual void MtuExchange() = 0;
+
+        uint16_t maxAttMtu = services::AttMtuExchange::defaultMaxAttMtuSize;
     };
 }
 
