@@ -23,7 +23,7 @@ namespace services
         , private GattClientMtuExchange
     {
     public:
-        ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchange& attMtuExchangeReceiver, GapCentral& gapCentral);
+        ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchange& AttMtuExchange, GapCentral& gapCentral);
 
         // Implementation of GattClient (via GattClientDiscovery)
         void StartServiceDiscovery() override;
@@ -42,7 +42,7 @@ namespace services
         // Implementation of GattClient (via GattClientMtuExchange)
         void MtuExchange() override;
 
-        // Implementation of AttMtuExchangeReceiver
+        // Implementation of AttMtuExchange
         uint16_t EffectiveMaxAttMtuSize() const override;
 
     private:
@@ -56,7 +56,7 @@ namespace services
         void NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data) override;
         void IndicationReceived(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone) override;
 
-        // Implementation of AttMtuExchangeReceiverObserver
+        // Implementation of AttMtuExchangeObserver
         void ExchangedMaxAttMtuSize() override;
 
         // Implementation of GapCentralObserver

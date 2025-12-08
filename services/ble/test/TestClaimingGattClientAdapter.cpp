@@ -18,12 +18,12 @@ namespace
     {
     public:
         testing::StrictMock<services::GattClientMock> gattClient;
-        testing::StrictMock<services::AttMtuExchangeReceiverMock> attMtuExchange;
+        testing::StrictMock<services::AttMtuExchangeMock> attMtuExchange;
         testing::StrictMock<services::GapCentralMock> gapCentral;
         services::ClaimingGattClientAdapter adapter{ gattClient, attMtuExchange, gapCentral };
         testing::StrictMock<services::GattClientDiscoveryObserverMock> discoveryObserver{ adapter };
         testing::StrictMock<services::GattClientStackUpdateObserverMock> stackUpdateObserver{ adapter };
-        testing::StrictMock<services::AttMtuExchangeReceiverObserverMock> attMtuExchangeObserver{ adapter };
+        testing::StrictMock<services::AttMtuExchangeObserverMock> attMtuExchangeObserver{ adapter };
 
         static constexpr services::AttAttribute::Handle handle = 0x1;
         static constexpr services::AttAttribute::Handle endHandle = 0x2;

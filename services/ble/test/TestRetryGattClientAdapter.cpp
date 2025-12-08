@@ -17,7 +17,7 @@ namespace
     {
     public:
         services::GattClientMock gattClient;
-        services::AttMtuExchangeReceiverMock attMtuExchange;
+        services::AttMtuExchangeMock attMtuExchange;
         services::GapCentralMock gapCentral;
         testing::StrictMock<services::ClaimingGattClientAdapterMock> adapter{ gattClient, attMtuExchange, gapCentral };
         testing::StrictMock<services::RetryGattClientCharacteristicsOperations> retryAdapter{ adapter };
