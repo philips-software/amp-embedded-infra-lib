@@ -49,7 +49,8 @@ namespace services
             if (!allocated.has_value() || allocated->size() < data.size())
                 return false;
 
-            std::copy(data.begin(), data.end(), allocated->begin()); // TODO: Handle offsets?
+            // TODO: Handle offsets?
+            std::copy(data.begin(), data.end(), allocated->begin());
 
             return true;
         }

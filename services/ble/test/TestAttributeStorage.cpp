@@ -22,6 +22,15 @@ public:
     infra::ByteRange exampleStringData{ reinterpret_cast<uint8_t*>(exampleStringDataRaw.begin()), reinterpret_cast<uint8_t*>(exampleStringDataRaw.end()) };
 };
 
+TEST_F(AttributeStorageTest, get_non_existing_handle_returns_nullopt)
+{
+    services::AttAttribute::Handle handle = 1;
+
+    auto data = storage.Get(handle);
+
+    EXPECT_FALSE(data.has_value());
+}
+
 TEST_F(AttributeStorageTest, get_created_handle_returns_zeroed_data)
 {
     services::AttAttribute::Handle handle = 1;
@@ -43,6 +52,15 @@ TEST_F(AttributeStorageTest, create_existing_handle_aborts)
 
     storage.Create(handle, size);
     EXPECT_DEATH(storage.Create(handle, size), "");
+}
+
+TEST_F(AttributeStorageTest, store_non_existing_handle_fails)
+{
+    services::AttAttribute::Handle handle = 1;
+
+    bool result = storage.Store(handle, exampleNumberData);
+
+    ASSERT_FALSE(result);
 }
 
 TEST_F(AttributeStorageTest, get_stored_returns_data)
