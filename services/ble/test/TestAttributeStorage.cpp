@@ -26,7 +26,7 @@ TEST_F(AttributeStorageTest, get_non_existing_handle_returns_nullopt)
 {
     services::AttAttribute::Handle handle = 1;
 
-    auto data = storage.Get(handle);
+    auto data = storage.Read(handle);
 
     EXPECT_FALSE(data.has_value());
 }
@@ -53,7 +53,7 @@ TEST_F(AttributeStorageTest, get_created_handle_returns_zeroed_data)
     std::size_t size = 10;
 
     storage.Create(handle, size);
-    auto data = storage.Get(handle);
+    auto data = storage.Read(handle);
 
     ASSERT_TRUE(data);
     EXPECT_EQ(data->size(), size);
@@ -77,34 +77,34 @@ TEST_F(AttributeStorageTest, created_data_always_aligned)
     std::size_t size = 1;
 
     storage.Create(handle, size);
-    auto data = storage.Get(handle);
+    auto data = storage.Read(handle);
     ASSERT_TRUE(data);
     EXPECT_EQ(reinterpret_cast<std::uintptr_t>(data->begin()) % alignof(std::max_align_t), 0u);
 
     storage.Create(otherHandle, size);
-    auto otherData = storage.Get(otherHandle);
+    auto otherData = storage.Read(otherHandle);
     ASSERT_TRUE(otherData);
     EXPECT_EQ(reinterpret_cast<std::uintptr_t>(otherData->begin()) % alignof(std::max_align_t), 0u);
 }
 
-TEST_F(AttributeStorageTest, store_non_existing_handle_fails)
+TEST_F(AttributeStorageTest, Write_non_existing_handle_fails)
 {
     services::AttAttribute::Handle handle = 1;
 
-    bool result = storage.Store(handle, exampleNumberData);
+    bool result = storage.Write(handle, exampleNumberData);
 
     ASSERT_FALSE(result);
 }
 
-TEST_F(AttributeStorageTest, get_stored_returns_data)
+TEST_F(AttributeStorageTest, get_Writed_returns_data)
 {
     services::AttAttribute::Handle handle = 1;
 
     storage.Create(handle, exampleNumberData.size());
-    bool result = storage.Store(handle, exampleNumberData);
+    bool result = storage.Write(handle, exampleNumberData);
     ASSERT_TRUE(result);
 
-    auto data = storage.Get(handle);
+    auto data = storage.Read(handle);
 
     ASSERT_TRUE(data);
     EXPECT_NE(data, exampleNumberData); // Different locations in memory
@@ -112,7 +112,7 @@ TEST_F(AttributeStorageTest, get_stored_returns_data)
     EXPECT_TRUE(std::equal(data->begin(), data->end(), exampleNumberData.begin()));
 }
 
-TEST_F(AttributeStorageTest, store_multiple_get_multiple)
+TEST_F(AttributeStorageTest, Write_multiple_get_multiple)
 {
     services::AttAttribute::Handle numberHandle = 1;
     services::AttAttribute::Handle stringHandle = 2;
@@ -120,13 +120,13 @@ TEST_F(AttributeStorageTest, store_multiple_get_multiple)
     storage.Create(numberHandle, exampleNumberData.size());
     storage.Create(stringHandle, exampleStringData.size());
 
-    auto result = storage.Store(numberHandle, exampleNumberData);
+    auto result = storage.Write(numberHandle, exampleNumberData);
     ASSERT_TRUE(result);
-    result = storage.Store(stringHandle, exampleStringData);
+    result = storage.Write(stringHandle, exampleStringData);
     ASSERT_TRUE(result);
 
-    auto numberData = storage.Get(numberHandle);
-    auto stringData = storage.Get(stringHandle);
+    auto numberData = storage.Read(numberHandle);
+    auto stringData = storage.Read(stringHandle);
 
     ASSERT_TRUE(numberData);
     EXPECT_NE(*numberData, exampleNumberData); // Different locations in memory

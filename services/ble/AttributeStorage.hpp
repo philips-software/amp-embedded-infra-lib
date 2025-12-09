@@ -36,6 +36,7 @@ namespace services
 
         void Create(services::AttAttribute::Handle handle, std::size_t size)
         {
+            // TODO(HW): What to do with zero size?
             really_assert(!Find(handle).has_value());
             really_assert(handle != 0);
             auto allocated = Allocate(size);
@@ -43,7 +44,7 @@ namespace services
             entries.emplace_back(handle, allocated);
         }
 
-        bool Store(services::AttAttribute::Handle handle, infra::ConstByteRange data)
+        bool Write(services::AttAttribute::Handle handle, infra::ConstByteRange data)
         {
             auto allocated = Find(handle);
 
@@ -56,7 +57,7 @@ namespace services
             return true;
         }
 
-        std::optional<infra::ConstByteRange> Get(services::AttAttribute::Handle handle) const
+        std::optional<infra::ConstByteRange> Read(services::AttAttribute::Handle handle) const
         {
             return Find(handle);
         }
