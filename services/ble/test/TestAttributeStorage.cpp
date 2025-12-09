@@ -62,3 +62,44 @@ TEST_F(AttributeStorageTest, get_stored_returns_data)
     EXPECT_NE(data, exampleNumberData); // Different locations in memory
     EXPECT_TRUE(std::equal(data.begin(), data.end(), exampleNumberData.begin()));
 }
+
+TEST_F(AttributeStorageTest, store_multiple_get_multiple)
+{
+    services::AttAttribute::Handle numberHandle = 1;
+    services::AttAttribute::Handle stringHandle = 2;
+
+    storage.Create(numberHandle, exampleNumberData.size());
+    storage.Create(stringHandle, exampleStringData.size());
+
+    storage.Store(numberHandle, exampleNumberData);
+    storage.Store(stringHandle, exampleStringData);
+
+    auto numberData = storage.Get(numberHandle, exampleNumberData.size());
+    auto stringData = storage.Get(stringHandle, exampleStringData.size());
+
+    EXPECT_NE(numberData, exampleNumberData); // Different locations in memory
+    EXPECT_TRUE(std::equal(numberData.begin(), numberData.end(), exampleNumberData.begin()));
+
+    EXPECT_NE(stringData, exampleStringData); // Different locations in memory
+    EXPECT_TRUE(std::equal(stringData.begin(), stringData.end(), exampleStringData.begin()));
+}
+
+TEST_F(AttributeStorageTest, out_of_storage_memory_abort)
+{
+    services::AttAttribute::Handle handle = 1;
+    services::AttAttribute::Handle otherHandle = 1;
+
+    storage.Create(handle, storageSize);
+    EXPECT_DEATH(storage.Create(otherHandle, 1), "");
+}
+
+TEST_F(AttributeStorageTest, out_of_entries_memory_abort)
+{
+    ASSERT_GE(storageSize, numberOfEntries);
+
+    services::AttAttribute::Handle handle = 1;
+    for (std::size_t i = 0; i < numberOfEntries; ++i)
+        storage.Create(handle++, 1);
+
+    EXPECT_DEATH(storage.Create(handle, 1), "");
+}
