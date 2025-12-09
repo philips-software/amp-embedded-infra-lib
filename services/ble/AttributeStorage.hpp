@@ -42,19 +42,21 @@ namespace services
             entries.emplace_back(handle, allocated);
         }
 
-        void Store(services::AttAttribute::Handle handle, infra::ConstByteRange data)
+        bool Store(services::AttAttribute::Handle handle, infra::ConstByteRange data)
         {
             auto allocated = Find(handle);
-            really_assert(allocated.has_value());
-            really_assert(allocated->size() >= data.size());
+
+            if (!allocated.has_value() || allocated->size() < data.size())
+                return false;
+
             std::copy(data.begin(), data.end(), allocated->begin()); // TODO: Handle offsets?
+
+            return true;
         }
 
-        infra::ConstByteRange Get(services::AttAttribute::Handle handle)
+        std::optional<infra::ConstByteRange> Get(services::AttAttribute::Handle handle) const
         {
-            auto data = Find(handle);
-            really_assert(data.has_value());
-            return data.value();
+            return Find(handle);
         }
 
     private:
@@ -66,7 +68,7 @@ namespace services
             return result;
         }
 
-        std::optional<infra::ByteRange> Find(services::AttAttribute::Handle handle)
+        std::optional<infra::ByteRange> Find(services::AttAttribute::Handle handle) const
         {
             for (auto& entry : entries)
                 if (entry.handle == handle)
