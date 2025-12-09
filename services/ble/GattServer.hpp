@@ -40,6 +40,7 @@ namespace services
 
         virtual AttAttribute::Handle ServiceHandle() const = 0;
         virtual AttAttribute::Handle CharacteristicHandle() const = 0;
+        virtual AttAttribute::Handle CharacteristicValueHandle() const = 0;
     };
 
     class GattServerCharacteristicOperations
