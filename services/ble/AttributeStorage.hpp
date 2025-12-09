@@ -36,6 +36,7 @@ namespace services
 
         void Create(services::AttAttribute::Handle handle, std::size_t size)
         {
+            really_assert(handle != 0);
             really_assert(!Find(handle).has_value());
             auto allocated = Allocate(size);
             std::fill(allocated.begin(), allocated.end(), 0);
@@ -49,7 +50,6 @@ namespace services
             if (!allocated.has_value() || allocated->size() < data.size())
                 return false;
 
-            // TODO: Handle offsets?
             std::copy(data.begin(), data.end(), allocated->begin());
 
             return true;

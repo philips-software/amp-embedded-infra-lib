@@ -31,6 +31,22 @@ TEST_F(AttributeStorageTest, get_non_existing_handle_returns_nullopt)
     EXPECT_FALSE(data.has_value());
 }
 
+TEST_F(AttributeStorageTest, create_valid_handle)
+{
+    services::AttAttribute::Handle handle = 1;
+    std::size_t size = 10;
+
+    storage.Create(handle, size);
+}
+
+TEST_F(AttributeStorageTest, create_invalid_handle_abort)
+{
+    services::AttAttribute::Handle handle = 0;
+    std::size_t size = 10;
+
+    EXPECT_DEATH(storage.Create(handle, size), "");
+}
+
 TEST_F(AttributeStorageTest, get_created_handle_returns_zeroed_data)
 {
     services::AttAttribute::Handle handle = 1;
