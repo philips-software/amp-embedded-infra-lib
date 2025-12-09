@@ -296,7 +296,8 @@ namespace services
 
         connections.remove_if([](const infra::WeakPtr<ConnectionWin>& connection)
             {
-                return connection.lock() == nullptr;
+                auto connectionPtr = connection.lock();
+                return connectionPtr == nullptr || !connectionPtr->Connected();
             });
         datagrams.remove_if([](const infra::WeakPtr<DatagramWin>& datagram)
             {
