@@ -21,6 +21,7 @@ namespace services
 
             services::AttAttribute::Handle handle;
             infra::ByteRange data;
+            std::size_t populated = 0;
         };
 
     public:
@@ -37,7 +38,7 @@ namespace services
         void Create(services::AttAttribute::Handle handle, std::size_t size)
         {
             // TODO(HW): What to do with zero size?
-            really_assert(!Find(handle).has_value());
+            really_assert(Find(handle) == nullptr);
             really_assert(handle != 0);
             auto allocated = Allocate(size);
             std::fill(allocated.begin(), allocated.end(), 0);
@@ -46,20 +47,23 @@ namespace services
 
         bool Write(services::AttAttribute::Handle handle, infra::ConstByteRange data)
         {
-            auto allocated = Find(handle);
+            auto entry = Find(handle);
 
-            if (!allocated.has_value() || allocated->size() < data.size())
+            if (entry == nullptr || entry->data.size() < data.size())
                 return false;
 
-            // TODO: Handle offsets?
-            std::copy(data.begin(), data.end(), allocated->begin());
+            std::copy(data.begin(), data.end(), entry->data.begin());
+            entry->populated = data.size();
 
             return true;
         }
 
         std::optional<infra::ConstByteRange> Read(services::AttAttribute::Handle handle) const
         {
-            return Find(handle);
+            auto entry = Find(handle);
+            if (entry == nullptr)
+                return std::nullopt;
+            return infra::ConstByteRange(entry->data.begin(), entry->data.begin() + entry->populated);
         }
 
     private:
@@ -77,12 +81,12 @@ namespace services
             return result;
         }
 
-        std::optional<infra::ByteRange> Find(services::AttAttribute::Handle handle) const
+        AttributeStorageEntry* Find(services::AttAttribute::Handle handle) const
         {
             for (auto& entry : entries)
                 if (entry.handle == handle)
-                    return entry.data;
-            return std::nullopt;
+                    return &entry;
+            return nullptr;
         }
 
     private:

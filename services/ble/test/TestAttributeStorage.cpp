@@ -47,7 +47,7 @@ TEST_F(AttributeStorageTest, create_invalid_handle_abort)
     EXPECT_DEATH(storage.Create(handle, size), "");
 }
 
-TEST_F(AttributeStorageTest, get_created_handle_returns_zeroed_data)
+TEST_F(AttributeStorageTest, get_created_empty_returns_empty)
 {
     services::AttAttribute::Handle handle = 1;
     std::size_t size = 10;
@@ -56,9 +56,7 @@ TEST_F(AttributeStorageTest, get_created_handle_returns_zeroed_data)
     auto data = storage.Read(handle);
 
     ASSERT_TRUE(data);
-    EXPECT_EQ(data->size(), size);
-    for (auto byte : data.value())
-        EXPECT_EQ(byte, 0);
+    EXPECT_EQ(data->size(), 0);
 }
 
 TEST_F(AttributeStorageTest, create_existing_handle_aborts)
@@ -96,7 +94,7 @@ TEST_F(AttributeStorageTest, Write_non_existing_handle_fails)
     ASSERT_FALSE(result);
 }
 
-TEST_F(AttributeStorageTest, get_Writed_returns_data)
+TEST_F(AttributeStorageTest, get_written_returns_data)
 {
     services::AttAttribute::Handle handle = 1;
 
@@ -109,6 +107,24 @@ TEST_F(AttributeStorageTest, get_Writed_returns_data)
     ASSERT_TRUE(data);
     EXPECT_NE(data, exampleNumberData); // Different locations in memory
     EXPECT_EQ(data->size(), exampleNumberData.size());
+    EXPECT_TRUE(std::equal(data->begin(), data->end(), exampleNumberData.begin()));
+}
+
+TEST_F(AttributeStorageTest, get_written_bigger_allocation_returns_only_written_data)
+{
+    services::AttAttribute::Handle handle = 1;
+    std::size_t biggerValueSize = exampleNumberData.size() + 32;
+
+    storage.Create(handle, biggerValueSize);
+    bool result = storage.Write(handle, exampleNumberData);
+    ASSERT_TRUE(result);
+
+    auto data = storage.Read(handle);
+
+    ASSERT_TRUE(data);
+    EXPECT_NE(data, exampleNumberData); // Different locations in memory
+    EXPECT_EQ(data->size(), exampleNumberData.size());
+    EXPECT_NE(data->size(), biggerValueSize);
     EXPECT_TRUE(std::equal(data->begin(), data->end(), exampleNumberData.begin()));
 }
 
