@@ -13,7 +13,7 @@ class AttributeStorageTest
 public:
     static constexpr std::size_t numberOfEntries = 5;
     static constexpr std::size_t storageSize = 64;
-    hal::AttributeStorage::WithStorage<numberOfEntries, storageSize> storage;
+    services::AttributeStorage::WithStorage<numberOfEntries, storageSize> storage;
 
     std::array<uint8_t, 4> exampleNumberDataRaw = { 0xB, 0xE, 0xE, 0xF };
     infra::ByteRange exampleNumberData{ exampleNumberDataRaw };

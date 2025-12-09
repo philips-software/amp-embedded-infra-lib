@@ -8,11 +8,8 @@
 #include <cstddef>
 #include <optional>
 
-// TODO: Move this to infra/services/ble once we're back on track with main
-
-namespace hal
+namespace services
 {
-
     class AttributeStorage
     {
         struct AttributeStorageEntry
