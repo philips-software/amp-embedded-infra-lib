@@ -36,6 +36,7 @@ namespace services
 
         void Create(services::AttAttribute::Handle handle, std::size_t size)
         {
+            really_assert(!Find(handle).has_value());
             auto allocated = Allocate(size);
             std::fill(allocated.begin(), allocated.end(), 0);
             entries.emplace_back(handle, allocated);
@@ -49,12 +50,11 @@ namespace services
             std::copy(data.begin(), data.end(), allocated->begin()); // TODO: Handle offsets?
         }
 
-        infra::ConstByteRange Get(services::AttAttribute::Handle handle, std::size_t size)
+        infra::ConstByteRange Get(services::AttAttribute::Handle handle)
         {
             auto data = Find(handle);
             really_assert(data.has_value());
-            really_assert(data->size() == size);
-            return *data;
+            return data.value();
         }
 
     private:

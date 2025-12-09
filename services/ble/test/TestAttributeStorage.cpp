@@ -25,9 +25,8 @@ public:
 TEST_F(AttributeStorageTest, get_non_existent_handle_abort)
 {
     services::AttAttribute::Handle handle = 1;
-    std::size_t size = 10;
 
-    EXPECT_DEATH(storage.Get(handle, size), "");
+    EXPECT_DEATH(storage.Get(handle), "");
 }
 
 TEST_F(AttributeStorageTest, store_non_existent_handle_abort)
@@ -43,7 +42,7 @@ TEST_F(AttributeStorageTest, get_created_handle_returns_zeroed_data)
     std::size_t size = 10;
 
     storage.Create(handle, size);
-    auto data = storage.Get(handle, size);
+    auto data = storage.Get(handle);
 
     EXPECT_EQ(data.size(), size);
     for (auto byte : data)
@@ -57,9 +56,10 @@ TEST_F(AttributeStorageTest, get_stored_returns_data)
     storage.Create(handle, exampleNumberData.size());
     storage.Store(handle, exampleNumberData);
 
-    auto data = storage.Get(handle, exampleNumberData.size());
+    auto data = storage.Get(handle);
 
     EXPECT_NE(data, exampleNumberData); // Different locations in memory
+    EXPECT_EQ(data.size(), exampleNumberData.size());
     EXPECT_TRUE(std::equal(data.begin(), data.end(), exampleNumberData.begin()));
 }
 
@@ -74,8 +74,8 @@ TEST_F(AttributeStorageTest, store_multiple_get_multiple)
     storage.Store(numberHandle, exampleNumberData);
     storage.Store(stringHandle, exampleStringData);
 
-    auto numberData = storage.Get(numberHandle, exampleNumberData.size());
-    auto stringData = storage.Get(stringHandle, exampleStringData.size());
+    auto numberData = storage.Get(numberHandle);
+    auto stringData = storage.Get(stringHandle);
 
     EXPECT_NE(numberData, exampleNumberData); // Different locations in memory
     EXPECT_TRUE(std::equal(numberData.begin(), numberData.end(), exampleNumberData.begin()));
