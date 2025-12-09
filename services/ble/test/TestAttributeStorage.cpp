@@ -1,0 +1,64 @@
+
+#include "infra/util/BoundedString.hpp"
+#include "infra/util/ByteRange.hpp"
+#include "infra/util/MemoryRange.hpp"
+#include "services/ble/Att.hpp"
+#include "services/ble/AttributeStorage.hpp"
+#include "gtest/gtest.h"
+#include <cstdint>
+
+class AttributeStorageTest
+    : public testing::Test
+{
+public:
+    static constexpr std::size_t numberOfEntries = 5;
+    static constexpr std::size_t storageSize = 64;
+    hal::AttributeStorage::WithStorage<numberOfEntries, storageSize> storage;
+
+    std::array<uint8_t, 4> exampleNumberDataRaw = { 0xB, 0xE, 0xE, 0xF };
+    infra::ByteRange exampleNumberData{ exampleNumberDataRaw };
+
+    infra::BoundedString::WithStorage<32> exampleStringDataRaw = "fly-you-fools";
+    infra::ByteRange exampleStringData{ reinterpret_cast<uint8_t*>(exampleStringDataRaw.begin()), reinterpret_cast<uint8_t*>(exampleStringDataRaw.end()) };
+};
+
+TEST_F(AttributeStorageTest, get_non_existent_handle_abort)
+{
+    services::AttAttribute::Handle handle = 1;
+    std::size_t size = 10;
+
+    EXPECT_DEATH(storage.Get(handle, size), "");
+}
+
+TEST_F(AttributeStorageTest, store_non_existent_handle_abort)
+{
+    services::AttAttribute::Handle handle = 1;
+
+    EXPECT_DEATH(storage.Store(handle, exampleNumberData), "");
+}
+
+TEST_F(AttributeStorageTest, get_created_handle_returns_zeroed_data)
+{
+    services::AttAttribute::Handle handle = 1;
+    std::size_t size = 10;
+
+    storage.Create(handle, size);
+    auto data = storage.Get(handle, size);
+
+    EXPECT_EQ(data.size(), size);
+    for (auto byte : data)
+        EXPECT_EQ(byte, 0);
+}
+
+TEST_F(AttributeStorageTest, get_stored_returns_data)
+{
+    services::AttAttribute::Handle handle = 1;
+
+    storage.Create(handle, exampleNumberData.size());
+    storage.Store(handle, exampleNumberData);
+
+    auto data = storage.Get(handle, exampleNumberData.size());
+
+    EXPECT_NE(data, exampleNumberData); // Different locations in memory
+    EXPECT_TRUE(std::equal(data.begin(), data.end(), exampleNumberData.begin()));
+}
