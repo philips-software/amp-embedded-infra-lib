@@ -11,7 +11,7 @@ class AttributeStorageTest
     : public testing::Test
 {
 public:
-    static constexpr std::size_t numberOfEntries = 5;
+    static constexpr std::size_t numberOfEntries = 4;
     static constexpr std::size_t storageSize = 64;
     services::AttributeStorage::WithStorage<numberOfEntries, storageSize> storage;
 
@@ -68,6 +68,23 @@ TEST_F(AttributeStorageTest, create_existing_handle_aborts)
 
     storage.Create(handle, size);
     EXPECT_DEATH(storage.Create(handle, size), "");
+}
+
+TEST_F(AttributeStorageTest, created_data_always_aligned)
+{
+    services::AttAttribute::Handle handle = 1;
+    services::AttAttribute::Handle otherHandle = 2;
+    std::size_t size = 1;
+
+    storage.Create(handle, size);
+    auto data = storage.Get(handle);
+    ASSERT_TRUE(data);
+    EXPECT_EQ(reinterpret_cast<std::uintptr_t>(data->begin()) % alignof(std::max_align_t), 0u);
+
+    storage.Create(otherHandle, size);
+    auto otherData = storage.Get(otherHandle);
+    ASSERT_TRUE(otherData);
+    EXPECT_EQ(reinterpret_cast<std::uintptr_t>(otherData->begin()) % alignof(std::max_align_t), 0u);
 }
 
 TEST_F(AttributeStorageTest, store_non_existing_handle_fails)
@@ -131,7 +148,7 @@ TEST_F(AttributeStorageTest, out_of_storage_memory_abort)
 
 TEST_F(AttributeStorageTest, out_of_entries_memory_abort)
 {
-    ASSERT_GE(storageSize, numberOfEntries);
+    ASSERT_GE(storageSize, numberOfEntries * 4); // Compensate for alignment overhead
 
     services::AttAttribute::Handle handle = 1;
     for (std::size_t i = 0; i < numberOfEntries; ++i)

@@ -36,8 +36,8 @@ namespace services
 
         void Create(services::AttAttribute::Handle handle, std::size_t size)
         {
-            really_assert(handle != 0);
             really_assert(!Find(handle).has_value());
+            really_assert(handle != 0);
             auto allocated = Allocate(size);
             std::fill(allocated.begin(), allocated.end(), 0);
             entries.emplace_back(handle, allocated);
@@ -50,6 +50,7 @@ namespace services
             if (!allocated.has_value() || allocated->size() < data.size())
                 return false;
 
+            // TODO: Handle offsets?
             std::copy(data.begin(), data.end(), allocated->begin());
 
             return true;
@@ -61,11 +62,17 @@ namespace services
         }
 
     private:
+        std::size_t roundToAlignedSize(std::size_t size)
+        {
+            constexpr std::size_t alignment = alignof(std::max_align_t);
+            return ((size + alignment - 1) / alignment) * alignment;
+        }
+
         infra::ByteRange Allocate(std::size_t size)
         {
             really_assert(storage.size() >= size);
             auto result = infra::MakeRange(storage.begin(), storage.begin() + size);
-            storage.pop_front(size);
+            storage.pop_front(roundToAlignedSize(size));
             return result;
         }
 
