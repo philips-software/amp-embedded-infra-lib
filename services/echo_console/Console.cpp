@@ -965,7 +965,7 @@ namespace application
             if (methodInvocation.method.size() == 1 || methodInvocation.method.front() == service->name)
                 for (auto& method : service->methods)
                     if (method.name == methodInvocation.method.back())
-                        matchingMethods.push_back(std::make_pair(service, &method));
+                        matchingMethods.emplace_back(std::make_pair(service, &method));
         }
 
         if (matchingMethods.empty())
@@ -974,8 +974,8 @@ namespace application
         if (methodInvocation.method.size() == 1 && matchingMethods.size() > 1)
         {
             std::vector<std::string> serviceNames;
-            for (const auto& match : matchingMethods)
-                serviceNames.push_back(match.first->name);
+            for (const auto& [echoService, echoMethod] : matchingMethods)
+                serviceNames.push_back(echoService->name);
 
             throw ConsoleExceptions::AmbiguousMethod{ methodInvocation.method.back(), serviceNames };
         }
