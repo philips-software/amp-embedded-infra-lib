@@ -175,7 +175,8 @@ message DiscoveredDevice
     AddressType addressType = 2;
     bytes data = 3 [(bytes_size) = 32];
     int32 rssi = 4;
-    AdvertisingEventType advertisingEventType = 5;
+    reserved 5; // deprecated isScanResponse in favour of advertisingEventType
+    AdvertisingEventType advertisingEventType = 6;
 }
 
 message DeviceDiscoveryFilter
