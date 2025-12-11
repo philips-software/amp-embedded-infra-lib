@@ -9,17 +9,22 @@
 namespace main_
 {
     struct EchoOnSesameSecured
+        : public services::Stoppable
     {
         EchoOnSesameSecured(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage, infra::BoundedVector<uint8_t>& securedSendBuffer, infra::BoundedVector<uint8_t>& securedReceiveBuffer,
             hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::SesameSecured::KeyMaterial& keyMaterial);
-        ~EchoOnSesameSecured();
 
         void Reset();
+
+        // Implementation of Stoppable
+        void Stop(const infra::Function<void()>& onDone) override;
 
         services::SesameCobs cobs;
         services::SesameWindowed windowed{ cobs };
         services::SesameSecured::WithCryptoMbedTls secured;
         services::EchoOnSesame echo;
+
+        infra::Function<void()> onDone;
 
         template<std::size_t MessageSize>
         struct SecuredStorage

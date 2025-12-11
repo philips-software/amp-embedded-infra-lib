@@ -14,17 +14,22 @@
 namespace main_
 {
     struct TracingEchoOnSesameSecured
+        : public services::Stoppable
     {
         TracingEchoOnSesameSecured(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage, infra::BoundedVector<uint8_t>& securedSendBuffer, infra::BoundedVector<uint8_t>& securedReceiveBuffer,
             hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::SesameSecured::KeyMaterial& keyMaterial, services::Tracer& tracer);
-        ~TracingEchoOnSesameSecured();
 
         void Reset();
+
+        // Implementation of Stoppable
+        void Stop(const infra::Function<void()>& onDone) override;
 
         services::SesameCobs cobs;
         services::SesameWindowed windowed{ cobs };
         services::SesameSecured::WithCryptoMbedTls secured;
         services::TracingEchoOnSesame echo;
+
+        infra::Function<void()> onDone;
     };
 
     struct TracingEchoOnSesameSecuredSymmetricKey

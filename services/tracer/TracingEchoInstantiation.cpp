@@ -9,8 +9,8 @@ namespace main_
 
     TracingEchoOnSesame::~TracingEchoOnSesame()
     {
-        cobs.Stop();
-        windowed.Stop();
+        cobs.Stop(infra::emptyFunction); // TODO ccrugo: ask richar what to do with these
+        windowed.Stop(infra::emptyFunction);
     }
 
     void TracingEchoOnSesame::Reset()

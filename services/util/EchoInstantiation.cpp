@@ -9,8 +9,8 @@ namespace main_
 
     EchoOnSesame::~EchoOnSesame()
     {
-        cobs.Stop();
-        windowed.Stop();
+        cobs.Stop(infra::emptyFunction); // TODO ccrugo: ask richar what to do with these
+        windowed.Stop(infra::emptyFunction);
     }
 
     void EchoOnSesame::Reset()

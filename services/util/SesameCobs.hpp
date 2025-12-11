@@ -8,12 +8,14 @@
 #include "infra/stream/LimitedOutputStream.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "services/util/Sesame.hpp"
+#include "services/util/Stoppable.hpp"
 
 namespace services
 {
     class SesameCobs
         : public SesameEncoded
         , private hal::BufferedSerialCommunicationObserver
+        , public services::Stoppable
     {
     public:
         template<std::size_t MaxMessageSize>
@@ -34,13 +36,14 @@ namespace services
 
         SesameCobs(infra::BoundedVector<uint8_t>& sendStorage, infra::BoundedDeque<uint8_t>& receivedMessage, hal::BufferedSerialCommunication& serial);
 
-        void Stop();
-
         // Implementation of Sesame
         void RequestSendMessage(std::size_t size) override;
         std::size_t MaxSendMessageSize() const override;
         std::size_t MessageSize(std::size_t size) const override;
         void Reset() override;
+
+        // Implementation of Stoppable
+        void Stop(const infra::Function<void()>& onDone) override;
 
     private:
         // Implementation of BufferedSerialCommunicationObserver
@@ -71,6 +74,7 @@ namespace services
         bool sendingFirstPacket = true;
         bool sendingUserData = false;
         bool resetting = false;
+        bool stopping = false;
         std::size_t sendSizeEncoded = 0;
         uint8_t nextOverhead = 1;
         bool overheadPositionIsPseudo = true;
@@ -87,6 +91,8 @@ namespace services
             } };
         infra::ConstByteRange dataToSend;
         uint8_t frameSize;
+
+        infra::Function<void()> onDone;
     };
 }
 

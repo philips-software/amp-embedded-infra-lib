@@ -9,15 +9,21 @@ namespace main_
         , echo(serializerFactory, services::echoErrorPolicyAbort, tracer, secured)
     {}
 
-    TracingEchoOnSesameSecured::~TracingEchoOnSesameSecured()
-    {
-        cobs.Stop();
-        windowed.Stop();
-    }
-
     void TracingEchoOnSesameSecured::Reset()
     {
         echo.Reset();
+    }
+
+    void TracingEchoOnSesameSecured::Stop(const infra::Function<void()>& onDone)
+    {
+        this->onDone = onDone;
+        cobs.Stop([this]()
+            {
+                windowed.Stop([this]()
+                    {
+                        this->onDone();
+                    });
+            });
     }
 
     TracingEchoOnSesameSecuredSymmetricKey::TracingEchoOnSesameSecuredSymmetricKey(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage, infra::BoundedVector<uint8_t>& securedSendBuffer, infra::BoundedVector<uint8_t>& securedReceiveBuffer,

@@ -13,12 +13,6 @@ namespace services
         , sendStorage(sendStorage)
     {}
 
-    void SesameCobs::Stop()
-    {
-        receivedDataReader.OnAllocatable([]() {});
-        sendStream.OnAllocatable([]() {});
-    }
-
     void SesameCobs::RequestSendMessage(std::size_t size)
     {
         assert(sendReqestedSize == std::nullopt);
@@ -64,6 +58,20 @@ namespace services
             resetting = true;
         else
             FinishReset();
+    }
+
+    void SesameCobs::Stop(const infra::Function<void()>& onDone)
+    {
+        receivedDataReader.OnAllocatable([]() {});
+        sendStream.OnAllocatable([]() {});
+
+        if (!sendingUserData && !resetting)
+            infra::EventDispatcher::Instance().Schedule(onDone);
+        else
+        {
+            stopping = true;
+            this->onDone = onDone;
+        }
     }
 
     void SesameCobs::DataReceived()
@@ -203,7 +211,9 @@ namespace services
         hal::BufferedSerialCommunicationObserver::Subject().SendData(infra::MakeByteRange(frameSize), [this]()
             {
                 --frameSize;
-                if (resetting)
+                if (stopping)
+                    onDone();
+                else if (resetting)
                     FinishReset();
                 else if (frameSize != 0)
                     SendData(infra::Head(dataToSend, frameSize));
@@ -234,7 +244,10 @@ namespace services
         sendSizeEncoded += 1;
         hal::BufferedSerialCommunicationObserver::Subject().SendData(infra::MakeByteRange(messageDelimiter), [this]()
             {
-                SendOrDone();
+                if (stopping)
+                    onDone();
+                else
+                    SendOrDone();
             });
     }
 
@@ -243,7 +256,9 @@ namespace services
         sendSizeEncoded += 1;
         hal::BufferedSerialCommunicationObserver::Subject().SendData(infra::MakeByteRange(messageDelimiter), [this]()
             {
-                if (resetting)
+                if (stopping)
+                    onDone();
+                else if (resetting)
                     FinishReset();
                 else
                 {
@@ -261,9 +276,14 @@ namespace services
     void SesameCobs::SendData(infra::ConstByteRange data)
     {
         sendSizeEncoded += data.size();
-        hal::BufferedSerialCommunicationObserver::Subject().SendData(data, [this]()
+
+        hal::BufferedSerialCommunicationObserver::Subject().SendData(data,
+            [this]()
             {
-                SendFrameDone();
+                if (stopping)
+                    onDone();
+                else
+                    SendFrameDone();
             });
     }
 
