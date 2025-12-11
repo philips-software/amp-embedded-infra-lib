@@ -15,7 +15,6 @@ namespace services
     {
     public:
         using EchoOnStreams::EchoOnStreams;
-        ~EchoOnConnection();
 
         // Implementation of ConnectionObserver
         void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
@@ -24,7 +23,6 @@ namespace services
     protected:
         // Implementation of EchoOnStreams
         void RequestSendStream(std::size_t size) override;
-        void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
 
     private:
         struct LimitedReader
@@ -54,14 +52,6 @@ namespace services
             }
         };
         infra::SharedPtr<void> keepAliveWhileReading;
-
-        struct Forwarder
-        {
-            infra::SharedPtr<void> keepAliveWhileForwarding;
-            infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
-        };
-
-        infra::NotifyingSharedOptional<Forwarder>::WithSize<sizeof(EchoOnConnection*) + sizeof(infra::SharedPtr<infra::StreamReaderWithRewinding>)> forwarder;
     };
 }
 

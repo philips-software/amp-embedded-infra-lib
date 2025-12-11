@@ -3,11 +3,6 @@
 
 namespace services
 {
-    EchoOnConnection::~EchoOnConnection()
-    {
-        forwarder.OnAllocatable(nullptr);
-    }
-
     void EchoOnConnection::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         EchoOnStreams::SendStreamAvailable(std::move(writer));
@@ -27,24 +22,8 @@ namespace services
 
     void EchoOnConnection::RequestSendStream(std::size_t size)
     {
-        ConnectionObserver::Subject().RequestSendStream(std::min(size, ConnectionObserver::Subject().MaxSendStreamSize()));
-    }
-
-    void EchoOnConnection::MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
-    {
-        if (forwarder.Allocatable())
-        {
-            forwarder.OnAllocatable(nullptr);
-            auto forwarderPtr = forwarder.Emplace(Forwarder{ ConnectionObserver::Subject().ObserverPtr(), std::move(reader) });
-            auto forwardingReader = infra::MakeContainedSharedObject(*forwarderPtr->reader, forwarderPtr);
-            forwarderPtr = nullptr;
-            EchoOnStreams::MethodContents(std::move(forwardingReader));
-        }
-        else
-            forwarder.OnAllocatable([this, reader]()
-                {
-                    MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>(reader));
-                });
+        if (IsAttached())
+            ConnectionObserver::Subject().RequestSendStream(std::min(size, ConnectionObserver::Subject().MaxSendStreamSize()));
     }
 
     EchoOnConnection::LimitedReader::LimitedReader(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, EchoOnConnection& connection)
