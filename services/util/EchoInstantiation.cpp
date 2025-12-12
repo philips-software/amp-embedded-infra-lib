@@ -7,14 +7,20 @@ namespace main_
         , echo(windowed, serializerFactory)
     {}
 
-    EchoOnSesame::~EchoOnSesame()
-    {
-        cobs.Stop(infra::emptyFunction); // TODO ccrugo: ask richar what to do with these
-        windowed.Stop(infra::emptyFunction);
-    }
-
     void EchoOnSesame::Reset()
     {
         echo.Reset();
+    }
+
+    void EchoOnSesame::Stop(const infra::Function<void()>& onDone)
+    {
+        this->onStopDone = onDone;
+        cobs.Stop([this]()
+            {
+                windowed.Stop([this]()
+                    {
+                        this->onStopDone();
+                    });
+            });
     }
 }

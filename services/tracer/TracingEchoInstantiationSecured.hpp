@@ -29,7 +29,7 @@ namespace main_
         services::SesameSecured::WithCryptoMbedTls secured;
         services::TracingEchoOnSesame echo;
 
-        infra::Function<void()> onDone;
+        infra::Function<void()> onStopDone;
     };
 
     struct TracingEchoOnSesameSecuredSymmetricKey

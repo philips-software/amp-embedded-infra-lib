@@ -24,7 +24,7 @@ namespace main_
         services::SesameSecured::WithCryptoMbedTls secured;
         services::EchoOnSesame echo;
 
-        infra::Function<void()> onDone;
+        infra::Function<void()> onStopDone;
 
         template<std::size_t MessageSize>
         struct SecuredStorage

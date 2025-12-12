@@ -16,12 +16,12 @@ namespace main_
 
     void EchoOnSesameSecured::Stop(const infra::Function<void()>& onDone)
     {
-        this->onDone = onDone;
+        this->onStopDone = onDone;
         cobs.Stop([this]()
             {
                 windowed.Stop([this]()
                     {
-                        this->onDone();
+                        this->onStopDone();
                     });
             });
     }

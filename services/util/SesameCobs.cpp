@@ -70,7 +70,7 @@ namespace services
         else
         {
             stopping = true;
-            this->onDone = onDone;
+            this->onStopDone = onDone;
         }
     }
 
@@ -212,7 +212,7 @@ namespace services
             {
                 --frameSize;
                 if (stopping)
-                    onDone();
+                    onStopDone();
                 else if (resetting)
                     FinishReset();
                 else if (frameSize != 0)
@@ -245,7 +245,7 @@ namespace services
         hal::BufferedSerialCommunicationObserver::Subject().SendData(infra::MakeByteRange(messageDelimiter), [this]()
             {
                 if (stopping)
-                    onDone();
+                    onStopDone();
                 else
                     SendOrDone();
             });
@@ -257,7 +257,7 @@ namespace services
         hal::BufferedSerialCommunicationObserver::Subject().SendData(infra::MakeByteRange(messageDelimiter), [this]()
             {
                 if (stopping)
-                    onDone();
+                    onStopDone();
                 else if (resetting)
                     FinishReset();
                 else
@@ -281,7 +281,7 @@ namespace services
             [this]()
             {
                 if (stopping)
-                    onDone();
+                    onStopDone();
                 else
                     SendFrameDone();
             });
