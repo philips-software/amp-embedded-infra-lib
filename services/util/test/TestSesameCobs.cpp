@@ -8,7 +8,6 @@
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "services/util/SesameCobs.hpp"
 #include "services/util/test_doubles/SesameMock.hpp"
-#include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
 #include "gmock/gmock.h"
 #include <deque>
 
