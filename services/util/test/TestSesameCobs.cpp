@@ -8,11 +8,13 @@
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "services/util/SesameCobs.hpp"
 #include "services/util/test_doubles/SesameMock.hpp"
+#include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
 #include "gmock/gmock.h"
 #include <deque>
 
 class SesameCobsTest
     : public testing::Test
+    , public infra::EventDispatcherWithWeakPtrFixture
 {
 public:
     void ExpectSendData(const std::vector<uint8_t>& v)
@@ -219,23 +221,31 @@ TEST_F(SesameCobsTest, malformed_message_is_forwarded)
 
 TEST_F(SesameCobsTest, no_new_received_message_after_stop)
 {
+    infra::VerifyingFunction<void()> onDone;
+
     ExpectReceivedMessageKeepReader({ 1, 2, 3, 4 }, 7);
     ReceiveData(infra::ConstructBin()({ 0, 5, 1, 2, 3, 4, 0, 3, 5, 6, 0 }).Vector());
 
-    communication.Stop();
+    communication.Stop(onDone);
     reader = nullptr;
+
+    ExecuteAllActions();
 }
 
 TEST_F(SesameCobsTest, no_new_send_message_after_stop)
 {
+    infra::VerifyingFunction<void()> onDone;
+
     EXPECT_CALL(observer, SendMessageStreamAvailable).WillOnce(testing::SaveArg<0>(&writer));
     communication.RequestSendMessage(4);
 
     infra::DataOutputStream::WithErrorPolicy stream(*writer);
     stream << infra::ConstructBin()({ 1, 2, 3, 4 }).Range();
 
-    communication.Stop();
+    communication.Stop(onDone);
     writer = nullptr;
+
+    ExecuteAllActions();
 }
 
 TEST_F(SesameCobsTest, Reset_invalidates_RequestSendMessage)
