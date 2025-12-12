@@ -187,7 +187,7 @@ namespace services
     {
         attMtuExchangeClaimer.Claim([this]()
             {
-                AttMtuExchangeObserver::Subject().MtuExchange();
+                GattClientObserver::Subject().MtuExchange();
             });
     }
 

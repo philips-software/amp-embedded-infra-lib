@@ -20,6 +20,7 @@ namespace services
         , private GattClientObserver
         , private AttMtuExchangeObserver
         , private GapCentralObserver
+        , private GattClientMtuExchange
     {
     public:
         ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchange& attMtuExchange, GapCentral& gapCentral);
@@ -38,9 +39,11 @@ namespace services
         void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
         void DisableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
 
+        // Implementation of GattClientMtuExchange
+        void MtuExchange() override;
+
         // Implementation of AttMtuExchange
         uint16_t EffectiveMaxAttMtuSize() const override;
-        void MtuExchange() override;
 
     private:
         // Implementation of GattClientObserver
@@ -115,7 +118,7 @@ namespace services
 
             CharacteristicOperation(Operation operation, AttAttribute::Handle handle)
                 : operation(operation)
-                , handle(handle){};
+                , handle(handle) {};
 
             Operation operation;
             AttAttribute::Handle handle;

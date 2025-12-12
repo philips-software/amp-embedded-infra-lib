@@ -94,7 +94,7 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_mtu_exchange)
     EXPECT_CALL(attMtuExchange, EffectiveMaxAttMtuSize()).WillOnce(testing::Return(200));
     EXPECT_EQ(200, adapter.EffectiveMaxAttMtuSize());
 
-    EXPECT_CALL(attMtuExchange, MtuExchange());
+    EXPECT_CALL(gattClient, MtuExchange());
     adapter.MtuExchange();
     ExecuteAllActions();
 
@@ -161,13 +161,13 @@ TEST_F(ClaimingGattClientAdapterTest, should_release_claimer_when_disconnected)
     EXPECT_CALL(attMtuExchange, EffectiveMaxAttMtuSize()).WillOnce(testing::Return(200));
     EXPECT_EQ(200, adapter.EffectiveMaxAttMtuSize());
 
-    EXPECT_CALL(attMtuExchange, MtuExchange());
+    EXPECT_CALL(gattClient, MtuExchange());
     adapter.MtuExchange();
     ExecuteAllActions();
 
     gapCentral.ChangeState(services::GapState::standby);
 
-    EXPECT_CALL(attMtuExchange, MtuExchange());
+    EXPECT_CALL(gattClient, MtuExchange());
     adapter.MtuExchange();
     ExecuteAllActions();
 }

@@ -125,10 +125,10 @@ namespace services
     {
     public:
         virtual uint16_t EffectiveMaxAttMtuSize() const = 0;
-        virtual void MtuExchange() = 0;
+        static constexpr uint16_t defaultMaxAttMtuSize = 23;
 
     protected:
-        static constexpr uint16_t defaultMaxAttMtuSize = 23;
+        uint16_t maxAttMtu = defaultMaxAttMtuSize;
     };
 
     inline GattCharacteristic::PropertyFlags operator|(GattCharacteristic::PropertyFlags lhs, GattCharacteristic::PropertyFlags rhs)
