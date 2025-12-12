@@ -83,3 +83,11 @@ TEST_F(BufferedSerialCommunicationOnUnbufferedTest, detached_observer_is_not_not
     observer.Detach();
     ExecuteAllActions();
 }
+
+TEST_F(BufferedSerialCommunicationOnUnbufferedTest, stop_calls_sets_empty_receive_data_callback)
+{
+    infra::VerifyingFunction<void()> onDone;
+    EXPECT_CALL(serial, ReceiveData(testing::_)).WillOnce(testing::SaveArg<0>(&receivedData));
+    buffered.Stop(onDone);
+    ExecuteAllActions();
+}

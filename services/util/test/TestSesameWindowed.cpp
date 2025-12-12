@@ -4,6 +4,7 @@
 #include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/ConstructBin.hpp"
 #include "infra/util/Endian.hpp"
+#include "infra/util/test_helper/MockCallback.hpp"
 #include "services/util/SesameCobs.hpp"
 #include "services/util/SesameWindowed.hpp"
 #include "services/util/test_doubles/SesameMock.hpp"
@@ -498,14 +499,18 @@ TEST_F(SesameWindowedTest, window_is_released_after_message_has_been_processed)
 
 TEST_F(SesameWindowedTest, no_new_message_after_stop)
 {
+    infra::VerifyingFunction<void()> onDone;
+
     ReceiveInitResponse(12);
 
     ExpectReceivedMessageAndSaveReader("abcd");
     ReceiveMessage("abcd");
 
     // ExpectRequestSendMessageForReleaseWindow(12);
-    communication.Stop();
+    communication.Stop(onDone);
     savedReader = nullptr;
+
+    ExecuteAllActions();
 }
 
 TEST_F(SesameWindowedTest, Reset_forwards_to_cobs_and_requests_initialize)

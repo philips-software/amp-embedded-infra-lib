@@ -1,5 +1,5 @@
 #include "services/util/SesameWindowed.hpp"
-#include "infra/stream/BoundedDequeOutputStream.hpp"
+#include "infra/event/EventDispatcherWithWeakPtr.hpp"
 
 namespace services
 {
@@ -10,11 +10,6 @@ namespace services
         , state(infra::InPlaceType<StateSendingInit>(), *this)
     {
         state->Request();
-    }
-
-    void SesameWindowed::Stop()
-    {
-        readerAccess.SetAction([]() {});
     }
 
     void SesameWindowed::RequestSendMessage(std::size_t size)
@@ -42,6 +37,12 @@ namespace services
         requestedSendMessageSize.reset();
         state.Emplace<StateSendingInit>(*this);
         state->Request();
+    }
+
+    void SesameWindowed::Stop(const infra::Function<void()>& onDone)
+    {
+        readerAccess.SetAction([]() {});
+        infra::EventDispatcher::Instance().Schedule(onDone);
     }
 
     void SesameWindowed::Initialized()

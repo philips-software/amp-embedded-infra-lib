@@ -11,18 +11,23 @@
 namespace main_
 {
     struct TracingEchoOnSesame
+        : public services::Stoppable
     {
         template<std::size_t MessageSize>
         struct WithMessageSize;
 
         TracingEchoOnSesame(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, services::Tracer& tracer);
-        ~TracingEchoOnSesame();
 
         void Reset();
+
+        // Implementation of Stoppable
+        void Stop(const infra::Function<void()>& onDone) override;
 
         services::SesameCobs cobs;
         services::SesameWindowed windowed{ cobs };
         services::TracingEchoOnSesame echo;
+
+        infra::Function<void()> onStopDone;
     };
 
     template<std::size_t MessageSize>

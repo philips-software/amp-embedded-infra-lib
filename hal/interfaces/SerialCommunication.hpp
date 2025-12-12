@@ -6,6 +6,7 @@
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/Observer.hpp"
+#include "services/util/Stoppable.hpp"
 
 namespace hal
 {
@@ -43,6 +44,7 @@ namespace hal
 
     class BufferedSerialCommunicationOnUnbuffered
         : public BufferedSerialCommunication
+        , public services::Stoppable
     {
     public:
         template<std::size_t Size>
@@ -55,6 +57,9 @@ namespace hal
         void SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion) override;
         infra::StreamReaderWithRewinding& Reader() override;
         void AckReceived() override;
+
+        // Implementation of Stoppable
+        void Stop(const infra::Function<void()>& onDone) override;
 
     private:
         infra::AtomicByteQueue& buffer;
