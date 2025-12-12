@@ -308,7 +308,6 @@ TEST_F(SesameCobsTest, stop_done_after_data_sent)
     onSent();
 }
 
-
 TEST_F(SesameCobsTest, stop_done_after_last_delimiter_sent)
 {
     infra::VerifyingFunction<void()> onDone;
@@ -326,7 +325,6 @@ TEST_F(SesameCobsTest, stop_done_after_last_delimiter_sent)
 
     ExpectSendData({ 1, 2, 3, 4 });
     onSent();
-    
     ExpectSendData({ 0 });
     onSent();
 
