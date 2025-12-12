@@ -9,6 +9,7 @@
 #include "services/util/SesameCobs.hpp"
 #include "services/util/test_doubles/SesameMock.hpp"
 #include "gmock/gmock.h"
+#include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
 #include <deque>
 
 class SesameCobsTest
