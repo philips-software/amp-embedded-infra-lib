@@ -392,14 +392,15 @@ namespace services
         DnsHostnamePartsStream hostnameParts(reader, hostnameStart);
 
         reconstructedHostname.clear();
+        infra::StringOutputStream reconstructedHostnameStream(reconstructedHostname, infra::noFail);
 
         while (!hostnameParts.Empty())
         {
-            reconstructedHostname += hostnameParts.Current();
+            reconstructedHostnameStream << hostnameParts.Current();
             hostnameParts.ConsumeCurrent();
 
             if (!hostnameParts.Empty())
-                reconstructedHostname += '.';
+                reconstructedHostnameStream << '.';
         }
 
         hostnameParts.ConsumeStream();
