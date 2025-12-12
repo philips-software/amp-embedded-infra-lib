@@ -199,6 +199,7 @@ namespace services
         infra::SharedPtr<void> keepAliveWhileWriting;
         bool sendBufferReadyForSending = false;
         infra::BoundedVector<uint8_t>::WithMaxSize<8> pongBuffer;
+        bool moreDataReceived = false;
     };
 }
 

@@ -178,6 +178,23 @@ TEST_F(SingleConnectionListenerTest, Stop_aborts_connection)
     connection.Detach();
 }
 
+TEST_F(SingleConnectionListenerTest, Stop_does_not_abort_stopped_connection)
+{
+    AcceptConnection();
+
+    infra::MockCallback<void()> onDone;
+    connection.Detach();
+
+    listener.Stop([&onDone]()
+        {
+            onDone.callback();
+        });
+
+    EXPECT_CALL(connectionObserverMock, Destructed());
+    EXPECT_CALL(onDone, callback());
+    connectionObserver = nullptr;
+}
+
 TEST_F(SingleConnectionListenerTest, NewConnectionStrategy)
 {
     listener.SetNewConnectionStrategy(newConnectionStrategy);
