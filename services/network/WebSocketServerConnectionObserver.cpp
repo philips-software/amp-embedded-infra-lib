@@ -40,13 +40,14 @@ namespace services
 
     void WebSocketServerConnectionObserver::DataReceived()
     {
-        auto startSize = receiveBuffer.size();
-
         receivingState->DataReceived();
         sendingState->CheckForSomethingToDo();
 
-        if (startSize != receiveBuffer.size())
+        if (moreDataReceived)
+        {
+            moreDataReceived = false;
             services::Connection::Observer().DataReceived();
+        }
     }
 
     void WebSocketServerConnectionObserver::Detaching()
@@ -97,6 +98,12 @@ namespace services
     void WebSocketServerConnectionObserver::ReceiveStreamAllocatable()
     {
         receivingState->DataReceived();
+
+        if (moreDataReceived)
+        {
+            moreDataReceived = false;
+            services::Connection::Observer().DataReceived();
+        }
     }
 
     void WebSocketServerConnectionObserver::SendStreamAllocatable()
@@ -238,6 +245,7 @@ namespace services
 
             while (growSize != 0)
             {
+                connection.moreDataReceived = true;
                 auto range = connection.receiveBuffer.contiguous_range(connection.receiveBuffer.end() - growSize);
                 stream >> range;
                 growSize -= range.size();
