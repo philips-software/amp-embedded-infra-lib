@@ -22,6 +22,7 @@ namespace services
         // Implementation of GattServerCharacteristicOperationsObserver
         AttAttribute::Handle ServiceHandle() const override;
         AttAttribute::Handle CharacteristicHandle() const override;
+        AttAttribute::Handle CharacteristicValueHandle() const override;
 
     private:
         struct UpdateContext

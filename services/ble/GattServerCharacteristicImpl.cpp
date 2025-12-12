@@ -42,6 +42,11 @@ namespace services
         return handle;
     }
 
+    AttAttribute::Handle GattServerCharacteristicImpl::CharacteristicValueHandle() const
+    {
+        return valueHandle;
+    }
+
     void GattServerCharacteristicImpl::UpdateValue()
     {
         auto status = GattServerCharacteristicOperationsObserver::Subject().Update(*this, updateContext->data);
