@@ -248,6 +248,93 @@ TEST_F(SesameCobsTest, no_new_send_message_after_stop)
     ExecuteAllActions();
 }
 
+TEST_F(SesameCobsTest, stop_done_after_first_delimiter_sent)
+{
+    infra::VerifyingFunction<void()> onDone;
+
+    EXPECT_CALL(observer, SendMessageStreamAvailable).WillOnce(testing::SaveArg<0>(&writer));
+    communication.RequestSendMessage(4);
+    infra::DataOutputStream::WithErrorPolicy stream(*writer);
+    stream << infra::ConstructBin()({ 1, 2, 3, 4 }).Range();
+
+    ExpectSendData({ 0 });
+    writer = nullptr;
+
+    communication.Stop(onDone);
+
+    onSent();
+}
+
+TEST_F(SesameCobsTest, stop_done_after_frame_sent)
+{
+    infra::VerifyingFunction<void()> onDone;
+
+    EXPECT_CALL(observer, SendMessageStreamAvailable).WillOnce(testing::SaveArg<0>(&writer));
+    communication.RequestSendMessage(4);
+    infra::DataOutputStream::WithErrorPolicy stream(*writer);
+    stream << infra::ConstructBin()({ 1, 2, 3, 4 }).Range();
+
+    ExpectSendData({ 0 });
+    writer = nullptr;
+
+    ExpectSendData({ 5 });
+    onSent();
+
+    communication.Stop(onDone);
+
+    onSent();
+}
+
+TEST_F(SesameCobsTest, stop_done_after_data_sent)
+{
+    infra::VerifyingFunction<void()> onDone;
+
+    EXPECT_CALL(observer, SendMessageStreamAvailable).WillOnce(testing::SaveArg<0>(&writer));
+    communication.RequestSendMessage(4);
+    infra::DataOutputStream::WithErrorPolicy stream(*writer);
+    stream << infra::ConstructBin()({ 1, 2, 3, 4 }).Range();
+
+    ExpectSendData({ 0 });
+    writer = nullptr;
+
+    ExpectSendData({ 5 });
+    onSent();
+
+    ExpectSendData({ 1, 2, 3, 4 });
+    onSent();
+
+    communication.Stop(onDone);
+
+    onSent();
+}
+
+
+TEST_F(SesameCobsTest, stop_done_after_last_delimiter_sent)
+{
+    infra::VerifyingFunction<void()> onDone;
+
+    EXPECT_CALL(observer, SendMessageStreamAvailable).WillOnce(testing::SaveArg<0>(&writer));
+    communication.RequestSendMessage(4);
+    infra::DataOutputStream::WithErrorPolicy stream(*writer);
+    stream << infra::ConstructBin()({ 1, 2, 3, 4 }).Range();
+
+    ExpectSendData({ 0 });
+    writer = nullptr;
+
+    ExpectSendData({ 5 });
+    onSent();
+
+    ExpectSendData({ 1, 2, 3, 4 });
+    onSent();
+    
+    ExpectSendData({ 0 });
+    onSent();
+
+    communication.Stop(onDone);
+
+    onSent();
+}
+
 TEST_F(SesameCobsTest, Reset_invalidates_RequestSendMessage)
 {
     RequestSendMessage(4, 7);
