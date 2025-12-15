@@ -92,7 +92,7 @@ namespace services
         infra::ConstByteRange dataToSend;
         uint8_t frameSize;
 
-        infra::Function<void()> onStopDone;
+        infra::AutoResetFunction<void()> onStopDone;
     };
 }
 

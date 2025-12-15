@@ -9,12 +9,12 @@
 #include "services/util/SesameCobs.hpp"
 #include "services/util/test_doubles/SesameMock.hpp"
 #include "gmock/gmock.h"
-#include "infra/event/test_helper/EventDispatcherWithWeakPtrFixture.hpp"
+#include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include <deque>
 
 class SesameCobsTest
     : public testing::Test
-    , public infra::EventDispatcherWithWeakPtrFixture
+    , public infra::EventDispatcherFixture
 {
 public:
     void ExpectSendData(const std::vector<uint8_t>& v)

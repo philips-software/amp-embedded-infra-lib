@@ -27,7 +27,7 @@ namespace main_
         services::SesameWindowed windowed{ cobs };
         services::TracingEchoOnSesame echo;
 
-        infra::Function<void()> onStopDone;
+        infra::AutoResetFunction<void()> onStopDone;
     };
 
     template<std::size_t MessageSize>

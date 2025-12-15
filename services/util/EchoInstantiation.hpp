@@ -5,7 +5,6 @@
 #ifdef EMIL_HAL_GENERIC
 #include "hal/generic/UartGeneric.hpp"
 #endif
-#include "infra/timer/Waiting.hpp"
 #include "infra/util/BoundedVector.hpp"
 #include "protobuf/echo/ServiceForwarder.hpp"
 #include "services/util/EchoOnMessageCommunication.hpp"
@@ -47,7 +46,7 @@ namespace main_
         services::SesameWindowed windowed{ cobs };
         services::EchoOnSesame echo;
 
-        infra::Function<void()> onStopDone;
+        infra::AutoResetFunction<void()> onStopDone;
 
         template<std::size_t MessageSize>
         struct CobsStorage
