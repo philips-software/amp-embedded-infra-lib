@@ -182,7 +182,7 @@ namespace services
     void SesameCobs::SendSerialData(const infra::ConstByteRange data, const infra::Function<void()>& onSendDataDone)
     {
         this->onSendDataDone = onSendDataDone;
-        hal::BufferedSerialCommunicationObserver::Subject().SendData(infra::MakeByteRange(frameSize), [this]()
+        hal::BufferedSerialCommunicationObserver::Subject().SendData(data, [this]()
             {
                 if (this->onStopDone)
                     this->onStopDone();
@@ -277,7 +277,7 @@ namespace services
     void SesameCobs::SendData(infra::ConstByteRange data)
     {
         sendSizeEncoded += data.size();
-        SendSerialData(infra::MakeByteRange(data), [this]()
+        SendSerialData(data, [this]()
             {
                 SendFrameDone();
             });
