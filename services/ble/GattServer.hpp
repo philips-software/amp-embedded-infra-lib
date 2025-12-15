@@ -59,7 +59,7 @@ namespace services
         // Returns success, or retry in transient failure or error
         // on unrecoverable failure (i.e. BLE stack indicates an issue
         // with updating or sending data).
-        virtual UpdateStatus Update(const GattServerCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data) const = 0;
+        virtual UpdateStatus Update(const GattServerCharacteristicOperationsObserver& characteristic, infra::ConstByteRange data) = 0;
     };
 
     class GattServerDescriptor
