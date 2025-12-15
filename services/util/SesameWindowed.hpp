@@ -7,6 +7,7 @@
 #include "infra/util/PolymorphicVariant.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "services/util/Sesame.hpp"
+#include "services/util/Stoppable.hpp"
 
 namespace services
 {
@@ -17,12 +18,11 @@ namespace services
     public:
         explicit SesameWindowed(SesameEncoded& delegate);
 
-        void Stop();
-
         // Implementation of Sesame
         void RequestSendMessage(std::size_t size) override;
         std::size_t MaxSendMessageSize() const override;
         void Reset() override;
+        void Stop();
 
     protected:
         // clang-format off
