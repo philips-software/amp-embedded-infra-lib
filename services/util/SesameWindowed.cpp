@@ -1,5 +1,4 @@
 #include "services/util/SesameWindowed.hpp"
-#include "infra/event/EventDispatcherWithWeakPtr.hpp"
 
 namespace services
 {
@@ -39,10 +38,9 @@ namespace services
         state->Request();
     }
 
-    void SesameWindowed::Stop(const infra::Function<void()>& onDone)
+    void SesameWindowed::Stop()
     {
         readerAccess.SetAction([]() {});
-        infra::EventDispatcher::Instance().Schedule(onDone);
     }
 
     void SesameWindowed::Initialized()

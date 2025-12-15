@@ -499,15 +499,13 @@ TEST_F(SesameWindowedTest, window_is_released_after_message_has_been_processed)
 
 TEST_F(SesameWindowedTest, no_new_message_after_stop)
 {
-    infra::VerifyingFunction<void()> onDone;
-
     ReceiveInitResponse(12);
 
     ExpectReceivedMessageAndSaveReader("abcd");
     ReceiveMessage("abcd");
 
     // ExpectRequestSendMessageForReleaseWindow(12);
-    communication.Stop(onDone);
+    communication.Stop();
     savedReader = nullptr;
 
     ExecuteAllActions();

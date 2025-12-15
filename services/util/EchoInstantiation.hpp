@@ -71,14 +71,15 @@ namespace main_
 #ifdef EMIL_HAL_GENERIC
     template<std::size_t MessageSize>
     struct EchoOnUart
+        : services::Stoppable
     {
         explicit EchoOnUart(infra::BoundedConstString portName, const hal::UartGeneric::Config& config = {})
             : uart(infra::AsStdString(portName), config)
         {}
 
-        ~EchoOnUart()
+        void Stop(const infra::Function<void()>& onDone) override
         {
-            echoOnSesame.Stop(infra::emptyFunction);
+            echoOnSesame.Stop(onDone);
         }
 
         hal::UartGeneric uart;

@@ -14,7 +14,6 @@ namespace services
     class SesameWindowed
         : public Sesame
         , private SesameEncodedObserver
-        , public services::Stoppable
     {
     public:
         explicit SesameWindowed(SesameEncoded& delegate);
@@ -23,9 +22,7 @@ namespace services
         void RequestSendMessage(std::size_t size) override;
         std::size_t MaxSendMessageSize() const override;
         void Reset() override;
-
-        // Implementation of Stoppable
-        void Stop(const infra::Function<void()>& onDone) override;
+        void Stop();
 
     protected:
         // clang-format off

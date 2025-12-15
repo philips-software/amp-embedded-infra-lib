@@ -59,6 +59,7 @@ namespace services
         void FinishMessage();
 
         void CheckReadyToSendUserData();
+        void SendSerialData(const infra::ConstByteRange data, const infra::Function<void()>& onSendDataDone);
         void SendStreamFilled();
         void SendOrDone();
         void SendFrame();
@@ -74,7 +75,6 @@ namespace services
         bool sendingFirstPacket = true;
         bool sendingUserData = false;
         bool resetting = false;
-        bool stopping = false;
         std::size_t sendSizeEncoded = 0;
         uint8_t nextOverhead = 1;
         bool overheadPositionIsPseudo = true;
@@ -93,6 +93,7 @@ namespace services
         uint8_t frameSize;
 
         infra::AutoResetFunction<void()> onStopDone;
+        infra::AutoResetFunction<void()> onSendDataDone;
     };
 }
 

@@ -17,10 +17,8 @@ namespace main_
         this->onStopDone = onDone;
         cobs.Stop([this]()
             {
-                windowed.Stop([this]()
-                    {
-                        this->onStopDone();
-                    });
+                windowed.Stop();
+                this->onStopDone();
             });
     }
 }
