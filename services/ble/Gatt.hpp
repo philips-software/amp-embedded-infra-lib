@@ -5,6 +5,7 @@
 #include "infra/util/EnumCast.hpp"
 #include "infra/util/Observer.hpp"
 #include "services/ble/Att.hpp"
+#include <cstdint>
 
 namespace services
 {
@@ -124,10 +125,12 @@ namespace services
         : public infra::Subject<AttMtuExchangeObserver>
     {
     public:
-        virtual uint16_t EffectiveMaxAttMtuSize() const = 0;
+        virtual uint16_t EffectiveMaxAttMtuSize() const;
+        void SetMaxAttMtu(uint16_t value);
+
         static constexpr uint16_t defaultMaxAttMtuSize = 23;
 
-    protected:
+    private:
         uint16_t maxAttMtu = defaultMaxAttMtuSize;
     };
 

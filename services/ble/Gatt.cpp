@@ -108,6 +108,16 @@ namespace services
     {
         return 0;
     }
+
+    uint16_t AttMtuExchange::EffectiveMaxAttMtuSize() const
+    {
+        return maxAttMtu;
+    }
+
+    void AttMtuExchange::SetMaxAttMtu(uint16_t value)
+    {
+        maxAttMtu = value;
+    }
 }
 
 namespace infra
