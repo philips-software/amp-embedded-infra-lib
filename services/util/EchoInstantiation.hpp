@@ -1,6 +1,7 @@
 #ifndef SERVICES_UTIL_ECHO_INSTANTIATION_HPP
 #define SERVICES_UTIL_ECHO_INSTANTIATION_HPP
 
+#include "infra/util/Function.hpp"
 #ifdef EMIL_HAL_GENERIC
 #include "hal/generic/UartGeneric.hpp"
 #endif
@@ -29,18 +30,23 @@ namespace main_
     };
 
     struct EchoOnSesame
+        : public services::Stoppable
     {
         template<std::size_t MessageSize>
         struct WithMessageSize;
 
         EchoOnSesame(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory);
-        ~EchoOnSesame();
 
         void Reset();
+
+        // Implementation of Stoppable
+        void Stop(const infra::Function<void()>& onDone) override;
 
         services::SesameCobs cobs;
         services::SesameWindowed windowed{ cobs };
         services::EchoOnSesame echo;
+
+        infra::AutoResetFunction<void()> onStopDone;
 
         template<std::size_t MessageSize>
         struct CobsStorage
@@ -65,10 +71,16 @@ namespace main_
 #ifdef EMIL_HAL_GENERIC
     template<std::size_t MessageSize>
     struct EchoOnUart
+        : services::Stoppable
     {
         explicit EchoOnUart(infra::BoundedConstString portName, const hal::UartGeneric::Config& config = {})
             : uart(infra::AsStdString(portName), config)
         {}
+
+        void Stop(const infra::Function<void()>& onDone) override
+        {
+            echoOnSesame.Stop(onDone);
+        }
 
         hal::UartGeneric uart;
         services::MethodSerializerFactory::OnHeap serializerFactory;

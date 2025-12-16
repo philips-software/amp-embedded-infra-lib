@@ -1,5 +1,4 @@
 #include "services/util/SesameWindowed.hpp"
-#include "infra/stream/BoundedDequeOutputStream.hpp"
 
 namespace services
 {
@@ -10,11 +9,6 @@ namespace services
         , state(infra::InPlaceType<StateSendingInit>(), *this)
     {
         state->Request();
-    }
-
-    void SesameWindowed::Stop()
-    {
-        readerAccess.SetAction([]() {});
     }
 
     void SesameWindowed::RequestSendMessage(std::size_t size)
@@ -42,6 +36,11 @@ namespace services
         requestedSendMessageSize.reset();
         state.Emplace<StateSendingInit>(*this);
         state->Request();
+    }
+
+    void SesameWindowed::Stop()
+    {
+        readerAccess.SetAction([]() {});
     }
 
     void SesameWindowed::Initialized()

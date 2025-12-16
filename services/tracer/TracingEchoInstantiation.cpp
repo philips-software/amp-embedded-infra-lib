@@ -7,14 +7,18 @@ namespace main_
         , echo(serializerFactory, services::echoErrorPolicyAbort, tracer, windowed)
     {}
 
-    TracingEchoOnSesame::~TracingEchoOnSesame()
-    {
-        cobs.Stop();
-        windowed.Stop();
-    }
-
     void TracingEchoOnSesame::Reset()
     {
         echo.Reset();
+    }
+
+    void TracingEchoOnSesame::Stop(const infra::Function<void()>& onDone)
+    {
+        this->onStopDone = onDone;
+        cobs.Stop([this]()
+            {
+                windowed.Stop();
+                this->onStopDone();
+            });
     }
 }
