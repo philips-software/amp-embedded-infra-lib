@@ -58,13 +58,11 @@ namespace services
     void EchoOnStreams::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
         really_assert(readerPtr == nullptr);
+        readerPtr = std::move(reader);
+        bufferedReader.emplace(receiveBuffer, *readerPtr);
 
         if (!delayDataReceived)
-        {
-            readerPtr = std::move(reader);
-            bufferedReader.emplace(receiveBuffer, *readerPtr);
             DataReceived();
-        }
         else
             delayedDataReceived = true;
     }
