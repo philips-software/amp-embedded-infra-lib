@@ -121,11 +121,17 @@ namespace services
         virtual void ExchangedMaxAttMtuSize() = 0;
     };
 
+    class AttMtuExchangeInterface
+    {
+        virtual uint16_t EffectiveMaxAttMtuSize() const = 0;
+    };
+
     class AttMtuExchange
         : public infra::Subject<AttMtuExchangeObserver>
+        , AttMtuExchangeInterface
     {
     public:
-        virtual uint16_t EffectiveMaxAttMtuSize() const;
+        uint16_t EffectiveMaxAttMtuSize() const override;
         void SetMaxAttMtu(uint16_t value);
 
         static constexpr uint16_t defaultMaxAttMtuSize = 23;

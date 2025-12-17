@@ -16,7 +16,7 @@ namespace services
     class ClaimingGattClientAdapter
         : public GattClientDiscovery
         , public GattClientCharacteristicOperations
-        , public AttMtuExchange
+        , public AttMtuExchangeInterface
         , private GattClientObserver
         , private AttMtuExchangeObserver
         , private GapCentralObserver
