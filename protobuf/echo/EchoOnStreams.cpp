@@ -58,10 +58,13 @@ namespace services
     void EchoOnStreams::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
         really_assert(readerPtr == nullptr);
-
         readerPtr = std::move(reader);
         bufferedReader.emplace(receiveBuffer, *readerPtr);
-        DataReceived();
+
+        if (!delayDataReceived)
+            DataReceived();
+        else
+            delayedDataReceived = true;
     }
 
     void EchoOnStreams::ReleaseReader()
@@ -80,9 +83,7 @@ namespace services
             skipNextStream = true;
         }
 
-        limitedReaderAccess.SetAction(infra::emptyFunction);
-        bufferedReader.reset();
-        readerPtr = nullptr;
+        ReleaseReader();
         limitedReader.reset();
         ReleaseDeserializer();
     }
@@ -233,6 +234,10 @@ namespace services
 
     void EchoOnStreams::LimitedReaderDone()
     {
+        delayDataReceived = true;
+        if (bufferedReader->Empty())
+            ReleaseReader();
+
         if (limitedReader->LimitReached())
         {
             limitedReader.reset();
@@ -243,6 +248,13 @@ namespace services
             }
             else
                 methodDeserializer->ExecuteMethod();
+        }
+
+        delayDataReceived = false;
+        if (delayedDataReceived)
+        {
+            delayedDataReceived = false;
+            DataReceived();
         }
     }
 }
