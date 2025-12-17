@@ -108,7 +108,7 @@ namespace services
             if (received == -1)
             {
                 if (errno != EWOULDBLOCK)
-                    ResetOwnership();
+                    AbortAndDestroy();
                 return;
             }
             else if (received != 0)

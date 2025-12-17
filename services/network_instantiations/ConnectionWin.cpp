@@ -96,7 +96,7 @@ namespace services
             if (received == SOCKET_ERROR)
             {
                 if (WSAGetLastError() != WSAEWOULDBLOCK)
-                    ResetOwnership();
+                    AbortAndDestroy();
                 return;
             }
             else if (received != 0)
@@ -131,7 +131,7 @@ namespace services
             if (sent == SOCKET_ERROR)
             {
                 if (WSAGetLastError() != WSAEWOULDBLOCK)
-                    ResetOwnership();
+                    AbortAndDestroy();
                 return;
             }
 
