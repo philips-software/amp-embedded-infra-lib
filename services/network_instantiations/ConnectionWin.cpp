@@ -112,7 +112,7 @@ namespace services
             }
             else
             {
-                ResetOwnership();
+                CloseAndDestroy();
                 return;
             }
         }

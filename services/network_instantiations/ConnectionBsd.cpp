@@ -123,8 +123,7 @@ namespace services
             }
             else
             {
-                socket = 0;
-                ResetOwnership();
+                CloseAndDestroy();
                 return;
             }
         }
