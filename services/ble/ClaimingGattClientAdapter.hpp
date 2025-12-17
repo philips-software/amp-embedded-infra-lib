@@ -17,10 +17,10 @@ namespace services
         : public GattClientDiscovery
         , public GattClientCharacteristicOperations
         , public AttMtuExchangeInterface
+        , public GattClientMtuExchange
         , private GattClientObserver
         , private AttMtuExchangeObserver
         , private GapCentralObserver
-        , private GattClientMtuExchange
     {
     public:
         ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchange& attMtuExchange, GapCentral& gapCentral);
