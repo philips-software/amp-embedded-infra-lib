@@ -110,18 +110,19 @@ namespace services
         AttAttribute::Handle endHandle;
     };
 
-    class AttMtuExchange;
+    class AttMtuExchangeInterface;
 
     class AttMtuExchangeObserver
-        : public infra::Observer<AttMtuExchangeObserver, AttMtuExchange>
+        : public infra::Observer<AttMtuExchangeObserver, AttMtuExchangeInterface>
     {
     public:
-        using infra::Observer<AttMtuExchangeObserver, AttMtuExchange>::Observer;
+        using Observer::Observer;
 
         virtual void ExchangedMaxAttMtuSize() = 0;
     };
 
     class AttMtuExchangeInterface
+        : public infra::Subject<AttMtuExchangeObserver>
     {
     protected:
         ~AttMtuExchangeInterface() = default;
@@ -131,8 +132,7 @@ namespace services
     };
 
     class AttMtuExchange
-        : public infra::Subject<AttMtuExchangeObserver>
-        , AttMtuExchangeInterface
+        : public AttMtuExchangeInterface
     {
     public:
         virtual ~AttMtuExchange() = default;
