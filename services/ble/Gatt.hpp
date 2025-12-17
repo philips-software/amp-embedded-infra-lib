@@ -123,6 +123,10 @@ namespace services
 
     class AttMtuExchangeInterface
     {
+    protected:
+        ~AttMtuExchangeInterface() = default;
+
+    public:
         virtual uint16_t EffectiveMaxAttMtuSize() const = 0;
     };
 
@@ -131,6 +135,7 @@ namespace services
         , AttMtuExchangeInterface
     {
     public:
+        virtual ~AttMtuExchange() = default;
         uint16_t EffectiveMaxAttMtuSize() const override;
         void SetMaxAttMtu(uint16_t value);
 
