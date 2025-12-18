@@ -4,6 +4,7 @@
 #include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/ConstructBin.hpp"
 #include "infra/util/Endian.hpp"
+#include "infra/util/test_helper/MockCallback.hpp"
 #include "services/util/SesameCobs.hpp"
 #include "services/util/SesameWindowed.hpp"
 #include "services/util/test_doubles/SesameMock.hpp"
@@ -506,6 +507,8 @@ TEST_F(SesameWindowedTest, no_new_message_after_stop)
     // ExpectRequestSendMessageForReleaseWindow(12);
     communication.Stop();
     savedReader = nullptr;
+
+    ExecuteAllActions();
 }
 
 TEST_F(SesameWindowedTest, Reset_forwards_to_cobs_and_requests_initialize)

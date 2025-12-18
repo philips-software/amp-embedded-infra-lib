@@ -32,6 +32,7 @@ namespace services
 
         IPv4Address Ipv4Address() const;
         void SetObserver(infra::SharedPtr<services::ConnectionObserver> connectionObserver);
+        bool Connected() const;
 
         void Receive();
         void Send();

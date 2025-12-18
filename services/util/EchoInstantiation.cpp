@@ -7,14 +7,18 @@ namespace main_
         , echo(windowed, serializerFactory)
     {}
 
-    EchoOnSesame::~EchoOnSesame()
-    {
-        cobs.Stop();
-        windowed.Stop();
-    }
-
     void EchoOnSesame::Reset()
     {
         echo.Reset();
+    }
+
+    void EchoOnSesame::Stop(const infra::Function<void()>& onDone)
+    {
+        this->onStopDone = onDone;
+        cobs.Stop([this]()
+            {
+                windowed.Stop();
+                this->onStopDone();
+            });
     }
 }

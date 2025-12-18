@@ -18,7 +18,7 @@ message Address
 // 1. Every state can go to standby.
 // 2. Every state can be entered from standby except the connected state.
 // 3. Connected state can only be entered from advertising and initiating states.
-// For further details refer to Section 1.1, BLUETOOTH CORE SPECIFICATION Version 5.3 | Vol 6, Part B  
+// For further details refer to Section 1.1, BLUETOOTH CORE SPECIFICATION Version 5.3 | Vol 6, Part B
 message State
 {
     enum Event
@@ -101,6 +101,20 @@ message AddressType
     AddressTypeEnum type = 1;
 }
 
+message AdvertisingEventType
+{
+    enum AdvertisingEventTypeEnum
+    {
+        advInd = 0;
+        advDirectInd = 1;
+        advScanInd = 2;
+        advNonconnInd = 3;
+        scanResponse = 4;
+    }
+
+    AdvertisingEventTypeEnum type = 1;
+}
+
 message AdvertisementMode
 {
     AdvertisementType type = 1;
@@ -161,7 +175,8 @@ message DiscoveredDevice
     AddressType addressType = 2;
     bytes data = 3 [(bytes_size) = 32];
     int32 rssi = 4;
-    bool isScanResponse = 5;
+    reserved 5; // deprecated isScanResponse in favour of advertisingEventType
+    AdvertisingEventType advertisingEventType = 6;
 }
 
 message DeviceDiscoveryFilter
@@ -193,10 +208,10 @@ service GapPeripheral
 
     // Allowed states: standby
     rpc Advertise(AdvertisementMode) returns (Nothing) { option (method_id) = 1; }
-    
+
     // Allowed states: advertising, connected
     rpc Standby(Nothing) returns (Nothing) { option (method_id) = 2; }
-    
+
     rpc SetAdvertisementData(AdvertisementData) returns (Nothing) { option (method_id) = 3; }
     rpc SetScanResponseData(AdvertisementData) returns (Nothing) { option (method_id) = 4; }
     rpc SetAllowPairing(BoolValue) returns (Nothing) { option (method_id) = 5; }
@@ -218,13 +233,13 @@ service GapCentral
 
     // Allowed states: standby
     rpc StartDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 1; }
-    
+
     // Allowed states: standby
     rpc StopDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 2; }
 
     // Allowed states: standby
     // For successful connection establishment, state will follow: standby -> initiating -> connected
-    // For falied connection establishment, state will follow: standby -> initiating -> standby 
+    // For falied connection establishment, state will follow: standby -> initiating -> standby
     rpc Connect(ConnectionParameters) returns (Nothing) { option (method_id) = 3; }
 
     // Allowed states: initiating
@@ -233,11 +248,11 @@ service GapCentral
     // Allowed states: connected
     rpc Disconnect(Nothing) returns (Nothing) { option (method_id) = 5; }
 
-    // Allowed states: connected 
+    // Allowed states: connected
     // 1. If there is a pre-existing bond, then the connection will be encrypted.
     // 2. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
     rpc PairAndBond(Nothing) returns (Nothing) { option (method_id) = 6; }
-    
+
     rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 7; }
     rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 8; }
     rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 9; }
@@ -246,7 +261,7 @@ service GapCentral
     rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 12; }
 
     // This will only succeed if Address is a private resolvable address, and if the device is bonded
-    rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; } 
+    rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; }
 
     // This will work with both public and random addresses
     rpc IsDeviceBonded(PeerNodeParameters) returns (Nothing) { option (method_id) = 14; }

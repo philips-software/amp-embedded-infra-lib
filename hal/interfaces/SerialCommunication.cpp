@@ -37,4 +37,11 @@ namespace hal
         buffer.Pop(reader.ConstructSaveMarker());
         reader.Rewind(0);
     }
+
+    void BufferedSerialCommunicationOnUnbuffered::Stop(const infra::Function<void()>& onDone)
+    {
+        delegate.ReceiveData([](infra::ConstByteRange) {});
+        scheduler.Schedule(onDone);
+    }
+
 }
