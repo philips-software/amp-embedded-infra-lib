@@ -2,6 +2,7 @@
 #define SERVICES_GATT_CLIENT_DECORATOR_HPP
 
 #include "infra/event/ClaimableResource.hpp"
+#include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/Function.hpp"
 #include "optional"
 #include "services/ble/Gap.hpp"
@@ -40,7 +41,7 @@ namespace services
         void DisableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
 
         // Implementation of GattClientMtuExchange
-        void MtuExchange() override;
+        virtual void MtuExchange(const infra::Function<void(OperationStatus)>& onDone) override;
 
         // Implementation of AttMtuExchange
         uint16_t EffectiveMaxAttMtuSize() const override;
@@ -127,6 +128,7 @@ namespace services
 
         std::optional<std::variant<DiscoveredService, DiscoveredCharacteristic, DiscoveredDescriptor, HandleRange>> discoveryContext;
         std::optional<CharacteristicOperation> characteristicOperationContext;
+        infra::AutoResetFunction<void(OperationStatus)> mtuExchangeOnDone;
 
         infra::ClaimableResource resource;
         infra::ClaimableResource::Claimer characteristicOperationsClaimer{ resource };

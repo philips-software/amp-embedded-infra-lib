@@ -183,11 +183,16 @@ namespace services
         return AttMtuExchangeObserver::Subject().EffectiveMaxAttMtuSize();
     }
 
-    void ClaimingGattClientAdapter::MtuExchange()
+    void ClaimingGattClientAdapter::MtuExchange(const infra::Function<void(OperationStatus)>& onDone)
     {
+        mtuExchangeOnDone = onDone;
         attMtuExchangeClaimer.Claim([this]()
             {
-                GattClientObserver::Subject().MtuExchange();
+                GattClientObserver::Subject().MtuExchange([this](OperationStatus result)
+                    {
+                        attMtuExchangeClaimer.Release();
+                        mtuExchangeOnDone(result);
+                    });
             });
     }
 
@@ -228,8 +233,6 @@ namespace services
             {
                 observer.ExchangedMaxAttMtuSize();
             });
-
-        attMtuExchangeClaimer.Release();
     }
 
     void ClaimingGattClientAdapter::DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered)

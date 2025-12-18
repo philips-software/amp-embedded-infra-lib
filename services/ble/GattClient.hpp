@@ -132,7 +132,7 @@ namespace services
     class GattClientMtuExchange
     {
     public:
-        virtual void MtuExchange() = 0;
+        virtual void MtuExchange(const infra::Function<void(OperationStatus)>& onDone) = 0;
     };
 
     class GattClient;
@@ -169,7 +169,8 @@ namespace services
         virtual void DisableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
         virtual void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
         virtual void DisableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
-        virtual void MtuExchange() = 0;
+
+        virtual void MtuExchange(const infra::Function<void(OperationStatus)>& onDone) = 0;
     };
 }
 
