@@ -52,7 +52,7 @@ namespace services
         {
             connection.OnAllocatable(onDone);
 
-            if (connection)
+            if (connection && (*connection)->IsAttached())
             {
                 if (force)
                     (*connection)->Abort();

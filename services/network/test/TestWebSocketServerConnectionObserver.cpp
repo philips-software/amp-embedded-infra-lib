@@ -203,8 +203,11 @@ TEST_F(WebSocketServerConnectionObserverTest, receive_frame_with_larger_payload_
     testing::InSequence s;
     EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
         {
+            EXPECT_CALL(connectionObserver, DataReceived()).WillOnce(testing::Invoke([this]()
+                {
+                    CheckDataReceived(std::vector<uint8_t>(8, 0x91));
+                }));
             CheckDataReceived(std::vector<uint8_t>(512, 0x91));
-            CheckDataReceived(std::vector<uint8_t>(8, 0x91));
         }));
 
     connection.SimulateDataReceived(receiveDataPayload);

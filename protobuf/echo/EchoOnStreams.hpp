@@ -66,6 +66,9 @@ namespace services
         infra::AccessedBySharedPtr limitedReaderAccess;
 
         infra::SharedOptional<MethodDeserializerDummy> deserializerDummy;
+
+        bool delayDataReceived = false;
+        bool delayedDataReceived = false;
     };
 }
 

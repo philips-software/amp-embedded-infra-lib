@@ -9,15 +9,19 @@ namespace main_
         , echo(secured, serializerFactory)
     {}
 
-    EchoOnSesameSecured::~EchoOnSesameSecured()
-    {
-        cobs.Stop();
-        windowed.Stop();
-    }
-
     void EchoOnSesameSecured::Reset()
     {
         echo.Reset();
+    }
+
+    void EchoOnSesameSecured::Stop(const infra::Function<void()>& onDone)
+    {
+        this->onStopDone = onDone;
+        cobs.Stop([this]()
+            {
+                windowed.Stop();
+                this->onStopDone();
+            });
     }
 
     EchoOnSesameSecuredSymmetricKey::EchoOnSesameSecuredSymmetricKey(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage, infra::BoundedVector<uint8_t>& securedSendBuffer, infra::BoundedVector<uint8_t>& securedReceiveBuffer,
