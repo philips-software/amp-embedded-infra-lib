@@ -22,9 +22,11 @@ TEST(GattServerTest, characteristic_implementation_handles_are_accesible)
     s.Handle() = 0xAB;
     services::GattServerCharacteristicImpl c{ s, uuid16, valueSize };
     c.Handle() = 0xCD;
+    c.ValueHandle() = 0xEF;
 
     EXPECT_EQ(0xAB, c.ServiceHandle());
     EXPECT_EQ(0xCD, c.CharacteristicHandle());
+    EXPECT_EQ(0xEF, c.CharacteristicValueHandle());
 }
 
 TEST(GattServerTest, characteristic_implementation_supports_different_uuid_lengths)
