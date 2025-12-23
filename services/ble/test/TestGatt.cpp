@@ -112,9 +112,9 @@ TEST(GattInsertionOperatorUuidTest, uuid_overload_operator)
 
 TEST(GattTest, UpdateAttMtuExchangeTest)
 {
-    services::AttMtuExchange exchange{};
+    services::AttMtuExchangeImpl exchange{};
 
-    EXPECT_THAT(exchange.EffectiveAttMtuSize(), testing::Eq(services::AttMtuExchange::defaultAttMtuSize));
+    EXPECT_THAT(exchange.EffectiveAttMtuSize(), testing::Eq(services::AttMtuExchangeImpl::defaultAttMtuSize));
     exchange.SetAttMtu(0);
     EXPECT_THAT(exchange.EffectiveAttMtuSize(), testing::Eq(0));
 }
