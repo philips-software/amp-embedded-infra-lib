@@ -109,14 +109,14 @@ namespace services
         return 0;
     }
 
-    uint16_t AttMtuExchange::EffectiveMaxAttMtuSize() const
+    uint16_t AttMtuExchangeImpl::EffectiveAttMtuSize() const
     {
-        return maxAttMtu;
+        return attMtu;
     }
 
-    void AttMtuExchange::SetMaxAttMtu(uint16_t value)
+    void AttMtuExchangeImpl::SetAttMtu(uint16_t value)
     {
-        maxAttMtu = value;
+        attMtu = value;
     }
 }
 

@@ -17,7 +17,7 @@ namespace services
     class ClaimingGattClientAdapter
         : public GattClientDiscovery
         , public GattClientCharacteristicOperations
-        , public AttMtuExchangeInterface
+        , public AttMtuExchange
         , public GattClientMtuExchange
         , private GattClientObserver
         , private AttMtuExchangeObserver
@@ -44,7 +44,7 @@ namespace services
         virtual void MtuExchange(const infra::Function<void(OperationStatus)>& onDone) override;
 
         // Implementation of AttMtuExchange
-        uint16_t EffectiveMaxAttMtuSize() const override;
+        uint16_t EffectiveAttMtuSize() const override;
 
     private:
         // Implementation of GattClientObserver
@@ -58,7 +58,7 @@ namespace services
         void IndicationReceived(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone) override;
 
         // Implementation of AttMtuExchangeObserver
-        void ExchangedMaxAttMtuSize() override;
+        void ExchangedAttMtuSize() override;
 
         // Implementation of GapCentralObserver
         void DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered) override;

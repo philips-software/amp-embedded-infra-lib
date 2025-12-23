@@ -91,8 +91,8 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_descriptor_discovered)
 
 TEST_F(ClaimingGattClientAdapterTest, should_call_mtu_exchange)
 {
-    EXPECT_CALL(attMtuExchange, EffectiveMaxAttMtuSize()).WillOnce(testing::Return(200));
-    EXPECT_EQ(200, adapter.EffectiveMaxAttMtuSize());
+    EXPECT_CALL(attMtuExchange, EffectiveAttMtuSize()).WillOnce(testing::Return(200));
+    EXPECT_EQ(200, adapter.EffectiveAttMtuSize());
 
     infra::Function<void(services::OperationStatus)> storedOnDone;
     EXPECT_CALL(gattClient, MtuExchange(testing::_)).WillOnce(testing::SaveArg<0>(&storedOnDone));
@@ -102,10 +102,10 @@ TEST_F(ClaimingGattClientAdapterTest, should_call_mtu_exchange)
     ExecuteAllActions();
     storedOnDone(services::OperationStatus::success);
 
-    EXPECT_CALL(attMtuExchangeObserver, ExchangedMaxAttMtuSize());
+    EXPECT_CALL(attMtuExchangeObserver, ExchangedAttMtuSize());
     attMtuExchange.NotifyObservers([](auto& observer)
         {
-            observer.ExchangedMaxAttMtuSize();
+            observer.ExchangedAttMtuSize();
         });
 }
 

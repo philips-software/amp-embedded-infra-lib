@@ -110,39 +110,39 @@ namespace services
         AttAttribute::Handle endHandle;
     };
 
-    class AttMtuExchangeInterface;
+    class AttMtuExchange;
 
     class AttMtuExchangeObserver
-        : public infra::Observer<AttMtuExchangeObserver, AttMtuExchangeInterface>
+        : public infra::Observer<AttMtuExchangeObserver, AttMtuExchange>
     {
     public:
         using Observer::Observer;
 
-        virtual void ExchangedMaxAttMtuSize() = 0;
-    };
-
-    class AttMtuExchangeInterface
-        : public infra::Subject<AttMtuExchangeObserver>
-    {
-    protected:
-        ~AttMtuExchangeInterface() = default;
-
-    public:
-        virtual uint16_t EffectiveMaxAttMtuSize() const = 0;
+        virtual void ExchangedAttMtuSize() = 0;
     };
 
     class AttMtuExchange
-        : public AttMtuExchangeInterface
+        : public infra::Subject<AttMtuExchangeObserver>
+    {
+    protected:
+        ~AttMtuExchange() = default;
+
+    public:
+        virtual uint16_t EffectiveAttMtuSize() const = 0;
+    };
+
+    class AttMtuExchangeImpl
+        : public AttMtuExchange
     {
     public:
-        virtual ~AttMtuExchange() = default;
-        uint16_t EffectiveMaxAttMtuSize() const override;
-        void SetMaxAttMtu(uint16_t value);
+        virtual ~AttMtuExchangeImpl() = default;
+        uint16_t EffectiveAttMtuSize() const override;
+        void SetAttMtu(uint16_t value);
 
-        static constexpr uint16_t defaultMaxAttMtuSize = 23;
+        static constexpr uint16_t defaultAttMtuSize = 23;
 
     private:
-        uint16_t maxAttMtu = defaultMaxAttMtuSize;
+        uint16_t attMtu = defaultAttMtuSize;
     };
 
     inline GattCharacteristic::PropertyFlags operator|(GattCharacteristic::PropertyFlags lhs, GattCharacteristic::PropertyFlags rhs)

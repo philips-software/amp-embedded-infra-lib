@@ -114,7 +114,7 @@ TEST(GattTest, UpdateAttMtuExchangeTest)
 {
     services::AttMtuExchange exchange{};
 
-    EXPECT_THAT(exchange.EffectiveMaxAttMtuSize(), testing::Eq(services::AttMtuExchange::defaultMaxAttMtuSize));
-    exchange.SetMaxAttMtu(0);
-    EXPECT_THAT(exchange.EffectiveMaxAttMtuSize(), testing::Eq(0));
+    EXPECT_THAT(exchange.EffectiveAttMtuSize(), testing::Eq(services::AttMtuExchange::defaultAttMtuSize));
+    exchange.SetAttMtu(0);
+    EXPECT_THAT(exchange.EffectiveAttMtuSize(), testing::Eq(0));
 }

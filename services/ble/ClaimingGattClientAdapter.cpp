@@ -178,9 +178,9 @@ namespace services
         PerformDescriptorOperation();
     }
 
-    uint16_t ClaimingGattClientAdapter::EffectiveMaxAttMtuSize() const
+    uint16_t ClaimingGattClientAdapter::EffectiveAttMtuSize() const
     {
-        return AttMtuExchangeObserver::Subject().EffectiveMaxAttMtuSize();
+        return AttMtuExchangeObserver::Subject().EffectiveAttMtuSize();
     }
 
     void ClaimingGattClientAdapter::MtuExchange(const infra::Function<void(OperationStatus)>& onDone)
@@ -227,11 +227,11 @@ namespace services
             });
     }
 
-    void ClaimingGattClientAdapter::ExchangedMaxAttMtuSize()
+    void ClaimingGattClientAdapter::ExchangedAttMtuSize()
     {
         infra::Subject<AttMtuExchangeObserver>::NotifyObservers([](auto& observer)
             {
-                observer.ExchangedMaxAttMtuSize();
+                observer.ExchangedAttMtuSize();
             });
     }
 
