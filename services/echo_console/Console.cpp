@@ -757,6 +757,11 @@ namespace application
 
             The method call in echo console for value="{ "bool":true }" would be:
                 Method "{ \"bool\":true }"
+
+        Best practice: To avoid ambiguity when multiple services have methods with the same name, prefix the method with the service name.
+            For example, if both GapCentral and GapPeripheral in Gap.proto have a RemoveAllBonds method, call the GapCentral version as:
+                GapCentral.RemoveAllBonds
+
         5. Primitive types mapping table:
             +-----------------+-----------------+-------------------------------------+
             | Proto Type      | Token Type      | Example Input                       |
@@ -923,6 +928,19 @@ namespace application
         {
             services::GlobalTracer().Trace() << "Incorrect type at index " << error.index << " expected type " << error.correctType << " (contents after that position is " << line.substr(error.index) << ")\n";
         }
+        catch (ConsoleExceptions::AmbiguousMethod& error)
+        {
+            services::GlobalTracer().Trace() << "Ambiguous method call: '" << error.methodName << "' exists in multiple services: ";
+
+            for (const auto& serviceName : error.serviceNames)
+            {
+                if (&serviceName != &error.serviceNames.front())
+                    services::GlobalTracer().Continue() << ", ";
+                services::GlobalTracer().Continue() << serviceName;
+            }
+
+            services::GlobalTracer().Continue() << "\nPlease specify the service name, e.g., " << error.serviceNames.front() << "." << error.methodName << "\n";
+        }
         catch (ConsoleExceptions::MethodNotFound& error)
         {
             services::GlobalTracer().Trace() << "Method ";
@@ -940,15 +958,29 @@ namespace application
 
     std::pair<std::shared_ptr<const EchoService>, const EchoMethod&> Console::SearchMethod(MethodInvocation& methodInvocation) const
     {
+        std::vector<std::pair<std::shared_ptr<const EchoService>, const EchoMethod*>> matchingMethods;
+
         for (auto service : root.services)
         {
             if (methodInvocation.method.size() == 1 || methodInvocation.method.front() == service->name)
                 for (auto& method : service->methods)
                     if (method.name == methodInvocation.method.back())
-                        return std::pair<std::shared_ptr<const EchoService>, const EchoMethod&>(service, method);
+                        matchingMethods.emplace_back(std::make_pair(service, &method));
         }
 
-        throw ConsoleExceptions::MethodNotFound{ methodInvocation.method };
+        if (matchingMethods.empty())
+            throw ConsoleExceptions::MethodNotFound{ methodInvocation.method };
+
+        if (methodInvocation.method.size() == 1 && matchingMethods.size() > 1)
+        {
+            std::vector<std::string> serviceNames;
+            for (const auto& [echoService, echoMethod] : matchingMethods)
+                serviceNames.push_back(echoService->name);
+
+            throw ConsoleExceptions::AmbiguousMethod{ methodInvocation.method.back(), serviceNames };
+        }
+
+        return std::pair<std::shared_ptr<const EchoService>, const EchoMethod&>(matchingMethods[0].first, *matchingMethods[0].second);
     }
 
     Console::MethodInvocation::MethodInvocation(const std::string& line)
