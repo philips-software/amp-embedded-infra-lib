@@ -50,6 +50,8 @@ target_sources(infra.util PRIVATE
     IntrusivePriorityQueue.hpp
     IntrusiveSet.hpp
     IntrusiveUnorderedSet.hpp
+    LogAndAbort.cpp
+    LogAndAbort.hpp
     MemoryRange.hpp
     MultiFunction.hpp
     Observer.hpp
