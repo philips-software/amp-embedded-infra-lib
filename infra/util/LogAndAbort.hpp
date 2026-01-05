@@ -7,6 +7,7 @@ namespace infra
 {
     using LogAndAbortHook = infra::Function<void(const char* message)>;
 
+    // Note: This hook could be called multiple times before an abort
     void RegisterLogAndAbortHook(LogAndAbortHook hook);
 
     void HandleLogAndAbort(const char* message);
