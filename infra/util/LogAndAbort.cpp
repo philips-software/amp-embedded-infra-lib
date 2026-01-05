@@ -1,6 +1,5 @@
-#include "infra/util/ReallyAssert.hpp"
+#include "infra/util/LogAndAbort.hpp"
 
-#ifdef INFRA_UTIL_LOG_AND_ABORT_ENABLED
 namespace infra
 {
     static LogAndAbortHook logAndAbortHook = nullptr;
@@ -16,4 +15,3 @@ namespace infra
             logAndAbortHook(message);
     }
 }
-#endif
