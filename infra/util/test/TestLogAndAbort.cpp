@@ -27,7 +27,7 @@ TEST_F(LogAndAbortTest, log_and_abort_no_handler_does_nothing)
 {
     // Manually calling hook to avoid aborting the test
     infra::ExecuteLogAndAbortHook("fool of a took");
-    infra::ExecuteLogAndAbortHook("speak %s to enter", "friend");
+    infra::ExecuteLogAndAbortHook("speak %s and enter", "friend");
 }
 
 TEST_F(LogAndAbortTest, log_and_abort_with_handler_calls_handler)
@@ -39,5 +39,5 @@ TEST_F(LogAndAbortTest, log_and_abort_with_handler_calls_handler)
     EXPECT_CALL(listener, LogAndAbortHook(testing::_, testing::_)).Times(1);
 
     // Manually calling hook to avoid aborting the test
-    infra::ExecuteLogAndAbortHook("speak %s to enter", "friend");
+    infra::ExecuteLogAndAbortHook("speak %s and enter", "friend");
 }
