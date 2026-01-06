@@ -5,8 +5,6 @@
 
 #include <cassert>
 #include <cstdlib>
-
-#ifdef EMIL_HOST_BUILD
 #include <functional>
 
 namespace infra
@@ -17,9 +15,8 @@ namespace infra
 
     void HandleAssertionFailure(const char* condition, const char* file, int line);
 }
-#endif
 
-#ifdef EMIL_HOST_BUILD
+#if defined(EMIL_HOST_BUILD) || defined(EMIL_ENABLE_LOG_AND_ABORT_LOGGING)
 #define INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition) \
     infra::HandleAssertionFailure(#condition, __FILE__, __LINE__)
 #else
