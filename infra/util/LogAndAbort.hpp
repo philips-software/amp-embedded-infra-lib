@@ -6,7 +6,7 @@
 
 namespace infra
 {
-    using LogAndAbortHook = infra::Function<void(const char* message, va_list* args)>;
+    using LogAndAbortHook = infra::Function<void(const char* format, va_list* args)>;
     void RegisterLogAndAbortHook(LogAndAbortHook hook);
     void ExecuteLogAndAbortHook(const char* format, ...);
 }
