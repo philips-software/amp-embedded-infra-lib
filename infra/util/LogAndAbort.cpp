@@ -9,9 +9,9 @@ namespace infra
         logAndAbortHook = std::move(hook);
     }
 
-    void HandleLogAndAbort(const char* message)
+    void HandleLogAndAbort(const char* format, ...)
     {
         if (logAndAbortHook)
-            logAndAbortHook(message);
+            logAndAbortHook(format);
     }
 }

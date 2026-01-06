@@ -9,7 +9,7 @@ namespace infra
     void RegisterAssertionFailureHandler(AssertionFailureHandler handler)
     {
         if (INFRA_UTIL_LOG_AND_ABORT_ENABLED)
-            log_and_abort("Assertion handler not supported when LogAndAbort is enabled");
+            LOG_AND_ABORT("Assertion handler not supported when LogAndAbort is enabled");
         customHandler = std::move(handler);
     }
 

@@ -6,11 +6,8 @@
 namespace infra
 {
     using LogAndAbortHook = infra::Function<void(const char* message)>;
-
-    // Note: This hook could be called multiple times before an abort
     void RegisterLogAndAbortHook(LogAndAbortHook hook);
-
-    void HandleLogAndAbort(const char* message);
+    void HandleLogAndAbort(const char* format, ...);
 }
 
 #if defined(EMIL_HOST_BUILD) || defined(EMIL_INFRA_ENABLE_LOG_AND_ABORT)
@@ -20,17 +17,17 @@ namespace infra
 #endif
 
 #if INFRA_UTIL_LOG_AND_ABORT_ENABLED
-#define INFRA_UTIL_LOG_AND_ABORT_HANDLER(msg) \
-    infra::HandleLogAndAbort(msg)
+#define INFRA_UTIL_LOG_AND_ABORT_HANDLER(format, ...) \
+    infra::HandleLogAndAbort(format, ##__VA_ARGS__)
 #else
-#define INFRA_UTIL_LOG_AND_ABORT_HANDLER(msg)
+#define INFRA_UTIL_LOG_AND_ABORT_HANDLER(format, ...)
 #endif
 
-#define log_and_abort(message)                     \
-    do                                             \
-    {                                              \
-        INFRA_UTIL_LOG_AND_ABORT_HANDLER(message); \
-        std::abort();                              \
+#define LOG_AND_ABORT(format, ...)                               \
+    do                                                           \
+    {                                                            \
+        INFRA_UTIL_LOG_AND_ABORT_HANDLER(format, ##__VA_ARGS__); \
+        std::abort();                                            \
     } while (0)
 
 #endif // INFRA_UTIL_LOGANDABORT_HPP
