@@ -1,6 +1,7 @@
 #include "infra/util/ReallyAssert.hpp"
 #include "infra/util/LogAndAbort.hpp"
 
+#if INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED
 namespace infra
 {
     static AssertionFailureHandler customHandler = nullptr;
@@ -18,3 +19,4 @@ namespace infra
             infra::ExecuteLogAndAbortHook("\nAssertion failed [%s] at %s:%d\n", condition, file, line);
     }
 }
+#endif

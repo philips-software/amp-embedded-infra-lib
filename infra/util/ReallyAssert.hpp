@@ -7,6 +7,13 @@
 #include <cstdlib>
 #include <functional>
 
+#if defined(EMIL_HOST_BUILD) || defined(EMIL_ENABLE_REALLY_ASSERT_LOGGING)
+#define INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED 1
+#else
+#define INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED 0
+#endif
+
+#ifdef INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED
 namespace infra
 {
     using AssertionFailureHandler = std::function<void(const char* condition, const char* file, int line)>;
@@ -16,9 +23,9 @@ namespace infra
     void HandleAssertionFailure(const char* condition, const char* file, int line);
 }
 
-#if defined(EMIL_HOST_BUILD) || defined(EMIL_ENABLE_LOG_AND_ABORT_LOGGING)
 #define INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition) \
     infra::HandleAssertionFailure(#condition, __FILE__, __LINE__)
+
 #else
 #define INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition)
 #endif
