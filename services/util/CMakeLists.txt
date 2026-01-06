@@ -51,6 +51,8 @@ target_sources(services.util PRIVATE
     GpioPinInverted.hpp
     I2cMultipleAccess.cpp
     I2cMultipleAccess.hpp
+    LogAndAbortTracer.cpp
+    LogAndAbortTracer.hpp
     LowPowerSerialCommunication.cpp
     LowPowerSerialCommunication.hpp
     LowPowerSpiMaster.cpp

@@ -17,12 +17,12 @@ namespace infra
     {
         if constexpr (INFRA_UTIL_LOG_AND_ABORT_ENABLED)
         {
-            infra::HandleLogAndAbort("Assertion failed [");
-            infra::HandleLogAndAbort(condition);
-            infra::HandleLogAndAbort("] at ");
-            infra::HandleLogAndAbort(file);
-            infra::HandleLogAndAbort(":");
-            infra::HandleLogAndAbort(std::to_string(line).c_str());
+            // infra::HandleLogAndAbort("Assertion failed [");
+            // infra::HandleLogAndAbort(condition);
+            // infra::HandleLogAndAbort("] at ");
+            // infra::HandleLogAndAbort(file);
+            // infra::HandleLogAndAbort(":");
+            // infra::HandleLogAndAbort(std::to_string(line).c_str());
         }
         else if (customHandler)
             customHandler(condition, file, line);

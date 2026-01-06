@@ -2,10 +2,11 @@
 #define INFRA_UTIL_LOGANDABORT_HPP
 
 #include "infra/util/Function.hpp"
+#include <cstdarg>
 
 namespace infra
 {
-    using LogAndAbortHook = infra::Function<void(const char* message)>;
+    using LogAndAbortHook = infra::Function<void(const char* message, va_list* args)>;
     void RegisterLogAndAbortHook(LogAndAbortHook hook);
     void HandleLogAndAbort(const char* format, ...);
 }
@@ -18,7 +19,7 @@ namespace infra
 
 #if INFRA_UTIL_LOG_AND_ABORT_ENABLED
 #define INFRA_UTIL_LOG_AND_ABORT_HANDLER(format, ...) \
-    infra::HandleLogAndAbort(format, ##__VA_ARGS__)
+    infra::HandleLogAndAbort(format "\n", ##__VA_ARGS__)
 #else
 #define INFRA_UTIL_LOG_AND_ABORT_HANDLER(format, ...)
 #endif

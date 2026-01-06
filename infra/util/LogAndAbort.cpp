@@ -1,4 +1,5 @@
 #include "infra/util/LogAndAbort.hpp"
+#include <cstdarg>
 
 namespace infra
 {
@@ -12,6 +13,11 @@ namespace infra
     void HandleLogAndAbort(const char* format, ...)
     {
         if (logAndAbortHook)
-            logAndAbortHook(format);
+        {
+            va_list args;
+            va_start(args, format);
+            logAndAbortHook(format, &args);
+            va_end(args);
+        }
     }
 }
