@@ -1,6 +1,6 @@
 #include "infra/util/ReallyAssert.hpp"
 
-#ifdef EMIL_HOST_BUILD
+// #ifdef EMIL_HOST_BUILD
 namespace infra
 {
     static AssertionFailureHandler customHandler = nullptr;
@@ -16,4 +16,5 @@ namespace infra
             customHandler(condition, file, line);
     }
 }
-#endif
+
+// #endif

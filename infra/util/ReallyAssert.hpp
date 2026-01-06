@@ -7,25 +7,8 @@
 #include <cstdint>
 #include <cstdlib>
 
-#ifdef EMIL_HOST_BUILD
+// #ifdef EMIL_HOST_BUILD
 #include <functional>
-
-namespace
-{
-    // Source - https://stackoverflow.com/a/19004720
-    // Posted by Chetan Reddy, modified by community. See post 'Timeline' for change history
-    // Retrieved 2026-01-06, License - CC BY-SA 4.0
-
-    constexpr int32_t basename_index(const char* const path, const int32_t index = 0, const int32_t slash_index = -1)
-    {
-        return path[index]
-                   ? (path[index] == '/'
-                             ? basename_index(path, index + 1, index)
-                             : basename_index(path, index + 1, slash_index))
-                   : (slash_index + 1);
-    }
-
-}
 
 namespace infra
 {
@@ -35,24 +18,26 @@ namespace infra
 
     void HandleAssertionFailure(const char* condition, const char* file, int line);
 }
+
+// #endif
+
+#if EMIL_REALLY_ASSERT_USE_FILE_NAME || 1
+#ifndef __FILE_NAME__
+#error "__FILE_NAME__ must be defined when EMIL_REALLY_ASSERT_USE_FILE_NAME is set"
 #endif
-
-#define STRINGIZE_DETAIL(x) #x
-#define STRINGIZE(x) STRINGIZE_DETAIL(x)
-
-// TODO(HW): Does this work for ehader files and everything?
-#define __FILENAME__ ({ static const int32_t basename_idx = basename_index(__FILE__); \
-                        static_assert (basename_idx >= 0, "compile-time basename");   \
-                        __FILE__ ":" STRINGIZE(__LINE__) ": " + basename_idx; })
-
-#ifdef EMIL_HOST_BUILD
-#define INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition) \
-    infra::HandleAssertionFailure(#condition, __FILENAME__, __LINE__)
+#define INFRA_UTIL_REALLY_ASSERT_TRIGGER_FILE_NAME __FILE_NAME__
 #else
-#define INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition)
-#endif
+#define INFRA_UTIL_REALLY_ASSERT_TRIGGER_FILE_NAME __FILE__
+#endif // EMIL_REALLY_ASSERT_USE_FILE_NAME
 
-#ifdef NDEBUG
+// #ifdef EMIL_HOST_BUILD
+#define INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition) \
+    infra::HandleAssertionFailure(#condition, INFRA_UTIL_REALLY_ASSERT_TRIGGER_FILE_NAME, __LINE__)
+// #else
+// #define INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition)
+// #endif
+
+// #ifdef NDEBUG
 #define really_assert(condition)                         \
     do                                                   \
     {                                                    \
@@ -62,8 +47,8 @@ namespace infra
             std::abort();                                \
         }                                                \
     } while (0)
-#else
-#define really_assert(condition) assert(condition)
-#endif
+// #else
+// #define really_assert(condition) assert(condition)
+// #endif
 
 #endif
