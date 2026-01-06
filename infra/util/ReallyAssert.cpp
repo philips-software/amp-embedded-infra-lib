@@ -8,22 +8,13 @@ namespace infra
 
     void RegisterAssertionFailureHandler(AssertionFailureHandler handler)
     {
-        if (INFRA_UTIL_LOG_AND_ABORT_ENABLED)
-            LOG_AND_ABORT("Assertion handler not supported when LogAndAbort is enabled");
         customHandler = std::move(handler);
     }
 
     void HandleAssertionFailure(const char* condition, const char* file, int line)
     {
         if constexpr (INFRA_UTIL_LOG_AND_ABORT_ENABLED)
-        {
-            // infra::HandleLogAndAbort("Assertion failed [");
-            // infra::HandleLogAndAbort(condition);
-            // infra::HandleLogAndAbort("] at ");
-            // infra::HandleLogAndAbort(file);
-            // infra::HandleLogAndAbort(":");
-            // infra::HandleLogAndAbort(std::to_string(line).c_str());
-        }
+            infra::ExecuteLogAndAbortHook("Assertion failed [%s] at %s:%d\n", condition, file, line);
         else if (customHandler)
             customHandler(condition, file, line);
     }

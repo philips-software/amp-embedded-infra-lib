@@ -8,7 +8,7 @@ namespace infra
 {
     using LogAndAbortHook = infra::Function<void(const char* message, va_list* args)>;
     void RegisterLogAndAbortHook(LogAndAbortHook hook);
-    void HandleLogAndAbort(const char* format, ...);
+    void ExecuteLogAndAbortHook(const char* format, ...);
 }
 
 #if defined(EMIL_HOST_BUILD) || defined(EMIL_INFRA_ENABLE_LOG_AND_ABORT)
@@ -19,7 +19,7 @@ namespace infra
 
 #if INFRA_UTIL_LOG_AND_ABORT_ENABLED
 #define INFRA_UTIL_LOG_AND_ABORT_HANDLER(format, ...) \
-    infra::HandleLogAndAbort(format "\n", ##__VA_ARGS__)
+    infra::ExecuteLogAndAbortHook(format "\n", ##__VA_ARGS__)
 #else
 #define INFRA_UTIL_LOG_AND_ABORT_HANDLER(format, ...)
 #endif
