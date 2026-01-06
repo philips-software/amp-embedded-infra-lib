@@ -1,43 +1,46 @@
 #include "infra/util/LogAndAbort.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include <array>
+#include <cstdio>
 
 namespace
 {
-    class Listener
+    void PrintLogAndAbortToStdout(const char* format, va_list* args)
     {
-    public:
-        MOCK_METHOD(void, LogAndAbortHook, (const char* message, va_list args), ());
-    };
-
-    class LogAndAbortTest
-        : public testing::Test
-    {
-    public:
-        Listener listener;
-    };
+        std::array<char, 256> buffer;
+        vsnprintf(buffer.data(), buffer.size(), format, *args);
+        std::cout << buffer.data();
+    }
 }
 
-TEST_F(LogAndAbortTest, log_and_abort_aborts)
+TEST(LogAndAbortTest, log_and_abort_aborts)
 {
     EXPECT_DEATH(LOG_AND_ABORT("Fly you fools!"), "");
 }
 
-TEST_F(LogAndAbortTest, log_and_abort_no_handler_does_nothing)
+TEST(LogAndAbortTest, log_and_abort_no_handler_does_nothing)
 {
+    testing::internal::CaptureStdout();
     // Manually calling hook to avoid aborting the test
     infra::ExecuteLogAndAbortHook("fool of a took");
     infra::ExecuteLogAndAbortHook("speak %s and enter", "friend");
+    std::string output = testing::internal::GetCapturedStdout();
+
+    EXPECT_THAT(output.empty(), true);
 }
 
-TEST_F(LogAndAbortTest, log_and_abort_with_handler_calls_handler)
+TEST(LogAndAbortTest, log_and_abort_with_handler_calls_handler)
 {
     infra::RegisterLogAndAbortHook([&](auto format, auto args)
         {
-            listener.LogAndAbortHook(format, *args);
+            PrintLogAndAbortToStdout(format, args);
         });
-    EXPECT_CALL(listener, LogAndAbortHook(testing::_, testing::_)).Times(1);
 
+    testing::internal::CaptureStdout();
     // Manually calling hook to avoid aborting the test
     infra::ExecuteLogAndAbortHook("speak %s and enter", "friend");
+    std::string output = testing::internal::GetCapturedStdout();
+
+    EXPECT_THAT(output, testing::HasSubstr("speak friend and enter"));
 }

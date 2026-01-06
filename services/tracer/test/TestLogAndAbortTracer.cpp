@@ -29,7 +29,7 @@ TEST_F(LogAndAbortTracerTest, log_and_abort_without_registered_tracer_doesnt_cal
     infra::ExecuteLogAndAbortHook("speak %s and enter", "elf");
     std::string output = testing::internal::GetCapturedStdout();
 
-    EXPECT_THAT(output, testing::HasSubstr(""));
+    EXPECT_THAT(output.empty(), true);
 }
 
 TEST_F(LogAndAbortTracerTest, log_and_abort_with_registered_tracer_calls_tracer)
@@ -41,8 +41,8 @@ TEST_F(LogAndAbortTracerTest, log_and_abort_with_registered_tracer_calls_tracer)
 
     testing::internal::CaptureStdout();
     // Calling hook directly to avoid aborting the test process.
-    infra::ExecuteLogAndAbortHook("speak %s and enter", "mellon");
+    infra::ExecuteLogAndAbortHook("speak %s and enter", "friend");
     std::string output = testing::internal::GetCapturedStdout();
 
-    EXPECT_THAT(output, testing::HasSubstr("speak mellon and enter"));
+    EXPECT_THAT(output, testing::HasSubstr("speak friend and enter"));
 }
