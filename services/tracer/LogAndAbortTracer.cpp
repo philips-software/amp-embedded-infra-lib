@@ -1,4 +1,4 @@
-#include "services/util/LogAndAbortTracer.hpp"
+#include "services/tracer/LogAndAbortTracer.hpp"
 #include "services/tracer/TracerAdapterPrintf.hpp"
 
 namespace services
