@@ -34,6 +34,7 @@ target_sources(infra.util_test PRIVATE
     TestIntrusivePriorityQueue.cpp
     TestIntrusiveSet.cpp
     TestIntrusiveUnorderedSet.cpp
+    TestLogAndAbort.cpp
     TestMemoryRange.cpp
     TestObserver.cpp
     TestOptional.cpp

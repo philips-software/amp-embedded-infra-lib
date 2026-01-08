@@ -1,4 +1,5 @@
 #include "protobuf/echo/EchoErrorPolicy.hpp"
+#include "infra/util/LogAndAbort.hpp"
 #include <cstdlib>
 
 namespace services
@@ -8,7 +9,7 @@ namespace services
 
     void EchoErrorPolicyAbortOnMessageFormatError::MessageFormatError() const
     {
-        std::abort();
+        LOG_AND_ABORT("Echo message format error");
     }
 
     void EchoErrorPolicyAbortOnMessageFormatError::ServiceNotFound(uint32_t serviceId) const
@@ -19,11 +20,11 @@ namespace services
 
     void EchoErrorPolicyAbort::ServiceNotFound(uint32_t serviceId) const
     {
-        std::abort();
+        LOG_AND_ABORT("Echo service not found: %u", serviceId);
     }
 
     void EchoErrorPolicyAbort::MethodNotFound(uint32_t serviceId, uint32_t methodId) const
     {
-        std::abort();
+        LOG_AND_ABORT("Echo method not found: %u %u", serviceId, methodId);
     }
 }

@@ -4,22 +4,14 @@
 //  really_assert is a macro similar to assert, however it is not compiled away in release mode
 
 #include <cassert>
-#include <cstdint>
 #include <cstdlib>
-
-// #ifdef EMIL_HOST_BUILD
 #include <functional>
 
-namespace infra
-{
-    using AssertionFailureHandler = std::function<void(const char* condition, const char* file, int line)>;
-
-    void RegisterAssertionFailureHandler(AssertionFailureHandler handler);
-
-    void HandleAssertionFailure(const char* condition, const char* file, int line);
-}
-
-// #endif
+#if defined(EMIL_HOST_BUILD) || defined(EMIL_ENABLE_REALLY_ASSERT_LOGGING)
+#define INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED 1
+#else
+#define INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED 0
+#endif
 
 #if EMIL_REALLY_ASSERT_USE_FILE_NAME || 1
 #ifndef __FILE_NAME__
@@ -30,14 +22,24 @@ namespace infra
 #define INFRA_UTIL_REALLY_ASSERT_TRIGGER_FILE_NAME __FILE__
 #endif // EMIL_REALLY_ASSERT_USE_FILE_NAME
 
-// #ifdef EMIL_HOST_BUILD
+#if INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED
+namespace infra
+{
+    using AssertionFailureHandler = std::function<void(const char* condition, const char* file, int line)>;
+
+    void RegisterAssertionFailureHandler(AssertionFailureHandler handler);
+
+    void HandleAssertionFailure(const char* condition, const char* file, int line);
+}
+
 #define INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition) \
     infra::HandleAssertionFailure(#condition, INFRA_UTIL_REALLY_ASSERT_TRIGGER_FILE_NAME, __LINE__)
-// #else
-// #define INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition)
-// #endif
 
-// #ifdef NDEBUG
+#else
+#define INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition)
+#endif
+
+#ifdef NDEBUG
 #define really_assert(condition)                         \
     do                                                   \
     {                                                    \
@@ -47,8 +49,8 @@ namespace infra
             std::abort();                                \
         }                                                \
     } while (0)
-// #else
-// #define really_assert(condition) assert(condition)
-// #endif
+#else
+#define really_assert(condition) assert(condition)
+#endif
 
 #endif
