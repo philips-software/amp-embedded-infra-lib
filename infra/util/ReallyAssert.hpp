@@ -13,7 +13,7 @@
 #define INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED 0
 #endif
 
-#ifdef INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED
+#if INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED
 namespace infra
 {
     using AssertionFailureHandler = std::function<void(const char* condition, const char* file, int line)>;

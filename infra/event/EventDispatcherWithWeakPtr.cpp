@@ -33,8 +33,12 @@ namespace infra
 
     void EventDispatcherWithWeakPtrWorker::Run()
     {
+        static int countdown = 1000;
         while (true)
         {
+            if (--countdown == 0)
+                really_assert(false); // Intentional assertion failure to demonstrate the ReallyAssert functionality
+
             ExecuteAllActions();
             Idle();
         }

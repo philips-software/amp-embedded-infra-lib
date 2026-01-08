@@ -23,7 +23,7 @@ TEST(LogAndAbortTest, log_and_abort_no_handler_does_nothing)
 {
     testing::internal::CaptureStdout();
     // Manually calling hook to avoid aborting the test
-    infra::ExecuteLogAndAbortHook("fool of a took");
+    infra::ExecuteLogAndAbortHook("fool of a Took");
     infra::ExecuteLogAndAbortHook("speak %s and enter", "friend");
     std::string output = testing::internal::GetCapturedStdout();
 

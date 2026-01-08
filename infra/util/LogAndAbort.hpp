@@ -19,7 +19,7 @@ namespace infra
 
 #if INFRA_UTIL_LOG_AND_ABORT_ENABLED
 #define INFRA_UTIL_LOG_AND_ABORT_HANDLER(format, ...) \
-    infra::ExecuteLogAndAbortHook("\n" format "\n", ##__VA_ARGS__)
+    infra::ExecuteLogAndAbortHook(format, ##__VA_ARGS__)
 #else
 #define INFRA_UTIL_LOG_AND_ABORT_HANDLER(format, ...)
 #endif
