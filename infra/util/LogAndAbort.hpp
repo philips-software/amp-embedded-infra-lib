@@ -9,7 +9,7 @@ namespace infra
     using LogAndAbortHook = infra::Function<void(const char* format, va_list* args)>;
     // Note: This hook may be called multiple times per abort.
     void RegisterLogAndAbortHook(LogAndAbortHook hook);
-    void ExecuteLogAndAbortHook(const char* format, ...);
+    void ExecuteLogAndAbortHook(const char* file, int line, const char* format, ...);
 }
 
 #if defined(EMIL_HOST_BUILD) || defined(EMIL_ENABLE_LOG_AND_ABORT_LOGGING)
