@@ -34,10 +34,21 @@ namespace infra
 
 #if defined(EMIL_ENABLE_LOGGING_FILE_UPON_ABORT) || defined(EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT)
             if (file)
-                logAndAbortHookForwarder("] at %s:%d ", file, line);
+                logAndAbortHookForwarder("] at %s:%d\n", file, line);
 #else
-            logAndAbortHookForwarder("]");
+            logAndAbortHookForwarder("]\n");
 #endif
+        }
+    }
+
+    void ExecuteLogAndAbortHookRaw(const char* format, ...)
+    {
+        if (logAndAbortHook)
+        {
+            va_list args;
+            va_start(args, format);
+            logAndAbortHook(format, &args);
+            va_end(args);
         }
     }
 }

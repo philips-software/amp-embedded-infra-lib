@@ -10,6 +10,7 @@ namespace infra
     // Note: This hook may be called multiple times per abort.
     void RegisterLogAndAbortHook(LogAndAbortHook hook);
     void ExecuteLogAndAbortHook(const char* file, int line, const char* format, ...);
+    void ExecuteLogAndAbortHookRaw(const char* format, ...);
 }
 
 #if defined(EMIL_HOST_BUILD) || defined(EMIL_ENABLE_LOG_AND_ABORT_LOGGING)
@@ -27,7 +28,6 @@ namespace infra
 #if INFRA_UTIL_LOG_AND_ABORT_ENABLED
 
 #if defined(EMIL_ENABLE_LOGGING_FILE_UPON_ABORT) || defined(EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT)
-
 #if EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT
 #ifndef __FILE_NAME__
 #error "__FILE_NAME__ must be defined when EMIL_REALLY_ASSERT_USE_FILE_NAME is set"
