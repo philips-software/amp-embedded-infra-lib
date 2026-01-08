@@ -8,12 +8,18 @@
 #include <functional>
 
 #if defined(EMIL_HOST_BUILD) || defined(EMIL_ENABLE_REALLY_ASSERT_LOGGING)
+
 #define INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED 1
+#if defined(EMIL_HOST_BUILD)
+// For host builds, always log filenames upon abort
+#define EMIL_ENABLE_LOGGING_FILE_UPON_ABORT
+#endif
+
 #else
 #define INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED 0
 #endif
 
-#if EMIL_REALLY_ASSERT_USE_FILE_NAME || 1
+#if EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT
 #ifndef __FILE_NAME__
 #error "__FILE_NAME__ must be defined when EMIL_REALLY_ASSERT_USE_FILE_NAME is set"
 #endif

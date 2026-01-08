@@ -95,6 +95,9 @@ set(conditional_compile_definitions
     EMIL_HOST_BUILD
     EMIL_ENABLE_LOG_AND_ABORT_LOGGING
     EMIL_ENABLE_REALLY_ASSERT_LOGGING
+
+    EMIL_ENABLE_LOGGING_FILE_UPON_ABORT
+    EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT
 )
 foreach(var IN LISTS conditional_compile_definitions)
     if (${var})

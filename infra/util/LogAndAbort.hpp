@@ -7,22 +7,47 @@
 namespace infra
 {
     using LogAndAbortHook = infra::Function<void(const char* format, va_list* args)>;
+    // Note: This hook may be called multiple times per abort.
     void RegisterLogAndAbortHook(LogAndAbortHook hook);
     void ExecuteLogAndAbortHook(const char* format, ...);
 }
 
 #if defined(EMIL_HOST_BUILD) || defined(EMIL_ENABLE_LOG_AND_ABORT_LOGGING)
+
 #define INFRA_UTIL_LOG_AND_ABORT_ENABLED 1
+#if defined(EMIL_HOST_BUILD)
+// For host builds, always log filenames upon abort
+#define EMIL_ENABLE_LOGGING_FILE_UPON_ABORT
+#endif
+
 #else
 #define INFRA_UTIL_LOG_AND_ABORT_ENABLED 0
 #endif
 
 #if INFRA_UTIL_LOG_AND_ABORT_ENABLED
+
+#if defined(EMIL_ENABLE_LOGGING_FILE_UPON_ABORT) || defined(EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT)
+
+#if EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT
+#ifndef __FILE_NAME__
+#error "__FILE_NAME__ must be defined when EMIL_REALLY_ASSERT_USE_FILE_NAME is set"
+#endif
+#define INFRA_UTIL_LOG_AND_ABORT_HOOK_FILE_NAME __FILE_NAME__
+#else
+#define INFRA_UTIL_LOG_AND_ABORT_HOOK_FILE_NAME __FILE__
+#endif // EMIL_REALLY_ASSERT_USE_FILE_NAME
+
 #define INFRA_UTIL_LOG_AND_ABORT_HANDLER(format, ...) \
-    infra::ExecuteLogAndAbortHook(format, ##__VA_ARGS__)
+    infra::ExecuteLogAndAbortHook(INFRA_UTIL_LOG_AND_ABORT_HOOK_FILE_NAME, __LINE__, format, ##__VA_ARGS__)
+
+#else
+#define INFRA_UTIL_LOG_AND_ABORT_HANDLER(format, ...) \
+    infra::ExecuteLogAndAbortHook(nullptr, 0, format, ##__VA_ARGS__)
+#endif // EMIL_ENABLE_LOGGING_FILENAMES
+
 #else
 #define INFRA_UTIL_LOG_AND_ABORT_HANDLER(format, ...)
-#endif
+#endif // INFRA_UTIL_LOG_AND_ABORT_ENABLED
 
 #define LOG_AND_ABORT(format, ...)                               \
     do                                                           \
