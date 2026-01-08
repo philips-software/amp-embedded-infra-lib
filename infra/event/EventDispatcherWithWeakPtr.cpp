@@ -1,4 +1,5 @@
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
+#include "infra/util/LogAndAbort.hpp"
 #include <cassert>
 
 namespace infra
@@ -33,8 +34,13 @@ namespace infra
 
     void EventDispatcherWithWeakPtrWorker::Run()
     {
+        int countdown = 5000;
         while (true)
         {
+            if (--countdown == 0)
+                // TODO(HW): Remove debugging code
+                // LOG_AND_ABORT("countdown %s", "expired");
+                really_assert(false);
             ExecuteAllActions();
             Idle();
         }

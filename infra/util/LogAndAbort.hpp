@@ -13,7 +13,6 @@ namespace infra
 }
 
 #if defined(EMIL_HOST_BUILD) || defined(EMIL_ENABLE_LOG_AND_ABORT_LOGGING)
-
 #define INFRA_UTIL_LOG_AND_ABORT_ENABLED 1
 #if defined(EMIL_HOST_BUILD)
 // For host builds, always log filenames upon abort
@@ -29,15 +28,17 @@ namespace infra
 #if defined(EMIL_ENABLE_LOGGING_FILE_UPON_ABORT) || defined(EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT)
 #if EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT
 #ifndef __FILE_NAME__
-#error "__FILE_NAME__ must be defined when EMIL_REALLY_ASSERT_USE_FILE_NAME is set"
+// Only available in some compilers, for example GCC 12 or later
+#error "__FILE_NAME__ must be available when EMIL_REALLY_ASSERT_USE_FILE_NAME is set"
 #endif
 #define INFRA_UTIL_LOG_AND_ABORT_HOOK_FILE_NAME __FILE_NAME__
 #else
 #define INFRA_UTIL_LOG_AND_ABORT_HOOK_FILE_NAME __FILE__
-#endif // EMIL_REALLY_ASSERT_USE_FILE_NAME
+#endif // EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT
 
 #define INFRA_UTIL_LOG_AND_ABORT_HANDLER(format, ...) \
-    infra::ExecuteLogAndAbortHook("Aborting",         \
+    infra::ExecuteLogAndAbortHook(                    \
+        "Aborting",                                   \
         INFRA_UTIL_LOG_AND_ABORT_HOOK_FILE_NAME,      \
         __LINE__,                                     \
         format,                                       \
