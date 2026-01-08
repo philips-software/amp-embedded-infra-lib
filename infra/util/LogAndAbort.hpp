@@ -9,8 +9,7 @@ namespace infra
     using LogAndAbortHook = infra::Function<void(const char* format, va_list* args)>;
     // Note: This hook may be called multiple times per abort.
     void RegisterLogAndAbortHook(LogAndAbortHook hook);
-    void ExecuteLogAndAbortHook(const char* file, int line, const char* format, ...);
-    void ExecuteLogAndAbortHookRaw(const char* format, ...);
+    void ExecuteLogAndAbortHook(const char* reason, const char* file, int line, const char* format, ...);
 }
 
 #if defined(EMIL_HOST_BUILD) || defined(EMIL_ENABLE_LOG_AND_ABORT_LOGGING)
@@ -38,11 +37,15 @@ namespace infra
 #endif // EMIL_REALLY_ASSERT_USE_FILE_NAME
 
 #define INFRA_UTIL_LOG_AND_ABORT_HANDLER(format, ...) \
-    infra::ExecuteLogAndAbortHook(INFRA_UTIL_LOG_AND_ABORT_HOOK_FILE_NAME, __LINE__, format, ##__VA_ARGS__)
+    infra::ExecuteLogAndAbortHook("Aborting",         \
+        INFRA_UTIL_LOG_AND_ABORT_HOOK_FILE_NAME,      \
+        __LINE__,                                     \
+        format,                                       \
+        ##__VA_ARGS__)
 
 #else
 #define INFRA_UTIL_LOG_AND_ABORT_HANDLER(format, ...) \
-    infra::ExecuteLogAndAbortHook(nullptr, 0, format, ##__VA_ARGS__)
+    infra::ExecuteLogAndAbortHook("Aborting", nullptr, 0, format, ##__VA_ARGS__)
 #endif // EMIL_ENABLE_LOGGING_FILENAMES
 
 #else

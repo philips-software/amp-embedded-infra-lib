@@ -17,9 +17,9 @@ namespace infra
             customHandler(condition, file, line);
         else if constexpr (INFRA_UTIL_LOG_AND_ABORT_ENABLED)
 #if defined(EMIL_ENABLE_LOGGING_FILE_UPON_ABORT) || defined(EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT)
-            infra::ExecuteLogAndAbortHookRaw("\nAssertion failed [%s] at %s:%d\n", condition, file, line);
+            infra::ExecuteLogAndAbortHook("Assertion failed", file, line, "%s", condition);
 #else
-            infra::ExecuteLogAndAbortHookRaw("\nAssertion failed [%s]\n", condition);
+            infra::ExecuteLogAndAbortHook("Assertion failed", nullptr, 0, "%s", condition);
 #endif
     }
 }
