@@ -5,10 +5,15 @@
 
 #include <cassert>
 #include <cstdlib>
-
-#ifdef EMIL_HOST_BUILD
 #include <functional>
 
+#if defined(EMIL_HOST_BUILD) || defined(EMIL_ENABLE_REALLY_ASSERT_LOGGING)
+#define INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED 1
+#else
+#define INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED 0
+#endif
+
+#if INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED
 namespace infra
 {
     using AssertionFailureHandler = std::function<void(const char* condition, const char* file, int line)>;
@@ -17,11 +22,10 @@ namespace infra
 
     void HandleAssertionFailure(const char* condition, const char* file, int line);
 }
-#endif
 
-#ifdef EMIL_HOST_BUILD
 #define INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition) \
     infra::HandleAssertionFailure(#condition, __FILE__, __LINE__)
+
 #else
 #define INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition)
 #endif
