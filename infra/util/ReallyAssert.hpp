@@ -22,13 +22,13 @@
 #if EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT
 #ifndef __FILE_NAME__
 // Only available in some compilers, for example GCC 12 or later
-#error "__FILE_NAME__ must be available when EMIL_REALLY_ASSERT_USE_FILE_NAME is set"
+#error "__FILE_NAME__ must be available when EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT is set"
 #endif
 #define INFRA_UTIL_REALLY_ASSERT_TRIGGER_FILE_NAME __FILE_NAME__
 
 #else
 #define INFRA_UTIL_REALLY_ASSERT_TRIGGER_FILE_NAME __FILE__
-#endif // EMIL_REALLY_ASSERT_USE_FILE_NAME
+#endif // EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT
 
 #if INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED
 namespace infra

@@ -29,7 +29,7 @@ namespace infra
 #if EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT
 #ifndef __FILE_NAME__
 // Only available in some compilers, for example GCC 12 or later
-#error "__FILE_NAME__ must be available when EMIL_REALLY_ASSERT_USE_FILE_NAME is set"
+#error "__FILE_NAME__ must be available when EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT is set"
 #endif
 #define INFRA_UTIL_LOG_AND_ABORT_HOOK_FILE_NAME __FILE_NAME__
 #else
@@ -47,7 +47,7 @@ namespace infra
 #else
 #define INFRA_UTIL_LOG_AND_ABORT_HANDLER(format, ...) \
     infra::ExecuteLogAndAbortHook("Aborting", nullptr, 0, format, ##__VA_ARGS__)
-#endif // EMIL_ENABLE_LOGGING_FILENAMES
+#endif // defined(EMIL_ENABLE_LOGGING_FILE_UPON_ABORT) || defined(EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT)
 
 #else
 #define INFRA_UTIL_LOG_AND_ABORT_HANDLER(format, ...)
