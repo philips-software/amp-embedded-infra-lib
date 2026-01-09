@@ -1,6 +1,7 @@
 #include "infra/util/ReallyAssert.hpp"
+#include "infra/util/LogAndAbort.hpp"
 
-#ifdef EMIL_HOST_BUILD
+#if INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED
 namespace infra
 {
     static AssertionFailureHandler customHandler = nullptr;
@@ -14,6 +15,8 @@ namespace infra
     {
         if (customHandler)
             customHandler(condition, file, line);
+        else if constexpr (INFRA_UTIL_LOG_AND_ABORT_ENABLED)
+            infra::ExecuteLogAndAbortHook("\nAssertion failed [%s] at %s:%d\n", condition, file, line);
     }
 }
 #endif

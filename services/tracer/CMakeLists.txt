@@ -17,6 +17,8 @@ target_link_libraries(services.tracer PUBLIC
 target_sources(services.tracer PRIVATE
     GlobalTracer.cpp
     GlobalTracer.hpp
+    LogAndAbortTracer.cpp
+    LogAndAbortTracer.hpp
     StreamWriterOnSerialCommunication.cpp
     StreamWriterOnSerialCommunication.hpp
     StreamWriterOnSynchronousSerialCommunication.cpp
