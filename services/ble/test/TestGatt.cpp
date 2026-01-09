@@ -109,3 +109,12 @@ TEST(GattInsertionOperatorUuidTest, uuid_overload_operator)
 
     EXPECT_EQ("Uuid16: [42], Uuid128: [100f0e0d0c0b0a090807060504030201]", stream.Storage());
 }
+
+TEST(GattTest, UpdateAttMtuExchangeTest)
+{
+    services::AttMtuExchangeImpl exchange{};
+
+    EXPECT_THAT(exchange.EffectiveAttMtuSize(), testing::Eq(services::AttMtuExchangeImpl::defaultAttMtuSize));
+    exchange.SetAttMtu(0);
+    EXPECT_THAT(exchange.EffectiveAttMtuSize(), testing::Eq(0));
+}

@@ -2,6 +2,7 @@
 #define SERVICES_GATT_CLIENT_DECORATOR_HPP
 
 #include "infra/event/ClaimableResource.hpp"
+#include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/Function.hpp"
 #include "optional"
 #include "services/ble/Gap.hpp"
@@ -17,6 +18,7 @@ namespace services
         : public GattClientDiscovery
         , public GattClientCharacteristicOperations
         , public AttMtuExchange
+        , public GattClientMtuExchange
         , private GattClientObserver
         , private AttMtuExchangeObserver
         , private GapCentralObserver
@@ -38,9 +40,11 @@ namespace services
         void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
         void DisableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
 
+        // Implementation of GattClientMtuExchange
+        virtual void MtuExchange(const infra::Function<void(OperationStatus)>& onDone) override;
+
         // Implementation of AttMtuExchange
-        uint16_t EffectiveMaxAttMtuSize() const override;
-        void MtuExchange() override;
+        uint16_t EffectiveAttMtuSize() const override;
 
     private:
         // Implementation of GattClientObserver
@@ -54,7 +58,7 @@ namespace services
         void IndicationReceived(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone) override;
 
         // Implementation of AttMtuExchangeObserver
-        void ExchangedMaxAttMtuSize() override;
+        void ExchangedAttMtuSize() override;
 
         // Implementation of GapCentralObserver
         void DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered) override;
@@ -115,7 +119,8 @@ namespace services
 
             CharacteristicOperation(Operation operation, AttAttribute::Handle handle)
                 : operation(operation)
-                , handle(handle){};
+                , handle(handle)
+            {}
 
             Operation operation;
             AttAttribute::Handle handle;
@@ -123,6 +128,7 @@ namespace services
 
         std::optional<std::variant<DiscoveredService, DiscoveredCharacteristic, DiscoveredDescriptor, HandleRange>> discoveryContext;
         std::optional<CharacteristicOperation> characteristicOperationContext;
+        infra::AutoResetFunction<void(OperationStatus)> mtuExchangeOnDone;
 
         infra::ClaimableResource resource;
         infra::ClaimableResource::Claimer characteristicOperationsClaimer{ resource };
