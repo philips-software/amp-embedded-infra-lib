@@ -1,4 +1,5 @@
 #include "services/tracer/LogAndAbortTracer.hpp"
+#include "services/tracer/Tracer.hpp"
 #include "services/tracer/TracerOnIoOutputInfrastructure.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -11,7 +12,7 @@ namespace
 
         infra::IoOutputStreamWriter writer;
         infra::TextOutputStream::WithErrorPolicy stream{ writer };
-        services::TracerWithDateTime tracer{ stream };
+        services::TracerToStream tracer{ stream };
     };
 
     class LogAndAbortTracerTest
@@ -26,7 +27,7 @@ TEST_F(LogAndAbortTracerTest, log_and_abort_without_registered_tracer_doesnt_cal
 {
     testing::internal::CaptureStdout();
     // Calling hook directly to avoid aborting the test process.
-    infra::ExecuteLogAndAbortHook("speak %s and enter", "elf");
+    infra::ExecuteLogAndAbortHook("reason", nullptr, 0, "speak %s and enter", "elf");
     std::string output = testing::internal::GetCapturedStdout();
 
     EXPECT_THAT(output.empty(), true);
@@ -41,8 +42,10 @@ TEST_F(LogAndAbortTracerTest, log_and_abort_with_registered_tracer_calls_tracer)
 
     testing::internal::CaptureStdout();
     // Calling hook directly to avoid aborting the test process.
-    infra::ExecuteLogAndAbortHook("speak %s and enter", "friend");
+    infra::ExecuteLogAndAbortHook("reason", "filename.cpp", 32, "speak %s and enter", "friend");
     std::string output = testing::internal::GetCapturedStdout();
 
+    EXPECT_THAT(output, testing::HasSubstr("reason"));
+    EXPECT_THAT(output, testing::HasSubstr("filename.cpp:32"));
     EXPECT_THAT(output, testing::HasSubstr("speak friend and enter"));
 }

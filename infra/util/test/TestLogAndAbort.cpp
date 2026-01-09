@@ -23,8 +23,8 @@ TEST(LogAndAbortTest, log_and_abort_no_handler_does_nothing)
 {
     testing::internal::CaptureStdout();
     // Manually calling hook to avoid aborting the test
-    infra::ExecuteLogAndAbortHook("fool of a Took");
-    infra::ExecuteLogAndAbortHook("speak %s and enter", "friend");
+    infra::ExecuteLogAndAbortHook(nullptr, nullptr, 0, "fool of a Took");
+    infra::ExecuteLogAndAbortHook(nullptr, nullptr, 0, "speak %s and enter", "friend");
     std::string output = testing::internal::GetCapturedStdout();
 
     EXPECT_THAT(output.empty(), true);
@@ -39,8 +39,26 @@ TEST(LogAndAbortTest, log_and_abort_with_handler_calls_handler)
 
     testing::internal::CaptureStdout();
     // Manually calling hook to avoid aborting the test
-    infra::ExecuteLogAndAbortHook("speak %s and enter", "friend");
+    infra::ExecuteLogAndAbortHook("reason", nullptr, 0, "speak %s and enter", "friend");
     std::string output = testing::internal::GetCapturedStdout();
 
+    EXPECT_THAT(output, testing::HasSubstr("reason"));
+    EXPECT_THAT(output, testing::HasSubstr("speak friend and enter"));
+}
+
+TEST(LogAndAbortTest, log_and_abort_with_filename_prints_filename)
+{
+    infra::RegisterLogAndAbortHook([&](auto format, auto args)
+        {
+            PrintLogAndAbortToStdout(format, args);
+        });
+
+    testing::internal::CaptureStdout();
+    // Manually calling hook to avoid aborting the test
+    infra::ExecuteLogAndAbortHook("reason", "filename.cpp", 32, "speak %s and enter", "friend");
+    std::string output = testing::internal::GetCapturedStdout();
+
+    EXPECT_THAT(output, testing::HasSubstr("reason"));
+    EXPECT_THAT(output, testing::HasSubstr("filename.cpp:32"));
     EXPECT_THAT(output, testing::HasSubstr("speak friend and enter"));
 }
