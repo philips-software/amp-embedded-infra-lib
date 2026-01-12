@@ -8,7 +8,8 @@ namespace services
 {
     using LogAndAbortTracerProvider = infra::Function<services::Tracer&()>;
 
-    // This will overwrite any previously registered LogAndAbort hook
+    // Note: This provider may be called multiple times per abort.
+    // Note: This will overwrite any previously registered LogAndAbort hook
     void RegisterLogAndAbortTracerProvider(LogAndAbortTracerProvider tracerProvider);
 }
 

@@ -3,9 +3,9 @@
 
 //  really_assert is a macro similar to assert, however it is not compiled away in release mode
 
+#include "infra/util/Function.hpp"
 #include <cassert>
 #include <cstdlib>
-#include <functional>
 
 #if defined(EMIL_HOST_BUILD) || defined(EMIL_ENABLE_REALLY_ASSERT_LOGGING)
 
@@ -33,7 +33,7 @@
 #if INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED
 namespace infra
 {
-    using AssertionFailureHandler = std::function<void(const char* condition, const char* file, int line)>;
+    using AssertionFailureHandler = infra::Function<void(const char* condition, const char* file, int line)>;
 
     void RegisterAssertionFailureHandler(AssertionFailureHandler handler);
 
