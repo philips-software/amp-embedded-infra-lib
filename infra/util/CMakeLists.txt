@@ -93,12 +93,19 @@ endif()
 
 set(conditional_compile_definitions
     EMIL_HOST_BUILD
+
+    # Enable the logging hooks for LogAndAbort and ReallyAssert
     EMIL_ENABLE_LOG_AND_ABORT_LOGGING
     EMIL_ENABLE_REALLY_ASSERT_LOGGING
+
+    # Optionally enable logging file paths (or only filenames) upon LOG_AND_ABORT or really_assert
+    EMIL_ENABLE_LOGGING_FILE_UPON_ABORT
+    EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT
 )
 foreach(var IN LISTS conditional_compile_definitions)
     if (${var})
         target_compile_definitions(infra.util PUBLIC ${var})
+        message(STATUS "infra.util: Enabled compile definition ${var}")
     endif()
 endforeach()
 
