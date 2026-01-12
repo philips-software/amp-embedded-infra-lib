@@ -1,4 +1,5 @@
 #include "infra/event/EventDispatcher.hpp"
+#include "infra/util/ReallyAssert.hpp"
 #include <cassert>
 
 namespace infra
