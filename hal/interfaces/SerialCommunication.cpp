@@ -40,7 +40,7 @@ namespace hal
 
     void BufferedSerialCommunicationOnUnbuffered::Stop(const infra::Function<void()>& onDone)
     {
-        delegate.ReceiveData([](infra::ConstByteRange) {});
+        delegate.ReceiveData(nullptr);
         scheduler.Schedule(onDone);
     }
 
