@@ -1,6 +1,7 @@
 #include "infra/util/Variant.hpp"
 #include "gtest/gtest.h"
 #include <cstdint>
+#include <utility>
 
 struct MoveableStruct
 {
@@ -80,13 +81,13 @@ TEST(VariantTest, TestInPlaceConstruction)
     {
         MyStruct(int aX, int aY)
             : x(aX)
-            , y(aY){};
+            , y(aY) {};
 
         int x;
         int y;
     };
 
-    infra::Variant<MyStruct> v(infra::InPlaceType<MyStruct>(), 2, 3);
+    infra::Variant<MyStruct> v(std::in_place_type_t<MyStruct>(), 2, 3);
     EXPECT_EQ(0, v.Which());
     EXPECT_EQ(2, v.Get<MyStruct>().x);
     EXPECT_EQ(3, v.Get<MyStruct>().y);
@@ -98,7 +99,7 @@ TEST(VariantTest, TestEmplace)
     {
         MyStruct(int aX, int aY)
             : x(aX)
-            , y(aY){};
+            , y(aY) {};
 
         bool operator==(const MyStruct& other) const
         {
@@ -139,7 +140,7 @@ TEST(VariantTest, TestAssignmentFromNarrowVariant)
 
 TEST(VariantTest, TestMoveConstruct)
 {
-    infra::Variant<MoveableStruct> v(infra::InPlaceType<MoveableStruct>(), 2);
+    infra::Variant<MoveableStruct> v(std::in_place_type_t<MoveableStruct>(), 2);
     auto v2(std::move(v));
     EXPECT_EQ(0, v2.Which());
     EXPECT_EQ(0, v.Get<MoveableStruct>().x);
@@ -148,8 +149,8 @@ TEST(VariantTest, TestMoveConstruct)
 
 TEST(VariantTest, TestMoveAssign)
 {
-    infra::Variant<MoveableStruct> v(infra::InPlaceType<MoveableStruct>(), 2);
-    infra::Variant<MoveableStruct> v2(infra::InPlaceType<MoveableStruct>(), 3);
+    infra::Variant<MoveableStruct> v(std::in_place_type_t<MoveableStruct>(), 2);
+    infra::Variant<MoveableStruct> v2(std::in_place_type_t<MoveableStruct>(), 3);
     v2 = std::move(v);
     EXPECT_EQ(0, v2.Which());
     EXPECT_EQ(0, v.Get<MoveableStruct>().x);
@@ -280,8 +281,8 @@ struct DoubleVisitor
 
 TEST(VariantTest, TestDoubleVisitor)
 {
-    infra::Variant<uint32_t, int> variant1(infra::InPlaceType<int>(), 5);
-    infra::Variant<uint32_t, int> variant2(infra::InPlaceType<uint32_t>(), 1u);
+    infra::Variant<uint32_t, int> variant1(std::in_place_type_t<int>(), 5);
+    infra::Variant<uint32_t, int> variant2(std::in_place_type_t<uint32_t>(), 1u);
     DoubleVisitor visitor;
     EXPECT_EQ(2, infra::ApplyVisitor(visitor, variant2, variant2));
     EXPECT_EQ(6, infra::ApplyVisitor(visitor, variant1, variant2));

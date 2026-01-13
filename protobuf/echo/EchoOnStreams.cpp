@@ -179,12 +179,12 @@ namespace services
             bufferedReader.reset();
             readerPtr = nullptr;
         }
-        else if (formatErrorPolicy.Failed() || !contents.Is<infra::PartialProtoLengthDelimited>())
+        else if (formatErrorPolicy.Failed() || !std::holds_alternative<infra::PartialProtoLengthDelimited>(contents))
             errorPolicy.MessageFormatError();
         else
         {
-            limitedReader.emplace(*bufferedReader, contents.Get<infra::PartialProtoLengthDelimited>().length);
-            StartMethod(serviceId, methodId, contents.Get<infra::PartialProtoLengthDelimited>().length);
+            limitedReader.emplace(*bufferedReader, std::get<infra::PartialProtoLengthDelimited>(contents).length);
+            StartMethod(serviceId, methodId, std::get<infra::PartialProtoLengthDelimited>(contents).length);
 
             if (formatErrorPolicy.Failed())
                 errorPolicy.MessageFormatError();

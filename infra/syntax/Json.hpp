@@ -6,8 +6,8 @@
 #include "infra/util/Compatibility.hpp"
 #include "infra/util/Optional.hpp"
 #include "infra/util/ReverseRange.hpp"
-#include "infra/util/Variant.hpp"
 #include <cstdint>
+#include <variant>
 
 #ifdef EMIL_HOST_BUILD
 #include <string>
@@ -242,7 +242,7 @@ namespace infra
             bool value;
         };
 
-        using Token = infra::Variant<End, Error, Colon, Comma, Dot, Null, LeftBrace, RightBrace, LeftBracket, RightBracket, String, JsonBiggerInt, JsonFloat, Boolean>;
+        using Token = std::variant<End, Error, Colon, Comma, Dot, Null, LeftBrace, RightBrace, LeftBracket, RightBracket, String, JsonBiggerInt, JsonFloat, Boolean>;
     }
 
     class JsonTokenizer
@@ -272,7 +272,7 @@ namespace infra
     class JsonObject;
     class JsonArray;
 
-    using JsonValue = infra::Variant<bool, int32_t, JsonBiggerInt, JsonString, JsonFloat, JsonObject, JsonArray>;
+    using JsonValue = std::variant<bool, int32_t, JsonBiggerInt, JsonString, JsonFloat, JsonObject, JsonArray>;
 
     class JsonObject
     {
@@ -529,10 +529,10 @@ namespace infra
     {
         const auto jsonValue = GetValue(key);
 
-        if (jsonValue.Is<int32_t>())
-            return ConvertValueTo<T>(std::abs(static_cast<int64_t>(jsonValue.Get<int32_t>())), jsonValue.Get<int32_t>() < 0);
-        else if (jsonValue.Is<JsonBiggerInt>())
-            return ConvertValueTo<T>(jsonValue.Get<JsonBiggerInt>().Value(), jsonValue.Get<JsonBiggerInt>().Negative());
+        if (std::holds_alternative<int32_t>(jsonValue))
+            return ConvertValueTo<T>(std::abs(static_cast<int64_t>(std::get<int32_t>(jsonValue))), std::get<int32_t>(jsonValue) < 0);
+        else if (std::holds_alternative<JsonBiggerInt>(jsonValue))
+            return ConvertValueTo<T>(std::get<JsonBiggerInt>(jsonValue).Value(), std::get<JsonBiggerInt>(jsonValue).Negative());
 
         SetError();
         return {};
@@ -566,7 +566,7 @@ namespace infra
         : arrayIterator(arrayIterator)
         , arrayEndIterator(arrayEndIterator)
     {
-        if (this->arrayIterator != arrayEndIterator && !this->arrayIterator->template Is<T>())
+        if (this->arrayIterator != arrayEndIterator && !std::holds_alternative<T>(*this->arrayIterator))
             this->arrayIterator.SetError();
     }
 
@@ -585,13 +585,13 @@ namespace infra
     template<class T>
     T JsonValueArrayIterator<T>::operator*() const
     {
-        return arrayIterator->Get<T>();
+        return std::get<T>(*arrayIterator);
     }
 
     template<class T>
     const T* JsonValueArrayIterator<T>::operator->() const
     {
-        return &arrayIterator->Get<T>();
+        return &std::get<T>(*arrayIterator);
     }
 
     template<class T>
@@ -599,7 +599,7 @@ namespace infra
     {
         ++arrayIterator;
 
-        if (arrayIterator != arrayEndIterator && !arrayIterator->Is<T>())
+        if (arrayIterator != arrayEndIterator && !std::holds_alternative<T>(*arrayIterator))
             arrayIterator.SetError();
 
         return *this;

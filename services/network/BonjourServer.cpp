@@ -1,6 +1,7 @@
 #include "services/network/BonjourServer.hpp"
 #include "infra/util/BitLogic.hpp"
 #include "infra/util/EnumCast.hpp"
+#include <variant>
 
 namespace services
 {
@@ -483,7 +484,7 @@ namespace services
         QuestionParser question(server, *waitingReader);
         if (question.HasAnswer())
         {
-            if (GetAddress(from).Is<services::IPv4Address>())
+            if (std::holds_alternative<services::IPv4Address>(GetAddress(from)))
                 question.RequestSendStream(*server.datagramExchangeIpv4, from, MakeUdpSocket(mdnsMulticastAddressIpv4, mdnsPort));
             else
                 question.RequestSendStream(*server.datagramExchangeIpv6, from, MakeUdpSocket(mdnsMulticastAddressIpv6, mdnsPort));

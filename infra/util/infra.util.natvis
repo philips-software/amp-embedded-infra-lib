@@ -53,7 +53,7 @@
     </Expand>
   </Type>
 
-  <Type Name="infra::Variant&lt;*&gt;">
+  <Type Name="std::variant&lt;*&gt;">
     <DisplayString Condition="dataIndex == 0">{*($T1*)&amp;data}</DisplayString>
     <DisplayString Condition="dataIndex == 1" Optional="true">{*($T2*)&amp;data}</DisplayString>
     <DisplayString Condition="dataIndex == 2" Optional="true">{*($T3*)&amp;data}</DisplayString>

@@ -33,10 +33,10 @@ TEST(GattServerTest, characteristic_implementation_supports_different_uuid_lengt
     services::GattServerCharacteristicImpl a{ s, uuid16, valueSize };
     services::GattServerCharacteristicImpl b{ s, uuid128, valueSize };
 
-    EXPECT_EQ(0x42, a.Type().Get<services::AttAttribute::Uuid16>());
+    EXPECT_EQ(0x42, std::get<services::AttAttribute::Uuid16>(a.Type()));
     EXPECT_EQ((infra::BigEndian<std::array<uint8_t, 16>>{ { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
                   0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10 } }),
-        b.Type().Get<services::AttAttribute::Uuid128>());
+        std::get<services::AttAttribute::Uuid128>(b.Type()));
 }
 
 TEST(GattServerTest, characteristic_implementation_supports_different_properties)
@@ -66,7 +66,7 @@ TEST(GattServerTest, characteristic_implementation_is_added_to_service)
     services::GattServerCharacteristicImpl b{ s, uuid16, valueSize };
 
     EXPECT_FALSE(s.Characteristics().empty());
-    EXPECT_EQ(0x42, s.Characteristics().front().Type().Get<services::AttAttribute::Uuid16>());
+    EXPECT_EQ(0x42, std::get<services::AttAttribute::Uuid16>(s.Characteristics().front().Type()));
 }
 
 TEST(GattServerTest, bitwise_and_permissions_supported)
@@ -136,7 +136,7 @@ TEST_F(GattServerCharacteristicTest, should_add_descriptor_to_list_with_16_bit_u
     // Verify descriptor is in the list
     auto& descriptors = characteristic.Descriptors();
     EXPECT_EQ(std::distance(descriptors.begin(), descriptors.end()), 1);
-    EXPECT_EQ(descriptors.begin()->Type().Get<services::AttAttribute::Uuid16>(), 0x2908);
+    EXPECT_EQ(std::get<services::AttAttribute::Uuid16>(descriptors.begin()->Type()), 0x2908);
 }
 
 TEST_F(GattServerCharacteristicTest, should_add_descriptor_to_list_with_128_bit_uuid)
@@ -151,7 +151,7 @@ TEST_F(GattServerCharacteristicTest, should_add_descriptor_to_list_with_128_bit_
     // Verify descriptor is in the list
     auto& descriptors = characteristic.Descriptors();
     EXPECT_EQ(std::distance(descriptors.begin(), descriptors.end()), 1);
-    EXPECT_TRUE(descriptors.begin()->Type().Is<services::AttAttribute::Uuid128>());
+    EXPECT_TRUE(std::holds_alternative<services::AttAttribute::Uuid128>(descriptors.begin()->Type()));
 }
 
 TEST_F(GattServerCharacteristicTest, should_add_descriptor_with_default_access_flags)

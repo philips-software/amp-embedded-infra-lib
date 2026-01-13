@@ -146,7 +146,7 @@ namespace application
             bool value;
         };
 
-        using Token = infra::Variant<End, Error, Comma, Dot, LeftBrace, RightBrace, LeftBracket, RightBracket, String, Integer, Boolean>;
+        using Token = std::variant<End, Error, Comma, Dot, LeftBrace, RightBrace, LeftBracket, RightBracket, String, Integer, Boolean>;
     }
 
     class ConsoleTokenizer
@@ -204,7 +204,7 @@ namespace application
     private:
         struct MessageTokens
         {
-            using MessageTokenValue = infra::Variant<std::string, int64_t, bool, MessageTokens, std::vector<MessageTokens>>;
+            using MessageTokenValue = std::variant<std::string, int64_t, bool, MessageTokens, std::vector<MessageTokens>>;
 
             std::vector<std::pair<MessageTokenValue, std::size_t>> tokens;
         };
@@ -237,7 +237,7 @@ namespace application
     private:
         void MethodReceived(const EchoService& service, const EchoMethod& method, infra::ProtoParser&& parser);
         void PrintMessage(const EchoMessage& message, infra::ProtoParser& parser);
-        void PrintField(infra::Variant<uint32_t, uint64_t, infra::ProtoLengthDelimited>& fieldData, const EchoField& field, infra::ProtoParser& parser);
+        void PrintField(std::variant<uint32_t, uint64_t, infra::ProtoLengthDelimited>& fieldData, const EchoField& field, infra::ProtoParser& parser);
         void MethodNotFound(const EchoService& service, uint32_t methodId) const;
         void ServiceNotFound(uint32_t serviceId, uint32_t methodId) const;
         void RunEventDispatcher(bool stopOnNetworkClose);

@@ -425,7 +425,7 @@ namespace application
             auto serviceId = static_cast<uint32_t>(parser.GetVarInt());
             auto messageStart = data.Reader().ConstructSaveMarker();
             auto partialField = parser.GetPartialField().first;
-            auto size = partialField.Is<infra::PartialProtoLengthDelimited>() ? partialField.Get<infra::PartialProtoLengthDelimited>().length : 0;
+            auto size = std::holds_alternative<infra::PartialProtoLengthDelimited>(partialField) ? std::get<infra::PartialProtoLengthDelimited>(partialField).length : 0;
             auto partialEnd = data.Reader().ConstructSaveMarker();
             data.Reader().Rewind(messageStart);
             infra::ProtoParser fullParser(data >> infra::data);
@@ -454,7 +454,7 @@ namespace application
                     for (const auto& method : service->methods)
                         if (method.methodId == methodId)
                         {
-                            MethodReceived(*service, method, value.Get<infra::ProtoLengthDelimited>().Parser());
+                            MethodReceived(*service, method, std::get<infra::ProtoLengthDelimited>(value).Parser());
 
                             receivedData.erase(receivedData.begin(), receivedData.begin() + data.Reader().ConstructSaveMarker());
                             data.Failed();
@@ -534,13 +534,13 @@ namespace application
         }
     }
 
-    void Console::PrintField(infra::Variant<uint32_t, uint64_t, infra::ProtoLengthDelimited>& fieldData, const EchoField& field, infra::ProtoParser& parser)
+    void Console::PrintField(std::variant<uint32_t, uint64_t, infra::ProtoLengthDelimited>& fieldData, const EchoField& field, infra::ProtoParser& parser)
     {
         class PrintFieldVisitor
             : public EchoFieldVisitor
         {
         public:
-            PrintFieldVisitor(infra::Variant<uint32_t, uint64_t, infra::ProtoLengthDelimited>& fieldData, infra::ProtoParser& parser, Console& console)
+            PrintFieldVisitor(std::variant<uint32_t, uint64_t, infra::ProtoLengthDelimited>& fieldData, infra::ProtoParser& parser, Console& console)
                 : fieldData(fieldData)
                 , parser(parser)
                 , console(console)
@@ -548,55 +548,55 @@ namespace application
 
             void VisitInt64(const EchoFieldInt64& field) override
             {
-                std::cout << static_cast<int32_t>(fieldData.Get<uint64_t>());
+                std::cout << static_cast<int32_t>(std::get<uint64_t>(fieldData));
             }
 
             void VisitUint64(const EchoFieldUint64& field) override
             {
-                std::cout << static_cast<int32_t>(fieldData.Get<uint64_t>());
+                std::cout << static_cast<int32_t>(std::get<uint64_t>(fieldData));
             }
 
             void VisitInt32(const EchoFieldInt32& field) override
             {
-                std::cout << static_cast<int32_t>(fieldData.Get<uint64_t>());
+                std::cout << static_cast<int32_t>(std::get<uint64_t>(fieldData));
             }
 
             void VisitFixed64(const EchoFieldFixed64& field) override
             {
-                std::cout << fieldData.Get<uint64_t>();
+                std::cout << std::get<uint64_t>(fieldData);
             }
 
             void VisitFixed32(const EchoFieldFixed32& field) override
             {
-                std::cout << fieldData.Get<uint32_t>();
+                std::cout << std::get<uint32_t>(fieldData);
             }
 
             void VisitBool(const EchoFieldBool& field) override
             {
-                std::cout << (fieldData.Get<uint64_t>() == 0 ? "false" : "true");
+                std::cout << (std::get<uint64_t>(fieldData) == 0 ? "false" : "true");
             }
 
             void VisitString(const EchoFieldString& field) override
             {
-                std::cout << fieldData.Get<infra::ProtoLengthDelimited>().GetStdString();
+                std::cout << std::get<infra::ProtoLengthDelimited>(fieldData).GetStdString();
             }
 
             void VisitUnboundedString(const EchoFieldUnboundedString& field) override
             {
-                std::cout << fieldData.Get<infra::ProtoLengthDelimited>().GetStdString();
+                std::cout << std::get<infra::ProtoLengthDelimited>(fieldData).GetStdString();
             }
 
             void VisitMessage(const EchoFieldMessage& field) override
             {
                 std::cout << "{ ";
-                infra::ProtoParser messageParser = fieldData.Get<infra::ProtoLengthDelimited>().Parser();
+                infra::ProtoParser messageParser = std::get<infra::ProtoLengthDelimited>(fieldData).Parser();
                 console.PrintMessage(*field.message, messageParser);
                 std::cout << " }";
             }
 
             void VisitBytes(const EchoFieldBytes& field) override
             {
-                std::vector<uint8_t> bytes = fieldData.Get<infra::ProtoLengthDelimited>().GetUnboundedBytes();
+                std::vector<uint8_t> bytes = std::get<infra::ProtoLengthDelimited>(fieldData).GetUnboundedBytes();
 
                 std::cout << "[";
                 for (auto byte : bytes)
@@ -606,7 +606,7 @@ namespace application
 
             void VisitUnboundedBytes(const EchoFieldUnboundedBytes& field) override
             {
-                std::vector<uint8_t> bytes = fieldData.Get<infra::ProtoLengthDelimited>().GetUnboundedBytes();
+                std::vector<uint8_t> bytes = std::get<infra::ProtoLengthDelimited>(fieldData).GetUnboundedBytes();
 
                 std::cout << "[";
                 for (auto byte : bytes)
@@ -616,22 +616,22 @@ namespace application
 
             void VisitUint32(const EchoFieldUint32& field) override
             {
-                std::cout << fieldData.Get<uint64_t>();
+                std::cout << std::get<uint64_t>(fieldData);
             }
 
             void VisitEnum(const EchoFieldEnum& field) override
             {
-                std::cout << fieldData.Get<uint64_t>();
+                std::cout << std::get<uint64_t>(fieldData);
             }
 
             void VisitSFixed64(const EchoFieldSFixed64& field) override
             {
-                std::cout << static_cast<int64_t>(fieldData.Get<uint64_t>());
+                std::cout << static_cast<int64_t>(std::get<uint64_t>(fieldData));
             }
 
             void VisitSFixed32(const EchoFieldSFixed32& field) override
             {
-                std::cout << static_cast<int32_t>(fieldData.Get<uint32_t>());
+                std::cout << static_cast<int32_t>(std::get<uint32_t>(fieldData));
             }
 
             void VisitRepeated(const EchoFieldRepeated& field) override
@@ -647,7 +647,7 @@ namespace application
             }
 
         private:
-            infra::Variant<uint32_t, uint64_t, infra::ProtoLengthDelimited>& fieldData;
+            std::variant<uint32_t, uint64_t, infra::ProtoLengthDelimited>& fieldData;
             infra::ProtoParser& parser;
             Console& console;
         };
@@ -723,7 +723,7 @@ namespace application
                 message NestedArgument
                 {
                     int32 value = 1;
-                }    
+                }
 
                 message TopArgument
                 {
@@ -971,9 +971,9 @@ namespace application
     {
         while (true)
         {
-            if (!currentToken.Is<ConsoleToken::String>())
+            if (!std::holds_alternative<ConsoleToken::String>(currentToken))
                 break;
-            auto stringToken = currentToken.Get<ConsoleToken::String>();
+            auto stringToken = std::get<ConsoleToken::String>(currentToken);
             method.push_back(stringToken.value);
 
             if (method.size() > 2)
@@ -981,7 +981,7 @@ namespace application
 
             currentToken = tokenizer.Token();
 
-            if (!currentToken.Is<ConsoleToken::Dot>())
+            if (!std::holds_alternative<ConsoleToken::Dot>(currentToken))
                 break;
 
             currentToken = tokenizer.Token();
@@ -993,7 +993,7 @@ namespace application
 
     void Console::MethodInvocation::ProcessParameterTokens()
     {
-        while (!currentToken.Is<ConsoleToken::End>())
+        while (!std::holds_alternative<ConsoleToken::End>(currentToken))
         {
             messageTokens.tokens.push_back(CreateMessageTokenValue());
             currentToken = tokenizer.Token();
@@ -1079,13 +1079,13 @@ namespace application
     {
         MessageTokens result;
 
-        while (!currentToken.Is<ConsoleToken::End>() && !currentToken.Is<ConsoleToken::RightBrace>())
+        while (!std::holds_alternative<ConsoleToken::End>(currentToken) && !std::holds_alternative<ConsoleToken::RightBrace>(currentToken))
         {
             result.tokens.push_back(CreateMessageTokenValue());
             currentToken = tokenizer.Token();
         }
 
-        if (!currentToken.Is<ConsoleToken::RightBrace>())
+        if (!std::holds_alternative<ConsoleToken::RightBrace>(currentToken))
             throw ConsoleExceptions::SyntaxError{ IndexOf(currentToken) };
 
         return result;
@@ -1097,19 +1097,19 @@ namespace application
 
         while (true)
         {
-            while (!currentToken.Is<ConsoleToken::End>() && !currentToken.Is<ConsoleToken::RightBracket>() && !currentToken.Is<ConsoleToken::Comma>())
+            while (!std::holds_alternative<ConsoleToken::End>(currentToken) && !std::holds_alternative<ConsoleToken::RightBracket>(currentToken) && !std::holds_alternative<ConsoleToken::Comma>(currentToken))
             {
                 result.tokens.push_back(CreateMessageTokenValue());
                 currentToken = tokenizer.Token();
             }
 
-            if (!currentToken.Is<ConsoleToken::Comma>())
+            if (!std::holds_alternative<ConsoleToken::Comma>(currentToken))
                 break;
 
             currentToken = tokenizer.Token();
         }
 
-        if (!currentToken.Is<ConsoleToken::RightBracket>())
+        if (!std::holds_alternative<ConsoleToken::RightBracket>(currentToken))
             throw ConsoleExceptions::SyntaxError{ IndexOf(currentToken) };
 
         return result;
@@ -1142,100 +1142,100 @@ namespace application
 
             void VisitInt64(const EchoFieldInt64& field) override
             {
-                if (!value.Is<int64_t>())
+                if (!std::holds_alternative<int64_t>(value))
                     throw ConsoleExceptions::IncorrectType{ valueIndex, "integer" };
 
-                formatter.PutVarIntField(value.Get<int64_t>(), field.number);
+                formatter.PutVarIntField(std::get<int64_t>(value), field.number);
             }
 
             void VisitUint64(const EchoFieldUint64& field) override
             {
-                if (!value.Is<int64_t>())
+                if (!std::holds_alternative<int64_t>(value))
                     throw ConsoleExceptions::IncorrectType{ valueIndex, "integer" };
 
-                formatter.PutVarIntField(value.Get<int64_t>(), field.number);
+                formatter.PutVarIntField(std::get<int64_t>(value), field.number);
             }
 
             void VisitInt32(const EchoFieldInt32& field) override
             {
-                if (!value.Is<int64_t>())
+                if (!std::holds_alternative<int64_t>(value))
                     throw ConsoleExceptions::IncorrectType{ valueIndex, "integer" };
 
-                formatter.PutVarIntField(value.Get<int64_t>(), field.number);
+                formatter.PutVarIntField(std::get<int64_t>(value), field.number);
             }
 
             void VisitFixed32(const EchoFieldFixed32& field) override
             {
-                if (!value.Is<int64_t>())
+                if (!std::holds_alternative<int64_t>(value))
                     throw ConsoleExceptions::IncorrectType{ valueIndex, "integer" };
 
-                formatter.PutFixed32Field(static_cast<uint32_t>(value.Get<int64_t>()), field.number);
+                formatter.PutFixed32Field(static_cast<uint32_t>(std::get<int64_t>(value)), field.number);
             }
 
             void VisitFixed64(const EchoFieldFixed64& field) override
             {
-                if (!value.Is<int64_t>())
+                if (!std::holds_alternative<int64_t>(value))
                     throw ConsoleExceptions::IncorrectType{ valueIndex, "integer" };
 
-                formatter.PutFixed64Field(static_cast<uint64_t>(value.Get<int64_t>()), field.number);
+                formatter.PutFixed64Field(static_cast<uint64_t>(std::get<int64_t>(value)), field.number);
             }
 
             void VisitBool(const EchoFieldBool& field) override
             {
-                if (!value.Is<bool>())
+                if (!std::holds_alternative<bool>(value))
                     throw ConsoleExceptions::IncorrectType{ valueIndex, "bool" };
 
-                formatter.PutVarIntField(value.Get<bool>(), field.number);
+                formatter.PutVarIntField(std::get<bool>(value), field.number);
             }
 
             void VisitString(const EchoFieldString& field) override
             {
-                if (!value.Is<std::string>())
+                if (!std::holds_alternative<std::string>(value))
                     throw ConsoleExceptions::IncorrectType{ valueIndex, "string" };
 
-                formatter.PutStringField(infra::BoundedConstString(value.Get<std::string>().data(), value.Get<std::string>().size()), field.number);
+                formatter.PutStringField(infra::BoundedConstString(std::get<std::string>(value).data(), std::get<std::string>(value).size()), field.number);
             }
 
             void VisitUnboundedString(const EchoFieldUnboundedString& field) override
             {
-                if (!value.Is<std::string>())
+                if (!std::holds_alternative<std::string>(value))
                     throw ConsoleExceptions::IncorrectType{ valueIndex, "string" };
 
-                formatter.PutStringField(infra::BoundedConstString(value.Get<std::string>().data(), value.Get<std::string>().size()), field.number);
+                formatter.PutStringField(infra::BoundedConstString(std::get<std::string>(value).data(), std::get<std::string>(value).size()), field.number);
             }
 
             void VisitEnum(const EchoFieldEnum& field) override
             {
-                if (!value.Is<int64_t>())
+                if (!std::holds_alternative<int64_t>(value))
                     throw ConsoleExceptions::IncorrectType{ valueIndex, "integer" };
 
-                formatter.PutVarIntField(value.Get<int64_t>(), field.number);
+                formatter.PutVarIntField(std::get<int64_t>(value), field.number);
             }
 
             void VisitSFixed32(const EchoFieldSFixed32& field) override
             {
-                if (!value.Is<int64_t>())
+                if (!std::holds_alternative<int64_t>(value))
                     throw ConsoleExceptions::IncorrectType{ valueIndex, "integer" };
 
-                formatter.PutFixed32Field(static_cast<uint32_t>(value.Get<int64_t>()), field.number);
+                formatter.PutFixed32Field(static_cast<uint32_t>(std::get<int64_t>(value)), field.number);
             }
 
             void VisitSFixed64(const EchoFieldSFixed64& field) override
             {
-                if (!value.Is<int64_t>())
+                if (!std::holds_alternative<int64_t>(value))
                     throw ConsoleExceptions::IncorrectType{ valueIndex, "integer" };
 
-                formatter.PutFixed64Field(static_cast<uint64_t>(value.Get<int64_t>()), field.number);
+                formatter.PutFixed64Field(static_cast<uint64_t>(std::get<int64_t>(value)), field.number);
             }
 
             void VisitMessage(const EchoFieldMessage& field) override
             {
-                if (!value.Is<MessageTokens>())
+                if (!std::holds_alternative<MessageTokens>(value))
                     throw ConsoleExceptions::IncorrectType{ valueIndex, field.protoType };
 
                 infra::StdVectorOutputStream::WithStorage stream;
                 infra::ProtoFormatter messageFormatter(stream);
-                methodInvocation.EncodeMessage(*field.message, value.Get<MessageTokens>(), valueIndex, messageFormatter);
+                methodInvocation.EncodeMessage(*field.message, std::get<MessageTokens>(value), valueIndex, messageFormatter);
                 formatter.PutLengthDelimitedField(infra::MakeRange(stream.Storage()), field.number);
             }
 
@@ -1251,10 +1251,10 @@ namespace application
 
             void VisitUint32(const EchoFieldUint32& field) override
             {
-                if (!value.Is<int64_t>())
+                if (!std::holds_alternative<int64_t>(value))
                     throw ConsoleExceptions::IncorrectType{ valueIndex, "integer" };
 
-                formatter.PutVarIntField(value.Get<int64_t>(), field.number);
+                formatter.PutVarIntField(std::get<int64_t>(value), field.number);
             }
 
             void VisitRepeated(const EchoFieldRepeated& field) override
@@ -1270,15 +1270,15 @@ namespace application
         private:
             void PutVector(int fieldNumber)
             {
-                if (!value.Is<MessageTokens>())
+                if (!std::holds_alternative<MessageTokens>(value))
                     throw ConsoleExceptions::IncorrectType{ valueIndex, "vector of integers" };
                 std::vector<uint8_t> bytes;
-                for (auto& messageToken : value.Get<MessageTokens>().tokens)
+                for (auto& messageToken : std::get<MessageTokens>(value).tokens)
                 {
-                    if (!messageToken.first.Is<int64_t>())
+                    if (!std::holds_alternative<int64_t>(messageToken.first))
                         throw ConsoleExceptions::IncorrectType{ messageToken.second, "integer" };
 
-                    bytes.push_back(static_cast<uint8_t>(messageToken.first.Get<int64_t>()));
+                    bytes.push_back(static_cast<uint8_t>(std::get<int64_t>(messageToken.first)));
                 }
 
                 formatter.PutBytesField(infra::MakeRange(bytes), fieldNumber);
@@ -1286,10 +1286,10 @@ namespace application
 
             void PutRepeated(const std::string& fieldProtoType, std::shared_ptr<EchoField> fieldType)
             {
-                if (!value.Is<std::vector<MessageTokens>>())
+                if (!std::holds_alternative<std::vector<MessageTokens>>(value))
                     throw ConsoleExceptions::IncorrectType{ valueIndex, fieldProtoType };
 
-                for (auto& messageTokens : value.Get<std::vector<MessageTokens>>())
+                for (auto& messageTokens : std::get<std::vector<MessageTokens>>(value))
                 {
                     EncodeFieldVisitor visitor(messageTokens, valueIndex, formatter, methodInvocation);
                     fieldType->Accept(visitor);

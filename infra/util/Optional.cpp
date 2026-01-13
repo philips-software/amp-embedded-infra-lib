@@ -2,9 +2,6 @@
 
 namespace infra
 {
-    const None none;
-    const InPlace inPlace;
-
     void OptionalCoverageDummy()
     {}
 }

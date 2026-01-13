@@ -24,7 +24,7 @@ TEST(StdStringInputStreamTest, StdStringInputStream)
 
 TEST(StdStringInputStreamTest, ExtractHexFrowStdStringInputStreamWithOverflow)
 {
-    infra::StdStringInputStream::WithStorage stream(infra::inPlace, "", infra::softFail);
+    infra::StdStringInputStream::WithStorage stream(std::in_place, "", infra::softFail);
 
     uint8_t v(1);
     stream >> infra::hex >> v;
@@ -34,7 +34,7 @@ TEST(StdStringInputStreamTest, ExtractHexFrowStdStringInputStreamWithOverflow)
 
 TEST(StdStringInputStreamTest, ExtractStringLiteral)
 {
-    infra::StdStringInputStream::WithStorage stream(infra::inPlace, "abcd");
+    infra::StdStringInputStream::WithStorage stream(std::in_place, "abcd");
 
     stream >> "abcd";
     EXPECT_TRUE(stream.Empty());
@@ -42,7 +42,7 @@ TEST(StdStringInputStreamTest, ExtractStringLiteral)
 
 TEST(StdStringInputStreamTest, PeekLiteral)
 {
-    infra::StdStringInputStream::WithStorage stream(infra::inPlace, "a");
+    infra::StdStringInputStream::WithStorage stream(std::in_place, "a");
 
     EXPECT_EQ('a', stream.PeekContiguousRange(0).front());
     EXPECT_EQ("a", stream.Storage());
@@ -53,7 +53,7 @@ TEST(StdStringInputStreamTest, PeekLiteral)
 
 TEST(StdStringInputStreamTest, PeekContiguousRange_returns_expected_range_size)
 {
-    infra::StdStringInputStream::WithStorage stream(infra::inPlace, "abcdef");
+    infra::StdStringInputStream::WithStorage stream(std::in_place, "abcdef");
 
     EXPECT_EQ(6, stream.PeekContiguousRange().size());
 

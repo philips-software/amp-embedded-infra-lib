@@ -166,7 +166,7 @@ namespace services
         std::optional<IPv6Address> ipv6Address;
         uint16_t port;
         const DnsHostnameParts& text;
-        infra::PolymorphicVariant<State, StateIdle, StateAnnounceIPv4, StateAnnounceIPv6> state{ infra::InPlaceType<StateIdle>(), *this };
+        infra::PolymorphicVariant<State, StateIdle, StateAnnounceIPv4, StateAnnounceIPv6> state{ std::in_place_type_t<StateIdle>(), *this };
     };
 }
 

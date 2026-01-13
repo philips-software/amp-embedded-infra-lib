@@ -1,7 +1,10 @@
 #include "infra/syntax/Json.hpp"
 #include "infra/stream/StringOutputStream.hpp"
+#include "infra/util/VariantDetail.hpp"
+#include "infra/util/Visitor.hpp"
 #include <algorithm>
 #include <cctype>
+#include <variant>
 
 namespace
 {
@@ -800,8 +803,8 @@ namespace infra
     {
         for (auto& keyValue : *this)
         {
-            if (keyValue.key == key && keyValue.value.Is<T>())
-                return keyValue.value.Get<T>();
+            if (keyValue.key == key && std::holds_alternative<T>(keyValue.value))
+                return std::get<T>(keyValue.value);
         }
 
         SetError();
@@ -813,8 +816,8 @@ namespace infra
     {
         for (auto& keyValue : *this)
         {
-            if (keyValue.key == key && keyValue.value.Is<T>())
-                return std::make_optional(keyValue.value.Get<T>());
+            if (keyValue.key == key && std::holds_alternative<T>(keyValue.value))
+                return std::make_optional(std::get<T>(keyValue.value));
         }
 
         return std::nullopt;
@@ -880,19 +883,19 @@ namespace infra
 
     std::optional<JsonValue> JsonIterator::ConvertValue(JsonToken::Token token)
     {
-        if (token.Is<JsonToken::String>())
-            return std::make_optional(JsonValue(token.Get<JsonToken::String>().Value()));
-        else if (token.Is<JsonBiggerInt>())
+        if (std::holds_alternative<JsonToken::String>(token))
+            return std::make_optional(JsonValue(std::get<JsonToken::String>(token).Value()));
+        else if (std::holds_alternative<JsonBiggerInt>(token))
             return ReadInteger(token);
-        else if (token.Is<JsonFloat>())
-            return std::make_optional(JsonValue(token.Get<JsonFloat>()));
-        else if (token.Is<JsonToken::Boolean>())
-            return std::make_optional(JsonValue(token.Get<JsonToken::Boolean>().Value()));
-        else if (token.Is<JsonToken::LeftBrace>())
+        else if (std::holds_alternative<JsonFloat>(token))
+            return std::make_optional(JsonValue(std::get<JsonFloat>(token)));
+        else if (std::holds_alternative<JsonToken::Boolean>(token))
+            return std::make_optional(JsonValue(std::get<JsonToken::Boolean>(token).Value()));
+        else if (std::holds_alternative<JsonToken::LeftBrace>(token))
             return ReadObjectValue(token);
-        else if (token.Is<JsonToken::LeftBracket>())
+        else if (std::holds_alternative<JsonToken::LeftBracket>(token))
             return ReadArrayValue(token);
-        else if (token.Is<JsonToken::Null>())
+        else if (std::holds_alternative<JsonToken::Null>(token))
             return std::make_optional(JsonValue(JsonObject()));
         else
             return std::nullopt;
@@ -900,10 +903,10 @@ namespace infra
 
     std::optional<JsonValue> JsonIterator::ReadInteger(const JsonToken::Token& token)
     {
-        if ((!token.Get<JsonBiggerInt>().Negative() && token.Get<JsonBiggerInt>().Value() <= std::numeric_limits<int32_t>::max()) || (token.Get<JsonBiggerInt>().Negative() && token.Get<JsonBiggerInt>().Value() <= static_cast<uint64_t>(-static_cast<int64_t>(std::numeric_limits<int32_t>::min()))))
-            return std::make_optional(JsonValue(static_cast<int32_t>(token.Get<JsonBiggerInt>().Value() * (token.Get<JsonBiggerInt>().Negative() ? -1 : 1))));
+        if ((!std::get<JsonBiggerInt>(token).Negative() && std::get<JsonBiggerInt>(token).Value() <= std::numeric_limits<int32_t>::max()) || (std::get<JsonBiggerInt>(token).Negative() && std::get<JsonBiggerInt>(token).Value() <= static_cast<uint64_t>(-static_cast<int64_t>(std::numeric_limits<int32_t>::min()))))
+            return std::make_optional(JsonValue(static_cast<int32_t>(std::get<JsonBiggerInt>(token).Value() * (std::get<JsonBiggerInt>(token).Negative() ? -1 : 1))));
         else
-            return std::make_optional(JsonValue(token.Get<JsonBiggerInt>()));
+            return std::make_optional(JsonValue(std::get<JsonBiggerInt>(token)));
     }
 
     std::optional<JsonValue> JsonIterator::ReadObjectValue(const JsonToken::Token& token)
@@ -911,7 +914,7 @@ namespace infra
         std::optional<JsonToken::RightBrace> objectEnd = SearchObjectEnd();
 
         if (objectEnd)
-            return std::make_optional(JsonValue(JsonObject(objectString.substr(token.Get<JsonToken::LeftBrace>().Index(), objectEnd->Index() + 1 - token.Get<JsonToken::LeftBrace>().Index()))));
+            return std::make_optional(JsonValue(JsonObject(objectString.substr(std::get<JsonToken::LeftBrace>(token).Index(), objectEnd->Index() + 1 - std::get<JsonToken::LeftBrace>(token).Index()))));
         else
             return std::nullopt;
     }
@@ -921,7 +924,7 @@ namespace infra
         std::optional<JsonToken::RightBracket> arrayEnd = SearchArrayEnd();
 
         if (arrayEnd)
-            return std::make_optional(JsonValue(JsonArray(objectString.substr(token.Get<JsonToken::LeftBracket>().Index(), arrayEnd->Index() + 1 - token.Get<JsonToken::LeftBracket>().Index()))));
+            return std::make_optional(JsonValue(JsonArray(objectString.substr(std::get<JsonToken::LeftBracket>(token).Index(), arrayEnd->Index() + 1 - std::get<JsonToken::LeftBracket>(token).Index()))));
         else
             return std::nullopt;
     }
@@ -930,18 +933,18 @@ namespace infra
     {
         std::size_t nested = 0;
         JsonToken::Token token = tokenizer.Token();
-        while ((nested != 0 || !token.Is<JsonToken::RightBrace>()) && !token.Is<JsonToken::End>() && !token.Is<JsonToken::Error>())
+        while ((nested != 0 || !std::holds_alternative<JsonToken::RightBrace>(token)) && !std::holds_alternative<JsonToken::End>(token) && !std::holds_alternative<JsonToken::Error>(token))
         {
-            if (token.Is<JsonToken::LeftBrace>())
+            if (std::holds_alternative<JsonToken::LeftBrace>(token))
                 --nested;
-            if (token.Is<JsonToken::RightBrace>())
+            if (std::holds_alternative<JsonToken::RightBrace>(token))
                 ++nested;
 
             token = tokenizer.Token();
         }
 
-        if (token.Is<JsonToken::RightBrace>())
-            return std::make_optional(token.Get<JsonToken::RightBrace>());
+        if (std::holds_alternative<JsonToken::RightBrace>(token))
+            return std::make_optional(std::get<JsonToken::RightBrace>(token));
         return std::nullopt;
     }
 
@@ -949,18 +952,18 @@ namespace infra
     {
         std::size_t nested = 0;
         JsonToken::Token token = tokenizer.Token();
-        while ((nested != 0 || !token.Is<JsonToken::RightBracket>()) && !token.Is<JsonToken::End>() && !token.Is<JsonToken::Error>())
+        while ((nested != 0 || !std::holds_alternative<JsonToken::RightBracket>(token)) && !std::holds_alternative<JsonToken::End>(token) && !std::holds_alternative<JsonToken::Error>(token))
         {
-            if (token.Is<JsonToken::LeftBracket>())
+            if (std::holds_alternative<JsonToken::LeftBracket>(token))
                 --nested;
-            if (token.Is<JsonToken::RightBracket>())
+            if (std::holds_alternative<JsonToken::RightBracket>(token))
                 ++nested;
 
             token = tokenizer.Token();
         }
 
-        if (token.Is<JsonToken::RightBracket>())
-            return std::make_optional(token.Get<JsonToken::RightBracket>());
+        if (std::holds_alternative<JsonToken::RightBracket>(token))
+            return std::make_optional(std::get<JsonToken::RightBracket>(token));
         else
             return std::nullopt;
     }
@@ -1052,17 +1055,17 @@ namespace infra
     void JsonObjectIterator::ReadObjectStart(JsonToken::Token token)
     {
         state = readKeyOrEnd;
-        if (!token.Is<JsonToken::LeftBrace>())
+        if (!std::holds_alternative<JsonToken::LeftBrace>(token))
             SetError();
     }
 
     void JsonObjectIterator::ReadKeyOrEnd(JsonToken::Token token)
     {
         state = readColon;
-        if (token.Is<JsonToken::RightBrace>())
+        if (std::holds_alternative<JsonToken::RightBrace>(token))
             state = end;
-        else if (token.Is<JsonToken::String>())
-            keyValue.key = token.Get<JsonToken::String>().Value();
+        else if (std::holds_alternative<JsonToken::String>(token))
+            keyValue.key = std::get<JsonToken::String>(token).Value();
         else
             SetError();
     }
@@ -1070,8 +1073,8 @@ namespace infra
     void JsonObjectIterator::ReadKey(JsonToken::Token token)
     {
         state = readColon;
-        if (token.Is<JsonToken::String>())
-            keyValue.key = token.Get<JsonToken::String>().Value();
+        if (std::holds_alternative<JsonToken::String>(token))
+            keyValue.key = std::get<JsonToken::String>(token).Value();
         else
             SetError();
     }
@@ -1079,7 +1082,7 @@ namespace infra
     void JsonObjectIterator::ReadColon(JsonToken::Token token)
     {
         state = readValue;
-        if (!token.Is<JsonToken::Colon>())
+        if (!std::holds_alternative<JsonToken::Colon>(token))
             SetError();
     }
 
@@ -1095,9 +1098,9 @@ namespace infra
 
     void JsonObjectIterator::ReadCommaOrObjectEnd(JsonToken::Token token)
     {
-        if (token.Is<JsonToken::Comma>())
+        if (std::holds_alternative<JsonToken::Comma>(token))
             state = readKey;
-        else if (token.Is<JsonToken::RightBrace>())
+        else if (std::holds_alternative<JsonToken::RightBrace>(token))
             state = end;
         else
             SetError();
@@ -1171,12 +1174,12 @@ namespace infra
             {
                 case readArrayStart:
                     state = readValueOrEnd;
-                    if (!token.Is<JsonToken::LeftBracket>())
+                    if (!std::holds_alternative<JsonToken::LeftBracket>(token))
                         SetError();
                     break;
                 case readValueOrEnd:
                     state = readCommaOrArrayEnd;
-                    if (token.Is<JsonToken::RightBracket>())
+                    if (std::holds_alternative<JsonToken::RightBracket>(token))
                         state = end;
                     else
                         ReadValue(token);
@@ -1186,9 +1189,9 @@ namespace infra
                     ReadValue(token);
                     break;
                 case readCommaOrArrayEnd:
-                    if (token.Is<JsonToken::Comma>())
+                    if (std::holds_alternative<JsonToken::Comma>(token))
                         state = readValue;
-                    else if (token.Is<JsonToken::RightBracket>())
+                    else if (std::holds_alternative<JsonToken::RightBracket>(token))
                         state = end;
                     else
                         SetError();
@@ -1258,80 +1261,53 @@ namespace infra
             JsonValueArrayIterator<JsonArray>(array.end(), array.end()));
     }
 
-    void CopyToken(infra::JsonToken::Token token, infra::TextOutputStream& stream)
+    void CopyToken(JsonToken::Token token, infra::TextOutputStream& stream)
     {
-        class CopyVisitor
-            : public infra::StaticVisitor<void>
-        {
-        public:
-            explicit CopyVisitor(infra::TextOutputStream& stream)
-                : stream(stream)
-            {}
-
-            void operator()(infra::JsonToken::End) const
-            {
-                std::abort();
-            }
-
-            void operator()(infra::JsonToken::Error) const
-            {
-                std::abort();
-            }
-
-            void operator()(infra::JsonToken::Colon)
+        const auto visitor = MultiVisitor{
+            [&stream](const JsonToken::Colon&) -> void
             {
                 stream << ':';
-            }
-
-            void operator()(infra::JsonToken::Comma)
+            },
+            [&stream](const JsonToken::Comma&) -> void
             {
                 stream << ',';
-            }
-
-            void operator()(infra::JsonToken::Dot)
+            },
+            [&stream](const JsonToken::Dot&) -> void
             {
                 stream << '.';
-            }
-
-            void operator()(infra::JsonToken::Null)
+            },
+            [&stream](const JsonToken::Null&) -> void
             {
                 stream << "null";
-            }
-
-            void operator()(infra::JsonToken::LeftBrace)
+            },
+            [&stream](const JsonToken::LeftBrace&) -> void
             {
                 stream << '{';
-            }
-
-            void operator()(infra::JsonToken::RightBrace)
+            },
+            [&stream](const JsonToken::RightBrace&) -> void
             {
                 stream << '}';
-            }
-
-            void operator()(infra::JsonToken::LeftBracket)
+            },
+            [&stream](const JsonToken::LeftBracket&) -> void
             {
                 stream << '[';
-            }
-
-            void operator()(infra::JsonToken::RightBracket)
+            },
+            [&stream](const JsonToken::RightBracket&) -> void
             {
                 stream << ']';
-            }
-
-            void operator()(infra::JsonToken::String token)
+            },
+            [&stream](const JsonToken::String& token) -> void
             {
                 stream << '"' << token.RawValue() << '"';
-            }
-
-            void operator()(infra::JsonBiggerInt token)
+            },
+            [&stream](const infra::JsonBiggerInt& token) -> void
             {
                 if (token.Negative())
                     stream << '-';
 
                 stream << token.Value();
-            }
-
-            void operator()(infra::JsonFloat token)
+            },
+            [&stream](const infra::JsonFloat& token) -> void
             {
                 if (token.Negative())
                     stream << '-';
@@ -1345,22 +1321,21 @@ namespace infra
                 }
 
                 stream << token.IntValue() << "." << infra::Width(width, '0') << fractional;
-            }
-
-            void operator()(infra::JsonToken::Boolean token)
+            },
+            [&stream](const JsonToken::Boolean& token) -> void
             {
                 if (token.Value())
                     stream << "true";
                 else
                     stream << "false";
-            }
-
-        private:
-            infra::TextOutputStream& stream;
+            },
+            [&stream](const auto&) -> void
+            {
+                std::abort();
+            },
         };
 
-        CopyVisitor copyVisitor(stream);
-        infra::ApplyVisitor(copyVisitor, token);
+        std::visit(visitor, token);
     }
 
     void CleanJsonContents(infra::BoundedString& contents)
@@ -1370,7 +1345,7 @@ namespace infra
         newContents.clear();
         infra::StringOutputStream stream(newContents);
 
-        for (infra::JsonToken::Token token = tokenizer.Token(); !token.Is<infra::JsonToken::End>() && !token.Is<infra::JsonToken::Error>(); token = tokenizer.Token())
+        for (JsonToken::Token token = tokenizer.Token(); !std::holds_alternative<JsonToken::End>(token) && !std::holds_alternative<JsonToken::Error>(token); token = tokenizer.Token())
             CopyToken(token, stream);
 
         contents = newContents;

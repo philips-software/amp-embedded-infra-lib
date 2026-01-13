@@ -2,47 +2,96 @@
 #include "infra/stream/StringInputStream.hpp"
 #include "infra/util/CompareMembers.hpp"
 #include "infra/util/Tokenizer.hpp"
+#include "infra/util/Visitor.hpp"
 
 namespace services
 {
+    namespace
+    {
+        UdpSocket ToUdpSocket(const IPv4Address& address, uint16_t port)
+        {
+            return Udpv4Socket{ address, port };
+        }
+
+        UdpSocket ToUdpSocket(const IPv6Address& address, uint16_t port)
+        {
+            return Udpv6Socket{ address, port };
+        }
+
+        IPAddress ToAddress(const Udpv4Socket& socket)
+        {
+            return IPv4Address{ socket.first };
+        }
+
+        IPAddress ToAddress(const Udpv6Socket& socket)
+        {
+            return IPv6Address{ socket.first };
+        }
+
+        IPVersions ToIpVersion(const IPv4Address&)
+        {
+            return IPVersions::ipv4;
+        }
+
+        IPVersions ToIpVersion(const IPv6Address&)
+        {
+            return IPVersions::ipv6;
+        }
+
+        IPVersions ToIpVersion(const Udpv4Socket&)
+        {
+            return IPVersions::ipv4;
+        }
+
+        IPVersions ToIpVersion(const Udpv6Socket&)
+        {
+            return IPVersions::ipv6;
+        }
+    }
+
     UdpSocket MakeUdpSocket(IPAddress address, uint16_t port)
     {
-        if (address.Is<services::IPv4Address>())
-            return Udpv4Socket{ address.Get<services::IPv4Address>(), port };
-        else
-            return Udpv6Socket{ address.Get<services::IPv6Address>(), port };
+        return std::visit([&port](const auto& address)
+            {
+                return ToUdpSocket(address, port);
+            },
+            address);
     }
 
     IPAddress GetAddress(UdpSocket socket)
     {
-        if (socket.Is<Udpv4Socket>())
-            return socket.Get<Udpv4Socket>().first;
-        else
-            return socket.Get<Udpv6Socket>().first;
+        return std::visit([](const auto& socket)
+            {
+                return ToAddress(socket);
+            },
+            socket);
     }
 
     uint16_t GetPort(UdpSocket socket)
     {
-        if (socket.Is<Udpv4Socket>())
-            return socket.Get<Udpv4Socket>().second;
-        else
-            return socket.Get<Udpv6Socket>().second;
+        return std::visit([](const auto& socket)
+            {
+                return socket.second;
+            },
+            socket);
     }
 
     IPVersions GetVersion(IPAddress address)
     {
-        if (address.Is<IPv4Address>())
-            return services::IPVersions::ipv4;
-        else
-            return services::IPVersions::ipv6;
+        return std::visit([](const auto& address)
+            {
+                return ToIpVersion(address);
+            },
+            address);
     }
 
     IPVersions GetVersion(UdpSocket socket)
     {
-        if (socket.Is<Udpv4Socket>())
-            return services::IPVersions::ipv4;
-        else
-            return services::IPVersions::ipv6;
+        return std::visit([](const auto& socket)
+            {
+                return ToIpVersion(socket);
+            },
+            socket);
     }
 
     IPv4Address IPv4AddressLocalHost()
@@ -62,7 +111,7 @@ namespace services
 
     IPv4Address ConvertFromUint32(uint32_t address)
     {
-        return services::IPv4Address{
+        return IPv4Address{
             static_cast<uint8_t>(address >> 24),
             static_cast<uint8_t>(address >> 16),
             static_cast<uint8_t>(address >> 8),
@@ -200,10 +249,11 @@ namespace infra
 
     infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::IPAddress& address)
     {
-        if (address.Is<services::IPv4Address>())
-            stream << address.Get<services::IPv4Address>();
-        else
-            stream << address.Get<services::IPv6Address>();
+        std::visit([&stream](const auto& address)
+            {
+                stream << address;
+            },
+            address);
 
         return stream;
     }
@@ -214,10 +264,18 @@ namespace infra
 
     TextOutputStream& operator<<(TextOutputStream& stream, const AsCanonicalFormIpHelper& asCanonicalFormIpHelper)
     {
-        if (services::GetVersion(asCanonicalFormIpHelper.address) == services::IPVersions::ipv4)
-            stream << asCanonicalFormIpHelper.address;
-        else
-            stream << "[" << asCanonicalFormIpHelper.address << "]";
+        const auto visitor = infra::MultiVisitor{
+            [&stream](const services::IPv4Address& address)
+            {
+                stream << address;
+            },
+            [&stream](const services::IPv6Address& address)
+            {
+                stream << "[" << address << "]";
+            },
+        };
+
+        std::visit(visitor, asCanonicalFormIpHelper.address);
 
         return stream;
     }

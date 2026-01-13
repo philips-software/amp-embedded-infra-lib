@@ -725,14 +725,14 @@ namespace services
     infra::SharedPtr<HttpClient> HttpClientConnectorImpl<HttpClient, Args...>::InvokeEmplace(std::index_sequence<I...>)
     {
         ipAddress.Storage().clear();
-        if (address.Is<services::IPv4Address>())
+        if (std::holds_alternative<services::IPv4Address>(address))
         {
-            auto& addr = address.Get<services::IPv4Address>();
+            auto& addr = std::get<services::IPv4Address>(address);
             ipAddress << addr[0] << '.' << addr[1] << '.' << addr[2] << '.' << addr[3];
         }
         else
         {
-            auto& addr = address.Get<services::IPv6Address>();
+            auto& addr = std::get<services::IPv6Address>(address);
             ipAddress << addr[0] << '.' << addr[1] << '.' << addr[2] << '.' << addr[3] << '.' << addr[4] << '.' << addr[5] << '.' << addr[6] << '.' << addr[7];
         }
 

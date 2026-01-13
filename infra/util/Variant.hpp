@@ -24,17 +24,17 @@ namespace infra
     public:
         static const std::size_t size = sizeof...(T);
 
-        Variant();
-        Variant(const Variant& other);
-        Variant(Variant&& other) NOEXCEPT_SPECIFICATION((std::is_nothrow_move_constructible_v<T> && ...));
+        [[deprecated("Use std::variant instead")]] Variant();
+        [[deprecated("Use std::variant instead")]] Variant(const Variant& other);
+        [[deprecated("Use std::variant instead")]] Variant(Variant&& other) NOEXCEPT_SPECIFICATION((std::is_nothrow_move_constructible_v<T> && ...));
         template<class... T2>
-        Variant(const Variant<T2...>& other);
+        [[deprecated("Use std::variant instead")]] Variant(const Variant<T2...>& other);
         template<class U>
-        Variant(const U& v, typename std::enable_if<ExistsInTypeList<U, T...>::value>::type* = 0);
+        [[deprecated("Use std::variant instead")]] Variant(const U& v, typename std::enable_if<ExistsInTypeList<U, T...>::value>::type* = 0);
         template<class U, class... Args>
-        explicit Variant(InPlaceType<U>, Args&&... args);
+        [[deprecated("Use std::variant instead")]] explicit Variant(std::in_place_type_t<U>, Args&&... args);
         template<class... Args>
-        Variant(AtIndex, std::size_t index, Args&&... args);
+        [[deprecated("Use std::variant instead")]] Variant(AtIndex, std::size_t index, Args&&... args);
 
         Variant& operator=(const Variant& other);
         Variant& operator=(Variant&& other) NOEXCEPT_SPECIFICATION((std::is_nothrow_move_assignable_v<T> && ...) && (std::is_nothrow_move_constructible_v<T> && ...));
@@ -149,7 +149,7 @@ namespace infra
 
     template<class... T>
     template<class U, class... Args>
-    Variant<T...>::Variant(InPlaceType<U>, Args&&... args)
+    Variant<T...>::Variant(std::in_place_type_t<U>, Args&&... args)
     {
         ConstructInEmptyVariant<U>(std::forward<Args>(args)...);
     }
