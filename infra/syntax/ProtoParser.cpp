@@ -1,5 +1,5 @@
 #include "infra/syntax/ProtoParser.hpp"
-#include "infra/util/Visitor.hpp"
+#include "infra/util/MultiVisitor.hpp"
 
 namespace infra
 {

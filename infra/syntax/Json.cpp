@@ -1,9 +1,10 @@
 #include "infra/syntax/Json.hpp"
 #include "infra/stream/StringOutputStream.hpp"
+#include "infra/util/MultiVisitor.hpp"
 #include "infra/util/VariantDetail.hpp"
-#include "infra/util/Visitor.hpp"
 #include <algorithm>
 #include <cctype>
+#include <optional>
 #include <variant>
 
 namespace
@@ -883,22 +884,42 @@ namespace infra
 
     std::optional<JsonValue> JsonIterator::ConvertValue(JsonToken::Token token)
     {
-        if (std::holds_alternative<JsonToken::String>(token))
-            return std::make_optional(JsonValue(std::get<JsonToken::String>(token).Value()));
-        else if (std::holds_alternative<JsonBiggerInt>(token))
-            return ReadInteger(token);
-        else if (std::holds_alternative<JsonFloat>(token))
-            return std::make_optional(JsonValue(std::get<JsonFloat>(token)));
-        else if (std::holds_alternative<JsonToken::Boolean>(token))
-            return std::make_optional(JsonValue(std::get<JsonToken::Boolean>(token).Value()));
-        else if (std::holds_alternative<JsonToken::LeftBrace>(token))
-            return ReadObjectValue(token);
-        else if (std::holds_alternative<JsonToken::LeftBracket>(token))
-            return ReadArrayValue(token);
-        else if (std::holds_alternative<JsonToken::Null>(token))
-            return std::make_optional(JsonValue(JsonObject()));
-        else
-            return std::nullopt;
+        const MultiVisitor visitor{
+            [this](const JsonToken::String& value) -> std::optional<JsonValue>
+            {
+                return value.Value();
+            },
+            [this, &token](const JsonBiggerInt&) -> std::optional<JsonValue>
+            {
+                return ReadInteger(token);
+            },
+            [this](const JsonFloat& value) -> std::optional<JsonValue>
+            {
+                return value;
+            },
+            [this](const JsonToken::Boolean& value) -> std::optional<JsonValue>
+            {
+                return value.Value();
+            },
+            [this, &token](const JsonToken::LeftBrace&) -> std::optional<JsonValue>
+            {
+                return ReadObjectValue(token);
+            },
+            [this, &token](const JsonToken::LeftBracket&) -> std::optional<JsonValue>
+            {
+                return ReadArrayValue(token);
+            },
+            [this](const JsonToken::Null&) -> std::optional<JsonValue>
+            {
+                return JsonObject();
+            },
+            [this](auto) -> std::optional<JsonValue>
+            {
+                return std::nullopt;
+            },
+        };
+
+        return std::visit(visitor, token);
     }
 
     std::optional<JsonValue> JsonIterator::ReadInteger(const JsonToken::Token& token)
@@ -1098,12 +1119,22 @@ namespace infra
 
     void JsonObjectIterator::ReadCommaOrObjectEnd(JsonToken::Token token)
     {
-        if (std::holds_alternative<JsonToken::Comma>(token))
-            state = readKey;
-        else if (std::holds_alternative<JsonToken::RightBrace>(token))
-            state = end;
-        else
-            SetError();
+        const MultiVisitor visitor{
+            [this](JsonToken::Comma)
+            {
+                state = readKey;
+            },
+            [this](JsonToken::RightBrace)
+            {
+                state = end;
+            },
+            [this](auto)
+            {
+                SetError();
+            },
+        };
+
+        std::visit(visitor, token);
     }
 
     void JsonObjectIterator::SetError()

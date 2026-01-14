@@ -1,7 +1,7 @@
 #include "services/echo_console/Console.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/stream/StringInputStream.hpp"
-#include "infra/util/Visitor.hpp"
+#include "infra/util/MultiVisitor.hpp"
 #include "services/tracer/GlobalTracer.hpp"
 #include <cctype>
 #include <iomanip>

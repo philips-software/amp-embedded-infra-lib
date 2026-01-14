@@ -1,8 +1,8 @@
 #include "services/network/Address.hpp"
 #include "infra/stream/StringInputStream.hpp"
 #include "infra/util/CompareMembers.hpp"
+#include "infra/util/MultiVisitor.hpp"
 #include "infra/util/Tokenizer.hpp"
-#include "infra/util/Visitor.hpp"
 
 namespace services
 {

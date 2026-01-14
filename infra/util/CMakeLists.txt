@@ -52,6 +52,7 @@ target_sources(infra.util PRIVATE
     IntrusiveUnorderedSet.hpp
     MemoryRange.hpp
     MultiFunction.hpp
+    MultiVisitor.hpp
     Observer.hpp
     PolymorphicVariant.hpp
     PostAssign.hpp
