@@ -21,7 +21,7 @@ TEST(OptionalTest, TestConstructedEmpty)
 
 TEST(OptionalTest, TestConstructedEmptyWithNone)
 {
-    infra::Optional<bool> o(infra::none);
+    infra::Optional<bool> o(std::nullopt);
     EXPECT_FALSE(o);
 }
 
@@ -133,17 +133,17 @@ TEST(OptionalTest, TestAssignValue)
 TEST(OptionalTest, TestAssignNone)
 {
     infra::Optional<bool> o(std::in_place, true);
-    o = infra::none;
+    o = std::nullopt;
     EXPECT_FALSE(o);
 }
 
 TEST(OptionalTest, TestCompareToNone)
 {
     infra::Optional<bool> o;
-    EXPECT_TRUE(o == infra::none);
-    EXPECT_FALSE(o != infra::none);
-    EXPECT_TRUE(infra::none == o);
-    EXPECT_FALSE(infra::none != o);
+    EXPECT_TRUE(o == std::nullopt);
+    EXPECT_FALSE(o != std::nullopt);
+    EXPECT_TRUE(std::nullopt == o);
+    EXPECT_FALSE(std::nullopt != o);
 }
 
 TEST(OptionalTest, TestCompare)
@@ -326,7 +326,7 @@ TEST(OptionalForPolymorphicObjectsTest, TestConstructedEmpty)
 
 TEST(OptionalForPolymorphicObjectsTest, TestConstructedEmptyWithNone)
 {
-    infra::OptionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o(infra::none);
+    infra::OptionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o(std::nullopt);
     EXPECT_FALSE(static_cast<bool>(o));
 }
 
@@ -378,7 +378,7 @@ TEST(OptionalForPolymorphicObjectsTest, TestAssignRValue)
 TEST(OptionalForPolymorphicObjectsTest, TestAssignNone)
 {
     infra::OptionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o(std::in_place_type_t<PolymorphicBool>(), true);
-    o = infra::none;
+    o = std::nullopt;
     EXPECT_FALSE(static_cast<bool>(o));
 }
 
@@ -399,10 +399,10 @@ TEST(OptionalForPolymorphicObjectsTest, TestAssignDescendant)
 TEST(OptionalForPolymorphicObjectsTest, TestCompareToNone)
 {
     infra::OptionalForPolymorphicObjects<PolymorphicBool, sizeof(void*)> o;
-    EXPECT_TRUE(o == infra::none);
-    EXPECT_FALSE(o != infra::none);
-    EXPECT_TRUE(infra::none == o);
-    EXPECT_FALSE(infra::none != o);
+    EXPECT_TRUE(o == std::nullopt);
+    EXPECT_FALSE(o != std::nullopt);
+    EXPECT_TRUE(std::nullopt == o);
+    EXPECT_FALSE(std::nullopt != o);
 }
 
 TEST(OptionalForPolymorphicObjectsTest, TestCompare)

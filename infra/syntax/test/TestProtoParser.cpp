@@ -142,11 +142,13 @@ TEST(ProtoParserTest, SkipEverything_skips_LengthDelimited)
     infra::StdVectorInputStream::WithStorage stream(std::in_place, std::vector<uint8_t>{ (1 << 3) | 2, 2, 1 << 3, 5, 1 << 3, 5 });
     infra::ProtoParser parser(stream);
 
-    infra::ProtoParser::Field field = parser.GetField();
+    {
+        auto field{ parser.GetField() };
 
-    std::get<infra::ProtoLengthDelimited>(field.first).SkipEverything();
+        std::get<infra::ProtoLengthDelimited>(field.first).SkipEverything();
+    }
 
-    field = parser.GetField();
+    auto field{ parser.GetField() };
     EXPECT_EQ(5, std::get<uint64_t>(field.first));
     EXPECT_EQ(1, field.second);
 }

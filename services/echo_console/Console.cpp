@@ -1,6 +1,7 @@
 #include "services/echo_console/Console.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/stream/StringInputStream.hpp"
+#include "infra/util/Visitor.hpp"
 #include "services/tracer/GlobalTracer.hpp"
 #include <cctype>
 #include <iomanip>
@@ -177,20 +178,13 @@ namespace application
 
     namespace
     {
-        struct IndexOfVisitor
-            : public infra::StaticVisitor<std::size_t>
-        {
-            template<class T>
-            std::size_t operator()(const T& value) const
-            {
-                return value.index;
-            }
-        };
-
         std::size_t IndexOf(const ConsoleToken::Token& token)
         {
-            IndexOfVisitor visitor;
-            return infra::ApplyVisitor(visitor, token);
+            return std::visit([](const auto& token)
+                {
+                    return token.index;
+                },
+                token);
         }
     }
 
@@ -973,7 +967,7 @@ namespace application
         {
             if (!std::holds_alternative<ConsoleToken::String>(currentToken))
                 break;
-            auto stringToken = std::get<ConsoleToken::String>(currentToken);
+            const auto& stringToken = std::get<ConsoleToken::String>(currentToken);
             method.push_back(stringToken.value);
 
             if (method.size() > 2)
@@ -1002,77 +996,41 @@ namespace application
 
     std::pair<Console::MessageTokens::MessageTokenValue, std::size_t> Console::MethodInvocation::CreateMessageTokenValue()
     {
-        struct TokenVisitor
-            : public infra::StaticVisitor<Console::MessageTokens::MessageTokenValue>
-        {
-            explicit TokenVisitor(MethodInvocation& invocation)
-                : invocation(invocation)
-            {}
-
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::End) const
+        auto visitor = infra::MultiVisitor{
+            [this](ConsoleToken::LeftBrace)
+            {
+                currentToken = tokenizer.Token();
+                return ProcessMessage();
+            },
+            [this](ConsoleToken::LeftBracket)
+            {
+                currentToken = tokenizer.Token();
+                return MessageTokens::MessageTokenValue(ProcessArray());
+            },
+            [](const ConsoleToken::String& value)
+            {
+                return MessageTokens::MessageTokenValue(value.value);
+            },
+            [](ConsoleToken::Integer value)
+            {
+                return MessageTokens::MessageTokenValue(value.value);
+            },
+            [](ConsoleToken::Boolean value)
+            {
+                return MessageTokens::MessageTokenValue(value.value);
+            },
+            [](ConsoleToken::End) -> MessageTokens::MessageTokenValue
             {
                 std::abort();
-            }
-
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::Error value) const
+            },
+            [](auto value) -> MessageTokens::MessageTokenValue
             {
                 throw ConsoleExceptions::SyntaxError{ value.index };
             }
-
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::Comma value) const
-            {
-                throw ConsoleExceptions::SyntaxError{ value.index };
-            }
-
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::Dot value) const
-            {
-                throw ConsoleExceptions::SyntaxError{ value.index };
-            }
-
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::LeftBrace) const
-            {
-                invocation.currentToken = invocation.tokenizer.Token();
-                return invocation.ProcessMessage();
-            }
-
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::RightBrace value) const
-            {
-                throw ConsoleExceptions::SyntaxError{ value.index };
-            }
-
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::LeftBracket) const
-            {
-                invocation.currentToken = invocation.tokenizer.Token();
-                return MessageTokens::MessageTokenValue(invocation.ProcessArray());
-            }
-
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::RightBracket value) const
-            {
-                throw ConsoleExceptions::SyntaxError{ value.index };
-            }
-
-            MessageTokens::MessageTokenValue operator()(const ConsoleToken::String& value) const
-            {
-                return MessageTokens::MessageTokenValue(value.value);
-            }
-
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::Integer value) const
-            {
-                return MessageTokens::MessageTokenValue(value.value);
-            }
-
-            MessageTokens::MessageTokenValue operator()(ConsoleToken::Boolean value) const
-            {
-                return MessageTokens::MessageTokenValue(value.value);
-            }
-
-        private:
-            MethodInvocation& invocation;
         };
 
-        TokenVisitor visitor(*this);
         std::size_t index = IndexOf(currentToken);
-        return std::make_pair(infra::ApplyVisitor(visitor, currentToken), index);
+        return std::make_pair(std::visit(visitor, currentToken), index);
     }
 
     Console::MessageTokens::MessageTokenValue Console::MethodInvocation::ProcessMessage()

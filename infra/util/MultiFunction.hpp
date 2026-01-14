@@ -92,32 +92,32 @@ namespace infra
         template<class... Args>
         bool Invocable(EMIL_MAYBE_UNUSED Args&&... args)
         {
-            return functions.Which() == IndexOf<Args...>::Value + 1;
+            return functions.index() == IndexOf<Args...>::Value + 1;
         }
 
         explicit operator bool() const
         {
-            return functions.Which() != 0;
+            return functions.index() != 0;
         }
 
         bool operator==(const std::nullptr_t) const
         {
-            return functions.Which() == 0;
+            return functions.index() == 0;
         }
 
         friend bool operator==(const std::nullptr_t, const MultiFunctionHelper<F...>& f)
         {
-            return f.functions.Which() == 0;
+            return f.functions.index() == 0;
         }
 
         bool operator!=(const std::nullptr_t) const
         {
-            return functions.Which() != 0;
+            return functions.index() != 0;
         }
 
         friend bool operator!=(const std::nullptr_t, const MultiFunctionHelper<F...>& f)
         {
-            return f.functions.Which() != 0;
+            return f.functions.index() != 0;
         }
 
     private:
