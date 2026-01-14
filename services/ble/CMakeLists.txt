@@ -26,6 +26,8 @@ target_sources(services.ble PRIVATE
     BondStorageSynchronizer.hpp
     Gap.cpp
     Gap.hpp
+    GapPeripheralIntervalDecorator.cpp
+    GapPeripheralIntervalDecorator.hpp
     Gatt.cpp
     Gatt.hpp
     GattClient.cpp
