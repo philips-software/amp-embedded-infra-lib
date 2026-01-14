@@ -1,7 +1,7 @@
 #include "infra/syntax/JsonStreamingParser.hpp"
 #include "infra/util/Function.hpp"
-#include "infra/util/Optional.hpp"
 #include <cctype>
+#include <optional>
 
 namespace infra
 {

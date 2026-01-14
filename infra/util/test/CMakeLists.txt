@@ -36,7 +36,6 @@ target_sources(infra.util_test PRIVATE
     TestIntrusiveUnorderedSet.cpp
     TestMemoryRange.cpp
     TestObserver.cpp
-    TestOptional.cpp
     TestPolymorphicVariant.cpp
     TestProxyCreator.cpp
     TestReallyAssert.cpp
@@ -49,7 +48,6 @@ target_sources(infra.util_test PRIVATE
     TestStaticStorage.cpp
     TestTokenizer.cpp
     TestUnit.cpp
-    TestVariant.cpp
 )
 
 set_source_files_properties(

@@ -2,9 +2,9 @@
 #define INFRA_SHARED_OPTIONAL_HPP
 
 #include "infra/util/Function.hpp"
-#include "infra/util/Optional.hpp"
 #include "infra/util/SharedObjectAllocator.hpp"
 #include <cstddef>
+#include <optional>
 
 namespace infra
 {

@@ -3,7 +3,6 @@
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/LimitedOutputStream.hpp"
 #include "infra/util/ConstructBin.hpp"
-#include "infra/util/Optional.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "protobuf/echo/test_doubles/EchoMock.hpp"
 #include "protobuf/echo/test_doubles/ServiceStub.hpp"
@@ -11,6 +10,7 @@
 #include "services/util/test_doubles/SesameMock.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include <optional>
 #include <utility>
 
 namespace services

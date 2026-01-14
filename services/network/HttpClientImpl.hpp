@@ -5,11 +5,11 @@
 #include "infra/stream/LimitedInputStream.hpp"
 #include "infra/stream/LimitedOutputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
-#include "infra/util/Optional.hpp"
 #include "infra/util/PolymorphicVariant.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 #include "services/network/HttpClient.hpp"
+#include <optional>
 
 namespace services
 {

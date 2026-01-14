@@ -4,9 +4,9 @@
 #include "infra/stream/OutputStream.hpp"
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/Compatibility.hpp"
-#include "infra/util/Optional.hpp"
 #include "infra/util/ReverseRange.hpp"
 #include <cstdint>
+#include <optional>
 #include <variant>
 
 #ifdef EMIL_HOST_BUILD

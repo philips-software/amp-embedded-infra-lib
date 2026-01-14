@@ -1,6 +1,6 @@
 // clang-format off
 #include "hal/windows/UartPortFinder.hpp"
-#include "infra/util/Optional.hpp"
+#include <optional>
 #include <initguid.h>
 #include <devpkey.h>
 #include <devpropdef.h>

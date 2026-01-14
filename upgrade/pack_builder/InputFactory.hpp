@@ -1,9 +1,9 @@
 #ifndef UPGRADE_INPUT_FACTORY_HPP
 #define UPGRADE_INPUT_FACTORY_HPP
 
-#include "infra/util/Optional.hpp"
 #include "upgrade/pack_builder/Input.hpp"
 #include <memory>
+#include <optional>
 #include <string>
 
 namespace application

@@ -1,7 +1,7 @@
 #ifndef INFRA_WITH_STORAGE_HPP
 #define INFRA_WITH_STORAGE_HPP
 
-#include "infra/util/Optional.hpp" // For std::in_place_t
+#include <optional> // For std::in_place_t
 #include <utility>
 
 namespace infra

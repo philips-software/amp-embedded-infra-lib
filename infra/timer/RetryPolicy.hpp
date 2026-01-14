@@ -2,7 +2,7 @@
 #define INFRA_RETRY_POLICY_HPP
 
 #include "infra/timer/Timer.hpp"
-#include "infra/util/Optional.hpp"
+#include <optional>
 
 namespace infra
 {

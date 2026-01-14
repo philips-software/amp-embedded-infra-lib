@@ -2,10 +2,10 @@
 #define SERVICES_HTTP_CLIENT_CACHED_CONNECTION_HPP
 
 #include "infra/timer/Timer.hpp"
-#include "infra/util/Optional.hpp"
 #include "infra/util/SharedPtr.hpp"
 #include "services/network/HttpClient.hpp"
 #include "services/util/Sha256.hpp"
+#include <optional>
 
 namespace services
 {

@@ -1,4 +1,5 @@
 #include "infra/syntax/JsonObjectNavigator.hpp"
+#include "infra/util/TransformOptional.hpp"
 
 namespace infra
 {

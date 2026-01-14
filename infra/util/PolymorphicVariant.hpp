@@ -2,7 +2,7 @@
 #define INFRA_POLYMORPHIC_VARIANT_HPP
 
 #include "infra/util/StaticStorage.hpp"
-#include "infra/util/Variant.hpp"
+#include "infra/util/VariantDetail.hpp"
 
 namespace infra
 {

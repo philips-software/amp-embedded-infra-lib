@@ -2,8 +2,8 @@
 #define SERVICES_GATT_CHARACTERISTIC_IMPL_HPP
 
 #include "infra/util/ByteRange.hpp"
-#include "infra/util/Optional.hpp"
 #include "services/ble/GattServer.hpp"
+#include <optional>
 
 namespace services
 {
