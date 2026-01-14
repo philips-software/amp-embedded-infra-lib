@@ -32,7 +32,7 @@ namespace services
 
     ConnectionBsd::~ConnectionBsd()
     {
-        if (socket != 0)
+        if (Connected())
         {
             int result = close(socket);
             if (result == -1)
@@ -94,6 +94,11 @@ namespace services
         Attach(connectionObserver);
     }
 
+    bool ConnectionBsd::Connected() const
+    {
+        return socket != 0;
+    }
+
     void ConnectionBsd::Receive()
     {
         while (!receiveBuffer.full())
@@ -103,7 +108,7 @@ namespace services
             if (received == -1)
             {
                 if (errno != EWOULDBLOCK)
-                    ResetOwnership();
+                    AbortAndDestroy();
                 return;
             }
             else if (received != 0)
@@ -118,7 +123,7 @@ namespace services
             }
             else
             {
-                ResetOwnership();
+                CloseAndDestroy();
                 return;
             }
         }
@@ -163,7 +168,8 @@ namespace services
 
     void ConnectionBsd::ResetOwnership()
     {
-        Detach();
+        if (IsAttached())
+            Detach();
         self = nullptr;
     }
 

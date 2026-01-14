@@ -274,6 +274,12 @@ namespace application
             std::vector<std::string> method;
         };
 
+        struct AmbiguousMethod
+        {
+            std::string methodName;
+            std::vector<std::string> serviceNames;
+        };
+
         struct SyntaxError
         {
             std::size_t index;
