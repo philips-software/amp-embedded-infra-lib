@@ -6,7 +6,7 @@
 namespace infra
 {
     template<class T, class F>
-    auto TransformOptional(const std::optional<T>& value, F transformation) -> std::optional<decltype(transformation(*value))>
+    auto TransformOptional(const std::optional<T>& value, F&& transformation) -> std::optional<decltype(transformation(*value))>
     {
         if (value != std::nullopt)
             return std::make_optional(transformation(*value));
