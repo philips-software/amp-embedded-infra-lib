@@ -1,7 +1,7 @@
-#ifndef INFRA_MULTI_VISITOR_HPP
-#define INFRA_MULTI_VISITOR_HPP
+#ifndef INFRA_OVERLOADED_HPP
+#define INFRA_OVERLOADED_HPP
 
-// The MultiVisitor utility allows combining multiple visitor lambdas or functors into a single visitor object.
+// The Overloaded utility allows combining multiple visitor lambdas or functors into a single visitor object.
 // This is particularly useful when working with std::variant and std::visit, enabling handling of multiple types
 // with different behaviors in a clean and concise manner.
 //
@@ -9,14 +9,14 @@
 //
 // std::variant<int, std::string, float, double> value = 42;
 //
-// std::visit(MultiVisitor{
+// std::visit(Overloaded{
 //     [](int i) { std::cout << "int: " << i << '\n'; },
 //     [](const std::string& s) { std::cout << "string: " << s << '\n'; },
 //     [](auto a) { std::cout << "auto: " << a << '\n'; }
 // }, value);
 //
-// In this example, the MultiVisitor combines three different lambdas to handle int, std::string, and any other type (using auto).
-// When std::visit is called with the MultiVisitor, it will invoke the appropriate lambda based on the type held by the variant.
+// In this example, the Overloaded combines three different lambdas to handle int, std::string, and any other type (using auto).
+// When std::visit is called with the Overloaded, it will invoke the appropriate lambda based on the type held by the variant.
 //
 // The auto lambda acts as a catch-all due to C++ overload resolution rules:
 // - When std::visit invokes the visitor's operator(), the compiler considers all available overloads
@@ -32,14 +32,14 @@
 namespace infra
 {
     template<typename... Ts>
-    struct MultiVisitor : Ts...
+    struct Overloaded : Ts...
     {
         using Ts::operator()...;
     };
 
-    // CTAD (Class template argument deduction) for MultiVisitor
+    // CTAD (Class template argument deduction) for Overloaded
     template<typename... Ts>
-    MultiVisitor(Ts...) -> MultiVisitor<Ts...>;
+    Overloaded(Ts...) -> Overloaded<Ts...>;
 }
 
 #endif

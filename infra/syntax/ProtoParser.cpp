@@ -1,5 +1,5 @@
 #include "infra/syntax/ProtoParser.hpp"
-#include "infra/util/MultiVisitor.hpp"
+#include "infra/util/Overloaded.hpp"
 
 namespace infra
 {
@@ -128,7 +128,7 @@ namespace infra
         const auto& value = partialField.first;
         const auto& fieldNumber = partialField.second;
 
-        auto visitor = MultiVisitor{
+        auto visitor = Overloaded{
             [this, &fieldNumber](const PartialProtoLengthDelimited& value) -> ProtoParser::Field
             {
                 return { ProtoLengthDelimited(input, formatErrorPolicy, value.length), fieldNumber };

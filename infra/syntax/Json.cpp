@@ -1,6 +1,6 @@
 #include "infra/syntax/Json.hpp"
 #include "infra/stream/StringOutputStream.hpp"
-#include "infra/util/MultiVisitor.hpp"
+#include "infra/util/Overloaded.hpp"
 #include "infra/util/VariantDetail.hpp"
 #include <algorithm>
 #include <cctype>
@@ -884,7 +884,7 @@ namespace infra
 
     std::optional<JsonValue> JsonIterator::ConvertValue(JsonToken::Token token)
     {
-        const MultiVisitor visitor{
+        const Overloaded visitor{
             [this](const JsonToken::String& value) -> std::optional<JsonValue>
             {
                 return value.Value();
@@ -1119,7 +1119,7 @@ namespace infra
 
     void JsonObjectIterator::ReadCommaOrObjectEnd(JsonToken::Token token)
     {
-        const MultiVisitor visitor{
+        const Overloaded visitor{
             [this](JsonToken::Comma)
             {
                 state = readKey;
@@ -1294,7 +1294,7 @@ namespace infra
 
     void CopyToken(JsonToken::Token token, infra::TextOutputStream& stream)
     {
-        const auto visitor = MultiVisitor{
+        const auto visitor = Overloaded{
             [&stream](const JsonToken::Colon&) -> void
             {
                 stream << ':';

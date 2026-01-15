@@ -1,7 +1,7 @@
 #include "services/network/Address.hpp"
 #include "infra/stream/StringInputStream.hpp"
 #include "infra/util/CompareMembers.hpp"
-#include "infra/util/MultiVisitor.hpp"
+#include "infra/util/Overloaded.hpp"
 #include "infra/util/Tokenizer.hpp"
 
 namespace services
@@ -264,7 +264,7 @@ namespace infra
 
     TextOutputStream& operator<<(TextOutputStream& stream, const AsCanonicalFormIpHelper& asCanonicalFormIpHelper)
     {
-        const auto visitor = infra::MultiVisitor{
+        const auto visitor = infra::Overloaded{
             [&stream](const services::IPv4Address& address)
             {
                 stream << address;
