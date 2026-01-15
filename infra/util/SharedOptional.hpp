@@ -10,8 +10,8 @@
 namespace infra
 {
     // clang-format off
-     struct AlsoWhenAlreadyAllocatable{};
-     extern const AlsoWhenAlreadyAllocatable alsoWhenAlreadyAllocatable;
+    struct AlsoWhenAlreadyAllocatable{};
+    extern const AlsoWhenAlreadyAllocatable alsoWhenAlreadyAllocatable;
     // clang-format on
 
     template<class T>
