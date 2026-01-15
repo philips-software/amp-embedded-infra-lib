@@ -24,7 +24,10 @@ namespace hal
 
     void BufferedSerialCommunicationOnUnbuffered::SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion)
     {
-        delegate.SendData(data, actionOnCompletion);
+        if (!stopped)
+            delegate.SendData(data, actionOnCompletion);
+        else if (actionOnCompletion != nullptr)
+            actionOnCompletion();
     }
 
     infra::StreamReaderWithRewinding& BufferedSerialCommunicationOnUnbuffered::Reader()
@@ -40,6 +43,7 @@ namespace hal
 
     void BufferedSerialCommunicationOnUnbuffered::Stop(const infra::Function<void()>& onDone)
     {
+        stopped = true;
         delegate.ReceiveData(nullptr);
         scheduler.Schedule(onDone);
     }

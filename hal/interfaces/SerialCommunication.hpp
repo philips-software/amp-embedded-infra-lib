@@ -67,6 +67,7 @@ namespace hal
 
         infra::AtomicByteQueueReader reader{ buffer };
         infra::AtomicTriggerScheduler scheduler;
+        bool stopped = false;
     };
 }
 
