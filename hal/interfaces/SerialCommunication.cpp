@@ -26,8 +26,6 @@ namespace hal
     {
         if (!stopped)
             delegate.SendData(data, actionOnCompletion);
-        else if (actionOnCompletion != nullptr)
-            actionOnCompletion();
     }
 
     infra::StreamReaderWithRewinding& BufferedSerialCommunicationOnUnbuffered::Reader()
