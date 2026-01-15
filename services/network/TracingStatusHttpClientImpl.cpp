@@ -1,4 +1,5 @@
 #include "services/network/TracingStatusHttpClientImpl.hpp"
+#include <algorithm>
 
 namespace services
 {
@@ -11,6 +12,47 @@ namespace services
     {
         tracer.Trace() << "HttpClientImpl::StatusAvailable " << statusLine;
         HttpClientImpl::StatusAvailable(code, statusLine);
+    }
+
+    void TracingStatusHttpClientImpl::DataReceived()
+    {
+        auto receiveStream = GetConnection().ReceiveStream();
+        infra::DataInputStream::WithErrorPolicy stream(*receiveStream);
+
+        if (!stream.Empty())
+        {
+            tracer.Trace() << "HttpClientImpl::DataReceived - Received " << stream.Available() << " bytes:";
+            auto marker = receiveStream->ConstructSaveMarker();
+
+            // Limit output to first 512 bytes to avoid log overflow
+            std::size_t bytesToLog = std::min(stream.Available(), static_cast<std::size_t>(512));
+            infra::LimitedStreamReader limitedReader(*receiveStream, bytesToLog);
+            infra::DataInputStream::WithErrorPolicy limitedStream(limitedReader);
+
+            while (!limitedStream.Empty())
+                tracer.Trace() << infra::ByteRangeAsString(limitedStream.ContiguousRange());
+
+            if (stream.Available() > 512)
+                tracer.Trace() << "... (" << (stream.Available() - 512) << " more bytes not shown)";
+
+            receiveStream->Rewind(marker);
+        }
+
+        HttpClientImpl::DataReceived();
+    }
+
+    void TracingStatusHttpClientImpl::HeaderParsingDone(bool error)
+    {
+        if (error)
+            tracer.Trace() << "HttpClientImpl::HeaderParsingDone - ERROR: Header parsing failed";
+        HttpClientImpl::HeaderParsingDone(error);
+    }
+
+    void TracingStatusHttpClientImpl::OnAbortingConnection()
+    {
+        tracer.Trace() << "HttpClientImpl::OnAbortingConnection - Aborting due to: "
+                       << (HeaderParsingError() ? "header parsing error" : "missing Content-Length");
+        HttpClientImpl::OnAbortingConnection();
     }
 
     void TracingStatusHttpClientImpl::Detaching()
@@ -28,6 +70,47 @@ namespace services
     {
         tracer.Trace() << "HttpClientImplWithRedirection::StatusAvailable " << statusLine;
         HttpClientImplWithRedirection::StatusAvailable(code, statusLine);
+    }
+
+    void TracingStatusHttpClientImplWithRedirection::DataReceived()
+    {
+        auto receiveStream = GetConnection().ReceiveStream();
+        infra::DataInputStream::WithErrorPolicy stream(*receiveStream);
+
+        if (!stream.Empty())
+        {
+            tracer.Trace() << "HttpClientImplWithRedirection::DataReceived - Received " << stream.Available() << " bytes:";
+            auto marker = receiveStream->ConstructSaveMarker();
+
+            // Limit output to first 512 bytes to avoid log overflow
+            std::size_t bytesToLog = std::min(stream.Available(), static_cast<std::size_t>(512));
+            infra::LimitedStreamReader limitedReader(*receiveStream, bytesToLog);
+            infra::DataInputStream::WithErrorPolicy limitedStream(limitedReader);
+
+            while (!limitedStream.Empty())
+                tracer.Trace() << infra::ByteRangeAsString(limitedStream.ContiguousRange());
+
+            if (stream.Available() > 512)
+                tracer.Trace() << "... (" << (stream.Available() - 512) << " more bytes not shown)";
+
+            receiveStream->Rewind(marker);
+        }
+
+        HttpClientImplWithRedirection::DataReceived();
+    }
+
+    void TracingStatusHttpClientImplWithRedirection::HeaderParsingDone(bool error)
+    {
+        if (error)
+            tracer.Trace() << "HttpClientImplWithRedirection::HeaderParsingDone - ERROR: Header parsing failed";
+        HttpClientImplWithRedirection::HeaderParsingDone(error);
+    }
+
+    void TracingStatusHttpClientImplWithRedirection::OnAbortingConnection()
+    {
+        tracer.Trace() << "HttpClientImplWithRedirection::OnAbortingConnection - Aborting due to: "
+                       << (HeaderParsingError() ? "header parsing error" : "missing Content-Length");
+        HttpClientImplWithRedirection::OnAbortingConnection();
     }
 
     void TracingStatusHttpClientImplWithRedirection::Detaching()

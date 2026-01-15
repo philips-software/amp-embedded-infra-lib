@@ -41,6 +41,8 @@ namespace services
         void CloseConnection() override;
         Connection& GetConnection() override;
 
+        bool HeaderParsingError() const { return headerParsingError; }
+
         // Implementation of ConnectionObserver
         void Attached() override;
         void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
@@ -57,6 +59,7 @@ namespace services
         void BodyComplete();
 
     protected:
+        virtual void OnAbortingConnection();
         virtual void BodyReaderAvailable(infra::SharedPtr<infra::CountingStreamReaderWithRewinding>&& bodyReader);
 
     private:

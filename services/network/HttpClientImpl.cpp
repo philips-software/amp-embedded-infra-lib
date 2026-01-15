@@ -211,7 +211,10 @@ namespace services
             if (!headerParsingError && contentLength != std::nullopt)
                 BodyReceived();
             else
+            {
+                OnAbortingConnection();
                 AbortAndDestroy();
+            }
         }
     }
 
@@ -358,6 +361,11 @@ namespace services
     void HttpClientImpl::AbortAndDestroy()
     {
         ConnectionObserver::Subject().AbortAndDestroy();
+    }
+
+    void HttpClientImpl::OnAbortingConnection()
+    {
+        // Default implementation does nothing - tracing classes can override to log the reason
     }
 
     HttpClientImpl::BodyReader::BodyReader(const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader, uint32_t contentLength)

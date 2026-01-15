@@ -17,13 +17,16 @@ namespace services
         // Implementation of ConnectionObserver
         void Attached() override;
         void Detaching() override;
+        void DataReceived() override;
         void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
     protected:
         // Implementation of HttpHeaderParserObserver
         void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine) override;
+        void HeaderParsingDone(bool error) override;
         // Implementation of HttpClientImplWithRedirection
         void BodyReaderAvailable(infra::SharedPtr<infra::CountingStreamReaderWithRewinding>&& bodyReader) override;
+        void OnAbortingConnection() override;
 
     private:
         class TracingWriter
@@ -56,6 +59,7 @@ namespace services
         // Implementation of ConnectionObserver
         void Attached() override;
         void Detaching() override;
+        void DataReceived() override;
         void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
         // Implementation of HttpClientImplWithRedirection
@@ -64,9 +68,11 @@ namespace services
     protected:
         // Implementation of HttpHeaderParserObserver
         void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine) override;
+        void HeaderParsingDone(bool error) override;
 
         // Implementation of HttpClientImplWithRedirection
         void BodyReaderAvailable(infra::SharedPtr<infra::CountingStreamReaderWithRewinding>&& bodyReader) override;
+        void OnAbortingConnection() override;
 
     private:
         class TracingWriter

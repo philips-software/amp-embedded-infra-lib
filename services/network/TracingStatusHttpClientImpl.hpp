@@ -14,7 +14,10 @@ namespace services
 
     protected:
         void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine) override;
+        void DataReceived() override;
         void Detaching() override;
+        void HeaderParsingDone(bool error) override;
+        void OnAbortingConnection() override;
 
     private:
         friend class TracingStatusHttpClientConnectorImpl;
@@ -33,6 +36,9 @@ namespace services
 
     protected:
         void StatusAvailable(HttpStatusCode code, infra::BoundedConstString statusLine) override;
+        void DataReceived() override;
+        void HeaderParsingDone(bool error) override;
+        void OnAbortingConnection() override;
         void Detaching() override;
         void Redirecting(infra::BoundedConstString url) override;
 
