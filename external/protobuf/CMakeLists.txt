@@ -49,7 +49,7 @@ if (EMIL_HOST_BUILD)
                 target_compile_options(${target} PUBLIC -Wno-deprecated-declarations)
             endif()
             if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang" AND "${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" MATCHES "MSVC")
-                # unused-command-line-argument: /MP option is set by the library when building with MSVC, but the flag has no effect on clang-cl 
+                # unused-command-line-argument: /MP option is set by the library when building with MSVC, but the flag has no effect on clang-cl
                 target_compile_options(${target} PUBLIC -Wno-unused-command-line-argument -Wno-invalid-offsetof)
             endif()
         endforeach()

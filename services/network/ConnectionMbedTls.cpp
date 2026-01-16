@@ -30,8 +30,8 @@ namespace services
         hal::SynchronousRandomDataGenerator& randomDataGenerator, const ParametersWorkaround& parameters)
         : createdObserver(std::move(createdObserver))
         , randomDataGenerator(randomDataGenerator)
-        , server(parameters.parameters.Is<ServerParameters>())
-        , clientSession(parameters.parameters.Is<ClientParameters>() ? &parameters.parameters.Get<ClientParameters>().session : nullptr)
+        , server(std::holds_alternative<ServerParameters>(parameters.parameters))
+        , clientSession(std::holds_alternative<ClientParameters>(parameters.parameters) ? &std::get<ClientParameters>(parameters.parameters).session : nullptr)
         , receiveReader([this]()
               {
                   keepAliveForReader = nullptr;
@@ -55,7 +55,7 @@ namespace services
         certificates.Config(sslConfig);
 
         if (server)
-            mbedtls_ssl_conf_session_cache(&sslConfig, &parameters.parameters.Get<ServerParameters>().serverCache, mbedtls_ssl_cache_get, mbedtls_ssl_cache_set);
+            mbedtls_ssl_conf_session_cache(&sslConfig, &std::get<ServerParameters>(parameters.parameters).serverCache, mbedtls_ssl_cache_get, mbedtls_ssl_cache_set);
 
         if (!server)
         {
@@ -97,7 +97,7 @@ namespace services
 
     int ConnectionMbedTls::GetAuthMode(const ParametersWorkaround& parameters) const
     {
-        auto certificateValidation = server ? parameters.parameters.Get<ServerParameters>().certificateValidation : parameters.parameters.Get<ClientParameters>().certificateValidation;
+        auto certificateValidation = server ? std::get<ServerParameters>(parameters.parameters).certificateValidation : std::get<ClientParameters>(parameters.parameters).certificateValidation;
 
         switch (certificateValidation)
         {
@@ -452,7 +452,7 @@ namespace services
     }
 
     ConnectionMbedTls::StreamWriterMbedTls::StreamWriterMbedTls(ConnectionMbedTls& connection, uint32_t size)
-        : infra::LimitedStreamWriter::WithOutput<infra::BoundedVectorStreamWriter>(infra::inPlace, connection.sendBuffer, size)
+        : infra::LimitedStreamWriter::WithOutput<infra::BoundedVectorStreamWriter>(std::in_place, connection.sendBuffer, size)
         , connection(connection)
     {}
 

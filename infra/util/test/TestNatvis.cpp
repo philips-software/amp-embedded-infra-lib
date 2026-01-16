@@ -1,10 +1,10 @@
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/Function.hpp"
-#include "infra/util/Optional.hpp"
-#include "infra/util/Variant.hpp"
 #include "gtest/gtest.h"
 #include <cstdint>
+#include <optional>
+#include <variant>
 
 namespace
 {
@@ -55,16 +55,6 @@ TEST(NatvisTest, visualize_Function)
         return 10;
     };
     infra::Function<void(void*)> function = free;
-}
-
-TEST(NatvisTest, visualize_Variant)
-{
-    infra::Variant<int, char, bool> emptyVariant;
-    infra::Variant<int, char, bool> variantWithBool{ true };
-    infra::Variant<int, char, bool> variantWithInt{ 1 };
-    infra::Variant<int, char, bool> variantWithChar{ 'A' };
-
-    infra::Variant<Content, bool> variantWithOwnType{ Content() };
 }
 
 /*

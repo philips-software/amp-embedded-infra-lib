@@ -43,7 +43,7 @@ public:
 
     void ReceivePacket(const std::vector<uint8_t>& data)
     {
-        base.GetObserver().ReceivedMessage(reader.Emplace(infra::inPlace, data), data.size() + data.size() / 254 + 2);
+        base.GetObserver().ReceivedMessage(reader.Emplace(std::in_place, data), data.size() + data.size() / 254 + 2);
     }
 
     void ReceiveInitRequest(uint16_t availableWindow)

@@ -2,8 +2,8 @@
 #define JSON_OBJECT_NAVIGATOR_HPP
 
 #include "infra/syntax/Json.hpp"
-#include "infra/util/Optional.hpp"
 #include <functional>
+#include <optional>
 
 namespace infra
 {

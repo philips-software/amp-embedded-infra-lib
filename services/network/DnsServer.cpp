@@ -58,7 +58,7 @@ namespace services
         stream << questionFooter;
         stream << rnameCompression;
         stream << payload;
-        stream << answer->second.Get<services::IPv4Address>();
+        stream << std::get<services::IPv4Address>(answer->second);
 
         question.reset();
         answer.reset();

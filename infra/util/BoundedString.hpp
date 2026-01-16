@@ -8,6 +8,7 @@
 #include "infra/util/WithStorage.hpp"
 #include <algorithm>
 #include <cctype>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <limits>

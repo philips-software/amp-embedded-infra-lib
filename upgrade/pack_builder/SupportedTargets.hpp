@@ -1,8 +1,9 @@
 #ifndef UPGRADE_SUPPORTED_TARGETS_HPP
 #define UPGRADE_SUPPORTED_TARGETS_HPP
 
-#include "infra/util/Optional.hpp"
+#include <cstdint>
 #include <map>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
