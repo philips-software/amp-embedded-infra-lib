@@ -52,14 +52,14 @@ namespace application
 
         for (infra::JsonObjectIterator it = components->begin(); it != components->end(); ++it)
             if (std::holds_alternative<infra::JsonString>(it->value))
-                result.emplace_back(std::make_tuple(it->key.ToStdString(), std::get<infra::JsonString>(it->value).ToStdString(), std::nullopt));
+                result.emplace_back(it->key.ToStdString(), std::get<infra::JsonString>(it->value).ToStdString(), std::nullopt);
             else if (std::holds_alternative<infra::JsonObject>(it->value))
             {
                 auto component = std::get<infra::JsonObject>(it->value);
                 auto key = it->key.ToStdString();
                 auto [path, address] = ExtractDataFromObjectComponent(key, component);
 
-                result.emplace_back(std::make_tuple(key, path, address));
+                result.emplace_back(key, path, address);
             }
             else
                 throw ParseException("ConfigParser error: invalid value for component: " + it->key.ToStdString());
@@ -80,9 +80,9 @@ namespace application
 
         for (infra::JsonObjectIterator it = options->begin(); it != options->end(); ++it)
             if (std::holds_alternative<infra::JsonString>(it->value))
-                result.emplace_back(std::make_pair(it->key.ToStdString(), std::get<infra::JsonString>(it->value).ToStdString()));
+                result.emplace_back(it->key.ToStdString(), std::get<infra::JsonString>(it->value).ToStdString());
             else if (std::holds_alternative<int32_t>(it->value))
-                result.emplace_back(std::pair<std::string, std::string>(it->key.ToStdString(), std::to_string(std::get<int32_t>(it->value))));
+                result.emplace_back(it->key.ToStdString(), std::to_string(std::get<int32_t>(it->value)));
             else
                 throw ParseException("ConfigParser error: invalid value for option: " + it->key.ToStdString());
 
