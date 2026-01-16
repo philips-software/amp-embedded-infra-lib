@@ -8,7 +8,7 @@ class GapPeripheralIntervalDecoratorTest
 {
 public:
     testing::StrictMock<services::GapPeripheralMock> gap;
-    application::GapPeripheralIntervalDecorator gapPeripheralIntervalDecorator{ gap };
+    services::GapPeripheralIntervalDecorator gapPeripheralIntervalDecorator{ gap };
     testing::StrictMock<services::GapPeripheralObserverMock> gapObserver{ gapPeripheralIntervalDecorator };
 };
 
