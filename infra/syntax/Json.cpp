@@ -885,35 +885,35 @@ namespace infra
     std::optional<JsonValue> JsonIterator::ConvertValue(JsonToken::Token token)
     {
         const Overloaded visitor{
-            [this](const JsonToken::String& value) -> std::optional<JsonValue>
+            [](const JsonToken::String& value) -> std::optional<JsonValue>
             {
                 return value.Value();
             },
-            [this, &token](const JsonBiggerInt&) -> std::optional<JsonValue>
+            [this, &token](const JsonBiggerInt&)
             {
                 return ReadInteger(token);
             },
-            [this](const JsonFloat& value) -> std::optional<JsonValue>
+            [](const JsonFloat& value) -> std::optional<JsonValue>
             {
                 return value;
             },
-            [this](const JsonToken::Boolean& value) -> std::optional<JsonValue>
+            [](const JsonToken::Boolean& value) -> std::optional<JsonValue>
             {
                 return value.Value();
             },
-            [this, &token](const JsonToken::LeftBrace&) -> std::optional<JsonValue>
+            [this, &token](const JsonToken::LeftBrace&)
             {
                 return ReadObjectValue(token);
             },
-            [this, &token](const JsonToken::LeftBracket&) -> std::optional<JsonValue>
+            [this, &token](const JsonToken::LeftBracket&)
             {
                 return ReadArrayValue(token);
             },
-            [this](const JsonToken::Null&) -> std::optional<JsonValue>
+            [](const JsonToken::Null&) -> std::optional<JsonValue>
             {
                 return JsonObject();
             },
-            [this](auto) -> std::optional<JsonValue>
+            [](auto) -> std::optional<JsonValue>
             {
                 return std::nullopt;
             },
@@ -1295,50 +1295,50 @@ namespace infra
     void CopyToken(JsonToken::Token token, infra::TextOutputStream& stream)
     {
         const auto visitor = Overloaded{
-            [&stream](const JsonToken::Colon&) -> void
+            [&stream](const JsonToken::Colon&)
             {
                 stream << ':';
             },
-            [&stream](const JsonToken::Comma&) -> void
+            [&stream](const JsonToken::Comma&)
             {
                 stream << ',';
             },
-            [&stream](const JsonToken::Dot&) -> void
+            [&stream](const JsonToken::Dot&)
             {
                 stream << '.';
             },
-            [&stream](const JsonToken::Null&) -> void
+            [&stream](const JsonToken::Null&)
             {
                 stream << "null";
             },
-            [&stream](const JsonToken::LeftBrace&) -> void
+            [&stream](const JsonToken::LeftBrace&)
             {
                 stream << '{';
             },
-            [&stream](const JsonToken::RightBrace&) -> void
+            [&stream](const JsonToken::RightBrace&)
             {
                 stream << '}';
             },
-            [&stream](const JsonToken::LeftBracket&) -> void
+            [&stream](const JsonToken::LeftBracket&)
             {
                 stream << '[';
             },
-            [&stream](const JsonToken::RightBracket&) -> void
+            [&stream](const JsonToken::RightBracket&)
             {
                 stream << ']';
             },
-            [&stream](const JsonToken::String& token) -> void
+            [&stream](const JsonToken::String& token)
             {
                 stream << '"' << token.RawValue() << '"';
             },
-            [&stream](const infra::JsonBiggerInt& token) -> void
+            [&stream](const infra::JsonBiggerInt& token)
             {
                 if (token.Negative())
                     stream << '-';
 
                 stream << token.Value();
             },
-            [&stream](const infra::JsonFloat& token) -> void
+            [&stream](const infra::JsonFloat& token)
             {
                 if (token.Negative())
                     stream << '-';
@@ -1353,14 +1353,14 @@ namespace infra
 
                 stream << token.IntValue() << "." << infra::Width(width, '0') << fractional;
             },
-            [&stream](const JsonToken::Boolean& token) -> void
+            [&stream](const JsonToken::Boolean& token)
             {
                 if (token.Value())
                     stream << "true";
                 else
                     stream << "false";
             },
-            [&stream](const auto&) -> void
+            [&stream](const auto&)
             {
                 std::abort();
             },
