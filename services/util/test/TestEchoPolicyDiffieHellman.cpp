@@ -165,6 +165,16 @@ TEST_F(EchoPolicyDiffieHellmanTest, send_and_receive)
     ExchangeData();
 }
 
+TEST_F(EchoPolicyDiffieHellmanTest, intialize_while_initializing_starts_over)
+{
+    Initialized(); // second initialization
+
+    EXPECT_CALL(echoPolicyLeft, KeyExchangeSuccessful());
+    EXPECT_CALL(echoPolicyRight, KeyExchangeSuccessful());
+
+    ExchangeData();
+}
+
 namespace
 {
     class DiffieHellmanKeyEstablishmentMock
