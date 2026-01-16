@@ -57,16 +57,6 @@ TEST(NatvisTest, visualize_Function)
     infra::Function<void(void*)> function = free;
 }
 
-TEST(NatvisTest, visualize_Variant)
-{
-    std::variant<int, char, bool> emptyVariant;
-    std::variant<int, char, bool> variantWithBool{ true };
-    std::variant<int, char, bool> variantWithInt{ 1 };
-    std::variant<int, char, bool> variantWithChar{ 'A' };
-
-    std::variant<Content, bool> variantWithOwnType{ Content() };
-}
-
 /*
 TEST(NatvisTest, visualize_PolymorphicVariant)
 {
