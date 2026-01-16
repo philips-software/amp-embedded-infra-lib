@@ -1294,7 +1294,8 @@ namespace infra
 
     void CopyToken(JsonToken::Token token, infra::TextOutputStream& stream)
     {
-        const auto visitor = Overloaded{
+
+        auto visitor = Overloaded{
             [&stream](const JsonToken::Colon&)
             {
                 stream << ':';
@@ -1360,7 +1361,11 @@ namespace infra
                 else
                     stream << "false";
             },
-            [](const auto&)
+            [](const JsonToken::End&)
+            {
+                std::abort();
+            },
+            [](const JsonToken::Error&)
             {
                 std::abort();
             },
