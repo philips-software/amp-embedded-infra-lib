@@ -1360,7 +1360,7 @@ namespace infra
                 else
                     stream << "false";
             },
-            [&stream](const auto&)
+            [](const auto&)
             {
                 std::abort();
             },
