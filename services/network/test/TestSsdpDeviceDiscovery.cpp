@@ -69,9 +69,9 @@ public:
                 ASSERT_EQ(sendSize, 200);
 
                 if (ipVersion == services::IPVersions::ipv6)
-                    ASSERT_TRUE(remote.Is<services::Udpv6Socket>());
+                    ASSERT_TRUE(std::holds_alternative<services::Udpv6Socket>(remote));
                 else
-                    ASSERT_TRUE(remote.Is<services::Udpv4Socket>());
+                    ASSERT_TRUE(std::holds_alternative<services::Udpv4Socket>(remote));
             });
     }
 

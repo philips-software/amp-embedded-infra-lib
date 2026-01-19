@@ -45,7 +45,7 @@ namespace services
             CertificateValidation certificateValidation;
         };
 
-        using Parameters = infra::Variant<ServerParameters, ClientParameters>;
+        using Parameters = std::variant<ServerParameters, ClientParameters>;
 
         struct ParametersWorkaround
         {

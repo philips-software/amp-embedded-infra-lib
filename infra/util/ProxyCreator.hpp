@@ -2,7 +2,6 @@
 #define INFRA_PROXY_CREATOR_HPP
 
 #include "infra/util/Function.hpp"
-#include "infra/util/Optional.hpp"
 #include <optional>
 #include <tuple>
 

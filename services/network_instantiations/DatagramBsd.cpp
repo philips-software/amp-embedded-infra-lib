@@ -122,8 +122,8 @@ namespace services
     {
         sockaddr_in address{};
         address.sin_family = AF_INET;
-        address.sin_addr.s_addr = htonl(services::ConvertToUint32(requestedTo.Get<Udpv4Socket>().first));
-        address.sin_port = htons(requestedTo.Get<Udpv4Socket>().second);
+        address.sin_addr.s_addr = htonl(services::ConvertToUint32(std::get<Udpv4Socket>(requestedTo).first));
+        address.sin_port = htons(std::get<Udpv4Socket>(requestedTo).second);
         int sent = sendto(socket, reinterpret_cast<char*>(sendBuffer->data()), sendBuffer->size(), 0, reinterpret_cast<sockaddr*>(&address), sizeof(address));
 
         if (sent == -1)
@@ -185,11 +185,11 @@ namespace services
 
     void DatagramBsd::BindLocal(const UdpSocket& local)
     {
-        localAddress = local.Get<Udpv4Socket>().first;
+        localAddress = std::get<Udpv4Socket>(local).first;
         sockaddr_in address{};
         address.sin_family = AF_INET;
         address.sin_addr.s_addr = htonl(services::ConvertToUint32(localAddress));
-        address.sin_port = htons(local.Get<Udpv4Socket>().second);
+        address.sin_port = htons(std::get<Udpv4Socket>(local).second);
         auto result = bind(socket, reinterpret_cast<sockaddr*>(&address), sizeof(address));
         assert(result == 0);
     }
@@ -198,8 +198,8 @@ namespace services
     {
         sockaddr_in address{};
         address.sin_family = AF_INET;
-        address.sin_addr.s_addr = htonl(services::ConvertToUint32(remote.Get<Udpv4Socket>().first));
-        address.sin_port = htons(remote.Get<Udpv4Socket>().second);
+        address.sin_addr.s_addr = htonl(services::ConvertToUint32(std::get<Udpv4Socket>(remote).first));
+        address.sin_port = htons(std::get<Udpv4Socket>(remote).second);
         auto result = connect(socket, reinterpret_cast<sockaddr*>(&address), sizeof(address));
         assert(result == 0);
 

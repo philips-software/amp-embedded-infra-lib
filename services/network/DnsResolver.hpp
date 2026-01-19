@@ -4,11 +4,11 @@
 #include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"
 #include "infra/timer/Timer.hpp"
 #include "infra/util/BoundedVector.hpp"
-#include "infra/util/Optional.hpp"
-#include "infra/util/Variant.hpp"
 #include "services/network/Datagram.hpp"
 #include "services/network/Dns.hpp"
 #include "services/network/NameResolver.hpp"
+#include <optional>
+#include <variant>
 
 namespace services
 {
@@ -59,7 +59,7 @@ namespace services
         private:
             void DiscardNameServerRecords();
             void ReadAdditionalRecords(infra::BoundedVector<IPAddress>& recursiveDnsServers, uint32_t nameServerPosition);
-            infra::Variant<Answer, CName, NoAnswer> ReadAnswer();
+            std::variant<Answer, CName, NoAnswer> ReadAnswer();
             void DiscardAnswer();
             std::optional<IPAddress> ReadNameServer(std::size_t nameServerPosition, std::size_t numNameServers);
             bool ReadAndMatchHostname();

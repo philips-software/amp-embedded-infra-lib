@@ -57,11 +57,6 @@ namespace services
 
         class MqttFormatter
         {
-        private:
-            template<PacketType packetType>
-            struct InPlaceType
-            {};
-
         public:
             explicit MqttFormatter(infra::DataOutputStream stream);
 
@@ -285,7 +280,7 @@ namespace services
             template<class operation, class... Args>
             void QueueSendOperation(Args&&... args)
             {
-                sendOperations.emplace_back(infra::InPlaceType<operation>(), std::forward<Args>(args)...);
+                sendOperations.emplace_back(std::in_place_type_t<operation>(), std::forward<Args>(args)...);
                 ProcessSendOperations();
             }
         };

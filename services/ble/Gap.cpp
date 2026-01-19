@@ -2,7 +2,7 @@
 #include "infra/stream/ByteInputStream.hpp"
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/MemoryRange.hpp"
-#include "infra/util/Optional.hpp"
+#include <optional>
 
 namespace
 {

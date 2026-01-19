@@ -325,79 +325,79 @@ namespace services
 
     inline void DeserializeField(ProtoBool, infra::ProtoParser& parser, infra::ProtoParser::FieldVariant& field, bool& value)
     {
-        parser.ReportFormatResult(field.Is<uint64_t>());
-        if (field.Is<uint64_t>())
-            value = field.Get<uint64_t>() != 0;
+        parser.ReportFormatResult(std::holds_alternative<uint64_t>(field));
+        if (std::holds_alternative<uint64_t>(field))
+            value = std::get<uint64_t>(field) != 0;
     }
 
     inline void DeserializeField(ProtoUInt32, infra::ProtoParser& parser, infra::ProtoParser::FieldVariant& field, uint32_t& value)
     {
-        parser.ReportFormatResult(field.Is<uint64_t>());
-        if (field.Is<uint64_t>())
-            value = static_cast<uint32_t>(field.Get<uint64_t>());
+        parser.ReportFormatResult(std::holds_alternative<uint64_t>(field));
+        if (std::holds_alternative<uint64_t>(field))
+            value = static_cast<uint32_t>(std::get<uint64_t>(field));
     }
 
     inline void DeserializeField(ProtoInt32, infra::ProtoParser& parser, infra::ProtoParser::FieldVariant& field, int32_t& value)
     {
-        parser.ReportFormatResult(field.Is<uint64_t>());
-        if (field.Is<uint64_t>())
-            value = static_cast<int32_t>(field.Get<uint64_t>());
+        parser.ReportFormatResult(std::holds_alternative<uint64_t>(field));
+        if (std::holds_alternative<uint64_t>(field))
+            value = static_cast<int32_t>(std::get<uint64_t>(field));
     }
 
     inline void DeserializeField(ProtoUInt64, infra::ProtoParser& parser, infra::ProtoParser::FieldVariant& field, uint64_t& value)
     {
-        parser.ReportFormatResult(field.Is<uint64_t>());
-        if (field.Is<uint64_t>())
-            value = field.Get<uint64_t>();
+        parser.ReportFormatResult(std::holds_alternative<uint64_t>(field));
+        if (std::holds_alternative<uint64_t>(field))
+            value = std::get<uint64_t>(field);
     }
 
     inline void DeserializeField(ProtoInt64, infra::ProtoParser& parser, infra::ProtoParser::FieldVariant& field, int64_t& value)
     {
-        parser.ReportFormatResult(field.Is<uint64_t>());
-        if (field.Is<uint64_t>())
-            value = static_cast<int64_t>(field.Get<uint64_t>());
+        parser.ReportFormatResult(std::holds_alternative<uint64_t>(field));
+        if (std::holds_alternative<uint64_t>(field))
+            value = static_cast<int64_t>(std::get<uint64_t>(field));
     }
 
     inline void DeserializeField(ProtoFixed32, infra::ProtoParser& parser, infra::ProtoParser::FieldVariant& field, uint32_t& value)
     {
-        parser.ReportFormatResult(field.Is<uint32_t>());
-        if (field.Is<uint32_t>())
-            value = field.Get<uint32_t>();
+        parser.ReportFormatResult(std::holds_alternative<uint32_t>(field));
+        if (std::holds_alternative<uint32_t>(field))
+            value = std::get<uint32_t>(field);
     }
 
     inline void DeserializeField(ProtoFixed64, infra::ProtoParser& parser, infra::ProtoParser::FieldVariant& field, uint64_t& value)
     {
-        parser.ReportFormatResult(field.Is<uint64_t>());
-        if (field.Is<uint64_t>())
-            value = field.Get<uint64_t>();
+        parser.ReportFormatResult(std::holds_alternative<uint64_t>(field));
+        if (std::holds_alternative<uint64_t>(field))
+            value = std::get<uint64_t>(field);
     }
 
     inline void DeserializeField(ProtoSFixed32, infra::ProtoParser& parser, infra::ProtoParser::FieldVariant& field, int32_t& value)
     {
-        parser.ReportFormatResult(field.Is<uint32_t>());
-        if (field.Is<uint32_t>())
-            value = static_cast<int32_t>(field.Get<uint32_t>());
+        parser.ReportFormatResult(std::holds_alternative<uint32_t>(field));
+        if (std::holds_alternative<uint32_t>(field))
+            value = static_cast<int32_t>(std::get<uint32_t>(field));
     }
 
     inline void DeserializeField(ProtoSFixed64, infra::ProtoParser& parser, infra::ProtoParser::FieldVariant& field, int64_t& value)
     {
-        parser.ReportFormatResult(field.Is<uint64_t>());
-        if (field.Is<uint64_t>())
-            value = static_cast<int64_t>(field.Get<uint64_t>());
+        parser.ReportFormatResult(std::holds_alternative<uint64_t>(field));
+        if (std::holds_alternative<uint64_t>(field))
+            value = static_cast<int64_t>(std::get<uint64_t>(field));
     }
 
     inline void DeserializeField(ProtoUnboundedString, infra::ProtoParser& parser, infra::ProtoParser::FieldVariant& field, std::string& value)
     {
-        parser.ReportFormatResult(field.Is<infra::ProtoLengthDelimited>());
-        if (field.Is<infra::ProtoLengthDelimited>())
-            value = field.Get<infra::ProtoLengthDelimited>().GetStdString();
+        parser.ReportFormatResult(std::holds_alternative<infra::ProtoLengthDelimited>(field));
+        if (std::holds_alternative<infra::ProtoLengthDelimited>(field))
+            value = std::get<infra::ProtoLengthDelimited>(field).GetStdString();
     }
 
     inline void DeserializeField(ProtoUnboundedBytes, infra::ProtoParser& parser, infra::ProtoParser::FieldVariant& field, std::vector<uint8_t>& value)
     {
-        parser.ReportFormatResult(field.Is<infra::ProtoLengthDelimited>());
-        if (field.Is<infra::ProtoLengthDelimited>())
-            value = field.Get<infra::ProtoLengthDelimited>().GetUnboundedBytes();
+        parser.ReportFormatResult(std::holds_alternative<infra::ProtoLengthDelimited>(field));
+        if (std::holds_alternative<infra::ProtoLengthDelimited>(field))
+            value = std::get<infra::ProtoLengthDelimited>(field).GetUnboundedBytes();
     }
 
     template<std::size_t Max, class T, class U>
@@ -429,10 +429,10 @@ namespace services
     template<class T, class U>
     void DeserializeField(ProtoMessage<T>, infra::ProtoParser& parser, infra::ProtoParser::FieldVariant& field, U& value)
     {
-        parser.ReportFormatResult(field.Is<infra::ProtoLengthDelimited>());
-        if (field.Is<infra::ProtoLengthDelimited>())
+        parser.ReportFormatResult(std::holds_alternative<infra::ProtoLengthDelimited>(field));
+        if (std::holds_alternative<infra::ProtoLengthDelimited>(field))
         {
-            infra::ProtoParser nestedParser = field.Get<infra::ProtoLengthDelimited>().Parser();
+            infra::ProtoParser nestedParser = std::get<infra::ProtoLengthDelimited>(field).Parser();
             value.Deserialize(nestedParser);
         }
     }
@@ -440,104 +440,104 @@ namespace services
     template<class T>
     void DeserializeField(ProtoEnum<T>, infra::ProtoParser& parser, infra::ProtoParser::FieldVariant& field, T& value)
     {
-        parser.ReportFormatResult(field.Is<uint64_t>());
-        if (field.Is<uint64_t>())
-            value = static_cast<T>(field.Get<uint64_t>());
+        parser.ReportFormatResult(std::holds_alternative<uint64_t>(field));
+        if (std::holds_alternative<uint64_t>(field))
+            value = static_cast<T>(std::get<uint64_t>(field));
     }
 
     template<std::size_t Max>
     void DeserializeField(ProtoBytes<Max>, infra::ProtoParser& parser, infra::ProtoParser::FieldVariant& field, infra::BoundedVector<uint8_t>& value)
     {
-        parser.ReportFormatResult(field.Is<infra::ProtoLengthDelimited>());
-        if (field.Is<infra::ProtoLengthDelimited>())
-            field.Get<infra::ProtoLengthDelimited>().GetBytes(value);
+        parser.ReportFormatResult(std::holds_alternative<infra::ProtoLengthDelimited>(field));
+        if (std::holds_alternative<infra::ProtoLengthDelimited>(field))
+            std::get<infra::ProtoLengthDelimited>(field).GetBytes(value);
     }
 
     template<std::size_t Max>
     void DeserializeField(ProtoBytes<Max>, infra::ProtoParser& parser, infra::ProtoParser::FieldVariant& field, infra::ConstByteRange& value)
     {
-        parser.ReportFormatResult(field.Is<infra::ProtoLengthDelimited>());
-        if (field.Is<infra::ProtoLengthDelimited>())
-            field.Get<infra::ProtoLengthDelimited>().GetBytesReference(value);
+        parser.ReportFormatResult(std::holds_alternative<infra::ProtoLengthDelimited>(field));
+        if (std::holds_alternative<infra::ProtoLengthDelimited>(field))
+            std::get<infra::ProtoLengthDelimited>(field).GetBytesReference(value);
     }
 
     template<std::size_t Max>
     void DeserializeField(ProtoString<Max>, infra::ProtoParser& parser, infra::ProtoParser::FieldVariant& field, infra::BoundedString& value)
     {
-        parser.ReportFormatResult(field.Is<infra::ProtoLengthDelimited>());
-        if (field.Is<infra::ProtoLengthDelimited>())
-            field.Get<infra::ProtoLengthDelimited>().GetString(value);
+        parser.ReportFormatResult(std::holds_alternative<infra::ProtoLengthDelimited>(field));
+        if (std::holds_alternative<infra::ProtoLengthDelimited>(field))
+            std::get<infra::ProtoLengthDelimited>(field).GetString(value);
     }
 
     template<std::size_t Max>
     void DeserializeField(ProtoString<Max>, infra::ProtoParser& parser, infra::ProtoParser::FieldVariant& field, infra::BoundedConstString& value)
     {
-        parser.ReportFormatResult(field.Is<infra::ProtoLengthDelimited>());
-        if (field.Is<infra::ProtoLengthDelimited>())
-            field.Get<infra::ProtoLengthDelimited>().GetStringReference(value);
+        parser.ReportFormatResult(std::holds_alternative<infra::ProtoLengthDelimited>(field));
+        if (std::holds_alternative<infra::ProtoLengthDelimited>(field))
+            std::get<infra::ProtoLengthDelimited>(field).GetStringReference(value);
     }
 
     inline void DeserializeField(ProtoBool, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, bool& value)
     {
-        parser.ReportFormatResult(field.Is<uint64_t>());
-        if (field.Is<uint64_t>())
-            value = field.Get<uint64_t>() != 0;
+        parser.ReportFormatResult(std::holds_alternative<uint64_t>(field));
+        if (std::holds_alternative<uint64_t>(field))
+            value = std::get<uint64_t>(field) != 0;
     }
 
     inline void DeserializeField(ProtoUInt32, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, uint32_t& value)
     {
-        parser.ReportFormatResult(field.Is<uint64_t>());
-        if (field.Is<uint64_t>())
-            value = static_cast<uint32_t>(field.Get<uint64_t>());
+        parser.ReportFormatResult(std::holds_alternative<uint64_t>(field));
+        if (std::holds_alternative<uint64_t>(field))
+            value = static_cast<uint32_t>(std::get<uint64_t>(field));
     }
 
     inline void DeserializeField(ProtoInt32, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, int32_t& value)
     {
-        parser.ReportFormatResult(field.Is<uint64_t>());
-        if (field.Is<uint64_t>())
-            value = static_cast<int32_t>(field.Get<uint64_t>());
+        parser.ReportFormatResult(std::holds_alternative<uint64_t>(field));
+        if (std::holds_alternative<uint64_t>(field))
+            value = static_cast<int32_t>(std::get<uint64_t>(field));
     }
 
     inline void DeserializeField(ProtoUInt64, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, uint64_t& value)
     {
-        parser.ReportFormatResult(field.Is<uint64_t>());
-        if (field.Is<uint64_t>())
-            value = field.Get<uint64_t>();
+        parser.ReportFormatResult(std::holds_alternative<uint64_t>(field));
+        if (std::holds_alternative<uint64_t>(field))
+            value = std::get<uint64_t>(field);
     }
 
     inline void DeserializeField(ProtoInt64, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, int64_t& value)
     {
-        parser.ReportFormatResult(field.Is<uint64_t>());
-        if (field.Is<uint64_t>())
-            value = static_cast<int64_t>(field.Get<uint64_t>());
+        parser.ReportFormatResult(std::holds_alternative<uint64_t>(field));
+        if (std::holds_alternative<uint64_t>(field))
+            value = static_cast<int64_t>(std::get<uint64_t>(field));
     }
 
     inline void DeserializeField(ProtoFixed32, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, uint32_t& value)
     {
-        parser.ReportFormatResult(field.Is<uint32_t>());
-        if (field.Is<uint32_t>())
-            value = field.Get<uint32_t>();
+        parser.ReportFormatResult(std::holds_alternative<uint32_t>(field));
+        if (std::holds_alternative<uint32_t>(field))
+            value = std::get<uint32_t>(field);
     }
 
     inline void DeserializeField(ProtoFixed64, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, uint64_t& value)
     {
-        parser.ReportFormatResult(field.Is<uint64_t>());
-        if (field.Is<uint64_t>())
-            value = field.Get<uint64_t>();
+        parser.ReportFormatResult(std::holds_alternative<uint64_t>(field));
+        if (std::holds_alternative<uint64_t>(field))
+            value = std::get<uint64_t>(field);
     }
 
     inline void DeserializeField(ProtoSFixed32, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, int32_t& value)
     {
-        parser.ReportFormatResult(field.Is<uint32_t>());
-        if (field.Is<uint32_t>())
-            value = static_cast<int32_t>(field.Get<uint32_t>());
+        parser.ReportFormatResult(std::holds_alternative<uint32_t>(field));
+        if (std::holds_alternative<uint32_t>(field))
+            value = static_cast<int32_t>(std::get<uint32_t>(field));
     }
 
     inline void DeserializeField(ProtoSFixed64, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, int64_t& value)
     {
-        parser.ReportFormatResult(field.Is<uint64_t>());
-        if (field.Is<uint64_t>())
-            value = static_cast<int64_t>(field.Get<uint64_t>());
+        parser.ReportFormatResult(std::holds_alternative<uint64_t>(field));
+        if (std::holds_alternative<uint64_t>(field))
+            value = static_cast<int64_t>(std::get<uint64_t>(field));
     }
 }
 

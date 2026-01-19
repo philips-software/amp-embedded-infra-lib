@@ -24,8 +24,8 @@ TEST(GattClientTest, characteristic_implementation_supports_different_uuid_lengt
     service.AddCharacteristic(characteristicDefinitionA);
     service.AddCharacteristic(characteristicDefinitionB);
 
-    EXPECT_EQ(0x42, characteristicDefinitionA.Type().Get<services::AttAttribute::Uuid16>());
-    EXPECT_EQ(uuid128, characteristicDefinitionB.Type().Get<services::AttAttribute::Uuid128>());
+    EXPECT_EQ(0x42, std::get<services::AttAttribute::Uuid16>(characteristicDefinitionA.Type()));
+    EXPECT_EQ(uuid128, std::get<services::AttAttribute::Uuid128>(characteristicDefinitionB.Type()));
 }
 
 TEST(GattClientTest, characteristic_implementation_supports_different_properties)
@@ -51,7 +51,7 @@ TEST(GattClientTest, characteristic_implementation_is_added_to_service)
     service.AddCharacteristic(characteristicDefinitionB);
 
     EXPECT_FALSE(service.Characteristics().empty());
-    EXPECT_EQ(0x84, service.Characteristics().front().Type().Get<services::AttAttribute::Uuid16>());
+    EXPECT_EQ(0x84, std::get<services::AttAttribute::Uuid16>(service.Characteristics().front().Type()));
 }
 
 TEST(GattClientTest, OperationStatusSuccess)

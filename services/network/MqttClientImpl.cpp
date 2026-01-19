@@ -183,7 +183,7 @@ namespace services
         infra::Duration operationTimeout, infra::Duration pingInterval)
         : operationTimeout(operationTimeout)
         , pingInterval(pingInterval)
-        , state(infra::InPlaceType<StateConnecting>(), *this, factory, clientId, username, password)
+        , state(std::in_place_type_t<StateConnecting>(), *this, factory, clientId, username, password)
     {}
 
     void MqttClientImpl::Publish()

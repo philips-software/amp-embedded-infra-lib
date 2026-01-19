@@ -103,10 +103,10 @@ namespace services
         template<class C>
         void DeserializeContainer(infra::BoundedVector<std::pair<uint32_t, infra::Function<void(const infra::DataInputStream& stream)>>>& stack, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, C& value)
         {
-            parser.ReportFormatResult(field.Is<infra::PartialProtoLengthDelimited>());
-            if (field.Is<infra::PartialProtoLengthDelimited>())
+            parser.ReportFormatResult(std::holds_alternative<infra::PartialProtoLengthDelimited>(field));
+            if (std::holds_alternative<infra::PartialProtoLengthDelimited>(field))
             {
-                auto bytesSize = field.Get<infra::PartialProtoLengthDelimited>().length;
+                auto bytesSize = std::get<infra::PartialProtoLengthDelimited>(field).length;
                 stack.emplace_back(bytesSize, [&value](const infra::DataInputStream& stream)
                     {
                         while (!stream.Empty())
@@ -144,9 +144,9 @@ namespace services
 
     void ProtoMessageReceiverBase::ConsumeUnknownField(infra::ProtoParser::PartialField& field)
     {
-        if (field.first.Is<infra::PartialProtoLengthDelimited>())
+        if (std::holds_alternative<infra::PartialProtoLengthDelimited>(field.first))
         {
-            auto size = field.first.Get<infra::PartialProtoLengthDelimited>().length;
+            auto size = std::get<infra::PartialProtoLengthDelimited>(field.first).length;
             stack.emplace_back(size, [](const infra::DataInputStream& stream)
                 {
                     while (!stream.Empty())

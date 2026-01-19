@@ -5,7 +5,9 @@
 #include "infra/util/BoundedList.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "infra/util/WithStorage.hpp"
+#include "services/network/Address.hpp"
 #include "services/network/Connection.hpp"
+#include <tuple>
 
 namespace services
 {
@@ -15,7 +17,7 @@ namespace services
         class ExclusiveConnection;
 
     public:
-        using Claimer = infra::ClaimableResource::Claimer::WithSize<sizeof(void*) + sizeof(IPAddress) + sizeof(infra::AutoResetFunction<void()>)>;
+        using Claimer = infra::ClaimableResource::Claimer::WithSize<sizeof(std::tuple<void*, IPAddress, infra::AutoResetFunction<void()>>)>;
 
         infra::ClaimableResource& Resource();
         infra::SharedPtr<ExclusiveConnection> CreateConnection(Claimer&& claimer);

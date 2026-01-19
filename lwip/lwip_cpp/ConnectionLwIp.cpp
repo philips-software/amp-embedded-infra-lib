@@ -630,9 +630,9 @@ namespace services
         tcp_arg(control, this);
         tcp_err(control, &ConnectorLwIp::StaticError);
 
-        if (clientFactory.Address().Is<IPv4Address>())
+        if (std::holds_alternative<IPv4Address>(clientFactory.Address()))
         {
-            IPv4Address ipv4Address = clientFactory.Address().Get<IPv4Address>();
+            IPv4Address ipv4Address = std::get<IPv4Address>(clientFactory.Address());
             ip_addr_t ipAddress IPADDR4_INIT(0);
             IP4_ADDR(&ipAddress.u_addr.ip4, ipv4Address[0], ipv4Address[1], ipv4Address[2], ipv4Address[3]);
             err_t result = tcp_connect(control, &ipAddress, clientFactory.Port(), &ConnectorLwIp::StaticConnected);
@@ -640,7 +640,7 @@ namespace services
         }
         else
         {
-            IPv6Address ipv6Address = clientFactory.Address().Get<IPv6Address>();
+            IPv6Address ipv6Address = std::get<IPv6Address>(clientFactory.Address());
             ip_addr_t ipAddress IPADDR6_INIT(0, 0, 0, 0);
             IP6_ADDR(&ipAddress.u_addr.ip6, PP_HTONL(ipv6Address[1] + (static_cast<uint32_t>(ipv6Address[0]) << 16)), PP_HTONL(ipv6Address[3] + (static_cast<uint32_t>(ipv6Address[2]) << 16)), PP_HTONL(ipv6Address[5] + (static_cast<uint32_t>(ipv6Address[4]) << 16)), PP_HTONL(ipv6Address[7] + (static_cast<uint32_t>(ipv6Address[6]) << 16)));
             err_t result = tcp_connect(control, &ipAddress, clientFactory.Port(), &ConnectorLwIp::StaticConnected);
