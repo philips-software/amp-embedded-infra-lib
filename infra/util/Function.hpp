@@ -22,7 +22,6 @@
 //  Function<void(), 8> g = [this, &x]() { DoSomething(x); }; // Ok.
 
 #include "infra/util/ByteRange.hpp"
-#include "infra/util/ReallyAssert.hpp"
 #include "infra/util/StaticStorage.hpp"
 #include "infra/util/VariadicTemplates.hpp"
 #include <cstddef>

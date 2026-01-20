@@ -946,16 +946,16 @@ namespace application
                 printer.Outdent();
 
                 printer.Print(R"(        default:
-            if (field.first.Is<infra::ProtoLengthDelimited>())
-                field.first.Get<infra::ProtoLengthDelimited>().SkipEverything();
+            if (std::holds_alternative<infra::ProtoLengthDelimited>(field.first))
+                std::get<infra::ProtoLengthDelimited>(field.first).SkipEverything();
             break;
     }
 }
 )");
             }
             else
-                printer.Print(R"(    if (field.first.Is<infra::ProtoLengthDelimited>())
-        field.first.Get<infra::ProtoLengthDelimited>().SkipEverything();
+                printer.Print(R"(    if (std::holds_alternative<infra::ProtoLengthDelimited>(field.first))
+        std::get<infra::ProtoLengthDelimited>(field.first).SkipEverything();
 }
 )");
         }

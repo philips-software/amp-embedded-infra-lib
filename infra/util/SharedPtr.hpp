@@ -2,6 +2,7 @@
 #define INFRA_SHARED_PTR_HPP
 
 #include "infra/util/Function.hpp"
+#include "infra/util/ReallyAssert.hpp"
 #include "infra/util/StaticStorage.hpp"
 #include <cassert>
 #include <cstdint>

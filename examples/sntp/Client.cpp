@@ -44,7 +44,7 @@ struct TimeWithSynchronization
     void NameLookupDone(services::IPAddress address, infra::TimePoint validUntil) override
     {
         tracer.Trace() << "Name lookup done; found address " << address;
-        sntpClient.RequestTime(address.Get<services::IPv4Address>());
+        sntpClient.RequestTime(std::get<services::IPv4Address>(address));
     }
 
     void NameLookupFailed() override

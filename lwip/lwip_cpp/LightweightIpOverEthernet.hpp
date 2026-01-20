@@ -6,10 +6,10 @@
 #include "infra/util/BoundedDeque.hpp"
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/Observer.hpp"
-#include "infra/util/Optional.hpp"
 #include "lwip/netif.h"
 #include "services/network/Address.hpp"
 #include <array>
+#include <optional>
 
 namespace services
 {

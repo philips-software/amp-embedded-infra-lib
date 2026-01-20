@@ -257,7 +257,7 @@ namespace services
         : network(network)
         , factory(factory)
     {
-        auto address = factory.Address().Get<services::IPv4Address>();
+        auto address = std::get<services::IPv4Address>(factory.Address());
 
         connectSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         assert(connectSocket != -1);

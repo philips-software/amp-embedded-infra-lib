@@ -52,7 +52,7 @@ namespace services
     {
         infra::JsonArrayIterator argumentIterator(invokeArguments->begin());
         SkipOverStringArguments(argumentIterator);
-        return argumentIterator->Get<infra::JsonArray>();
+        return std::get<infra::JsonArray>(*argumentIterator);
     }
 
     std::optional<infra::JsonString> CucumberStepArguments::GetTableArgument(infra::BoundedConstString fieldName) const
@@ -61,13 +61,13 @@ namespace services
         SkipOverStringArguments(argumentIterator);
 
         if (argumentIterator != invokeArguments->end())
-            for (infra::JsonArrayIterator rowIterator = argumentIterator->Get<infra::JsonArray>().begin(); rowIterator != invokeArguments->end(); ++rowIterator)
-                if (fieldName == rowIterator->Get<infra::JsonArray>().begin()->Get<infra::JsonString>())
+            for (infra::JsonArrayIterator rowIterator = std::get<infra::JsonArray>(*argumentIterator).begin(); rowIterator != invokeArguments->end(); ++rowIterator)
+                if (fieldName == std::get<infra::JsonString>(*std::get<infra::JsonArray>(*rowIterator).begin()))
                 {
-                    infra::JsonArrayIterator collumnIterator = rowIterator->Get<infra::JsonArray>().begin();
+                    infra::JsonArrayIterator collumnIterator = std::get<infra::JsonArray>(*rowIterator).begin();
                     ++collumnIterator;
-                    if (collumnIterator != rowIterator->Get<infra::JsonArray>().end())
-                        return std::make_optional(collumnIterator->Get<infra::JsonString>());
+                    if (collumnIterator != std::get<infra::JsonArray>(*rowIterator).end())
+                        return std::make_optional(std::get<infra::JsonString>(*collumnIterator));
                 }
         return std::nullopt;
     }
@@ -115,7 +115,7 @@ namespace services
         if (argumentIterator != invokeArguments->end())
         {
             ++nrFields;
-            for (infra::JsonArrayIterator rowIterator = argumentIterator->Get<infra::JsonArray>().begin(); rowIterator != invokeArguments->end(); ++rowIterator)
+            for (infra::JsonArrayIterator rowIterator = std::get<infra::JsonArray>(*argumentIterator).begin(); rowIterator != invokeArguments->end(); ++rowIterator)
                 ++nrFields;
         }
         return nrFields;
@@ -133,7 +133,7 @@ namespace services
                 ++argumentCount;
             }
             if (argumentCount == argumentNumber)
-                return std::make_optional(argumentIterator->Get<infra::JsonString>());
+                return std::make_optional(std::get<infra::JsonString>(*argumentIterator));
         }
         return std::nullopt;
     }

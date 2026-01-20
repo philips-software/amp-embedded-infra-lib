@@ -1,4 +1,5 @@
 #include "infra/syntax/ProtoParser.hpp"
+#include "infra/util/Overloaded.hpp"
 
 namespace infra
 {
@@ -121,37 +122,24 @@ namespace infra
         return result;
     }
 
-    struct MakeFullField
-        : infra::StaticVisitor<ProtoParser::Field>
-    {
-        MakeFullField(infra::DataInputStream inputStream, infra::StreamErrorPolicy& formatErrorPolicy, uint32_t fieldNumber)
-            : inputStream(inputStream)
-            , formatErrorPolicy(formatErrorPolicy)
-            , fieldNumber(fieldNumber)
-        {}
-
-        template<class T>
-        ProtoParser::Field operator()(T value) const
-        {
-            return { value, fieldNumber };
-        }
-
-        ProtoParser::Field operator()(PartialProtoLengthDelimited value) const
-        {
-            return { ProtoLengthDelimited(inputStream, formatErrorPolicy, value.length), fieldNumber };
-        }
-
-    private:
-        infra::DataInputStream inputStream;
-        infra::StreamErrorPolicy& formatErrorPolicy;
-        uint32_t fieldNumber;
-    };
-
     ProtoParser::Field ProtoParser::GetField()
     {
-        auto [value, fieldNumber] = GetPartialField();
-        MakeFullField visitor(input, formatErrorPolicy, fieldNumber);
-        return infra::ApplyVisitor(visitor, value);
+        const auto partialField = GetPartialField();
+        const auto& value = partialField.first;
+        const auto& fieldNumber = partialField.second;
+
+        auto visitor = Overloaded{
+            [this, &fieldNumber](const PartialProtoLengthDelimited& value) -> ProtoParser::Field
+            {
+                return { ProtoLengthDelimited(input, formatErrorPolicy, value.length), fieldNumber };
+            },
+            [this, &fieldNumber](const auto& value) -> ProtoParser::Field
+            {
+                return { value, fieldNumber };
+            }
+        };
+
+        return std::visit(visitor, value);
     }
 
     ProtoParser::PartialField ProtoParser::GetPartialField()

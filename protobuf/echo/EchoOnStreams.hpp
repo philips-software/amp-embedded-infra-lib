@@ -4,9 +4,9 @@
 #include "infra/stream/BufferingStreamReader.hpp"
 #include "infra/util/BoundedDeque.hpp"
 #include "infra/util/Function.hpp"
-#include "infra/util/Optional.hpp"
 #include "protobuf/echo/Echo.hpp"
 #include "protobuf/echo/Serialization.hpp"
+#include <optional>
 
 namespace services
 {

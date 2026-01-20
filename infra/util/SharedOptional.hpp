@@ -2,15 +2,16 @@
 #define INFRA_SHARED_OPTIONAL_HPP
 
 #include "infra/util/Function.hpp"
-#include "infra/util/Optional.hpp"
-#include "infra/util/SharedObjectAllocator.hpp"
+#include "infra/util/ReallyAssert.hpp"
+#include "infra/util/SharedPtr.hpp"
 #include <cstddef>
+#include <optional>
 
 namespace infra
 {
     // clang-format off
-    extern const struct AlsoWhenAlreadyAllocatable{} alsoWhenAlreadyAllocatable;
-
+    struct AlsoWhenAlreadyAllocatable{};
+    extern const AlsoWhenAlreadyAllocatable alsoWhenAlreadyAllocatable;
     // clang-format on
 
     template<class T>

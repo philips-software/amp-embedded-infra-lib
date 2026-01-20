@@ -4,8 +4,8 @@
 #include "infra/stream/InputStream.hpp"
 #include "infra/stream/LimitedInputStream.hpp"
 #include "infra/util/BoundedVector.hpp"
-#include "infra/util/Variant.hpp"
 #include <utility>
+#include <variant>
 
 namespace infra
 {
@@ -42,9 +42,9 @@ namespace infra
     class ProtoParser
     {
     public:
-        using FieldVariant = infra::Variant<uint32_t, uint64_t, ProtoLengthDelimited>;
+        using FieldVariant = std::variant<uint32_t, uint64_t, ProtoLengthDelimited>;
         using Field = std::pair<FieldVariant, uint32_t>;
-        using PartialFieldVariant = infra::Variant<uint32_t, uint64_t, PartialProtoLengthDelimited>;
+        using PartialFieldVariant = std::variant<uint32_t, uint64_t, PartialProtoLengthDelimited>;
         using PartialField = std::pair<PartialFieldVariant, uint32_t>;
 
         explicit ProtoParser(infra::DataInputStream inputStream);

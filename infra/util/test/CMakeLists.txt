@@ -34,9 +34,9 @@ target_sources(infra.util_test PRIVATE
     TestIntrusivePriorityQueue.cpp
     TestIntrusiveSet.cpp
     TestIntrusiveUnorderedSet.cpp
+    TestLogAndAbort.cpp
     TestMemoryRange.cpp
     TestObserver.cpp
-    TestOptional.cpp
     TestPolymorphicVariant.cpp
     TestProxyCreator.cpp
     TestReallyAssert.cpp
@@ -49,11 +49,15 @@ target_sources(infra.util_test PRIVATE
     TestStaticStorage.cpp
     TestTokenizer.cpp
     TestUnit.cpp
-    TestVariant.cpp
 )
 
 set_source_files_properties(
     TestOptional.cpp PROPERTIES COMPILE_FLAGS
+    "$<$<CXX_COMPILER_ID:GNU>:-Wno-deprecated-declarations>$<$<CXX_COMPILER_ID:Clang>:-Wno-deprecated-declarations>$<$<CXX_COMPILER_ID:AppleClang>:-Wno-deprecated-declarations>$<$<CXX_COMPILER_ID:MSVC>:/wd4996>"
+)
+
+set_source_files_properties(
+    TestVariant.cpp PROPERTIES COMPILE_FLAGS
     "$<$<CXX_COMPILER_ID:GNU>:-Wno-deprecated-declarations>$<$<CXX_COMPILER_ID:Clang>:-Wno-deprecated-declarations>$<$<CXX_COMPILER_ID:AppleClang>:-Wno-deprecated-declarations>$<$<CXX_COMPILER_ID:MSVC>:/wd4996>"
 )
 

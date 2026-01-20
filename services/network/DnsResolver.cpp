@@ -125,9 +125,9 @@ namespace services
         {
             auto answer = ReadAnswer();
 
-            if (answer.Is<Answer>())
-                return std::make_optional(std::make_pair(answer.Get<Answer>().address, answer.Get<Answer>().validUntil));
-            else if (answer.Is<CName>())
+            if (std::holds_alternative<Answer>(answer))
+                return std::make_optional(std::make_pair(std::get<Answer>(answer).address, std::get<Answer>(answer).validUntil));
+            else if (std::holds_alternative<CName>(answer))
                 recurse = true;
         }
 
@@ -161,7 +161,7 @@ namespace services
         }
     }
 
-    infra::Variant<DnsResolver::Answer, DnsResolver::CName, DnsResolver::NoAnswer> DnsResolver::ReplyParser::ReadAnswer()
+    std::variant<DnsResolver::Answer, DnsResolver::CName, DnsResolver::NoAnswer> DnsResolver::ReplyParser::ReadAnswer()
     {
         bool hostnameMatches = ReadAndMatchHostname();
         auto payload = stream.Extract<DnsRecordPayload>();

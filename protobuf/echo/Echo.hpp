@@ -1,6 +1,7 @@
 #ifndef PROTOBUF_ECHO_HPP
 #define PROTOBUF_ECHO_HPP
 
+#include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/Observer.hpp"
 #include "protobuf/echo/EchoErrorPolicy.hpp"
