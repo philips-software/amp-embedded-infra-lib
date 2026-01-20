@@ -1,4 +1,4 @@
-#include "services/ble//GapPeripheralIntervalDecorator.hpp"
+#include "services/ble/GapPeripheralIntervalDecorator.hpp"
 #include <cassert>
 
 namespace services
