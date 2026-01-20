@@ -1,10 +1,10 @@
-#include "gtest/gtest.h"
 #include "hal/interfaces/test_doubles/FlashMock.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "protobuf/echo/test_doubles/EchoMock.hpp"
 #include "protobuf/echo/test_doubles/EchoSingleLoopback.hpp"
 #include "services/util/FlashEcho.hpp"
+#include "gtest/gtest.h"
 
 namespace
 {
@@ -92,6 +92,14 @@ public:
     const std::array<uint8_t, 4> data{ 5, 8, 2, 3 };
     infra::Function<void()> onDone;
 };
+
+TEST_F(FlashProxyTest, Accessors)
+{
+    EXPECT_EQ(4, flashProxy.NumberOfSectors());
+    EXPECT_EQ(4096, flashProxy.SizeOfSector(0));
+    EXPECT_EQ(1, flashProxy.SectorOfAddress(5000));
+    EXPECT_EQ(4096, flashProxy.AddressOfSector(1));
+}
 
 TEST_F(FlashProxyTest, ReadBuffer)
 {

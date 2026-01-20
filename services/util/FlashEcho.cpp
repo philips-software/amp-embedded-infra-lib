@@ -9,7 +9,6 @@ namespace services
         , flash(flash)
     {}
 
-
     void FlashEcho::Read(uint32_t address, uint32_t size)
     {
         flash.ReadBuffer(infra::Head(infra::MakeRange(buffer), size), address, [this, size]()
@@ -150,7 +149,7 @@ namespace services
 
     void FlashEchoProxy::ReadPartialBuffer(uint32_t address, uint32_t start)
     {
-        if (readingBuffer.size() - start > 0)
+        if (readingBuffer.size() > start)
         {
             this->start = start;
             proxy.RequestSend([this, address]()
