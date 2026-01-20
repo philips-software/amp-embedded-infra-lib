@@ -1,4 +1,5 @@
 #include "infra/syntax/JsonFileReader.hpp"
+#include <variant>
 
 namespace infra
 {
@@ -36,8 +37,8 @@ namespace infra
     void JsonFileReader::CheckValidJsonObject(infra::JsonObject& jsonObject) const
     {
         for (auto it : jsonObject)
-            if (it.value.Is<infra::JsonObject>())
-                CheckValidJsonObject(it.value.Get<infra::JsonObject>());
+            if (std::holds_alternative<infra::JsonObject>(it.value))
+                CheckValidJsonObject(std::get<infra::JsonObject>(it.value));
 
         if (jsonObject.Error())
             throw JsonFileReaderException("Invalid JSON object.");

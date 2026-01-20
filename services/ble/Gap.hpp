@@ -7,8 +7,8 @@
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/EnumCast.hpp"
 #include "infra/util/Observer.hpp"
-#include "infra/util/Optional.hpp"
 #include "services/ble/Att.hpp"
+#include <optional>
 
 namespace services
 {

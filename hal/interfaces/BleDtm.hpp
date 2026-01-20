@@ -1,8 +1,8 @@
 #ifndef HAL_INTERFACE_BLE_DTM_HPP
 #define HAL_INTERFACE_BLE_DTM_HPP
 
-#include "infra/util/Optional.hpp"
 #include <cstdint>
+#include <optional>
 
 namespace hal
 {

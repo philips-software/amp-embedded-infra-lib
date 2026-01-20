@@ -801,7 +801,7 @@ public:
             infra::ProtoParser::Field field = parser.GetField();
             assert(field.second == 1);
             infra::BoundedVector<uint8_t>::WithMaxSize<8> bytes;
-            field.first.Get<infra::ProtoLengthDelimited>().GetBytes(bytes);
+            std::get<infra::ProtoLengthDelimited>(field.first).GetBytes(bytes);
             assert(bytes.size() == data.size());
             std::copy(bytes.begin(), bytes.end(), data.begin());
         }
@@ -1073,7 +1073,7 @@ public:
             infra::ProtoParser::Field field = parser.GetField();
             assert(field.second == 1);
             infra::BoundedVector<uint8_t>::WithMaxSize<8> bytes;
-            field.first.Get<infra::ProtoLengthDelimited>().GetBytes(bytes);
+            std::get<infra::ProtoLengthDelimited>(field.first).GetBytes(bytes);
             assert(bytes.size() == data.size());
             std::copy(bytes.begin(), bytes.end(), data.begin());
         }

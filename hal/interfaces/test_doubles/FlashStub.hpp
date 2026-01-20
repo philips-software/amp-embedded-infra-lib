@@ -2,7 +2,7 @@
 #define HAL_STUB_FLASH_STUB_HPP
 
 #include "hal/interfaces/Flash.hpp"
-#include "infra/util/Optional.hpp"
+#include <optional>
 
 namespace hal
 {

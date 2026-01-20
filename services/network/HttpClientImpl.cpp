@@ -10,8 +10,8 @@ namespace services
     HttpClientImpl::HttpClientImpl(infra::BoundedConstString hostname)
         : hostname(hostname)
         , bodyReaderAccess(infra::emptyFunction)
-        , sendingState(infra::InPlaceType<SendingStateRequest>(), *this)
-        , nextState(infra::InPlaceType<SendingStateRequest>(), *this)
+        , sendingState(std::in_place_type_t<SendingStateRequest>(), *this)
+        , nextState(std::in_place_type_t<SendingStateRequest>(), *this)
     {}
 
     void HttpClientImpl::Retarget(infra::BoundedConstString hostname)
@@ -536,7 +536,7 @@ namespace services
     void HttpClientImplWithRedirection::Get(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
         if (query == std::nullopt)
-            query.emplace(infra::InPlaceType<QueryGet>(), headers);
+            query.emplace(std::in_place_type_t<QueryGet>(), headers);
 
         HttpClientImpl::Get(requestTarget, headers);
     }
@@ -544,7 +544,7 @@ namespace services
     void HttpClientImplWithRedirection::Head(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
         if (query == std::nullopt)
-            query.emplace(infra::InPlaceType<QueryHead>(), headers);
+            query.emplace(std::in_place_type_t<QueryHead>(), headers);
 
         HttpClientImpl::Head(requestTarget, headers);
     }
@@ -552,7 +552,7 @@ namespace services
     void HttpClientImplWithRedirection::Connect(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
         if (query == std::nullopt)
-            query.emplace(infra::InPlaceType<QueryConnect>(), headers);
+            query.emplace(std::in_place_type_t<QueryConnect>(), headers);
 
         HttpClientImpl::Connect(requestTarget, headers);
     }
@@ -560,7 +560,7 @@ namespace services
     void HttpClientImplWithRedirection::Options(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
         if (query == std::nullopt)
-            query.emplace(infra::InPlaceType<QueryOptions>(), headers);
+            query.emplace(std::in_place_type_t<QueryOptions>(), headers);
 
         HttpClientImpl::Options(requestTarget, headers);
     }
@@ -568,7 +568,7 @@ namespace services
     void HttpClientImplWithRedirection::Post(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
     {
         if (query == std::nullopt)
-            query.emplace(infra::InPlaceType<QueryPost>(), content, headers);
+            query.emplace(std::in_place_type_t<QueryPost>(), content, headers);
 
         HttpClientImpl::Post(requestTarget, content, headers);
     }
@@ -576,7 +576,7 @@ namespace services
     void HttpClientImplWithRedirection::Post(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
         if (query == std::nullopt)
-            query.emplace(infra::InPlaceType<QueryPostChunked>(), headers);
+            query.emplace(std::in_place_type_t<QueryPostChunked>(), headers);
 
         HttpClientImpl::Post(requestTarget, headers);
     }
@@ -584,7 +584,7 @@ namespace services
     void HttpClientImplWithRedirection::Post(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers)
     {
         if (query == std::nullopt)
-            query.emplace(infra::InPlaceType<QueryPostStreamed>(), contentSize, headers);
+            query.emplace(std::in_place_type_t<QueryPostStreamed>(), contentSize, headers);
 
         HttpClientImpl::Post(requestTarget, contentSize, headers);
     }
@@ -592,7 +592,7 @@ namespace services
     void HttpClientImplWithRedirection::Put(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
     {
         if (query == std::nullopt)
-            query.emplace(infra::InPlaceType<QueryPut>(), content, headers);
+            query.emplace(std::in_place_type_t<QueryPut>(), content, headers);
 
         HttpClientImpl::Put(requestTarget, content, headers);
     }
@@ -600,7 +600,7 @@ namespace services
     void HttpClientImplWithRedirection::Put(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
         if (query == std::nullopt)
-            query.emplace(infra::InPlaceType<QueryPutChunked>(), headers);
+            query.emplace(std::in_place_type_t<QueryPutChunked>(), headers);
 
         HttpClientImpl::Put(requestTarget, headers);
     }
@@ -608,7 +608,7 @@ namespace services
     void HttpClientImplWithRedirection::Put(infra::BoundedConstString requestTarget, std::size_t contentSize, HttpHeaders headers)
     {
         if (query == std::nullopt)
-            query.emplace(infra::InPlaceType<QueryPutStreamed>(), contentSize, headers);
+            query.emplace(std::in_place_type_t<QueryPutStreamed>(), contentSize, headers);
 
         HttpClientImpl::Put(requestTarget, contentSize, headers);
     }
@@ -616,7 +616,7 @@ namespace services
     void HttpClientImplWithRedirection::Patch(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
     {
         if (query == std::nullopt)
-            query.emplace(infra::InPlaceType<QueryPatch>(), content, headers);
+            query.emplace(std::in_place_type_t<QueryPatch>(), content, headers);
 
         HttpClientImpl::Patch(requestTarget, content, headers);
     }
@@ -624,7 +624,7 @@ namespace services
     void HttpClientImplWithRedirection::Patch(infra::BoundedConstString requestTarget, HttpHeaders headers)
     {
         if (query == std::nullopt)
-            query.emplace(infra::InPlaceType<QueryPatchChunked>(), headers);
+            query.emplace(std::in_place_type_t<QueryPatchChunked>(), headers);
 
         HttpClientImpl::Patch(requestTarget, headers);
     }
@@ -632,7 +632,7 @@ namespace services
     void HttpClientImplWithRedirection::Delete(infra::BoundedConstString requestTarget, infra::BoundedConstString content, HttpHeaders headers)
     {
         if (query == std::nullopt)
-            query.emplace(infra::InPlaceType<QueryDelete>(), content, headers);
+            query.emplace(std::in_place_type_t<QueryDelete>(), content, headers);
 
         HttpClientImpl::Delete(requestTarget, content, headers);
     }

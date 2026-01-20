@@ -2,9 +2,9 @@
 #define HAL_BLE_DTM_MOCK_HPP
 
 #include "hal/interfaces/BleDtm.hpp"
-#include "infra/util/Optional.hpp"
 #include "gmock/gmock.h"
 #include <cstdint>
+#include <optional>
 
 namespace hal
 {

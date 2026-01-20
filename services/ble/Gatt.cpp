@@ -114,10 +114,10 @@ namespace infra
 {
     TextOutputStream& operator<<(TextOutputStream& stream, const services::AttAttribute::Uuid& uuid)
     {
-        if (uuid.Is<services::AttAttribute::Uuid16>())
-            stream << "[" << hex << uuid.Get<services::AttAttribute::Uuid16>() << "]";
+        if (std::holds_alternative<services::AttAttribute::Uuid16>(uuid))
+            stream << "[" << hex << std::get<services::AttAttribute::Uuid16>(uuid) << "]";
         else
-            stream << "[" << AsHex(MakeByteRange(uuid.Get<services::AttAttribute::Uuid128>())) << "]";
+            stream << "[" << AsHex(MakeByteRange(std::get<services::AttAttribute::Uuid128>(uuid))) << "]";
 
         return stream;
     }

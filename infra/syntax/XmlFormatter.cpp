@@ -1,6 +1,5 @@
 #include "infra/syntax/XmlFormatter.hpp"
 #include "infra/syntax/EscapeCharacterHelper.hpp"
-#include "infra/util/Optional.hpp"
 #include <optional>
 #include <utility>
 

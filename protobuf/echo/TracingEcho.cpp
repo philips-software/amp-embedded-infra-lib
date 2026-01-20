@@ -177,17 +177,17 @@ namespace services
 
             // clang-format off
             if (stream.Failed()
-                || (contents.Is<infra::PartialProtoLengthDelimited>()
-                    && contents.Get<infra::PartialProtoLengthDelimited>().length > stream.Available()
-                    && contents.Get<infra::PartialProtoLengthDelimited>().length <= writerBuffer.max_size() - writerBuffer.size() + stream.Available()))
+                || (std::holds_alternative<infra::PartialProtoLengthDelimited>(contents)
+                    && std::get<infra::PartialProtoLengthDelimited>(contents).length > stream.Available()
+                    && std::get<infra::PartialProtoLengthDelimited>(contents).length <= writerBuffer.max_size() - writerBuffer.size() + stream.Available()))
                 return false; // Buffer does not yet contain a full message (but a full message will eventually fit), wait for the next serialization
             // clang-format on
 
-            if (contents.Is<infra::PartialProtoLengthDelimited>() && contents.Get<infra::PartialProtoLengthDelimited>().length > stream.Available())
+            if (std::holds_alternative<infra::PartialProtoLengthDelimited>(contents) && std::get<infra::PartialProtoLengthDelimited>(contents).length > stream.Available())
             {
                 // The buffer contains a message, but the whole message is not going to fit in the buffer
-                tracer.Trace() << "< message too big to be traced for service " << serviceId << " method " << methodId << " length " << contents.Get<infra::PartialProtoLengthDelimited>().length << " available " << stream.Available();
-                skipping = contents.Get<infra::PartialProtoLengthDelimited>().length;
+                tracer.Trace() << "< message too big to be traced for service " << serviceId << " method " << methodId << " length " << std::get<infra::PartialProtoLengthDelimited>(contents).length << " available " << stream.Available();
+                skipping = std::get<infra::PartialProtoLengthDelimited>(contents).length;
                 writerBuffer.erase(writerBuffer.begin(), writerBuffer.begin() + stream.Reader().Processed());
                 auto skippingNow = std::min<std::size_t>(skipping, writerBuffer.size());
                 writerBuffer.erase(writerBuffer.begin(), writerBuffer.begin() + skippingNow);
@@ -200,14 +200,14 @@ namespace services
                 infra::ProtoParser newParser(stream, formatErrorPolicy);
                 auto message = newParser.GetField();
 
-                if (formatErrorPolicy.Failed() || !message.first.Is<infra::ProtoLengthDelimited>())
+                if (formatErrorPolicy.Failed() || !std::holds_alternative<infra::ProtoLengthDelimited>(message.first))
                 {
                     tracer.Trace() << "< Malformed message";
                     writerBuffer.erase(writerBuffer.begin(), writerBuffer.begin() + stream.Reader().Processed());
                 }
                 else
                 {
-                    SendingMethod(serviceId, methodId, message.first.Get<infra::ProtoLengthDelimited>());
+                    SendingMethod(serviceId, methodId, std::get<infra::ProtoLengthDelimited>(message.first));
                     if (stream.Failed() || formatErrorPolicy.Failed())
                         tracer.Continue() << "... Malformed message";
                     writerBuffer.erase(writerBuffer.begin(), writerBuffer.begin() + stream.Reader().Processed());

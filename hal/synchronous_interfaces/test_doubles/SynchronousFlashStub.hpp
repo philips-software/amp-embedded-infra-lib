@@ -2,7 +2,7 @@
 #define SYNCHRONOUS_HAL_SYNCHRONOUS_FLASH_STUB_HPP
 
 #include "hal/synchronous_interfaces/SynchronousFlash.hpp"
-#include "infra/util/Optional.hpp"
+#include <optional>
 
 namespace hal
 {

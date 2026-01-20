@@ -5,8 +5,8 @@
 #include "infra/stream/StreamManipulators.hpp"
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/ByteRange.hpp"
-#include "infra/util/Optional.hpp"
 #include <cstdlib>
+#include <optional>
 #include <type_traits>
 
 namespace infra
