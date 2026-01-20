@@ -2,6 +2,7 @@
 #include "infra/syntax/EscapeCharacterHelper.hpp"
 #include "infra/syntax/Json.hpp"
 #include "infra/util/BoundedVector.hpp"
+#include <variant>
 
 namespace infra
 {
@@ -150,9 +151,9 @@ namespace infra
             {
                 token.clear();
                 infra::JsonObjectFormatter subObjectFormatter{ formatter.SubObject(kv.key) };
-                if (kv.value.Is<infra::JsonObject>())
+                if (std::holds_alternative<infra::JsonObject>(kv.value))
                 {
-                    infra::JsonObject valueJsonObj = kv.value.Get<infra::JsonObject>();
+                    infra::JsonObject valueJsonObj = std::get<infra::JsonObject>(kv.value);
                     infra::Merge(subObjectFormatter, valueJsonObj, pathRemaining, valueToMerge);
                 }
                 else
@@ -366,40 +367,16 @@ namespace infra
 
     void JsonObjectFormatter::Add(const infra::JsonKeyValue& keyValue)
     {
-        if (keyValue.value.Is<bool>())
-            Add(keyValue.key, keyValue.value.Get<bool>());
-        else if (keyValue.value.Is<int32_t>())
-            Add(keyValue.key, keyValue.value.Get<int32_t>());
-        else if (keyValue.value.Is<JsonBiggerInt>())
-            Add(keyValue.key, keyValue.value.Get<JsonBiggerInt>());
-        else if (keyValue.value.Is<JsonString>())
-            Add(keyValue.key, keyValue.value.Get<JsonString>());
-        else if (keyValue.value.Is<JsonObject>())
-            Add(keyValue.key, keyValue.value.Get<JsonObject>());
-        else if (keyValue.value.Is<JsonArray>())
-            Add(keyValue.key, keyValue.value.Get<JsonArray>());
-        else
-            std::abort();
+        Add(keyValue.key, keyValue.value);
     }
 
     void JsonObjectFormatter::Add(JsonString key, const JsonValue& value)
     {
-        if (value.Is<bool>())
-            Add(key, value.Get<bool>());
-        else if (value.Is<int32_t>())
-            Add(key, value.Get<int32_t>());
-        else if (value.Is<JsonBiggerInt>())
-            Add(key, value.Get<JsonBiggerInt>());
-        else if (value.Is<JsonFloat>())
-            Add(key, value.Get<JsonFloat>());
-        else if (value.Is<JsonString>())
-            Add(key, value.Get<JsonString>());
-        else if (value.Is<JsonObject>())
-            Add(key, value.Get<JsonObject>());
-        else if (value.Is<JsonArray>())
-            Add(key, value.Get<JsonArray>());
-        else
-            std::abort();
+        std::visit([this, &key](const auto& value)
+            {
+                Add(key, value);
+            },
+            value);
     }
 
     void JsonObjectFormatter::AddMilliFloat(const char* tagName, uint64_t intValue, uint32_t milliFractionalValue, bool negative)

@@ -6,7 +6,7 @@ namespace services
         : SesameEncodedObserver(delegate)
         , ownBufferSize(static_cast<uint16_t>(SesameEncodedObserver::Subject().MaxSendMessageSize()))
         , releaseWindowSize(static_cast<uint16_t>(SesameEncodedObserver::Subject().MessageSize(sizeof(PacketReleaseWindow))))
-        , state(infra::InPlaceType<StateSendingInit>(), *this)
+        , state(std::in_place_type_t<StateSendingInit>(), *this)
     {
         state->Request();
     }

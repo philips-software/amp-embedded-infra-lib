@@ -2,7 +2,7 @@
 #define INFRA_POLYMORPHIC_VARIANT_HPP
 
 #include "infra/util/StaticStorage.hpp"
-#include "infra/util/Variant.hpp"
+#include "infra/util/VariantDetail.hpp"
 
 namespace infra
 {
@@ -19,7 +19,7 @@ namespace infra
         template<class U>
         explicit PolymorphicVariant(const U& v);
         template<class U, class... Args>
-        PolymorphicVariant(InPlaceType<U>, Args&&... args);
+        PolymorphicVariant(std::in_place_type_t<U>, Args&&... args);
 
         PolymorphicVariant& operator=(const PolymorphicVariant& other);
         template<class... T2>
@@ -124,7 +124,7 @@ namespace infra
 
     template<class Base, class... T>
     template<class U, class... Args>
-    PolymorphicVariant<Base, T...>::PolymorphicVariant(InPlaceType<U>, Args&&... args)
+    PolymorphicVariant<Base, T...>::PolymorphicVariant(std::in_place_type_t<U>, Args&&... args)
     {
         ConstructInEmptyVariant<U>(std::forward<Args>(args)...);
     }

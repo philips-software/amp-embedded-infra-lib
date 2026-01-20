@@ -4,7 +4,7 @@
 #include "infra/stream/OutputStream.hpp"
 #include "infra/timer/DerivedTimerService.hpp"
 #include "infra/timer/TimeStreaming.hpp"
-#include "infra/util/Optional.hpp"
+#include <optional>
 
 namespace infra
 {

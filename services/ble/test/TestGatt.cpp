@@ -14,7 +14,7 @@ TEST(GattDescriptor, access)
     services::AttAttribute::Handle handle = 2;
     services::GattDescriptor descriptor{ type, handle };
 
-    EXPECT_EQ(services::AttAttribute::Uuid(infra::InPlaceType<uint16_t>(), type), descriptor.Type());
+    EXPECT_EQ(services::AttAttribute::Uuid(std::in_place_type_t<uint16_t>(), type), descriptor.Type());
     EXPECT_EQ(handle, descriptor.Handle());
     EXPECT_EQ(handle, const_cast<const services::GattDescriptor&>(descriptor).Handle());
 }
@@ -33,7 +33,7 @@ TEST(GattTest, service_has_handle_and_type)
 {
     services::GattService s{ uuid16 };
 
-    EXPECT_EQ(0x42, s.Type().Get<services::AttAttribute::Uuid16>());
+    EXPECT_EQ(0x42, std::get<services::AttAttribute::Uuid16>(s.Type()));
     EXPECT_EQ(0, s.Handle());
     EXPECT_EQ(0, s.EndHandle());
     EXPECT_EQ(0, const_cast<const services::GattService&>(s).EndHandle());

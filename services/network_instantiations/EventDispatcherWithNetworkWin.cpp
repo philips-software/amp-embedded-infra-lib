@@ -67,7 +67,7 @@ namespace services
 
     void EventDispatcherWithNetwork::Connect(ClientConnectionObserverFactory& factory)
     {
-        assert(factory.Address().Is<IPv4Address>());
+        assert(std::holds_alternative<IPv4Address>(factory.Address()));
         connectors.emplace_back(*this, factory);
     }
 

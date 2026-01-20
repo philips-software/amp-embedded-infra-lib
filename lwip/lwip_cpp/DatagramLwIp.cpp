@@ -21,15 +21,15 @@ namespace services
 
         std::pair<ip_addr_t, uint16_t> Convert(UdpSocket socket)
         {
-            if (socket.Is<Udpv4Socket>())
-                return std::make_pair(Convert(socket.Get<Udpv4Socket>().first), socket.Get<Udpv4Socket>().second);
+            if (std::holds_alternative<Udpv4Socket>(socket))
+                return std::make_pair(Convert(std::get<Udpv4Socket>(socket).first), std::get<Udpv4Socket>(socket).second);
             else
-                return std::make_pair(Convert(socket.Get<Udpv6Socket>().first), socket.Get<Udpv6Socket>().second);
+                return std::make_pair(Convert(std::get<Udpv6Socket>(socket).first), std::get<Udpv6Socket>(socket).second);
         }
     }
 
     DatagramExchangeLwIP::DatagramExchangeLwIP(DatagramExchangeObserver& observer)
-        : state(infra::InPlaceType<StateIdle>(), *this)
+        : state(std::in_place_type_t<StateIdle>(), *this)
     {
         observer.Attach(*this);
     }
@@ -66,25 +66,25 @@ namespace services
 
     void DatagramExchangeLwIP::Connect(UdpSocket remote)
     {
-        if (remote.Is<Udpv4Socket>())
+        if (std::holds_alternative<Udpv4Socket>(remote))
         {
             control = CreateUdpPcb(IPVersions::ipv4);
             assert(control != nullptr);
-            IPv4Address ipv4Address = remote.Get<Udpv4Socket>().first;
+            IPv4Address ipv4Address = std::get<Udpv4Socket>(remote).first;
             ip_addr_t ipAddress IPADDR4_INIT(0);
             IP4_ADDR(&ipAddress.u_addr.ip4, ipv4Address[0], ipv4Address[1], ipv4Address[2], ipv4Address[3]);
-            err_t result = udp_connect(control, &ipAddress, remote.Get<Udpv4Socket>().second);
+            err_t result = udp_connect(control, &ipAddress, std::get<Udpv4Socket>(remote).second);
             assert(result == ERR_OK);
         }
         else
         {
             control = CreateUdpPcb(IPVersions::ipv6);
             assert(control != nullptr);
-            IPv6Address ipv6Address = remote.Get<Udpv6Socket>().first;
+            IPv6Address ipv6Address = std::get<Udpv6Socket>(remote).first;
             ip_addr_t ipAddress IPADDR6_INIT(0, 0, 0, 0);
             IP6_ADDR(&ipAddress.u_addr.ip6, PP_HTONL(ipv6Address[1] + (static_cast<uint32_t>(ipv6Address[0]) << 16)), PP_HTONL(ipv6Address[3] + (static_cast<uint32_t>(ipv6Address[2]) << 16)), PP_HTONL(ipv6Address[5] + (static_cast<uint32_t>(ipv6Address[4]) << 16)), PP_HTONL(ipv6Address[7] + (static_cast<uint32_t>(ipv6Address[6]) << 16)));
             ip6_addr_set_zone(&ipAddress.u_addr.ip6, netif_default->ip6_addr->u_addr.ip6.zone);
-            err_t result = udp_connect(control, &ipAddress, remote.Get<Udpv6Socket>().second);
+            err_t result = udp_connect(control, &ipAddress, std::get<Udpv6Socket>(remote).second);
             assert(result == ERR_OK);
         }
 
@@ -93,15 +93,15 @@ namespace services
 
     void DatagramExchangeLwIP::Connect(uint16_t localPort, UdpSocket remote)
     {
-        if (remote.Is<Udpv4Socket>())
+        if (std::holds_alternative<Udpv4Socket>(remote))
         {
             control = CreateUdpPcb(IPVersions::ipv4);
             assert(control != nullptr);
             ip_set_option(control, SOF_BROADCAST);
-            IPv4Address ipv4Address = remote.Get<Udpv4Socket>().first;
+            IPv4Address ipv4Address = std::get<Udpv4Socket>(remote).first;
             ip_addr_t ipAddress IPADDR4_INIT(0);
             IP4_ADDR(&ipAddress.u_addr.ip4, ipv4Address[0], ipv4Address[1], ipv4Address[2], ipv4Address[3]);
-            err_t result = udp_connect(control, &ipAddress, remote.Get<Udpv4Socket>().second);
+            err_t result = udp_connect(control, &ipAddress, std::get<Udpv4Socket>(remote).second);
             assert(result == ERR_OK);
             result = udp_bind(control, IP4_ADDR_ANY, localPort);
             assert(result == ERR_OK);
@@ -110,11 +110,11 @@ namespace services
         {
             control = CreateUdpPcb(IPVersions::ipv6);
             assert(control != nullptr);
-            IPv6Address ipv6Address = remote.Get<Udpv6Socket>().first;
+            IPv6Address ipv6Address = std::get<Udpv6Socket>(remote).first;
             ip_addr_t ipAddress IPADDR6_INIT(0, 0, 0, 0);
             IP6_ADDR(&ipAddress.u_addr.ip6, PP_HTONL(ipv6Address[1] + (static_cast<uint32_t>(ipv6Address[0]) << 16)), PP_HTONL(ipv6Address[3] + (static_cast<uint32_t>(ipv6Address[2]) << 16)), PP_HTONL(ipv6Address[5] + (static_cast<uint32_t>(ipv6Address[4]) << 16)), PP_HTONL(ipv6Address[7] + (static_cast<uint32_t>(ipv6Address[6]) << 16)));
             ip6_addr_set_zone(&ipAddress.u_addr.ip6, netif_default->ip6_addr->u_addr.ip6.zone);
-            err_t result = udp_connect(control, &ipAddress, remote.Get<Udpv6Socket>().second);
+            err_t result = udp_connect(control, &ipAddress, std::get<Udpv6Socket>(remote).second);
             assert(result == ERR_OK);
             result = udp_bind(control, IP6_ADDR_ANY, localPort);
             assert(result == ERR_OK);

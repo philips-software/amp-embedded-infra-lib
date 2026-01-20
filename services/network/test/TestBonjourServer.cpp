@@ -27,20 +27,20 @@ public:
 
     void DataReceived(const std::vector<uint8_t>& data, services::IPv4Address address = services::IPv4Address{ 1, 2, 3, 4 }, uint16_t port = 5353)
     {
-        datagramExchange->GetObserver().DataReceived(infra::MakeSharedOnHeap<infra::StdVectorInputStreamReader::WithStorage>(infra::inPlace, data), services::Udpv4Socket{ address, port });
+        datagramExchange->GetObserver().DataReceived(infra::MakeSharedOnHeap<infra::StdVectorInputStreamReader::WithStorage>(std::in_place, data), services::Udpv4Socket{ address, port });
     }
 
     void DataReceived(const std::vector<uint8_t>& data, services::IPv6Address address, uint16_t port = 5353)
     {
-        datagramExchange->GetObserver().DataReceived(infra::MakeSharedOnHeap<infra::StdVectorInputStreamReader::WithStorage>(infra::inPlace, data), services::Udpv6Socket{ address, port });
+        datagramExchange->GetObserver().DataReceived(infra::MakeSharedOnHeap<infra::StdVectorInputStreamReader::WithStorage>(std::in_place, data), services::Udpv6Socket{ address, port });
     }
 
     void DataReceived(const std::vector<uint8_t>& data, services::IPAddress address, uint16_t port = 5353)
     {
-        if (address.Is<services::IPv4Address>())
-            DataReceived(data, address.Get<services::IPv4Address>(), port);
+        if (std::holds_alternative<services::IPv4Address>(address))
+            DataReceived(data, std::get<services::IPv4Address>(address), port);
         else
-            DataReceived(data, address.Get<services::IPv6Address>(), port);
+            DataReceived(data, std::get<services::IPv6Address>(address), port);
     }
 
     void PacketReceived(services::IPv4Address address = services::IPv4Address{ 1, 2, 3, 4 }, uint16_t port = 5353)

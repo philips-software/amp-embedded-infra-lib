@@ -8,7 +8,7 @@
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/IntegerNormalization.hpp"
-#include "infra/util/Optional.hpp"
+#include <optional>
 #include <type_traits>
 
 namespace infra

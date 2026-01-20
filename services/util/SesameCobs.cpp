@@ -169,14 +169,14 @@ namespace services
                     if (!receiving)
                         DataReceived();
                 });
-            GetObserver().ReceivedMessage(receivedDataReader.Emplace(infra::inPlace, receivedMessage, messageSize), std::exchange(receiveSizeEncoded, 0));
+            GetObserver().ReceivedMessage(receivedDataReader.Emplace(std::in_place, receivedMessage, messageSize), std::exchange(receiveSizeEncoded, 0));
         }
     }
 
     void SesameCobs::CheckReadyToSendUserData()
     {
         if (!sendingUserData && sendReqestedSize != std::nullopt)
-            SesameEncoded::GetObserver().SendMessageStreamAvailable(sendStream.Emplace(infra::inPlace, sendStorage, *std::exchange(sendReqestedSize, std::nullopt)));
+            SesameEncoded::GetObserver().SendMessageStreamAvailable(sendStream.Emplace(std::in_place, sendStorage, *std::exchange(sendReqestedSize, std::nullopt)));
     }
 
     void SesameCobs::SendSerialData(const infra::ConstByteRange data, const infra::Function<void()>& onSendDataDone)

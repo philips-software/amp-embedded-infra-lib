@@ -131,18 +131,18 @@ namespace services
     template<class Enum>
     void ProtoMessageReceiverBase::DeserializeField(ProtoEnum<Enum>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Enum& value) const
     {
-        parser.ReportFormatResult(field.Is<uint64_t>());
-        if (field.Is<uint64_t>())
-            value = static_cast<Enum>(field.Get<uint64_t>());
+        parser.ReportFormatResult(std::holds_alternative<uint64_t>(field));
+        if (std::holds_alternative<uint64_t>(field))
+            value = static_cast<Enum>(std::get<uint64_t>(field));
     }
 
     template<class Message>
     void ProtoMessageReceiverBase::DeserializeField(ProtoMessage<Message>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Message& value)
     {
-        parser.ReportFormatResult(field.Is<infra::PartialProtoLengthDelimited>());
-        if (field.Is<infra::PartialProtoLengthDelimited>())
+        parser.ReportFormatResult(std::holds_alternative<infra::PartialProtoLengthDelimited>(field));
+        if (std::holds_alternative<infra::PartialProtoLengthDelimited>(field))
         {
-            auto messageSize = field.Get<infra::PartialProtoLengthDelimited>().length;
+            auto messageSize = std::get<infra::PartialProtoLengthDelimited>(field).length;
             stack.emplace_back(messageSize, [this, &value](const infra::DataInputStream& stream)
                 {
                     FeedForMessage(stream, value);
