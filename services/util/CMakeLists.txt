@@ -1,5 +1,6 @@
 add_library(services.util ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 
+protocol_buffer_echo_cpp(services.util Flash.proto)
 protocol_buffer_echo_cpp(services.util SesameSecurity.proto)
 
 target_link_libraries(services.util PUBLIC
@@ -33,6 +34,8 @@ target_sources(services.util PRIVATE
     FlashAlign.cpp
     FlashAlign.hpp
     FlashDelegate.hpp
+    FlashEcho.cpp
+    FlashEcho.hpp
     FlashMultipleAccess.cpp
     FlashMultipleAccess.hpp
     FlashQuadSpi.cpp

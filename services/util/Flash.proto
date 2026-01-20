@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+import "EchoAttributes.proto";
+
+package flash;
+
+message ReadRequest
+{
+    uint32 address = 1;
+    uint32 size = 2;
+}
+
+message ReadResponse
+{
+    bytes contents = 1 [(bytes_size) = 512];
+}
+
+message WriteRequest
+{
+    uint32 address = 1;
+    bytes contents = 2 [(bytes_size) = 512];
+}
+
+message EraseSectorsRequest
+{
+    uint32 sector = 1;
+    uint32 number_of_sectors = 2;
+}
+
+service Flash
+{
+    option (service_id) = 50;
+
+    rpc Read(ReadRequest) returns (Nothing) { option (method_id) = 1; }
+    rpc Write(WriteRequest) returns (Nothing) { option (method_id) = 2; }
+    rpc EraseSectors(EraseSectorsRequest) returns (Nothing) { option (method_id) = 3; }
+}
+
+service FlashResult
+{
+    option (service_id) = 51;
+
+    rpc ReadDone(ReadResponse) returns (Nothing) { option (method_id) = 1; }
+    rpc WriteDone(Nothing) returns (Nothing) { option (method_id) = 2; }
+    rpc EraseSectorsDone(Nothing) returns (Nothing) { option (method_id) = 3; }
+}
