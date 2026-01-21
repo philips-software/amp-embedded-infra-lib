@@ -189,8 +189,13 @@ message SecurityPreference
 
 // ==================================================
 // GAP PERIPHERAL SERVICE DEFINITION
-// Unless otherwise specified, all methods are allowed in all link layer states
-// Unless another callback is specified, all methods result in GapPeripheralResponse.Done on success
+// ==================================================
+// State constraints:
+//  Unless otherwise specified, all methods are allowed in all link layer states
+// Callback constraints:
+//  Unless otherwise specified, methods do not by default result in any callbacks on the response service
+//  When a callback is specified for a method and only for that method, next of the same method call is not allowed until the callback has been received
+//  When a callback is specified for more than one method, any of the associated method calls is not allowed until the callback for the previous call have been received
 // ==================================================
 service GapPeripheral
 {
@@ -203,11 +208,12 @@ service GapPeripheral
 
     // Allowed in link layer states: standby
     // Results in GapPeripheralResponse.StateChanged with state advertising
-    // TODO: Not all modes may be supported by all servers, document.
+    // TODO: Not all advertising modes may be supported by all servers, document.
     rpc Advertise(AdvertisementMode) returns (Nothing) { option (method_id) = 1; }
 
     // Allowed in link layer states: advertising, connected
     // Results in GapPeripheralResponse.StateChanged with state standby
+    // TODO: What if there is a standby transition already ongoing? Then this call will not result in another state change.
     rpc Standby(Nothing) returns (Nothing) { option (method_id) = 2; }
 
     // Allowed in link layer states: standby
@@ -247,6 +253,7 @@ service GapPeripheral
     // This command has to be issued to notify the master of the security
     // requirements of the slave. The master may encrypt the link, initiate the
     // pairing procedure, or reject the request.
+    // TODO: Explain what happens if it clashes with a standby state change
     rpc SendSecurityRequest(Nothing) returns (Nothing) { option (method_id) = 9; }
 
     // Allowed in link layer states: standby
@@ -264,13 +271,6 @@ service GapPeripheral
     // EXTENDED FEATURE SET
     // Servers may optionally implement these methods
     // ==================================================
-
-    // ==================================================
-    // Out Of Band Pairing 
-    // ==================================================
-
-    rpc GenerateOutOfBandData(Nothing) returns (Nothing) { option (method_id) = 13; }
-    rpc SetOutOfBandData(OutOfBandData) returns (Nothing) { option (method_id) = 14; }
 }
 
 service GapPeripheralResponse 
@@ -299,15 +299,6 @@ service GapPeripheralResponse
     // EXTENDED FEATURE SET
     // Servers may optionally implement these methods
     // ==================================================
-
-    // ==================================================
-    // Out Of Band Pairing
-    // ==================================================
-
-    // TODO: Who uses this? Is it part of OOB? If not used remove. 
-    rpc DisplayPasskey(Passkey) returns(Nothing) { option(method_id) = 9; }
-
-    rpc OutOfBandDataGenerated(OutOfBandData) returns(Nothing) { option(method_id) = 10; }
 }
 
 // ==================================================
