@@ -282,8 +282,6 @@ service GapPeripheralResponse
     // All servers must implement these methods  
     // ==================================================
 
-    rpc Done(Nothing) returns(Nothing) { option(method_id) = 1; }
-
     rpc StateChanged(State) returns(Nothing) { option(method_id) = 2; }
 
     rpc AdvertisingAddress(Address) returns(Nothing) { option(method_id) = 3; }
