@@ -129,6 +129,12 @@ namespace services
         virtual void StartDescriptorDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) = 0;
     };
 
+    class GattClientMtuExchange
+    {
+    public:
+        virtual void MtuExchange(const infra::Function<void(OperationStatus)>& onDone) = 0;
+    };
+
     class GattClient;
 
     class GattClientObserver
@@ -163,6 +169,8 @@ namespace services
         virtual void DisableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
         virtual void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
         virtual void DisableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
+
+        virtual void MtuExchange(const infra::Function<void(OperationStatus)>& onDone) = 0;
     };
 }
 

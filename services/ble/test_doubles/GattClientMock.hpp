@@ -96,6 +96,7 @@ namespace services
         MOCK_METHOD(void, DisableNotification, (AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone), (override));
         MOCK_METHOD(void, EnableIndication, (AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone), (override));
         MOCK_METHOD(void, DisableIndication, (AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone), (override));
+        MOCK_METHOD(void, MtuExchange, (const infra::Function<void(OperationStatus)>& onDone), (override));
     };
 }
 
