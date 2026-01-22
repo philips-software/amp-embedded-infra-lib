@@ -9,38 +9,82 @@ namespace services
         , flash(flash)
     {}
 
+    void FlashEcho::Stop(const infra::Function<void()>& onDone)
+    {
+        onStopped = onDone;
+
+        if (!busy)
+            onStopped();
+    }
+
     void FlashEcho::Read(uint32_t address, uint32_t size)
     {
+        busy = true;
+
         flash.ReadBuffer(infra::Head(infra::MakeRange(buffer), size), address, [this, size]()
             {
-                flashResult.RequestSend([this, size]()
-                    {
-                        flashResult.ReadDone(infra::Head(infra::MakeRange(buffer), size));
-                        MethodDone();
-                    });
+                if (onStopped)
+                {
+                    busy = false;
+                    onStopped();
+                }
+                else
+                    flashResult.RequestSend([this, size]()
+                        {
+                            busy = false;
+                            flashResult.ReadDone(infra::Head(infra::MakeRange(buffer), size));
+                            MethodDone();
+
+                            if (onStopped)
+                                onStopped();
+                        });
             });
     }
 
     void FlashEcho::Write(uint32_t address, infra::ConstByteRange contents)
     {
+        busy = true;
+
         flash.WriteBuffer(contents, address, [this]()
             {
-                flashResult.RequestSend([this]()
+                if (onStopped)
+                {
+                    busy = false;
+                    onStopped();
+                }
+                else
+                    flashResult.RequestSend([this]()
                     {
+                        busy = false;
                         flashResult.WriteDone();
                         MethodDone();
+
+                        if (onStopped)
+                            onStopped();
                     });
             });
     }
 
     void FlashEcho::EraseSectors(uint32_t sector, uint32_t numberOfSectors)
     {
+        busy = true;
+
         flash.EraseSectors(sector, sector + numberOfSectors, [this]()
             {
-                flashResult.RequestSend([this]()
+                if (onStopped)
+                {
+                    busy = false;
+                    onStopped();
+                }
+                else
+                    flashResult.RequestSend([this]()
                     {
+                        busy = false;
                         flashResult.EraseSectorsDone();
                         MethodDone();
+
+                        if (onStopped)
+                            onStopped();
                     });
             });
     }
