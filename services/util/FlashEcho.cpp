@@ -54,14 +54,14 @@ namespace services
                 }
                 else
                     flashResult.RequestSend([this]()
-                    {
-                        busy = false;
-                        flashResult.WriteDone();
-                        MethodDone();
+                        {
+                            busy = false;
+                            flashResult.WriteDone();
+                            MethodDone();
 
-                        if (onStopped)
-                            onStopped();
-                    });
+                            if (onStopped)
+                                onStopped();
+                        });
             });
     }
 
@@ -78,14 +78,14 @@ namespace services
                 }
                 else
                     flashResult.RequestSend([this]()
-                    {
-                        busy = false;
-                        flashResult.EraseSectorsDone();
-                        MethodDone();
+                        {
+                            busy = false;
+                            flashResult.EraseSectorsDone();
+                            MethodDone();
 
-                        if (onStopped)
-                            onStopped();
-                    });
+                            if (onStopped)
+                                onStopped();
+                        });
             });
     }
 
