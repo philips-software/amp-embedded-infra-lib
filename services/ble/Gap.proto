@@ -274,12 +274,11 @@ service GapPeripheralResponse
     option (service_id) = 34;
 
     rpc Done(Nothing) returns (Nothing) { option (method_id) = 1; }
-    rpc DeviceStarted(Nothing) returns (Nothing) { option (method_id) = 2; }
-    rpc StateChanged(State) returns (Nothing) { option (method_id) = 3; }
-    rpc ResolvableAddress(Address) returns (Nothing) { option (method_id) = 4; }
-    rpc DisplayPasskey(Passkey) returns (Nothing) { option (method_id) = 5; }
-    rpc IdentityAddress(Address) returns (Nothing) { option (method_id) = 6; }
-    rpc OutOfBandDataGenerated(OutOfBandData) returns (Nothing) { option (method_id) = 7; }
+    rpc StateChanged(State) returns (Nothing) { option (method_id) = 2; }
+    rpc ResolvableAddress(Address) returns (Nothing) { option (method_id) = 3; }
+    rpc DisplayPasskey(Passkey) returns (Nothing) { option (method_id) = 4; }
+    rpc IdentityAddress(Address) returns (Nothing) { option (method_id) = 5; }
+    rpc OutOfBandDataGenerated(OutOfBandData) returns (Nothing) { option (method_id) = 6; }
 }
 
 service GapCentralResponse
@@ -292,9 +291,8 @@ service GapCentralResponse
     rpc PairingSuccessfullyCompleted(Nothing) returns (Nothing) { option (method_id) =  4; }
     rpc PairingFailed(PairingStatus) returns (Nothing) { option (method_id) = 5; }
     rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
-    rpc DeviceStarted(Nothing) returns (Nothing) { option (method_id) = 7; }
-    rpc ResolvedPrivateAddress(Address) returns (Nothing) { option (method_id) = 8; }
-    rpc ResolvePrivateAddressFailed(Nothing) returns (Nothing) { option (method_id) = 9; }
-    rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 10; }
-    rpc OutOfBandDataGenerated(OutOfBandData) returns (Nothing) { option (method_id) = 11; }
+    rpc ResolvedPrivateAddress(Address) returns (Nothing) { option (method_id) = 7; }
+    rpc ResolvePrivateAddressFailed(Nothing) returns (Nothing) { option (method_id) = 8; }
+    rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 9; }
+    rpc OutOfBandDataGenerated(OutOfBandData) returns (Nothing) { option (method_id) = 10; }
 }
