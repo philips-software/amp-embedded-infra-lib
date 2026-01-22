@@ -108,6 +108,16 @@ namespace services
     {
         return 0;
     }
+
+    uint16_t AttMtuExchangeImpl::EffectiveAttMtuSize() const
+    {
+        return attMtu;
+    }
+
+    void AttMtuExchangeImpl::SetAttMtu(uint16_t value)
+    {
+        attMtu = value;
+    }
 }
 
 namespace infra
