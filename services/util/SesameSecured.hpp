@@ -111,6 +111,7 @@ namespace services
         std::array<uint8_t, blockSize> initialReceiveIv;
         std::array<uint8_t, blockSize> receiveIv;
         infra::SharedOptional<ReceiveBufferReader> receiveBufferReader;
+        bool integrityCheckFailed = false;
     };
 
 #ifdef EMIL_USE_MBEDTLS
