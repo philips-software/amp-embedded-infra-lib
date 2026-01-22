@@ -163,9 +163,29 @@ TEST_F(SesameSecuredTest, damaged_message_does_not_propagate)
 
     sentData[7] = 7;
 
-    EXPECT_CALL(integrityObserver, IntegrityCheckFailed());
     EXPECT_CALL(upper, ReceivedMessage(testing::_)).Times(0);
     ReceivedMessage(sentData);
+
+    Send("efgh");
+    EXPECT_CALL(integrityObserver, IntegrityCheckFailed());
+    ReceivedMessage(sentData);
+}
+
+TEST_F(SesameSecuredTest, truncated_message_followed_by_init_is_not_reported)
+{
+    Send("abcd");
+
+    sentData.resize(sentData.size() - 1);
+
+    EXPECT_CALL(upper, ReceivedMessage(testing::_)).Times(0);
+    ReceivedMessage(sentData);
+
+    EXPECT_CALL(upper, Initialized());
+    lower.GetObserver().Initialized();
+    sentData.clear();
+
+    Send("efgh");
+    Receive("efgh");
 }
 
 TEST_F(SesameSecuredTest, short_message_does_not_propagate)
