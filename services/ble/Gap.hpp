@@ -153,6 +153,22 @@ namespace services
             bool outOfBandSupported;
         };
 
+        // Remove this function when we deprecate SecurityMode and SecurityLevel
+        static auto ConvertToSecurityModeAndLevel(SecurityPreferences preferences)
+        {
+            const auto mode = SecurityMode::mode1;
+            auto level = SecurityLevel::level1;
+
+            if (preferences.ioCapabilities == IoCapabilities::none || preferences.mitm == SecuritySupport::disabled)
+                level = SecurityLevel::level2;
+            else if (preferences.mitm == SecuritySupport::supported)
+                level = SecurityLevel::level3;
+            else if (preferences.secureConnections == SecuritySupport::enforced)
+                level = SecurityLevel::level4;
+
+            return std::make_pair(mode, level);
+        }
+
         // 1. If there is a pre-existing bond, then the connection will be encrypted.
         // 2. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
         virtual void PairAndBond() = 0;

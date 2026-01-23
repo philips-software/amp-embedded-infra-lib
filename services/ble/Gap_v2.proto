@@ -4,7 +4,7 @@ syntax = "proto3";
 
 import "EchoAttributes.proto";
 
-package gap;
+package gap_v2;
 option java_package = "com.philips.emil.protobufEcho";
 option java_outer_classname = "GapProto";
 
@@ -97,6 +97,12 @@ message AddressType
     AddressTypeEnum type = 1;
 }
 
+message AddressWithType
+{
+    Address address = 1;
+    AddressType addressType = 2;
+}
+
 message AdvertisingEventType
 {
     enum AdvertisingEventTypeEnum
@@ -127,14 +133,6 @@ message PairingStatus
 
     Error error = 1;
 };
-
-message OutOfBandData
-{
-    Address address = 1;
-    AddressType addressType = 2;
-    bytes randomData = 3 [(bytes_size) = 16];
-    bytes confirmData = 4 [(bytes_size) = 16];
-}
 
 message BondsStatus
 {
@@ -199,7 +197,7 @@ message SecurityPreference
 // ==================================================
 service GapPeripheral
 {
-    option (service_id) = 32;
+    option (service_id) = 320;
 
     // ==================================================
     // CORE FEATURE SET
@@ -266,16 +264,11 @@ service GapPeripheral
 
     // Results in GapPeripheralResponse.BondInformation
     rpc GetBondInformation(Nothing) returns (Nothing) { option (method_id) = 12; }
-
-    // ==================================================
-    // EXTENDED FEATURE SET
-    // Servers may optionally implement these methods
-    // ==================================================
 }
 
 service GapPeripheralResponse 
 {
-    option(service_id) = 34;
+    option(service_id) = 340;
 
     // ==================================================
     // CORE FEATURE SET
@@ -284,19 +277,21 @@ service GapPeripheralResponse
 
     rpc StateChanged(State) returns(Nothing) { option(method_id) = 2; }
 
-    rpc AdvertisingAddress(Address) returns(Nothing) { option(method_id) = 3; }
-    rpc IdentityAddress(Address) returns(Nothing) { option(method_id) = 4; }
+    rpc AdvertisingAddress(AddressWithType) returns(Nothing) { option(method_id) = 3; }
 
+    rpc IdentityAddress(AddressWithType) returns(Nothing) { option(method_id) = 4; }
+
+    // TODO: What is the use for these calls?
+    // TODO: Do we get these callbacks also when establishing connection from a bonded peer?
     rpc PairingSuccessfullyCompleted(Nothing) returns(Nothing) { option(method_id) = 5; }
     rpc PairingFailed(PairingStatus) returns(Nothing) { option(method_id) = 6; }
 
+    // TODO: State that there are two ways this callback can be triggered: 
+    // by RemoveAllBonds/RemoveOldestBond calls, or when a new bond is created
+    // TODO: Do we get a call if max bonds is reached and the oldest bond is removed automatically?
     rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 7; }
-    rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 8; }
 
-    // ==================================================
-    // EXTENDED FEATURE SET
-    // Servers may optionally implement these methods
-    // ==================================================
+    rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 8; }
 }
 
 // ==================================================
@@ -362,9 +357,17 @@ message DeviceDiscoveryFilter
     bytes data = 2 [(bytes_size) = 32];
 };
 
+message OutOfBandData
+{
+    Address address = 1;
+    AddressType addressType = 2;
+    bytes randomData = 3 [(bytes_size) = 16];
+    bytes confirmData = 4 [(bytes_size) = 16];
+}
+
 service GapCentral
 {
-    option (service_id) = 33;
+    option (service_id) = 330;
 
     // Allowed states: standby
     rpc StartDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 1; }
@@ -405,7 +408,7 @@ service GapCentral
 }
 
 service GapCentralResponse {
-  option(service_id) = 35;
+  option(service_id) = 350;
 
   rpc Done(Nothing) returns(Nothing) { option(method_id) = 1; }
   rpc DeviceDiscovered(DiscoveredDevice) returns(Nothing) { option(method_id) = 2; }
