@@ -1,4 +1,5 @@
 #include "infra/util/LogAndAbort.hpp"
+#include <atomic>
 #include <cstdarg>
 
 namespace infra
@@ -8,6 +9,8 @@ namespace infra
 
 namespace
 {
+    std::atomic<bool> busy{ false };
+
     void logAndAbortHookForwarder(const char* format, ...)
     {
         if (infra::logAndAbortHook)
@@ -29,6 +32,9 @@ namespace infra
 
     void ExecuteLogAndAbortHook(const char* reason, const char* file, int line, const char* format, ...)
     {
+        if (busy.exchange(true))
+            return;
+
         if (logAndAbortHook)
         {
             logAndAbortHookForwarder("\n%s! [", reason);
