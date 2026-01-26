@@ -62,3 +62,20 @@ TEST(LogAndAbortTest, log_and_abort_with_filename_prints_filename)
     EXPECT_THAT(output, testing::HasSubstr("filename.cpp:32"));
     EXPECT_THAT(output, testing::HasSubstr("speak friend and enter"));
 }
+
+TEST(LogAndAbortTest, log_and_abort_recursive_call_skipped)
+{
+    infra::RegisterLogAndAbortHook([&](auto format, auto args)
+        {
+            PrintLogAndAbortToStdout(format, args);
+            infra::ExecuteLogAndAbortHook("recursive", "file.cpp", 42, "recursive %s", "call");
+        });
+
+    testing::internal::CaptureStdout();
+    // Manually calling hook to avoid aborting the test
+    infra::ExecuteLogAndAbortHook("condition", "file.cpp", 32, "initial %s", "call");
+    std::string output = testing::internal::GetCapturedStdout();
+
+    EXPECT_THAT(output, testing::HasSubstr("condition"));
+    EXPECT_THAT(output, testing::Not(testing::HasSubstr("recursive")));
+}
