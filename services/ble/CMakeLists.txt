@@ -4,10 +4,6 @@ protocol_buffer_echo_all(services.ble Gap.proto)
 protocol_buffer_csharp(services.ble Gap.proto)
 protocol_buffer_java(services.ble Gap.proto)
 
-protocol_buffer_echo_all(services.ble Gap_v2.proto)
-protocol_buffer_csharp(services.ble Gap_v2.proto)
-protocol_buffer_java(services.ble Gap_v2.proto)
-
 protocol_buffer_echo_all(services.ble Gatt.proto)
 protocol_buffer_csharp(services.ble Gatt.proto)
 protocol_buffer_java(services.ble Gatt.proto)
