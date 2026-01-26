@@ -294,6 +294,12 @@ service GapPeripheralResponse
     rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 8; }
 }
 
+service GapPeripheralReadiness {
+    option(service_id) = 36;
+
+    rpc DeviceStarted(Nothing) returns(Nothing) { option(method_id) = 1; }
+}
+
 // ==================================================
 // GAP CENTRAL
 // ==================================================
@@ -408,24 +414,19 @@ service GapCentral
 }
 
 service GapCentralResponse {
-  option(service_id) = 350;
+    option(service_id) = 350;
 
-  rpc Done(Nothing) returns(Nothing) { option(method_id) = 1; }
-  rpc DeviceDiscovered(DiscoveredDevice) returns(Nothing) { option(method_id) = 2; }
-  rpc StateChanged(State) returns(Nothing) { option(method_id) = 3; }
-  rpc PairingSuccessfullyCompleted(Nothing) returns(Nothing) { option(method_id) = 4; }
-  rpc PairingFailed(PairingStatus) returns(Nothing) { option(method_id) = 5; }
-  rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 6; }
-  rpc ResolvedPrivateAddress(Address) returns(Nothing) { option(method_id) = 7; }
-  rpc ResolvePrivateAddressFailed(Nothing) returns(Nothing) { option(method_id) = 8; }
-  rpc DeviceBonded(BoolValue) returns(Nothing) { option(method_id) = 9; }
-  rpc OutOfBandDataGenerated(OutOfBandData) returns(Nothing) { option(method_id) = 10; }
+    rpc Done(Nothing) returns (Nothing) { option (method_id) = 1; }
+    rpc DeviceDiscovered(DiscoveredDevice) returns (Nothing) { option (method_id) = 2; }
+    rpc StateChanged(State) returns (Nothing) { option (method_id) = 3; }
+    rpc PairingSuccessfullyCompleted(Nothing) returns (Nothing) { option (method_id) =  4; }
+    rpc PairingFailed(PairingStatus) returns (Nothing) { option (method_id) = 5; }
+    rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
+    rpc DeviceStarted(Nothing) returns (Nothing) { option (method_id) = 7; }
+    rpc ResolvedPrivateAddress(Address) returns (Nothing) { option (method_id) = 8; }
+    rpc ResolvePrivateAddressFailed(Nothing) returns (Nothing) { option (method_id) = 9; }
+    rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 10; }
+    rpc OutOfBandDataGenerated(OutOfBandData) returns (Nothing) { option (method_id) = 11; }
 }
 
-service DeviceInitialization {
-  option(service_id) = 36;
 
-  rpc DeviceStarted(Nothing) returns(Nothing) { option(method_id) = 1; }
-  // Wait for Gabriel
-  // He has a branch: https://github.com/philips-internal/amp-connectivity-nodes/compare/main...feature/unify-device-start-proto
-}
