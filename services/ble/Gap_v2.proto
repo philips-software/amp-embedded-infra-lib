@@ -1,0 +1,432 @@
+// clang-format off
+
+syntax = "proto3";
+
+import "EchoAttributes.proto";
+
+package gap_v2;
+option java_package = "com.philips.emil.protobufEcho";
+option java_outer_classname = "GapProto";
+
+// ==================================================
+// GAP COMMON
+// ==================================================
+
+message Address
+{
+    bytes address = 1 [(bytes_size) = 6];
+}
+
+message BoolValue
+{
+    bool value = 1;
+}
+
+message UInt32Value
+{
+    uint32 value = 1;
+}
+
+// Link layer states of a device in a Peripheral or Central role
+// Peripheral role states are standby, connected and advertising.
+// Central role states are standby, scanning, connected and initiating.
+// Allowed transitions are as follows.
+// 1. Every state can go to standby.
+// 2. Every state can be entered from standby except the connected state.
+// 3. Connected state can only be entered from advertising and initiating states.
+// For further details refer to Section 1.1, BLUETOOTH CORE SPECIFICATION Version 5.3 | Vol 6, Part B
+message State
+{
+    enum Event
+    {
+        standby = 0;
+        scanning = 1;
+        connected = 2;
+        advertising = 3;
+        initiating = 4;
+    }
+    Event value = 1;
+}
+
+message IoCapabilities
+{
+    enum IoCapabilitiesEnum
+    {
+        None = 0;
+        Display = 1;
+        DisplayYesNo = 2;
+        Keyboard = 3;
+        KeyboardDisplay = 4;
+    }
+
+    IoCapabilitiesEnum ioCaps = 1;
+}
+
+message SecurityLevel
+{
+    enum SecurityLevelEnum
+    {
+        None = 0;
+        UnauthenticatedPairing = 1;
+        AuthenticatedPairing = 2;
+        AuthenticatedPairingWithLE = 3;
+    }
+
+    SecurityLevelEnum level = 1;
+}
+
+message AdvertisementType
+{
+    enum AdvertisementTypeEnum
+    {
+        AdvInd = 0;
+        AdvNonconnInd = 1;
+    }
+
+    AdvertisementTypeEnum type = 1;
+}
+
+message AddressType
+{
+    enum AddressTypeEnum
+    {
+        publicAddress = 0;
+        randomAddress = 1;
+    }
+
+    AddressTypeEnum type = 1;
+}
+
+message AddressWithType
+{
+    Address address = 1;
+    AddressType addressType = 2;
+}
+
+message AdvertisingEventType
+{
+    enum AdvertisingEventTypeEnum
+    {
+        advInd = 0;
+        advDirectInd = 1;
+        advScanInd = 2;
+        advNonconnInd = 3;
+        scanResponse = 4;
+    }
+
+    AdvertisingEventTypeEnum type = 1;
+}
+
+message PairingStatus
+{
+    enum Error
+    {
+        passkeyEntryFailed = 0;
+        authenticationRequirementsNotMet = 1;
+        pairingNotSupported = 2;
+        insufficientEncryptionKeySize = 3;
+        numericComparisonFailed = 4;
+        timeout = 5;
+        encryptionFailed = 6;
+        unknown = 7;
+    }
+
+    Error error = 1;
+};
+
+message BondsStatus
+{
+    uint32 currentBonds = 1;
+    uint32 maxBonds = 2;
+}
+
+// ==================================================
+// GAP PERIPHERAL
+// ==================================================
+
+message Passkey
+{
+    int32 passkey = 1;
+    bool numericComparison = 2;
+}
+
+message AdvertisementMode
+{
+    AdvertisementType type = 1;
+    uint32 advInterval = 2;
+}
+
+message AdvertisementData
+{
+    bytes data = 1 [(bytes_size) = 28]; 
+}
+
+message SecurityPreference
+{
+    enum SupportEnum
+    {
+        disabled = 0;
+        supported = 1;
+        enforced = 2;
+    }
+
+    enum IoCapabilitiesEnum
+    {   
+        None = 0;
+        Display = 1;
+        DisplayYesNo = 2;
+        Keyboard = 3;
+        KeyboardDisplay = 4;
+    }
+
+    SupportEnum secureConnections = 1;
+    SupportEnum mitm = 2;
+    IoCapabilitiesEnum ioCapabilities = 3;
+    bool outOfBandSupported = 4;
+}
+
+// ==================================================
+// GAP PERIPHERAL SERVICE DEFINITION
+// ==================================================
+// State constraints:
+//  Unless otherwise specified, all methods are allowed in all link layer states
+// Callback constraints:
+//  Unless otherwise specified, methods do not by default result in any callbacks on the response service
+//  When a callback is specified for a method and only for that method, next of the same method call is not allowed until the callback has been received
+//  When a callback is specified for more than one method, any of the associated method calls is not allowed until the callback for the previous call have been received
+// ==================================================
+service GapPeripheral
+{
+    option (service_id) = 320;
+
+    // ==================================================
+    // CORE FEATURE SET
+    // All servers must implement these methods  
+    // ==================================================
+
+    // Allowed in link layer states: standby
+    // Results in GapPeripheralResponse.StateChanged with state advertising
+    // TODO: Not all advertising modes may be supported by all servers, document.
+    rpc Advertise(AdvertisementMode) returns (Nothing) { option (method_id) = 1; }
+
+    // Allowed in link layer states: advertising, connected
+    // Results in GapPeripheralResponse.StateChanged with state standby
+    // TODO: What if there is a standby transition already ongoing? Then this call will not result in another state change.
+    rpc Standby(Nothing) returns (Nothing) { option (method_id) = 2; }
+
+    // Allowed in link layer states: standby
+    // Formatting of advertisement data is as per Bluetooth Core Specification.
+    // TODO: Include ble spec reference
+    // Maximum advertisement data length is 28 bytes. Server adds 3 more bytes of flags data with the flag bits 'LE General Discoverable Mode' and 'BR/EDR Not Supported' enabled.
+    // Server will not check validity of the advertisement data and only maximum length of each field will be passed to BLE stack
+    rpc SetAdvertisementData(AdvertisementData) returns (Nothing) { option (method_id) = 3; }
+
+    // Allowed in link layer states: standby
+    // Formatting of scan response data is as per Bluetooth Core Specification.
+    // TODO: Include ble spec reference
+    // Maximum scan response length is 13 bytes. Server reserves 18 bytes for streaming service uuids. Scan Response is only possible with scannable advertisements
+    // Server will not check validity of the scan response data and only maximum length of each field will be passed to BLE stack
+    rpc SetScanResponseData(AdvertisementData) returns (Nothing) { option (method_id) = 4; }
+    
+    // Allowed in link layer states: advertising
+    // Results in GapPeripheralResponse.AdvertisingAddress
+    // Type of the advertising address is statically configured
+    rpc GetAdvertisingAddress(Nothing) returns (Nothing) { option (method_id) = 5; }
+
+    // Results in GapPeripheralResponse.IdentityAddress
+    // Identity address is statically configured
+    rpc GetIdentityAddress(Nothing) returns (Nothing) { option (method_id) = 6; }
+
+    // Allowed in link layer states: standby
+    // TODO: State default behavior
+    rpc SetSecurityPreferences(SecurityPreference) returns (Nothing) { option (method_id) = 7; }
+
+    // Allowed in link layer states: standby
+    // Default is to allow pairing
+    // TODO: Explain behavior
+    rpc SetAllowPairing(BoolValue) returns (Nothing) { option (method_id) = 8; }
+
+    // Allowed in link layer states: connected
+    // Send a slave security request to the master.
+    // This command has to be issued to notify the master of the security
+    // requirements of the slave. The master may encrypt the link, initiate the
+    // pairing procedure, or reject the request.
+    // TODO: Explain what happens if it clashes with a standby state change
+    rpc SendSecurityRequest(Nothing) returns (Nothing) { option (method_id) = 9; }
+
+    // Allowed in link layer states: standby
+    // Results in GapPeripheralResponse.NumberOfBondsChanged
+    rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 10; }
+
+    // Allowed in link layer states: standby
+    // Results in GapPeripheralResponse.NumberOfBondsChanged
+    rpc RemoveOldestBond(Nothing) returns (Nothing) { option (method_id) = 11; }
+
+    // Results in GapPeripheralResponse.BondInformation
+    rpc GetBondInformation(Nothing) returns (Nothing) { option (method_id) = 12; }
+}
+
+service GapPeripheralResponse 
+{
+    option(service_id) = 340;
+
+    // ==================================================
+    // CORE FEATURE SET
+    // All servers must implement these methods  
+    // ==================================================
+
+    rpc StateChanged(State) returns(Nothing) { option(method_id) = 2; }
+
+    rpc AdvertisingAddress(AddressWithType) returns(Nothing) { option(method_id) = 3; }
+
+    rpc IdentityAddress(AddressWithType) returns(Nothing) { option(method_id) = 4; }
+
+    // TODO: What is the use for these calls?
+    // TODO: Do we get these callbacks also when establishing connection from a bonded peer?
+    rpc PairingSuccessfullyCompleted(Nothing) returns(Nothing) { option(method_id) = 5; }
+    rpc PairingFailed(PairingStatus) returns(Nothing) { option(method_id) = 6; }
+
+    // TODO: State that there are two ways this callback can be triggered: 
+    // by RemoveAllBonds/RemoveOldestBond calls, or when a new bond is created
+    // TODO: Do we get a call if max bonds is reached and the oldest bond is removed automatically?
+    rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 7; }
+
+    rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 8; }
+}
+
+service GapPeripheralReadiness {
+    option(service_id) = 36;
+
+    rpc DeviceStarted(Nothing) returns(Nothing) { option(method_id) = 1; }
+}
+
+// ==================================================
+// GAP CENTRAL
+// ==================================================
+
+message SecurityModeAndLevel
+{
+    enum SecurityLevelEnum
+    {
+        none = 0;
+        unauthenticatedPairing = 1;
+        authenticatedPairing = 2;
+        authenticatedPairingWithLE = 3;
+    }
+
+    enum SecurityModeEnum
+    {
+        mode1 = 0;
+        mode2 = 1;
+    }
+
+    SecurityModeEnum mode = 1;
+    SecurityLevelEnum level = 2;
+}
+
+message PeerNodeParameters
+{
+    Address address = 1;
+    AddressType addressType = 2;
+}
+
+message ConnectionParameters
+{
+    PeerNodeParameters peerParameters = 1;
+    uint32 initiatingTimeoutInMs = 2;
+}
+
+message DiscoveredDevice
+{
+    Address address = 1;
+    AddressType addressType = 2;
+    bytes data = 3 [(bytes_size) = 32];
+    int32 rssi = 4;
+    
+    // deprecated isScanResponse in favour of advertisingEventType
+    reserved 5;
+
+    AdvertisingEventType advertisingEventType = 6;
+}
+
+message DeviceDiscoveryFilter
+{
+    enum Filter
+    {
+        address = 0;
+
+        // Filtering on contents of Manufacturer specific data
+        advertisingData = 1; 
+    }
+
+    Filter filter = 1;
+    bytes data = 2 [(bytes_size) = 32];
+};
+
+message OutOfBandData
+{
+    Address address = 1;
+    AddressType addressType = 2;
+    bytes randomData = 3 [(bytes_size) = 16];
+    bytes confirmData = 4 [(bytes_size) = 16];
+}
+
+service GapCentral
+{
+    option (service_id) = 330;
+
+    // Allowed states: standby
+    rpc StartDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 1; }
+
+    // Allowed states: standby
+    rpc StopDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 2; }
+
+    // Allowed states: standby
+    // For successful connection establishment, state will follow: standby -> initiating -> connected
+    // For falied connection establishment, state will follow: standby -> initiating -> standby
+    rpc Connect(ConnectionParameters) returns (Nothing) { option (method_id) = 3; }
+
+    // Allowed states: initiating
+    rpc CancelConnect(Nothing) returns (Nothing) { option (method_id) = 4; }
+
+    // Allowed states: connected
+    rpc Disconnect(Nothing) returns (Nothing) { option (method_id) = 5; }
+
+    // Allowed states: connected
+    // 1. If there is a pre-existing bond, then the connection will be encrypted.
+    // 2. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
+    rpc PairAndBond(Nothing) returns (Nothing) { option (method_id) = 6; }
+
+    rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 7; }
+    rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 8; }
+    rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 9; }
+    rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 10; }
+    rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 11; }
+    rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 12; }
+
+    // This will only succeed if Address is a private resolvable address, and if the device is bonded
+    rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; }
+
+    // This will work with both public and random addresses
+    rpc IsDeviceBonded(PeerNodeParameters) returns (Nothing) { option (method_id) = 14; }
+    rpc GenerateOutOfBandData(Nothing) returns (Nothing) { option (method_id) = 15; }
+    rpc SetOutOfBandData(OutOfBandData) returns (Nothing) { option (method_id) = 16; }
+}
+
+service GapCentralResponse {
+    option(service_id) = 350;
+
+    rpc Done(Nothing) returns (Nothing) { option (method_id) = 1; }
+    rpc DeviceDiscovered(DiscoveredDevice) returns (Nothing) { option (method_id) = 2; }
+    rpc StateChanged(State) returns (Nothing) { option (method_id) = 3; }
+    rpc PairingSuccessfullyCompleted(Nothing) returns (Nothing) { option (method_id) =  4; }
+    rpc PairingFailed(PairingStatus) returns (Nothing) { option (method_id) = 5; }
+    rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
+    rpc DeviceStarted(Nothing) returns (Nothing) { option (method_id) = 7; }
+    rpc ResolvedPrivateAddress(Address) returns (Nothing) { option (method_id) = 8; }
+    rpc ResolvePrivateAddressFailed(Nothing) returns (Nothing) { option (method_id) = 9; }
+    rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 10; }
+    rpc OutOfBandDataGenerated(OutOfBandData) returns (Nothing) { option (method_id) = 11; }
+}
+
+
