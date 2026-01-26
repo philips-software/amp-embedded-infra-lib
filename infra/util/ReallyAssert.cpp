@@ -30,6 +30,8 @@ namespace infra
 #else
             infra::ExecuteLogAndAbortHook("Assertion failed", nullptr, 0, "%s", condition);
 #endif
+
+        busy = false;
     }
 }
 #endif

@@ -51,5 +51,7 @@ namespace infra
             logAndAbortHookForwarder("]\n");
 #endif
         }
+
+        busy = false;
     }
 }
