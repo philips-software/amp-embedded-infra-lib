@@ -7,6 +7,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [8.1.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v8.0.0...v8.1.0) (2026-01-26)
+
+
+### Features
+
+* Add services/util/FlashEcho ([#1068](https://github.com/philips-software/amp-embedded-infra-lib/issues/1068)) ([f38e0ac](https://github.com/philips-software/amp-embedded-infra-lib/commit/f38e0ac947cf81a1d48ffd79b079ac3f8c20ccac))
+* Mtu exchange interface update ([#1036](https://github.com/philips-software/amp-embedded-infra-lib/issues/1036)) ([0d8f096](https://github.com/philips-software/amp-embedded-infra-lib/commit/0d8f096330aca30e935f84caf6b3c76c176cec34))
+
+
+### Bug Fixes
+
+* Do not report integrity failed on a truncated message, which may be the result of a reboot of the peer ([#1072](https://github.com/philips-software/amp-embedded-infra-lib/issues/1072)) ([42c3ad5](https://github.com/philips-software/amp-embedded-infra-lib/commit/42c3ad53076691f6a49e4ea96e2fa5a283561a1c))
+
 ## [8.0.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v7.2.0...v8.0.0) (2026-01-16)
 
 
