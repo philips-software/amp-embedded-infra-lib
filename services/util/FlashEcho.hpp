@@ -13,6 +13,8 @@ namespace services
     public:
         FlashEcho(services::Echo& echo, hal::Flash& flash);
 
+        void Stop(const infra::Function<void()>& onDone);
+
         // Implementation of flash::Flash
         void Read(uint32_t address, uint32_t size) override;
         void Write(uint32_t address, infra::ConstByteRange contents) override;
@@ -23,6 +25,9 @@ namespace services
         hal::Flash& flash;
 
         std::array<uint8_t, flash::WriteRequest::contentsSize> buffer;
+
+        bool busy = false;
+        infra::AutoResetFunction<void()> onStopped;
     };
 
     class FlashEchoProxy
