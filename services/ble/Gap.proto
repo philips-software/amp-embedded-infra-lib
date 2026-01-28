@@ -230,7 +230,8 @@ service GapPeripheral
     
     // Allowed in link layer states: advertising
     // Results in GapPeripheralResponse.AdvertisingAddress
-    // Type of the advertising address is statically configured
+    // Type of the advertising address is statically configured. It is the same with Identity Address when privacy is 
+    // not used and different otherwise.
     rpc GetAdvertisingAddress(Nothing) returns (Nothing) { option (method_id) = 5; }
 
     // Results in GapPeripheralResponse.IdentityAddress
@@ -238,7 +239,7 @@ service GapPeripheral
     rpc GetIdentityAddress(Nothing) returns (Nothing) { option (method_id) = 6; }
 
     // Allowed in link layer states: standby
-    // TODO: State default behavior
+    // TODO: State default settings
     rpc SetSecurityPreferences(SecurityPreference) returns (Nothing) { option (method_id) = 7; }
 
     // Allowed in link layer states: standby
@@ -260,6 +261,7 @@ service GapPeripheral
 
     // Allowed in link layer states: standby
     // Results in GapPeripheralResponse.NumberOfBondsChanged
+    // Oldest bond means the least recently used, i.e. connected, bonded peer.
     rpc RemoveOldestBond(Nothing) returns (Nothing) { option (method_id) = 11; }
 
     // Results in GapPeripheralResponse.BondInformation
@@ -275,6 +277,7 @@ service GapPeripheralResponse
     // All servers must implement these methods  
     // ==================================================
 
+    // Default state after device start is standby
     rpc StateChanged(State) returns(Nothing) { option(method_id) = 2; }
 
     rpc AdvertisingAddress(AddressWithType) returns(Nothing) { option(method_id) = 3; }
@@ -289,6 +292,7 @@ service GapPeripheralResponse
     // TODO: State that there are two ways this callback can be triggered: 
     // by RemoveAllBonds/RemoveOldestBond calls, or when a new bond is created
     // TODO: Do we get a call if max bonds is reached and the oldest bond is removed automatically?
+    // TODO: Clarify what the parameter mean exactly. It is the number of bonds after the change
     rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 7; }
 
     rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 8; }
@@ -297,6 +301,7 @@ service GapPeripheralResponse
 service GapPeripheralReadiness {
     option(service_id) = 36;
 
+    // TODO: Clarify when this means: This means GapPeripheral service is ready to be used
     rpc DeviceStarted(Nothing) returns(Nothing) { option(method_id) = 1; }
 }
 
