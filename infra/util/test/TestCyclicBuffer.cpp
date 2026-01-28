@@ -1,5 +1,7 @@
 #include "infra/util/CyclicBuffer.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include <cstdint>
 
 class CyclicBufferTest
     : public testing::Test
@@ -148,4 +150,45 @@ TEST_F(CyclicBufferTest, ContiguousRangeWithOffsetBeyondEndWrapped2)
     buffer.Push(std::vector<uint8_t>{ 5, 6 });
 
     EXPECT_EQ((std::vector<uint8_t>{ 6 }), buffer.ContiguousRange(3));
+}
+
+TEST_F(CyclicBufferTest, PopIntoUntilEnd)
+{
+    buffer.Push(std::vector<uint8_t>{ 1, 2, 3, 4 });
+    buffer.Pop(1);
+    buffer.Push(std::vector<uint8_t>{ 5 });
+
+    std::array<uint8_t, 3> destination;
+    buffer.PopInto(infra::MakeRange(destination));
+    EXPECT_THAT(destination, testing::ElementsAreArray({ 2, 3, 4 }));
+
+    EXPECT_EQ(buffer.Size(), 1);
+    EXPECT_THAT(buffer.ContiguousRange(), testing::ElementsAreArray({ 5 }));
+}
+
+TEST_F(CyclicBufferTest, PopIntoBeyondEndWrapped)
+{
+    buffer.Push(std::vector<uint8_t>{ 1, 2, 3, 4 });
+    buffer.Pop(1);
+    buffer.Push(std::vector<uint8_t>{ 5 });
+
+    std::array<uint8_t, 4> destination;
+    buffer.PopInto(infra::MakeRange(destination));
+    EXPECT_THAT(destination, testing::ElementsAreArray({ 2, 3, 4, 5 }));
+
+    EXPECT_EQ(buffer.Size(), 0);
+}
+
+TEST_F(CyclicBufferTest, PopIntoLessBeyondEndWrapped)
+{
+    buffer.Push(std::vector<uint8_t>{ 1, 2, 3, 4 });
+    buffer.Pop(3);
+    buffer.Push(std::vector<uint8_t>{ 5, 6, 7 });
+
+    std::array<uint8_t, 3> destination;
+    buffer.PopInto(infra::MakeRange(destination));
+    EXPECT_THAT(destination, testing::ElementsAreArray({ 4, 5, 6 }));
+
+    EXPECT_EQ(buffer.Size(), 1);
+    EXPECT_THAT(buffer.ContiguousRange(), testing::ElementsAreArray({ 7 }));
 }
