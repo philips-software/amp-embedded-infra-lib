@@ -162,10 +162,10 @@ namespace infra
         std::size_t numRead = 0;
         while (numRead < destination.size())
         {
-            auto chunk = Head(ContiguousRange(), destination.size() - numRead);
-            std::copy(chunk.begin(), chunk.end(), destination.begin() + numRead);
-            Pop(chunk.size());
-            numRead += chunk.size();
+            auto contiguousChunk = Head(ContiguousRange(), destination.size() - numRead);
+            std::copy(contiguousChunk.begin(), contiguousChunk.end(), destination.begin() + numRead);
+            Pop(contiguousChunk.size());
+            numRead += contiguousChunk.size();
         }
     }
 }
