@@ -159,13 +159,13 @@ namespace infra
     {
         assert(Size() >= destination.size());
 
-        std::size_t haveRead = 0;
-        while (haveRead < destination.size())
+        std::size_t numRead = 0;
+        while (numRead < destination.size())
         {
-            auto chunk = Head(ContiguousRange(), destination.size() - haveRead);
-            std::copy(chunk.begin(), chunk.end(), destination.begin() + haveRead);
+            auto chunk = Head(ContiguousRange(), destination.size() - numRead);
+            std::copy(chunk.begin(), chunk.end(), destination.begin() + numRead);
             Pop(chunk.size());
-            haveRead += chunk.size();
+            numRead += chunk.size();
         }
     }
 }
