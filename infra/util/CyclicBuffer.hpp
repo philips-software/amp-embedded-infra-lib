@@ -6,8 +6,11 @@
 //  is useful when feeding large blocks to e.g. DMA.
 //  In practise, the typedef CyclicByteBuffer will most often be used.
 
-#include "infra/util/ByteRange.hpp"
+#include "infra/util/MemoryRange.hpp"
 #include "infra/util/WithStorage.hpp"
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
 
 namespace infra
 {
@@ -29,6 +32,7 @@ namespace infra
         void Push(MemoryRange<const T> data);
 
         void Pop(std::size_t numToPop);
+        void PopInto(MemoryRange<T> destination);
 
         MemoryRange<T> ContiguousRange(size_t offset = 0) const;
 
@@ -148,6 +152,21 @@ namespace infra
             return MemoryRange<T>(offsetFront, storage.end());
         else
             return MemoryRange<T>(offsetFront, back);
+    }
+
+    template<class T>
+    void CyclicBuffer<T>::PopInto(MemoryRange<T> destination)
+    {
+        assert(Size() >= destination.size());
+
+        std::size_t numRead = 0;
+        while (numRead < destination.size())
+        {
+            auto contiguousChunk = Head(ContiguousRange(), destination.size() - numRead);
+            std::copy(contiguousChunk.begin(), contiguousChunk.end(), destination.begin() + numRead);
+            Pop(contiguousChunk.size());
+            numRead += contiguousChunk.size();
+        }
     }
 }
 
