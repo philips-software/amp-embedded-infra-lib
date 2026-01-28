@@ -158,7 +158,6 @@ namespace infra
     void CyclicBuffer<T>::PopInto(MemoryRange<T> destination)
     {
         assert(Size() >= destination.size());
-        assert(destination.size() >= destination.size());
 
         std::size_t haveRead = 0;
         while (haveRead < destination.size())
