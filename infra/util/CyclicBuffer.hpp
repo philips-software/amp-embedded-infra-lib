@@ -162,7 +162,7 @@ namespace infra
         while (!destination.empty())
         {
             auto contiguousChunk = Head(ContiguousRange(), destination.size());
-            infra::Copy(contiguousChunk, infra::Head(destination, contiguousChunk.size());
+            infra::Copy(contiguousChunk, infra::Head(destination, contiguousChunk.size()));
             Pop(contiguousChunk.size());
             destination = infra::DiscardHead(destination, contiguousChunk.size());
         }
