@@ -159,13 +159,12 @@ namespace infra
     {
         assert(Size() >= destination.size());
 
-        std::size_t numRead = 0;
-        while (numRead < destination.size())
+        while (!destination.empty())
         {
-            auto contiguousChunk = Head(ContiguousRange(), destination.size() - numRead);
-            std::copy(contiguousChunk.begin(), contiguousChunk.end(), destination.begin() + numRead);
+            auto contiguousChunk = Head(ContiguousRange(), destination.size());
+            infra::Copy(contiguousChunk, infra::Head(destination, contiguousChunk.size());
             Pop(contiguousChunk.size());
-            numRead += contiguousChunk.size();
+            destination = infra::DiscardHead(destination, contiguousChunk.size());
         }
     }
 }
