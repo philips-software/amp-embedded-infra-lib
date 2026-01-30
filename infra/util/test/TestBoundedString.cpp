@@ -807,18 +807,18 @@ TEST(BoundedStringTest, ConstexprConstruct)
 
     {
         // BoundedStringBase<T>::BoundedStringBase(T* s, size_type count);
-        constexpr infra::BoundedConstString s1("abc", 3);
+        constexpr infra::BoundedConstString s1{ "abc", 3 };
         static_assert(s1.size() == 3);
         static_assert(s1[0] == 'a');
         static_assert(s1[1] == 'b');
 
-        constexpr infra::BoundedConstString s2("abc\0", 4);
+        constexpr infra::BoundedConstString s2{ "abc\0", 4 };
         static_assert(s2.size() == 4);
         static_assert(s2[0] == 'a');
         static_assert(s2[3] == '\0');
 
         static constexpr std::array<char, 5> data = { 'a', 'b', 'c', 'd', 'e' };
-        constexpr infra::BoundedConstString s3(data.data(), 5);
+        constexpr infra::BoundedConstString s3{ data.data(), 5 };
         static_assert(s3.size() == 5);
         static_assert(s3[0] == 'a');
         static_assert(s3[4] == 'e');
@@ -826,25 +826,20 @@ TEST(BoundedStringTest, ConstexprConstruct)
 
     {
         // BoundedStringBase<T>::BoundedStringBase(std::string_view s);
-        constexpr infra::BoundedConstString s1(std::string_view("abc"));
+        constexpr infra::BoundedConstString s1{ "abc"sv };
         static_assert(s1.size() == 3);
         static_assert(s1[0] == 'a');
         static_assert(s1[1] == 'b');
 
-        constexpr infra::BoundedConstString s2("abc"sv);
-        static_assert(s2.size() == 3);
+        constexpr infra::BoundedConstString s2{ "abc\0"sv };
+        static_assert(s2.size() == 4);
         static_assert(s2[0] == 'a');
-        static_assert(s2[1] == 'b');
-
-        constexpr infra::BoundedConstString s3("abc\0"sv);
-        static_assert(s3.size() == 4);
-        static_assert(s3[0] == 'a');
-        static_assert(s3[3] == '\0');
+        static_assert(s2[3] == '\0');
     }
     {
         // constexpr BoundedStringBase(const BoundedStringBase& other)
-        constexpr infra::BoundedConstString original("abc"sv);
-        constexpr infra::BoundedConstString copy(original);
+        constexpr infra::BoundedConstString original{ "abc"sv };
+        constexpr infra::BoundedConstString copy{ original };
         static_assert(copy.size() == 3);
         static_assert(copy[0] == 'a');
     }
@@ -854,8 +849,8 @@ TEST(BoundedStringTest, ConstexprAccess)
 {
     using namespace std::string_view_literals;
 
-    static constexpr auto s = "abc"sv;
-    constexpr infra::BoundedConstString string(s);
+    constexpr auto s = "abc"sv;
+    constexpr infra::BoundedConstString string{ s };
 
     static_assert(!string.empty());
     static_assert(string.full());
@@ -873,34 +868,36 @@ TEST(BoundedStringTest, ConstexprComparison)
 {
     using namespace std::string_view_literals;
 
-    static constexpr infra::BoundedConstString string1("abc"sv);
-    static constexpr infra::BoundedConstString string2("abc"sv);
-    static constexpr infra::BoundedConstString string3("abd"sv);
+    constexpr infra::BoundedConstString string1{ "abc"sv };
+    constexpr infra::BoundedConstString string2{ "abc"sv };
+    constexpr infra::BoundedConstString string3{ "abd"sv };
 
     static_assert(string1.compare(string2) == 0);
     static_assert(string1.compare(string3) < 0);
     static_assert(string3.compare(string1) > 0);
 
+#if __cplusplus >= 202002L
     // std::equal cannot be tested with C++17
-    // static_assert(string1 == string2);
-    // static_assert(string1 != string3);
-    // static_assert(!(string1 != string2));
-    // static_assert(string1 < string3);
-    // static_assert(!(string3 < string1));
-    // static_assert(string3 > string1);
-    // static_assert(!(string1 > string2));
-    // static_assert(string1 >= string2);
-    // static_assert(string3 >= string1);
-    // static_assert(!(string1 >= string3));
-    // static_assert(string1 <= string2);
-    // static_assert(string2 <= string3);
+    static_assert(string1 == string2);
+    static_assert(string1 != string3);
+    static_assert(!(string1 != string2));
+    static_assert(string1 < string3);
+    static_assert(!(string3 < string1));
+    static_assert(string3 > string1);
+    static_assert(!(string1 > string2));
+    static_assert(string1 >= string2);
+    static_assert(string3 >= string1);
+    static_assert(!(string1 >= string3));
+    static_assert(string1 <= string2);
+    static_assert(string2 <= string3);
+#endif
 }
 
 TEST(BoundedStringTest, ConstexprIteration)
 {
     using namespace std::string_view_literals;
 
-    static constexpr infra::BoundedConstString string("abc"sv);
+    constexpr infra::BoundedConstString string{ "abc"sv };
 
     // Test iterator
     {

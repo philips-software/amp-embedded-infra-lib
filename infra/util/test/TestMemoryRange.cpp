@@ -348,7 +348,7 @@ TEST(MemoryRangeTest, ConstexprConstruction)
     {
         // MemoryRange(T* begin, T* end)
         static constexpr uint8_t array[]{ 0, 1, 2 };
-        constexpr infra::MemoryRange<const uint8_t> range(&array[0], &array[0] + 3);
+        constexpr infra::MemoryRange<const uint8_t> range{ &array[0], &array[0] + 3 };
 
         static_assert(!range.empty(), "Range should not be empty");
         static_assert(range.size() == 3, "Range size should be 3");
@@ -358,8 +358,8 @@ TEST(MemoryRangeTest, ConstexprConstruction)
     {
         // MemoryRange(const MemoryRange<U>& other)
         static constexpr uint8_t data[]{ 0, 1, 2 };
-        constexpr infra::MemoryRange<const uint8_t> other(&data[0], &data[0] + 3);
-        constexpr auto range(other);
+        constexpr infra::MemoryRange<const uint8_t> other{ &data[0], &data[0] + 3 };
+        constexpr auto range{ other };
 
         static_assert(!range.empty(), "Range should not be empty");
         static_assert(range.size() == 3, "Range size should be 3");
@@ -369,7 +369,7 @@ TEST(MemoryRangeTest, ConstexprConstruction)
     {
         // MemoryRange(const std::array<T2, N>& array)
         static constexpr const std::array<uint8_t, 3> array{ 0, 1, 2 };
-        constexpr infra::MemoryRange<const uint8_t> range(array);
+        constexpr infra::MemoryRange<const uint8_t> range{ array };
 
         static_assert(!range.empty(), "Range should not be empty");
         static_assert(range.size() == 3, "Range size should be 3");
@@ -384,7 +384,7 @@ TEST(MemoryRangeTest, ConstexprConstruction)
 TEST(MemoryRangeTest, ConstexprIteration)
 {
     static constexpr std::array data{ 10, 20, 30, 40, 50 };
-    constexpr infra::MemoryRange<const int> range(data);
+    constexpr infra::MemoryRange<const int> range{ data };
 
     constexpr int sum = [](infra::MemoryRange<const int> r)
     {
@@ -402,9 +402,9 @@ TEST(MemoryRangeTest, ConstexprCompare)
     static constexpr std::array data1{ 10, 20, 30 };
     static constexpr std::array data3{ 10, 20, 31 };
 
-    constexpr infra::MemoryRange<const int> range1(data1);
-    constexpr infra::MemoryRange<const int> range2(data1);
-    constexpr infra::MemoryRange<const int> range3(data3);
+    constexpr infra::MemoryRange<const int> range1{ data1 };
+    constexpr infra::MemoryRange<const int> range2{ data1 };
+    constexpr infra::MemoryRange<const int> range3{ data3 };
 
     static_assert(range1 == range2, "Ranges should be equal");
     static_assert(!(range1 != range2), "Ranges should be equal");
@@ -415,7 +415,7 @@ TEST(MemoryRangeTest, ConstexprCompare)
 TEST(MemoryRangeTest, ConstexprAccess)
 {
     static constexpr std::array data{ 10, 20, 30, 40, 50 };
-    constexpr infra::MemoryRange<const int> range(data);
+    constexpr infra::MemoryRange<const int> range{ data };
 
     static_assert(range[0] == 10, "Element 0 should be 10");
     static_assert(range[1] == 20, "Element 1 should be 20");
@@ -428,7 +428,7 @@ TEST(MemoryRangeTest, ConstexprAccess)
 TEST(MemoryRangeTest, ConstexprClear)
 {
     static constexpr std::array data{ 10, 20, 30 };
-    constexpr infra::MemoryRange<const int> range(data);
+    constexpr infra::MemoryRange<const int> range{ data };
 
     constexpr infra::MemoryRange<const int> clearedRange = [](infra::MemoryRange<const int> r)
     {
@@ -436,13 +436,14 @@ TEST(MemoryRangeTest, ConstexprClear)
         return r;
     }(range);
 
+    static_assert(!range.empty(), "Original range should be unaffected");
     static_assert(clearedRange.empty(), "Cleared range should be empty");
 }
 
 TEST(MemoryRangeTest, ConstexprPop)
 {
     static constexpr std::array data{ 10, 20, 30, 40, 50 };
-    constexpr infra::MemoryRange<const int> range(data);
+    constexpr infra::MemoryRange<const int> range{ data };
 
     constexpr infra::MemoryRange<const int> poppedFrontRange = [](infra::MemoryRange<const int> r)
     {
@@ -461,12 +462,14 @@ TEST(MemoryRangeTest, ConstexprPop)
 
     static_assert(poppedBackRange.size() == 3, "Popped back range size should be 3");
     static_assert(poppedBackRange.back() == 30, "Popped back range back should be 30");
+
+    static_assert(range.size() == 5, "Original range should be unaffected");
 }
 
 TEST(MemoryRangeTest, ConstexprShrink)
 {
     static constexpr std::array data{ 10, 20, 30, 40, 50 };
-    constexpr infra::MemoryRange<const int> range(data);
+    constexpr infra::MemoryRange<const int> range{ data };
 
     constexpr infra::MemoryRange<const int> shrunkFrontRange = [](infra::MemoryRange<const int> r)
     {
@@ -485,6 +488,8 @@ TEST(MemoryRangeTest, ConstexprShrink)
 
     static_assert(shrunkBackRange.size() == 3, "Shrunk back range size should be 3");
     static_assert(shrunkBackRange.back() == 30, "Shrunk back range back should be 30");
+
+    static_assert(range.size() == 5, "Original range should be unaffected");
 }
 
 TEST(MemoryRangeTest, ConstexprMakeRange)
@@ -557,5 +562,15 @@ TEST(MemoryRangeTest, ConstexprMakeRange)
 
 TEST(MemoryRangeTest, ConstexprContentsEqual)
 {
-    // infra::ContentsEqual cannot be tested with C++17
+#if __cplusplus >= 202002L
+    static constexpr std::array data1{ 1, 2, 3 };
+    static constexpr std::array data2{ 1, 2, 3 };
+    static constexpr std::array data3{ 1, 2, 4 };
+
+    constexpr bool equal12 = infra::ContentsEqual(infra::MakeConstRange(data1), infra::MakeConstRange(data2));
+    constexpr bool equal13 = infra::ContentsEqual(infra::MakeConstRange(data1), infra::MakeConstRange(data3));
+
+    static_assert(equal12, "Ranges should be equal");
+    static_assert(!equal13, "Ranges should not be equal");
+#endif
 }
