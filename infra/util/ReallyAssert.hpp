@@ -65,6 +65,7 @@ namespace infra
 #define really_assert(condition) assert(condition)
 #endif
 
+// Note: This only prints the message if LogAndAbortHook (or Tracer) is registered
 #define really_assert_with_msg(condition, format, ...)                        \
     do                                                                        \
     {                                                                         \
