@@ -14,7 +14,7 @@ namespace services
         MOCK_METHOD(void, ServiceDone, (), (override));
         MOCK_METHOD(void, CancelRequestSend, (ServiceProxy & serviceProxy), (override));
         MOCK_METHOD(services::MethodSerializerFactory&, SerializerFactory, (), (override));
-        MOCK_METHOD(void, SetPolicy, (EchoPolicy& policy), (override));
+        MOCK_METHOD(void, SetPolicy, (EchoPolicy & policy), (override));
     };
 
     class EchoErrorPolicyMock

@@ -3,6 +3,7 @@
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include <filesystem>
 #include <fstream>
 #include "gtest/gtest.h"

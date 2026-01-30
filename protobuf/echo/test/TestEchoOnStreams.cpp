@@ -58,5 +58,5 @@ TEST_F(EchoOnStreamsTest, send_method_without_parameter)
             return echo.InheritedGrantSend(serviceProxy);
         }));
     echo.SendStreamAvailable(writer.Emplace(data));
-    EXPECT_EQ((std::vector<uint8_t>{1, 26, 0}), data);
+    EXPECT_EQ((std::vector<uint8_t>{ 1, 26, 0 }), data);
 }
