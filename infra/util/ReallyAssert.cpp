@@ -2,11 +2,6 @@
 #include "infra/util/LogAndAbort.hpp"
 #include <atomic>
 
-namespace
-{
-    std::atomic<bool> busy{ false };
-}
-
 #if INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED
 namespace infra
 {
@@ -19,6 +14,8 @@ namespace infra
 
     void HandleAssertionFailure(const char* condition, const char* file, int line)
     {
+        static std::atomic<bool> busy{ false };
+
         if (busy.exchange(true))
             return;
 
