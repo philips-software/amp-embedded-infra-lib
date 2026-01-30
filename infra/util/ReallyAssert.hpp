@@ -4,6 +4,7 @@
 //  really_assert is a macro similar to assert, however it is not compiled away in release mode
 
 #include "infra/util/Function.hpp"
+#include "infra/util/LogAndAbort.hpp"
 #include <cassert>
 #include <cstdlib>
 
@@ -42,12 +43,14 @@ namespace infra
 
 #define INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition) \
     infra::HandleAssertionFailure(#condition, INFRA_UTIL_REALLY_ASSERT_TRIGGER_FILE_NAME, __LINE__)
+#define INFRA_UTIL_REALLY_ASSERT_WITH_MSG_TRIGGER(condition, format, ...) \
+    infra::ExecuteLogAndAbortHook("Assertion failed", INFRA_UTIL_REALLY_ASSERT_TRIGGER_FILE_NAME, __LINE__, format, ##__VA_ARGS__)
 
 #else
 #define INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition)
+#define INFRA_UTIL_REALLY_ASSERT_WITH_MSG_TRIGGER(condition, format, ...)
 #endif
 
-#ifdef NDEBUG
 #define really_assert(condition)                         \
     do                                                   \
     {                                                    \
@@ -57,8 +60,15 @@ namespace infra
             std::abort();                                \
         }                                                \
     } while (0)
-#else
-#define really_assert(condition) assert(condition)
-#endif
+
+#define really_assert_with_msg(condition, format, ...)                        \
+    do                                                                        \
+    {                                                                         \
+        if (!(condition))                                                     \
+        {                                                                     \
+            INFRA_UTIL_REALLY_ASSERT_WITH_MSG_TRIGGER(format, ##__VA_ARGS__); \
+            std::abort();                                                     \
+        }                                                                     \
+    } while (0)
 
 #endif

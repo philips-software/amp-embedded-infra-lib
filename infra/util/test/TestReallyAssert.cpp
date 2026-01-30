@@ -1,6 +1,7 @@
 #include "infra/util/ReallyAssert.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include <cstddef>
 
 namespace
 {
@@ -44,4 +45,9 @@ TEST_F(ReallyAssertTest, assert_failed_with_handler_calls_handler)
 
     // Manually calling handler because a debug build will call the standard assert instead of really_assert
     infra::HandleAssertionFailure("condition", "file", 42);
+}
+
+TEST_F(ReallyAssertTest, assert_with_message_aborts)
+{
+    EXPECT_DEATH(really_assert_with_msg(false, "%s", "foo"), "");
 }
