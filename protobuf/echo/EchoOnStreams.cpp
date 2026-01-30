@@ -35,7 +35,7 @@ namespace services
         ReleaseDeserializer();
 
         if (readerPtr != nullptr)
-            DataReceived();
+            DataReceivedInReader();
     }
 
     void EchoOnStreams::CancelRequestSend(ServiceProxy& serviceProxy)
@@ -62,7 +62,7 @@ namespace services
         bufferedReader.emplace(receiveBuffer, *readerPtr);
 
         if (!delayDataReceived)
-            DataReceived();
+            DataReceivedInReader();
         else
             delayedDataReceived = true;
     }
@@ -141,7 +141,7 @@ namespace services
         }
     }
 
-    void EchoOnStreams::DataReceived()
+    void EchoOnStreams::DataReceivedInReader()
     {
         if (limitedReader != std::nullopt && readerPtr != nullptr)
             ContinueReceiveMessage();
@@ -208,7 +208,7 @@ namespace services
                     auto& self = *this;
                     LimitedReaderDone();
                     // LimitedReaderDone() may result in limitedReaderAccess' completion callback being reset, which invalidates the saved this pointer
-                    self.DataReceived();
+                    self.DataReceivedInReader();
                 });
         else
             LimitedReaderDone();
@@ -254,7 +254,7 @@ namespace services
         if (delayedDataReceived)
         {
             delayedDataReceived = false;
-            DataReceived();
+            DataReceivedInReader();
         }
     }
 }
