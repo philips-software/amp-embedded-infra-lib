@@ -51,6 +51,7 @@ namespace infra
 #define INFRA_UTIL_REALLY_ASSERT_WITH_MSG_TRIGGER(condition, format, ...)
 #endif
 
+#ifdef NDEBUG
 #define really_assert(condition)                         \
     do                                                   \
     {                                                    \
@@ -60,6 +61,9 @@ namespace infra
             std::abort();                                \
         }                                                \
     } while (0)
+#else
+#define really_assert(condition) assert(condition)
+#endif
 
 #define really_assert_with_msg(condition, format, ...)                        \
     do                                                                        \

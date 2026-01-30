@@ -1,7 +1,6 @@
 #include "infra/util/ReallyAssert.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include <cstddef>
 
 namespace
 {
