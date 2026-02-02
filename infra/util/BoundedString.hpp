@@ -76,7 +76,7 @@ namespace infra
         BoundedStringBase(const BoundedStringBase<U>& other);
         ~BoundedStringBase() = default;
 
-        BoundedStringBase& operator=(const BoundedStringBase& other);
+        BoundedStringBase& operator=(const BoundedStringBase& other) noexcept = default;
         BoundedStringBase& operator=(BoundedStringBase&& other) noexcept = default;
         BoundedStringBase& operator=(const char* s);
         BoundedStringBase& operator=(char ch);
@@ -494,14 +494,6 @@ namespace infra
         : range(other.range)
         , length(other.length)
     {}
-
-    template<class T>
-    BoundedStringBase<T>& BoundedStringBase<T>::operator=(const BoundedStringBase<T>& other)
-    {
-        range = other.range;
-        length = other.length;
-        return *this;
-    }
 
     template<class T>
     BoundedStringBase<T>& BoundedStringBase<T>::operator=(const char* s)
