@@ -43,7 +43,7 @@ namespace infra
 
 #define INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition) \
     infra::HandleAssertionFailure(#condition, INFRA_UTIL_REALLY_ASSERT_TRIGGER_FILE_NAME, __LINE__)
-#define INFRA_UTIL_REALLY_ASSERT_WITH_MSG_TRIGGER(condition, format, ...) \
+#define INFRA_UTIL_REALLY_ASSERT_WITH_MSG_TRIGGER(format, ...) \
     infra::ExecuteLogAndAbortHook("Assertion failed", INFRA_UTIL_REALLY_ASSERT_TRIGGER_FILE_NAME, __LINE__, format, ##__VA_ARGS__)
 
 #else
