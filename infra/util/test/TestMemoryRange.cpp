@@ -376,9 +376,16 @@ TEST(MemoryRangeTest, ConstexprConstruction)
         static_assert(range.begin() == &array[0], "Range begin should point to first element");
     }
 
+#if __cplusplus >= 202002L
     {
         // MemoryRange(const std::vector<T2>& vector) cannot be tested with C++17
+        constexpr std::vector<uint8_t> data{};
+        constexpr infra::MemoryRange<const uint8_t> range{ data };
+
+        static_assert(range.empty(), "Range should be empty");
+        static_assert(range.size() == 0, "Range size should be 0");
     }
+#endif
 }
 
 TEST(MemoryRangeTest, ConstexprIteration)
