@@ -544,10 +544,25 @@ TEST(MemoryRangeTest, ConstexprMakeRange)
         static_assert(range.begin() == &data[0], "Range begin should point to first element");
     }
 
+#if __cplusplus >= 202002L
     {
         // MakeRange(const std::vector<T>& range) cannot be tested with C++17
-        // MakeConstRange(const std::vector<T>& range) cannot be tested with C++17
+        constexpr std::vector<int> data{};
+        constexpr auto range = infra::MakeRange(data);
+
+        static_assert(range.empty(), "Range should be empty");
+        static_assert(range.size() == 0, "Range size should be 0");
     }
+
+    {
+        // MakeConstRange(const std::vector<T>& range) cannot be tested with C++17
+        constexpr std::vector<int> data{};
+        constexpr auto range = infra::MakeConstRange(data);
+
+        static_assert(range.empty(), "Range should be empty");
+        static_assert(range.size() == 0, "Range size should be 0");
+    }
+#endif
 
     {
         // MakeRangeFromSingleObject(T& object)
