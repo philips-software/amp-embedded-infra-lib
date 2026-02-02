@@ -334,3 +334,265 @@ TEST(MemoryRangeTest, MakeStringByteRange)
     EXPECT_EQ(infra::MemoryRange<const char>(string, string + std::strlen(string)), infra::ReinterpretCastMemoryRange<const char>(infra::MakeStringByteRange(string)));
     EXPECT_EQ(infra::MemoryRange<const char>(stdString.data(), stdString.data() + stdString.size()), infra::ReinterpretCastMemoryRange<const char>(infra::MakeStringByteRange(stdString)));
 }
+
+TEST(MemoryRangeTest, ConstexprConstruction)
+{
+    {
+        // MemoryRange()
+        constexpr infra::MemoryRange<uint8_t> range;
+
+        static_assert(range.empty(), "Range should be empty");
+        static_assert(range.size() == 0, "Range size should be 0");
+    }
+
+    {
+        // MemoryRange(T* begin, T* end)
+        static constexpr uint8_t array[]{ 0, 1, 2 };
+        constexpr infra::MemoryRange<const uint8_t> range{ &array[0], &array[0] + 3 };
+
+        static_assert(!range.empty(), "Range should not be empty");
+        static_assert(range.size() == 3, "Range size should be 3");
+        static_assert(range.begin() == &array[0], "Range begin should point to first element");
+    }
+
+    {
+        // MemoryRange(const MemoryRange<U>& other)
+        static constexpr uint8_t data[]{ 0, 1, 2 };
+        constexpr infra::MemoryRange<const uint8_t> other{ &data[0], &data[0] + 3 };
+        constexpr auto range{ other };
+
+        static_assert(!range.empty(), "Range should not be empty");
+        static_assert(range.size() == 3, "Range size should be 3");
+        static_assert(range.begin() == &data[0], "Range begin should point to first element");
+    }
+
+    {
+        // MemoryRange(const std::array<T2, N>& array)
+        static constexpr const std::array<uint8_t, 3> array{ 0, 1, 2 };
+        constexpr infra::MemoryRange<const uint8_t> range{ array };
+
+        static_assert(!range.empty(), "Range should not be empty");
+        static_assert(range.size() == 3, "Range size should be 3");
+        static_assert(range.begin() == &array[0], "Range begin should point to first element");
+    }
+
+#if __cplusplus >= 202002L
+    {
+        // MemoryRange(const std::vector<T2>& vector) cannot be tested with C++17
+        constexpr std::vector<uint8_t> data{};
+        constexpr infra::MemoryRange<const uint8_t> range{ data };
+
+        static_assert(range.empty(), "Range should be empty");
+        static_assert(range.size() == 0, "Range size should be 0");
+    }
+#endif
+}
+
+TEST(MemoryRangeTest, ConstexprIteration)
+{
+    static constexpr std::array data{ 10, 20, 30, 40, 50 };
+    constexpr infra::MemoryRange<const int> range{ data };
+
+    constexpr int sum = [](infra::MemoryRange<const int> r)
+    {
+        int result = 0;
+        for (const auto& element : r)
+            result += element;
+        return result;
+    }(range);
+
+    static_assert(sum == 150, "Sum should be 150");
+}
+
+TEST(MemoryRangeTest, ConstexprCompare)
+{
+    static constexpr std::array data1{ 10, 20, 30 };
+    static constexpr std::array data3{ 10, 20, 31 };
+
+    constexpr infra::MemoryRange<const int> range1{ data1 };
+    constexpr infra::MemoryRange<const int> range2{ data1 };
+    constexpr infra::MemoryRange<const int> range3{ data3 };
+
+    static_assert(range1 == range2, "Ranges should be equal");
+    static_assert(!(range1 != range2), "Ranges should be equal");
+    static_assert(range1 != range3, "Ranges should not be equal");
+    static_assert(!(range1 == range3), "Ranges should not be equal");
+}
+
+TEST(MemoryRangeTest, ConstexprAccess)
+{
+    static constexpr std::array data{ 10, 20, 30, 40, 50 };
+    constexpr infra::MemoryRange<const int> range{ data };
+
+    static_assert(range[0] == 10, "Element 0 should be 10");
+    static_assert(range[1] == 20, "Element 1 should be 20");
+    static_assert(range[2] == 30, "Element 2 should be 30");
+    static_assert(range.front() == 10, "Front element should be 10");
+    static_assert(range.back() == 50, "Back element should be 50");
+    static_assert(range.contains(&data[2]), "Range should contain element at index 2");
+}
+
+TEST(MemoryRangeTest, ConstexprClear)
+{
+    static constexpr std::array data{ 10, 20, 30 };
+    constexpr infra::MemoryRange<const int> range{ data };
+
+    constexpr infra::MemoryRange<const int> clearedRange = [](infra::MemoryRange<const int> r)
+    {
+        r.clear();
+        return r;
+    }(range);
+
+    static_assert(!range.empty(), "Original range should be unaffected");
+    static_assert(clearedRange.empty(), "Cleared range should be empty");
+}
+
+TEST(MemoryRangeTest, ConstexprPop)
+{
+    static constexpr std::array data{ 10, 20, 30, 40, 50 };
+    constexpr infra::MemoryRange<const int> range{ data };
+
+    constexpr infra::MemoryRange<const int> poppedFrontRange = [](infra::MemoryRange<const int> r)
+    {
+        r.pop_front(2);
+        return r;
+    }(range);
+
+    static_assert(poppedFrontRange.size() == 3, "Popped front range size should be 3");
+    static_assert(poppedFrontRange.front() == 30, "Popped front range front should be 30");
+
+    constexpr infra::MemoryRange<const int> poppedBackRange = [](infra::MemoryRange<const int> r)
+    {
+        r.pop_back(2);
+        return r;
+    }(range);
+
+    static_assert(poppedBackRange.size() == 3, "Popped back range size should be 3");
+    static_assert(poppedBackRange.back() == 30, "Popped back range back should be 30");
+
+    static_assert(range.size() == 5, "Original range should be unaffected");
+}
+
+TEST(MemoryRangeTest, ConstexprShrink)
+{
+    static constexpr std::array data{ 10, 20, 30, 40, 50 };
+    constexpr infra::MemoryRange<const int> range{ data };
+
+    constexpr infra::MemoryRange<const int> shrunkFrontRange = [](infra::MemoryRange<const int> r)
+    {
+        r.shrink_from_front_to(2);
+        return r;
+    }(range);
+
+    static_assert(shrunkFrontRange.size() == 2, "Shrunk front range size should be 2");
+    static_assert(shrunkFrontRange.front() == 40, "Shrunk front range front should be 40");
+
+    constexpr infra::MemoryRange<const int> shrunkBackRange = [](infra::MemoryRange<const int> r)
+    {
+        r.shrink_from_back_to(3);
+        return r;
+    }(range);
+
+    static_assert(shrunkBackRange.size() == 3, "Shrunk back range size should be 3");
+    static_assert(shrunkBackRange.back() == 30, "Shrunk back range back should be 30");
+
+    static_assert(range.size() == 5, "Original range should be unaffected");
+}
+
+TEST(MemoryRangeTest, ConstexprMakeRange)
+{
+    {
+        // MakeRange(const T* b, const T* e)
+        static constexpr std::array data{ 10, 20, 30 };
+        constexpr auto range = infra::MakeRange(&data[0], &data[0] + 3);
+
+        static_assert(!range.empty(), "Range should not be empty");
+        static_assert(range.size() == 3, "Range size should be 3");
+        static_assert(range.begin() == &data[0], "Range begin should point to first element");
+    }
+
+    {
+        // MakeRange(const T (&data)[N])
+        static constexpr uint8_t data[] = { 10, 20, 30 };
+        constexpr auto range = infra::MakeRange(data);
+
+        static_assert(!range.empty(), "Range should not be empty");
+        static_assert(range.size() == 3, "Range size should be 3");
+        static_assert(range.begin() == &data[0], "Range begin should point to first element");
+    }
+
+    {
+        // MakeConstRange(const T (&data)[N])
+        static constexpr uint8_t data[] = { 10, 20, 30 };
+        constexpr auto range = infra::MakeConstRange(data);
+
+        static_assert(!range.empty(), "Range should not be empty");
+        static_assert(range.size() == 3, "Range size should be 3");
+        static_assert(range.begin() == &data[0], "Range begin should point to first element");
+    }
+
+    {
+        // MakeRange(const std::array<T, N>& container)
+        static constexpr std::array data{ 10, 20, 30 };
+        constexpr auto range = infra::MakeRange(data);
+
+        static_assert(!range.empty(), "Range should not be empty");
+        static_assert(range.size() == 3, "Range size should be 3");
+        static_assert(range.begin() == &data[0], "Range begin should point to first element");
+    }
+
+    {
+        // MakeConstRange(const std::array<T, N>& container)
+        static constexpr std::array data{ 10, 20, 30 };
+        constexpr auto range = infra::MakeConstRange(data);
+
+        static_assert(!range.empty(), "Range should not be empty");
+        static_assert(range.size() == 3, "Range size should be 3");
+        static_assert(range.begin() == &data[0], "Range begin should point to first element");
+    }
+
+#if __cplusplus >= 202002L
+    {
+        // MakeRange(const std::vector<T>& range) cannot be tested with C++17
+        constexpr std::vector<int> data{};
+        constexpr auto range = infra::MakeRange(data);
+
+        static_assert(range.empty(), "Range should be empty");
+        static_assert(range.size() == 0, "Range size should be 0");
+    }
+
+    {
+        // MakeConstRange(const std::vector<T>& range) cannot be tested with C++17
+        constexpr std::vector<int> data{};
+        constexpr auto range = infra::MakeConstRange(data);
+
+        static_assert(range.empty(), "Range should be empty");
+        static_assert(range.size() == 0, "Range size should be 0");
+    }
+#endif
+
+    {
+        // MakeRangeFromSingleObject(T& object)
+        static constexpr int object = 42;
+        constexpr auto range = infra::MakeRangeFromSingleObject(object);
+
+        static_assert(!range.empty(), "Range should not be empty");
+        static_assert(range.size() == 1, "Range size should be 1");
+        static_assert(range.front() == 42, "Range front should be 42");
+    }
+}
+
+TEST(MemoryRangeTest, ConstexprContentsEqual)
+{
+#if __cplusplus >= 202002L
+    static constexpr std::array data1{ 1, 2, 3 };
+    static constexpr std::array data2{ 1, 2, 3 };
+    static constexpr std::array data3{ 1, 2, 4 };
+
+    constexpr bool equal12 = infra::ContentsEqual(infra::MakeConstRange(data1), infra::MakeConstRange(data2));
+    constexpr bool equal13 = infra::ContentsEqual(infra::MakeConstRange(data1), infra::MakeConstRange(data3));
+
+    static_assert(equal12, "Ranges should be equal");
+    static_assert(!equal13, "Ranges should not be equal");
+#endif
+}

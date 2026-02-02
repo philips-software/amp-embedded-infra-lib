@@ -6,7 +6,6 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdlib>
-#include <initializer_list>
 #include <type_traits>
 #include <vector>
 
@@ -16,16 +15,16 @@ namespace infra
     class MemoryRange
     {
     public:
-        MemoryRange();
-        MemoryRange(T* begin, T* end);
+        constexpr MemoryRange();
+        constexpr MemoryRange(T* begin, T* end);
         template<class U>
-        MemoryRange(const MemoryRange<U>& other);
+        constexpr MemoryRange(const MemoryRange<U>& other);
         template<class T2, std::size_t N>
         constexpr MemoryRange(const std::array<T2, N>& array);
         template<class T2, std::size_t N>
         MemoryRange(std::array<T2, N>& array);
         template<class T2>
-        MemoryRange(const std::vector<T2>& vector);
+        constexpr MemoryRange(const std::vector<T2>& vector);
         template<class T2>
         MemoryRange(std::vector<T2>& vector);
 
@@ -39,32 +38,32 @@ namespace infra
         using difference_type = std::ptrdiff_t;
         using size_type = std::size_t;
 
-        bool empty() const;
-        size_type size() const;
+        constexpr bool empty() const;
+        constexpr size_type size() const;
 
         // MemoryRange does not own its elements, so accessing an element is a const operation that returns a non-const element
-        T* begin() const;
-        const T* cbegin() const;
-        T* end() const;
-        const T* cend() const;
+        constexpr T* begin() const;
+        constexpr const T* cbegin() const;
+        constexpr T* end() const;
+        constexpr const T* cend() const;
 
-        T& operator[](size_type index) const;
+        constexpr T& operator[](size_type index) const;
         template<class U>
-        bool operator==(const MemoryRange<U>& rhs) const;
+        constexpr bool operator==(const MemoryRange<U>& rhs) const;
         template<class U>
-        bool operator!=(const MemoryRange<U>& rhs) const;
+        constexpr bool operator!=(const MemoryRange<U>& rhs) const;
 
-        T& front() const;
-        T& back() const;
+        constexpr T& front() const;
+        constexpr T& back() const;
 
-        bool contains(const T* element) const;
-        bool contains_or_end(const T* element) const;
+        constexpr bool contains(const T* element) const;
+        constexpr bool contains_or_end(const T* element) const;
 
-        void clear();
-        void pop_front(size_type num = 1);
-        void pop_back(size_type num = 1);
-        void shrink_from_front_to(size_type newSize);
-        void shrink_from_back_to(size_type newSize);
+        constexpr void clear();
+        constexpr void pop_front(size_type num = 1);
+        constexpr void pop_back(size_type num = 1);
+        constexpr void shrink_from_front_to(size_type newSize);
+        constexpr void shrink_from_back_to(size_type newSize);
 
     private:
         T* beginElement;
@@ -74,25 +73,25 @@ namespace infra
     template<class T>
     MemoryRange<T> MakeRange(T* b, T* e);
     template<class T>
-    MemoryRange<const T> MakeConstRange(const T* b, const T* e);
+    constexpr MemoryRange<const T> MakeConstRange(const T* b, const T* e);
     template<class T, std::size_t N>
     MemoryRange<T> MakeRange(std::array<T, N>& container);
     template<class T, std::size_t N>
-    MemoryRange<const T> MakeRange(const std::array<T, N>& container);
+    constexpr MemoryRange<const T> MakeRange(const std::array<T, N>& container);
     template<class T, std::size_t N>
-    MemoryRange<const T> MakeConstRange(const std::array<T, N>& container);
+    constexpr MemoryRange<const T> MakeConstRange(const std::array<T, N>& container);
     template<class T>
     std::vector<typename std::remove_const<T>::type> MakeVector(MemoryRange<T> range);
     template<class T>
     MemoryRange<T> MakeRange(std::vector<T>& range);
     template<class T>
-    MemoryRange<const T> MakeRange(const std::vector<T>& range);
+    constexpr MemoryRange<const T> MakeRange(const std::vector<T>& range);
     template<class T>
-    MemoryRange<const T> MakeConstRange(const std::vector<T>& range);
+    constexpr MemoryRange<const T> MakeConstRange(const std::vector<T>& range);
     template<class T>
     MemoryRange<const T> MakeConst(infra::MemoryRange<T> range);
     template<class T>
-    MemoryRange<T> MakeRangeFromSingleObject(T& object);
+    constexpr MemoryRange<T> MakeRangeFromSingleObject(T& object);
 
     template<class T, class U>
     MemoryRange<T> ReinterpretCastMemoryRange(MemoryRange<U> memoryRange);
@@ -104,7 +103,7 @@ namespace infra
     template<class T>
     void Copy(MemoryRange<const typename std::remove_const<T>::type> from, MemoryRange<T> to);
     template<class T, class U>
-    bool ContentsEqual(MemoryRange<T> x, MemoryRange<U> y);
+    constexpr bool ContentsEqual(MemoryRange<T> x, MemoryRange<U> y);
 
     template<class T>
     MemoryRange<T> IntersectingRange(MemoryRange<T> x, MemoryRange<T> y);
@@ -144,20 +143,20 @@ namespace infra
     ////    Implementation    ////
 
     template<class T>
-    MemoryRange<T>::MemoryRange()
+    constexpr MemoryRange<T>::MemoryRange()
         : beginElement(nullptr)
         , endElement(nullptr)
     {}
 
     template<class T>
-    MemoryRange<T>::MemoryRange(T* begin, T* end)
+    constexpr MemoryRange<T>::MemoryRange(T* begin, T* end)
         : beginElement(begin)
         , endElement(end)
     {}
 
     template<class T>
     template<class U>
-    MemoryRange<T>::MemoryRange(const MemoryRange<U>& other)
+    constexpr MemoryRange<T>::MemoryRange(const MemoryRange<U>& other)
         : beginElement(other.begin())
         , endElement(other.end())
     {}
@@ -178,7 +177,7 @@ namespace infra
 
     template<class T>
     template<class T2>
-    MemoryRange<T>::MemoryRange(const std::vector<T2>& vector)
+    constexpr MemoryRange<T>::MemoryRange(const std::vector<T2>& vector)
         : beginElement(vector.data())
         , endElement(vector.data() + vector.size())
     {}
@@ -191,43 +190,43 @@ namespace infra
     {}
 
     template<class T>
-    bool MemoryRange<T>::empty() const
+    constexpr bool MemoryRange<T>::empty() const
     {
         return beginElement == endElement;
     }
 
     template<class T>
-    std::size_t MemoryRange<T>::size() const
+    constexpr std::size_t MemoryRange<T>::size() const
     {
         return endElement - beginElement;
     }
 
     template<class T>
-    T* MemoryRange<T>::begin() const
+    constexpr T* MemoryRange<T>::begin() const
     {
         return beginElement;
     }
 
     template<class T>
-    const T* MemoryRange<T>::cbegin() const
+    constexpr const T* MemoryRange<T>::cbegin() const
     {
         return beginElement;
     }
 
     template<class T>
-    T* MemoryRange<T>::end() const
+    constexpr T* MemoryRange<T>::end() const
     {
         return endElement;
     }
 
     template<class T>
-    const T* MemoryRange<T>::cend() const
+    constexpr const T* MemoryRange<T>::cend() const
     {
         return endElement;
     }
 
     template<class T>
-    T& MemoryRange<T>::operator[](std::size_t index) const
+    constexpr T& MemoryRange<T>::operator[](std::size_t index) const
     {
         assert(index < size());
         return *(begin() + index);
@@ -235,72 +234,72 @@ namespace infra
 
     template<class T>
     template<class U>
-    bool MemoryRange<T>::operator==(const MemoryRange<U>& rhs) const
+    constexpr bool MemoryRange<T>::operator==(const MemoryRange<U>& rhs) const
     {
         return (empty() && rhs.empty()) || (begin() == rhs.begin() && end() == rhs.end());
     }
 
     template<class T>
     template<class U>
-    bool MemoryRange<T>::operator!=(const MemoryRange<U>& rhs) const
+    constexpr bool MemoryRange<T>::operator!=(const MemoryRange<U>& rhs) const
     {
         return !(*this == rhs);
     }
 
     template<class T>
-    T& MemoryRange<T>::front() const
+    constexpr T& MemoryRange<T>::front() const
     {
         return *beginElement;
     }
 
     template<class T>
-    T& MemoryRange<T>::back() const
+    constexpr T& MemoryRange<T>::back() const
     {
         return *(endElement - 1);
     }
 
     template<class T>
-    bool MemoryRange<T>::contains(const T* element) const
+    constexpr bool MemoryRange<T>::contains(const T* element) const
     {
         return element >= beginElement && element < endElement;
     }
 
     template<class T>
-    bool MemoryRange<T>::contains_or_end(const T* element) const
+    constexpr bool MemoryRange<T>::contains_or_end(const T* element) const
     {
         return element >= beginElement && element <= endElement;
     }
 
     template<class T>
-    void MemoryRange<T>::clear()
+    constexpr void MemoryRange<T>::clear()
     {
         beginElement = nullptr;
         endElement = nullptr;
     }
 
     template<class T>
-    void MemoryRange<T>::pop_front(std::size_t num)
+    constexpr void MemoryRange<T>::pop_front(std::size_t num)
     {
         assert(num <= size());
         beginElement += num;
     }
 
     template<class T>
-    void MemoryRange<T>::pop_back(std::size_t num)
+    constexpr void MemoryRange<T>::pop_back(std::size_t num)
     {
         assert(num <= size());
         endElement -= num;
     }
 
     template<class T>
-    void MemoryRange<T>::shrink_from_front_to(std::size_t newSize)
+    constexpr void MemoryRange<T>::shrink_from_front_to(std::size_t newSize)
     {
         if (newSize < size())
             beginElement = endElement - newSize;
     }
 
     template<class T>
-    void MemoryRange<T>::shrink_from_back_to(std::size_t newSize)
+    constexpr void MemoryRange<T>::shrink_from_back_to(std::size_t newSize)
     {
         if (newSize < size())
             endElement = beginElement + newSize;
@@ -313,7 +312,7 @@ namespace infra
     }
 
     template<class T>
-    MemoryRange<const T> MakeRange(const T* b, const T* e)
+    constexpr MemoryRange<const T> MakeRange(const T* b, const T* e)
     {
         return MemoryRange<const T>(b, e);
     }
@@ -325,13 +324,13 @@ namespace infra
     }
 
     template<class T, std::size_t N>
-    MemoryRange<const T> MakeRange(const T (&data)[N])
+    constexpr MemoryRange<const T> MakeRange(const T (&data)[N])
     {
         return MemoryRange<const T>(&data[0], &data[0] + N);
     }
 
     template<class T, std::size_t N>
-    MemoryRange<const T> MakeConstRange(const T (&data)[N])
+    constexpr MemoryRange<const T> MakeConstRange(const T (&data)[N])
     {
         return MemoryRange<const T>(&data[0], &data[0] + N);
     }
@@ -343,13 +342,13 @@ namespace infra
     }
 
     template<class T, std::size_t N>
-    MemoryRange<const T> MakeRange(const std::array<T, N>& container)
+    constexpr MemoryRange<const T> MakeRange(const std::array<T, N>& container)
     {
         return MemoryRange<const T>(container.data(), container.data() + container.size());
     }
 
     template<class T, std::size_t N>
-    MemoryRange<const T> MakeConstRange(const std::array<T, N>& container)
+    constexpr MemoryRange<const T> MakeConstRange(const std::array<T, N>& container)
     {
         return MemoryRange<const T>(container.data(), container.data() + container.size());
     }
@@ -367,13 +366,13 @@ namespace infra
     }
 
     template<class T>
-    MemoryRange<const T> MakeRange(const std::vector<T>& range)
+    constexpr MemoryRange<const T> MakeRange(const std::vector<T>& range)
     {
         return MemoryRange<const T>(range);
     }
 
     template<class T>
-    MemoryRange<const T> MakeConstRange(const std::vector<T>& range)
+    constexpr MemoryRange<const T> MakeConstRange(const std::vector<T>& range)
     {
         return MemoryRange<const T>(range);
     }
@@ -385,7 +384,7 @@ namespace infra
     }
 
     template<class T>
-    MemoryRange<T> MakeRangeFromSingleObject(T& object)
+    constexpr MemoryRange<T> MakeRangeFromSingleObject(T& object)
     {
         return MemoryRange<T>(&object, &object + 1);
     }
@@ -416,7 +415,7 @@ namespace infra
     }
 
     template<class T, class U>
-    bool ContentsEqual(MemoryRange<T> x, MemoryRange<U> y)
+    constexpr bool ContentsEqual(MemoryRange<T> x, MemoryRange<U> y)
     {
         return x.size() == y.size() && std::equal(x.begin(), x.end(), y.begin());
     }
