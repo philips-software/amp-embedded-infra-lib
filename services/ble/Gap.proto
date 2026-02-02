@@ -103,7 +103,6 @@ message AddressWithType
     AddressType addressType = 2;
 }
 
-// TODO: See if we can merge this with AdvertisementType
 message AdvertisingEventType
 {
     enum AdvertisingEventTypeEnum
@@ -206,17 +205,14 @@ service GapPeripheral
 
     // Allowed in link layer states: standby
     // Results in GapPeripheralResponse.StateChanged with state advertising
-    // TODO: Not all advertising modes may be supported by all servers, document.
     rpc Advertise(AdvertisementMode) returns (Nothing) { option (method_id) = 1; }
 
     // Allowed in link layer states: advertising, connected
     // Results in GapPeripheralResponse.StateChanged with state standby
-    // TODO: What if there is a standby transition already ongoing? Then this call will not result in another state change.
     rpc Standby(Nothing) returns (Nothing) { option (method_id) = 2; }
 
     // Allowed in link layer states: standby
     // Formatting of advertisement data is as per Bluetooth Core Specification.
-    // TODO: Include ble spec reference
     // Maximum advertisement data length for this method is 28 bytes. Server reserves 3 bytes for flags data with the flag bits 'LE General Discoverable Mode' and 'BR/EDR Not Supported' enabled.
     // Server will not check validity of the advertisement data and only maximum length of each field will be passed to BLE stack
     // If not set by this method, server will have aa advertisement data only flags field.
@@ -224,7 +220,6 @@ service GapPeripheral
 
     // Allowed in link layer states: standby
     // Formatting of scan response data is as per Bluetooth Core Specification.
-    // TODO: Include ble spec reference
     // Maximum scan response length for this method is 13 bytes. Server reserves 18 bytes for streaming service uuids. Scan Response is only possible with scannable advertisements
     // Server will not check validity of the scan response data and only maximum length of each field will be passed to BLE stack
     // If not set by this method, server will have as scan response data only service uuids.
@@ -241,12 +236,10 @@ service GapPeripheral
     rpc GetIdentityAddress(Nothing) returns (Nothing) { option (method_id) = 6; }
 
     // Allowed in link layer states: standby
-    // TODO: State default settings
     rpc SetSecurityPreferences(SecurityPreference) returns (Nothing) { option (method_id) = 7; }
 
     // Allowed in link layer states: standby
     // Default is to allow pairing
-    // TODO: Explain behavior
     rpc SetAllowPairing(BoolValue) returns (Nothing) { option (method_id) = 8; }
 
     // Allowed in link layer states: connected
@@ -254,7 +247,6 @@ service GapPeripheral
     // This command has to be issued to notify the master of the security
     // requirements of the slave. The master may encrypt the link, initiate the
     // pairing procedure, or reject the request.
-    // TODO: Explain what happens if it clashes with a standby state change
     rpc SendSecurityRequest(Nothing) returns (Nothing) { option (method_id) = 9; }
 
     // Allowed in link layer states: standby
@@ -286,16 +278,11 @@ service GapPeripheralResponse
 
     rpc IdentityAddress(AddressWithType) returns(Nothing) { option(method_id) = 4; }
 
-    // TODO: What is the use for these calls?
-    // TODO: Do we get these callbacks also when establishing connection from a bonded peer?
-    // TODO: Can we merge these two calls into one with a boolean parameter?
+
     rpc PairingSuccessfullyCompleted(Nothing) returns(Nothing) { option(method_id) = 5; }
     rpc PairingFailed(PairingStatus) returns(Nothing) { option(method_id) = 6; }
 
-    // TODO: State that there are two ways this callback can be triggered: 
-    // by RemoveAllBonds/RemoveOldestBond calls, or when a new bond is created
-    // TODO: Do we get a call if max bonds is reached and the oldest bond is removed automatically?
-    // TODO: Clarify what the parameter mean exactly. It is the number of bonds after the change
+
     rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 7; }
 
     rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 8; }
@@ -304,8 +291,6 @@ service GapPeripheralResponse
 service GapPeripheralReadiness {
     option(service_id) = 36;
 
-    // TODO: Clarify when this means: This means GapPeripheral service is ready to be used
-    // TODO: Do we remove this when we merge with Celllar?
     rpc DeviceStarted(Nothing) returns(Nothing) { option(method_id) = 1; }
 }
 
