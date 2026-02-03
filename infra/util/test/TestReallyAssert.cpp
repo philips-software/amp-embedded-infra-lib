@@ -52,6 +52,16 @@ TEST_F(ReallyAssertTest, assert_failed_with_handler_calls_handler)
     infra::HandleAssertionFailure("condition", "file", 42);
 }
 
+TEST_F(ReallyAssertTest, assert_failed_with_message_aborts)
+{
+    EXPECT_DEATH(really_assert_with_msg(false, "%s", "foo"), "");
+}
+
+TEST_F(ReallyAssertTest, assert_passed_with_message_aborts)
+{
+    really_assert_with_msg(true, "%s", "foo");
+}
+
 TEST_F(ReallyAssertTest, assert_failed_recursive_call_skipped)
 {
     infra::RegisterAssertionFailureHandler([this](auto&&... args)
