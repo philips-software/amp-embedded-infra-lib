@@ -1,5 +1,4 @@
 #include "infra/util/ReallyAssert.hpp"
-#include "infra/util/LogAndAbort.hpp"
 #include <atomic>
 
 #if INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED
