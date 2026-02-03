@@ -7,7 +7,7 @@
 namespace infra
 {
     using LogAndAbortHook = infra::Function<void(const char* reason, const char* file, int line, const char* format, va_list* args)>;
-    // Note: This hook may be called multiple times per abort.
+    // Note: This hook is called exactly once per LOG_AND_ABORT invocation.
     void RegisterLogAndAbortHook(LogAndAbortHook hook);
     void ExecuteLogAndAbortHook(const char* reason, const char* file, int line, const char* format, ...);
 }
