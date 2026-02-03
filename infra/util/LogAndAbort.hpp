@@ -6,7 +6,7 @@
 
 namespace infra
 {
-    using LogAndAbortHook = infra::Function<void(const char* format, va_list* args)>;
+    using LogAndAbortHook = infra::Function<void(const char* reason, const char* file, int line, const char* format, va_list* args)>;
     // Note: This hook may be called multiple times per abort.
     void RegisterLogAndAbortHook(LogAndAbortHook hook);
     void ExecuteLogAndAbortHook(const char* reason, const char* file, int line, const char* format, ...);
@@ -24,6 +24,11 @@ namespace infra
 #endif
 
 #if INFRA_UTIL_LOG_AND_ABORT_ENABLED
+#define INFRA_UTIL_LOG_AND_ABORT_HANDLER_HOOK(msg, file, line, format, ...) \
+    infra::ExecuteLogAndAbortHook(msg, file, line, format, ##__VA_ARGS__)
+
+#define INFRA_UTIL_LOG_AND_ABORT_HANDLER_MSG(file, line, format, ...) \
+    INFRA_UTIL_LOG_AND_ABORT_HANDLER_HOOK("Aborting", file, line, format, ##__VA_ARGS__)
 
 #if defined(EMIL_ENABLE_LOGGING_FILE_UPON_ABORT) || defined(EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT)
 #if EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT
@@ -31,24 +36,13 @@ namespace infra
 // Only available in some compilers, for example GCC 12 or later
 #error "__FILE_NAME__ must be available when EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT is set"
 #endif
-#define INFRA_UTIL_LOG_AND_ABORT_HOOK_FILE_NAME __FILE_NAME__
+#define INFRA_UTIL_LOG_AND_ABORT_HANDLER(format, ...) INFRA_UTIL_LOG_AND_ABORT_HANDLER_MSG(__FILE_NAME__, __LINE__, format, ##__VA_ARGS__)
 #else
-#define INFRA_UTIL_LOG_AND_ABORT_HOOK_FILE_NAME __FILE__
+#define INFRA_UTIL_LOG_AND_ABORT_HANDLER(format, ...) INFRA_UTIL_LOG_AND_ABORT_HANDLER_MSG(__FILE__, __LINE__, format, ##__VA_ARGS__)
 #endif // EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT
-
-#define INFRA_UTIL_LOG_AND_ABORT_HANDLER(format, ...) \
-    infra::ExecuteLogAndAbortHook(                    \
-        "Aborting",                                   \
-        INFRA_UTIL_LOG_AND_ABORT_HOOK_FILE_NAME,      \
-        __LINE__,                                     \
-        format,                                       \
-        ##__VA_ARGS__)
-
 #else
-#define INFRA_UTIL_LOG_AND_ABORT_HANDLER(format, ...) \
-    infra::ExecuteLogAndAbortHook("Aborting", nullptr, 0, format, ##__VA_ARGS__)
+#define INFRA_UTIL_LOG_AND_ABORT_HANDLER(format, ...) INFRA_UTIL_LOG_AND_ABORT_HANDLER_MSG(nullptr, 0, format, ##__VA_ARGS__)
 #endif // defined(EMIL_ENABLE_LOGGING_FILE_UPON_ABORT) || defined(EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT)
-
 #else
 #define INFRA_UTIL_LOG_AND_ABORT_HANDLER(format, ...)
 #endif // INFRA_UTIL_LOG_AND_ABORT_ENABLED
