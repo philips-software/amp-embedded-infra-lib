@@ -14,7 +14,9 @@
   border: none;
   max-width: 600px;
   min-width: 500px;
-  box-shadow: 0 1px 0 0 rgb(0 0 0 / 20%), 0 2px 3px 0 rgb(0 0 0 / 10%);
+  box-shadow:
+    0 1px 0 0 rgb(0 0 0 / 20%),
+    0 2px 3px 0 rgb(0 0 0 / 10%);
 }
 
 @media screen and (max-width: 768px) {
