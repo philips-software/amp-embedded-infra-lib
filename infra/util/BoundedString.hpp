@@ -13,6 +13,7 @@
 #include <cstring>
 #include <limits>
 #include <string>
+#include <string_view>
 
 #ifdef EMIL_HOST_BUILD
 #include <ostream>
@@ -51,7 +52,7 @@ namespace infra
         static const size_type npos;
 
     public:
-        BoundedStringBase() = default;
+        constexpr BoundedStringBase() = default;
         explicit BoundedStringBase(MemoryRange<T> range);
         BoundedStringBase(MemoryRange<NonConstT> range, size_type count);
         BoundedStringBase(MemoryRange<NonConstT> range, size_type count, char ch);
@@ -59,8 +60,9 @@ namespace infra
         BoundedStringBase(MemoryRange<NonConstT> range, const char* s, size_type count);
         BoundedStringBase(MemoryRange<NonConstT> range, const char* s);
         BoundedStringBase(MemoryRange<NonConstT> range, const std::string& s);
-        BoundedStringBase(T* s, size_type count);
+        constexpr BoundedStringBase(T* s, size_type count);
         BoundedStringBase(T* s);
+        constexpr BoundedStringBase(std::string_view s);
         BoundedStringBase(const std::string& s);
         BoundedStringBase(std::string& s);
         template<class InputIterator>
@@ -68,7 +70,7 @@ namespace infra
         BoundedStringBase(MemoryRange<NonConstT> range, std::initializer_list<char> initializerList);
         template<class U>
         BoundedStringBase(MemoryRange<NonConstT> range, const BoundedStringBase<U>& other);
-        BoundedStringBase(const BoundedStringBase& other);
+        constexpr BoundedStringBase(const BoundedStringBase& other);
         BoundedStringBase(BoundedStringBase&& other) noexcept = default;
         template<class U>
         BoundedStringBase(const BoundedStringBase<U>& other);
@@ -98,28 +100,28 @@ namespace infra
 
     public:
         reference operator[](size_type pos);
-        const_reference operator[](size_type pos) const;
+        constexpr const_reference operator[](size_type pos) const;
         reference front();
-        const_reference front() const;
+        constexpr const_reference front() const;
         reference back();
-        const_reference back() const;
-        pointer data() const;
+        constexpr const_reference back() const;
+        constexpr pointer data() const;
 
     public:
-        iterator begin() const;
-        const_iterator cbegin() const;
-        iterator end() const;
-        const_iterator cend() const;
-        reverse_iterator rbegin() const;
-        const_reverse_iterator crbegin() const;
-        reverse_iterator rend() const;
-        const_reverse_iterator crend() const;
+        constexpr iterator begin() const;
+        constexpr const_iterator cbegin() const;
+        constexpr iterator end() const;
+        constexpr const_iterator cend() const;
+        constexpr reverse_iterator rbegin() const;
+        constexpr const_reverse_iterator crbegin() const;
+        constexpr reverse_iterator rend() const;
+        constexpr const_reverse_iterator crend() const;
 
     public:
-        bool empty() const;
-        bool full() const;
-        size_type size() const;
-        size_type max_size() const;
+        constexpr bool empty() const;
+        constexpr bool full() const;
+        constexpr size_type size() const;
+        constexpr size_type max_size() const;
 
     public:
         void clear();
@@ -160,15 +162,15 @@ namespace infra
         BoundedStringBase& operator+=(const char* s);
         BoundedStringBase& operator+=(const std::string& s);
 
-        int compare(const BoundedStringBase& other) const;
-        int compare(size_type pos1, size_type count1, const BoundedStringBase& other) const;
-        int compare(size_type pos1, size_type count1, const BoundedStringBase& other, size_type pos2, size_type count2) const;
+        constexpr int compare(const BoundedStringBase& other) const;
+        constexpr int compare(size_type pos1, size_type count1, const BoundedStringBase& other) const;
+        constexpr int compare(size_type pos1, size_type count1, const BoundedStringBase& other, size_type pos2, size_type count2) const;
         int compare(const char* s) const;
         int compare(size_type pos1, size_type count1, const char* s) const;
-        int compare(size_type pos1, size_type count1, const char* s, size_type count2) const;
-        int compare(const std::string& s) const;
-        int compare(size_type pos1, size_type count1, const std::string& s) const;
-        int compare(size_type pos1, size_type count1, const std::string& s, size_type count2) const;
+        constexpr int compare(size_type pos1, size_type count1, const char* s, size_type count2) const;
+        constexpr int compare(const std::string& s) const;
+        constexpr int compare(size_type pos1, size_type count1, const std::string& s) const;
+        constexpr int compare(size_type pos1, size_type count1, const std::string& s, size_type count2) const;
 
         template<class U>
         BoundedStringBase& replace(size_type pos, size_type count, const BoundedStringBase<U>& other);
@@ -263,7 +265,7 @@ namespace infra
     private:
         void MoveUp(size_type start, size_type count);
         void MoveDown(size_type start, size_type count);
-        int CompareImpl(const char* begin1, const char* end1, const char* begin2, const char* end2) const;
+        constexpr int CompareImpl(const char* begin1, const char* end1, const char* begin2, const char* end2) const;
         void ReplaceImpl(char* begin1, size_type count1, const char* begin2, size_type count2);
         void ReplaceImpl(char* begin1, size_type count1, char ch, size_type count2);
 
@@ -276,65 +278,65 @@ namespace infra
     };
 
     template<class T, class U>
-    bool operator==(const BoundedStringBase<T>& lhs, const BoundedStringBase<U>& rhs);
+    constexpr bool operator==(const BoundedStringBase<T>& lhs, const BoundedStringBase<U>& rhs);
     template<class T, class U>
-    bool operator!=(const BoundedStringBase<T>& lhs, const BoundedStringBase<U>& rhs);
+    constexpr bool operator!=(const BoundedStringBase<T>& lhs, const BoundedStringBase<U>& rhs);
     template<class T, class U>
-    bool operator<(const BoundedStringBase<T>& lhs, const BoundedStringBase<U>& rhs);
+    constexpr bool operator<(const BoundedStringBase<T>& lhs, const BoundedStringBase<U>& rhs);
     template<class T, class U>
-    bool operator<=(const BoundedStringBase<T>& lhs, const BoundedStringBase<U>& rhs);
+    constexpr bool operator<=(const BoundedStringBase<T>& lhs, const BoundedStringBase<U>& rhs);
     template<class T, class U>
-    bool operator>(const BoundedStringBase<T>& lhs, const BoundedStringBase<U>& rhs);
+    constexpr bool operator>(const BoundedStringBase<T>& lhs, const BoundedStringBase<U>& rhs);
     template<class T, class U>
-    bool operator>=(const BoundedStringBase<T>& lhs, const BoundedStringBase<U>& rhs);
+    constexpr bool operator>=(const BoundedStringBase<T>& lhs, const BoundedStringBase<U>& rhs);
     template<class T>
-    bool operator==(const char* lhs, const BoundedStringBase<T>& rhs);
+    constexpr bool operator==(const char* lhs, const BoundedStringBase<T>& rhs);
     template<class T>
-    bool operator==(const BoundedStringBase<T>& lhs, const char* rhs);
+    constexpr bool operator==(const BoundedStringBase<T>& lhs, const char* rhs);
     template<class T>
-    bool operator==(const std::string& lhs, const BoundedStringBase<T>& rhs);
+    constexpr bool operator==(const std::string& lhs, const BoundedStringBase<T>& rhs);
     template<class T>
-    bool operator==(const BoundedStringBase<T>& lhs, const std::string& rhs);
+    constexpr bool operator==(const BoundedStringBase<T>& lhs, const std::string& rhs);
     template<class T>
-    bool operator!=(const char* lhs, const BoundedStringBase<T>& rhs);
+    constexpr bool operator!=(const char* lhs, const BoundedStringBase<T>& rhs);
     template<class T>
-    bool operator!=(const BoundedStringBase<T>& lhs, const char* rhs);
+    constexpr bool operator!=(const BoundedStringBase<T>& lhs, const char* rhs);
     template<class T>
-    bool operator!=(const std::string& lhs, const BoundedStringBase<T>& rhs);
+    constexpr bool operator!=(const std::string& lhs, const BoundedStringBase<T>& rhs);
     template<class T>
-    bool operator!=(const BoundedStringBase<T>& lhs, const std::string& rhs);
+    constexpr bool operator!=(const BoundedStringBase<T>& lhs, const std::string& rhs);
     template<class T>
-    bool operator<(const char* lhs, const BoundedStringBase<T>& rhs);
+    constexpr bool operator<(const char* lhs, const BoundedStringBase<T>& rhs);
     template<class T>
-    bool operator<(const BoundedStringBase<T>& lhs, const char* rhs);
+    constexpr bool operator<(const BoundedStringBase<T>& lhs, const char* rhs);
     template<class T>
-    bool operator<(const std::string& lhs, const BoundedStringBase<T>& rhs);
+    constexpr bool operator<(const std::string& lhs, const BoundedStringBase<T>& rhs);
     template<class T>
-    bool operator<(const BoundedStringBase<T>& lhs, const std::string& rhs);
+    constexpr bool operator<(const BoundedStringBase<T>& lhs, const std::string& rhs);
     template<class T>
-    bool operator<=(const char* lhs, const BoundedStringBase<T>& rhs);
+    constexpr bool operator<=(const char* lhs, const BoundedStringBase<T>& rhs);
     template<class T>
-    bool operator<=(const BoundedStringBase<T>& lhs, const char* rhs);
+    constexpr bool operator<=(const BoundedStringBase<T>& lhs, const char* rhs);
     template<class T>
-    bool operator<=(const std::string& lhs, const BoundedStringBase<T>& rhs);
+    constexpr bool operator<=(const std::string& lhs, const BoundedStringBase<T>& rhs);
     template<class T>
-    bool operator<=(const BoundedStringBase<T>& lhs, const std::string& rhs);
+    constexpr bool operator<=(const BoundedStringBase<T>& lhs, const std::string& rhs);
     template<class T>
-    bool operator>(const char* lhs, const BoundedStringBase<T>& rhs);
+    constexpr bool operator>(const char* lhs, const BoundedStringBase<T>& rhs);
     template<class T>
-    bool operator>(const BoundedStringBase<T>& lhs, const char* rhs);
+    constexpr bool operator>(const BoundedStringBase<T>& lhs, const char* rhs);
     template<class T>
-    bool operator>(const std::string& lhs, const BoundedStringBase<T>& rhs);
+    constexpr bool operator>(const std::string& lhs, const BoundedStringBase<T>& rhs);
     template<class T>
-    bool operator>(const BoundedStringBase<T>& lhs, const std::string& rhs);
+    constexpr bool operator>(const BoundedStringBase<T>& lhs, const std::string& rhs);
     template<class T>
-    bool operator>=(const char* lhs, const BoundedStringBase<T>& rhs);
+    constexpr bool operator>=(const char* lhs, const BoundedStringBase<T>& rhs);
     template<class T>
-    bool operator>=(const BoundedStringBase<T>& lhs, const char* rhs);
+    constexpr bool operator>=(const BoundedStringBase<T>& lhs, const char* rhs);
     template<class T>
-    bool operator>=(const std::string& lhs, const BoundedStringBase<T>& rhs);
+    constexpr bool operator>=(const std::string& lhs, const BoundedStringBase<T>& rhs);
     template<class T>
-    bool operator>=(const BoundedStringBase<T>& lhs, const std::string& rhs);
+    constexpr bool operator>=(const BoundedStringBase<T>& lhs, const std::string& rhs);
     template<class T>
     std::string operator+(const std::string& lhs, const BoundedStringBase<T>& rhs);
 
@@ -443,7 +445,7 @@ namespace infra
     }
 
     template<class T>
-    BoundedStringBase<T>::BoundedStringBase(T* s, size_type count)
+    constexpr BoundedStringBase<T>::BoundedStringBase(T* s, size_type count)
         : range(s, s + count)
         , length(count)
     {}
@@ -452,6 +454,12 @@ namespace infra
     BoundedStringBase<T>::BoundedStringBase(T* s)
         : range(s, s + std::strlen(s)) //NOSONAR
         , length(range.size())
+    {}
+
+    template<class T>
+    constexpr BoundedStringBase<T>::BoundedStringBase(std::string_view s)
+        : range(s.data(), s.data() + s.size())
+        , length(s.size())
     {}
 
     template<class T>
@@ -482,7 +490,7 @@ namespace infra
     }
 
     template<class T>
-    BoundedStringBase<T>::BoundedStringBase(const BoundedStringBase<T>& other)
+    constexpr BoundedStringBase<T>::BoundedStringBase(const BoundedStringBase<T>& other)
         : range(other.range)
         , length(other.length)
     {}
@@ -604,7 +612,7 @@ namespace infra
     }
 
     template<class T>
-    const T& BoundedStringBase<T>::operator[](size_type pos) const
+    constexpr const T& BoundedStringBase<T>::operator[](size_type pos) const
     {
         return range[pos];
     }
@@ -616,7 +624,7 @@ namespace infra
     }
 
     template<class T>
-    const T& BoundedStringBase<T>::front() const
+    constexpr const T& BoundedStringBase<T>::front() const
     {
         return range.front();
     }
@@ -628,85 +636,85 @@ namespace infra
     }
 
     template<class T>
-    const T& BoundedStringBase<T>::back() const
+    constexpr const T& BoundedStringBase<T>::back() const
     {
         return range[length - 1];
     }
 
     template<class T>
-    T* BoundedStringBase<T>::data() const
+    constexpr T* BoundedStringBase<T>::data() const
     {
         return range.begin();
     }
 
     template<class T>
-    typename BoundedStringBase<T>::iterator BoundedStringBase<T>::begin() const
+    constexpr typename BoundedStringBase<T>::iterator BoundedStringBase<T>::begin() const
     {
         return range.begin();
     }
 
     template<class T>
-    typename BoundedStringBase<T>::const_iterator BoundedStringBase<T>::cbegin() const
+    constexpr typename BoundedStringBase<T>::const_iterator BoundedStringBase<T>::cbegin() const
     {
         return range.begin();
     }
 
     template<class T>
-    typename BoundedStringBase<T>::iterator BoundedStringBase<T>::end() const
+    constexpr typename BoundedStringBase<T>::iterator BoundedStringBase<T>::end() const
     {
         return range.begin() + length;
     }
 
     template<class T>
-    typename BoundedStringBase<T>::const_iterator BoundedStringBase<T>::cend() const
+    constexpr typename BoundedStringBase<T>::const_iterator BoundedStringBase<T>::cend() const
     {
         return range.begin() + length;
     }
 
     template<class T>
-    typename BoundedStringBase<T>::reverse_iterator BoundedStringBase<T>::rbegin() const
+    constexpr typename BoundedStringBase<T>::reverse_iterator BoundedStringBase<T>::rbegin() const
     {
         return reverse_iterator(range.begin() + length);
     }
 
     template<class T>
-    typename BoundedStringBase<T>::const_reverse_iterator BoundedStringBase<T>::crbegin() const
+    constexpr typename BoundedStringBase<T>::const_reverse_iterator BoundedStringBase<T>::crbegin() const
     {
         return reverse_iterator(range.begin() + length);
     }
 
     template<class T>
-    typename BoundedStringBase<T>::reverse_iterator BoundedStringBase<T>::rend() const
+    constexpr typename BoundedStringBase<T>::reverse_iterator BoundedStringBase<T>::rend() const
     {
         return reverse_iterator(range.begin());
     }
 
     template<class T>
-    typename BoundedStringBase<T>::const_reverse_iterator BoundedStringBase<T>::crend() const
+    constexpr typename BoundedStringBase<T>::const_reverse_iterator BoundedStringBase<T>::crend() const
     {
         return reverse_iterator(range.begin());
     }
 
     template<class T>
-    bool BoundedStringBase<T>::empty() const
+    constexpr bool BoundedStringBase<T>::empty() const
     {
         return length == 0;
     }
 
     template<class T>
-    bool BoundedStringBase<T>::full() const
+    constexpr bool BoundedStringBase<T>::full() const
     {
         return length == max_size();
     }
 
     template<class T>
-    typename BoundedStringBase<T>::size_type BoundedStringBase<T>::size() const
+    constexpr typename BoundedStringBase<T>::size_type BoundedStringBase<T>::size() const
     {
         return length;
     }
 
     template<class T>
-    typename BoundedStringBase<T>::size_type BoundedStringBase<T>::max_size() const
+    constexpr typename BoundedStringBase<T>::size_type BoundedStringBase<T>::max_size() const
     {
         return range.size();
     }
@@ -920,19 +928,19 @@ namespace infra
     }
 
     template<class T>
-    int BoundedStringBase<T>::compare(const BoundedStringBase<T>& other) const
+    constexpr int BoundedStringBase<T>::compare(const BoundedStringBase<T>& other) const
     {
         return CompareImpl(begin(), end(), other.begin(), other.end());
     }
 
     template<class T>
-    int BoundedStringBase<T>::compare(size_type pos1, size_type count1, const BoundedStringBase<T>& other) const
+    constexpr int BoundedStringBase<T>::compare(size_type pos1, size_type count1, const BoundedStringBase<T>& other) const
     {
         return CompareImpl(begin() + pos1, begin() + pos1 + count1, other.begin(), other.end());
     }
 
     template<class T>
-    int BoundedStringBase<T>::compare(size_type pos1, size_type count1, const BoundedStringBase<T>& other, size_type pos2, size_type count2) const
+    constexpr int BoundedStringBase<T>::compare(size_type pos1, size_type count1, const BoundedStringBase<T>& other, size_type pos2, size_type count2) const
     {
         return CompareImpl(begin() + pos1, begin() + pos1 + count1, other.begin() + pos2, other.begin() + pos2 + count2);
     }
@@ -950,25 +958,25 @@ namespace infra
     }
 
     template<class T>
-    int BoundedStringBase<T>::compare(size_type pos1, size_type count1, const char* s, size_type count2) const
+    constexpr int BoundedStringBase<T>::compare(size_type pos1, size_type count1, const char* s, size_type count2) const
     {
         return CompareImpl(begin() + pos1, begin() + pos1 + count1, s, s + count2);
     }
 
     template<class T>
-    int BoundedStringBase<T>::compare(const std::string& s) const
+    constexpr int BoundedStringBase<T>::compare(const std::string& s) const
     {
         return CompareImpl(begin(), end(), s.data(), s.data() + s.size());
     }
 
     template<class T>
-    int BoundedStringBase<T>::compare(size_type pos1, size_type count1, const std::string& s) const
+    constexpr int BoundedStringBase<T>::compare(size_type pos1, size_type count1, const std::string& s) const
     {
         return CompareImpl(begin() + pos1, begin() + pos1 + count1, s.data(), s.data() + s.size());
     }
 
     template<class T>
-    int BoundedStringBase<T>::compare(size_type pos1, size_type count1, const std::string& s, size_type count2) const
+    constexpr int BoundedStringBase<T>::compare(size_type pos1, size_type count1, const std::string& s, size_type count2) const
     {
         return CompareImpl(begin() + pos1, begin() + pos1 + count1, s.data(), s.data() + count2);
     }
@@ -1436,7 +1444,7 @@ namespace infra
     }
 
     template<class T>
-    int BoundedStringBase<T>::CompareImpl(const char* begin1, const char* end1, const char* begin2, const char* end2) const
+    constexpr int BoundedStringBase<T>::CompareImpl(const char* begin1, const char* end1, const char* begin2, const char* end2) const
     {
         for (; begin1 != end1 && begin2 != end2; ++begin1, ++begin2)
             if (*begin1 != *begin2)
@@ -1527,183 +1535,183 @@ namespace infra
     const typename BoundedStringBase<T>::size_type BoundedStringBase<T>::npos = std::numeric_limits<size_type>::max();
 
     template<class T, class U>
-    bool operator==(const BoundedStringBase<T>& lhs, const BoundedStringBase<U>& rhs)
+    constexpr bool operator==(const BoundedStringBase<T>& lhs, const BoundedStringBase<U>& rhs)
     {
         return lhs.size() == rhs.size() && std::equal(lhs.begin(), lhs.end(), rhs.begin());
     }
 
     template<class T, class U>
-    bool operator!=(const BoundedStringBase<T>& lhs, const BoundedStringBase<U>& rhs)
+    constexpr bool operator!=(const BoundedStringBase<T>& lhs, const BoundedStringBase<U>& rhs)
     {
         return !(lhs == rhs);
     }
 
     template<class T, class U>
-    bool operator<(const BoundedStringBase<T>& lhs, const BoundedStringBase<U>& rhs)
+    constexpr bool operator<(const BoundedStringBase<T>& lhs, const BoundedStringBase<U>& rhs)
     {
         return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
     }
 
     template<class T, class U>
-    bool operator<=(const BoundedStringBase<T>& lhs, const BoundedStringBase<U>& rhs)
+    constexpr bool operator<=(const BoundedStringBase<T>& lhs, const BoundedStringBase<U>& rhs)
     {
         return !(rhs < lhs);
     }
 
     template<class T, class U>
-    bool operator>(const BoundedStringBase<T>& lhs, const BoundedStringBase<U>& rhs)
+    constexpr bool operator>(const BoundedStringBase<T>& lhs, const BoundedStringBase<U>& rhs)
     {
         return rhs < lhs;
     }
 
     template<class T, class U>
-    bool operator>=(const BoundedStringBase<T>& lhs, const BoundedStringBase<U>& rhs)
+    constexpr bool operator>=(const BoundedStringBase<T>& lhs, const BoundedStringBase<U>& rhs)
     {
         return !(lhs < rhs);
     }
 
     template<class T>
-    bool operator==(const char* lhs, const BoundedStringBase<T>& rhs)
+    constexpr bool operator==(const char* lhs, const BoundedStringBase<T>& rhs)
     {
         return std::strlen(lhs) == rhs.size() //NOSONAR
                && std::equal(rhs.begin(), rhs.end(), lhs);
     }
 
     template<class T>
-    bool operator==(const BoundedStringBase<T>& lhs, const char* rhs)
+    constexpr bool operator==(const BoundedStringBase<T>& lhs, const char* rhs)
     {
         return lhs.size() == std::strlen(rhs) //NOSONAR
                && std::equal(lhs.begin(), lhs.end(), rhs);
     }
 
     template<class T>
-    bool operator==(const std::string& lhs, const BoundedStringBase<T>& rhs)
+    constexpr bool operator==(const std::string& lhs, const BoundedStringBase<T>& rhs)
     {
         return lhs.size() == rhs.size() && std::equal(rhs.begin(), rhs.end(), lhs.begin());
     }
 
     template<class T>
-    bool operator==(const BoundedStringBase<T>& lhs, const std::string& rhs)
+    constexpr bool operator==(const BoundedStringBase<T>& lhs, const std::string& rhs)
     {
         return lhs.size() == rhs.size() && std::equal(lhs.begin(), lhs.end(), rhs.begin());
     }
 
     template<class T>
-    bool operator!=(const char* lhs, const BoundedStringBase<T>& rhs)
+    constexpr bool operator!=(const char* lhs, const BoundedStringBase<T>& rhs)
     {
         return !(lhs == rhs);
     }
 
     template<class T>
-    bool operator!=(const BoundedStringBase<T>& lhs, const char* rhs)
+    constexpr bool operator!=(const BoundedStringBase<T>& lhs, const char* rhs)
     {
         return !(lhs == rhs);
     }
 
     template<class T>
-    bool operator!=(const std::string& lhs, const BoundedStringBase<T>& rhs)
+    constexpr bool operator!=(const std::string& lhs, const BoundedStringBase<T>& rhs)
     {
         return !(lhs == rhs);
     }
 
     template<class T>
-    bool operator!=(const BoundedStringBase<T>& lhs, const std::string& rhs)
+    constexpr bool operator!=(const BoundedStringBase<T>& lhs, const std::string& rhs)
     {
         return !(lhs == rhs);
     }
 
     template<class T>
-    bool operator<(const char* lhs, const BoundedStringBase<T>& rhs)
+    constexpr bool operator<(const char* lhs, const BoundedStringBase<T>& rhs)
     {
         return std::lexicographical_compare(lhs, lhs + std::strlen(lhs), rhs.begin(), rhs.end()); //NOSONAR
     }
 
     template<class T>
-    bool operator<(const BoundedStringBase<T>& lhs, const char* rhs)
+    constexpr bool operator<(const BoundedStringBase<T>& lhs, const char* rhs)
     {
         return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs, rhs + std::strlen(rhs)); //NOSONAR
     }
 
     template<class T>
-    bool operator<(const std::string& lhs, const BoundedStringBase<T>& rhs)
+    constexpr bool operator<(const std::string& lhs, const BoundedStringBase<T>& rhs)
     {
         return std::lexicographical_compare(lhs.data(), lhs.data() + lhs.size(), rhs.begin(), rhs.end());
     }
 
     template<class T>
-    bool operator<(const BoundedStringBase<T>& lhs, const std::string& rhs)
+    constexpr bool operator<(const BoundedStringBase<T>& lhs, const std::string& rhs)
     {
         return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.data(), rhs.data() + rhs.size());
     }
 
     template<class T>
-    bool operator<=(const char* lhs, const BoundedStringBase<T>& rhs)
+    constexpr bool operator<=(const char* lhs, const BoundedStringBase<T>& rhs)
     {
         return !(rhs < lhs);
     }
 
     template<class T>
-    bool operator<=(const BoundedStringBase<T>& lhs, const char* rhs)
+    constexpr bool operator<=(const BoundedStringBase<T>& lhs, const char* rhs)
     {
         return !(rhs < lhs);
     }
 
     template<class T>
-    bool operator<=(const std::string& lhs, const BoundedStringBase<T>& rhs)
+    constexpr bool operator<=(const std::string& lhs, const BoundedStringBase<T>& rhs)
     {
         return !(rhs < lhs);
     }
 
     template<class T>
-    bool operator<=(const BoundedStringBase<T>& lhs, const std::string& rhs)
+    constexpr bool operator<=(const BoundedStringBase<T>& lhs, const std::string& rhs)
     {
         return !(rhs < lhs);
     }
 
     template<class T>
-    bool operator>(const char* lhs, const BoundedStringBase<T>& rhs)
+    constexpr bool operator>(const char* lhs, const BoundedStringBase<T>& rhs)
     {
         return rhs < lhs;
     }
 
     template<class T>
-    bool operator>(const BoundedStringBase<T>& lhs, const char* rhs)
+    constexpr bool operator>(const BoundedStringBase<T>& lhs, const char* rhs)
     {
         return rhs < lhs;
     }
 
     template<class T>
-    bool operator>(const std::string& lhs, const BoundedStringBase<T>& rhs)
+    constexpr bool operator>(const std::string& lhs, const BoundedStringBase<T>& rhs)
     {
         return rhs < lhs;
     }
 
     template<class T>
-    bool operator>(const BoundedStringBase<T>& lhs, const std::string& rhs)
+    constexpr bool operator>(const BoundedStringBase<T>& lhs, const std::string& rhs)
     {
         return rhs < lhs;
     }
 
     template<class T>
-    bool operator>=(const char* lhs, const BoundedStringBase<T>& rhs)
+    constexpr bool operator>=(const char* lhs, const BoundedStringBase<T>& rhs)
     {
         return !(lhs < rhs);
     }
 
     template<class T>
-    bool operator>=(const BoundedStringBase<T>& lhs, const char* rhs)
+    constexpr bool operator>=(const BoundedStringBase<T>& lhs, const char* rhs)
     {
         return !(lhs < rhs);
     }
 
     template<class T>
-    bool operator>=(const std::string& lhs, const BoundedStringBase<T>& rhs)
+    constexpr bool operator>=(const std::string& lhs, const BoundedStringBase<T>& rhs)
     {
         return !(lhs < rhs);
     }
 
     template<class T>
-    bool operator>=(const BoundedStringBase<T>& lhs, const std::string& rhs)
+    constexpr bool operator>=(const BoundedStringBase<T>& lhs, const std::string& rhs)
     {
         return !(lhs < rhs);
     }
