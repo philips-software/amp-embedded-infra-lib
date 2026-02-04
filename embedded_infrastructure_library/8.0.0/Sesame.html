@@ -289,10 +289,11 @@ key and an 128 bit Initialisation Vector (IV). Both directions of communication 
 </div>
 <div class="paragraph">
 <p>Each message is encrypted with <code>AES-128-GCM</code> with the key and IV as parameters. This results in
-a cyphertext of size equal to the size of the message, plus a 16 byte MAC. Since in <code>GCM</code> IVs may
-not be reused, the IV is incremented in a specific way to avoid using the same IV twice: After
-each message, treat the IV as a 128-bit unsigned Big Endian number, and add 2<sup>64</sup> to it (discarding any overflow).
-This way, the protocol can securely handle 2<sup>64</sup> messages each of size at most 2<sup>64</sup> before a
+a cyphertext of size equal to the size of the message, plus a 16 byte MAC. Following the recommendation in
+NIST SP800-38D section 5.2.1.1, the length of the IV is 12 bytes. Since in <code>GCM</code> IVs may
+not be reused, the IV is incremented for each message to avoid using the same IV twice: After
+each message, treat the IV as a 96-bit unsigned Big Endian number, and add 1 to it (discarding any overflow).
+This way, the protocol can securely handle 2<sup>96</sup> messages each of size at most 2<sup>39</sup> bytes before a
 re-negotiation of keys is necessary.</p>
 </div>
 <div class="paragraph">
@@ -377,8 +378,8 @@ of the presented public key. If this signature is correct, it computes the share
 and the peer&#8217;s public key using the Diffie-Hellman scheme.
 Key expansion is performed on the shared secret to generate enough material for the required key/IV pairs in this
 way: <a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-90Ar1.pdf"><code>HMAC-DRBG-SHA256</code></a> is seeded
-with the shared secret, and generates 4 times 128 bits of data. The first 128
-bits of data is Key<sub>A</sub>, the next IV<sub>A</sub>, then Key<sub>B</sub>, then IV<sub>B</sub>. Both parties perform a lexicographical compare
+with the shared secret, and generates 2 times 128 + 96 bits of data. The first 128
+bits of data is Key<sub>A</sub>, the next 96 bits is IV<sub>A</sub>, then 128 bits for Key<sub>B</sub>, then 96 bits for IV<sub>B</sub>. Both parties perform a lexicographical compare
 of their Diffie-Hellman public keys. The party with public key that compares greater than the public key of its peer
 uses Key<sub>A</sub> and IV<sub>A</sub> for sending data, the other party uses Key<sub>B</sub> and IV<sub>B</sub> for sending data.</p>
 </div>
@@ -468,7 +469,7 @@ package sesame_security;
 message SymmetricKeyMaterial
 {
     bytes key = 1 [(bytes_size) = 16];
-    bytes iv = 2 [(bytes_size) = 16];
+    bytes iv = 2 [(bytes_size) = 12];
 }
 
 message DiffieHellmanMaterial
