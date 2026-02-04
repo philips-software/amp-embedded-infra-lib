@@ -107,15 +107,15 @@ namespace services
         auto sharedSecret = (*keyExchange)->SharedSecret(otherPublicKey);
         auto publicKey = (*keyExchange)->PublicKey();
 
-        int swap = std::lexicographical_compare(publicKey.begin(), publicKey.end(), otherPublicKey.begin(), otherPublicKey.end()) ? 32 : 0;
+        int swap = std::lexicographical_compare(publicKey.begin(), publicKey.end(), otherPublicKey.begin(), otherPublicKey.end()) ? 28 : 0;
 
         std::array<uint8_t, 64> expandedMaterial{};
         keyExpander.Expand(sharedSecret, expandedMaterial);
 
-        std::array<uint8_t, 16> key = Middle<16>(expandedMaterial, 0 + swap);
-        std::array<uint8_t, 16> iv = Middle<16>(expandedMaterial, 16 + swap);
-        std::array<uint8_t, 16> otherKey = Middle<16>(expandedMaterial, 32 - swap);
-        std::array<uint8_t, 16> otherIv = Middle<16>(expandedMaterial, 48 - swap);
+        auto key = Middle<16>(expandedMaterial, 0 + swap);
+        auto iv = Middle<12>(expandedMaterial, 16 + swap);
+        auto otherKey = Middle<16>(expandedMaterial, 28 - swap);
+        auto otherIv = Middle<12>(expandedMaterial, 44 - swap);
 
         nextKeyPair = { key, iv };
         secured.SetReceiveKey(otherKey, otherIv);
