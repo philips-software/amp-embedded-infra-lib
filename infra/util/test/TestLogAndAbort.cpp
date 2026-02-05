@@ -51,7 +51,7 @@ TEST_F(LogAndAbortTest, log_and_abort_with_handler_calls_handler)
             logAndAbortMock.Call(std::forward<decltype(args)>(args)...);
         });
 
-    EXPECT_CALL(logAndAbortMock, Call("reason", nullptr, 0, "speak %s and enter", testing::_));
+    EXPECT_CALL(logAndAbortMock, Call(testing::StrEq("reason"), nullptr, 0, testing::StrEq("speak %s and enter"), testing::_));
 
     // Manually calling hook to avoid aborting the test
     infra::ExecuteLogAndAbortHook("reason", nullptr, 0, "speak %s and enter", "friend");
@@ -64,7 +64,7 @@ TEST_F(LogAndAbortTest, log_and_abort_with_filename_prints_filename)
             logAndAbortMock.Call(std::forward<decltype(args)>(args)...);
         });
 
-    EXPECT_CALL(logAndAbortMock, Call("reason", "filename.cpp", 32, "speak %s and enter", testing::_));
+    EXPECT_CALL(logAndAbortMock, Call(testing::StrEq("reason"), testing::StrEq("filename.cpp"), 32, testing::StrEq("speak %s and enter"), testing::_));
 
     // Manually calling hook to avoid aborting the test
     infra::ExecuteLogAndAbortHook("reason", "filename.cpp", 32, "speak %s and enter", "friend");
@@ -78,7 +78,7 @@ TEST_F(LogAndAbortTest, log_and_abort_recursive_call_skipped)
             infra::ExecuteLogAndAbortHook("recursive", "file.cpp", 42, "recursive %s", "call");
         });
 
-    EXPECT_CALL(logAndAbortMock, Call("condition", "file.cpp", 32, "initial %s", testing::_));
+    EXPECT_CALL(logAndAbortMock, Call(testing::StrEq("condition"), testing::StrEq("file.cpp"), 32, testing::StrEq("initial %s"), testing::_));
 
     // Manually calling hook to avoid aborting the test
     infra::ExecuteLogAndAbortHook("condition", "file.cpp", 32, "initial %s", "call");

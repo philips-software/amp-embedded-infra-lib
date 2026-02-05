@@ -46,7 +46,7 @@ TEST_F(ReallyAssertTest, assert_failed_with_handler_calls_handler)
             assertionFailureHandlerMock.Call(std::forward<decltype(args)>(args)...);
         });
 
-    EXPECT_CALL(assertionFailureHandlerMock, Call("condition", "file", 42));
+    EXPECT_CALL(assertionFailureHandlerMock, Call(testing::StrEq("condition"), testing::StrEq("file"), 42));
 
     // Manually calling handler because a debug build will call the standard assert instead of really_assert
     infra::HandleAssertionFailure("condition", "file", 42);
@@ -70,7 +70,7 @@ TEST_F(ReallyAssertTest, assert_failed_recursive_call_skipped)
             infra::HandleAssertionFailure("recursive", "file", 42);
         });
 
-    EXPECT_CALL(assertionFailureHandlerMock, Call("fail", "file", 42));
+    EXPECT_CALL(assertionFailureHandlerMock, Call(testing::StrEq("fail"), testing::StrEq("file"), 42));
 
     // Manually calling handler because a debug build will call the standard assert instead of really_assert
     infra::HandleAssertionFailure("fail", "file", 42);
