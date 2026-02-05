@@ -7,4 +7,9 @@ namespace main_
     {
         services::SetGlobalTracerInstance(tracer);
     }
+
+    TracerOnIoOutputInfrastructure::~TracerOnIoOutputInfrastructure()
+    {
+        services::ClearGlobalTracerInstance();
+    }
 }

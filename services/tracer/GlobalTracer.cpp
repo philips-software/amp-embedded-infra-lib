@@ -22,6 +22,11 @@ namespace services
         globalTracerInstance = &tracer;
     }
 
+    void ClearGlobalTracerInstance()
+    {
+        globalTracerInstance = nullptr;
+    }
+
     Tracer& GlobalTracer()
     {
 #ifdef EMIL_HOST_BUILD
