@@ -7,7 +7,7 @@ package sesame_security;
 message SymmetricKeyMaterial
 {
     bytes key = 1 [(bytes_size) = 16];
-    bytes iv = 2 [(bytes_size) = 16];
+    bytes iv = 2 [(bytes_size) = 12];
 }
 
 message DiffieHellmanMaterial
