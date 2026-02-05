@@ -487,6 +487,26 @@ namespace services
                 return std::make_optional(HttpStatusCode::RequestRangeNotSatisfiable);
             case 417:
                 return std::make_optional(HttpStatusCode::ExpectationFailed);
+            case 421:
+                return std::make_optional(HttpStatusCode::MisdirectedRequest);
+            case 422:
+                return std::make_optional(HttpStatusCode::UnprocessableContent);
+            case 423:
+                return std::make_optional(HttpStatusCode::Locked);
+            case 424:
+                return std::make_optional(HttpStatusCode::FailedDependency);
+            case 425:
+                return std::make_optional(HttpStatusCode::TooEarly);
+            case 426:
+                return std::make_optional(HttpStatusCode::UpgradeRequired);
+            case 428:
+                return std::make_optional(HttpStatusCode::PreconditionRequired);
+            case 429:
+                return std::make_optional(HttpStatusCode::TooManyRequests);
+            case 431:
+                return std::make_optional(HttpStatusCode::RequestHeaderFieldsTooLarge);
+            case 451:
+                return std::make_optional(HttpStatusCode::UnavailableForLegalReasons);
             case 500:
                 return std::make_optional(HttpStatusCode::InternalServerError);
             case 501:
@@ -499,6 +519,16 @@ namespace services
                 return std::make_optional(HttpStatusCode::GatewayTimeOut);
             case 505:
                 return std::make_optional(HttpStatusCode::HttpVersionNotSupported);
+            case 506:
+                return std::make_optional(HttpStatusCode::VariantAlsoNegotiates);
+            case 507:
+                return std::make_optional(HttpStatusCode::InsuficientStorage);
+            case 508:
+                return std::make_optional(HttpStatusCode::LoopDetected);
+            case 510:
+                return std::make_optional(HttpStatusCode::NotExtended);
+            case 511:
+                return std::make_optional(HttpStatusCode::NetworkAuthenticationRequired);
         }
 
         return std::nullopt;
@@ -578,6 +608,26 @@ namespace services
                 return "RequestRangeNotSatisfiable";
             case services::HttpStatusCode::ExpectationFailed:
                 return "ExpectationFailed";
+            case services::HttpStatusCode::MisdirectedRequest:
+                return "MisdirectedRequest";
+            case services::HttpStatusCode::UnprocessableContent:
+                return "UnprocessableContent";
+            case services::HttpStatusCode::Locked:
+                return "Locked";
+            case services::HttpStatusCode::FailedDependency:
+                return "FailedDependency";
+            case services::HttpStatusCode::TooEarly:
+                return "TooEarly";
+            case services::HttpStatusCode::UpgradeRequired:
+                return "UpgradeRequired";
+            case services::HttpStatusCode::PreconditionRequired:
+                return "PreconditionRequired";
+            case services::HttpStatusCode::TooManyRequests:
+                return "TooManyRequests";
+            case services::HttpStatusCode::RequestHeaderFieldsTooLarge:
+                return "RequestHeaderFieldsTooLarge";
+            case services::HttpStatusCode::UnavailableForLegalReasons:
+                return "UnavailableForLegalReasons";
             case services::HttpStatusCode::InternalServerError:
                 return "InternalServerError";
             case services::HttpStatusCode::NotImplemented:
@@ -590,6 +640,16 @@ namespace services
                 return "GatewayTimeOut";
             case services::HttpStatusCode::HttpVersionNotSupported:
                 return "HttpVersionNotSupported";
+            case services::HttpStatusCode::VariantAlsoNegotiates:
+                return "VariantAlsoNegotiates";
+            case services::HttpStatusCode::InsuficientStorage:
+                return "InsuficientStorage";
+            case services::HttpStatusCode::LoopDetected:
+                return "LoopDetected";
+            case services::HttpStatusCode::NotExtended:
+                return "NotExtended";
+            case services::HttpStatusCode::NetworkAuthenticationRequired:
+                return "NetworkAuthenticationRequired";
         }
 
         std::abort();
