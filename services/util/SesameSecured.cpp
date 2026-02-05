@@ -176,7 +176,7 @@ namespace services
 
     void SesameSecured::IncreaseIv(infra::ByteRange iv) const
     {
-        for (auto i = iv.begin() + iv.size() / 2; i != iv.begin(); --i)
+        for (auto i = iv.begin() + iv.size(); i != iv.begin(); --i)
             if (++*std::prev(i) != 0)
                 break;
     }
