@@ -14,7 +14,12 @@ namespace
         : public testing::Test
     {
     public:
-        Listener listener;
+        ~ReallyAssertTest()
+        {
+            infra::RegisterAssertionFailureHandler(nullptr);
+        }
+
+        testing::MockFunction<void(const char* condition, const char* file, int line)> assertionFailureHandlerMock;
     };
 }
 
@@ -36,11 +41,12 @@ TEST_F(ReallyAssertTest, assert_failed_without_handler_does_nothing)
 
 TEST_F(ReallyAssertTest, assert_failed_with_handler_calls_handler)
 {
-    infra::RegisterAssertionFailureHandler([&](auto condition, auto file, auto line)
+    infra::RegisterAssertionFailureHandler([this](auto&&... args)
         {
-            listener.OnAssertionFailure(condition, file, line);
+            assertionFailureHandlerMock.Call(std::forward<decltype(args)>(args)...);
         });
-    EXPECT_CALL(listener, OnAssertionFailure(testing::_, testing::_, testing::_)).Times(1);
+
+    EXPECT_CALL(assertionFailureHandlerMock, Call(testing::StrEq("condition"), testing::StrEq("file"), 42));
 
     // Manually calling handler because a debug build will call the standard assert instead of really_assert
     infra::HandleAssertionFailure("condition", "file", 42);
@@ -58,18 +64,14 @@ TEST_F(ReallyAssertTest, assert_passed_with_message_aborts)
 
 TEST_F(ReallyAssertTest, assert_failed_recursive_call_skipped)
 {
-    infra::RegisterAssertionFailureHandler([&](auto condition, auto, auto)
+    infra::RegisterAssertionFailureHandler([this](auto&&... args)
         {
-            std::cout << condition << std::endl;
+            assertionFailureHandlerMock.Call(std::forward<decltype(args)>(args)...);
             infra::HandleAssertionFailure("recursive", "file", 42);
         });
 
-    testing::internal::CaptureStdout();
+    EXPECT_CALL(assertionFailureHandlerMock, Call(testing::StrEq("fail"), testing::StrEq("file"), 42));
+
     // Manually calling handler because a debug build will call the standard assert instead of really_assert
     infra::HandleAssertionFailure("fail", "file", 42);
-
-    std::string output = testing::internal::GetCapturedStdout();
-
-    EXPECT_THAT(output, testing::HasSubstr("fail"));
-    EXPECT_THAT(output, testing::Not(testing::HasSubstr("recursive")));
 }
