@@ -3,10 +3,13 @@
 
 #include "infra/event/AtomicTriggerScheduler.hpp"
 #include "infra/stream/AtomicByteQueue.hpp"
+#include "infra/stream/InputStream.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/Observer.hpp"
+#include "infra/util/WithStorage.hpp"
 #include "services/util/Stoppable.hpp"
+#include <cstddef>
 
 namespace hal
 {
@@ -67,6 +70,8 @@ namespace hal
 
         infra::AtomicByteQueueReader reader{ buffer };
         infra::AtomicTriggerScheduler scheduler;
+
+        infra::Function<void()> handleDataReceived;
     };
 }
 

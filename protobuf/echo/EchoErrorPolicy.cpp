@@ -1,15 +1,13 @@
 #include "protobuf/echo/EchoErrorPolicy.hpp"
 #include "infra/util/LogAndAbort.hpp"
+#include <cstdint>
 #include <cstdlib>
 
 namespace services
 {
-    const EchoErrorPolicyAbortOnMessageFormatError echoErrorPolicyAbortOnMessageFormatError;
-    const EchoErrorPolicyAbort echoErrorPolicyAbort;
-
-    void EchoErrorPolicyAbortOnMessageFormatError::MessageFormatError() const
+    void EchoErrorPolicyAbortOnMessageFormatError::MessageFormatError(const char* reason) const
     {
-        LOG_AND_ABORT("Echo message format error");
+        LOG_AND_ABORT("Echo message format error: %s", reason);
     }
 
     void EchoErrorPolicyAbortOnMessageFormatError::ServiceNotFound(uint32_t serviceId) const
