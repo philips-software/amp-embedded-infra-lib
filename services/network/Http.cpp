@@ -522,7 +522,7 @@ namespace services
             case 506:
                 return std::make_optional(HttpStatusCode::VariantAlsoNegotiates);
             case 507:
-                return std::make_optional(HttpStatusCode::InsuficientStorage);
+                return std::make_optional(HttpStatusCode::InsufficientStorage);
             case 508:
                 return std::make_optional(HttpStatusCode::LoopDetected);
             case 510:
@@ -642,8 +642,8 @@ namespace services
                 return "HttpVersionNotSupported";
             case services::HttpStatusCode::VariantAlsoNegotiates:
                 return "VariantAlsoNegotiates";
-            case services::HttpStatusCode::InsuficientStorage:
-                return "InsuficientStorage";
+            case services::HttpStatusCode::InsufficientStorage:
+                return "InsufficientStorage";
             case services::HttpStatusCode::LoopDetected:
                 return "LoopDetected";
             case services::HttpStatusCode::NotExtended:

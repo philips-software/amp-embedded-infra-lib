@@ -75,7 +75,7 @@ namespace services
         GatewayTimeOut = 504,
         HttpVersionNotSupported = 505,
         VariantAlsoNegotiates = 506,
-        InsuficientStorage = 507,
+        InsufficientStorage = 507,
         LoopDetected = 508,
         NotExtended = 510,
         NetworkAuthenticationRequired = 511
