@@ -159,10 +159,11 @@ link:https://en.wikipedia.org/wiki/Galois/Counter_Mode[`GCM`] mode. `AES-128-GCM
 key and an 128 bit Initialisation Vector (IV). Both directions of communication require their own unique key/IV pair.
 
 Each message is encrypted with `AES-128-GCM` with the key and IV as parameters. This results in
-a cyphertext of size equal to the size of the message, plus a 16 byte MAC. Since in `GCM` IVs may
-not be reused, the IV is incremented in a specific way to avoid using the same IV twice: After
-each message, treat the IV as a 128-bit unsigned Big Endian number, and add 2^64^ to it (discarding any overflow).
-This way, the protocol can securely handle 2^64^ messages each of size at most 2^64^ before a
+a cyphertext of size equal to the size of the message, plus a 16 byte MAC. Following the recommendation in
+NIST SP800-38D section 5.2.1.1, the length of the IV is 12 bytes. Since in `GCM` IVs may
+not be reused, the IV is incremented for each message to avoid using the same IV twice: After
+each message, treat the IV as a 96-bit unsigned Big Endian number, and add 1 to it (discarding any overflow).
+This way, the protocol can securely handle 2^96^ messages each of size at most 2^39^ bytes before a
 re-negotiation of keys is necessary.
 
 Key establishment is not a responsiblity of the Secured layer; but care must be taken that
@@ -233,8 +234,8 @@ of the presented public key. If this signature is correct, it computes the share
 and the peer's public key using the Diffie-Hellman scheme.
 Key expansion is performed on the shared secret to generate enough material for the required key/IV pairs in this
 way: link:https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-90Ar1.pdf[`HMAC-DRBG-SHA256`] is seeded
-with the shared secret, and generates 4 times 128 bits of data. The first 128
-bits of data is Key~A~, the next IV~A~, then Key~B~, then IV~B~. Both parties perform a lexicographical compare
+with the shared secret, and generates 2 times 128 + 96 bits of data. The first 128
+bits of data is Key~A~, the next 96 bits is IV~A~, then 128 bits for Key~B~, then 96 bits for IV~B~. Both parties perform a lexicographical compare
 of their Diffie-Hellman public keys. The party with public key that compares greater than the public key of its peer
 uses Key~A~ and IV~A~ for sending data, the other party uses Key~B~ and IV~B~ for sending data.
 
