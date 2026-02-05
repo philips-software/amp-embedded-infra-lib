@@ -65,6 +65,8 @@ namespace hal
         void Stop(const infra::Function<void()>& onDone) override;
 
     private:
+        void Stop();
+
         infra::AtomicByteQueue& buffer;
         SerialCommunication& delegate;
 

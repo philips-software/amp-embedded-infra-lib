@@ -28,7 +28,7 @@ namespace hal
 
     BufferedSerialCommunicationOnUnbuffered::~BufferedSerialCommunicationOnUnbuffered()
     {
-        Stop(infra::emptyFunction);
+        Stop();
     }
 
     void BufferedSerialCommunicationOnUnbuffered::SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion)
@@ -49,9 +49,14 @@ namespace hal
 
     void BufferedSerialCommunicationOnUnbuffered::Stop(const infra::Function<void()>& onDone)
     {
-        handleDataReceived = infra::emptyFunction;
-        delegate.ReceiveData(nullptr);
+        Stop();
 
         infra::EventDispatcher::Instance().Schedule(onDone);
+    }
+
+    void BufferedSerialCommunicationOnUnbuffered::Stop()
+    {
+        handleDataReceived = infra::emptyFunction;
+        delegate.ReceiveData(nullptr);
     }
 }
