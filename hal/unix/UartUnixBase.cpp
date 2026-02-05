@@ -73,7 +73,7 @@ namespace hal
         settings.c_oflag = 0;
         settings.c_oflag &= ~OPOST;
 
-        settings.c_cc[VTIME] = 1; // Wait for up to 100ms (1 deciseconds) for data to arrive
+        settings.c_cc[VTIME] = 1; // Wait for up to 100ms (1 decisecond) for data to arrive
         settings.c_cc[VMIN] = 0;
 
         settings.c_iflag &= ~(IXON | IXOFF | IXANY);
