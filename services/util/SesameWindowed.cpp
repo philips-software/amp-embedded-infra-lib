@@ -96,6 +96,10 @@ namespace services
         SetNextState();
     }
 
+    void SesameWindowed::PeekMessage(infra::StreamReaderWithRewinding& reader, std::size_t encodedSize)
+    {
+    }
+
     void SesameWindowed::ReceivedInitialize()
     {
         maxUsableBufferSize = otherAvailableWindow;

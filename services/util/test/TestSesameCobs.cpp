@@ -49,6 +49,18 @@ public:
         onSent();
     }
 
+    void ExpectPeekMessage(const std::vector<uint8_t>& expected, std::size_t encodedSize)
+    {
+        EXPECT_CALL(observer, PeekMessage(testing::_, encodedSize)).WillOnce(testing::Invoke([this, expected](infra::StreamReaderWithRewinding& reader, uint16_t encodedSize)
+            {
+                infra::DataInputStream::WithErrorPolicy stream(reader);
+                std::vector<uint8_t> data(stream.Available(), 0);
+                stream >> infra::MakeRange(data);
+
+                EXPECT_EQ(expected, data);
+            })).RetiresOnSaturation();
+    }
+
     void ExpectReceivedMessage(const std::vector<uint8_t>& expected, std::size_t encodedSize)
     {
         EXPECT_CALL(observer, ReceivedMessage(testing::_, encodedSize)).WillOnce(testing::Invoke([this, expected](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, uint16_t encodedSize)
@@ -58,7 +70,6 @@ public:
                 stream >> infra::MakeRange(data);
 
                 EXPECT_EQ(expected, data);
-                EXPECT_CALL(serial, Reader()).WillOnce(testing::ReturnRef(emptyReader)).RetiresOnSaturation();
             }));
     }
 
@@ -87,8 +98,13 @@ public:
     void ReceiveData(const std::vector<uint8_t>& data)
     {
         receivedDataReader.Storage() = data;
-        EXPECT_CALL(serial, Reader()).WillOnce(testing::ReturnRef(receivedDataReader)).RetiresOnSaturation();
-        EXPECT_CALL(serial, AckReceived());
+        EXPECT_CALL(serial, Reader()).WillRepeatedly(testing::ReturnRef(receivedDataReader));
+        EXPECT_CALL(serial, AckReceived()).WillRepeatedly(testing::Invoke([this]()
+            {
+                auto contents = receivedDataReader.Storage();
+                contents.erase(contents.begin(), contents.end() - receivedDataReader.Available());
+                infra::ReConstruct(receivedDataReader, std::in_place, contents);
+            }));
         serial.GetObserver().DataReceived();
     }
 
@@ -174,47 +190,52 @@ TEST_F(SesameCobsTest, send_two_packets)
 
 TEST_F(SesameCobsTest, receive_data)
 {
+    ExpectPeekMessage({ 1, 2, 3 }, 7);
     ExpectReceivedMessage({ 1, 2, 3, 4 }, 7);
     ReceiveData(infra::ConstructBin()({ 0, 5, 1, 2, 3, 4, 0 }).Vector());
 }
 
 TEST_F(SesameCobsTest, receive_data_with_0)
 {
+    ExpectPeekMessage({ 1, 0, 3 }, 7);
     ExpectReceivedMessage({ 1, 0, 3, 4 }, 7);
     ReceiveData(infra::ConstructBin()({ 0, 2, 1, 3, 3, 4, 0 }).Vector());
 }
 
 TEST_F(SesameCobsTest, receive_large_data)
 {
+    ExpectPeekMessage(std::vector<uint8_t>(3, 3), 284);
     ExpectReceivedMessage(std::vector<uint8_t>(280, 3), 284);
     ReceiveData(infra::ConstructBin()({ 0, 255 })(std::vector<uint8_t>(254, 3))({ 27 })(std::vector<uint8_t>(26, 3))({ 0 }).Vector());
 }
 
 TEST_F(SesameCobsTest, receive_interrupted_data)
 {
+    ExpectPeekMessage({ 1, 2 }, 5);
     ExpectReceivedMessage({ 1, 2 }, 5);
     ReceiveData(infra::ConstructBin()({ 0, 5, 1, 2, 0 }).Vector());
 }
 
 TEST_F(SesameCobsTest, receive_two_messages)
 {
+    ExpectPeekMessage({ 1, 2, 3 }, 7);
+    ExpectPeekMessage({ 5, 6 }, 4);
     ExpectReceivedMessageKeepReader({ 1, 2, 3, 4 }, 7);
     ReceiveData(infra::ConstructBin()({ 0, 5, 1, 2, 3, 4, 0, 3, 5, 6, 0 }).Vector());
 
     ExpectReceivedMessage({ 5, 6 }, 4);
-    EXPECT_CALL(serial, Reader()).WillOnce(testing::ReturnRef(receivedDataReader)).RetiresOnSaturation();
     EXPECT_CALL(serial, AckReceived());
     reader = nullptr;
 }
 
 TEST_F(SesameCobsTest, malformed_empty_message_is_discarded)
 {
-    EXPECT_CALL(serial, Reader()).WillOnce(testing::ReturnRef(emptyReader)).RetiresOnSaturation();
     ReceiveData(infra::ConstructBin()({ 0, 5, 0 }).Vector());
 }
 
 TEST_F(SesameCobsTest, malformed_message_is_forwarded)
 {
+    ExpectPeekMessage({ 1 }, 4);
     ExpectReceivedMessage({ 1 }, 4);
     ReceiveData(infra::ConstructBin()({ 0, 5, 1, 0 }).Vector());
 }
@@ -223,6 +244,8 @@ TEST_F(SesameCobsTest, no_new_received_message_after_stop)
 {
     infra::VerifyingFunction<void()> onDone;
 
+    ExpectPeekMessage({ 1, 2, 3 }, 7);
+    ExpectPeekMessage({ 5, 6 }, 4);
     ExpectReceivedMessageKeepReader({ 1, 2, 3, 4 }, 7);
     ReceiveData(infra::ConstructBin()({ 0, 5, 1, 2, 3, 4, 0, 3, 5, 6, 0 }).Vector());
 

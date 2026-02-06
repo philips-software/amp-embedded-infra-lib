@@ -51,6 +51,11 @@ namespace services
         receivedMessage.clear();
         receiveSizeEncoded = 0;
         currentMessageSize = 0;
+        nextPeekOverhead = 1;
+        peekOverheadPositionIsPseudo = true;
+        receivedPeekMessage.clear();
+        receiveSizePeekEncoded = 0;
+        currentPeekMessageSize = 0;
         receivedDataReader.OnAllocatable([]() {});
         sendReqestedSize.reset();
 
@@ -75,13 +80,27 @@ namespace services
     {
         receiving = true;
 
+        {
+            auto& reader = hal::BufferedSerialCommunicationObserver::Subject().Reader();
+            while (true)
+            {
+                auto data = reader.PeekContiguousRange(receivePeekIndex);
+                if (data.empty())
+                    break;
+                receivePeekIndex += data.size();
+                ReceivedPeekData(data);
+            }
+        }
+
         while (receivedDataReader.Allocatable())
         {
             auto& reader = hal::BufferedSerialCommunicationObserver::Subject().Reader();
             auto data = reader.ExtractContiguousRange(std::numeric_limits<uint32_t>::max());
             if (data.empty())
                 break;
+            auto dataSize = data.size();
             ReceivedData(data);
+            receivePeekIndex -= dataSize - data.size();
             reader.Rewind(reader.ConstructSaveMarker() - data.size());
             hal::BufferedSerialCommunicationObserver::Subject().AckReceived();
         }
@@ -170,6 +189,83 @@ namespace services
                         DataReceived();
                 });
             GetObserver().ReceivedMessage(receivedDataReader.Emplace(std::in_place, receivedMessage, messageSize), std::exchange(receiveSizeEncoded, 0));
+        }
+    }
+
+    void SesameCobs::ReceivedPeekData(infra::ConstByteRange& data)
+    {
+        while (!data.empty())
+        {
+            if (nextPeekOverhead == 1)
+                ExtractPeekOverhead(data);
+            else
+                ExtractPeekData(data);
+        }
+    }
+
+    void SesameCobs::ExtractPeekOverhead(infra::ConstByteRange& data)
+    {
+        nextPeekOverhead = data.front();
+
+        if (nextPeekOverhead == 0)
+            PeekMessageBoundary(data);
+        else
+        {
+            ++receiveSizePeekEncoded;
+            data.pop_front();
+            if (!peekOverheadPositionIsPseudo)
+                ReceivedPeekPayload(infra::MakeByteRange(messageDelimiter));
+            peekOverheadPositionIsPseudo = nextPeekOverhead == 255;
+        }
+    }
+
+    void SesameCobs::ExtractPeekData(infra::ConstByteRange& data)
+    {
+        infra::ConstByteRange preDelimiter;
+        infra::ConstByteRange postDelimiter;
+        std::tie(preDelimiter, postDelimiter) = infra::FindAndSplit(infra::Head(data, nextPeekOverhead - 1), messageDelimiter);
+
+        if (!preDelimiter.empty())
+            ForwardPeekData(preDelimiter, data);
+
+        if (!postDelimiter.empty())
+            PeekMessageBoundary(data);
+    }
+
+    void SesameCobs::ForwardPeekData(infra::ConstByteRange contents, infra::ConstByteRange& data)
+    {
+        ReceivedPeekPayload(contents);
+        data.pop_front(contents.size());
+        receiveSizePeekEncoded += contents.size();
+        nextPeekOverhead -= static_cast<uint8_t>(contents.size());
+    }
+
+    void SesameCobs::PeekMessageBoundary(infra::ConstByteRange& data)
+    {
+        ++receiveSizePeekEncoded;
+        FinishPeekMessage();
+        data.pop_front();
+        nextPeekOverhead = 1;
+        peekOverheadPositionIsPseudo = true;
+    }
+
+    void SesameCobs::ReceivedPeekPayload(infra::ConstByteRange data)
+    {
+        auto fittingData = infra::Head(data, receivedPeekMessage.max_size() - receivedPeekMessage.size());
+        receivedPeekMessage.insert(receivedPeekMessage.end(), fittingData.begin(), fittingData.end());
+        currentPeekMessageSize += data.size();
+    }
+
+    void SesameCobs::FinishPeekMessage()
+    {
+        auto messageSize = currentPeekMessageSize;
+        currentPeekMessageSize = 0;
+
+        if (messageSize != 0)
+        {
+            infra::LimitedStreamReaderWithRewinding::WithInput<infra::BoundedDequeInputStreamReader> reader(std::in_place, receivedPeekMessage, messageSize);
+            GetObserver().PeekMessage(reader, std::exchange(receiveSizePeekEncoded, 0));
+            receivedPeekMessage.clear();
         }
     }
 
