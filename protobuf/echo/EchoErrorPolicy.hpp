@@ -11,7 +11,7 @@ namespace services
         virtual ~EchoErrorPolicy() = default;
 
     public:
-        virtual void MessageFormatError() const = 0;
+        virtual void MessageFormatError(const char* reason) const = 0;
         virtual void ServiceNotFound(uint32_t serviceId) const = 0;
         virtual void MethodNotFound(uint32_t serviceId, uint32_t methodId) const = 0;
     };
@@ -20,7 +20,7 @@ namespace services
         : public EchoErrorPolicy
     {
     public:
-        void MessageFormatError() const override;
+        void MessageFormatError(const char* reason) const override;
         void ServiceNotFound(uint32_t serviceId) const override;
         void MethodNotFound(uint32_t serviceId, uint32_t methodId) const override;
     };
@@ -33,8 +33,8 @@ namespace services
         void MethodNotFound(uint32_t serviceId, uint32_t methodId) const override;
     };
 
-    extern const EchoErrorPolicyAbortOnMessageFormatError echoErrorPolicyAbortOnMessageFormatError;
-    extern const EchoErrorPolicyAbort echoErrorPolicyAbort;
+    const inline EchoErrorPolicyAbortOnMessageFormatError echoErrorPolicyAbortOnMessageFormatError;
+    const inline EchoErrorPolicyAbort echoErrorPolicyAbort;
 }
 
 #endif

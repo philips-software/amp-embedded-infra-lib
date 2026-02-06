@@ -7,6 +7,7 @@
 #include "protobuf/echo/test_doubles/ServiceStub.hpp"
 #include "services/network/EchoOnConnection.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
+#include "gmock/gmock.h"
 
 class EchoOnConnectionTest
     : public testing::Test
@@ -79,7 +80,7 @@ TEST_F(EchoOnConnectionTest, MessageFormatError_is_reported_when_message_is_not_
     auto readerPtr = infra::UnOwnedSharedPtr(stream.Reader());
 
     EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
-    EXPECT_CALL(errorPolicy, MessageFormatError());
+    EXPECT_CALL(errorPolicy, MessageFormatError(testing::StrEq("Format failed or contents not PartialProtoLengthDelimited")));
     EXPECT_CALL(connection, AckReceived());
     connection.Observer().DataReceived();
 }
@@ -90,7 +91,7 @@ TEST_F(EchoOnConnectionTest, MessageFormatError_is_reported_when_message_is_of_u
     auto readerPtr = infra::UnOwnedSharedPtr(stream.Reader());
 
     EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
-    EXPECT_CALL(errorPolicy, MessageFormatError());
+    EXPECT_CALL(errorPolicy, MessageFormatError(testing::StrEq("Format failed or contents not PartialProtoLengthDelimited")));
     EXPECT_CALL(connection, AckReceived());
     connection.Observer().DataReceived();
 }
@@ -101,7 +102,7 @@ TEST_F(EchoOnConnectionTest, MessageFormatError_is_reported_when_parameter_in_me
     auto readerPtr = infra::UnOwnedSharedPtr(stream.Reader());
 
     EXPECT_CALL(connection, ReceiveStream()).WillOnce(testing::Return(readerPtr));
-    EXPECT_CALL(errorPolicy, MessageFormatError());
+    EXPECT_CALL(errorPolicy, MessageFormatError(testing::StrEq("Deserializer failed")));
     EXPECT_CALL(connection, AckReceived());
     connection.Observer().DataReceived();
 }

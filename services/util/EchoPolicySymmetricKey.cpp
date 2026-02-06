@@ -14,7 +14,7 @@ namespace services
         }
     }
 
-    EchoPolicySymmetricKey::EchoPolicySymmetricKey(EchoWithPolicy& echo, EchoInitialization& echoInitialization, SesameSecured& secured, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    EchoPolicySymmetricKey::EchoPolicySymmetricKey(Echo& echo, EchoInitialization& echoInitialization, SesameSecured& secured, hal::SynchronousRandomDataGenerator& randomDataGenerator)
         : EchoInitializationObserver(echoInitialization)
         , SymmetricKeyEstablishment(echo)
         , SymmetricKeyEstablishmentProxy(echo)
@@ -61,7 +61,7 @@ namespace services
 
     void EchoPolicySymmetricKey::ActivateNewKeyMaterial(infra::ConstByteRange key, infra::ConstByteRange iv)
     {
-        secured.SetReceiveKey(Convert<16>(key), Convert<16>(iv));
+        secured.SetReceiveKey(Convert<16>(key), Convert<12>(iv));
         MethodDone();
     }
 

@@ -49,7 +49,7 @@ namespace services
         struct WithCryptoMbedTls;
 #endif
 
-        EchoPolicyDiffieHellman(const Crypto& crypto, EchoWithPolicy& echo, EchoInitialization& echoInitialization, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        EchoPolicyDiffieHellman(const Crypto& crypto, Echo& echo, EchoInitialization& echoInitialization, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
     private:
         // Implementation of SesameObserver
@@ -79,7 +79,7 @@ namespace services
 
         bool initializingKeys = true;
         bool busy = false;
-        std::optional<std::pair<std::array<uint8_t, 16>, std::array<uint8_t, 16>>> nextKeyPair;
+        std::optional<std::pair<SesameSecured::KeyType, SesameSecured::IvType>> nextKeyPair;
         infra::IntrusiveList<ServiceProxy> waitingProxies;
 
         infra::CreatorBase<EcSecP256r1DiffieHellman, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)>& keyExchangeCreator;
@@ -94,7 +94,7 @@ namespace services
     struct EchoPolicyDiffieHellman::WithCryptoMbedTls
         : public EchoPolicyDiffieHellman
     {
-        WithCryptoMbedTls(EchoWithPolicy& echo, EchoInitialization& echoInitialization, SesameSecured& secured, const EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        WithCryptoMbedTls(Echo& echo, EchoInitialization& echoInitialization, SesameSecured& secured, const EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
         infra::Creator<EcSecP256r1DiffieHellman, EcSecP256r1DiffieHellmanMbedTls, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)> keyExchange;
         EcSecP256r1DsaSignerMbedTls signer;

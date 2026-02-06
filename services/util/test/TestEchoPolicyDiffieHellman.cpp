@@ -102,8 +102,8 @@ public:
     testing::StrictMock<services::SesameMock> lowerRight;
     bool lowerLeftRequest = false;
     bool lowerRightRequest = false;
-    std::array<uint8_t, services::SesameSecured::keySize> key{ 1, 2 };
-    std::array<uint8_t, services::SesameSecured::blockSize> iv{ 1, 3 };
+    services::SesameSecured::KeyType key{ 1, 2 };
+    services::SesameSecured::IvType iv{ 1, 3 };
     services::SesameSecured::WithCryptoMbedTls::WithBuffers<100> securedLeft{ lowerLeft, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
     services::SesameSecured::WithCryptoMbedTls::WithBuffers<100> securedRight{ lowerRight, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
 

@@ -5,7 +5,7 @@
 #include "services/network/test_doubles/AddressMock.hpp"
 #include "services/network/test_doubles/DatagramMock.hpp"
 #include "services/network/test_doubles/SntpMock.hpp"
-#include <gmock/gmock.h>
+#include "gmock/gmock.h"
 
 class SntpClientTest
     : public testing::Test

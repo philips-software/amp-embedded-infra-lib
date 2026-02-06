@@ -65,8 +65,8 @@ public:
         sentData.clear();
     }
 
-    std::array<uint8_t, services::SesameSecured::keySize> key{ 1, 2 };
-    std::array<uint8_t, services::SesameSecured::blockSize> iv{ 1, 3 };
+    services::SesameSecured::KeyType key{ 1, 2 };
+    services::SesameSecured::IvType iv{ 1, 3 };
 
     testing::StrictMock<services::SesameMock> lower;
     services::SesameSecured::WithCryptoMbedTls::WithBuffers<64> secured{ lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
@@ -127,8 +127,8 @@ TEST_F(SesameSecuredTest, key_change_to_different_key_results_in_different_encry
     auto first = sentData;
     Receive("abcd");
 
-    std::array<uint8_t, services::SesameSecured::keySize> key2{ 1, 2, 1 };
-    std::array<uint8_t, services::SesameSecured::blockSize> iv2{ 1, 3, 1 };
+    services::SesameSecured::KeyType key2{ 1, 2, 1 };
+    services::SesameSecured::IvType iv2{ 1, 3, 1 };
     secured.SetSendKey(key2, iv2);
 
     Send("abcd");
@@ -143,8 +143,8 @@ TEST_F(SesameSecuredTest, initialization_results_in_default_keys)
     auto first = sentData;
     Receive("abcd");
 
-    std::array<uint8_t, services::SesameSecured::keySize> key2{ 1, 2, 1 };
-    std::array<uint8_t, services::SesameSecured::blockSize> iv2{ 1, 3, 1 };
+    services::SesameSecured::KeyType key2{ 1, 2, 1 };
+    services::SesameSecured::IvType iv2{ 1, 3, 1 };
     secured.SetSendKey(key2, iv2);
 
     EXPECT_CALL(upper, Initialized());
@@ -163,9 +163,29 @@ TEST_F(SesameSecuredTest, damaged_message_does_not_propagate)
 
     sentData[7] = 7;
 
-    EXPECT_CALL(integrityObserver, IntegrityCheckFailed());
     EXPECT_CALL(upper, ReceivedMessage(testing::_)).Times(0);
     ReceivedMessage(sentData);
+
+    Send("efgh");
+    EXPECT_CALL(integrityObserver, IntegrityCheckFailed());
+    ReceivedMessage(sentData);
+}
+
+TEST_F(SesameSecuredTest, truncated_message_followed_by_init_is_not_reported)
+{
+    Send("abcd");
+
+    sentData.resize(sentData.size() - 1);
+
+    EXPECT_CALL(upper, ReceivedMessage(testing::_)).Times(0);
+    ReceivedMessage(sentData);
+
+    EXPECT_CALL(upper, Initialized());
+    lower.GetObserver().Initialized();
+    sentData.clear();
+
+    Send("efgh");
+    Receive("efgh");
 }
 
 TEST_F(SesameSecuredTest, short_message_does_not_propagate)

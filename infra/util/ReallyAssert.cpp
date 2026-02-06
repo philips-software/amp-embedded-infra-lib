@@ -1,10 +1,16 @@
 #include "infra/util/ReallyAssert.hpp"
+#include "infra/util/Function.hpp"
 #include "infra/util/LogAndAbort.hpp"
+#include <atomic>
+#include <utility>
 
 #if INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED
 namespace infra
 {
-    static AssertionFailureHandler customHandler = nullptr;
+    namespace
+    {
+        AssertionFailureHandler customHandler = nullptr;
+    }
 
     void RegisterAssertionFailureHandler(AssertionFailureHandler handler)
     {
@@ -13,6 +19,16 @@ namespace infra
 
     void HandleAssertionFailure(const char* condition, const char* file, int line)
     {
+        static std::atomic<bool> busy{ false };
+
+        if (busy.exchange(true))
+            return;
+
+        infra::ExecuteOnDestruction clearBusy([]
+            {
+                busy = false;
+            });
+
         if (customHandler)
             customHandler(condition, file, line);
         else if constexpr (INFRA_UTIL_LOG_AND_ABORT_ENABLED)

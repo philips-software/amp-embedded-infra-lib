@@ -5,6 +5,7 @@
 #include "hal/unix/UartUnixBase.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/Function.hpp"
+#include <array>
 #include <atomic>
 #include <cstdint>
 #include <mutex>
@@ -31,7 +32,7 @@ namespace hal
         void Read();
 
     private:
-        uint8_t buffer;
+        std::array<uint8_t, 128> buffer;
         std::atomic<bool> running{ false };
         std::thread readThread;
         std::mutex receivedDataMutex;

@@ -75,6 +75,7 @@ namespace services
 
     void SesameSecured::Initialized()
     {
+        integrityCheckFailed = false;
         SetSendKey(initialSendKey, initialSendIv);
         SetReceiveKey(initialReceiveKey, initialReceiveIv);
         GetObserver().Initialized();
@@ -105,6 +106,18 @@ namespace services
 
     void SesameSecured::ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
+        if (integrityCheckFailed)
+        {
+            // If a message with a failed integrity check is followed by another message instead of a reset,
+            // then the integrity failure was not due to a truncated message
+            IntegritySubject::NotifyObservers([](auto& observer)
+                {
+                    observer.IntegrityCheckFailed();
+                });
+
+            return;
+        }
+
         infra::DataInputStream::WithErrorPolicy stream(*reader);
 
         if (stream.Available() < blockSize)
@@ -137,10 +150,7 @@ namespace services
 
         if (numSame != computedMac.size())
         {
-            IntegritySubject::NotifyObservers([](auto& observer)
-                {
-                    observer.IntegrityCheckFailed();
-                });
+            integrityCheckFailed = true;
             return;
         }
 
@@ -166,7 +176,7 @@ namespace services
 
     void SesameSecured::IncreaseIv(infra::ByteRange iv) const
     {
-        for (auto i = iv.begin() + iv.size() / 2; i != iv.begin(); --i)
+        for (auto i = iv.begin() + iv.size(); i != iv.begin(); --i)
             if (++*std::prev(i) != 0)
                 break;
     }
