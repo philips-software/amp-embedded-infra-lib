@@ -1,6 +1,7 @@
 #include "args.hxx"
 #include "hal/generic/FileSystemGeneric.hpp"
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
+#include "hal/generic/UartGeneric.hpp"
 #include "infra/stream/IoOutputStream.hpp"
 #include "infra/stream/StdVectorInputStream.hpp"
 #include "infra/syntax/Json.hpp"
@@ -13,14 +14,16 @@
 #include "services/util/EchoPolicyDiffieHellman.hpp"
 #include "services/util/EchoPolicySymmetricKey.hpp"
 #include "services/util/SesameCobs.hpp"
+
+#ifdef PeekMessage
+#undef PeekMessage
+#endif
+
 #include "services/util/SesameSecured.hpp"
 #include "services/util/SesameWindowed.hpp"
 #include <deque>
 #include <fstream>
 #include <iostream>
-// clang-format off
-#include "hal/generic/UartGeneric.hpp"  // Don't include before SesameWindowed.hpp due to windows.h #defining PeekMessage
-// clang-format on
 
 class ConsoleClientUart
     : public application::ConsoleObserver
