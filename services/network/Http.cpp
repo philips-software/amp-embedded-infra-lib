@@ -2,7 +2,6 @@
 #include "infra/stream/StringInputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/util/Tokenizer.hpp"
-#include <string>
 
 namespace services
 {
@@ -206,12 +205,9 @@ namespace services
             infra::Tokenizer tokenizer(statusLine, ' ');
 
             auto versionValid = HttpVersionValid(tokenizer.Token(0));
-            auto optionalStatusCode = HttpStatusCodeFromString(tokenizer.Token(1));
-            if (versionValid && optionalStatusCode)
-            {
-                statusCode = *optionalStatusCode;
+            auto statusCode = HttpStatusCodeFromString(tokenizer.Token(1));
+            if (versionValid)
                 observer.StatusAvailable(statusCode, statusLine);
-            }
             else
             {
                 error = true;
@@ -409,7 +405,7 @@ namespace services
         return std::nullopt;
     }
 
-    std::optional<HttpStatusCode> HttpStatusCodeFromString(infra::BoundedConstString statusCode)
+    HttpStatusCode HttpStatusCodeFromString(infra::BoundedConstString statusCode)
     {
         std::underlying_type<services::HttpStatusCode>::type value = 0;
 
@@ -537,7 +533,7 @@ namespace services
                 return "NetworkAuthenticationRequired";
         }
 
-        return "";
+        return "Unknown HTTP status";
     }
 }
 
@@ -559,11 +555,10 @@ namespace infra
 
     TextOutputStream& operator<<(TextOutputStream& stream, services::HttpStatusCode statusCode)
     {
-        auto statusString = services::HttpStatusCodeToString(statusCode);
-        if (statusString.empty())
-            stream << static_cast<int>(statusCode);
-        else
-            stream << statusString;
+        auto status = services::HttpStatusCodeToString(statusCode);
+        stream << status;
+        if (status == "Unknown HTTP status")
+            stream << ": " << static_cast<int>(statusCode);
 
         return stream;
     }

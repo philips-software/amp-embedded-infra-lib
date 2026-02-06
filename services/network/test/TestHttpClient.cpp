@@ -107,7 +107,7 @@ INSTANTIATE_TEST_SUITE_P(HttpStatusMessageTest, HttpStatusMessageFormattingTest,
         HttpStatusCodeWithString{ services::HttpStatusCode::LoopDetected, "LoopDetected" },
         HttpStatusCodeWithString{ services::HttpStatusCode::NotExtended, "NotExtended" },
         HttpStatusCodeWithString{ services::HttpStatusCode::NetworkAuthenticationRequired, "NetworkAuthenticationRequired" },
-        HttpStatusCodeWithString{ static_cast<services::HttpStatusCode>(900), "900" }));
+        HttpStatusCodeWithString{ static_cast<services::HttpStatusCode>(900), "Unknown HTTP status: 900" }));
 
 struct HttpStatusCodeAndString
 {

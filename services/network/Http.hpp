@@ -193,7 +193,7 @@ namespace services
     infra::BoundedConstString HttpVerbToString(HttpVerb verb);
     std::optional<HttpVerb> HttpVerbFromString(infra::BoundedConstString verb);
 
-    std::optional<HttpStatusCode> HttpStatusCodeFromString(infra::BoundedConstString statusCode);
+    HttpStatusCode HttpStatusCodeFromString(infra::BoundedConstString statusCode);
     infra::BoundedConstString HttpStatusCodeToString(services::HttpStatusCode statusCode);
 }
 
