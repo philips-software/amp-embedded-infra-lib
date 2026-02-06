@@ -162,6 +162,7 @@ namespace services
         const uint16_t ownBufferSize;
         const uint16_t releaseWindowSize;
         bool initialized = false;
+        bool discardUntilInit = false;
         infra::SharedPtr<infra::StreamReaderWithRewinding> receivedMessageReader;
         infra::AccessedBySharedPtr readerAccess;
         uint16_t otherAvailableWindow{ 0 };

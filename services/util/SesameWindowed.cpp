@@ -64,6 +64,7 @@ namespace services
         switch (stream.Extract<Operation>())
         {
             case Operation::init:
+                discardUntilInit = false;
                 otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
                 ReceivedInit(otherAvailableWindow);
                 sendInitResponse = true;
@@ -77,12 +78,7 @@ namespace services
                 break;
             case Operation::releaseWindow:
                 if (initialized)
-                {
                     releasedWindow += encodedSize;
-                    auto oldOtherAvailableWindow = otherAvailableWindow;
-                    otherAvailableWindow += stream.Extract<infra::LittleEndian<uint16_t>>();
-                    ReceivedReleaseWindow(oldOtherAvailableWindow, otherAvailableWindow);
-                }
                 break;
             case Operation::message:
                 if (initialized)
@@ -98,6 +94,29 @@ namespace services
 
     void SesameWindowed::PeekMessage(infra::StreamReaderWithRewinding& reader, std::size_t encodedSize)
     {
+        infra::DataInputStream::WithErrorPolicy stream(reader, infra::noFail);
+        switch (stream.Extract<Operation>())
+        {
+            case Operation::init:
+                {
+                    // No need to send any data until the init is processed.
+                    // Discard anything while normal processing continues.
+                    discardUntilInit = true;
+                    break;
+                }
+            case Operation::initResponse:
+                break;
+            case Operation::releaseWindow:
+                if (initialized)
+                {
+                    auto oldOtherAvailableWindow = otherAvailableWindow;
+                    otherAvailableWindow += stream.Extract<infra::LittleEndian<uint16_t>>();
+                    ReceivedReleaseWindow(oldOtherAvailableWindow, otherAvailableWindow);
+                }
+                break;
+            case Operation::message:
+                break;
+        }
     }
 
     void SesameWindowed::ReceivedInitialize()
@@ -129,9 +148,9 @@ namespace services
                 if (receivedMessageReader == nullptr)
                     state.Emplace<StateSendingInitResponse>(*this).Request();
             }
-            else if (requestedSendMessageSize != std::nullopt && SesameEncodedObserver::Subject().MessageSize(*requestedSendMessageSize + 1) + releaseWindowSize <= otherAvailableWindow)
+            else if (requestedSendMessageSize != std::nullopt && (discardUntilInit || SesameEncodedObserver::Subject().MessageSize(*requestedSendMessageSize + 1) + releaseWindowSize <= otherAvailableWindow))
                 state.Emplace<StateSendingMessage>(*this).Request();
-            else if (releasedWindow > releaseWindowSize && releaseWindowSize <= otherAvailableWindow)
+            else if (!discardUntilInit && releasedWindow > releaseWindowSize && releaseWindowSize <= otherAvailableWindow)
                 state.Emplace<StateSendingReleaseWindow>(*this).Request();
             else
                 state.Emplace<StateOperational>(*this);
@@ -243,7 +262,13 @@ namespace services
 
     void SesameWindowed::StateSendingMessage::Request()
     {
-        communication.SesameEncodedObserver::Subject().RequestSendMessage(requestedSize);
+        if (communication.discardUntilInit)
+        {
+            communication.requestedSendMessageSize.reset();
+            MessageSent(0);
+        }
+        else
+            communication.SesameEncodedObserver::Subject().RequestSendMessage(requestedSize);
     }
 
     void SesameWindowed::StateSendingMessage::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
