@@ -282,7 +282,7 @@ service GapPeripheralResponse
 
 
     rpc PairingSuccessfullyCompleted(Nothing) returns(Nothing) { option(method_id) = 5; }
-    rpc PairingFailed(PairingStatus) returns(Nothing) { option(method_id) = 6; }
+    rpc PairingFailed(PairingErrorType) returns(Nothing) { option(method_id) = 6; }
 
 
     rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 7; }
