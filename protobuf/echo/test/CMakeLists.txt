@@ -5,6 +5,7 @@ emil_add_test(protobuf.echo_test)
 protocol_buffer_echo_cpp(protobuf.echo_test TestMessages.proto)
 
 target_sources(protobuf.echo_test PRIVATE
+    TestEchoOnStreams.cpp
     TestProtoMessageReceiver.cpp
     TestProtoMessageSender.cpp
     TestServiceForwarder.cpp

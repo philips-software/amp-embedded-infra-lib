@@ -2,6 +2,7 @@
 #include "infra/util/ByteRange.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include <string_view>
 #include <type_traits>
 
 TEST(BoundedStringTest, TestConstructedEmpty)
@@ -789,4 +790,150 @@ TEST(BoundedStringTest, TestStringLiteral)
     EXPECT_THAT(string, testing::Eq("abc"_s));
 
     static_assert(std::is_same_v<decltype(string), infra::BoundedConstString>);
+}
+
+TEST(BoundedStringTest, ConstexprConstruct)
+{
+    using namespace std::string_view_literals;
+
+    {
+        // BoundedStringBase<T>::BoundedStringBase();
+        constexpr infra::BoundedConstString s1;
+        static_assert(s1.size() == 0);
+
+        constexpr infra::BoundedString s2;
+        static_assert(s2.size() == 0);
+    }
+
+    {
+        // BoundedStringBase<T>::BoundedStringBase(T* s, size_type count);
+        constexpr infra::BoundedConstString s1{ "abc", 3 };
+        static_assert(s1.size() == 3);
+        static_assert(s1[0] == 'a');
+        static_assert(s1[1] == 'b');
+
+        constexpr infra::BoundedConstString s2{ "abc\0", 4 };
+        static_assert(s2.size() == 4);
+        static_assert(s2[0] == 'a');
+        static_assert(s2[3] == '\0');
+
+        static constexpr std::array<char, 5> data = { 'a', 'b', 'c', 'd', 'e' };
+        constexpr infra::BoundedConstString s3{ data.data(), 5 };
+        static_assert(s3.size() == 5);
+        static_assert(s3[0] == 'a');
+        static_assert(s3[4] == 'e');
+    }
+
+    {
+        // BoundedStringBase<T>::BoundedStringBase(std::string_view s);
+        constexpr infra::BoundedConstString s1{ "abc"sv };
+        static_assert(s1.size() == 3);
+        static_assert(s1[0] == 'a');
+        static_assert(s1[1] == 'b');
+
+        constexpr infra::BoundedConstString s2{ "abc\0"sv };
+        static_assert(s2.size() == 4);
+        static_assert(s2[0] == 'a');
+        static_assert(s2[3] == '\0');
+    }
+    {
+        // constexpr BoundedStringBase(const BoundedStringBase& other)
+        constexpr infra::BoundedConstString original{ "abc"sv };
+        constexpr infra::BoundedConstString copy{ original };
+        static_assert(copy.size() == 3);
+        static_assert(copy[0] == 'a');
+    }
+}
+
+TEST(BoundedStringTest, ConstexprAccess)
+{
+    using namespace std::string_view_literals;
+
+    constexpr auto s = "abc"sv;
+    constexpr infra::BoundedConstString string{ s };
+
+    static_assert(!string.empty());
+    static_assert(string.full());
+    static_assert(string.size() == 3);
+    static_assert(string.max_size() == 3);
+    static_assert(string[0] == 'a');
+    static_assert(string[1] == 'b');
+    static_assert(string[2] == 'c');
+    static_assert(string.front() == 'a');
+    static_assert(string.back() == 'c');
+    static_assert(string.data() == s.data());
+}
+
+TEST(BoundedStringTest, ConstexprComparison)
+{
+    using namespace std::string_view_literals;
+
+    constexpr infra::BoundedConstString string1{ "abc"sv };
+    constexpr infra::BoundedConstString string2{ "abc"sv };
+    constexpr infra::BoundedConstString string3{ "abd"sv };
+
+    static_assert(string1.compare(string2) == 0);
+    static_assert(string1.compare(string3) < 0);
+    static_assert(string3.compare(string1) > 0);
+
+#if __cplusplus >= 202002L
+    // std::equal cannot be tested with C++17
+    static_assert(string1 == string2);
+    static_assert(string1 != string3);
+    static_assert(!(string1 != string2));
+    static_assert(string1 < string3);
+    static_assert(!(string3 < string1));
+    static_assert(string3 > string1);
+    static_assert(!(string1 > string2));
+    static_assert(string1 >= string2);
+    static_assert(string3 >= string1);
+    static_assert(!(string1 >= string3));
+    static_assert(string1 <= string2);
+    static_assert(string2 <= string3);
+#endif
+}
+
+TEST(BoundedStringTest, ConstexprIteration)
+{
+    using namespace std::string_view_literals;
+
+    constexpr infra::BoundedConstString string{ "abc"sv };
+
+    // Test iterator
+    {
+        constexpr auto begin = string.begin();
+        constexpr auto end = string.end();
+        static_assert(begin != end);
+        static_assert(*begin == 'a');
+
+        constexpr auto iter1 = begin + 1;
+        static_assert(iter1 != end);
+        static_assert(*iter1 == 'b');
+
+        constexpr auto iter2 = iter1 + 1;
+        static_assert(iter2 != end);
+        static_assert(*iter2 == 'c');
+
+        constexpr auto iter3 = iter2 + 1;
+        static_assert(iter3 == end);
+    }
+
+    // Test const_iterator
+    {
+        constexpr auto begin = string.cbegin();
+        constexpr auto end = string.cend();
+        static_assert(begin != end);
+        static_assert(*begin == 'a');
+
+        constexpr auto iter1 = begin + 1;
+        static_assert(iter1 != end);
+        static_assert(*iter1 == 'b');
+
+        constexpr auto iter2 = iter1 + 1;
+        static_assert(iter2 != end);
+        static_assert(*iter2 == 'c');
+
+        constexpr auto iter3 = iter2 + 1;
+        static_assert(iter3 == end);
+    }
 }

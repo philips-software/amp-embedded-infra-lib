@@ -4,7 +4,7 @@
 #include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/util/ConstructBin.hpp"
 #include "protobuf/echo/ProtoMessageSender.hpp"
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 
 class ProtoMessageSenderTest
     : public testing::Test

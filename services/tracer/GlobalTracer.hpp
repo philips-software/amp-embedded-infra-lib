@@ -6,6 +6,8 @@
 namespace services
 {
     void SetGlobalTracerInstance(Tracer& tracer);
+    void ClearGlobalTracerInstance();
+
     Tracer& GlobalTracer();
 }
 

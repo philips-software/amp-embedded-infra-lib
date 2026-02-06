@@ -2,22 +2,30 @@
 #define PROTOBUF_ECHO_ON_STREAMS_HPP
 
 #include "infra/stream/BufferingStreamReader.hpp"
+#include "infra/stream/InputStream.hpp"
+#include "infra/stream/LimitedInputStream.hpp"
+#include "infra/stream/OutputStream.hpp"
 #include "infra/util/BoundedDeque.hpp"
-#include "infra/util/Function.hpp"
+#include "infra/util/IntrusiveList.hpp"
+#include "infra/util/SharedOptional.hpp"
+#include "infra/util/SharedPtr.hpp"
 #include "protobuf/echo/Echo.hpp"
+#include "protobuf/echo/EchoErrorPolicy.hpp"
 #include "protobuf/echo/Serialization.hpp"
+#include <cstddef>
+#include <cstdint>
 #include <optional>
 
 namespace services
 {
     class EchoOnStreams
-        : public EchoWithPolicy
+        : public Echo
     {
     public:
         explicit EchoOnStreams(services::MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
         ~EchoOnStreams();
 
-        // Implementation of EchoWithPolicy
+        // Implementation of Echo
         void SetPolicy(EchoPolicy& policy) override;
         void RequestSend(ServiceProxy& serviceProxy) override;
         void ServiceDone() override;
@@ -39,7 +47,7 @@ namespace services
     private:
         void TryGrantSend();
 
-        void DataReceived();
+        void DataReceivedInReader();
         void StartReceiveMessage();
         void ContinueReceiveMessage();
         void StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size);

@@ -42,8 +42,9 @@ namespace services
     public:
         static constexpr std::size_t keySize = 16;
         static constexpr std::size_t blockSize = 16;
+        static constexpr std::size_t ivSize = 12;
         using KeyType = std::array<uint8_t, keySize>;
-        using IvType = std::array<uint8_t, blockSize>;
+        using IvType = std::array<uint8_t, ivSize>;
 
         template<std::size_t Size>
         static constexpr std::size_t encodedMessageSize = Size + blockSize;
@@ -97,8 +98,8 @@ namespace services
         AesGcmEncryption& receiveEncryption;
         infra::BoundedVector<uint8_t>& sendBuffer;
         std::array<uint8_t, keySize> initialSendKey;
-        std::array<uint8_t, blockSize> initialSendIv;
-        std::array<uint8_t, blockSize> sendIv;
+        std::array<uint8_t, ivSize> initialSendIv;
+        std::array<uint8_t, ivSize> sendIv;
         infra::SharedPtr<infra::StreamWriter> sendWriter;
         infra::NotifyingSharedOptional<infra::LimitedStreamWriter::WithOutput<infra::BoundedVectorStreamWriter>> sendBufferWriter{ [this]()
             {
@@ -108,8 +109,8 @@ namespace services
 
         infra::BoundedVector<uint8_t>& receiveBuffer;
         std::array<uint8_t, keySize> initialReceiveKey;
-        std::array<uint8_t, blockSize> initialReceiveIv;
-        std::array<uint8_t, blockSize> receiveIv;
+        std::array<uint8_t, ivSize> initialReceiveIv;
+        std::array<uint8_t, ivSize> receiveIv;
         infra::SharedOptional<ReceiveBufferReader> receiveBufferReader;
         bool integrityCheckFailed = false;
     };

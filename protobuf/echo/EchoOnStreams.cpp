@@ -1,12 +1,29 @@
 #include "protobuf/echo/EchoOnStreams.hpp"
+#include "infra/stream/InputStream.hpp"
+#include "infra/stream/OutputStream.hpp"
+#include "infra/stream/StreamErrorPolicy.hpp"
+#include "infra/syntax/ProtoFormatter.hpp"
+#include "infra/syntax/ProtoParser.hpp"
+#include "infra/util/Function.hpp"
+#include "infra/util/ReallyAssert.hpp"
+#include "infra/util/SharedPtr.hpp"
+#include "protobuf/echo/Echo.hpp"
+#include "protobuf/echo/EchoErrorPolicy.hpp"
+#include "protobuf/echo/Serialization.hpp"
+#include <cassert>
+#include <cstdint>
+#include <limits>
+#include <optional>
+#include <utility>
+#include <variant>
 
 namespace services
 {
     EchoPolicy EchoOnStreams::defaultPolicy;
 
     EchoOnStreams::EchoOnStreams(services::MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy)
-        : serializerFactory(serializerFactory)
-        , errorPolicy(errorPolicy)
+        : serializerFactory{ serializerFactory }
+        , errorPolicy{ errorPolicy }
     {}
 
     EchoOnStreams::~EchoOnStreams()
@@ -35,7 +52,7 @@ namespace services
         ReleaseDeserializer();
 
         if (readerPtr != nullptr)
-            DataReceived();
+            DataReceivedInReader();
     }
 
     void EchoOnStreams::CancelRequestSend(ServiceProxy& serviceProxy)
@@ -62,7 +79,7 @@ namespace services
         bufferedReader.emplace(receiveBuffer, *readerPtr);
 
         if (!delayDataReceived)
-            DataReceived();
+            DataReceivedInReader();
         else
             delayedDataReceived = true;
     }
@@ -141,7 +158,7 @@ namespace services
         }
     }
 
-    void EchoOnStreams::DataReceived()
+    void EchoOnStreams::DataReceivedInReader()
     {
         if (limitedReader != std::nullopt && readerPtr != nullptr)
             ContinueReceiveMessage();
@@ -180,14 +197,14 @@ namespace services
             readerPtr = nullptr;
         }
         else if (formatErrorPolicy.Failed() || !std::holds_alternative<infra::PartialProtoLengthDelimited>(contents))
-            errorPolicy.MessageFormatError();
+            errorPolicy.MessageFormatError("Format failed or contents not PartialProtoLengthDelimited");
         else
         {
             limitedReader.emplace(*bufferedReader, std::get<infra::PartialProtoLengthDelimited>(contents).length);
             StartMethod(serviceId, methodId, std::get<infra::PartialProtoLengthDelimited>(contents).length);
 
             if (formatErrorPolicy.Failed())
-                errorPolicy.MessageFormatError();
+                errorPolicy.MessageFormatError("Format failed");
         }
     }
 
@@ -208,7 +225,7 @@ namespace services
                     auto& self = *this;
                     LimitedReaderDone();
                     // LimitedReaderDone() may result in limitedReaderAccess' completion callback being reset, which invalidates the saved this pointer
-                    self.DataReceived();
+                    self.DataReceivedInReader();
                 });
         else
             LimitedReaderDone();
@@ -243,7 +260,7 @@ namespace services
             limitedReader.reset();
             if (methodDeserializer->Failed())
             {
-                errorPolicy.MessageFormatError();
+                errorPolicy.MessageFormatError("Deserializer failed");
                 ReleaseDeserializer();
             }
             else
@@ -254,7 +271,7 @@ namespace services
         if (delayedDataReceived)
         {
             delayedDataReceived = false;
-            DataReceived();
+            DataReceivedInReader();
         }
     }
 }

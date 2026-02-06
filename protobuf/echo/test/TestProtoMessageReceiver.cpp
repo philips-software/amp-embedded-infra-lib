@@ -1,7 +1,7 @@
 #include "generated/echo/TestMessages.pb.hpp"
 #include "infra/stream/StdVectorInputStream.hpp"
 #include "protobuf/echo/ProtoMessageReceiver.hpp"
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 
 TEST(ProtoMessageReceiverTest, parse_bool)
 {
