@@ -80,21 +80,19 @@ namespace services
     {
         receiving = true;
 
+        auto& reader = hal::BufferedSerialCommunicationObserver::Subject().Reader();
+
+        while (true)
         {
-            auto& reader = hal::BufferedSerialCommunicationObserver::Subject().Reader();
-            while (true)
-            {
-                auto data = reader.PeekContiguousRange(receivePeekIndex);
-                if (data.empty())
-                    break;
-                receivePeekIndex += data.size();
-                ReceivedPeekData(data);
-            }
+            auto data = reader.PeekContiguousRange(receivePeekIndex);
+            if (data.empty())
+                break;
+            receivePeekIndex += data.size();
+            ReceivedPeekData(data);
         }
 
         while (receivedDataReader.Allocatable())
         {
-            auto& reader = hal::BufferedSerialCommunicationObserver::Subject().Reader();
             auto data = reader.ExtractContiguousRange(std::numeric_limits<uint32_t>::max());
             if (data.empty())
                 break;
