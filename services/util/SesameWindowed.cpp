@@ -281,14 +281,6 @@ namespace services
         communication.GetObserver().SendMessageStreamAvailable(std::move(writer));
     }
 
-    void SesameWindowed::StateSendingMessage::MessageSent(std::size_t encodedSize)
-    {
-        communication.otherAvailableWindow -= encodedSize;
-
-        communication.sending = false;
-        communication.SetNextState();
-    }
-
     SesameWindowed::StateSendingReleaseWindow::StateSendingReleaseWindow(SesameWindowed& communication)
         : State(communication)
     {

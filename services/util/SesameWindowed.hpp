@@ -142,7 +142,6 @@ namespace services
 
             void Request() override;
             void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-            void MessageSent(std::size_t encodedSize) override;
 
         private:
             std::size_t requestedSize;
