@@ -31,7 +31,7 @@ namespace
     };
 }
 
-class FlashTest
+class FlashEchoTest
     : public testing::Test
 {
 public:
@@ -45,7 +45,7 @@ public:
     infra::Function<void()> onDone;
 };
 
-TEST_F(FlashTest, Read)
+TEST_F(FlashEchoTest, Read)
 {
     EXPECT_CALL(delegate, ReadBuffer(testing::_, 1234, testing::_)).WillOnce(testing::Invoke([&](infra::ByteRange buffer, uint32_t address, infra::Function<void()> onReadDone)
         {
@@ -58,11 +58,11 @@ TEST_F(FlashTest, Read)
     onDone();
 }
 
-TEST_F(FlashTest, Write)
+TEST_F(FlashEchoTest, Write)
 {
-    EXPECT_CALL(delegate, WriteBuffer(infra::CheckByteRangeContents(infra::MakeRange(data)), 1234, testing::_)).WillOnce(testing::Invoke([&](infra::ConstByteRange buffer, uint32_t address, infra::Function<void()> onReadDone)
+    EXPECT_CALL(delegate, WriteBuffer(infra::CheckByteRangeContents(infra::MakeRange(data)), 1234, testing::_)).WillOnce(testing::Invoke([&](infra::ConstByteRange buffer, uint32_t address, infra::Function<void()> onWriteDone)
         {
-            onDone = onReadDone;
+            onDone = onWriteDone;
         }));
     flash.Write(1234, data);
 
@@ -70,12 +70,61 @@ TEST_F(FlashTest, Write)
     onDone();
 }
 
-TEST_F(FlashTest, EraseSectors)
+TEST_F(FlashEchoTest, EraseSectors)
 {
     EXPECT_CALL(delegate, EraseSectors(1234, 1238, testing::_)).WillOnce(testing::SaveArg<2>(&onDone));
     flash.EraseSectors(1234, 4);
 
     EXPECT_CALL(flashResult, EraseSectorsDone());
+    onDone();
+}
+
+TEST_F(FlashEchoTest, stop_while_idle)
+{
+    infra::VerifyingFunction<void()> onStopped;
+    flash.Stop(onStopped);
+}
+
+TEST_F(FlashEchoTest, stop_while_reading)
+{
+    infra::VerifyingFunction<void()> onStopped;
+
+    EXPECT_CALL(delegate, ReadBuffer(testing::_, 1234, testing::_)).WillOnce(testing::Invoke([&](infra::ByteRange buffer, uint32_t address, infra::Function<void()> onReadDone)
+        {
+            infra::Copy(infra::MakeRange(data), buffer);
+            onDone = onReadDone;
+            flash.Stop(onStopped);
+        }));
+    flash.Read(1234, data.size());
+
+    onDone();
+}
+
+TEST_F(FlashEchoTest, stop_while_writing)
+{
+    infra::VerifyingFunction<void()> onStopped;
+
+    EXPECT_CALL(delegate, WriteBuffer(infra::CheckByteRangeContents(infra::MakeRange(data)), 1234, testing::_)).WillOnce(testing::Invoke([&](infra::ConstByteRange buffer, uint32_t address, infra::Function<void()> onWriteDone)
+        {
+            onDone = onWriteDone;
+            flash.Stop(onStopped);
+        }));
+    flash.Write(1234, data);
+
+    onDone();
+}
+
+TEST_F(FlashEchoTest, stop_while_erasing)
+{
+    infra::VerifyingFunction<void()> onStopped;
+
+    EXPECT_CALL(delegate, EraseSectors(1234, 1238, testing::_)).WillOnce(testing::Invoke([&](uint32_t sector, uint32_t numberOfSectors, infra::Function<void()> onEraseDone)
+        {
+            onDone = onEraseDone;
+            flash.Stop(onStopped);
+        }));
+    flash.EraseSectors(1234, 4);
+
     onDone();
 }
 
