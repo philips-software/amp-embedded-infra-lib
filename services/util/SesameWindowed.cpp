@@ -98,12 +98,12 @@ namespace services
         switch (stream.Extract<Operation>())
         {
             case Operation::init:
-                {
-                    // No need to send any data until the init is processed.
-                    // Discard anything while normal processing continues.
-                    discardUntilInit = true;
-                    break;
-                }
+            {
+                // No need to send any data until the init is processed.
+                // Discard anything while normal processing continues.
+                discardUntilInit = true;
+                break;
+            }
             case Operation::initResponse:
                 break;
             case Operation::releaseWindow:

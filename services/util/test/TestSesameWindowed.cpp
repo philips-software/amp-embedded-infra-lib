@@ -43,7 +43,8 @@ public:
 
     void PeekPacket(const std::vector<uint8_t>& data)
     {
-        base.GetObserver().PeekMessage(infra::StdVectorInputStreamReader::WithStorage(std::in_place, data), data.size() + data.size() / 254 + 2);
+        infra::StdVectorInputStreamReader::WithStorage reader(std::in_place, data);
+        base.GetObserver().PeekMessage(reader, data.size() + data.size() / 254 + 2);
     }
 
     void ReceivePacket(const std::vector<uint8_t>& data)

@@ -1,4 +1,5 @@
 #include "hal/interfaces/test_doubles/SerialCommunicationMock.hpp"
+#include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include "infra/stream/StdVectorInputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/util/AutoResetFunction.hpp"
@@ -9,7 +10,6 @@
 #include "services/util/SesameCobs.hpp"
 #include "services/util/test_doubles/SesameMock.hpp"
 #include "gmock/gmock.h"
-#include "infra/event/test_helper/EventDispatcherFixture.hpp"
 #include <deque>
 
 class SesameCobsTest
@@ -52,13 +52,14 @@ public:
     void ExpectPeekMessage(const std::vector<uint8_t>& expected, std::size_t encodedSize)
     {
         EXPECT_CALL(observer, PeekMessage(testing::_, encodedSize)).WillOnce(testing::Invoke([this, expected](infra::StreamReaderWithRewinding& reader, uint16_t encodedSize)
-            {
-                infra::DataInputStream::WithErrorPolicy stream(reader);
-                std::vector<uint8_t> data(stream.Available(), 0);
-                stream >> infra::MakeRange(data);
+                                                                                 {
+                                                                                     infra::DataInputStream::WithErrorPolicy stream(reader);
+                                                                                     std::vector<uint8_t> data(stream.Available(), 0);
+                                                                                     stream >> infra::MakeRange(data);
 
-                EXPECT_EQ(expected, data);
-            })).RetiresOnSaturation();
+                                                                                     EXPECT_EQ(expected, data);
+                                                                                 }))
+            .RetiresOnSaturation();
     }
 
     void ExpectReceivedMessage(const std::vector<uint8_t>& expected, std::size_t encodedSize)
