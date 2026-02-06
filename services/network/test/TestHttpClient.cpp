@@ -96,7 +96,6 @@ INSTANTIATE_TEST_SUITE_P(HttpStatusMessageTest, HttpStatusMessageFormattingTest,
         HttpStatusCodeWithString{ services::HttpStatusCode::TooManyRequests, "TooManyRequests" },
         HttpStatusCodeWithString{ services::HttpStatusCode::RequestHeaderFieldsTooLarge, "RequestHeaderFieldsTooLarge" },
         HttpStatusCodeWithString{ services::HttpStatusCode::UnavailableForLegalReasons, "UnavailableForLegalReasons" },
-
         HttpStatusCodeWithString{ services::HttpStatusCode::InternalServerError, "InternalServerError" },
         HttpStatusCodeWithString{ services::HttpStatusCode::NotImplemented, "NotImplemented" },
         HttpStatusCodeWithString{ services::HttpStatusCode::BadGateway, "BadGateway" },
@@ -107,7 +106,8 @@ INSTANTIATE_TEST_SUITE_P(HttpStatusMessageTest, HttpStatusMessageFormattingTest,
         HttpStatusCodeWithString{ services::HttpStatusCode::InsufficientStorage, "InsufficientStorage" },
         HttpStatusCodeWithString{ services::HttpStatusCode::LoopDetected, "LoopDetected" },
         HttpStatusCodeWithString{ services::HttpStatusCode::NotExtended, "NotExtended" },
-        HttpStatusCodeWithString{ services::HttpStatusCode::NetworkAuthenticationRequired, "NetworkAuthenticationRequired" }));
+        HttpStatusCodeWithString{ services::HttpStatusCode::NetworkAuthenticationRequired, "NetworkAuthenticationRequired" },
+        HttpStatusCodeWithString{ static_cast<services::HttpStatusCode>(900), "900" }));
 
 struct HttpStatusCodeAndString
 {
@@ -441,15 +441,13 @@ TEST_F(HttpClientTest, incorrect_response_version_should_not_call_StatusAvailabl
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/X.Y 200 Success\r\n")));
 }
 
-TEST_F(HttpClientTest, incorrect_response_code_should_not_call_StatusAvailable)
+TEST_F(HttpClientTest, unexpected_response_code_should_call_StatusAvailable)
 {
     Connect();
 
-    EXPECT_CALL(client, StatusAvailable(testing::_)).Times(0);
+    EXPECT_CALL(client, StatusAvailable(static_cast<services::HttpStatusCode>(900)));
 
     EXPECT_CALL(connection, AckReceivedMock());
-    EXPECT_CALL(connection, AbortAndDestroyMock());
-    EXPECT_CALL(client, Detaching());
     client.Subject().Get("/");
     ExecuteAllActions();
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 900 Invalid\r\n")));

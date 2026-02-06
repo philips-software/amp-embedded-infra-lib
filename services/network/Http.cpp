@@ -2,6 +2,7 @@
 #include "infra/stream/StringInputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/util/Tokenizer.hpp"
+#include <string>
 
 namespace services
 {
@@ -415,123 +416,7 @@ namespace services
         for (std::size_t index = 0; index < statusCode.size(); ++index)
             value = value * 10 + statusCode[index] - '0';
 
-        switch (value)
-        {
-            case 100:
-                return std::make_optional(HttpStatusCode::Continue);
-            case 101:
-                return std::make_optional(HttpStatusCode::SwitchingProtocols);
-            case 200:
-                return std::make_optional(HttpStatusCode::OK);
-            case 201:
-                return std::make_optional(HttpStatusCode::Created);
-            case 202:
-                return std::make_optional(HttpStatusCode::Accepted);
-            case 203:
-                return std::make_optional(HttpStatusCode::NonAuthorativeInformation);
-            case 204:
-                return std::make_optional(HttpStatusCode::NoContent);
-            case 205:
-                return std::make_optional(HttpStatusCode::ResetContent);
-            case 206:
-                return std::make_optional(HttpStatusCode::PartialContent);
-            case 300:
-                return std::make_optional(HttpStatusCode::MultipleChoices);
-            case 301:
-                return std::make_optional(HttpStatusCode::MovedPermanently);
-            case 302:
-                return std::make_optional(HttpStatusCode::Found);
-            case 303:
-                return std::make_optional(HttpStatusCode::SeeOther);
-            case 304:
-                return std::make_optional(HttpStatusCode::NotModified);
-            case 305:
-                return std::make_optional(HttpStatusCode::UseProxy);
-            case 307:
-                return std::make_optional(HttpStatusCode::TemporaryRedirect);
-            case 308:
-                return std::make_optional(HttpStatusCode::PermanentRedirect);
-            case 400:
-                return std::make_optional(HttpStatusCode::BadRequest);
-            case 401:
-                return std::make_optional(HttpStatusCode::Unauthorized);
-            case 402:
-                return std::make_optional(HttpStatusCode::PaymentRequired);
-            case 403:
-                return std::make_optional(HttpStatusCode::Forbidden);
-            case 404:
-                return std::make_optional(HttpStatusCode::NotFound);
-            case 405:
-                return std::make_optional(HttpStatusCode::MethodNotAllowed);
-            case 406:
-                return std::make_optional(HttpStatusCode::NotAcceptable);
-            case 407:
-                return std::make_optional(HttpStatusCode::ProxyAuthenticationRequired);
-            case 408:
-                return std::make_optional(HttpStatusCode::RequestTimeOut);
-            case 409:
-                return std::make_optional(HttpStatusCode::Conflict);
-            case 410:
-                return std::make_optional(HttpStatusCode::Gone);
-            case 411:
-                return std::make_optional(HttpStatusCode::LengthRequired);
-            case 412:
-                return std::make_optional(HttpStatusCode::PreconditionFailed);
-            case 413:
-                return std::make_optional(HttpStatusCode::RequestEntityTooLarge);
-            case 414:
-                return std::make_optional(HttpStatusCode::RequestUriTooLarge);
-            case 415:
-                return std::make_optional(HttpStatusCode::UnsupportedMediaType);
-            case 416:
-                return std::make_optional(HttpStatusCode::RequestRangeNotSatisfiable);
-            case 417:
-                return std::make_optional(HttpStatusCode::ExpectationFailed);
-            case 421:
-                return std::make_optional(HttpStatusCode::MisdirectedRequest);
-            case 422:
-                return std::make_optional(HttpStatusCode::UnprocessableContent);
-            case 423:
-                return std::make_optional(HttpStatusCode::Locked);
-            case 424:
-                return std::make_optional(HttpStatusCode::FailedDependency);
-            case 425:
-                return std::make_optional(HttpStatusCode::TooEarly);
-            case 426:
-                return std::make_optional(HttpStatusCode::UpgradeRequired);
-            case 428:
-                return std::make_optional(HttpStatusCode::PreconditionRequired);
-            case 429:
-                return std::make_optional(HttpStatusCode::TooManyRequests);
-            case 431:
-                return std::make_optional(HttpStatusCode::RequestHeaderFieldsTooLarge);
-            case 451:
-                return std::make_optional(HttpStatusCode::UnavailableForLegalReasons);
-            case 500:
-                return std::make_optional(HttpStatusCode::InternalServerError);
-            case 501:
-                return std::make_optional(HttpStatusCode::NotImplemented);
-            case 502:
-                return std::make_optional(HttpStatusCode::BadGateway);
-            case 503:
-                return std::make_optional(HttpStatusCode::ServiceUnavailable);
-            case 504:
-                return std::make_optional(HttpStatusCode::GatewayTimeOut);
-            case 505:
-                return std::make_optional(HttpStatusCode::HttpVersionNotSupported);
-            case 506:
-                return std::make_optional(HttpStatusCode::VariantAlsoNegotiates);
-            case 507:
-                return std::make_optional(HttpStatusCode::InsufficientStorage);
-            case 508:
-                return std::make_optional(HttpStatusCode::LoopDetected);
-            case 510:
-                return std::make_optional(HttpStatusCode::NotExtended);
-            case 511:
-                return std::make_optional(HttpStatusCode::NetworkAuthenticationRequired);
-        }
-
-        return std::nullopt;
+        return static_cast<services::HttpStatusCode>(value);
     }
 
     infra::BoundedConstString HttpStatusCodeToString(services::HttpStatusCode statusCode)
@@ -652,7 +537,7 @@ namespace services
                 return "NetworkAuthenticationRequired";
         }
 
-        std::abort();
+        return "";
     }
 }
 
@@ -674,7 +559,11 @@ namespace infra
 
     TextOutputStream& operator<<(TextOutputStream& stream, services::HttpStatusCode statusCode)
     {
-        stream << services::HttpStatusCodeToString(statusCode);
+        auto statusString = services::HttpStatusCodeToString(statusCode);
+        if (statusString.empty())
+            stream << static_cast<int>(statusCode);
+        else
+            stream << statusString;
 
         return stream;
     }
