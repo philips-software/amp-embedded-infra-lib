@@ -217,7 +217,7 @@ service GapPeripheral
     // Formatting of advertisement data is as per Bluetooth Core Specification.
     // Maximum advertisement data length for this method is 28 bytes. Server reserves an additional 3 bytes for flags data with the flag bits 'LE General Discoverable Mode' and 'BR/EDR Not Supported' enabled.
     // Server will not check validity of the advertisement data and only maximum length of each field will be passed to BLE stack
-    // If not set by this method, server will have aa advertisement data only flags field.
+    // If not set by this method, server will have as advertisement data only flags field.
     rpc SetAdvertisementData(AdvertisementData) returns (Nothing) { option (method_id) = 3; }
 
     // Allowed in link layer states: standby
