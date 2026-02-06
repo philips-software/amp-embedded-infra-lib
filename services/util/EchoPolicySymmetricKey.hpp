@@ -15,7 +15,7 @@ namespace services
         , private sesame_security::SymmetricKeyEstablishmentProxy
     {
     public:
-        EchoPolicySymmetricKey(EchoWithPolicy& echo, EchoInitialization& echoInitialization, SesameSecured& secured, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        EchoPolicySymmetricKey(Echo& echo, EchoInitialization& echoInitialization, SesameSecured& secured, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
     private:
         // Implementation of EchoInitializationObserver
@@ -39,7 +39,7 @@ namespace services
 
         bool initializingSending = true;
         infra::IntrusiveList<ServiceProxy> waitingProxies;
-        std::optional<std::pair<std::array<uint8_t, 16>, std::array<uint8_t, 16>>> nextKeyPair;
+        std::optional<std::pair<SesameSecured::KeyType, SesameSecured::IvType>> nextKeyPair;
     };
 }
 

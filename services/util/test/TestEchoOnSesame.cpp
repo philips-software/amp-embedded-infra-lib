@@ -173,19 +173,19 @@ TEST_F(EchoOnSesameTest, service_method_without_parameter_is_invoked)
 
 TEST_F(EchoOnSesameTest, MessageFormatError_is_reported_when_message_is_not_a_LengthDelimited)
 {
-    EXPECT_CALL(errorPolicy, MessageFormatError());
+    EXPECT_CALL(errorPolicy, MessageFormatError(testing::StrEq("Format failed or contents not PartialProtoLengthDelimited")));
     ReceiveMessage(infra::ConstructBin()({ 1, 0, 2 }).Range());
 }
 
 TEST_F(EchoOnSesameTest, MessageFormatError_is_reported_when_message_is_of_unknown_type)
 {
-    EXPECT_CALL(errorPolicy, MessageFormatError());
+    EXPECT_CALL(errorPolicy, MessageFormatError(testing::StrEq("Format failed or contents not PartialProtoLengthDelimited")));
     ReceiveMessage(infra::ConstructBin()({ 1, 6 }).Range());
 }
 
 TEST_F(EchoOnSesameTest, MessageFormatError_is_reported_when_parameter_in_message_is_of_incorrect_type)
 {
-    EXPECT_CALL(errorPolicy, MessageFormatError());
+    EXPECT_CALL(errorPolicy, MessageFormatError(testing::StrEq("Deserializer failed")));
     ReceiveMessage(infra::ConstructBin()({ 1, 10, 5, 13, 5, 0, 0, 0 }).Range());
 }
 
