@@ -2,10 +2,18 @@
 #define PROTOBUF_ECHO_ON_STREAMS_HPP
 
 #include "infra/stream/BufferingStreamReader.hpp"
+#include "infra/stream/InputStream.hpp"
+#include "infra/stream/LimitedInputStream.hpp"
+#include "infra/stream/OutputStream.hpp"
 #include "infra/util/BoundedDeque.hpp"
-#include "infra/util/Function.hpp"
+#include "infra/util/IntrusiveList.hpp"
+#include "infra/util/SharedOptional.hpp"
+#include "infra/util/SharedPtr.hpp"
 #include "protobuf/echo/Echo.hpp"
+#include "protobuf/echo/EchoErrorPolicy.hpp"
 #include "protobuf/echo/Serialization.hpp"
+#include <cstddef>
+#include <cstdint>
 #include <optional>
 
 namespace services
