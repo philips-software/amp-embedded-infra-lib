@@ -29,6 +29,7 @@ target_sources(infra.stream PRIVATE
     CountingInputStream.hpp
     CountingOutputStream.cpp
     CountingOutputStream.hpp
+    FilesystemStreaming.hpp
     Formatter.cpp
     Formatter.hpp
     InputStream.cpp

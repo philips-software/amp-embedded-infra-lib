@@ -21,7 +21,7 @@ namespace services
         : public services::EchoErrorPolicy
     {
     public:
-        MOCK_METHOD(void, MessageFormatError, (), (const override));
+        MOCK_METHOD(void, MessageFormatError, (const char* reason), (const override));
         MOCK_METHOD(void, ServiceNotFound, (uint32_t serviceId), (const override));
         MOCK_METHOD(void, MethodNotFound, (uint32_t serviceId, uint32_t methodId), (const override));
     };

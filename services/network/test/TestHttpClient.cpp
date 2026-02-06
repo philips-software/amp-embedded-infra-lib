@@ -86,12 +86,28 @@ INSTANTIATE_TEST_SUITE_P(HttpStatusMessageTest, HttpStatusMessageFormattingTest,
         HttpStatusCodeWithString{ services::HttpStatusCode::UnsupportedMediaType, "UnsupportedMediaType" },
         HttpStatusCodeWithString{ services::HttpStatusCode::RequestRangeNotSatisfiable, "RequestRangeNotSatisfiable" },
         HttpStatusCodeWithString{ services::HttpStatusCode::ExpectationFailed, "ExpectationFailed" },
+        HttpStatusCodeWithString{ services::HttpStatusCode::MisdirectedRequest, "MisdirectedRequest" },
+        HttpStatusCodeWithString{ services::HttpStatusCode::UnprocessableContent, "UnprocessableContent" },
+        HttpStatusCodeWithString{ services::HttpStatusCode::Locked, "Locked" },
+        HttpStatusCodeWithString{ services::HttpStatusCode::FailedDependency, "FailedDependency" },
+        HttpStatusCodeWithString{ services::HttpStatusCode::TooEarly, "TooEarly" },
+        HttpStatusCodeWithString{ services::HttpStatusCode::UpgradeRequired, "UpgradeRequired" },
+        HttpStatusCodeWithString{ services::HttpStatusCode::PreconditionRequired, "PreconditionRequired" },
+        HttpStatusCodeWithString{ services::HttpStatusCode::TooManyRequests, "TooManyRequests" },
+        HttpStatusCodeWithString{ services::HttpStatusCode::RequestHeaderFieldsTooLarge, "RequestHeaderFieldsTooLarge" },
+        HttpStatusCodeWithString{ services::HttpStatusCode::UnavailableForLegalReasons, "UnavailableForLegalReasons" },
         HttpStatusCodeWithString{ services::HttpStatusCode::InternalServerError, "InternalServerError" },
         HttpStatusCodeWithString{ services::HttpStatusCode::NotImplemented, "NotImplemented" },
         HttpStatusCodeWithString{ services::HttpStatusCode::BadGateway, "BadGateway" },
         HttpStatusCodeWithString{ services::HttpStatusCode::ServiceUnavailable, "ServiceUnavailable" },
         HttpStatusCodeWithString{ services::HttpStatusCode::GatewayTimeOut, "GatewayTimeOut" },
-        HttpStatusCodeWithString{ services::HttpStatusCode::HttpVersionNotSupported, "HttpVersionNotSupported" }));
+        HttpStatusCodeWithString{ services::HttpStatusCode::HttpVersionNotSupported, "HttpVersionNotSupported" },
+        HttpStatusCodeWithString{ services::HttpStatusCode::VariantAlsoNegotiates, "VariantAlsoNegotiates" },
+        HttpStatusCodeWithString{ services::HttpStatusCode::InsufficientStorage, "InsufficientStorage" },
+        HttpStatusCodeWithString{ services::HttpStatusCode::LoopDetected, "LoopDetected" },
+        HttpStatusCodeWithString{ services::HttpStatusCode::NotExtended, "NotExtended" },
+        HttpStatusCodeWithString{ services::HttpStatusCode::NetworkAuthenticationRequired, "NetworkAuthenticationRequired" },
+        HttpStatusCodeWithString{ static_cast<services::HttpStatusCode>(900), "Unknown HTTP status: 900" }));
 
 struct HttpStatusCodeAndString
 {
@@ -149,12 +165,27 @@ INSTANTIATE_TEST_SUITE_P(HttpStatusMessageTest, HttpStatusMessageParsingTest,
         HttpStatusCodeAndString{ "415", services::HttpStatusCode::UnsupportedMediaType },
         HttpStatusCodeAndString{ "416", services::HttpStatusCode::RequestRangeNotSatisfiable },
         HttpStatusCodeAndString{ "417", services::HttpStatusCode::ExpectationFailed },
+        HttpStatusCodeAndString{ "421", services::HttpStatusCode::MisdirectedRequest },
+        HttpStatusCodeAndString{ "422", services::HttpStatusCode::UnprocessableContent },
+        HttpStatusCodeAndString{ "423", services::HttpStatusCode::Locked },
+        HttpStatusCodeAndString{ "424", services::HttpStatusCode::FailedDependency },
+        HttpStatusCodeAndString{ "425", services::HttpStatusCode::TooEarly },
+        HttpStatusCodeAndString{ "426", services::HttpStatusCode::UpgradeRequired },
+        HttpStatusCodeAndString{ "428", services::HttpStatusCode::PreconditionRequired },
+        HttpStatusCodeAndString{ "429", services::HttpStatusCode::TooManyRequests },
+        HttpStatusCodeAndString{ "431", services::HttpStatusCode::RequestHeaderFieldsTooLarge },
+        HttpStatusCodeAndString{ "451", services::HttpStatusCode::UnavailableForLegalReasons },
         HttpStatusCodeAndString{ "500", services::HttpStatusCode::InternalServerError },
         HttpStatusCodeAndString{ "501", services::HttpStatusCode::NotImplemented },
         HttpStatusCodeAndString{ "502", services::HttpStatusCode::BadGateway },
         HttpStatusCodeAndString{ "503", services::HttpStatusCode::ServiceUnavailable },
         HttpStatusCodeAndString{ "504", services::HttpStatusCode::GatewayTimeOut },
-        HttpStatusCodeAndString{ "505", services::HttpStatusCode::HttpVersionNotSupported }));
+        HttpStatusCodeAndString{ "505", services::HttpStatusCode::HttpVersionNotSupported },
+        HttpStatusCodeAndString{ "506", services::HttpStatusCode::VariantAlsoNegotiates },
+        HttpStatusCodeAndString{ "507", services::HttpStatusCode::InsufficientStorage },
+        HttpStatusCodeAndString{ "508", services::HttpStatusCode::LoopDetected },
+        HttpStatusCodeAndString{ "510", services::HttpStatusCode::NotExtended },
+        HttpStatusCodeAndString{ "511", services::HttpStatusCode::NetworkAuthenticationRequired }));
 
 class HttpClientTest
     : public testing::Test
@@ -410,15 +441,13 @@ TEST_F(HttpClientTest, incorrect_response_version_should_not_call_StatusAvailabl
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/X.Y 200 Success\r\n")));
 }
 
-TEST_F(HttpClientTest, incorrect_response_code_should_not_call_StatusAvailable)
+TEST_F(HttpClientTest, unexpected_response_code_should_call_StatusAvailable)
 {
     Connect();
 
-    EXPECT_CALL(client, StatusAvailable(testing::_)).Times(0);
+    EXPECT_CALL(client, StatusAvailable(static_cast<services::HttpStatusCode>(900)));
 
     EXPECT_CALL(connection, AckReceivedMock());
-    EXPECT_CALL(connection, AbortAndDestroyMock());
-    EXPECT_CALL(client, Detaching());
     client.Subject().Get("/");
     ExecuteAllActions();
     connection.SimulateDataReceived(infra::StringAsByteRange(infra::BoundedConstString("HTTP/1.1 900 Invalid\r\n")));
