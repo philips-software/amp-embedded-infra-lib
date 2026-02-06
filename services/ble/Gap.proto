@@ -117,7 +117,7 @@ message AdvertisingEventType
     AdvertisingEventTypeEnum type = 1;
 }
 
-message PairingStatus
+message PairingErrorType
 {
     enum Error
     {
