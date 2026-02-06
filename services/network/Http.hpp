@@ -58,12 +58,27 @@ namespace services
         UnsupportedMediaType = 415,
         RequestRangeNotSatisfiable = 416,
         ExpectationFailed = 417,
+        MisdirectedRequest = 421,
+        UnprocessableContent = 422,
+        Locked = 423,
+        FailedDependency = 424,
+        TooEarly = 425,
+        UpgradeRequired = 426,
+        PreconditionRequired = 428,
+        TooManyRequests = 429,
+        RequestHeaderFieldsTooLarge = 431,
+        UnavailableForLegalReasons = 451,
         InternalServerError = 500,
         NotImplemented = 501,
         BadGateway = 502,
         ServiceUnavailable = 503,
         GatewayTimeOut = 504,
-        HttpVersionNotSupported = 505
+        HttpVersionNotSupported = 505,
+        VariantAlsoNegotiates = 506,
+        InsufficientStorage = 507,
+        LoopDetected = 508,
+        NotExtended = 510,
+        NetworkAuthenticationRequired = 511
     };
 
     namespace http_responses
@@ -178,7 +193,7 @@ namespace services
     infra::BoundedConstString HttpVerbToString(HttpVerb verb);
     std::optional<HttpVerb> HttpVerbFromString(infra::BoundedConstString verb);
 
-    std::optional<HttpStatusCode> HttpStatusCodeFromString(infra::BoundedConstString statusCode);
+    HttpStatusCode HttpStatusCodeFromString(infra::BoundedConstString statusCode);
     infra::BoundedConstString HttpStatusCodeToString(services::HttpStatusCode statusCode);
 }
 

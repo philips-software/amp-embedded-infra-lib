@@ -19,13 +19,13 @@
 namespace services
 {
     class EchoOnStreams
-        : public EchoWithPolicy
+        : public Echo
     {
     public:
         explicit EchoOnStreams(services::MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
         ~EchoOnStreams();
 
-        // Implementation of EchoWithPolicy
+        // Implementation of Echo
         void SetPolicy(EchoPolicy& policy) override;
         void RequestSend(ServiceProxy& serviceProxy) override;
         void ServiceDone() override;
@@ -47,7 +47,7 @@ namespace services
     private:
         void TryGrantSend();
 
-        void DataReceived();
+        void DataReceivedInReader();
         void StartReceiveMessage();
         void ContinueReceiveMessage();
         void StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size);

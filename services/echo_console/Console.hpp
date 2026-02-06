@@ -183,7 +183,7 @@ namespace application
 
     class Console
         : public infra::Subject<ConsoleObserver>
-        , public services::EchoWithPolicy
+        , public services::Echo
     {
     public:
         explicit Console(EchoRoot& root, bool stopOnNetworkClose);
@@ -194,7 +194,7 @@ namespace application
         services::NameResolver& NameResolver();
         void DataReceived(infra::StreamReader& reader);
 
-        // Implementation of EchoWithPolicy
+        // Implementation of Echo
         void SetPolicy(services::EchoPolicy& policy) override;
         void RequestSend(services::ServiceProxy& serviceProxy) override;
         void ServiceDone() override;

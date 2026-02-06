@@ -71,12 +71,6 @@ namespace services
         virtual void ServiceDone() = 0;
         virtual void CancelRequestSend(ServiceProxy& serviceProxy) = 0;
         virtual services::MethodSerializerFactory& SerializerFactory() = 0;
-    };
-
-    class EchoWithPolicy
-        : public Echo
-    {
-    public:
         virtual void SetPolicy(EchoPolicy& policy) = 0;
     };
 
