@@ -394,6 +394,14 @@ namespace services
                 TlsWriteFailure(result);
                 std::abort();
             }
+#ifdef MBEDTLS_SSL_PROTO_TLS1_3
+            else if (!server && result == MBEDTLS_ERR_SSL_RECEIVED_NEW_SESSION_TICKET)
+            {
+                result = clientSession->GetSession(&sslContext);
+                clientSession->Obtained();
+                assert(result == 0);
+            }
+#endif
             else if (result < 0)
             {
                 encryptedSendWriter = nullptr;
