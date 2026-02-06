@@ -188,11 +188,13 @@ message SecurityPreference
 // GAP PERIPHERAL SERVICE DEFINITION
 // ==================================================
 // State constraints:
-//  Unless otherwise specified, all methods are allowed in all link layer states
+//  Unless otherwise specified, all methods are allowed in all link layer states.
+//  Not conformance may cause undefined behavior
 // Callback constraints:
 //  Unless otherwise specified, methods do not by default result in any callbacks on the response service
 //  When a callback is specified for a method and only for that method, another call of the same method is not allowed until the callback has been received.
 //  When a callback is specified for more than one method, any of the associated method calls is not allowed until the callback for the previous call have been received
+//  Not conformance may cause undefined behavior
 // ==================================================
 service GapPeripheral
 {
