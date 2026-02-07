@@ -58,6 +58,14 @@ namespace services
         void ReceivedPayload(infra::ConstByteRange data);
         void FinishMessage();
 
+        void ReceivedPeekData(infra::ConstByteRange& data);
+        void ExtractPeekOverhead(infra::ConstByteRange& data);
+        void ExtractPeekData(infra::ConstByteRange& data);
+        void ForwardPeekData(infra::ConstByteRange contents, infra::ConstByteRange& data);
+        void PeekMessageBoundary(infra::ConstByteRange& data);
+        void ReceivedPeekPayload(infra::ConstByteRange data);
+        void FinishPeekMessage();
+
         void CheckReadyToSendUserData();
         void SendSerialData(const infra::ConstByteRange data, const infra::Function<void()>& onSendDataDone);
         void SendStreamFilled();
@@ -82,6 +90,12 @@ namespace services
         infra::BoundedDeque<uint8_t>& receivedMessage;
         std::size_t receiveSizeEncoded = 0;
         std::size_t currentMessageSize = 0;
+        infra::BoundedDeque<uint8_t>::WithMaxSize<3> receivedPeekMessage;
+        std::size_t receivePeekIndex = 0;
+        uint8_t nextPeekOverhead = 1;
+        std::size_t receiveSizePeekEncoded = 0;
+        bool peekOverheadPositionIsPseudo = true;
+        std::size_t currentPeekMessageSize = 0;
         infra::NotifyingSharedOptional<infra::LimitedStreamReaderWithRewinding::WithInput<infra::BoundedDequeInputStreamReader>> receivedDataReader;
 
         infra::BoundedVector<uint8_t>& sendStorage;

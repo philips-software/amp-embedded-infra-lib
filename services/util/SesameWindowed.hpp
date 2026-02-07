@@ -44,6 +44,7 @@ namespace services
         void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         void MessageSent(std::size_t encodedSize) override;
         void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, std::size_t encodedSize) override;
+        void PeekMessage(infra::StreamReaderWithRewinding& reader, std::size_t encodedSize) override;
 
     private:
         void ReceivedInitialize();
@@ -141,7 +142,6 @@ namespace services
 
             void Request() override;
             void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-            void MessageSent(std::size_t encodedSize) override;
 
         private:
             std::size_t requestedSize;
@@ -161,6 +161,7 @@ namespace services
         const uint16_t ownBufferSize;
         const uint16_t releaseWindowSize;
         bool initialized = false;
+        bool discardUntilInit = false;
         infra::SharedPtr<infra::StreamReaderWithRewinding> receivedMessageReader;
         infra::AccessedBySharedPtr readerAccess;
         uint16_t otherAvailableWindow{ 0 };
