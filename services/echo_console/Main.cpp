@@ -11,14 +11,14 @@
 #include "services/network/HttpClientImpl.hpp"
 #include "services/network/WebSocketClientConnectionObserver.hpp"
 #include "services/tracer/GlobalTracer.hpp"
-#include "services/util/EchoPolicyDiffieHellman.hpp"
-#include "services/util/EchoPolicySymmetricKey.hpp"
-#include "services/util/SesameCobs.hpp"
 
 #ifdef PeekMessage
 #undef PeekMessage
 #endif
 
+#include "services/util/EchoPolicyDiffieHellman.hpp"
+#include "services/util/EchoPolicySymmetricKey.hpp"
+#include "services/util/SesameCobs.hpp"
 #include "services/util/SesameSecured.hpp"
 #include "services/util/SesameWindowed.hpp"
 #include <deque>

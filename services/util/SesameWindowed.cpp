@@ -117,6 +117,8 @@ namespace services
             case Operation::message:
                 break;
         }
+
+        SetNextState();
     }
 
     void SesameWindowed::ReceivedInitialize()

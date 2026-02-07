@@ -325,7 +325,7 @@ TEST_F(SesameWindowedTest, release_window_packet_waits_for_window_available)
     ExpectReceivedMessage("abcd");
     ReceiveMessage("abcd");
 
-    ExpectRequestSendMessageForReleaseWindow(17);
+    ExpectRequestSendMessageForReleaseWindow(12);
     ReceiveReleaseWindow(5);
 }
 
@@ -383,7 +383,7 @@ TEST_F(SesameWindowedTest, release_window_consumes_window)
     ExpectReceivedMessage("abcd");
     ReceiveMessage("abcd");
 
-    ExpectRequestSendMessageForReleaseWindow(12);
+    ExpectRequestSendMessageForReleaseWindow(7);
     ReceiveReleaseWindow(5); // release window consumed by release window
 }
 
