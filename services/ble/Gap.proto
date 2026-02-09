@@ -1,5 +1,3 @@
-// clang-format off
-
 syntax = "proto3";
 
 import "EchoAttributes.proto";
@@ -161,6 +159,11 @@ message AdvertisementData
     bytes data = 1 [(bytes_size) = 28]; 
 }
 
+message ScanResponseData
+{
+    bytes data = 1 [(bytes_size) = 13]; 
+}
+
 message SecurityPreference
 {
     enum SupportEnum
@@ -225,7 +228,7 @@ service GapPeripheral
     // Maximum scan response length for this method is 13 bytes. Server reserves 18 bytes for streaming service uuids. Scan Response is only possible with scannable advertisements
     // Server will not check validity of the scan response data and only maximum length of each field will be passed to BLE stack
     // If not set by this method, server will have as scan response data only service uuids.
-    rpc SetScanResponseData(AdvertisementData) returns (Nothing) { option (method_id) = 4; }
+    rpc SetScanResponseData(ScanResponseData) returns (Nothing) { option (method_id) = 4; }
     
     // Allowed in link layer states: advertising
     // Results in GapPeripheralResponse.AdvertisingAddress
