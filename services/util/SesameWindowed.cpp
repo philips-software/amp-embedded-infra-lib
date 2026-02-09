@@ -6,7 +6,7 @@ namespace services
     namespace
     {
         // This reader is used to put an extra '4' in front of a message, in order to exactly calculate the encoded size
-        // Only ExtractContiguousRange() and Available() are used by SesameCobs, so only those methods are implemented here.
+        // Only ExtractContiguousRange(), Empty(), and Available() are used by SesameCobs, so only those methods are implemented here.
         class ExtraCharacterReader
             : public infra::LimitedStreamReader
         {
@@ -38,7 +38,7 @@ namespace services
 
             bool Empty() const override
             {
-                std::abort();
+                return extraCharacter != 0 || infra::LimitedStreamReader::Empty();
             }
 
             std::size_t Available() const override
