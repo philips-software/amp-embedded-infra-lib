@@ -1,5 +1,6 @@
 #include "services/network_instantiations/ConnectionWin.hpp"
 #include "services/network_instantiations/EventDispatcherWithNetworkWin.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -34,6 +35,7 @@ namespace services
         assert(requestedSendSize == 0);
         assert(sendSize != 0 && sendSize <= MaxSendStreamSize());
         requestedSendSize = sendSize;
+        GlobalTracer().Trace() << "ConnectionWin::RequestSendStream " << sendSize;
         TryAllocateSendStream();
     }
 

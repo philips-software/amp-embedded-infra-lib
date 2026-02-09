@@ -1,4 +1,5 @@
 #include "protobuf/echo/EchoOnStreams.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -99,6 +100,7 @@ namespace services
         {
             sendingProxy = &sendRequesters.front();
             sendRequesters.pop_front();
+            GlobalTracer().Trace() << "EchoOnStreams: Granting size " << sendingProxy->CurrentRequestedSize() << ": " << (sendingProxy->CurrentRequestedSize() + 2 * infra::MaxVarIntSize(std::numeric_limits<uint64_t>::max()));
             RequestSendStream(sendingProxy->CurrentRequestedSize() + 2 * infra::MaxVarIntSize(std::numeric_limits<uint64_t>::max()));
         }
     }

@@ -90,6 +90,7 @@ namespace services
         assert(sendSize != 0 && sendSize <= MaxSendStreamSize());
         really_assert(control != nullptr);
         requestedSendSize = sendSize;
+        GlobalTracer().Trace() << "ConnectionLwIp::RequestSendStream " << sendSize;
         TryAllocateSendStream();
     }
 
