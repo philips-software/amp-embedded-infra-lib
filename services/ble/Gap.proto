@@ -425,4 +425,4 @@ service GapCentralResponse {
     rpc OutOfBandDataGenerated(OutOfBandData) returns (Nothing) { option (method_id) = 11; }
 }
 
-
+// clang-format on
