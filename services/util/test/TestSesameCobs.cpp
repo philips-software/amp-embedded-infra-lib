@@ -107,11 +107,19 @@ TEST_F(SesameCobsTest, MaxSendMessageSize)
     EXPECT_EQ(277, communication.MaxSendMessageSize());
 }
 
+TEST_F(SesameCobsTest, WorstCaseMessageSize)
+{
+    EXPECT_EQ(2, communication.WorstCaseMessageSize(0));
+    EXPECT_EQ(255, communication.WorstCaseMessageSize(253));
+    EXPECT_EQ(257, communication.WorstCaseMessageSize(254));
+}
+
 TEST_F(SesameCobsTest, MessageSize)
 {
-    EXPECT_EQ(2, communication.MessageSize(0));
-    EXPECT_EQ(255, communication.MessageSize(253));
-    EXPECT_EQ(257, communication.MessageSize(254));
+    EXPECT_EQ(2, communication.MessageSize(infra::StdVectorInputStreamReader::WithStorage{}));
+    EXPECT_EQ(255, communication.MessageSize(infra::StdVectorInputStreamReader::WithStorage{ std::in_place, std::vector<uint8_t>(253, 1) }));
+    EXPECT_EQ(257, communication.MessageSize(infra::StdVectorInputStreamReader::WithStorage{ std::in_place, std::vector<uint8_t>(254, 1) }));  // Overhead byte needs to be inserted
+    EXPECT_EQ(256, communication.MessageSize(infra::StdVectorInputStreamReader::WithStorage{ std::in_place, std::vector<uint8_t>(254, 0) })); // Overhead byte will not be inserted
 }
 
 TEST_F(SesameCobsTest, send_data)

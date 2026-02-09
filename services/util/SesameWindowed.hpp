@@ -1,8 +1,10 @@
 #ifndef SERVICES_SESAME_WINDOWED_HPP
 #define SERVICES_SESAME_WINDOWED_HPP
 
+#include "infra/stream/BoundedDequeInputStream.hpp"
 #include "infra/stream/LimitedInputStream.hpp"
 #include "infra/util/Aligned.hpp"
+#include "infra/util/BoundedDeque.hpp"
 #include "infra/util/Endian.hpp"
 #include "infra/util/PolymorphicVariant.hpp"
 #include "infra/util/SharedOptional.hpp"
@@ -16,7 +18,10 @@ namespace services
         , private SesameEncodedObserver
     {
     public:
-        explicit SesameWindowed(SesameEncoded& delegate);
+        template<std::size_t MaxMessageSize>
+        using WithMaxMessageSize = infra::WithStorage<SesameWindowed, infra::BoundedDeque<uint8_t>::WithMaxSize<MaxMessageSize>>;
+
+        explicit SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, SesameEncoded& delegate);
 
         // Implementation of Sesame
         void RequestSendMessage(std::size_t size) override;
@@ -47,6 +52,8 @@ namespace services
 
     private:
         void ReceivedInitialize();
+        void SaveReceivedMessage(infra::StreamReader& reader);
+        void TryForwardReceivedMessage();
         void ForwardReceivedMessage(uint16_t encodedSize);
         void SetNextState();
 
@@ -158,9 +165,12 @@ namespace services
         };
 
     private:
+        infra::BoundedDeque<uint8_t>& receivedMessage;
         const uint16_t ownBufferSize;
         const uint16_t releaseWindowSize;
         bool initialized = false;
+        uint16_t currentReceiveMessageSize;
+        infra::SharedOptional<infra::LimitedStreamReaderWithRewinding::WithInput<infra::BoundedDequeInputStreamReader>> currentReceiveMessageReader;
         infra::SharedPtr<infra::StreamReaderWithRewinding> receivedMessageReader;
         infra::AccessedBySharedPtr readerAccess;
         uint16_t otherAvailableWindow{ 0 };

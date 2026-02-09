@@ -18,7 +18,7 @@ class SesameWindowedTest
 public:
     SesameWindowedTest()
     {
-        EXPECT_CALL(base, MessageSize(testing::_)).WillRepeatedly(testing::Invoke([](std::size_t size)
+        EXPECT_CALL(base, WorstCaseMessageSize(testing::_)).WillRepeatedly(testing::Invoke([](std::size_t size)
             {
                 return size + size / 254 + 2;
             }));
@@ -64,6 +64,15 @@ public:
     }
 
     void ReceiveMessage(const std::string& text)
+    {
+        EXPECT_CALL(base, MessageSize(testing::_)).WillOnce(testing::Invoke([](infra::StreamReader& reader)
+            {
+                return reader.Available() + reader.Available() / 254 + 2;
+            }));
+        ReceivePacket(infra::ConstructBin()(4)(text).Vector());
+    }
+
+    void PretendReceiveMessage(const std::string& text)
     {
         ReceivePacket(infra::ConstructBin()(4)(text).Vector());
     }
@@ -138,11 +147,11 @@ public:
     infra::Execute execute{ [this]()
         {
             EXPECT_CALL(base, MaxSendMessageSize()).WillOnce(testing::Return(16));
-            EXPECT_CALL(base, MessageSize(3)).WillOnce(testing::Return(5));
+            EXPECT_CALL(base, WorstCaseMessageSize(3)).WillOnce(testing::Return(5));
             ExpectRequestSendMessageForInit(16);
         } };
     infra::SharedOptional<infra::StdVectorInputStreamReader::WithStorage> reader;
-    services::SesameWindowed communication{ base };
+    services::SesameWindowed::WithMaxMessageSize<16> communication{ base };
     testing::StrictMock<services::SesameObserverMock> observer{ communication };
     infra::SharedPtr<infra::StreamWriter> savedWriter;
     infra::SharedPtr<infra::StreamReaderWithRewinding> savedReader;
@@ -266,7 +275,7 @@ TEST_F(SesameWindowedTest, release_window_packet_waits_for_window_available)
 
 TEST_F(SesameWindowedTest, received_message_before_initialized_is_discarded)
 {
-    ReceiveMessage("abcd");
+    PretendReceiveMessage("abcd");
 
     ReceiveInitResponse(12);
 }
