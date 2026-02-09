@@ -47,9 +47,11 @@ namespace services
             }
 
         private:
-            static const char character = '\x4';
+            static const char character;
             std::size_t extraCharacter = 1;
         };
+
+        const char ExtraCharacterReader::character = '\x4';
     }
 
     SesameWindowed::SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, SesameEncoded& delegate)
