@@ -132,7 +132,7 @@ message PairingStatus
     }
 
     Error error = 1;
-};
+}
 
 message BondsStatus
 {
