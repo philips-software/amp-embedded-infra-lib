@@ -117,7 +117,7 @@ message AdvertisingEventType
     AdvertisingEventTypeEnum type = 1;
 }
 
-message PairingErrorType
+message PairingStatus
 {
     enum Error
     {
@@ -282,7 +282,7 @@ service GapPeripheralResponse
 
 
     rpc PairingSuccessfullyCompleted(Nothing) returns(Nothing) { option(method_id) = 5; }
-    rpc PairingFailed(PairingErrorType) returns(Nothing) { option(method_id) = 6; }
+    rpc PairingFailed(PairingStatus) returns(Nothing) { option(method_id) = 6; }
 
 
     rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 7; }
