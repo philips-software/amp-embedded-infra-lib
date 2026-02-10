@@ -155,7 +155,6 @@ namespace
         EXPECT_CALL(flashMock, ReadBuffer(testing::_, testing::Eq(0x8000))).Times(1);
         aligner.ReadBuffer(infra::MakeRange(buffer), 0x8000);
 
-        // EraseSectors now needs AddressOfSector and SizeOfSector for overlap checking and bounds validation
         EXPECT_CALL(flashMock, NumberOfSectors()).WillRepeatedly(testing::Return(256));
         EXPECT_CALL(flashMock, AddressOfSector(testing::Eq(2))).WillRepeatedly(testing::Return(0x2000));
         EXPECT_CALL(flashMock, AddressOfSector(testing::Eq(4))).WillRepeatedly(testing::Return(0x4000));
@@ -344,9 +343,8 @@ namespace
         std::array<uint8_t, 8> data;
         std::fill(data.begin(), data.end(), 0xCC);
 
-        aligner.WriteBuffer(infra::MakeRange(data), 0x10000);
-
-        EXPECT_DEATH(aligner.Flush(), "");
+        // Buffering data at boundary (0x10000 = 16 * 4096) should abort immediately
+        EXPECT_DEATH(aligner.WriteBuffer(infra::MakeRange(data), 0x10000), "");
     }
 
     TEST_F(SynchronousFlashAlignerDeathTest, address_overflow_aborts)
@@ -400,6 +398,24 @@ namespace
         std::array<uint8_t, 8> data;
         std::fill(data.begin(), data.end(), 0xFF);
         EXPECT_DEATH(aligner.WriteBuffer(infra::MakeRange(data), 0x1001), "");
+    }
+
+    TEST_F(SynchronousFlashAlignerDeathTest, buffered_write_beyond_flash_size_aborts_immediately)
+    {
+        EXPECT_CALL(flashMock, NumberOfSectors()).WillRepeatedly(testing::Return(16));
+        EXPECT_CALL(flashMock, SizeOfSector(testing::_)).WillRepeatedly(testing::Return(4096));
+        EXPECT_CALL(flashMock, AddressOfSector(testing::_))
+            .WillRepeatedly(testing::Invoke([](uint32_t sector)
+                {
+                    return sector * 4096;
+                }));
+
+        // TotalSize is 16*4096 = 0x10000
+        // Attempt to buffer 4 bytes at 0xFFFE (would span 0xFFFE-0x10002 when aligned)
+        // This should abort during WriteBuffer, not later during Flush
+        std::array<uint8_t, 4> data;
+        std::fill(data.begin(), data.end(), 0xAA);
+        EXPECT_DEATH(aligner.WriteBuffer(infra::MakeRange(data), 0xFFFE), "");
     }
 
     TEST_F(SynchronousFlashAlignerDeathTest, read_overlapping_buffered_data_aborts)

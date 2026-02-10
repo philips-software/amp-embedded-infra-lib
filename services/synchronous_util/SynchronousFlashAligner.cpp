@@ -16,14 +16,7 @@ namespace services
             return;
         }
 
-        auto size = alignedBuffer_.size();
-
-        really_assert(size <= std::numeric_limits<uint32_t>::max());
-        really_assert(static_cast<uint32_t>(size) <= *address_);
-
-        auto writeAddress = *address_ - static_cast<uint32_t>(size);
-        really_assert(writeAddress <= TotalSize());
-        really_assert(alignedBuffer_.max_size() <= TotalSize() - writeAddress);
+        auto writeAddress = *address_ - static_cast<uint32_t>(alignedBuffer_.size());
 
         alignedBuffer_.resize(alignedBuffer_.max_size(), 0x00);
         SynchronousFlashDelegateBase::WriteBuffer(infra::MakeRange(alignedBuffer_), writeAddress);
@@ -76,19 +69,24 @@ namespace services
                 really_assert(address % alignedBuffer_.max_size() == 0);
             }
 
-            alignedBuffer_.insert(alignedBuffer_.end(), sendLater.begin(), sendLater.end());
-
             really_assert(buffer.size() <= std::numeric_limits<uint32_t>::max());
             really_assert(address <= std::numeric_limits<uint32_t>::max() - static_cast<uint32_t>(buffer.size()));
+            really_assert(address <= TotalSize());
 
             address_ = address + static_cast<uint32_t>(buffer.size());
+
+            alignedBuffer_.insert(alignedBuffer_.end(), sendLater.begin(), sendLater.end());
+
+            really_assert(alignedBuffer_.size() <= std::numeric_limits<uint32_t>::max());
+            really_assert(static_cast<uint32_t>(alignedBuffer_.size()) <= *address_);
+            auto bufferedStart = *address_ - static_cast<uint32_t>(alignedBuffer_.size());
+            really_assert(alignedBuffer_.max_size() <= TotalSize() - bufferedStart);
 
             if (sendNow.empty())
             {
                 return;
             }
 
-            really_assert(address <= TotalSize());
             really_assert(sendNow.size() <= TotalSize() - address);
 
             SynchronousFlashDelegateBase::WriteBuffer(sendNow, address);
@@ -128,13 +126,9 @@ namespace services
         if (alignedBuffer_.empty())
             return false;
 
-        really_assert(alignedBuffer_.size() <= std::numeric_limits<uint32_t>::max());
-        really_assert(static_cast<uint32_t>(alignedBuffer_.size()) <= *address_);
-
         auto bufferedStart = *address_ - static_cast<uint32_t>(alignedBuffer_.size());
         auto bufferedEnd = *address_;
 
-        // Check if ranges overlap: ranges overlap if start of one is before end of the other, and vice versa
         return rangeStart < bufferedEnd && rangeEnd > bufferedStart;
     }
 }
