@@ -57,13 +57,19 @@ namespace infra
     } while (0)
 
 #define LOG_AND_ABORT_NOT_IMPLEMENTED() LOG_AND_ABORT("Not implemented")
-#define LOG_AND_ABORT_ENUM(value)                                                                                            \
-    do                                                                                                                       \
-    {                                                                                                                        \
-        static_assert(std::is_enum_v<std::decay_t<decltype(value)>>, "LOG_AND_ABORT_ENUM can only be used with enum types"); \
-        LOG_AND_ABORT("Unexpected enum: %lld",                                                                               \
-            static_cast<int64_t>(                                                                                            \
-                static_cast<std::underlying_type_t<std::decay_t<decltype(value)>>>(value)));                                 \
+#define LOG_AND_ABORT_ENUM(value)                                                                                             \
+    do                                                                                                                        \
+    {                                                                                                                         \
+        static_assert(std::is_enum_v<std::decay_t<decltype(value)>>, "LOG_AND_ABORT_ENUM can only be used with enum types");  \
+        using LogAndAbortEnumUnderlyingType = std::underlying_type_t<std::decay_t<decltype(value)>>;                          \
+        if constexpr (std::is_signed_v<LogAndAbortEnumUnderlyingType>)                                                        \
+        {                                                                                                                     \
+            LOG_AND_ABORT("Unexpected enum: %lld", static_cast<int64_t>(static_cast<LogAndAbortEnumUnderlyingType>(value)));  \
+        }                                                                                                                     \
+        else                                                                                                                  \
+        {                                                                                                                     \
+            LOG_AND_ABORT("Unexpected enum: %llu", static_cast<uint64_t>(static_cast<LogAndAbortEnumUnderlyingType>(value))); \
+        }                                                                                                                     \
     } while (0)
 
 #endif // INFRA_UTIL_LOGANDABORT_HPP
