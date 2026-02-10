@@ -86,12 +86,12 @@ TEST_F(LogAndAbortTest, log_and_abort_recursive_call_skipped)
 
 TEST_F(LogAndAbortTest, log_and_abort_specialized)
 {
-    LOG_AND_ABORT_NOT_IMPLEMENTED();
+    EXPECT_DEATH(LOG_AND_ABORT_NOT_IMPLEMENTED(), "");
 
-    enum class TestEnum : uint8_t
+    enum class TestEnum : int
     {
         Value1,
         Value2
     };
-    LOG_AND_ABORT_ENUM(TestEnum::Value1);
+    EXPECT_DEATH(LOG_AND_ABORT_ENUM(TestEnum::Value1), "");
 }

@@ -55,9 +55,11 @@ namespace infra
     } while (0)
 
 #define LOG_AND_ABORT_NOT_IMPLEMENTED() LOG_AND_ABORT("Not implemented")
-#define LOG_AND_ABORT_ENUM(value)                                                                                        \
-    static_assert(std::is_enum_v<std::decay_t<decltype(value)>>, "LOG_AND_ABORT_ENUM can only be used with enum types"); \
-    static_assert(std::is_convertible_v<std::decay_t<decltype(value)>, int>, "Enum value must be convertible to int");   \
-    LOG_AND_ABORT("Unexpected enum: %d", static_cast<int>(value))
+#define LOG_AND_ABORT_ENUM(value)                                                                                            \
+    do                                                                                                                       \
+    {                                                                                                                        \
+        static_assert(std::is_enum_v<std::decay_t<decltype(value)>>, "LOG_AND_ABORT_ENUM can only be used with enum types"); \
+        LOG_AND_ABORT("Unexpected enum: %d", static_cast<int>(value));                                                       \
+    } while (0)
 
 #endif // INFRA_UTIL_LOGANDABORT_HPP
