@@ -138,6 +138,21 @@ namespace services
             level4,
         };
 
+        enum class SecuritySupport : uint8_t
+        {
+            disabled,
+            supported,
+            enforced
+        };
+
+        struct SecurityPreferences
+        {
+            SecuritySupport secureConnections;
+            SecuritySupport mitm;
+            IoCapabilities ioCapabilities;
+            bool outOfBandSupported;
+        };
+
         // 1. If there is a pre-existing bond, then the connection will be encrypted.
         // 2. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
         virtual void PairAndBond() = 0;
