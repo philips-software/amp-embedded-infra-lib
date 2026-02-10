@@ -2,7 +2,6 @@
 #define SERVICES_SYNCHRONOUS_FLASH_ALIGNER_HPP
 
 #include "hal/synchronous_interfaces/SynchronousFlash.hpp"
-#include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/WithStorage.hpp"
 #include "services/synchronous_util/SynchronousFlashDelegate.hpp"
@@ -26,9 +25,7 @@ namespace upgrade::application
 
     private:
         infra::BoundedVector<uint8_t>& alignedBuffer_;
-        infra::ConstByteRange buffer_;
-        uint32_t address_;
-        infra::AutoResetFunction<void()> onDone_;
+        uint32_t address_{ 0 };
     };
 }
 

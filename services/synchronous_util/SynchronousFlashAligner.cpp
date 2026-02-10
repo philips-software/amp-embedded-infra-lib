@@ -27,38 +27,48 @@ namespace upgrade::application
 
         alignedBuffer_.resize(alignedBuffer_.max_size(), 0x00);
         SynchronousFlashDelegateBase::WriteBuffer(infra::MakeRange(alignedBuffer_), writeAddress);
+
+        alignedBuffer_.clear();
     }
 
     void SynchronousFlashAligner::WriteBuffer(infra::ConstByteRange buffer, uint32_t address)
     {
         if (!alignedBuffer_.empty())
         {
-            auto range = infra::Head(buffer, alignedBuffer_.max_size() - alignedBuffer_.size());
+            if (address != address_)
+            {
+                Flush();
+                alignedBuffer_.clear();
+            }
+            else
+            {
+                auto range = infra::Head(buffer, alignedBuffer_.max_size() - alignedBuffer_.size());
 
-            really_assert(range.size() <= std::numeric_limits<uint32_t>::max());
-            really_assert(address <= std::numeric_limits<uint32_t>::max() - static_cast<uint32_t>(range.size()));
+                really_assert(range.size() <= std::numeric_limits<uint32_t>::max());
+                really_assert(address <= std::numeric_limits<uint32_t>::max() - static_cast<uint32_t>(range.size()));
 
-            alignedBuffer_.insert(alignedBuffer_.end(), range.begin(), range.end());
-            buffer.pop_front(range.size());
-            address += static_cast<uint32_t>(range.size());
+                alignedBuffer_.insert(alignedBuffer_.end(), range.begin(), range.end());
+                buffer.pop_front(range.size());
+                address += static_cast<uint32_t>(range.size());
+            }
         }
 
         if (alignedBuffer_.full())
         {
-            this->buffer_ = buffer;
-            this->address_ = address;
+            auto remainingBuffer = buffer;
+            auto remainingAddress = address;
 
             really_assert(alignedBuffer_.size() <= std::numeric_limits<uint32_t>::max());
-            really_assert(static_cast<uint32_t>(alignedBuffer_.size()) <= address);
+            really_assert(static_cast<uint32_t>(alignedBuffer_.size()) <= remainingAddress);
 
-            auto writeAddress = address - static_cast<uint32_t>(alignedBuffer_.size());
+            auto writeAddress = remainingAddress - static_cast<uint32_t>(alignedBuffer_.size());
 
             really_assert(writeAddress <= TotalSize());
             really_assert(alignedBuffer_.size() <= TotalSize() - writeAddress);
 
             SynchronousFlashDelegateBase::WriteBuffer(infra::MakeRange(alignedBuffer_), writeAddress);
             alignedBuffer_.clear();
-            WriteBuffer(this->buffer_, this->address_);
+            WriteBuffer(remainingBuffer, remainingAddress);
         }
         else
         {
