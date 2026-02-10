@@ -265,6 +265,28 @@ namespace
         aligner.WriteBuffer(infra::MakeRange(secondWrite), 0x1006);
     }
 
+    TEST_F(SynchronousFlashAlignerTest, aligned_start_addresses_are_accepted)
+    {
+        std::array<uint8_t, 8> data;
+        std::fill(data.begin(), data.end(), 0xFF);
+
+        // Test various aligned addresses (multiples of 16)
+        std::array<uint32_t, 5> alignedAddresses = { 0x0000, 0x0010, 0x0100, 0x1000, 0x10000 };
+
+        for (auto address : alignedAddresses)
+        {
+            std::array<uint8_t, 16> expected;
+            std::fill(expected.begin(), expected.begin() + 8, 0xFF);
+            std::fill(expected.begin() + 8, expected.end(), 0x00);
+
+            EXPECT_CALL(flashMock, WriteBuffer(testing::ElementsAreArray(expected), testing::Eq(address))).Times(1);
+
+            // Write at aligned address - should buffer without aborting
+            aligner.WriteBuffer(infra::MakeRange(data), address);
+            aligner.Flush();
+        }
+    }
+
     class SynchronousFlashAlignerDeathTest : public testing::Test
     {
     public:
@@ -317,7 +339,7 @@ namespace
         std::array<uint8_t, 8> data;
         std::fill(data.begin(), data.end(), 0xCC);
 
-        aligner.WriteBuffer(infra::MakeRange(data), 0x10008);
+        aligner.WriteBuffer(infra::MakeRange(data), 0x10000);
 
         EXPECT_DEATH(aligner.Flush(), "");
     }
@@ -357,5 +379,21 @@ namespace
         std::array<uint8_t, 8> secondWrite;
         std::fill(secondWrite.begin(), secondWrite.end(), 0x22);
         EXPECT_DEATH(aligner.WriteBuffer(infra::MakeRange(secondWrite), 0x2000), "");
+    }
+
+    TEST_F(SynchronousFlashAlignerDeathTest, write_at_unaligned_address_aborts)
+    {
+        EXPECT_CALL(flashMock, NumberOfSectors()).WillRepeatedly(testing::Return(256));
+        EXPECT_CALL(flashMock, SizeOfSector(testing::_)).WillRepeatedly(testing::Return(4096));
+        EXPECT_CALL(flashMock, AddressOfSector(testing::_))
+            .WillRepeatedly(testing::Invoke([](uint32_t sector)
+                {
+                    return sector * 4096;
+                }));
+
+        // Attempt to write at unaligned address (not a multiple of 16) - should abort
+        std::array<uint8_t, 8> data;
+        std::fill(data.begin(), data.end(), 0xFF);
+        EXPECT_DEATH(aligner.WriteBuffer(infra::MakeRange(data), 0x1001), "");
     }
 }

@@ -70,6 +70,12 @@ namespace services
             auto sendNowSize = buffer.size() - buffer.size() % alignedBuffer_.max_size();
             auto sendNow = infra::Head(buffer, sendNowSize);
             auto sendLater = infra::DiscardHead(buffer, sendNowSize);
+
+            if (!address_)
+            {
+                really_assert(address % alignedBuffer_.max_size() == 0);
+            }
+
             alignedBuffer_.insert(alignedBuffer_.end(), sendLater.begin(), sendLater.end());
 
             really_assert(buffer.size() <= std::numeric_limits<uint32_t>::max());
