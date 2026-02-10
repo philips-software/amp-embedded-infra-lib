@@ -61,8 +61,9 @@ namespace infra
     do                                                                                                                       \
     {                                                                                                                        \
         static_assert(std::is_enum_v<std::decay_t<decltype(value)>>, "LOG_AND_ABORT_ENUM can only be used with enum types"); \
-        using UnderlyingType = std::underlying_type_t<std::decay_t<decltype(value)>>;                                        \
-        LOG_AND_ABORT("Unexpected enum: %lld", static_cast<int64_t>(static_cast<UnderlyingType>(value)));                    \
+        LOG_AND_ABORT("Unexpected enum: %lld",                                                                               \
+            static_cast<int64_t>(                                                                                            \
+                static_cast<std::underlying_type_t<std::decay_t<decltype(value)>>>(value)));                                 \
     } while (0)
 
 #endif // INFRA_UTIL_LOGANDABORT_HPP
