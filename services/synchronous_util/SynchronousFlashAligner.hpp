@@ -23,6 +23,11 @@ namespace services
         void Flush();
 
         void WriteBuffer(infra::ConstByteRange buffer, uint32_t address) override;
+        void ReadBuffer(infra::ByteRange buffer, uint32_t address) override;
+        void EraseSectors(uint32_t beginIndex, uint32_t endIndex) override;
+
+    private:
+        bool OverlapsWithBufferedData(uint32_t rangeStart, uint32_t rangeEnd) const;
 
     private:
         infra::BoundedVector<uint8_t>& alignedBuffer_;

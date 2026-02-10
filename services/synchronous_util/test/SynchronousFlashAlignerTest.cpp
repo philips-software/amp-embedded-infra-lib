@@ -155,6 +155,11 @@ namespace
         EXPECT_CALL(flashMock, ReadBuffer(testing::_, testing::Eq(0x8000))).Times(1);
         aligner.ReadBuffer(infra::MakeRange(buffer), 0x8000);
 
+        // EraseSectors now needs AddressOfSector and SizeOfSector for overlap checking and bounds validation
+        EXPECT_CALL(flashMock, NumberOfSectors()).WillRepeatedly(testing::Return(256));
+        EXPECT_CALL(flashMock, AddressOfSector(testing::Eq(2))).WillRepeatedly(testing::Return(0x2000));
+        EXPECT_CALL(flashMock, AddressOfSector(testing::Eq(4))).WillRepeatedly(testing::Return(0x4000));
+        EXPECT_CALL(flashMock, SizeOfSector(testing::Eq(4))).WillRepeatedly(testing::Return(4096));
         EXPECT_CALL(flashMock, EraseSectors(testing::Eq(2), testing::Eq(5))).Times(1);
         aligner.EraseSectors(2, 5);
     }
@@ -395,5 +400,143 @@ namespace
         std::array<uint8_t, 8> data;
         std::fill(data.begin(), data.end(), 0xFF);
         EXPECT_DEATH(aligner.WriteBuffer(infra::MakeRange(data), 0x1001), "");
+    }
+
+    TEST_F(SynchronousFlashAlignerDeathTest, read_overlapping_buffered_data_aborts)
+    {
+        EXPECT_CALL(flashMock, NumberOfSectors()).WillRepeatedly(testing::Return(256));
+        EXPECT_CALL(flashMock, SizeOfSector(testing::_)).WillRepeatedly(testing::Return(4096));
+        EXPECT_CALL(flashMock, AddressOfSector(testing::_))
+            .WillRepeatedly(testing::Invoke([](uint32_t sector)
+                {
+                    return sector * 4096;
+                }));
+
+        // Buffer 8 bytes at 0x1000 (will span 0x1000-0x1008)
+        std::array<uint8_t, 8> writeData;
+        std::fill(writeData.begin(), writeData.end(), 0xAA);
+        aligner.WriteBuffer(infra::MakeRange(writeData), 0x1000);
+
+        // Attempt to read from overlapping address - should abort
+        std::array<uint8_t, 16> readData;
+        EXPECT_DEATH(aligner.ReadBuffer(infra::MakeRange(readData), 0x1000), "");
+    }
+
+    TEST_F(SynchronousFlashAlignerDeathTest, erase_overlapping_buffered_data_aborts)
+    {
+        EXPECT_CALL(flashMock, NumberOfSectors()).WillRepeatedly(testing::Return(256));
+        EXPECT_CALL(flashMock, SizeOfSector(testing::_)).WillRepeatedly(testing::Return(4096));
+        EXPECT_CALL(flashMock, AddressOfSector(testing::_))
+            .WillRepeatedly(testing::Invoke([](uint32_t sector)
+                {
+                    return sector * 4096;
+                }));
+
+        // Buffer 8 bytes at 0x1000 (will span 0x1000-0x1008), which is in sector 1 (0x1000-0x1FFF)
+        std::array<uint8_t, 8> writeData;
+        std::fill(writeData.begin(), writeData.end(), 0xBB);
+        aligner.WriteBuffer(infra::MakeRange(writeData), 0x1000);
+
+        // Attempt to erase sector 1 which contains buffered data - should abort
+        EXPECT_DEATH(aligner.EraseSectors(1, 2), "");
+    }
+}
+
+namespace
+{
+    class SynchronousFlashAlignerOverlapTest : public testing::Test
+    {
+    public:
+        SynchronousFlashAlignerOverlapTest()
+        {
+            EXPECT_CALL(flashMock, NumberOfSectors()).Times(testing::AnyNumber()).WillRepeatedly(testing::Return(DefaultNumSectors));
+            EXPECT_CALL(flashMock, SizeOfSector(testing::_)).Times(testing::AnyNumber()).WillRepeatedly(testing::Return(DefaultSectorSize));
+            EXPECT_CALL(flashMock, AddressOfSector(testing::_)).Times(testing::AnyNumber()).WillRepeatedly(testing::Invoke([](uint32_t sector)
+                {
+                    return sector * DefaultSectorSize;
+                }));
+        }
+
+        testing::StrictMock<hal::SynchronousFlashMock> flashMock;
+        services::SynchronousFlashAligner::WithAlignment<Alignment> aligner{ flashMock };
+    };
+
+    TEST_F(SynchronousFlashAlignerOverlapTest, read_non_overlapping_address_succeeds)
+    {
+        // Buffer 8 bytes at 0x1000 (will span 0x1000-0x1008)
+        std::array<uint8_t, 8> writeData;
+        std::fill(writeData.begin(), writeData.end(), 0xCC);
+        aligner.WriteBuffer(infra::MakeRange(writeData), 0x1000);
+
+        // Read from non-overlapping address 0x2000 - should succeed
+        std::array<uint8_t, 16> readData;
+        EXPECT_CALL(flashMock, ReadBuffer(testing::_, testing::Eq(0x2000))).Times(1);
+        aligner.ReadBuffer(infra::MakeRange(readData), 0x2000);
+    }
+
+    TEST_F(SynchronousFlashAlignerOverlapTest, read_without_buffered_data_succeeds)
+    {
+        // No buffered data, read should work at any address
+        std::array<uint8_t, 16> readData;
+        EXPECT_CALL(flashMock, ReadBuffer(testing::_, testing::Eq(0x1000))).Times(1);
+        aligner.ReadBuffer(infra::MakeRange(readData), 0x1000);
+    }
+
+    TEST_F(SynchronousFlashAlignerOverlapTest, erase_non_overlapping_sectors_succeeds)
+    {
+        // Buffer 8 bytes at 0x1000 (sector 0, spans 0x1000-0x1008)
+        std::array<uint8_t, 8> writeData;
+        std::fill(writeData.begin(), writeData.end(), 0xDD);
+        aligner.WriteBuffer(infra::MakeRange(writeData), 0x1000);
+
+        // Erase sectors 2-3 (non-overlapping with sector 0) - should succeed
+        EXPECT_CALL(flashMock, EraseSectors(testing::Eq(2), testing::Eq(3))).Times(1);
+        aligner.EraseSectors(2, 3);
+    }
+
+    TEST_F(SynchronousFlashAlignerOverlapTest, erase_without_buffered_data_succeeds)
+    {
+        // No buffered data, erase should work
+        EXPECT_CALL(flashMock, EraseSectors(testing::Eq(0), testing::Eq(1))).Times(1);
+        aligner.EraseSectors(0, 1);
+    }
+
+    TEST_F(SynchronousFlashAlignerOverlapTest, read_after_flush_succeeds)
+    {
+        // Buffer and flush data
+        std::array<uint8_t, 8> writeData;
+        std::fill(writeData.begin(), writeData.end(), 0xEE);
+
+        std::array<uint8_t, 16> expected;
+        std::fill(expected.begin(), expected.begin() + 8, 0xEE);
+        std::fill(expected.begin() + 8, expected.end(), 0x00);
+
+        EXPECT_CALL(flashMock, WriteBuffer(testing::ElementsAreArray(expected), testing::Eq(0x1000))).Times(1);
+        aligner.WriteBuffer(infra::MakeRange(writeData), 0x1000);
+        aligner.Flush();
+
+        // After flush, buffer is empty, so read should work
+        std::array<uint8_t, 16> readData;
+        EXPECT_CALL(flashMock, ReadBuffer(testing::_, testing::Eq(0x1000))).Times(1);
+        aligner.ReadBuffer(infra::MakeRange(readData), 0x1000);
+    }
+
+    TEST_F(SynchronousFlashAlignerOverlapTest, erase_after_flush_succeeds)
+    {
+        // Buffer and flush data at sector 0
+        std::array<uint8_t, 8> writeData;
+        std::fill(writeData.begin(), writeData.end(), 0xFF);
+
+        std::array<uint8_t, 16> expected;
+        std::fill(expected.begin(), expected.begin() + 8, 0xFF);
+        std::fill(expected.begin() + 8, expected.end(), 0x00);
+
+        EXPECT_CALL(flashMock, WriteBuffer(testing::ElementsAreArray(expected), testing::Eq(0x1000))).Times(1);
+        aligner.WriteBuffer(infra::MakeRange(writeData), 0x1000);
+        aligner.Flush();
+
+        // After flush, buffer is empty, so erase should work
+        EXPECT_CALL(flashMock, EraseSectors(testing::Eq(0), testing::Eq(1))).Times(1);
+        aligner.EraseSectors(0, 1);
     }
 }

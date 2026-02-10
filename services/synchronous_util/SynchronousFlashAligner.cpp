@@ -94,4 +94,47 @@ namespace services
             SynchronousFlashDelegateBase::WriteBuffer(sendNow, address);
         }
     }
+
+    void SynchronousFlashAligner::ReadBuffer(infra::ByteRange buffer, uint32_t address)
+    {
+        really_assert(buffer.size() <= std::numeric_limits<uint32_t>::max());
+        really_assert(!OverlapsWithBufferedData(address, address + static_cast<uint32_t>(buffer.size())));
+
+        SynchronousFlashDelegateBase::ReadBuffer(buffer, address);
+    }
+
+    void SynchronousFlashAligner::EraseSectors(uint32_t beginIndex, uint32_t endIndex)
+    {
+        really_assert(beginIndex <= endIndex);
+
+        if (beginIndex < endIndex)
+        {
+            auto eraseStart = AddressOfSector(beginIndex);
+            auto eraseEnd = AddressOfSector(endIndex - 1);
+
+            really_assert(eraseEnd <= TotalSize());
+            really_assert(SizeOfSector(endIndex - 1) <= TotalSize() - eraseEnd);
+
+            eraseEnd += SizeOfSector(endIndex - 1);
+
+            really_assert(!OverlapsWithBufferedData(eraseStart, eraseEnd));
+        }
+
+        SynchronousFlashDelegateBase::EraseSectors(beginIndex, endIndex);
+    }
+
+    bool SynchronousFlashAligner::OverlapsWithBufferedData(uint32_t rangeStart, uint32_t rangeEnd) const
+    {
+        if (alignedBuffer_.empty())
+            return false;
+
+        really_assert(alignedBuffer_.size() <= std::numeric_limits<uint32_t>::max());
+        really_assert(static_cast<uint32_t>(alignedBuffer_.size()) <= *address_);
+
+        auto bufferedStart = *address_ - static_cast<uint32_t>(alignedBuffer_.size());
+        auto bufferedEnd = *address_;
+
+        // Check if ranges overlap: ranges overlap if start of one is before end of the other, and vice versa
+        return rangeStart < bufferedEnd && rangeEnd > bufferedStart;
+    }
 }
