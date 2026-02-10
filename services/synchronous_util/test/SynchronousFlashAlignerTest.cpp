@@ -3,7 +3,6 @@
 #include "gmock/gmock.h"
 #include <algorithm>
 #include <array>
-#include <csignal>
 
 namespace
 {
@@ -275,108 +274,88 @@ namespace
 
     TEST_F(SynchronousFlashAlignerDeathTest, write_beyond_flash_size_aborts)
     {
-        EXPECT_EXIT(({
-            EXPECT_CALL(flashMock, NumberOfSectors()).WillRepeatedly(testing::Return(16));
-            EXPECT_CALL(flashMock, SizeOfSector(testing::_)).WillRepeatedly(testing::Return(4096));
-            EXPECT_CALL(flashMock, AddressOfSector(testing::_))
-                .WillRepeatedly(testing::Invoke([](uint32_t sector)
-                    {
-                        return sector * 4096;
-                    }));
+        EXPECT_CALL(flashMock, NumberOfSectors()).WillRepeatedly(testing::Return(16));
+        EXPECT_CALL(flashMock, SizeOfSector(testing::_)).WillRepeatedly(testing::Return(4096));
+        EXPECT_CALL(flashMock, AddressOfSector(testing::_))
+            .WillRepeatedly(testing::Invoke([](uint32_t sector)
+                {
+                    return sector * 4096;
+                }));
 
-            std::array<uint8_t, 16> data;
-            std::fill(data.begin(), data.end(), 0xAA);
+        std::array<uint8_t, 16> data;
+        std::fill(data.begin(), data.end(), 0xAA);
 
-            aligner.WriteBuffer(infra::MakeRange(data), 0x10000);
-        }),
-            ::testing::KilledBySignal(SIGABRT),
-            ".*");
+        EXPECT_DEATH(aligner.WriteBuffer(infra::MakeRange(data), 0x10000), "");
     }
 
     TEST_F(SynchronousFlashAlignerDeathTest, write_that_extends_beyond_flash_aborts)
     {
-        EXPECT_EXIT(({
-            EXPECT_CALL(flashMock, NumberOfSectors()).WillRepeatedly(testing::Return(16));
-            EXPECT_CALL(flashMock, SizeOfSector(testing::_)).WillRepeatedly(testing::Return(4096));
-            EXPECT_CALL(flashMock, AddressOfSector(testing::_))
-                .WillRepeatedly(testing::Invoke([](uint32_t sector)
-                    {
-                        return sector * 4096;
-                    }));
+        EXPECT_CALL(flashMock, NumberOfSectors()).WillRepeatedly(testing::Return(16));
+        EXPECT_CALL(flashMock, SizeOfSector(testing::_)).WillRepeatedly(testing::Return(4096));
+        EXPECT_CALL(flashMock, AddressOfSector(testing::_))
+            .WillRepeatedly(testing::Invoke([](uint32_t sector)
+                {
+                    return sector * 4096;
+                }));
 
-            std::array<uint8_t, 32> data;
-            std::fill(data.begin(), data.end(), 0xBB);
+        std::array<uint8_t, 32> data;
+        std::fill(data.begin(), data.end(), 0xBB);
 
-            aligner.WriteBuffer(infra::MakeRange(data), 0xFFF0);
-        }),
-            ::testing::KilledBySignal(SIGABRT),
-            ".*");
+        EXPECT_DEATH(aligner.WriteBuffer(infra::MakeRange(data), 0xFFF0), "");
     }
 
     TEST_F(SynchronousFlashAlignerDeathTest, flush_beyond_flash_size_aborts)
     {
-        EXPECT_EXIT(({
-            EXPECT_CALL(flashMock, NumberOfSectors()).WillRepeatedly(testing::Return(16));
-            EXPECT_CALL(flashMock, SizeOfSector(testing::_)).WillRepeatedly(testing::Return(4096));
-            EXPECT_CALL(flashMock, AddressOfSector(testing::_))
-                .WillRepeatedly(testing::Invoke([](uint32_t sector)
-                    {
-                        return sector * 4096;
-                    }));
+        EXPECT_CALL(flashMock, NumberOfSectors()).WillRepeatedly(testing::Return(16));
+        EXPECT_CALL(flashMock, SizeOfSector(testing::_)).WillRepeatedly(testing::Return(4096));
+        EXPECT_CALL(flashMock, AddressOfSector(testing::_))
+            .WillRepeatedly(testing::Invoke([](uint32_t sector)
+                {
+                    return sector * 4096;
+                }));
 
-            std::array<uint8_t, 8> data;
-            std::fill(data.begin(), data.end(), 0xCC);
+        std::array<uint8_t, 8> data;
+        std::fill(data.begin(), data.end(), 0xCC);
 
-            aligner.WriteBuffer(infra::MakeRange(data), 0x10008);
+        aligner.WriteBuffer(infra::MakeRange(data), 0x10008);
 
-            aligner.Flush();
-        }),
-            ::testing::KilledBySignal(SIGABRT),
-            ".*");
+        EXPECT_DEATH(aligner.Flush(), "");
     }
 
     TEST_F(SynchronousFlashAlignerDeathTest, address_overflow_aborts)
     {
-        EXPECT_EXIT(({
-            EXPECT_CALL(flashMock, NumberOfSectors()).WillRepeatedly(testing::Return(256));
-            EXPECT_CALL(flashMock, SizeOfSector(testing::_)).WillRepeatedly(testing::Return(4096));
-            EXPECT_CALL(flashMock, AddressOfSector(testing::_))
-                .WillRepeatedly(testing::Invoke([](uint32_t sector)
-                    {
-                        return sector * 4096;
-                    }));
+        EXPECT_CALL(flashMock, NumberOfSectors()).WillRepeatedly(testing::Return(256));
+        EXPECT_CALL(flashMock, SizeOfSector(testing::_)).WillRepeatedly(testing::Return(4096));
+        EXPECT_CALL(flashMock, AddressOfSector(testing::_))
+            .WillRepeatedly(testing::Invoke([](uint32_t sector)
+                {
+                    return sector * 4096;
+                }));
 
-            std::array<uint8_t, 10> data;
-            std::fill(data.begin(), data.end(), 0xEE);
+        std::array<uint8_t, 10> data;
+        std::fill(data.begin(), data.end(), 0xEE);
 
-            aligner.WriteBuffer(infra::MakeRange(data), 0xFFFFFFFF);
-        }),
-            ::testing::KilledBySignal(SIGABRT),
-            ".*");
+        EXPECT_DEATH(aligner.WriteBuffer(infra::MakeRange(data), 0xFFFFFFFF), "");
     }
 
     TEST_F(SynchronousFlashAlignerDeathTest, write_at_non_contiguous_address_with_buffered_data_aborts)
     {
-        EXPECT_EXIT(({
-            EXPECT_CALL(flashMock, NumberOfSectors()).WillRepeatedly(testing::Return(256));
-            EXPECT_CALL(flashMock, SizeOfSector(testing::_)).WillRepeatedly(testing::Return(4096));
-            EXPECT_CALL(flashMock, AddressOfSector(testing::_))
-                .WillRepeatedly(testing::Invoke([](uint32_t sector)
-                    {
-                        return sector * 4096;
-                    }));
+        EXPECT_CALL(flashMock, NumberOfSectors()).WillRepeatedly(testing::Return(256));
+        EXPECT_CALL(flashMock, SizeOfSector(testing::_)).WillRepeatedly(testing::Return(4096));
+        EXPECT_CALL(flashMock, AddressOfSector(testing::_))
+            .WillRepeatedly(testing::Invoke([](uint32_t sector)
+                {
+                    return sector * 4096;
+                }));
 
-            // First write - buffer 8 bytes at 0x1000
-            std::array<uint8_t, 8> firstWrite;
-            std::fill(firstWrite.begin(), firstWrite.end(), 0x11);
-            aligner.WriteBuffer(infra::MakeRange(firstWrite), 0x1000);
+        // First write - buffer 8 bytes at 0x1000
+        std::array<uint8_t, 8> firstWrite;
+        std::fill(firstWrite.begin(), firstWrite.end(), 0x11);
+        aligner.WriteBuffer(infra::MakeRange(firstWrite), 0x1000);
 
-            // Attempt to write at non-contiguous address with buffered data - should abort
-            std::array<uint8_t, 8> secondWrite;
-            std::fill(secondWrite.begin(), secondWrite.end(), 0x22);
-            aligner.WriteBuffer(infra::MakeRange(secondWrite), 0x2000);
-        }),
-            ::testing::KilledBySignal(SIGABRT),
-            ".*");
+        // Attempt to write at non-contiguous address with buffered data - should abort
+        std::array<uint8_t, 8> secondWrite;
+        std::fill(secondWrite.begin(), secondWrite.end(), 0x22);
+        EXPECT_DEATH(aligner.WriteBuffer(infra::MakeRange(secondWrite), 0x2000), "");
     }
 }
