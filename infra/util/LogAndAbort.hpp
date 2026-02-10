@@ -3,6 +3,7 @@
 
 #include "infra/util/Function.hpp"
 #include <cstdarg>
+#include <cstdint>
 #include <type_traits>
 
 namespace infra
@@ -60,7 +61,8 @@ namespace infra
     do                                                                                                                       \
     {                                                                                                                        \
         static_assert(std::is_enum_v<std::decay_t<decltype(value)>>, "LOG_AND_ABORT_ENUM can only be used with enum types"); \
-        LOG_AND_ABORT("Unexpected enum: %d", static_cast<int>(value));                                                       \
+        using UnderlyingType = std::underlying_type_t<std::decay_t<decltype(value)>>;                                        \
+        LOG_AND_ABORT("Unexpected enum: %lld", static_cast<int64_t>(static_cast<UnderlyingType>(value)));                    \
     } while (0)
 
 #endif // INFRA_UTIL_LOGANDABORT_HPP
