@@ -19,9 +19,9 @@ namespace upgrade::application
         auto size = alignedBuffer_.size();
 
         really_assert(size <= std::numeric_limits<uint32_t>::max());
-        really_assert(static_cast<uint32_t>(size) <= address_);
+        really_assert(static_cast<uint32_t>(size) <= *address_);
 
-        auto writeAddress = address_ - static_cast<uint32_t>(size);
+        auto writeAddress = *address_ - static_cast<uint32_t>(size);
         really_assert(writeAddress <= TotalSize());
         really_assert(alignedBuffer_.max_size() <= TotalSize() - writeAddress);
 
@@ -29,28 +29,23 @@ namespace upgrade::application
         SynchronousFlashDelegateBase::WriteBuffer(infra::MakeRange(alignedBuffer_), writeAddress);
 
         alignedBuffer_.clear();
+        address_.reset();
     }
 
     void SynchronousFlashAligner::WriteBuffer(infra::ConstByteRange buffer, uint32_t address)
     {
         if (!alignedBuffer_.empty())
         {
-            if (address != address_)
-            {
-                Flush();
-                alignedBuffer_.clear();
-            }
-            else
-            {
-                auto range = infra::Head(buffer, alignedBuffer_.max_size() - alignedBuffer_.size());
+            really_assert(!address_ || address == *address_);
 
-                really_assert(range.size() <= std::numeric_limits<uint32_t>::max());
-                really_assert(address <= std::numeric_limits<uint32_t>::max() - static_cast<uint32_t>(range.size()));
+            auto range = infra::Head(buffer, alignedBuffer_.max_size() - alignedBuffer_.size());
 
-                alignedBuffer_.insert(alignedBuffer_.end(), range.begin(), range.end());
-                buffer.pop_front(range.size());
-                address += static_cast<uint32_t>(range.size());
-            }
+            really_assert(range.size() <= std::numeric_limits<uint32_t>::max());
+            really_assert(address <= std::numeric_limits<uint32_t>::max() - static_cast<uint32_t>(range.size()));
+
+            alignedBuffer_.insert(alignedBuffer_.end(), range.begin(), range.end());
+            buffer.pop_front(range.size());
+            address += static_cast<uint32_t>(range.size());
         }
 
         if (alignedBuffer_.full())
@@ -80,7 +75,7 @@ namespace upgrade::application
             really_assert(buffer.size() <= std::numeric_limits<uint32_t>::max());
             really_assert(address <= std::numeric_limits<uint32_t>::max() - static_cast<uint32_t>(buffer.size()));
 
-            this->address_ = address + static_cast<uint32_t>(buffer.size());
+            address_ = address + static_cast<uint32_t>(buffer.size());
 
             if (sendNow.empty())
             {

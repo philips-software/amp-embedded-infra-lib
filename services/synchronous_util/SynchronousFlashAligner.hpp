@@ -5,6 +5,7 @@
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/WithStorage.hpp"
 #include "services/synchronous_util/SynchronousFlashDelegate.hpp"
+#include <optional>
 
 namespace upgrade::application
 {
@@ -25,7 +26,7 @@ namespace upgrade::application
 
     private:
         infra::BoundedVector<uint8_t>& alignedBuffer_;
-        uint32_t address_{ 0 };
+        std::optional<uint32_t> address_{ 0 };
     };
 }
 

@@ -225,86 +225,45 @@ namespace
         aligner.WriteBuffer(infra::MakeRange(data), 0x1000);
     }
 
-    TEST_F(SynchronousFlashAlignerTest, non_contiguous_address_flushes_buffer)
+    TEST_F(SynchronousFlashAlignerTest, contiguous_address_continues_buffering)
     {
         // First write - buffer 8 bytes at 0x1000
         std::array<uint8_t, 8> firstWrite;
         std::fill(firstWrite.begin(), firstWrite.end(), 0x11);
         aligner.WriteBuffer(infra::MakeRange(firstWrite), 0x1000);
 
-        // Second write at non-contiguous address should flush first buffer
+        // Second write at contiguous address should continue buffering
         std::array<uint8_t, 8> secondWrite;
         std::fill(secondWrite.begin(), secondWrite.end(), 0x22);
 
-        std::array<uint8_t, 16> firstExpected;
-        std::fill(firstExpected.begin(), firstExpected.begin() + 8, 0x11);
-        std::fill(firstExpected.begin() + 8, firstExpected.end(), 0x00);
+        std::array<uint8_t, 16> expected;
+        std::fill(expected.begin(), expected.begin() + 8, 0x11);
+        std::fill(expected.begin() + 8, expected.end(), 0x22);
 
-        testing::InSequence seq;
-        EXPECT_CALL(flashMock, WriteBuffer(testing::ElementsAreArray(firstExpected), testing::Eq(0x1000))).Times(1);
+        EXPECT_CALL(flashMock, WriteBuffer(testing::ElementsAreArray(expected), testing::Eq(0x1000))).Times(1);
 
-        // Non-contiguous write at 0x2000 (not 0x1008)
-        aligner.WriteBuffer(infra::MakeRange(secondWrite), 0x2000);
+        // Contiguous write at 0x1008
+        aligner.WriteBuffer(infra::MakeRange(secondWrite), 0x1008);
     }
 
-    TEST_F(SynchronousFlashAlignerTest, non_contiguous_address_then_continues_normally)
+    TEST_F(SynchronousFlashAlignerTest, multiple_contiguous_writes)
     {
         // First write - buffer 6 bytes at 0x1000
         std::array<uint8_t, 6> firstWrite;
         std::fill(firstWrite.begin(), firstWrite.end(), 0xAA);
         aligner.WriteBuffer(infra::MakeRange(firstWrite), 0x1000);
 
-        // Non-contiguous write at 0x3000 should flush and start new buffer
+        // Second write continues contiguously
         std::array<uint8_t, 10> secondWrite;
         std::fill(secondWrite.begin(), secondWrite.end(), 0xBB);
 
-        std::array<uint8_t, 16> firstExpected;
-        std::fill(firstExpected.begin(), firstExpected.begin() + 6, 0xAA);
-        std::fill(firstExpected.begin() + 6, firstExpected.end(), 0x00);
+        std::array<uint8_t, 16> expected;
+        std::fill(expected.begin(), expected.begin() + 6, 0xAA);
+        std::fill(expected.begin() + 6, expected.end(), 0xBB);
 
-        testing::InSequence seq;
-        EXPECT_CALL(flashMock, WriteBuffer(testing::ElementsAreArray(firstExpected), testing::Eq(0x1000))).Times(1);
+        EXPECT_CALL(flashMock, WriteBuffer(testing::ElementsAreArray(expected), testing::Eq(0x1000))).Times(1);
 
-        aligner.WriteBuffer(infra::MakeRange(secondWrite), 0x3000);
-
-        // Third write continues from second - should combine in buffer
-        std::array<uint8_t, 10> thirdWrite;
-        std::fill(thirdWrite.begin(), thirdWrite.end(), 0xCC);
-
-        std::array<uint8_t, 16> secondExpected;
-        std::fill(secondExpected.begin(), secondExpected.begin() + 10, 0xBB);
-        std::fill(secondExpected.begin() + 10, secondExpected.end(), 0xCC);
-
-        EXPECT_CALL(flashMock, WriteBuffer(testing::ElementsAreArray(secondExpected), testing::Eq(0x3000))).Times(1);
-
-        aligner.WriteBuffer(infra::MakeRange(thirdWrite), 0x300A);
-    }
-
-    TEST_F(SynchronousFlashAlignerTest, non_contiguous_address_with_full_buffer)
-    {
-        // Write 12 bytes to partially fill buffer
-        std::array<uint8_t, 12> firstWrite;
-        std::fill(firstWrite.begin(), firstWrite.end(), 0x33);
-        aligner.WriteBuffer(infra::MakeRange(firstWrite), 0x5000);
-
-        // Write at non-contiguous address with enough data to complete alignment
-        std::array<uint8_t, 20> secondWrite;
-        std::fill(secondWrite.begin(), secondWrite.end(), 0x44);
-
-        std::array<uint8_t, 16> firstExpected;
-        std::fill(firstExpected.begin(), firstExpected.begin() + 12, 0x33);
-        std::fill(firstExpected.begin() + 12, firstExpected.end(), 0x00);
-
-        std::array<uint8_t, 16> secondExpected;
-        std::fill(secondExpected.begin(), secondExpected.end(), 0x44);
-
-        testing::InSequence seq;
-        // First buffered data should be flushed due to non-contiguous address
-        EXPECT_CALL(flashMock, WriteBuffer(testing::ElementsAreArray(firstExpected), testing::Eq(0x5000))).Times(1);
-        // Then new data should be written aligned
-        EXPECT_CALL(flashMock, WriteBuffer(testing::ElementsAreArray(secondExpected), testing::Eq(0x7000))).Times(1);
-
-        aligner.WriteBuffer(infra::MakeRange(secondWrite), 0x7000);
+        aligner.WriteBuffer(infra::MakeRange(secondWrite), 0x1006);
     }
 
     class SynchronousFlashAlignerDeathTest : public testing::Test
@@ -391,6 +350,31 @@ namespace
             std::fill(data.begin(), data.end(), 0xEE);
 
             aligner.WriteBuffer(infra::MakeRange(data), 0xFFFFFFFF);
+        }),
+            ::testing::KilledBySignal(SIGABRT),
+            ".*");
+    }
+
+    TEST_F(SynchronousFlashAlignerDeathTest, write_at_non_contiguous_address_with_buffered_data_aborts)
+    {
+        EXPECT_EXIT(({
+            EXPECT_CALL(flashMock, NumberOfSectors()).WillRepeatedly(testing::Return(256));
+            EXPECT_CALL(flashMock, SizeOfSector(testing::_)).WillRepeatedly(testing::Return(4096));
+            EXPECT_CALL(flashMock, AddressOfSector(testing::_))
+                .WillRepeatedly(testing::Invoke([](uint32_t sector)
+                    {
+                        return sector * 4096;
+                    }));
+
+            // First write - buffer 8 bytes at 0x1000
+            std::array<uint8_t, 8> firstWrite;
+            std::fill(firstWrite.begin(), firstWrite.end(), 0x11);
+            aligner.WriteBuffer(infra::MakeRange(firstWrite), 0x1000);
+
+            // Attempt to write at non-contiguous address with buffered data - should abort
+            std::array<uint8_t, 8> secondWrite;
+            std::fill(secondWrite.begin(), secondWrite.end(), 0x22);
+            aligner.WriteBuffer(infra::MakeRange(secondWrite), 0x2000);
         }),
             ::testing::KilledBySignal(SIGABRT),
             ".*");
