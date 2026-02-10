@@ -2,7 +2,7 @@
 #include "infra/util/ReallyAssert.hpp"
 #include <limits>
 
-namespace upgrade::application
+namespace services
 {
     SynchronousFlashAligner::SynchronousFlashAligner(infra::BoundedVector<uint8_t>& buffer, hal::SynchronousFlash& delegate)
         : SynchronousFlashDelegateBase(delegate)

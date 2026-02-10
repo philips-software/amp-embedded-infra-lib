@@ -7,7 +7,7 @@
 #include "services/synchronous_util/SynchronousFlashDelegate.hpp"
 #include <optional>
 
-namespace upgrade::application
+namespace services
 {
     // The purpose of this class is to make sure that writes to flash are always aligned on a certain boundary. This is used
     // when writing to internal flash, which must often be written in multiples of 8 or 16 bytes

@@ -26,7 +26,7 @@ namespace
         }
 
         testing::StrictMock<hal::SynchronousFlashMock> flashMock;
-        upgrade::application::SynchronousFlashAligner::WithAlignment<Alignment> aligner{ flashMock };
+        services::SynchronousFlashAligner::WithAlignment<Alignment> aligner{ flashMock };
     };
 
     TEST_F(SynchronousFlashAlignerTest, write_buffer_aligned_size)
@@ -269,7 +269,7 @@ namespace
     {
     public:
         hal::SynchronousFlashMock flashMock;
-        upgrade::application::SynchronousFlashAligner::WithAlignment<Alignment> aligner{ flashMock };
+        services::SynchronousFlashAligner::WithAlignment<Alignment> aligner{ flashMock };
     };
 
     TEST_F(SynchronousFlashAlignerDeathTest, write_beyond_flash_size_aborts)

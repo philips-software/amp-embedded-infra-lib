@@ -1,6 +1,6 @@
 #include "services/synchronous_util/SynchronousFlashDelegate.hpp"
 
-namespace upgrade::application
+namespace services
 {
     SynchronousFlashDelegateBase::SynchronousFlashDelegateBase(hal::SynchronousFlash& delegate)
         : delegate_(delegate)

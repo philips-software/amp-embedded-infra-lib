@@ -4,7 +4,7 @@
 #include "hal/synchronous_interfaces/SynchronousFlash.hpp"
 #include <cstdint>
 
-namespace upgrade::application
+namespace services
 {
     class SynchronousFlashDelegateBase
         : public hal::SynchronousFlash

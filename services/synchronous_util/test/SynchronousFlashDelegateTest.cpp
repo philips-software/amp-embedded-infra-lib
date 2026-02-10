@@ -5,13 +5,13 @@
 #include <algorithm>
 #include <array>
 
-namespace upgrade::application::test
+namespace
 {
     class SynchronousFlashDelegateTest : public ::testing::Test
     {
     public:
         testing::StrictMock<hal::SynchronousFlashMock> flashMock;
-        SynchronousFlashDelegateBase delegate{ flashMock };
+        services::SynchronousFlashDelegateBase delegate{ flashMock };
     };
 
     TEST_F(SynchronousFlashDelegateTest, number_of_sectors)
