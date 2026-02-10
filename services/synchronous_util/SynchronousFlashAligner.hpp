@@ -26,7 +26,7 @@ namespace upgrade::application
 
     private:
         infra::BoundedVector<uint8_t>& alignedBuffer_;
-        std::optional<uint32_t> address_{ 0 };
+        std::optional<uint32_t> address_{ std::nullopt };
     };
 }
 
