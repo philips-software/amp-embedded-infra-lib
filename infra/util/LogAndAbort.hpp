@@ -3,6 +3,7 @@
 
 #include "infra/util/Function.hpp"
 #include <cstdarg>
+#include <type_traits>
 
 namespace infra
 {
