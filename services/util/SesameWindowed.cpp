@@ -38,7 +38,7 @@ namespace services
 
             bool Empty() const override
             {
-                return extraCharacter != 0 || infra::LimitedStreamReader::Empty();
+                return extraCharacter == 0 && infra::LimitedStreamReader::Empty();
             }
 
             std::size_t Available() const override
@@ -58,7 +58,7 @@ namespace services
         : SesameEncodedObserver(delegate)
         , receivedMessage(receivedMessage)
         , ownBufferSize(static_cast<uint16_t>(SesameEncodedObserver::Subject().MaxSendMessageSize()))
-        , releaseWindowSize(static_cast<uint16_t>(SesameEncodedObserver::Subject().WorstCaseMessageSize(sizeof(PacketReleaseWindow))))
+        , releaseWindowSize(static_cast<uint16_t>(SesameEncodedObserver::Subject().WorstCaseEncodedMessageSize(sizeof(PacketReleaseWindow))))
         , state(std::in_place_type_t<StateSendingInit>(), *this)
     {
         state->Request();
@@ -72,7 +72,7 @@ namespace services
     std::size_t SesameWindowed::MaxSendMessageSize() const
     {
         assert(initialized);
-        return (std::min(ownBufferSize, maxUsableBufferSize) - sizeof(Operation) - releaseWindowSize - SesameEncodedObserver::Subject().WorstCaseMessageSize(sizeof(Operation))) / 2;
+        return SesameEncodedObserver::Subject().WorstCaseDecodedMessageSize((std::min(ownBufferSize, maxUsableBufferSize) - releaseWindowSize) / 2) - sizeof(Operation);
     }
 
     void SesameWindowed::Reset()
@@ -202,9 +202,9 @@ namespace services
                 if (receivedMessageReader == nullptr)
                     state.Emplace<StateSendingInitResponse>(*this).Request();
             }
-            else if (requestedSendMessageSize != std::nullopt && SesameEncodedObserver::Subject().WorstCaseMessageSize(*requestedSendMessageSize + 1) + releaseWindowSize <= otherAvailableWindow)
+            else if (requestedSendMessageSize != std::nullopt && SesameEncodedObserver::Subject().WorstCaseEncodedMessageSize(*requestedSendMessageSize + 1) + releaseWindowSize <= otherAvailableWindow)
                 state.Emplace<StateSendingMessage>(*this).Request();
-            else if (releasedWindow > releaseWindowSize && releaseWindowSize <= otherAvailableWindow)
+            else if (releasedWindow >= MaxSendMessageSize() && releaseWindowSize <= otherAvailableWindow)
                 state.Emplace<StateSendingReleaseWindow>(*this).Request();
             else
                 state.Emplace<StateOperational>(*this);

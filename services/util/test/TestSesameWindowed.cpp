@@ -18,9 +18,13 @@ class SesameWindowedTest
 public:
     SesameWindowedTest()
     {
-        EXPECT_CALL(base, WorstCaseMessageSize(testing::_)).WillRepeatedly(testing::Invoke([](std::size_t size)
+        EXPECT_CALL(base, WorstCaseEncodedMessageSize(testing::_)).WillRepeatedly(testing::Invoke([](std::size_t size)
             {
                 return size + size / 254 + 2;
+            }));
+        EXPECT_CALL(base, WorstCaseDecodedMessageSize(testing::_)).WillRepeatedly(testing::Invoke([](std::size_t size)
+            {
+                return (size - 2) - (size - 2) / 254;
             }));
     }
 
@@ -146,12 +150,12 @@ public:
     infra::NotifyingSharedOptional<infra::StdVectorOutputStreamWriter> writer;
     infra::Execute execute{ [this]()
         {
-            EXPECT_CALL(base, MaxSendMessageSize()).WillOnce(testing::Return(16));
-            EXPECT_CALL(base, WorstCaseMessageSize(3)).WillOnce(testing::Return(5));
-            ExpectRequestSendMessageForInit(16);
+            EXPECT_CALL(base, MaxSendMessageSize()).WillOnce(testing::Return(24));
+            EXPECT_CALL(base, WorstCaseEncodedMessageSize(3)).WillOnce(testing::Return(5));
+            ExpectRequestSendMessageForInit(24);
         } };
     infra::SharedOptional<infra::StdVectorInputStreamReader::WithStorage> reader;
-    services::SesameWindowed::WithMaxMessageSize<16> communication{ base };
+    services::SesameWindowed::WithMaxMessageSize<24> communication{ base };
     testing::StrictMock<services::SesameObserverMock> observer{ communication };
     infra::SharedPtr<infra::StreamWriter> savedWriter;
     infra::SharedPtr<infra::StreamReaderWithRewinding> savedReader;
@@ -160,16 +164,16 @@ public:
 TEST_F(SesameWindowedTest, MaxSendMessageSize)
 {
     // When the cobs layer is able to send a 16 byte message, then 18 bytes (cobs start plus delimiter) are available
-    ReceiveInitResponse(16);
-    // 4 bytes in a message expands to 1 (cobs) + 1 (operation) + 3 (message) + 1 (delimiter) = 6
-    // Two of these messages plus one release window amount to 6 + 6 + 5 = 17, which is under the limit of the 18 bytes buffer of cobs
-    EXPECT_EQ(3, communication.MaxSendMessageSize());
-    EXPECT_EQ(17, (services::SesameWindowed::bufferSizeForMessage<3, services::SesameCobs::EncodedMessageSize>));
+    ReceiveInitResponse(24);
+    // 6 bytes in a message expands to 1 (cobs) + 1 (operation) + 6 (message) + 1 (delimiter) = 9
+    // Two of these messages plus one release window amount to 9 + 9 + 5 = 23, which is under the limit of the 24 bytes buffer of cobs
+    EXPECT_EQ(6, communication.MaxSendMessageSize());
+    EXPECT_EQ(23, (services::SesameWindowed::bufferSizeForMessage<6, services::SesameCobs::EncodedMessageSize>));
 }
 
 TEST_F(SesameWindowedTest, send_message_after_initialized)
 {
-    ReceiveInitResponse(12);
+    ReceiveInitResponse(24);
 
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
@@ -184,7 +188,6 @@ TEST_F(SesameWindowedTest, message_waits_until_window_is_freed)
 
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
-    ExpectRequestSendMessageForReleaseWindow(10);
     ReceiveReleaseWindow(6);
 }
 
@@ -226,12 +229,12 @@ TEST_F(SesameWindowedTest, send_message_while_initializing_waits_for_initialized
 
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
-    ReceiveInitResponse(12);
+    ReceiveInitResponse(28);
 }
 
 TEST_F(SesameWindowedTest, request_sending_new_message_while_previous_is_still_processing)
 {
-    ReceiveInitResponse(20);
+    ReceiveInitResponse(28);
 
     EXPECT_CALL(base, RequestSendMessage(5));
     communication.RequestSendMessage(4);
@@ -255,7 +258,7 @@ TEST_F(SesameWindowedTest, request_sending_new_message_while_previous_is_still_p
 
 TEST_F(SesameWindowedTest, receive_message_after_initialized)
 {
-    ReceiveInitResponse(12);
+    ReceiveInitResponse(26);
 
     ExpectReceivedMessage("abcd");
     ExpectRequestSendMessageForReleaseWindow(12);
@@ -269,7 +272,6 @@ TEST_F(SesameWindowedTest, release_window_packet_waits_for_window_available)
     ExpectReceivedMessage("abcd");
     ReceiveMessage("abcd");
 
-    ExpectRequestSendMessageForReleaseWindow(17);
     ReceiveReleaseWindow(5);
 }
 
@@ -277,7 +279,7 @@ TEST_F(SesameWindowedTest, received_message_before_initialized_is_discarded)
 {
     PretendReceiveMessage("abcd");
 
-    ReceiveInitResponse(12);
+    ReceiveInitResponse(24);
 }
 
 TEST_F(SesameWindowedTest, received_release_window_before_initialized_is_discarded)
@@ -287,54 +289,39 @@ TEST_F(SesameWindowedTest, received_release_window_before_initialized_is_discard
 
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
-    ReceiveInitResponse(12);
+    ReceiveInitResponse(28);
 }
 
 TEST_F(SesameWindowedTest, handle_init_request_after_initialization)
 {
     ReceiveInitResponse(8);
 
-    ExpectRequestSendMessageForInitResponse(16);
+    ExpectRequestSendMessageForInitResponse(24);
     ReceiveInitRequest(8);
 }
 
 TEST_F(SesameWindowedTest, init_response_consumes_window)
 {
-    ReceiveInitResponse(16);
+    ReceiveInitResponse(24);
 
-    ExpectRequestSendMessageForInitResponse(16);
-    ReceiveInitRequest(5 + 7 + 7); // window for two messages and saving for releaseWindow
+    ExpectRequestSendMessageForInitResponse(24);
+    ReceiveInitRequest(5 + 9 + 9); // window for two messages and saving for releaseWindow
 
-    ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
-    ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
-    communication.RequestSendMessage(4);
+    ExpectRequestSendMessageForMessage(7, { 1, 2, 3, 4, 5, 6 });
+    ExpectSendMessageStreamAvailable({ 1, 2, 3, 4, 5, 6 });
+    communication.RequestSendMessage(6);
 
-    communication.RequestSendMessage(4);
+    communication.RequestSendMessage(6);
 
-    ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
-    ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
+    ExpectRequestSendMessageForMessage(7, { 1, 2, 3, 4, 5, 6 });
+    ExpectSendMessageStreamAvailable({ 1, 2, 3, 4, 5, 6 });
     ReceiveReleaseWindow(5); // release window consumed by initResponse
-}
-
-TEST_F(SesameWindowedTest, release_window_consumes_window)
-{
-    ReceiveInitResponse(5); // window for one release window
-
-    ExpectReceivedMessage("abcd");
-    ExpectRequestSendMessageForReleaseWindow(12);
-    ReceiveMessage("abcd");
-
-    ExpectReceivedMessage("abcd");
-    ReceiveMessage("abcd");
-
-    ExpectRequestSendMessageForReleaseWindow(12);
-    ReceiveReleaseWindow(5); // release window consumed by release window
 }
 
 TEST_F(SesameWindowedTest, received_init_request_while_sending_message_finishes_message_then_sends_init_response)
 {
     // build
-    ReceiveInitResponse(16);
+    ReceiveInitResponse(24);
 
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailableAndSaveWriter();
@@ -342,9 +329,9 @@ TEST_F(SesameWindowedTest, received_init_request_while_sending_message_finishes_
     communication.RequestSendMessage(4);
 
     // operate
-    ReceiveInitRequest(12);
+    ReceiveInitRequest(24);
 
-    ExpectRequestSendMessageForInitResponse(16);
+    ExpectRequestSendMessageForInitResponse(24);
 
     {
         std::vector<uint8_t> data{ 1, 2, 3, 4 };
@@ -357,7 +344,7 @@ TEST_F(SesameWindowedTest, received_init_request_while_sending_message_finishes_
 TEST_F(SesameWindowedTest, increase_window_while_sending)
 {
     // build
-    ReceiveInitResponse(12);
+    ReceiveInitResponse(24);
 
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
@@ -376,7 +363,7 @@ TEST_F(SesameWindowedTest, increase_window_while_sending)
 TEST_F(SesameWindowedTest, init_response_while_sending)
 {
     // build
-    ReceiveInitResponse(12);
+    ReceiveInitResponse(24);
 
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
@@ -394,33 +381,33 @@ TEST_F(SesameWindowedTest, init_response_while_sending)
 
 TEST_F(SesameWindowedTest, received_init_request_while_sending_init)
 {
-    ExpectRequestSendMessageForInitResponse(16);
+    ExpectRequestSendMessageForInitResponse(24);
     ReceiveInitRequest(8);
 
-    ReceiveInitResponse(16);
+    ReceiveInitResponse(24);
 }
 
 TEST_F(SesameWindowedTest, init_response_while_sending_init_is_ignored)
 {
     ReceiveInitResponse(8);
 
-    ReceiveInitResponse(16);
+    ReceiveInitResponse(24);
 }
 
 TEST_F(SesameWindowedTest, release_window_while_sending_init_is_ignored)
 {
     ReceiveReleaseWindow(4);
 
-    ReceiveInitResponse(16);
+    ReceiveInitResponse(24);
 }
 
 TEST_F(SesameWindowedTest, requesting_message_while_sending_init_response)
 {
     // build
-    ExpectRequestSendMessageForInitResponse(16);
+    ExpectRequestSendMessageForInitResponse(24);
     ReceiveInitRequest(8);
 
-    ReceiveInitResponse(16);
+    ReceiveInitResponse(24);
 
     // operate
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
@@ -431,23 +418,23 @@ TEST_F(SesameWindowedTest, requesting_message_while_sending_init_response)
 TEST_F(SesameWindowedTest, init_request_while_sending_init_response_results_in_new_init_response)
 {
     // build
-    ExpectRequestSendMessageForInitResponse(16);
+    ExpectRequestSendMessageForInitResponse(24);
     ReceiveInitRequest(8);
 
-    ReceiveInitResponse(16);
+    ReceiveInitResponse(24);
 
     // operate
-    ExpectRequestSendMessageForInitResponse(16);
+    ExpectRequestSendMessageForInitResponse(24);
     ReceiveInitRequest(8);
 }
 
 TEST_F(SesameWindowedTest, release_window_while_sending_init_response_is_ignored)
 {
     // build
-    ExpectRequestSendMessageForInitResponse(16);
+    ExpectRequestSendMessageForInitResponse(24);
     ReceiveInitRequest(8);
 
-    ReceiveInitResponse(16);
+    ReceiveInitResponse(24);
 
     // operate
     ExpectRequestSendMessageForReleaseWindow(10);
@@ -457,7 +444,7 @@ TEST_F(SesameWindowedTest, release_window_while_sending_init_response_is_ignored
 TEST_F(SesameWindowedTest, no_window_release_after_small_message)
 {
     // build
-    ReceiveInitResponse(12);
+    ReceiveInitResponse(24);
     ExpectReceivedMessage("ab");
     ExpectRequestSendMessageForReleaseWindow(10);
     ReceiveMessage("ab");
@@ -471,7 +458,7 @@ TEST_F(SesameWindowedTest, no_window_release_after_small_message)
 TEST_F(SesameWindowedTest, no_window_release_after_just_release_window)
 {
     // build
-    ReceiveInitResponse(12);
+    ReceiveInitResponse(24);
     ExpectReceivedMessage("ab");
     ExpectRequestSendMessageForReleaseWindow(10);
     ReceiveMessage("ab");
@@ -484,7 +471,7 @@ TEST_F(SesameWindowedTest, no_window_release_after_just_release_window)
 TEST_F(SesameWindowedTest, window_release_after_second_release_window)
 {
     // build
-    ReceiveInitResponse(12);
+    ReceiveInitResponse(24);
     ExpectReceivedMessage("ab");
     ExpectRequestSendMessageForReleaseWindow(10);
     ReceiveMessage("ab");
@@ -497,7 +484,7 @@ TEST_F(SesameWindowedTest, window_release_after_second_release_window)
 
 TEST_F(SesameWindowedTest, window_is_released_after_message_has_been_processed)
 {
-    ReceiveInitResponse(12);
+    ReceiveInitResponse(24);
 
     ExpectReceivedMessageAndSaveReader("abcd");
     ReceiveMessage("abcd");
@@ -508,7 +495,7 @@ TEST_F(SesameWindowedTest, window_is_released_after_message_has_been_processed)
 
 TEST_F(SesameWindowedTest, no_new_message_after_stop)
 {
-    ReceiveInitResponse(12);
+    ReceiveInitResponse(24);
 
     ExpectReceivedMessageAndSaveReader("abcd");
     ReceiveMessage("abcd");
@@ -522,14 +509,14 @@ TEST_F(SesameWindowedTest, no_new_message_after_stop)
 
 TEST_F(SesameWindowedTest, Reset_forwards_to_cobs_and_requests_initialize)
 {
-    ReceiveInitResponse(12);
+    ReceiveInitResponse(24);
 
-    ExpectRequestSendMessageForInit(16);
+    ExpectRequestSendMessageForInit(24);
 
     EXPECT_CALL(base, Reset());
     communication.Reset();
 
-    ReceiveInitResponse(12);
+    ReceiveInitResponse(24);
 
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });

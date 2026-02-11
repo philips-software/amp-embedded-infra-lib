@@ -26,9 +26,14 @@ namespace services
         return sendStorage.max_size() - 2 - (sendStorage.max_size() - 2) / 255;
     }
 
-    std::size_t SesameCobs::WorstCaseMessageSize(std::size_t size) const
+    std::size_t SesameCobs::WorstCaseEncodedMessageSize(std::size_t size) const
     {
         return size + size / 254 + 2;
+    }
+
+    std::size_t SesameCobs::WorstCaseDecodedMessageSize(std::size_t encodedMessageSize) const
+    {
+        return (encodedMessageSize - 2) - (encodedMessageSize - 2) / 254;
     }
 
     std::size_t SesameCobs::MessageSize(infra::StreamReader&& message) const

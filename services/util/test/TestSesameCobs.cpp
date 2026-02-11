@@ -107,11 +107,18 @@ TEST_F(SesameCobsTest, MaxSendMessageSize)
     EXPECT_EQ(277, communication.MaxSendMessageSize());
 }
 
-TEST_F(SesameCobsTest, WorstCaseMessageSize)
+TEST_F(SesameCobsTest, WorstCaseEncodedMessageSize)
 {
-    EXPECT_EQ(2, communication.WorstCaseMessageSize(0));
-    EXPECT_EQ(255, communication.WorstCaseMessageSize(253));
-    EXPECT_EQ(257, communication.WorstCaseMessageSize(254));
+    EXPECT_EQ(2, communication.WorstCaseEncodedMessageSize(0));
+    EXPECT_EQ(255, communication.WorstCaseEncodedMessageSize(253));
+    EXPECT_EQ(257, communication.WorstCaseEncodedMessageSize(254));
+}
+
+TEST_F(SesameCobsTest, WorstCaseDecodedMessageSize)
+{
+    EXPECT_EQ(0, communication.WorstCaseDecodedMessageSize(2));
+    EXPECT_EQ(253, communication.WorstCaseDecodedMessageSize(255));
+    EXPECT_EQ(254, communication.WorstCaseDecodedMessageSize(257));
 }
 
 TEST_F(SesameCobsTest, MessageSize)
