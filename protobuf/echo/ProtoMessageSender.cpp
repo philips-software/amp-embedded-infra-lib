@@ -3,7 +3,7 @@
 
 namespace services
 {
-    ProtoMessageSenderBase::ProtoMessageSenderBase(infra::BoundedVector<std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter), 3 * sizeof(uint8_t*)>>>& stack)
+    ProtoMessageSenderBase::ProtoMessageSenderBase(infra::BoundedVector<std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy), 3 * sizeof(uint8_t*)>>>& stack)
         : stack(stack)
     {}
 
@@ -17,7 +17,7 @@ namespace services
 
             auto& [index, callback] = stack.back();
             bool retry = false;
-            auto result = callback(stream, index, retry, output.Writer());
+            auto result = callback(stream, index, retry, output.Writer(), output.ErrorPolicy());
             if (result)
                 stack.pop_back();
             else if (!retry)
@@ -86,14 +86,16 @@ namespace services
 
     namespace
     {
-        void SerializeRange(infra::BoundedVector<std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter), 3 * sizeof(uint8_t*)>>>& stack, infra::ProtoFormatter& formatter, infra::ConstByteRange value, uint32_t fieldNumber, bool& retry)
+        void SerializeRange(infra::BoundedVector<std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy), 3 * sizeof(uint8_t*)>>>& stack, infra::ProtoFormatter& formatter, infra::ConstByteRange value, uint32_t fieldNumber, bool& retry)
         {
             formatter.PutVarInt((fieldNumber << 3) | 2);
             formatter.PutVarInt(value.size());
 
-            stack.emplace_back(0, [value](infra::DataOutputStream& stream, uint32_t& index, const bool&, const infra::StreamWriter&)
+            stack.emplace_back(0, [value](infra::DataOutputStream& stream, uint32_t& index, const bool&, const infra::StreamWriter&, infra::StreamErrorPolicy& errorPolicy)
                 {
-                    auto range = infra::Head(infra::DiscardHead(value, index), stream.Available());
+                    auto range = infra::DiscardHead(value, index);
+                    errorPolicy.ReportResult(range.size() <= stream.Available());
+                    range = infra::Head(range, stream.Available());
                     stream << range;
                     index += range.size();
                     return index == value.size();
