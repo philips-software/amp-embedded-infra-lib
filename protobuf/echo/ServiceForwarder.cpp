@@ -1,4 +1,5 @@
 #include "protobuf/echo/ServiceForwarder.hpp"
+#include "infra/syntax/ProtoFormatter.hpp"
 
 namespace services
 {
@@ -43,7 +44,10 @@ namespace services
     bool ServiceForwarderBase::Serialize(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         contentsWriter = std::move(writer);
-        auto result = processedSize + contentsWriter->Available() < forwardingSize;
+
+        auto availableForPayload = contentsWriter->Available() - ExtraSize();
+        auto result = (processedSize + availableForPayload) < forwardingSize;
+
         Transfer();
 
         return result;
@@ -82,6 +86,20 @@ namespace services
             contentsWriter = nullptr;
         if (processedSize == forwardingSize || (contentsReader != nullptr && contentsReader->Empty()))
             contentsReader = nullptr;
+    }
+
+    std::size_t ServiceForwarderBase::ExtraSize() const
+    {
+        std::size_t extraSize = 0;
+
+        if (!sentHeader)
+        {
+            extraSize += infra::MaxVarIntSize(forwardingServiceId);
+            extraSize += infra::MaxVarIntSize((forwardingMethodId << 3) | 2);
+            extraSize += infra::MaxVarIntSize(forwardingSize);
+        }
+
+        return extraSize;
     }
 
     bool ServiceForwarderAll::AcceptsService(uint32_t id) const

@@ -28,6 +28,7 @@ namespace services
 
     private:
         void Transfer();
+        std::size_t ExtraSize() const;
 
     private:
         uint32_t forwardingServiceId;
