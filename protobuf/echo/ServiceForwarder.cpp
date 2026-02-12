@@ -45,11 +45,11 @@ namespace services
     {
         contentsWriter = std::move(writer);
 
-        auto result = (processedSize + AvailableForPayload()) < forwardingSize;
+        auto partlySent = (processedSize + AvailableForPayload()) < forwardingSize;
 
         Transfer();
 
-        return result;
+        return partlySent;
     }
 
     void ServiceForwarderBase::Transfer()
