@@ -51,6 +51,7 @@ namespace services
         void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, std::size_t encodedSize) override;
 
     private:
+        std::size_t MaxReceiveMessageSize() const;
         void ReceivedInitialize();
         void SaveReceivedMessage(infra::StreamReader& reader);
         void TryForwardReceivedMessage();

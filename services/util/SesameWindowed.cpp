@@ -72,7 +72,7 @@ namespace services
     std::size_t SesameWindowed::MaxSendMessageSize() const
     {
         assert(initialized);
-        return SesameEncodedObserver::Subject().WorstCaseDecodedMessageSize((std::min(ownBufferSize, maxUsableBufferSize) - releaseWindowSize) / 2) - sizeof(Operation);
+        return SesameEncodedObserver::Subject().WorstCaseDecodedMessageSize((maxUsableBufferSize - releaseWindowSize) / 2) - sizeof(Operation);
     }
 
     void SesameWindowed::Reset()
@@ -146,6 +146,12 @@ namespace services
         SetNextState();
     }
 
+    std::size_t SesameWindowed::MaxReceiveMessageSize() const
+    {
+        assert(initialized);
+        return SesameEncodedObserver::Subject().WorstCaseDecodedMessageSize((ownBufferSize - releaseWindowSize) / 2) - sizeof(Operation);
+    }
+
     void SesameWindowed::ReceivedInitialize()
     {
         maxUsableBufferSize = otherAvailableWindow;
@@ -204,7 +210,7 @@ namespace services
             }
             else if (requestedSendMessageSize != std::nullopt && SesameEncodedObserver::Subject().WorstCaseEncodedMessageSize(*requestedSendMessageSize + 1) + releaseWindowSize <= otherAvailableWindow)
                 state.Emplace<StateSendingMessage>(*this).Request();
-            else if (releasedWindow >= MaxSendMessageSize() && releaseWindowSize <= otherAvailableWindow)
+            else if (releasedWindow >= MaxReceiveMessageSize() && releaseWindowSize <= otherAvailableWindow)
                 state.Emplace<StateSendingReleaseWindow>(*this).Request();
             else
                 state.Emplace<StateOperational>(*this);

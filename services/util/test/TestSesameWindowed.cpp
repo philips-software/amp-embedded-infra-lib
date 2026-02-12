@@ -188,6 +188,7 @@ TEST_F(SesameWindowedTest, message_waits_until_window_is_freed)
 
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
+    ExpectRequestSendMessageForReleaseWindow(10);
     ReceiveReleaseWindow(6);
 }
 
@@ -272,6 +273,7 @@ TEST_F(SesameWindowedTest, release_window_packet_waits_for_window_available)
     ExpectReceivedMessage("abcd");
     ReceiveMessage("abcd");
 
+    ExpectRequestSendMessageForReleaseWindow(17);
     ReceiveReleaseWindow(5);
 }
 
