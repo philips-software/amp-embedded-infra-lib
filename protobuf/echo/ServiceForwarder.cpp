@@ -45,8 +45,7 @@ namespace services
     {
         contentsWriter = std::move(writer);
 
-        auto availableForPayload = contentsWriter->Available() - ExtraSize();
-        auto result = (processedSize + availableForPayload) < forwardingSize;
+        auto result = (processedSize + AvailableForPayload()) < forwardingSize;
 
         Transfer();
 
@@ -88,12 +87,19 @@ namespace services
             contentsReader = nullptr;
     }
 
-    std::size_t ServiceForwarderBase::ExtraSize() const
+    std::size_t ServiceForwarderBase::AvailableForPayload() const
     {
+        auto available = contentsWriter->Available();
+
         if (sentHeader)
+            return available;
+
+        auto headerSize = infra::MaxVarIntSize(forwardingServiceId) + infra::MaxVarIntSize((forwardingMethodId << 3) | 2) + infra::MaxVarIntSize(forwardingSize);
+
+        if (headerSize > available)
             return 0;
 
-        return infra::MaxVarIntSize(forwardingServiceId) + infra::MaxVarIntSize((forwardingMethodId << 3) | 2) + infra::MaxVarIntSize(forwardingSize);
+        return available - headerSize;
     }
 
     bool ServiceForwarderAll::AcceptsService(uint32_t id) const
