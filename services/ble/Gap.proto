@@ -6,9 +6,23 @@ package gap;
 option java_package = "com.philips.emil.protobufEcho";
 option java_outer_classname = "GapProto";
 
+// ==================================================
+// GAP COMMON
+// ==================================================
+
 message Address
 {
     bytes address = 1 [(bytes_size) = 6];
+}
+
+message BoolValue
+{
+    bool value = 1;
+}
+
+message UInt32Value
+{
+    uint32 value = 1;
 }
 
 // Link layer states of a device in a Peripheral or Central role
@@ -70,6 +84,225 @@ message AdvertisementType
     AdvertisementTypeEnum type = 1;
 }
 
+message AddressType
+{
+    enum AddressTypeEnum
+    {
+        publicAddress = 0;
+        randomAddress = 1;
+    }
+
+    AddressTypeEnum type = 1;
+}
+
+message AddressWithType
+{
+    Address address = 1;
+    AddressType addressType = 2;
+}
+
+message AdvertisingEventType
+{
+    enum AdvertisingEventTypeEnum
+    {
+        advInd = 0;
+        advDirectInd = 1;
+        advScanInd = 2;
+        advNonconnInd = 3;
+        scanResponse = 4;
+    }
+
+    AdvertisingEventTypeEnum type = 1;
+}
+
+message PairingStatus
+{
+    enum Error
+    {
+        passkeyEntryFailed = 0;
+        authenticationRequirementsNotMet = 1;
+        pairingNotSupported = 2;
+        insufficientEncryptionKeySize = 3;
+        numericComparisonFailed = 4;
+        timeout = 5;
+        encryptionFailed = 6;
+        unknown = 7;
+    }
+
+    Error error = 1;
+}
+
+message BondsStatus
+{
+    uint32 currentBonds = 1;
+    uint32 maxBonds = 2;
+}
+
+// ==================================================
+// GAP PERIPHERAL
+// ==================================================
+
+message Passkey
+{
+    int32 passkey = 1;
+    bool numericComparison = 2;
+}
+
+message AdvertisementMode
+{
+    AdvertisementType type = 1;
+    uint32 advInterval = 2;
+}
+
+message AdvertisementData
+{
+    bytes data = 1 [(bytes_size) = 28]; 
+}
+
+message ScanResponseData
+{
+    bytes data = 1 [(bytes_size) = 13]; 
+}
+
+message SecurityPreference
+{
+    enum SupportEnum
+    {
+        disabled = 0;
+        supported = 1;
+        enforced = 2;
+    }
+
+    enum IoCapabilitiesEnum
+    {   
+        None = 0;
+        Display = 1;
+        DisplayYesNo = 2;
+        Keyboard = 3;
+        KeyboardDisplay = 4;
+    }
+
+    SupportEnum secureConnections = 1;
+    SupportEnum mitm = 2;
+    IoCapabilitiesEnum ioCapabilities = 3;
+}
+
+// ==================================================
+// GAP PERIPHERAL SERVICE DEFINITION
+// ==================================================
+// State constraints:
+//  Unless otherwise specified, all methods are allowed in all link layer states.
+//  Non-conformance may cause undefined behavior
+// Callback constraints:
+//  Unless otherwise specified, methods do not by default result in any callbacks on the response service
+//  When a callback is specified for a method and only for that method, another call of the same method is not allowed until the callback has been received.
+//  When a callback is specified for more than one method, any of the associated method calls is not allowed until the callback for the previous call has been received
+//  Non-conformance may cause undefined behavior
+// ==================================================
+service GapPeripheral
+{
+    option (service_id) = 32;
+
+    // ==================================================
+    // CORE FEATURE SET
+    // All servers must implement these methods  
+    // ==================================================
+
+    // Allowed in link layer states: standby
+    // Results in GapPeripheralResponse.StateChanged with state advertising
+    rpc Advertise(AdvertisementMode) returns (Nothing) { option (method_id) = 1; }
+
+    // Allowed in link layer states: advertising, connected
+    // Results in GapPeripheralResponse.StateChanged with state standby
+    rpc Standby(Nothing) returns (Nothing) { option (method_id) = 2; }
+
+    // Allowed in link layer states: standby
+    // Formatting of advertisement data is as per Bluetooth Core Specification.
+    // Maximum advertisement data length for this method is 28 bytes. Server reserves an additional 3 bytes for flags data with the flag bits 'LE General Discoverable Mode' and 'BR/EDR Not Supported' enabled.
+    // Server will not check validity of the advertisement data and only maximum length of each field will be passed to BLE stack
+    // If not set by this method, server will have as advertisement data only flags field.
+    rpc SetAdvertisementData(AdvertisementData) returns (Nothing) { option (method_id) = 3; }
+
+    // Allowed in link layer states: standby
+    // Formatting of scan response data is as per Bluetooth Core Specification.
+    // Maximum scan response length for this method is 13 bytes. Server reserves 18 bytes for streaming service uuids. Scan Response is only possible with scannable advertisements
+    // Server will not check validity of the scan response data and only maximum length of each field will be passed to BLE stack
+    // If not set by this method, server will have as scan response data only service uuids.
+    rpc SetScanResponseData(ScanResponseData) returns (Nothing) { option (method_id) = 4; }
+    
+    // Allowed in link layer states: advertising
+    // Results in GapPeripheralResponse.AdvertisingAddress
+    // Type of the advertising address is statically configured. It is the same with Identity Address when privacy is 
+    // not used and different otherwise.
+    rpc GetAdvertisingAddress(Nothing) returns (Nothing) { option (method_id) = 5; }
+
+    // Results in GapPeripheralResponse.IdentityAddress
+    // Type of the identity address is statically configured
+    rpc GetIdentityAddress(Nothing) returns (Nothing) { option (method_id) = 6; }
+
+    // Allowed in link layer states: standby
+    rpc SetSecurityPreferences(SecurityPreference) returns (Nothing) { option (method_id) = 7; }
+
+    // Allowed in link layer states: standby
+    // Default is to allow pairing
+    rpc SetAllowPairing(BoolValue) returns (Nothing) { option (method_id) = 8; }
+
+    // Allowed in link layer states: connected
+    // Send a slave security request to the master.
+    // This command has to be issued to notify the master of the security
+    // requirements of the slave. The master may encrypt the link, initiate the
+    // pairing procedure, or reject the request.
+    rpc SendSecurityRequest(Nothing) returns (Nothing) { option (method_id) = 9; }
+
+    // Allowed in link layer states: standby
+    // Results in GapPeripheralResponse.NumberOfBondsChanged
+    rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 10; }
+
+    // Allowed in link layer states: standby
+    // Results in GapPeripheralResponse.NumberOfBondsChanged
+    // Oldest bond means the least recently used, i.e. connected, bonded peer.
+    rpc RemoveOldestBond(Nothing) returns (Nothing) { option (method_id) = 11; }
+
+    // Results in GapPeripheralResponse.BondInformation
+    rpc GetBondInformation(Nothing) returns (Nothing) { option (method_id) = 12; }
+}
+
+service GapPeripheralResponse 
+{
+    option(service_id) = 34;
+
+    // ==================================================
+    // CORE FEATURE SET
+    // All servers must implement these methods  
+    // ==================================================
+
+    // Default state after device start is standby
+    rpc StateChanged(State) returns(Nothing) { option(method_id) = 2; }
+
+    rpc AdvertisingAddress(AddressWithType) returns(Nothing) { option(method_id) = 3; }
+
+    rpc IdentityAddress(AddressWithType) returns(Nothing) { option(method_id) = 4; }
+
+
+    rpc PairingSuccessfullyCompleted(Nothing) returns(Nothing) { option(method_id) = 5; }
+    rpc PairingFailed(PairingStatus) returns(Nothing) { option(method_id) = 6; }
+
+
+    rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 7; }
+
+    rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 8; }
+}
+
+service GapPeripheralReadiness {
+    option(service_id) = 36;
+
+    rpc DeviceStarted(Nothing) returns(Nothing) { option(method_id) = 1; }
+}
+
+// ==================================================
+// GAP CENTRAL
+// ==================================================
+
 message SecurityModeAndLevel
 {
     enum SecurityLevelEnum
@@ -90,42 +323,6 @@ message SecurityModeAndLevel
     SecurityLevelEnum level = 2;
 }
 
-message AddressType
-{
-    enum AddressTypeEnum
-    {
-        publicAddress = 0;
-        randomAddress = 1;
-    }
-
-    AddressTypeEnum type = 1;
-}
-
-message AdvertisingEventType
-{
-    enum AdvertisingEventTypeEnum
-    {
-        advInd = 0;
-        advDirectInd = 1;
-        advScanInd = 2;
-        advNonconnInd = 3;
-        scanResponse = 4;
-    }
-
-    AdvertisingEventTypeEnum type = 1;
-}
-
-message AdvertisementMode
-{
-    AdvertisementType type = 1;
-    uint32 advInterval = 2;
-}
-
-message AdvertisementData
-{
-    bytes data = 1 [(bytes_size) = 28]; //Don't add flags data, method adds flags data internally with the flag bits 'LE General Discoverable Mode' and 'BR/EDR Not Supported' enabled.
-}
-
 message PeerNodeParameters
 {
     Address address = 1;
@@ -138,44 +335,16 @@ message ConnectionParameters
     uint32 initiatingTimeoutInMs = 2;
 }
 
-message Passkey
-{
-    int32 passkey = 1;
-    bool numericComparison = 2;
-}
-
-message PairingStatus
-{
-    enum Error
-    {
-        passkeyEntryFailed = 0;
-        authenticationRequirementsNotMet = 1;
-        pairingNotSupported = 2;
-        insufficientEncryptionKeySize = 3;
-        numericComparisonFailed = 4;
-        timeout = 5;
-        encryptionFailed = 6;
-        unknown = 7;
-    }
-
-    Error error = 1;
-};
-
-message OutOfBandData
-{
-    Address address = 1;
-    AddressType addressType = 2;
-    bytes randomData = 3 [(bytes_size) = 16];
-    bytes confirmData = 4 [(bytes_size) = 16];
-}
-
 message DiscoveredDevice
 {
     Address address = 1;
     AddressType addressType = 2;
     bytes data = 3 [(bytes_size) = 32];
     int32 rssi = 4;
-    reserved 5; // deprecated isScanResponse in favour of advertisingEventType
+    
+    // deprecated isScanResponse in favour of advertisingEventType
+    reserved 5;
+
     AdvertisingEventType advertisingEventType = 6;
 }
 
@@ -184,47 +353,21 @@ message DeviceDiscoveryFilter
     enum Filter
     {
         address = 0;
-        advertisingData = 1; // Filtering on contents of Manufacturer specific data
 
+        // Filtering on contents of Manufacturer specific data
+        advertisingData = 1; 
     }
 
     Filter filter = 1;
     bytes data = 2 [(bytes_size) = 32];
 };
 
-message BoolValue
+message OutOfBandData
 {
-    bool value = 1;
-}
-
-message UInt32Value
-{
-    uint32 value = 1;
-}
-
-service GapPeripheral
-{
-    option (service_id) = 32;
-
-    // Allowed states: standby
-    rpc Advertise(AdvertisementMode) returns (Nothing) { option (method_id) = 1; }
-
-    // Allowed states: advertising, connected
-    rpc Standby(Nothing) returns (Nothing) { option (method_id) = 2; }
-
-    rpc SetAdvertisementData(AdvertisementData) returns (Nothing) { option (method_id) = 3; }
-    rpc SetScanResponseData(AdvertisementData) returns (Nothing) { option (method_id) = 4; }
-    rpc SetAllowPairing(BoolValue) returns (Nothing) { option (method_id) = 5; }
-    rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 6; }
-    rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 7; }
-    rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 8; }
-
-    // Allowed states: advertising
-    rpc GetResolvableAddress(Nothing) returns (Nothing) { option (method_id) = 9; }
-    rpc GetIdentityAddress(Nothing) returns (Nothing) { option (method_id) = 10; }
-
-    rpc GenerateOutOfBandData(Nothing) returns (Nothing) { option (method_id) = 11; }
-    rpc SetOutOfBandData(OutOfBandData) returns (Nothing) { option (method_id) = 12; }
+    Address address = 1;
+    AddressType addressType = 2;
+    bytes randomData = 3 [(bytes_size) = 16];
+    bytes confirmData = 4 [(bytes_size) = 16];
 }
 
 service GapCentral
@@ -269,22 +412,8 @@ service GapCentral
     rpc SetOutOfBandData(OutOfBandData) returns (Nothing) { option (method_id) = 16; }
 }
 
-service GapPeripheralResponse
-{
-    option (service_id) = 34;
-
-    rpc Done(Nothing) returns (Nothing) { option (method_id) = 1; }
-    rpc DeviceStarted(Nothing) returns (Nothing) { option (method_id) = 2; }
-    rpc StateChanged(State) returns (Nothing) { option (method_id) = 3; }
-    rpc ResolvableAddress(Address) returns (Nothing) { option (method_id) = 4; }
-    rpc DisplayPasskey(Passkey) returns (Nothing) { option (method_id) = 5; }
-    rpc IdentityAddress(Address) returns (Nothing) { option (method_id) = 6; }
-    rpc OutOfBandDataGenerated(OutOfBandData) returns (Nothing) { option (method_id) = 7; }
-}
-
-service GapCentralResponse
-{
-    option (service_id) = 35;
+service GapCentralResponse {
+    option(service_id) = 35;
 
     rpc Done(Nothing) returns (Nothing) { option (method_id) = 1; }
     rpc DeviceDiscovered(DiscoveredDevice) returns (Nothing) { option (method_id) = 2; }
@@ -298,3 +427,5 @@ service GapCentralResponse
     rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 10; }
     rpc OutOfBandDataGenerated(OutOfBandData) returns (Nothing) { option (method_id) = 11; }
 }
+
+
