@@ -90,16 +90,10 @@ namespace services
 
     std::size_t ServiceForwarderBase::ExtraSize() const
     {
-        std::size_t extraSize = 0;
+        if (sentHeader)
+            return 0;
 
-        if (!sentHeader)
-        {
-            extraSize += infra::MaxVarIntSize(forwardingServiceId);
-            extraSize += infra::MaxVarIntSize((forwardingMethodId << 3) | 2);
-            extraSize += infra::MaxVarIntSize(forwardingSize);
-        }
-
-        return extraSize;
+        return infra::MaxVarIntSize(forwardingServiceId) + infra::MaxVarIntSize((forwardingMethodId << 3) | 2) + infra::MaxVarIntSize(forwardingSize);
     }
 
     bool ServiceForwarderAll::AcceptsService(uint32_t id) const
