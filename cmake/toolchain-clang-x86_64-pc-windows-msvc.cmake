@@ -20,6 +20,8 @@ else()
 endif()
 
 set(CMAKE_RC_STANDARD_INCLUDE_DIRECTORIES ${WINDOWS_SDK_ROOT}/sdk/include/um ${WINDOWS_SDK_ROOT}/sdk/include/ucrt ${WINDOWS_SDK_ROOT}/sdk/include/shared)
+set(CMAKE_C_STANDARD_INCLUDE_DIRECTORIES ${WINDOWS_SDK_ROOT}/sdk/include/um ${WINDOWS_SDK_ROOT}/sdk/include/ucrt ${WINDOWS_SDK_ROOT}/sdk/include/shared)
+set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES ${WINDOWS_SDK_ROOT}/sdk/include/um ${WINDOWS_SDK_ROOT}/sdk/include/ucrt ${WINDOWS_SDK_ROOT}/sdk/include/shared)
 
 find_program(CMAKE_C_COMPILER NAMES clang-cl REQUIRED)
 find_program(CMAKE_CXX_COMPILER NAMES clang-cl REQUIRED)

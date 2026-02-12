@@ -2,6 +2,7 @@
 #define SERVICE_TRACER_TRACER_ON_IO_OUTPUT_INFRASTRUCTURE_HPP
 
 #include "infra/stream/IoOutputStream.hpp"
+#include "infra/stream/OutputStream.hpp"
 #include "services/tracer/TracerWithDateTime.hpp"
 
 namespace main_
@@ -9,6 +10,7 @@ namespace main_
     struct TracerOnIoOutputInfrastructure
     {
         TracerOnIoOutputInfrastructure();
+        ~TracerOnIoOutputInfrastructure();
 
         infra::IoOutputStreamWriter writer;
         infra::TextOutputStream::WithErrorPolicy stream{ writer };

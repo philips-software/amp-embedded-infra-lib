@@ -1,28 +1,16 @@
 #include "infra/util/LogAndAbort.hpp"
+#include "infra/util/Function.hpp"
 #include <atomic>
 #include <cstdarg>
+#include <utility>
 
 namespace infra
 {
-    static LogAndAbortHook logAndAbortHook = nullptr;
-}
-
-namespace
-{
-    void logAndAbortHookForwarder(const char* format, ...)
+    namespace
     {
-        if (infra::logAndAbortHook)
-        {
-            va_list args;
-            va_start(args, format);
-            infra::logAndAbortHook(format, &args);
-            va_end(args);
-        }
+        LogAndAbortHook logAndAbortHook = nullptr;
     }
-}
 
-namespace infra
-{
     void RegisterLogAndAbortHook(LogAndAbortHook hook)
     {
         logAndAbortHook = std::move(hook);
@@ -35,23 +23,17 @@ namespace infra
         if (busy.exchange(true))
             return;
 
+        infra::ExecuteOnDestruction clearBusy([]
+            {
+                busy = false;
+            });
+
         if (logAndAbortHook)
         {
-            logAndAbortHookForwarder("\n%s! [", reason);
-
             va_list args;
             va_start(args, format);
-            logAndAbortHook(format, &args);
+            logAndAbortHook(reason, file, line, format, &args);
             va_end(args);
-
-#if defined(EMIL_ENABLE_LOGGING_FILE_UPON_ABORT) || defined(EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT)
-            if (file)
-                logAndAbortHookForwarder("] at %s:%d\n", file, line);
-#else
-            logAndAbortHookForwarder("]\n");
-#endif
         }
-
-        busy = false;
     }
 }

@@ -75,15 +75,16 @@ namespace hal
                 if (!running)
                     break;
             }
-            auto range = infra::MakeByteRange(buffer);
-            auto size = read(FileDescriptor(), range.begin(), range.size());
+
+            const auto range = infra::MakeByteRange(buffer);
+            const auto size = read(FileDescriptor(), range.begin(), range.size());
 
             if (size < 0)
                 throw std::system_error(EFAULT, std::system_category());
 
             {
                 std::unique_lock lock(receivedDataMutex);
-                if (running && receivedData)
+                if (running && receivedData && size > 0)
                     receivedData(infra::ConstByteRange(range.begin(), range.begin() + size));
             }
         }
