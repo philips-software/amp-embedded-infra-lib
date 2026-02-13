@@ -129,23 +129,16 @@ namespace services
 
     void FlashEchoProxy::WriteBuffer(infra::ConstByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
+        bufferPosition = 0;
         writingBuffer = buffer;
         this->onDone = onDone;
 
-        if (!writingBuffer.empty())
-        {
-            proxy.RequestSend([this, address]()
-                {
-                    ++transferBuffers;
-                    auto size = std::min<std::size_t>(writingBuffer.size(), flash::WriteRequest::contentsSize);
-                    proxy.Write(address, infra::Head(writingBuffer, size));
-                    WriteBuffer(infra::DiscardHead(writingBuffer, size), address + size, this->onDone.Clone());
-                });
-        }
+        WritePartialBuffer(address, 0);
     }
 
     void FlashEchoProxy::ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
+        bufferPosition = 0;
         readingBuffer = buffer;
         this->onDone = onDone;
 
@@ -165,11 +158,10 @@ namespace services
 
     void FlashEchoProxy::ReadDone(infra::ConstByteRange contents)
     {
-        infra::Copy(contents, infra::Head(readingBuffer, contents.size()));
-        readingBuffer = infra::DiscardHead(readingBuffer, contents.size());
+        infra::Copy(contents, infra::Head(infra::DiscardHead(readingBuffer, bufferPosition), contents.size()));
+        bufferPosition += contents.size();
 
-        --transferBuffers;
-        if (transferBuffers == 0 && readingBuffer.empty())
+        if (bufferPosition == readingBuffer.size())
             onDone();
 
         MethodDone();
@@ -177,9 +169,9 @@ namespace services
 
     void FlashEchoProxy::WriteDone()
     {
-        --transferBuffers;
+        bufferPosition += std::min<std::size_t>(writingBuffer.size(), flash::WriteRequest::contentsSize);
 
-        if (transferBuffers == 0 && writingBuffer.empty())
+        if (bufferPosition >= writingBuffer.size())
             onDone();
 
         MethodDone();
@@ -198,10 +190,23 @@ namespace services
             this->start = start;
             proxy.RequestSend([this, address]()
                 {
-                    ++transferBuffers;
                     auto size = std::min<uint32_t>(readingBuffer.size() - this->start, flash::WriteRequest::contentsSize);
                     proxy.Read(address + this->start, size);
                     ReadPartialBuffer(address, this->start + size);
+                });
+        }
+    }
+
+    void FlashEchoProxy::WritePartialBuffer(uint32_t address, uint32_t start)
+    {
+        if (writingBuffer.size() > start)
+        {
+            this->start = start;
+            proxy.RequestSend([this, address]()
+                {
+                    auto size = std::min<std::size_t>(writingBuffer.size() - this->start, flash::WriteRequest::contentsSize);
+                    proxy.Write(address + this->start, infra::Head(infra::DiscardHead(writingBuffer, this->start), size));
+                    WritePartialBuffer(address, this->start + size);
                 });
         }
     }
