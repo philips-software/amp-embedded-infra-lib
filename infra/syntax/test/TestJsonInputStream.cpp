@@ -68,3 +68,13 @@ TEST_F(JsonInputStreamTest, Available)
 
     EXPECT_EQ(0, reader.Available());
 }
+
+TEST_F(JsonInputStreamTest, ExtractContiguousRange_NotImplemented)
+{
+    EXPECT_DEATH(reader.ExtractContiguousRange(1), "");
+}
+
+TEST_F(JsonInputStreamTest, PeekContiguousRange_NotImplemented)
+{
+    EXPECT_DEATH(reader.PeekContiguousRange(1), "");
+}
