@@ -69,7 +69,7 @@ public:
 
     void ReceiveMessage(const std::string& text)
     {
-        EXPECT_CALL(base, MessageSize(testing::_)).WillOnce(testing::Invoke([](infra::StreamReader& reader)
+        EXPECT_CALL(base, MessageSize(testing::_)).WillOnce(testing::Invoke([](infra::StreamReader&& reader)
             {
                 return reader.Available() + reader.Available() / 254 + 2;
             }));
