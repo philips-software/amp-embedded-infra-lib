@@ -10,6 +10,7 @@ target_sources(hal.synchronous_interfaces_test_doubles PRIVATE
     SynchronousEncryptorMock.hpp
     SynchronousFixedRandomDataGenerator.cpp
     SynchronousFixedRandomDataGenerator.hpp
+    SynchronousFlashMock.hpp
     SynchronousFlashStub.cpp
     SynchronousFlashStub.hpp
     SynchronousRandomDataGeneratorMock.hpp
