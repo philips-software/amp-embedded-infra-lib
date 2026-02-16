@@ -33,12 +33,12 @@ namespace infra
 
     ConstByteRange JsonInputStreamReader::ExtractContiguousRange(std::size_t max)
     {
-        LOG_AND_ABORT_NOT_IMPLEMENTED();
+        std::abort();
     }
 
     ConstByteRange infra::JsonInputStreamReader::PeekContiguousRange(std::size_t start)
     {
-        LOG_AND_ABORT_NOT_IMPLEMENTED();
+        std::abort();
     }
 
     bool JsonInputStreamReader::Empty() const
