@@ -12,6 +12,7 @@ permissions: {}
 
 jobs:
   validate-pr-title:
+    name: "Check title is valid"
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -44,3 +45,18 @@ jobs:
         with:
           header: pr-title-lint-error
           delete: true
+
+  validate-pr-description:
+    name: "Check description is not empty"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR description is not empty
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const description = context.payload.pull_request.body;
+            if (!description || description.trim() === "") {
+              core.setFailed("Pull request description may not be empty.");
+            } else {
+              console.log("PR description is present.");
+            }
