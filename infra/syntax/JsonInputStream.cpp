@@ -1,5 +1,4 @@
 #include "infra/syntax/JsonInputStream.hpp"
-#include "infra/util/LogAndAbort.hpp"
 
 namespace infra
 {
@@ -33,12 +32,12 @@ namespace infra
 
     ConstByteRange JsonInputStreamReader::ExtractContiguousRange(std::size_t max)
     {
-        std::abort();
+        std::abort(); // Not implemented
     }
 
     ConstByteRange infra::JsonInputStreamReader::PeekContiguousRange(std::size_t start)
     {
-        std::abort();
+        std::abort(); // Not implemented
     }
 
     bool JsonInputStreamReader::Empty() const
