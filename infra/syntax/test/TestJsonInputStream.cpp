@@ -68,3 +68,19 @@ TEST_F(JsonInputStreamTest, Available)
 
     EXPECT_EQ(0, reader.Available());
 }
+
+TEST_F(JsonInputStreamTest, construct_with_SoftFail)
+{
+    infra::JsonInputStream stream(string, infra::softFail);
+    char a;
+    stream >> a;
+    EXPECT_EQ('a', a);
+}
+
+TEST_F(JsonInputStreamTest, construct_with_NoFail)
+{
+    infra::JsonInputStream stream(string, infra::noFail);
+    char a;
+    stream >> a;
+    EXPECT_EQ('a', a);
+}
