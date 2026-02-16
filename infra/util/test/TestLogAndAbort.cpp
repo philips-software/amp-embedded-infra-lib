@@ -83,3 +83,25 @@ TEST_F(LogAndAbortTest, log_and_abort_recursive_call_skipped)
     // Manually calling hook to avoid aborting the test
     infra::ExecuteLogAndAbortHook("condition", "file.cpp", 32, "initial %s", "call");
 }
+
+TEST_F(LogAndAbortTest, log_and_abort_not_implemented)
+{
+    EXPECT_DEATH(LOG_AND_ABORT_NOT_IMPLEMENTED(), "");
+}
+
+TEST_F(LogAndAbortTest, log_and_abort_enum)
+{
+    enum class TestEnumSigned : int
+    {
+        Value1,
+        Value2
+    };
+    EXPECT_DEATH(LOG_AND_ABORT_ENUM(TestEnumSigned::Value1), "");
+
+    enum class TestEnumUnsigned : uint32_t
+    {
+        Value1,
+        Value2
+    };
+    EXPECT_DEATH(LOG_AND_ABORT_ENUM(TestEnumUnsigned::Value1), "");
+}
