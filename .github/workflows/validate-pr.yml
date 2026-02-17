@@ -73,7 +73,6 @@ jobs:
             ## Attention: Pull Request Description is Empty
 
             Empty pull request descriptions are not allowed by our Way of Working.
-            
             > The PR description should summarize code changes made and provide context to why changes were required. This can also be provided by a link to a story/task, if the link provides sufficient information. This is to maintain good code history and aid reviewers.
 
             Please provide an adequate description for this pull request.
