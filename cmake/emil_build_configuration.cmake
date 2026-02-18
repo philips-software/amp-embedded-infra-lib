@@ -1,10 +1,7 @@
 function(add_build_configuration_definition target)
     if (CMAKE_CONFIGURATION_TYPES)
         target_compile_definitions(${target} PRIVATE
-            $<$<CONFIG:Debug>:BUILD_CONFIGURATION=\"Debug\"> 
-            $<$<CONFIG:RelWithDebInfo>:BUILD_CONFIGURATION=\"RelWithDebInfo\"> 
-            $<$<CONFIG:Release>:BUILD_CONFIGURATION=\"Release\"> 
-            $<$<CONFIG:MinSizeRel>:BUILD_CONFIGURATION=\"MinSizeRel\"> 
+            "BUILD_CONFIGURATION=\"$<CONFIG>\""
         )
     else()
         if (NOT CMAKE_BUILD_TYPE)
