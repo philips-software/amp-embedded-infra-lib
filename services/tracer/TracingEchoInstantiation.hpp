@@ -16,7 +16,7 @@ namespace main_
         template<std::size_t MessageSize>
         struct WithMessageSize;
 
-        TracingEchoOnSesame(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, services::Tracer& tracer);
+        TracingEchoOnSesame(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage, infra::BoundedDeque<uint8_t>& windowedReceivedMessage, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, services::Tracer& tracer);
 
         void Reset();
 
@@ -24,7 +24,7 @@ namespace main_
         void Stop(const infra::Function<void()>& onDone) override;
 
         services::SesameCobs cobs;
-        services::SesameWindowed windowed{ cobs };
+        services::SesameWindowed windowed;
         services::TracingEchoOnSesame echo;
 
         infra::AutoResetFunction<void()> onStopDone;
@@ -36,7 +36,7 @@ namespace main_
         , TracingEchoOnSesame
     {
         WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, services::Tracer& tracer)
-            : TracingEchoOnSesame(this->cobsSendStorage, this->cobsReceivedMessage, serialCommunication, serializerFactory, tracer)
+            : TracingEchoOnSesame(this->cobsSendStorage, this->cobsReceivedMessage, this->windowedReceivedMessage, serialCommunication, serializerFactory, tracer)
         {}
     };
 
