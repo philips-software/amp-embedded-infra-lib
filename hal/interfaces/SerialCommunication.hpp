@@ -22,6 +22,9 @@ namespace hal
     public:
         virtual void SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion) = 0;
         virtual void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) = 0;
+
+        virtual void Flush()
+        {}
     };
 
     class BufferedSerialCommunication;

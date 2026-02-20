@@ -120,6 +120,11 @@ namespace infra
         : OutputStream(writer, errorPolicy)
     {}
 
+    void TextOutputStream::Flush()
+    {
+        Writer().Flush();
+    }
+
     TextOutputStream TextOutputStream::operator<<(Hex)
     {
         TextOutputStream result(*this);

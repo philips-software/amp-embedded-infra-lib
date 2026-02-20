@@ -19,6 +19,11 @@ namespace services
         return std::numeric_limits<size_t>::max();
     }
 
+    void StreamWriterOnSerialCommunication::Flush()
+    {
+        communication.Flush();
+    }
+
     void StreamWriterOnSerialCommunication::TrySend()
     {
         if (!buffer.Empty() && !communicating)

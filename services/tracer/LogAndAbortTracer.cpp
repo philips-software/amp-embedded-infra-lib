@@ -29,6 +29,8 @@ namespace services
                             tracer.Continue() << "at " << file << ":" << line;
 
                         tracer.Trace();
+
+                        tracer.Flush();
                     }
                 });
         }

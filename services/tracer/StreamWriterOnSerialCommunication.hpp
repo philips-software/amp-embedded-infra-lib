@@ -18,6 +18,7 @@ namespace services
 
         void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
         std::size_t Available() const override;
+        void Flush() override;
 
     private:
         void TrySend();
