@@ -1,5 +1,5 @@
-#include "services/synchronous_util/SynchronousFlashDelegate.hpp"
 #include "hal/synchronous_interfaces/test_doubles/SynchronousFlashMock.hpp"
+#include "services/synchronous_util/SynchronousFlashDelegate.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include <algorithm>
@@ -7,7 +7,8 @@
 
 namespace
 {
-    class SynchronousFlashDelegateTest : public ::testing::Test
+    class SynchronousFlashDelegateTest
+        : public ::testing::Test
     {
     public:
         testing::StrictMock<hal::SynchronousFlashMock> flashMock;

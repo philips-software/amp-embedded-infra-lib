@@ -22,16 +22,19 @@ namespace services
 
         void Flush();
 
-        void WriteBuffer(infra::ConstByteRange buffer, uint32_t address) override;
-        void ReadBuffer(infra::ByteRange buffer, uint32_t address) override;
+        void WriteBuffer(infra::ConstByteRange buffer, uint32_t destAddress) override;
+        void ReadBuffer(infra::ByteRange buffer, uint32_t destAddress) override;
         void EraseSectors(uint32_t beginIndex, uint32_t endIndex) override;
 
     private:
+        void FillAlignedBuffer(infra::ConstByteRange& buffer, uint32_t& destAddress);
+        void FlushAlignedBuffer(uint32_t destAddress);
+        void WriteAlignedData(infra::ConstByteRange buffer, uint32_t destAddress);
         bool OverlapsWithBufferedData(uint32_t rangeStart, uint32_t rangeEnd) const;
 
     private:
-        infra::BoundedVector<uint8_t>& alignedBuffer_;
-        std::optional<uint32_t> address_{ std::nullopt };
+        infra::BoundedVector<uint8_t>& alignedBuffer;
+        std::optional<uint32_t> address;
     };
 }
 

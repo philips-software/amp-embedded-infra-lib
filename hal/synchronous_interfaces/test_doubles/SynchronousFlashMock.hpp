@@ -6,7 +6,8 @@
 
 namespace hal
 {
-    class SynchronousFlashMock : public SynchronousFlash
+    class SynchronousFlashMock
+        : public SynchronousFlash
     {
     public:
         MOCK_METHOD(uint32_t, NumberOfSectors, (), (const, override));

@@ -1,5 +1,5 @@
-#include "services/synchronous_util/SynchronousFlashAligner.hpp"
 #include "hal/synchronous_interfaces/test_doubles/SynchronousFlashMock.hpp"
+#include "services/synchronous_util/SynchronousFlashAligner.hpp"
 #include "gmock/gmock.h"
 #include <algorithm>
 #include <array>
@@ -291,7 +291,8 @@ namespace
         }
     }
 
-    class SynchronousFlashAlignerDeathTest : public testing::Test
+    class SynchronousFlashAlignerDeathTest
+        : public testing::Test
     {
     public:
         hal::SynchronousFlashMock flashMock;
@@ -460,7 +461,8 @@ namespace
 
 namespace
 {
-    class SynchronousFlashAlignerOverlapTest : public testing::Test
+    class SynchronousFlashAlignerOverlapTest
+        : public testing::Test
     {
     public:
         SynchronousFlashAlignerOverlapTest()

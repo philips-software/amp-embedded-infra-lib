@@ -10,7 +10,7 @@ namespace services
         : public hal::SynchronousFlash
     {
     public:
-        explicit SynchronousFlashDelegateBase(hal::SynchronousFlash& delegate);
+        explicit SynchronousFlashDelegateBase(hal::SynchronousFlash& parent);
 
         uint32_t NumberOfSectors() const override;
         uint32_t SizeOfSector(uint32_t sectorIndex) const override;
@@ -21,7 +21,7 @@ namespace services
         void EraseSectors(uint32_t beginIndex, uint32_t endIndex) override;
 
     private:
-        hal::SynchronousFlash& delegate_;
+        hal::SynchronousFlash& delegate;
     };
 }
 
