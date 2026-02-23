@@ -23,6 +23,7 @@ namespace services
     {
         communication.Flush(buffer.ContiguousRange());
         buffer.Pop(buffer.Size());
+        communicating = false;
     }
 
     void StreamWriterOnSerialCommunication::TrySend()
