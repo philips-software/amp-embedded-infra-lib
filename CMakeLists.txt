@@ -24,6 +24,7 @@ include(emil_docker_tools)
 include(emil_generate_artifacts)
 include(emil_test_helpers)
 include(emil_version_generator)
+include(emil_build_configuration)
 include(emil_xsltproc)
 include(FetchContent)
 include(GNUInstallDirs) # included to supply proper defaults to install(...) commands
