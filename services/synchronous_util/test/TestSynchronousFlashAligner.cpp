@@ -502,12 +502,12 @@ namespace
 
     TEST_F(SynchronousFlashAlignerOverlapTest, erase_non_overlapping_sectors_succeeds)
     {
-        // Buffer 8 bytes at 0x1000 (sector 0, spans 0x1000-0x1008)
+        // Buffer 8 bytes at 0x1000 (sector 1, spans 0x1000-0x1008)
         std::array<uint8_t, 8> writeData;
         std::fill(writeData.begin(), writeData.end(), 0xDD);
         aligner.WriteBuffer(infra::MakeRange(writeData), 0x1000);
 
-        // Erase sectors 2-3 (non-overlapping with sector 0) - should succeed
+        // Erase sectors 2-3 (non-overlapping with sector 1) - should succeed
         EXPECT_CALL(flashMock, EraseSectors(testing::Eq(2), testing::Eq(3))).Times(1);
         aligner.EraseSectors(2, 3);
     }
@@ -541,7 +541,7 @@ namespace
 
     TEST_F(SynchronousFlashAlignerOverlapTest, erase_after_flush_succeeds)
     {
-        // Buffer and flush data at sector 0
+        // Buffer and flush data at sector 1 (address 0x1000)
         std::array<uint8_t, 8> writeData;
         std::fill(writeData.begin(), writeData.end(), 0xFF);
 
