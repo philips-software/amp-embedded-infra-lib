@@ -130,7 +130,7 @@ namespace services
         EXPECT_EQ(data[7], 0x06);
     }
 
-    TEST_F(GapAdvertisementFormatterTest, append_public_target_address)
+    TEST_F(GapAdvertisementFormatterTest, append_random_target_address)
     {
         hal::MacAddress address({ 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 });
 
