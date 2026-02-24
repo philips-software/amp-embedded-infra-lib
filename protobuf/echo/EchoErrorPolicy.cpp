@@ -37,11 +37,11 @@ namespace services
 
     void EchoErrorPolicyWarn::ServiceNotFound(uint32_t serviceId) const
     {
-        tracer.Trace() << "Warning! Echo service not found: " << serviceId;
+        tracer.Trace() << "Warning! Echo service not found: serviceID: " << serviceId;
     }
 
     void EchoErrorPolicyWarn::MethodNotFound(uint32_t serviceId, uint32_t methodId) const
     {
-        tracer.Trace() << "Warning! Echo method not found: " << serviceId << " " << methodId;
+        tracer.Trace() << "Warning! Echo method not found: serviceID: " << serviceId << " methodID: " << methodId;
     }
 }
