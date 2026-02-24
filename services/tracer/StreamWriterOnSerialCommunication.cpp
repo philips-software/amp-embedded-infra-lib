@@ -21,9 +21,8 @@ namespace services
 
     void StreamWriterOnSerialCommunication::Flush()
     {
-        communication.Flush(buffer.ContiguousRange());
-        buffer.Pop(buffer.Size());
-        communicating = false;
+        size_t bytesFlushed = communication.Flush(buffer.ContiguousRange());
+        CommunicationDone(bytesFlushed);
     }
 
     void StreamWriterOnSerialCommunication::TrySend()
