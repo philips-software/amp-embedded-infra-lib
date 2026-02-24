@@ -1,4 +1,5 @@
 #include "services/tracer/StreamWriterOnSerialCommunication.hpp"
+#include "infra/util/MemoryRange.hpp"
 
 namespace services
 {
@@ -21,28 +22,27 @@ namespace services
 
     void StreamWriterOnSerialCommunication::Flush()
     {
-        size_t bytesFlushed = communication.Flush(buffer.ContiguousRange());
+        auto remainingData = infra::DiscardHead(buffer.ContiguousRange(), currentlySendingBytes);
+        size_t bytesFlushed = communication.SendDataBlocking(remainingData);
         CommunicationDone(bytesFlushed);
     }
 
     void StreamWriterOnSerialCommunication::TrySend()
     {
-        if (!buffer.Empty() && !communicating)
+        if (!buffer.Empty() && currentlySendingBytes == 0)
         {
-            communicating = true;
-
-            uint32_t size = buffer.ContiguousRange().size();
-            communication.SendData(buffer.ContiguousRange(), [this, size]()
+            currentlySendingBytes = buffer.ContiguousRange().size();
+            communication.SendData(buffer.ContiguousRange(), [this]()
                 {
-                    CommunicationDone(size);
+                    CommunicationDone(currentlySendingBytes);
                 });
         }
     }
 
     void StreamWriterOnSerialCommunication::CommunicationDone(uint32_t size)
     {
-        communicating = false;
         buffer.Pop(size);
+        currentlySendingBytes = 0;
 
         TrySend();
     }

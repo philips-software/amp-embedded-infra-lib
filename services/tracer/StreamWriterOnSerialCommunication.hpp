@@ -27,7 +27,7 @@ namespace services
     private:
         infra::CyclicByteBuffer buffer;
         hal::SerialCommunication& communication;
-        bool communicating = false;
+        uint32_t currentlySendingBytes = 0;
     };
 }
 
