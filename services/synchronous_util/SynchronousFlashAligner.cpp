@@ -48,6 +48,7 @@ namespace services
 
         SynchronousFlashDelegateBase::WriteBuffer(infra::MakeRange(alignedBuffer), writeAddress);
         alignedBuffer.clear();
+        address = std::nullopt;
     }
 
     void SynchronousFlashAligner::WriteAlignedData(infra::ConstByteRange buffer, uint32_t destAddress)
@@ -61,14 +62,16 @@ namespace services
         really_assert(destAddress <= std::numeric_limits<uint32_t>::max() - static_cast<uint32_t>(buffer.size()));
         really_assert(destAddress <= TotalSize());
 
-        address = destAddress + static_cast<uint32_t>(buffer.size());
-
         alignedBuffer.insert(alignedBuffer.end(), sendLater.begin(), sendLater.end());
 
-        really_assert(alignedBuffer.size() <= std::numeric_limits<uint32_t>::max());
-        really_assert(static_cast<uint32_t>(alignedBuffer.size()) <= *address);
-        auto bufferedStart = *address - static_cast<uint32_t>(alignedBuffer.size());
-        really_assert(alignedBuffer.max_size() <= TotalSize() - bufferedStart);
+        if (!alignedBuffer.empty())
+        {
+            address = destAddress + static_cast<uint32_t>(buffer.size());
+            really_assert(alignedBuffer.size() <= std::numeric_limits<uint32_t>::max());
+            really_assert(static_cast<uint32_t>(alignedBuffer.size()) <= *address);
+            auto bufferedStart = *address - static_cast<uint32_t>(alignedBuffer.size());
+            really_assert(alignedBuffer.max_size() <= TotalSize() - bufferedStart);
+        }
 
         if (!sendNow.empty())
         {
@@ -99,7 +102,10 @@ namespace services
     void SynchronousFlashAligner::ReadBuffer(infra::ByteRange buffer, uint32_t destAddress)
     {
         really_assert(buffer.size() <= std::numeric_limits<uint32_t>::max());
-        really_assert(!OverlapsWithBufferedData(destAddress, destAddress + static_cast<uint32_t>(buffer.size())));
+        auto size = static_cast<uint32_t>(buffer.size());
+        really_assert(destAddress <= std::numeric_limits<uint32_t>::max() - size);
+        auto rangeEnd = destAddress + size;
+        really_assert(!OverlapsWithBufferedData(destAddress, rangeEnd));
 
         SynchronousFlashDelegateBase::ReadBuffer(buffer, destAddress);
     }

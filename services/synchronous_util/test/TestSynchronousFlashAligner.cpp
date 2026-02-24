@@ -557,4 +557,71 @@ namespace
         EXPECT_CALL(flashMock, EraseSectors(testing::Eq(0), testing::Eq(1))).Times(1);
         aligner.EraseSectors(0, 1);
     }
+
+    TEST_F(SynchronousFlashAlignerDeathTest, read_buffer_address_overflow_aborts)
+    {
+        EXPECT_CALL(flashMock, NumberOfSectors()).WillRepeatedly(testing::Return(256));
+        EXPECT_CALL(flashMock, SizeOfSector(testing::_)).WillRepeatedly(testing::Return(4096));
+        EXPECT_CALL(flashMock, AddressOfSector(testing::_))
+            .WillRepeatedly(testing::Invoke([](uint32_t sector)
+                {
+                    return sector * 4096;
+                }));
+
+        // Attempt to read at address near UINT32_MAX where destAddress + size would overflow
+        std::array<uint8_t, 16> readData;
+        EXPECT_DEATH(aligner.ReadBuffer(infra::MakeRange(readData), 0xFFFFFFF0), "");
+    }
+
+    TEST_F(SynchronousFlashAlignerTest, write_at_new_aligned_address_after_flush_aligned_buffer)
+    {
+        // First write 12 bytes (buffered)
+        std::array<uint8_t, 12> firstWrite;
+        std::fill(firstWrite.begin(), firstWrite.end(), 0x11);
+        aligner.WriteBuffer(infra::MakeRange(firstWrite), 0x1000);
+
+        // Second write 4 bytes (fills buffer to 16, triggers FlushAlignedBuffer)
+        std::array<uint8_t, 4> secondWrite;
+        std::fill(secondWrite.begin(), secondWrite.end(), 0x22);
+
+        std::array<uint8_t, 16> expected;
+        std::fill(expected.begin(), expected.begin() + 12, 0x11);
+        std::fill(expected.begin() + 12, expected.end(), 0x22);
+
+        EXPECT_CALL(flashMock, WriteBuffer(testing::ElementsAreArray(expected), testing::Eq(0x1000))).Times(1);
+        aligner.WriteBuffer(infra::MakeRange(secondWrite), 0x100C);
+
+        // After FlushAlignedBuffer, buffer is empty and address should be reset
+        // Write at new aligned address should succeed (not abort)
+        std::array<uint8_t, 16> thirdWrite;
+        std::fill(thirdWrite.begin(), thirdWrite.end(), 0x33);
+
+        EXPECT_CALL(flashMock, WriteBuffer(testing::ElementsAreArray(thirdWrite), testing::Eq(0x2000))).Times(1);
+        aligner.WriteBuffer(infra::MakeRange(thirdWrite), 0x2000);
+    }
+
+    TEST_F(SynchronousFlashAlignerDeathTest, write_aligned_block_at_exact_flash_boundary_succeeds)
+    {
+        // Set up flash with size 0x10000 (64KB)
+        EXPECT_CALL(flashMock, NumberOfSectors()).WillRepeatedly(testing::Return(16));
+        EXPECT_CALL(flashMock, SizeOfSector(testing::_)).WillRepeatedly(testing::Return(4096));
+        EXPECT_CALL(flashMock, AddressOfSector(testing::_))
+            .WillRepeatedly(testing::Invoke([](uint32_t sector)
+                {
+                    return sector * 4096;
+                }));
+
+        // Recreate aligner with the setup above
+        services::SynchronousFlashAligner::WithAlignment<Alignment> boundaryAligner{ flashMock };
+
+        // Write perfectly aligned 16-byte block ending exactly at TotalSize (0x10000)
+        std::array<uint8_t, 16> data;
+        std::fill(data.begin(), data.end(), 0xAA);
+
+        EXPECT_CALL(flashMock, WriteBuffer(testing::ElementsAreArray(data), testing::Eq(0xFFF0))).Times(1);
+
+        // This should succeed - the write ends exactly at the boundary
+        // Without the fix, this would abort due to incorrect bufferedStart check
+        boundaryAligner.WriteBuffer(infra::MakeRange(data), 0xFFF0);
+    }
 }
