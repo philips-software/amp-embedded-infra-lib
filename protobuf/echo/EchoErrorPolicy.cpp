@@ -25,4 +25,23 @@ namespace services
     {
         LOG_AND_ABORT("Echo method not found: %u %u", serviceId, methodId);
     }
+
+    EchoErrorPolicyWarn::EchoErrorPolicyWarn(services::Tracer& tracer)
+        : tracer(tracer)
+    {}
+
+    void EchoErrorPolicyWarn::MessageFormatError(const char* reason) const
+    {
+        tracer.Trace() << "Warning! Echo message format error: " << reason;
+    }
+
+    void EchoErrorPolicyWarn::ServiceNotFound(uint32_t serviceId) const
+    {
+        tracer.Trace() << "Warning! Echo service not found: " << serviceId;
+    }
+
+    void EchoErrorPolicyWarn::MethodNotFound(uint32_t serviceId, uint32_t methodId) const
+    {
+        tracer.Trace() << "Warning! Echo method not found: " << serviceId << " " << methodId;
+    }
 }
