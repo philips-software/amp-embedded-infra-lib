@@ -88,6 +88,7 @@ namespace infra
     public:
         template<class Concrete>
         using WithCreator = Creator<T, Concrete, void(ConstructionArgs...)>;
+        using WithCreatorExternal = CreatorExternal<T, void(ConstructionArgs...)>;
 
         using ProxyCreator = infra::ProxyCreator<T, void(ConstructionArgs...)>;
         using DelayedProxyCreator = infra::DelayedProxyCreator<T, void(ConstructionArgs...)>;
@@ -114,6 +115,9 @@ namespace infra
     template<class... ConstructionArgs>
     class CreatorBase<void, void(ConstructionArgs...)>
     {
+    public:
+        using WithCreatorExternal = CreatorExternal<void, void(ConstructionArgs...)>;
+
     protected:
         CreatorBase() = default;
         ~CreatorBase() = default;

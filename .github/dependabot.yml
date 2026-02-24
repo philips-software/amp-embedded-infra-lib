@@ -6,6 +6,8 @@ updates:
     directory: /
     schedule:
       interval: daily
+    cooldown:
+      default-days: 7
     groups:
       minor-and-patch-action-updates:
         update-types:
