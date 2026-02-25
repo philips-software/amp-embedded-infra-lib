@@ -36,10 +36,12 @@ namespace services
 
         SesameCobs(infra::BoundedVector<uint8_t>& sendStorage, infra::BoundedDeque<uint8_t>& receivedMessage, hal::BufferedSerialCommunication& serial);
 
-        // Implementation of Sesame
+        // Implementation of SesameEncoded
         void RequestSendMessage(std::size_t size) override;
         std::size_t MaxSendMessageSize() const override;
-        std::size_t MessageSize(std::size_t size) const override;
+        std::size_t WorstCaseEncodedMessageSize(std::size_t size) const override;
+        std::size_t WorstCaseDecodedMessageSize(std::size_t encodedMessageSize) const override;
+        std::size_t MessageSize(infra::StreamReader&& message) const override;
         void Reset() override;
 
         // Implementation of Stoppable

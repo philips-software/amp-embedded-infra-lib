@@ -53,6 +53,7 @@ namespace services
         void EraseSectorsDone() override;
 
         void ReadPartialBuffer(uint32_t address, uint32_t start);
+        void WritePartialBuffer(uint32_t address, uint32_t start);
 
     private:
         infra::MemoryRange<const uint32_t> sectorSizes;
@@ -60,7 +61,7 @@ namespace services
         infra::AutoResetFunction<void()> onDone;
         infra::ConstByteRange writingBuffer;
         infra::ByteRange readingBuffer;
-        uint32_t transferBuffers = 0;
+        uint32_t bufferPosition = 0;
         uint32_t start;
         uint32_t endIndex;
     };
