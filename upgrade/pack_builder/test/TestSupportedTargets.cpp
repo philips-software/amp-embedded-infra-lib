@@ -10,7 +10,7 @@ TEST(SupportedTargetsTest, should_add_correct_targets)
                                                 .AddElf("elf", 1234)
                                                 .AddBin("bin", 5678);
 
-    EXPECT_EQ(application::SupportedTargets::TargetWithParameters{std::make_pair("cmd", infra::ByteRange{})}, targets.CmdTargets()[0]);
+    EXPECT_EQ(application::SupportedTargets::TargetWithData{std::make_pair("cmd", infra::ByteRange{})}, targets.CmdTargets()[0]);
     EXPECT_EQ("hex", targets.HexTargets()[0]);
     EXPECT_EQ(application::SupportedTargets::TargetWithOffset{ std::make_pair("elf", 1234) }, targets.ElfTargets()[0]);
     EXPECT_EQ(application::SupportedTargets::TargetWithOffset{ std::make_pair("bin", 5678) }, targets.BinTargets()[0]);
