@@ -23,7 +23,7 @@ namespace hal
         virtual void SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion) = 0;
         virtual void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) = 0;
 
-        // Implementations of this function is expected to execute any pending actionOnCompleted functions after flushing
+        // Implementations of this function are expected to execute any pending actionOnCompletion functions after flushing
         virtual void FlushSendBuffer()
         {}
     };
