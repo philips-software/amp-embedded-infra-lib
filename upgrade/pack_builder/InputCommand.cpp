@@ -3,9 +3,9 @@
 
 namespace application
 {
-    InputCommand::InputCommand(const std::string& targetName, const infra::ConstByteRange& parameters)
+    InputCommand::InputCommand(const std::string& targetName, const infra::ConstByteRange& data)
         : application::Input(targetName)
-        , image(parameters.begin(), parameters.end())
+        , data(data.begin(), data.end())
     {}
 
     std::vector<uint8_t> InputCommand::Image() const
@@ -19,7 +19,7 @@ namespace application
         uint32_t encryptionAndMacMethod = 0;
         result.insert(result.end(), reinterpret_cast<const uint8_t*>(&encryptionAndMacMethod), reinterpret_cast<const uint8_t*>(&encryptionAndMacMethod + 1));
 
-        result.insert(result.end(), image.begin(), image.end());
+        result.insert(result.end(), data.begin(), data.end());
 
         uint32_t size = result.size() + sizeof(size);
         result.insert(result.begin(), reinterpret_cast<const uint8_t*>(&size), reinterpret_cast<const uint8_t*>(&size + 1));

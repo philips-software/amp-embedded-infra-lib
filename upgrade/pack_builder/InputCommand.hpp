@@ -10,12 +10,12 @@ namespace application
         : public Input
     {
     public:
-        explicit InputCommand(const std::string& targetName, const infra::ConstByteRange& parameters = {});
+        explicit InputCommand(const std::string& targetName, const infra::ConstByteRange& data = {});
 
         std::vector<uint8_t> Image() const override;
 
     private:
-        std::vector<uint8_t> image;
+        std::vector<uint8_t> data;
     };
 }
 
