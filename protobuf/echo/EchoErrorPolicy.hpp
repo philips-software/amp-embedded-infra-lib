@@ -39,6 +39,7 @@ namespace services
     {
     public:
         explicit EchoErrorPolicyWarn(services::Tracer& tracer);
+
         void MessageFormatError(const char* reason) const override;
         void ServiceNotFound(uint32_t serviceId) const override;
         void MethodNotFound(uint32_t serviceId, uint32_t methodId) const override;
