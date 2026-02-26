@@ -1,6 +1,7 @@
 #ifndef UPGRADE_SUPPORTED_TARGETS_HPP
 #define UPGRADE_SUPPORTED_TARGETS_HPP
 
+#include "infra/util/ByteRange.hpp"
 #include <cstdint>
 #include <map>
 #include <optional>
@@ -16,6 +17,7 @@ namespace application
     {
     public:
         using Target = std::string;
+        using TargetWithParameters = std::pair<Target, infra::ConstByteRange>;
         using TargetWithOffset = std::pair<Target, uint32_t>;
 
         friend class SupportedTargetsBuilder;
@@ -52,7 +54,7 @@ namespace application
         }
 
     private:
-        std::vector<Target> cmd;
+        std::vector<TargetWithParameters> cmd;
         std::vector<Target> hex;
         std::vector<TargetWithOffset> elf;
         std::vector<TargetWithOffset> bin;
@@ -73,7 +75,7 @@ namespace application
         SupportedTargetsBuilder& Optional();
         SupportedTargetsBuilder& Order(uint8_t order);
 
-        SupportedTargetsBuilder& AddCmd(const SupportedTargets::Target& target);
+        SupportedTargetsBuilder& AddCmd(const SupportedTargets::Target& target, const infra::ConstByteRange& parameters = {});
         SupportedTargetsBuilder& AddHex(const SupportedTargets::Target& target);
         SupportedTargetsBuilder& AddElf(const SupportedTargets::Target& target, uint32_t offset);
         SupportedTargetsBuilder& AddBin(const SupportedTargets::Target& target, uint32_t offset);
