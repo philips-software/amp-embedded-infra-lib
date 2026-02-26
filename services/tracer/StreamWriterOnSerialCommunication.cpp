@@ -22,26 +22,36 @@ namespace services
 
     void StreamWriterOnSerialCommunication::Flush()
     {
-        auto remainingData = infra::DiscardHead(buffer.ContiguousRange(), currentlySendingBytes);
-        size_t bytesFlushed = communication.SendDataBlocking(remainingData);
-        CommunicationDone(bytesFlushed);
+        while (currentlySendingBytes != 0 || !buffer.Empty())
+        {
+            communication.FlushSendBuffer();
+            if (currentlySendingBytes != 0)
+            {
+                // The flush failed, likely not supported by communication. Continue without attempting flush
+                break;
+            }
+        }
     }
 
     void StreamWriterOnSerialCommunication::TrySend()
     {
         if (!buffer.Empty() && currentlySendingBytes == 0)
         {
-            currentlySendingBytes = buffer.ContiguousRange().size();
-            communication.SendData(buffer.ContiguousRange(), [this]()
+            auto contiguousBytesToSend = buffer.ContiguousRange();
+            currentlySendingBytes = contiguousBytesToSend.size();
+            communication.SendData(contiguousBytesToSend, [this, completedTransactionId = ++transactionId]()
                 {
-                    CommunicationDone(currentlySendingBytes);
+                    CommunicationDone(completedTransactionId);
                 });
         }
     }
 
-    void StreamWriterOnSerialCommunication::CommunicationDone(uint32_t size)
+    void StreamWriterOnSerialCommunication::CommunicationDone(uint16_t completedTransactionId)
     {
-        buffer.Pop(size);
+        if (completedTransactionId != transactionId)
+            return;
+
+        buffer.Pop(currentlySendingBytes);
         currentlySendingBytes = 0;
 
         TrySend();

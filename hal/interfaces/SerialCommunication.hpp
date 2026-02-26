@@ -23,10 +23,9 @@ namespace hal
         virtual void SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion) = 0;
         virtual void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) = 0;
 
-        virtual std::size_t SendDataBlocking(infra::ConstByteRange data)
-        {
-            return 0;
-        }
+        // Implementations of this function is expected to execute any pending actionOnCompleted functions after flushing
+        virtual void FlushSendBuffer()
+        {}
     };
 
     class BufferedSerialCommunication;
