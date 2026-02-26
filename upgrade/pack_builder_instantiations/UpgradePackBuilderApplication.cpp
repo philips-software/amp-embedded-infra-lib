@@ -8,7 +8,7 @@ namespace main_
         , supportedTargets(supportedTargets)
         , parser(header.productName + " Upgrade Pack Builder")
     {
-        for (const auto& [target, parameters] : supportedTargets.CmdTargets())
+        for (const auto& [target, data] : supportedTargets.CmdTargets())
             AddTarget(target);
 
         for (const auto& target : supportedTargets.HexTargets())

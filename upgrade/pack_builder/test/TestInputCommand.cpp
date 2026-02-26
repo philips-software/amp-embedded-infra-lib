@@ -18,7 +18,7 @@ TEST(TestInputCommand, should_generate_command_image)
 
 TEST(TestInputCommand, should_generate_command_image_with_blob)
 {
-    std::array<uint8_t, 8> blob { 0x00, 0x01, 0x02, 0x03, 0x04, 0x07, 0x08};
+    std::array<uint8_t, 8> blob { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
     application::InputCommand input{ "cmd-blob", infra::MakeByteRange(blob)};
     auto image = input.Image();
     auto& header = reinterpret_cast<application::ImageHeaderPrologue&>(image.front());

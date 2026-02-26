@@ -21,11 +21,11 @@ namespace application
         return *this;
     }
 
-    SupportedTargetsBuilder& SupportedTargetsBuilder::AddCmd(const SupportedTargets::Target& target, const infra::ConstByteRange& parameters)
+    SupportedTargetsBuilder& SupportedTargetsBuilder::AddCmd(const SupportedTargets::Target& target, const infra::ConstByteRange& data)
     {
         AddToMandatoryWhenNecessary(target);
         AddInOrder(target);
-        targets.cmd.emplace_back(target, parameters);
+        targets.cmd.emplace_back(target, data);
         return *this;
     }
 

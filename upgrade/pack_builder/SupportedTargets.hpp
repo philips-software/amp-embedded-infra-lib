@@ -17,7 +17,7 @@ namespace application
     {
     public:
         using Target = std::string;
-        using TargetWithParameters = std::pair<Target, infra::ConstByteRange>;
+        using TargetWithData = std::pair<Target, infra::ConstByteRange>;
         using TargetWithOffset = std::pair<Target, uint32_t>;
 
         friend class SupportedTargetsBuilder;
@@ -54,7 +54,7 @@ namespace application
         }
 
     private:
-        std::vector<TargetWithParameters> cmd;
+        std::vector<TargetWithData> cmd;
         std::vector<Target> hex;
         std::vector<TargetWithOffset> elf;
         std::vector<TargetWithOffset> bin;
@@ -75,7 +75,7 @@ namespace application
         SupportedTargetsBuilder& Optional();
         SupportedTargetsBuilder& Order(uint8_t order);
 
-        SupportedTargetsBuilder& AddCmd(const SupportedTargets::Target& target, const infra::ConstByteRange& parameters = {});
+        SupportedTargetsBuilder& AddCmd(const SupportedTargets::Target& target, const infra::ConstByteRange& data = {});
         SupportedTargetsBuilder& AddHex(const SupportedTargets::Target& target);
         SupportedTargetsBuilder& AddElf(const SupportedTargets::Target& target, uint32_t offset);
         SupportedTargetsBuilder& AddBin(const SupportedTargets::Target& target, uint32_t offset);
