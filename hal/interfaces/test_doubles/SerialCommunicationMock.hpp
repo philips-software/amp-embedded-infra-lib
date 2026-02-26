@@ -16,6 +16,7 @@ namespace hal
         void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) override;
 
         MOCK_METHOD(void, SendDataMock, (std::vector<uint8_t>));
+        MOCK_METHOD(void, FlushSendBuffer, (), (override));
 
         infra::AutoResetFunction<void()> actionOnCompletion;
         infra::Function<void(infra::ConstByteRange data)> dataReceived;
