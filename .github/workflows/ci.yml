@@ -138,6 +138,22 @@ jobs:
           configurePreset: "host-no-mbedtls"
           buildPreset: "host-no-mbedtls-Debug"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"
+  host_build_iwhu:
+    name: Host Build with Include-What-You-Use
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: hendrikmuhs/ccache-action@5ebbd400eff9e74630f759d94ddd7b6c26299639 # v1.2.20
+        with:
+          key: ${{ github.job }}-iwyu-ubuntu-latest
+      - uses: seanmiddleditch/gha-setup-ninja@3b1f8f94a2f8254bd26914c4ab9474d4f0015f67 # v6
+      - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
+        with:
+          configurePreset: "host-iwyu"
+          buildPreset: "host-iwyu-Debug"
+          configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"
   embedded_build:
     name: Embedded Build
     runs-on: ubuntu-latest

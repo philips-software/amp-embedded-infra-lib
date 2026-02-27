@@ -47,6 +47,14 @@
       }
     },
     {
+      "name": "host-iwyu",
+      "inherits": "defaults",
+      "cacheVariables": {
+        "CMAKE_CXX_INCLUDE_WHAT_YOU_USE": "include-what-you-use;-Wno-unknown-warning-option;-Xiwyu;--no_comments;-Xiwyu;--cxx17ns;-Xiwyu;--no_fwd_decls"
+      },
+      "generator": "Ninja Multi-Config"
+    },
+    {
       "name": "coverage",
       "displayName": "Configuration for Code Coverage",
       "inherits": "host",
@@ -133,7 +141,10 @@
       "name": "host-Debug-WithPackage",
       "configuration": "Debug",
       "configurePreset": "host",
-      "targets": ["all", "package"]
+      "targets": [
+        "all",
+        "package"
+      ]
     },
     {
       "name": "host-Release",
@@ -161,10 +172,17 @@
       "configurePreset": "host-no-mbedtls"
     },
     {
+      "name": "host-iwyu-debug",
+      "configuration": "Debug",
+      "configurePreset": "host-iwyu"
+    },
+    {
       "name": "release-package",
       "configuration": "MinSizeRel",
       "configurePreset": "host-single-MinSizeRel",
-      "targets": ["package"]
+      "targets": [
+        "package"
+      ]
     },
     {
       "name": "coverage",
