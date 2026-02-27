@@ -208,66 +208,66 @@ service GapPeripheral
     // All servers must implement these methods  
     // ==================================================
 
+    // Results in GapPeripheralResponse.CurrentState with current state
+    rpc GetState(Nothing) returns (Nothing) { option (method_id) = 1; }
+
     // Allowed in link layer states: standby
     // Results in GapPeripheralResponse.CurrentState with state advertising
-    rpc Advertise(AdvertisementMode) returns (Nothing) { option (method_id) = 1; }
+    rpc Advertise(AdvertisementMode) returns (Nothing) { option (method_id) = 2; }
 
     // Allowed in link layer states: advertising, connected
     // Results in GapPeripheralResponse.CurrentState with state standby
-    rpc Standby(Nothing) returns (Nothing) { option (method_id) = 2; }
+    rpc Standby(Nothing) returns (Nothing) { option (method_id) = 3; }
 
     // Allowed in link layer states: standby
     // Formatting of advertisement data is as per Bluetooth Core Specification.
     // Maximum advertisement data length for this method is 28 bytes. Server reserves an additional 3 bytes for flags data with the flag bits 'LE General Discoverable Mode' and 'BR/EDR Not Supported' enabled.
     // Server will not check validity of the advertisement data and only maximum length of each field will be passed to BLE stack
     // If not set by this method, server will have as advertisement data only flags field.
-    rpc SetAdvertisementData(AdvertisementData) returns (Nothing) { option (method_id) = 3; }
+    rpc SetAdvertisementData(AdvertisementData) returns (Nothing) { option (method_id) = 4; }
 
     // Allowed in link layer states: standby
     // Formatting of scan response data is as per Bluetooth Core Specification.
     // Maximum scan response length for this method is 13 bytes. Server reserves 18 bytes for streaming service uuids. Scan Response is only possible with scannable advertisements
     // Server will not check validity of the scan response data and only maximum length of each field will be passed to BLE stack
     // If not set by this method, server will have as scan response data only service uuids.
-    rpc SetScanResponseData(ScanResponseData) returns (Nothing) { option (method_id) = 4; }
+    rpc SetScanResponseData(ScanResponseData) returns (Nothing) { option (method_id) = 5; }
     
     // Allowed in link layer states: advertising
     // Results in GapPeripheralResponse.AdvertisingAddress
     // Type of the advertising address is statically configured. It is the same with Identity Address when privacy is 
     // not used and different otherwise.
-    rpc GetAdvertisingAddress(Nothing) returns (Nothing) { option (method_id) = 5; }
+    rpc GetAdvertisingAddress(Nothing) returns (Nothing) { option (method_id) = 6; }
 
     // Results in GapPeripheralResponse.IdentityAddress
     // Type of the identity address is statically configured
-    rpc GetIdentityAddress(Nothing) returns (Nothing) { option (method_id) = 6; }
+    rpc GetIdentityAddress(Nothing) returns (Nothing) { option (method_id) = 7; }
 
     // Allowed in link layer states: standby
-    rpc SetSecurityPreferences(SecurityPreference) returns (Nothing) { option (method_id) = 7; }
+    rpc SetSecurityPreferences(SecurityPreference) returns (Nothing) { option (method_id) = 8; }
 
     // Allowed in link layer states: standby
     // Default is to allow pairing
-    rpc SetAllowPairing(BoolValue) returns (Nothing) { option (method_id) = 8; }
+    rpc SetAllowPairing(BoolValue) returns (Nothing) { option (method_id) = 9; }
 
     // Allowed in link layer states: connected
     // Send a slave security request to the master.
     // This command has to be issued to notify the master of the security
     // requirements of the slave. The master may encrypt the link, initiate the
     // pairing procedure, or reject the request.
-    rpc SendSecurityRequest(Nothing) returns (Nothing) { option (method_id) = 9; }
+    rpc SendSecurityRequest(Nothing) returns (Nothing) { option (method_id) = 10; }
 
     // Allowed in link layer states: standby
     // Results in GapPeripheralResponse.NumberOfBondsChanged
-    rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 10; }
+    rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 11; }
 
     // Allowed in link layer states: standby
     // Results in GapPeripheralResponse.NumberOfBondsChanged
     // Oldest bond means the least recently used, i.e. connected, bonded peer.
-    rpc RemoveOldestBond(Nothing) returns (Nothing) { option (method_id) = 11; }
+    rpc RemoveOldestBond(Nothing) returns (Nothing) { option (method_id) = 12; }
 
     // Results in GapPeripheralResponse.BondInformation
-    rpc GetBondInformation(Nothing) returns (Nothing) { option (method_id) = 12; }
-
-    // Results in GapPeripheralResponse.CurrentState with current state
-    rpc GetState(Nothing) returns (Nothing) { option (method_id) = 13; }
+    rpc GetBondInformation(Nothing) returns (Nothing) { option (method_id) = 13; }
 }
 
 service GapPeripheralResponse 
