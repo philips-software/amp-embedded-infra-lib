@@ -209,11 +209,11 @@ service GapPeripheral
     // ==================================================
 
     // Allowed in link layer states: standby
-    // Results in GapPeripheralResponse.StateChanged with state advertising
+    // Results in GapPeripheralResponse.CurrentState with state advertising
     rpc Advertise(AdvertisementMode) returns (Nothing) { option (method_id) = 1; }
 
     // Allowed in link layer states: advertising, connected
-    // Results in GapPeripheralResponse.StateChanged with state standby
+    // Results in GapPeripheralResponse.CurrentState with state standby
     rpc Standby(Nothing) returns (Nothing) { option (method_id) = 2; }
 
     // Allowed in link layer states: standby
@@ -265,6 +265,9 @@ service GapPeripheral
 
     // Results in GapPeripheralResponse.BondInformation
     rpc GetBondInformation(Nothing) returns (Nothing) { option (method_id) = 12; }
+
+    // Results in GapPeripheralResponse.CurrentState with current state
+    rpc GetState(Nothing) returns (Nothing) { option (method_id) = 13; }
 }
 
 service GapPeripheralResponse 
@@ -277,7 +280,7 @@ service GapPeripheralResponse
     // ==================================================
 
     // Default state after device start is standby
-    rpc StateChanged(State) returns(Nothing) { option(method_id) = 2; }
+    rpc CurrentState(State) returns(Nothing) { option(method_id) = 2; }
 
     rpc AdvertisingAddress(AddressWithType) returns(Nothing) { option(method_id) = 3; }
 
