@@ -172,7 +172,7 @@
       "configurePreset": "host-no-mbedtls"
     },
     {
-      "name": "host-iwyu-debug",
+      "name": "host-iwyu-Debug",
       "configuration": "Debug",
       "configurePreset": "host-iwyu"
     },
