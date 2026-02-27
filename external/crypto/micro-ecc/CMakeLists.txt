@@ -30,4 +30,10 @@ target_sources(crypto.micro_ecc PRIVATE
     ${microecc_SOURCE_DIR}/uECC.h
 )
 
+if (TARGET_MCU_FAMILY STREQUAL stm32h5xx)
+    target_compile_definitions(crypto.micro_ecc PUBLIC
+        uECC_PLATFORM=uECC_generic
+    )
+endif()
+
 emil_exclude_from_clang_format(crypto.micro_ecc)
