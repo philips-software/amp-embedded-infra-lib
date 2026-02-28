@@ -71,8 +71,8 @@ namespace services
         EXPECT_CALL(gap, Disconnect());
         decorator.Disconnect();
 
-        EXPECT_CALL(gap, SetAddress(MacAddressContentsEqual(macAddress), GapDeviceAddressType::publicAddress));
-        decorator.SetAddress(macAddress, GapDeviceAddressType::publicAddress);
+        EXPECT_CALL(gap, SetAddress(testing::Eq(GapAddress{ macAddress, GapDeviceAddressType::publicAddress })));
+        decorator.SetAddress({ macAddress, GapDeviceAddressType::publicAddress });
 
         EXPECT_CALL(gap, StartDeviceDiscovery());
         decorator.StartDeviceDiscovery();
