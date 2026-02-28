@@ -33,6 +33,11 @@ namespace services
         return stream;
     }
 
+    void TracerToStream::Flush()
+    {
+        stream.Flush();
+    }
+
     TracerToDelegate::TracerToDelegate(Tracer& delegate)
         : delegate(delegate)
     {}
@@ -40,6 +45,11 @@ namespace services
     infra::TextOutputStream TracerToDelegate::Continue()
     {
         return delegate.Continue();
+    }
+
+    void TracerToDelegate::Flush()
+    {
+        delegate.Flush();
     }
 
     void TracerToDelegate::InsertHeader()

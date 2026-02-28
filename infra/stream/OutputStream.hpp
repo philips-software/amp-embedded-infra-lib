@@ -26,6 +26,7 @@ namespace infra
     public:
         virtual void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy) = 0;
         virtual std::size_t Available() const = 0;
+        virtual void Flush() {};
 
         bool Empty() const
         {
@@ -155,6 +156,8 @@ namespace infra
         using WithErrorPolicy = OutputStreamWithErrorPolicy<TextOutputStream>;
 
         TextOutputStream(StreamWriter& writer, StreamErrorPolicy& errorPolicy);
+
+        void Flush();
 
         TextOutputStream operator<<(Hex);
         TextOutputStream operator<<(Bin);
