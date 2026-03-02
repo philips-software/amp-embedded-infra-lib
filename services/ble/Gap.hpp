@@ -28,8 +28,8 @@ namespace services
     {
         standby,
         scanning,
-        advertising,
         connected,
+        advertising,
         initiating
     };
 
