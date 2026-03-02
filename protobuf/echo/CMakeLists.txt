@@ -3,6 +3,7 @@ add_library(protobuf.echo ${EMIL_EXCLUDE_FROM_ALL} STATIC)
 target_link_libraries(protobuf.echo PUBLIC
     infra.syntax
     services.network
+    services.tracer
 )
 
 if (EMIL_ENABLE_GLOBAL_TRACING)
