@@ -48,7 +48,7 @@ namespace infra
 
 #else
 #define INFRA_UTIL_REALLY_ASSERT_TRIGGER(condition)
-#define INFRA_UTIL_REALLY_ASSERT_WITH_MSG_TRIGGER(condition, format, ...)
+#define INFRA_UTIL_REALLY_ASSERT_WITH_MSG_TRIGGER(format, ...)
 #endif
 
 #ifdef NDEBUG

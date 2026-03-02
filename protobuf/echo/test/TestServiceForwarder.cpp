@@ -1,3 +1,4 @@
+#include "infra/stream/BoundedVectorOutputStream.hpp"
 #include "infra/stream/LimitedInputStream.hpp"
 #include "infra/stream/StdVectorInputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
@@ -87,4 +88,31 @@ TEST_F(ServiceForwarderTest, accept_one_service)
             EXPECT_FALSE(service.AcceptsService(2));
             EXPECT_FALSE(service.AcceptsService(3));
         });
+}
+
+TEST_F(ServiceForwarderAllTest, forward_message_with_limited_writebuffer_accounting_for_header)
+{
+    infra::BoundedVectorStreamWriter::WithStorage<6> writer;
+    infra::StdVectorInputStream::WithStorage inputStream{ std::in_place, std::vector<uint8_t>{ 1, 2, 3, 4, 5 } };
+
+    infra::SharedPtr<services::MethodSerializer> serializer;
+
+    EXPECT_CALL(echoTo, RequestSend(testing::_))
+        .WillOnce(testing::Invoke([&writer, &serializer](services::ServiceProxy& serviceProxy)
+            {
+                serializer = serviceProxy.GrantSend();
+                EXPECT_TRUE(serializer->Serialize(infra::UnOwnedSharedPtr(writer)));
+            }));
+
+    auto deserializer = forwarder.StartMethod(1, 5, 5, errorPolicy);
+    deserializer->MethodContents(infra::UnOwnedSharedPtr(inputStream.Reader()));
+
+    EXPECT_THAT(writer.Storage(), testing::ElementsAre(1, 42, 5, 1, 2, 3));
+
+    writer.Reset();
+    EXPECT_FALSE(serializer->Serialize(infra::UnOwnedSharedPtr(writer)));
+    EXPECT_THAT(writer.Storage(), testing::ElementsAre(4, 5));
+
+    EXPECT_CALL(echoFrom, ServiceDone());
+    deserializer->ExecuteMethod();
 }

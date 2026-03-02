@@ -9,5 +9,7 @@ target_link_libraries(services.synchronous_util_test PUBLIC
 )
 
 target_sources(services.synchronous_util_test PRIVATE
+    TestSynchronousFlashAligner.cpp
+    TestSynchronousFlashDelegate.cpp
     TestSynchronousFlashSpi.cpp
 )

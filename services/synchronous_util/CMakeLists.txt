@@ -6,12 +6,16 @@ target_link_libraries(services.synchronous_util PUBLIC
 )
 
 target_sources(services.synchronous_util PRIVATE
-    SynchronousFlashRegion.cpp
+    SynchronousFlashAligner.cpp
+    SynchronousFlashDelegate.cpp
     SynchronousFlashQuadSpi.cpp
+    SynchronousFlashRegion.cpp
     SynchronousFlashSpi.cpp
     SynchronousSpiMasterWithChipSelect.cpp
-    SynchronousFlashRegion.hpp
+    SynchronousFlashAligner.hpp
+    SynchronousFlashDelegate.hpp
     SynchronousFlashQuadSpi.hpp
+    SynchronousFlashRegion.hpp
     SynchronousFlashSpi.hpp
     SynchronousSpiMasterWithChipSelect.hpp
 )

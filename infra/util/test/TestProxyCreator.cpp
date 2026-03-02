@@ -138,7 +138,7 @@ TEST(ProxyCreatorTest, CreateVoidByCreatorExternal)
     infra::MockCallback<void()> destruction;
 
     PeripheralWithTwoParameters peripheral(5, 6);
-    infra::CreatorExternal<void, void()> creator([&peripheral, &construction]()
+    infra::CreatorBase<void, void()>::WithCreatorExternal creator([&peripheral, &construction]()
         {
             construction.callback();
         },
