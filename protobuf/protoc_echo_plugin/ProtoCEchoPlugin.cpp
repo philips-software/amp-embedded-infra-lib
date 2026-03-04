@@ -1552,6 +1552,65 @@ switch (methodId)
         return result.str();
     }
 
+    NullTracingServiceGenerator::NullTracingServiceGenerator(const std::shared_ptr<const EchoService>& service, Entities& formatter)
+        : service(service)
+    {
+        auto serviceClass = std::make_shared<Class>(service->name + "NullTracer");
+        serviceClass->Parent("public services::ServiceTracer");
+        serviceFormatter = serviceClass.get();
+        formatter.Add(serviceClass);
+
+        GenerateServiceConstructors();
+        GenerateServiceFunctions();
+        GenerateFieldConstants();
+        GenerateDataMembers();
+    }
+
+    void NullTracingServiceGenerator::GenerateServiceConstructors()
+    {
+        auto constructors = std::make_shared<Access>("public");
+        auto constructor = std::make_shared<Constructor>(service->name + "NullTracer", "tracingEcho.AddServiceTracer(*this);\n", 0);
+        constructor->Parameter("services::TracingEchoOnStreams& tracingEcho");
+        constructor->Initializer("services::ServiceTracer(serviceId)");
+        constructor->Initializer("tracingEcho(tracingEcho)");
+        constructors->Add(constructor);
+
+        constructors->Add(std::make_shared<Constructor>("~" + service->name + "NullTracer", "tracingEcho.RemoveServiceTracer(*this);\n", 0));
+
+        serviceFormatter->Add(constructors);
+    }
+
+    void NullTracingServiceGenerator::GenerateServiceFunctions()
+    {
+        auto functions = std::make_shared<Access>("public");
+
+        auto handle = std::make_shared<Function>("TraceMethod", "", "void", Function::fOverride | Function::fConst);
+        handle->Parameter("uint32_t methodId");
+        handle->Parameter("infra::ProtoLengthDelimited& contents");
+        handle->Parameter("services::Tracer& tracer");
+        functions->Add(handle);
+
+        serviceFormatter->Add(functions);
+    }
+
+    void NullTracingServiceGenerator::GenerateFieldConstants()
+    {
+        auto fields = std::make_shared<Access>("public");
+
+        fields->Add(std::make_shared<DataMember>("serviceId", "static const uint32_t", absl::StrCat(service->serviceId)));
+
+        serviceFormatter->Add(fields);
+    }
+
+    void NullTracingServiceGenerator::GenerateDataMembers()
+    {
+        auto dataMembers = std::make_shared<Access>("public");
+
+        dataMembers->Add(std::make_shared<DataMember>("tracingEcho", "services::TracingEchoOnStreams&"));
+
+        serviceFormatter->Add(dataMembers);
+    }
+
     EchoGenerator::EchoGenerator(google::protobuf::compiler::GeneratorContext* generatorContext, const std::string& name, const google::protobuf::FileDescriptor* file)
         : stream(generatorContext->Open(name))
         , printer(stream.get(), '$', nullptr)
@@ -1669,7 +1728,10 @@ switch (methodId)
         }
 
         for (auto& service : root.GetFile(*file)->services)
-            serviceGenerators.emplace_back(std::make_shared<TracingServiceGenerator>(service, *currentEntity));
+        {
+            tracingServiceGenerators.emplace_back(std::make_shared<TracingServiceGenerator>(service, *currentEntity));
+            nullTracingServiceGenerators.emplace_back(std::make_shared<NullTracingServiceGenerator>(service, *currentEntity));
+        }
     }
 
     void TracingEchoGenerator::GenerateHeader()
