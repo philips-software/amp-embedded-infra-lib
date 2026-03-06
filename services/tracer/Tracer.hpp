@@ -16,6 +16,7 @@ namespace services
         virtual ~Tracer() = default;
 
         virtual infra::TextOutputStream Continue() = 0;
+        virtual void Flush() = 0;
 
 #if defined(EMIL_ENABLE_TRACING)
         infra::TextOutputStream Trace();
@@ -53,6 +54,7 @@ namespace services
         explicit TracerToStream(infra::TextOutputStream& stream);
 
         infra::TextOutputStream Continue() override;
+        void Flush() override;
 
     private:
         infra::TextOutputStream& stream;
@@ -65,6 +67,7 @@ namespace services
         explicit TracerToDelegate(Tracer& delegate);
 
         infra::TextOutputStream Continue() override;
+        void Flush() override;
 
     protected:
         void InsertHeader() override;
