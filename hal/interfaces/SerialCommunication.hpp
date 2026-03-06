@@ -28,6 +28,12 @@ namespace hal
         {}
     };
 
+    class Flushable // TODO(HW): This can be used a new member in StreamWriter. Then UART also extends this.
+    {
+    public:
+        virtual void Flush() = 0;
+    };
+
     class BufferedSerialCommunication;
 
     class BufferedSerialCommunicationObserver

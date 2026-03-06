@@ -7,7 +7,7 @@
 
 namespace services
 {
-    class StreamWriterOnSerialCommunication
+    class StreamWriterOnSerialCommunication // Make new StreamWriterOnFlushableSerialCommunication
         : public infra::StreamWriter
     {
     public:
