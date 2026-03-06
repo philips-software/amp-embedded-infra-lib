@@ -26,9 +26,40 @@ namespace services
         return sendStorage.max_size() - 2 - (sendStorage.max_size() - 2) / 255;
     }
 
-    std::size_t SesameCobs::MessageSize(std::size_t size) const
+    std::size_t SesameCobs::WorstCaseEncodedMessageSize(std::size_t size) const
     {
         return size + size / 254 + 2;
+    }
+
+    std::size_t SesameCobs::WorstCaseDecodedMessageSize(std::size_t encodedMessageSize) const
+    {
+        return (encodedMessageSize - 2) - (encodedMessageSize - 2) / 254;
+    }
+
+    std::size_t SesameCobs::MessageSize(infra::StreamReader&& message) const
+    {
+        std::size_t result = 2;
+        uint8_t consecutiveNonZero = 0;
+
+        while (!message.Empty())
+        {
+            auto range = message.ExtractContiguousRange(std::numeric_limits<uint16_t>::max());
+            result += range.size();
+            for (auto x : range)
+                if (x == 0)
+                    consecutiveNonZero = 0;
+                else
+                {
+                    ++consecutiveNonZero;
+                    if (consecutiveNonZero == 254)
+                    {
+                        consecutiveNonZero = 0;
+                        ++result;
+                    }
+                }
+        }
+
+        return result;
     }
 
     void SesameCobs::Reset()
