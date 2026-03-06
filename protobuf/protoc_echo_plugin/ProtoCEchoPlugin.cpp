@@ -1584,7 +1584,7 @@ switch (methodId)
     {
         auto functions = std::make_shared<Access>("public");
 
-        auto handle = std::make_shared<Function>("TraceMethod", "", "void", Function::fOverride | Function::fConst);
+        auto handle = std::make_shared<Function>("TraceMethod", "contents.SkipEverything();", "void", Function::fOverride | Function::fConst);
         handle->Parameter("uint32_t methodId");
         handle->Parameter("infra::ProtoLengthDelimited& contents");
         handle->Parameter("services::Tracer& tracer");
