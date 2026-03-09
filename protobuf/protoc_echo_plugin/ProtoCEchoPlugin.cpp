@@ -1556,7 +1556,7 @@ switch (methodId)
         : service(service)
     {
         auto serviceClass = std::make_shared<Class>(service->name + "NullTracer");
-        serviceClass->Parent("public services::ServiceTracer");
+        serviceClass->Parent("public services::ServiceNullTracer");
         serviceFormatter = serviceClass.get();
         formatter.Add(serviceClass);
 
@@ -1571,7 +1571,7 @@ switch (methodId)
         auto constructors = std::make_shared<Access>("public");
         auto constructor = std::make_shared<Constructor>(service->name + "NullTracer", "tracingEcho.AddServiceTracer(*this);\n", 0);
         constructor->Parameter("services::TracingEchoOnStreams& tracingEcho");
-        constructor->Initializer("services::ServiceTracer(serviceId)");
+        constructor->Initializer("services::ServiceNullTracer(serviceId)");
         constructor->Initializer("tracingEcho(tracingEcho)");
         constructors->Add(constructor);
 

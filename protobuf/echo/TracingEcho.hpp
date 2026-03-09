@@ -17,10 +17,22 @@ namespace services
         explicit ServiceTracer(uint32_t serviceId);
 
         uint32_t ServiceId() const;
+        virtual void StartIncomingTrace(services::Tracer& tracer) const;
+        virtual void StartOutgoingTrace(services::Tracer& tracer) const;
         virtual void TraceMethod(uint32_t methodId, infra::ProtoLengthDelimited& contents, services::Tracer& tracer) const = 0;
 
     private:
         uint32_t serviceId;
+    };
+
+    class ServiceNullTracer
+        : public ServiceTracer
+    {
+    public:
+        using ServiceTracer::ServiceTracer;
+
+        void StartIncomingTrace(services::Tracer& tracer) const override;
+        void StartOutgoingTrace(services::Tracer& tracer) const override;
     };
 
     void PrintField(bool value, services::Tracer& tracer);
