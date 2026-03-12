@@ -163,7 +163,6 @@ public:
 
 TEST_F(SesameWindowedTest, MaxSendMessageSize)
 {
-    // When the cobs layer is able to send a 16 byte message, then 18 bytes (cobs start plus delimiter) are available
     ReceiveInitResponse(24);
     // 6 bytes in a message expands to 1 (cobs) + 1 (operation) + 6 (message) + 1 (delimiter) = 9
     // Two of these messages plus one release window amount to 9 + 9 + 5 = 23, which is under the limit of the 24 bytes buffer of cobs

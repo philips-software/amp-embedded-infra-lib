@@ -5,7 +5,7 @@ namespace services
 {
     namespace
     {
-        // This reader is used to put an extra '4' in front of a message, in order to exactly calculate the encoded size
+        // This reader is used to put the Operation::message byte ('\x4') in front of a message, in order to exactly calculate the encoded size
         // Only ExtractContiguousRange(), Empty(), and Available() are used by SesameCobs, so only those methods are implemented here.
         class ExtraCharacterReader
             : public infra::LimitedStreamReader
@@ -26,7 +26,7 @@ namespace services
             infra::ConstByteRange ExtractContiguousRange(std::size_t max) override
             {
                 if (extraCharacter != 0)
-                    return infra::Head(infra::MakeByteRange(character), std::exchange(extraCharacter, 0));
+                    return infra::Head(infra::Head(infra::MakeByteRange(character), std::exchange(extraCharacter, 0)), max);
                 else
                     return infra::LimitedStreamReader::ExtractContiguousRange(max);
             }
@@ -210,7 +210,7 @@ namespace services
             }
             else if (requestedSendMessageSize != std::nullopt && SesameEncodedObserver::Subject().WorstCaseEncodedMessageSize(*requestedSendMessageSize + 1) + releaseWindowSize <= otherAvailableWindow)
                 state.Emplace<StateSendingMessage>(*this).Request();
-            else if (releasedWindow >= MaxReceiveMessageSize() && releaseWindowSize <= otherAvailableWindow)
+            else if (releasedWindow >= (ownBufferSize - releaseWindowSize) / 2 && releaseWindowSize <= otherAvailableWindow)
                 state.Emplace<StateSendingReleaseWindow>(*this).Request();
             else
                 state.Emplace<StateOperational>(*this);

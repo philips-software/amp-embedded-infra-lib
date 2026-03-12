@@ -169,9 +169,9 @@ namespace services
 
     void FlashEchoProxy::WriteDone()
     {
-        bufferPosition += std::min<std::size_t>(writingBuffer.size(), flash::WriteRequest::contentsSize);
+        bufferPosition += std::min<std::size_t>(writingBuffer.size() - bufferPosition, flash::WriteRequest::contentsSize);
 
-        if (bufferPosition >= writingBuffer.size())
+        if (bufferPosition == writingBuffer.size())
             onDone();
 
         MethodDone();
