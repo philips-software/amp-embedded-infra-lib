@@ -51,7 +51,6 @@ namespace services
         void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, std::size_t encodedSize) override;
 
     private:
-        std::size_t MaxReceiveMessageSize() const;
         void ReceivedInitialize();
         void SaveReceivedMessage(infra::StreamReader& reader);
         void TryForwardReceivedMessage();
@@ -171,8 +170,7 @@ namespace services
         const uint16_t releaseWindowSize;
         bool initialized = false;
         uint16_t currentReceiveMessageSize;
-        infra::SharedOptional<infra::LimitedStreamReaderWithRewinding::WithInput<infra::BoundedDequeInputStreamReader>> currentReceiveMessageReader;
-        infra::SharedPtr<infra::StreamReaderWithRewinding> receivedMessageReader;
+        std::optional<infra::LimitedStreamReaderWithRewinding::WithInput<infra::BoundedDequeInputStreamReader>> currentReceiveMessageReader;
         infra::AccessedBySharedPtr readerAccess;
         uint16_t otherAvailableWindow{ 0 };
         uint16_t maxUsableBufferSize = 0;

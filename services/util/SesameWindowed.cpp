@@ -78,7 +78,7 @@ namespace services
     void SesameWindowed::Reset()
     {
         SesameEncodedObserver::Subject().Reset();
-        assert(receivedMessageReader == nullptr);
+        assert(currentReceiveMessageReader == std::nullopt);
         assert(!readerAccess.Referenced());
         initialized = false;
         otherAvailableWindow = 0;
@@ -146,12 +146,6 @@ namespace services
         SetNextState();
     }
 
-    std::size_t SesameWindowed::MaxReceiveMessageSize() const
-    {
-        assert(initialized);
-        return SesameEncodedObserver::Subject().WorstCaseDecodedMessageSize((ownBufferSize - releaseWindowSize) / 2) - sizeof(Operation);
-    }
-
     void SesameWindowed::ReceivedInitialize()
     {
         maxUsableBufferSize = otherAvailableWindow;
@@ -172,14 +166,14 @@ namespace services
 
     void SesameWindowed::TryForwardReceivedMessage()
     {
-        if (!receivedMessageReader && !receivedMessage.empty())
+        if (currentReceiveMessageReader == std::nullopt && !receivedMessage.empty())
         {
             infra::BoundedDequeInputStream stream(receivedMessage);
             currentReceiveMessageSize = stream.Extract<uint16_t>();
             auto encodedSize = SesameEncodedObserver::Subject().MessageSize(ExtraCharacterReader(stream.Reader(), currentReceiveMessageSize));
             receivedMessage.erase(receivedMessage.begin(), receivedMessage.begin() + 2);
 
-            receivedMessageReader = currentReceiveMessageReader.Emplace(std::in_place, receivedMessage, currentReceiveMessageSize);
+            currentReceiveMessageReader.emplace(std::in_place, receivedMessage, currentReceiveMessageSize);
             ForwardReceivedMessage(static_cast<uint16_t>(encodedSize));
         }
     }
@@ -189,14 +183,14 @@ namespace services
         readerAccess.SetAction([this, encodedSize]()
             {
                 releasedWindow += encodedSize;
-                receivedMessageReader = nullptr;
+                currentReceiveMessageReader = std::nullopt;
                 receivedMessage.erase(receivedMessage.begin(), receivedMessage.begin() + currentReceiveMessageSize);
                 TryForwardReceivedMessage();
                 SetNextState();
             });
 
-        ForwardingReceivedMessage(*receivedMessageReader);
-        GetObserver().ReceivedMessage(readerAccess.MakeShared(*receivedMessageReader));
+        ForwardingReceivedMessage(*currentReceiveMessageReader);
+        GetObserver().ReceivedMessage(readerAccess.MakeShared(*currentReceiveMessageReader));
     }
 
     void SesameWindowed::SetNextState()
@@ -205,7 +199,7 @@ namespace services
         {
             if (sendInitResponse)
             {
-                if (receivedMessageReader == nullptr)
+                if (currentReceiveMessageReader == std::nullopt)
                     state.Emplace<StateSendingInitResponse>(*this).Request();
             }
             else if (requestedSendMessageSize != std::nullopt && SesameEncodedObserver::Subject().WorstCaseEncodedMessageSize(*requestedSendMessageSize + 1) + releaseWindowSize <= otherAvailableWindow)
