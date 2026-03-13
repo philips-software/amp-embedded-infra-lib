@@ -49,7 +49,9 @@ namespace services
     public:
         virtual void RequestSendMessage(std::size_t size) = 0;
         virtual std::size_t MaxSendMessageSize() const = 0;
-        virtual std::size_t MessageSize(std::size_t size) const = 0;
+        virtual std::size_t WorstCaseEncodedMessageSize(std::size_t size) const = 0;
+        virtual std::size_t WorstCaseDecodedMessageSize(std::size_t encodedMessageSize) const = 0;
+        virtual std::size_t MessageSize(infra::StreamReader&& message) const = 0;
         virtual void Reset() = 0;
     };
 }

@@ -28,6 +28,10 @@ namespace services
 
     EchoOnStreams::~EchoOnStreams()
     {
+        // Ensure that the destruction of bufferedReader does not result in overflowing receiveBuffer
+        while (readerPtr != nullptr && !readerPtr->Empty())
+            readerPtr->ExtractContiguousRange(std::numeric_limits<std::size_t>::max());
+
         limitedReaderAccess.SetAction(infra::emptyFunction);
     }
 

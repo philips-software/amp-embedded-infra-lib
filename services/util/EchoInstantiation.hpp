@@ -35,7 +35,7 @@ namespace main_
         template<std::size_t MessageSize>
         struct WithMessageSize;
 
-        EchoOnSesame(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory);
+        EchoOnSesame(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage, infra::BoundedDeque<uint8_t>& windowedReceivedMessage, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory);
 
         void Reset();
 
@@ -43,7 +43,7 @@ namespace main_
         void Stop(const infra::Function<void()>& onDone) override;
 
         services::SesameCobs cobs;
-        services::SesameWindowed windowed{ cobs };
+        services::SesameWindowed windowed;
         services::EchoOnSesame echo;
 
         infra::AutoResetFunction<void()> onStopDone;
@@ -55,6 +55,7 @@ namespace main_
 
             infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameCobs::sendBufferSize<MessageSize>> cobsSendStorage;
             infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameCobs::receiveBufferSize<encodedMessageSize>> cobsReceivedMessage;
+            infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameCobs::receiveBufferSize<encodedMessageSize>> windowedReceivedMessage;
         };
     };
 
@@ -64,7 +65,7 @@ namespace main_
         , EchoOnSesame
     {
         WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory)
-            : EchoOnSesame(this->cobsSendStorage, this->cobsReceivedMessage, serialCommunication, serializerFactory)
+            : EchoOnSesame(this->cobsSendStorage, this->cobsReceivedMessage, this->windowedReceivedMessage, serialCommunication, serializerFactory)
         {}
     };
 
