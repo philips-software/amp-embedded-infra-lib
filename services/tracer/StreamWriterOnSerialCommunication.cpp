@@ -1,5 +1,4 @@
 #include "services/tracer/StreamWriterOnSerialCommunication.hpp"
-#include "infra/util/MemoryRange.hpp"
 
 namespace services
 {
@@ -20,39 +19,24 @@ namespace services
         return std::numeric_limits<size_t>::max();
     }
 
-    void StreamWriterOnSerialCommunication::Flush()
-    {
-        while (currentlySendingBytes != 0 || !buffer.Empty())
-        {
-            communication.FlushSendBuffer();
-            if (currentlySendingBytes != 0)
-            {
-                // The flush failed, likely not supported by communication. Continue without attempting flush
-                break;
-            }
-        }
-    }
-
     void StreamWriterOnSerialCommunication::TrySend()
     {
-        if (!buffer.Empty() && currentlySendingBytes == 0)
+        if (!buffer.Empty() && !communicating)
         {
-            auto contiguousBytesToSend = buffer.ContiguousRange();
-            currentlySendingBytes = contiguousBytesToSend.size();
-            communication.SendData(contiguousBytesToSend, [this, completedTransactionId = ++transactionId]()
+            communicating = true;
+
+            uint32_t size = buffer.ContiguousRange().size();
+            communication.SendData(buffer.ContiguousRange(), [this, size]()
                 {
-                    CommunicationDone(completedTransactionId);
+                    CommunicationDone(size);
                 });
         }
     }
 
-    void StreamWriterOnSerialCommunication::CommunicationDone(uint16_t completedTransactionId)
+    void StreamWriterOnSerialCommunication::CommunicationDone(uint32_t size)
     {
-        if (completedTransactionId != transactionId)
-            return;
-
-        buffer.Pop(currentlySendingBytes);
-        currentlySendingBytes = 0;
+        communicating = false;
+        buffer.Pop(size);
 
         TrySend();
     }

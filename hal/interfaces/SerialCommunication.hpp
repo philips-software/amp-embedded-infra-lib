@@ -13,6 +13,14 @@
 
 namespace hal
 {
+    class Flushable
+    {
+    public:
+        // This function will immediatelly call pending callbacks, which could result in duplicate callbacks due
+        // to EventDispatcher. Implementations of this function should be careful to avoid this.
+        virtual void Flush() = 0;
+    };
+
     class SerialCommunication
     {
     protected:
@@ -22,16 +30,6 @@ namespace hal
     public:
         virtual void SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion) = 0;
         virtual void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) = 0;
-
-        // Implementations of this function are expected to execute any pending actionOnCompletion functions after flushing
-        virtual void FlushSendBuffer()
-        {}
-    };
-
-    class Flushable // TODO(HW): This can be used a new member in StreamWriter. Then UART also extends this.
-    {
-    public:
-        virtual void Flush() = 0;
     };
 
     class BufferedSerialCommunication;

@@ -7,26 +7,29 @@
 
 namespace services
 {
-    class StreamWriterOnSerialCommunication
+    class StreamWriterOnFlushableSerialCommunication
         : public infra::StreamWriter
     {
     public:
         template<std::size_t StorageSize>
-        using WithStorage = infra::WithStorage<StreamWriterOnSerialCommunication, std::array<uint8_t, StorageSize>>;
+        using WithStorage = infra::WithStorage<StreamWriterOnFlushableSerialCommunication, std::array<uint8_t, StorageSize>>;
 
-        StreamWriterOnSerialCommunication(infra::ByteRange bufferStorage, hal::SerialCommunication& communication);
+        StreamWriterOnFlushableSerialCommunication(infra::ByteRange bufferStorage, hal::SerialCommunication& communication, hal::Flushable& flushableCommunication);
 
         void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
         std::size_t Available() const override;
+        void Flush() override;
 
     private:
         void TrySend();
-        void CommunicationDone(uint32_t size);
+        void CommunicationDone(uint16_t completedTransactionId);
 
     private:
         infra::CyclicByteBuffer buffer;
         hal::SerialCommunication& communication;
-        bool communicating = false;
+        hal::Flushable& flushableCommunication;
+        uint32_t currentlySendingBytes = 0;
+        uint16_t transactionId = 0;
     };
 }
 
