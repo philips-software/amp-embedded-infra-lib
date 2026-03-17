@@ -78,6 +78,13 @@ namespace services
             std::abort();
     }
 
+    bool DatagramBsd::SendBufferEmpty() const
+    {
+        if (!sendBuffer.has_value())
+            return true;
+        return sendBuffer->empty();
+    }
+
     void DatagramBsd::RequestSendStream(std::size_t sendSize)
     {
         RequestSendStream(sendSize, *connectedTo);
