@@ -1,6 +1,15 @@
 #include "services/tracer/TracerAdapterPrintf.hpp"
 #include "infra/util/Compatibility.hpp"
-#include <string.h>
+#include <cstring>
+
+namespace
+{
+    size_t GetStringLengthBounded(const char* str, int maxSize)
+    {
+        const char* end = static_cast<const char*>(std::memchr(str, 0, maxSize));
+        return end == nullptr ? maxSize : static_cast<size_t>(end - str);
+    }
+}
 
 namespace services
 {
@@ -113,8 +122,8 @@ namespace services
                     tracer.Continue() << "(null)";
                 else if (precision >= 0)
                 {
-                    auto stringSize = strnlen(str, static_cast<size_t>(precision));
-                    auto trimmedString = infra::BoundedConstString(str, stringSize);
+                    auto boundedStringSize = GetStringLengthBounded(str, precision);
+                    auto trimmedString = infra::BoundedConstString(str, boundedStringSize);
                     tracer.Continue() << trimmedString;
                 }
                 else
