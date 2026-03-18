@@ -1,6 +1,5 @@
 #include "services/tracer/TracerAdapterPrintf.hpp"
 #include "infra/util/Compatibility.hpp"
-#include "infra/util/ReallyAssert.hpp"
 
 namespace services
 {
@@ -91,6 +90,7 @@ namespace services
 
     void TracerAdapterPrintf::ParseFormat(char format, int lengthSpecifier, const infra::Width& width, int precision, va_list* args)
     {
+        // Note: precision is only supported for string currently.
         switch (format)
         {
             case '\0':
@@ -99,7 +99,6 @@ namespace services
                 tracer.Continue() << format;
                 break;
             case 'c':
-                really_assert(precision < 0);
                 tracer.Continue() << static_cast<const char>(va_arg(*args, int32_t));
                 break;
             case 's':
@@ -118,33 +117,28 @@ namespace services
             }
             case 'd':
             case 'i':
-                really_assert(precision < 0);
                 if (lengthSpecifier >= 2)
                     tracer.Continue() << va_arg(*args, int64_t);
                 else
                     tracer.Continue() << va_arg(*args, int32_t);
                 break;
             case 'u':
-                really_assert(precision < 0);
                 if (lengthSpecifier >= 2)
                     tracer.Continue() << va_arg(*args, uint64_t);
                 else
                     tracer.Continue() << va_arg(*args, uint32_t);
                 break;
             case 'p':
-                really_assert(precision < 0);
                 tracer.Continue() << "0x";
                 EMIL_FALLTHROUGH;
             case 'X':
             case 'x':
-                really_assert(precision < 0);
                 if (lengthSpecifier >= 2)
                     tracer.Continue() << infra::hex << width << va_arg(*args, uint64_t);
                 else
                     tracer.Continue() << infra::hex << width << va_arg(*args, uint32_t);
                 break;
             case 'f':
-                really_assert(precision < 0);
                 tracer.Continue() << static_cast<float>(va_arg(*args, double));
                 break;
             default:
