@@ -103,16 +103,16 @@ namespace services
                 break;
             case 's':
             {
-                const auto* s = va_arg(*args, char*);
-                if (s == nullptr)
+                const auto* str = va_arg(*args, const char*);
+                if (str == nullptr)
                     tracer.Continue() << "(null)";
                 else if (precision >= 0)
                 {
-                    for (int i = 0; i < precision && s[i] != '\0'; ++i)
-                        tracer.Continue() << s[i];
+                    for (int i = 0; i < precision && str[i] != '\0'; ++i)
+                        tracer.Continue() << str[i];
                 }
                 else
-                    tracer.Continue() << s;
+                    tracer.Continue() << str;
                 break;
             }
             case 'd':

@@ -199,3 +199,21 @@ TEST_F(TracerAdapterPrintfTest, print_width_with_static_precision_on_string)
     Print("%10.5s", "Hello, Tracer!");
     EXPECT_EQ("Hello", stream.Storage());
 }
+
+TEST_F(TracerAdapterPrintfTest, trailing_percent_does_not_read_out_of_bounds)
+{
+    Print("hello%");
+    EXPECT_EQ("hello", stream.Storage());
+}
+
+TEST_F(TracerAdapterPrintfTest, lone_trailing_percent_does_not_read_out_of_bounds)
+{
+    Print("%");
+    EXPECT_EQ("", stream.Storage());
+}
+
+TEST_F(TracerAdapterPrintfTest, trailing_percent_after_valid_format_does_not_read_out_of_bounds)
+{
+    Print("%d%", 42);
+    EXPECT_EQ("42", stream.Storage());
+}
