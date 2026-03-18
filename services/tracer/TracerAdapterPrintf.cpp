@@ -15,7 +15,11 @@ namespace services
         for (; *format != 0; ++format)
         {
             if (*format == '%')
+            {
                 HandleFormat(format, args);
+                if (*format == '\0')
+                    break;
+            }
             else if (*format == '\n')
                 tracer.Trace();
             else
