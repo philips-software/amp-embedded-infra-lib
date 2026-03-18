@@ -15,9 +15,13 @@ namespace hal
 {
     class Flushable
     {
+    protected:
+        Flushable() = default;
+        ~Flushable() = default;
+
     public:
-        // This function will immediatelly call pending callbacks, which could result in duplicate callbacks due
-        // to EventDispatcher. Implementations of this function should be careful to avoid this.
+        // It also calls pending callbacks, which may result in duplicate callbacks due to
+        // EventDispatcher. Implementations of this function should handle this edge case.
         virtual void Flush() = 0;
     };
 

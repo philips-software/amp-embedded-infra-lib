@@ -24,9 +24,7 @@ namespace services
     void StreamWriterOnFlushableSerialCommunication::Flush()
     {
         while (currentlySendingBytes != 0 || !buffer.Empty())
-        {
             flushableCommunication.Flush();
-        }
     }
 
     void StreamWriterOnFlushableSerialCommunication::TrySend()
