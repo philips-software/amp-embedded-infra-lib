@@ -115,10 +115,22 @@ TEST_F(TracerAdapterPrintfTest, print_int_in_hex_with_width_to_tracer)
     EXPECT_EQ("    abcd", stream.Storage());
 }
 
+TEST_F(TracerAdapterPrintfTest, print_int_in_hex_with_width_containing_zero_to_tracer)
+{
+    Print("%10x", 0xABCD);
+    EXPECT_EQ("      abcd", stream.Storage());
+}
+
 TEST_F(TracerAdapterPrintfTest, print_int_in_hex_with_width_padding_0_to_tracer)
 {
     Print("%08x", 0xABCD);
     EXPECT_EQ("0000abcd", stream.Storage());
+}
+
+TEST_F(TracerAdapterPrintfTest, print_long_long_in_hex_with_width_padding_0_to_tracer)
+{
+    Print("%016llx", 0xABCDLL);
+    EXPECT_EQ("000000000000abcd", stream.Storage());
 }
 
 TEST_F(TracerAdapterPrintfTest, print_int_in_hex_with_X_to_tracer)
@@ -174,4 +186,16 @@ TEST_F(TracerAdapterPrintfTest, print_null_string_with_precision)
 {
     Print("%.*s", 5, nullptr);
     EXPECT_EQ("(null)", stream.Storage());
+}
+
+TEST_F(TracerAdapterPrintfTest, print_width_with_dynamic_precision_on_string)
+{
+    Print("%10.*s", 5, "Hello, Tracer!");
+    EXPECT_EQ("Hello", stream.Storage());
+}
+
+TEST_F(TracerAdapterPrintfTest, print_width_with_static_precision_on_string)
+{
+    Print("%10.5s", "Hello, Tracer!");
+    EXPECT_EQ("Hello", stream.Storage());
 }

@@ -80,7 +80,7 @@ namespace services
             format++;
         }
 
-        while (*format > '0' && *format <= '9')
+        while (*format >= '0' && *format <= '9')
         {
             w.width = w.width * 10 + *format - '0';
             ++format;
