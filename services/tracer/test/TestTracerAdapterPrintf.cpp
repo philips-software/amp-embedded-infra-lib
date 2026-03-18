@@ -139,7 +139,7 @@ TEST_F(TracerAdapterPrintfTest, print_multiple_values)
     EXPECT_EQ("1002300", stream.Storage());
 }
 
-TEST_F(TracerAdapterPrintfTest, print_specified_number_characters_from_string)
+TEST_F(TracerAdapterPrintfTest, print_string_with_precision)
 {
     const char* str = "No admittance except on party business";
     Print("%.*s", 13, str);
