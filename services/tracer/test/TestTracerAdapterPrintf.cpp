@@ -139,9 +139,39 @@ TEST_F(TracerAdapterPrintfTest, print_multiple_values)
     EXPECT_EQ("1002300", stream.Storage());
 }
 
-TEST_F(TracerAdapterPrintfTest, print_string_with_precision)
+TEST_F(TracerAdapterPrintfTest, print_string_with_dynamic_precision)
 {
     const char* str = "No admittance except on party business";
     Print("%.*s", 13, str);
     EXPECT_EQ("No admittance", stream.Storage());
+}
+
+TEST_F(TracerAdapterPrintfTest, print_string_with_static_precision)
+{
+    Print("%.5s", "Hello, Tracer!");
+    EXPECT_EQ("Hello", stream.Storage());
+}
+
+TEST_F(TracerAdapterPrintfTest, print_string_with_zero_precision)
+{
+    Print("%.0s", "Hello, Tracer!");
+    EXPECT_EQ("", stream.Storage());
+}
+
+TEST_F(TracerAdapterPrintfTest, print_string_with_dynamic_zero_precision)
+{
+    Print("%.*s", 0, "Hello, Tracer!");
+    EXPECT_EQ("", stream.Storage());
+}
+
+TEST_F(TracerAdapterPrintfTest, print_string_with_precision_larger_than_string)
+{
+    Print("%.*s", 100, "Hello");
+    EXPECT_EQ("Hello", stream.Storage());
+}
+
+TEST_F(TracerAdapterPrintfTest, print_null_string_with_precision)
+{
+    Print("%.*s", 5, nullptr);
+    EXPECT_EQ("(null)", stream.Storage());
 }
