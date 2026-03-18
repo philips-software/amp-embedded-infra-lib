@@ -178,7 +178,7 @@ TEST_F(TracerAdapterPrintfTest, print_string_with_dynamic_zero_precision)
 
 TEST_F(TracerAdapterPrintfTest, print_string_with_precision_larger_than_string)
 {
-    Print("%.*s", 100, "Hello");
+    Print("%.*s", 20, "Hello");
     EXPECT_EQ("Hello", stream.Storage());
 }
 

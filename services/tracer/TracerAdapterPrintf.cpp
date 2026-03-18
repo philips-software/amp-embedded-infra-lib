@@ -1,5 +1,6 @@
 #include "services/tracer/TracerAdapterPrintf.hpp"
 #include "infra/util/Compatibility.hpp"
+#include <string.h>
 
 namespace services
 {
@@ -112,8 +113,9 @@ namespace services
                     tracer.Continue() << "(null)";
                 else if (precision >= 0)
                 {
-                    for (int i = 0; i < precision && str[i] != '\0'; ++i)
-                        tracer.Continue() << str[i];
+                    auto stringSize = strnlen(str, static_cast<size_t>(precision));
+                    auto trimmedString = infra::BoundedConstString(str, stringSize);
+                    tracer.Continue() << trimmedString;
                 }
                 else
                     tracer.Continue() << str;
