@@ -188,14 +188,16 @@ TEST_F(TracerAdapterPrintfTest, print_null_string_with_precision)
     EXPECT_EQ("(null)", stream.Storage());
 }
 
-TEST_F(TracerAdapterPrintfTest, print_width_with_dynamic_precision_on_string)
+TEST_F(TracerAdapterPrintfTest, print_string_with_dynamic_precision_ignores_width)
 {
+    // Width is not implemented for strings
     Print("%10.*s", 5, "Hello, Tracer!");
     EXPECT_EQ("Hello", stream.Storage());
 }
 
-TEST_F(TracerAdapterPrintfTest, print_width_with_static_precision_on_string)
+TEST_F(TracerAdapterPrintfTest, print_string_with_static_precision_ignores_width)
 {
+    // Width is not implemented for strings
     Print("%10.5s", "Hello, Tracer!");
     EXPECT_EQ("Hello", stream.Storage());
 }
