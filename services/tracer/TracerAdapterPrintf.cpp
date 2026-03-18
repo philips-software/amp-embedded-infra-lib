@@ -76,7 +76,7 @@ namespace services
         int precision = 0;
         while (*format >= '0' && *format <= '9')
         {
-            precision = precision * 10 + *format - '0';
+            precision = (precision * 10) + (*format - '0');
             ++format;
         }
 
@@ -95,7 +95,7 @@ namespace services
 
         while (*format >= '0' && *format <= '9')
         {
-            w.width = w.width * 10 + *format - '0';
+            w.width = (w.width * 10) + (*format - '0');
             ++format;
         }
 
