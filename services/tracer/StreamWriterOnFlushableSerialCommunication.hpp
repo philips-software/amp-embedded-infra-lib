@@ -22,14 +22,14 @@ namespace services
 
     private:
         void TrySend();
-        void CommunicationDone(uint16_t completedTransactionId);
+        void CommunicationDone(uint32_t completedTransactionId);
 
     private:
         infra::CyclicByteBuffer buffer;
         hal::SerialCommunication& communication;
         hal::Flushable& flushableCommunication;
         uint32_t currentlySendingBytes = 0;
-        uint16_t transactionId = 0;
+        uint32_t transactionId = 0;
     };
 }
 

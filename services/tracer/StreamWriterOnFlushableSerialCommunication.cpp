@@ -1,5 +1,4 @@
 #include "services/tracer/StreamWriterOnFlushableSerialCommunication.hpp"
-#include "infra/util/MemoryRange.hpp"
 
 namespace services
 {
@@ -40,7 +39,7 @@ namespace services
         }
     }
 
-    void StreamWriterOnFlushableSerialCommunication::CommunicationDone(uint16_t completedTransactionId)
+    void StreamWriterOnFlushableSerialCommunication::CommunicationDone(uint32_t completedTransactionId)
     {
         if (completedTransactionId != transactionId)
             return;
