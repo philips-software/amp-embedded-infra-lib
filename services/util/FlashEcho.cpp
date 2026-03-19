@@ -1,4 +1,5 @@
 #include "services/util/FlashEcho.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 #include <utility>
 
 namespace services
@@ -13,8 +14,14 @@ namespace services
     {
         onStopped = onDone;
 
+        services::GlobalTracer().Trace() << "==== FlashEcho Stop";
+
         if (!busy)
+        {
+            services::GlobalTracer().Trace() << "==== FlashEcho Stop 1";
+
             onStopped();
+        }
     }
 
     void FlashEcho::Read(uint32_t address, uint32_t size)
@@ -24,13 +31,19 @@ namespace services
         flash.ReadBuffer(infra::Head(infra::MakeRange(buffer), size), address, [this, size]()
             {
                 if (onStopped)
+                    services::GlobalTracer().Trace() << "==== FlashEcho Stop 2";
+
+                if (onStopped)
                 {
+                    services::GlobalTracer().Trace() << "==== FlashEcho Stop 3";
                     busy = false;
                     onStopped();
                 }
                 else
                     flashResult.RequestSend([this, size]()
                         {
+                            if (onStopped)
+                                services::GlobalTracer().Trace() << "==== FlashEcho Stop 4";
                             busy = false;
                             flashResult.ReadDone(infra::Head(infra::MakeRange(buffer), size));
                             MethodDone();
@@ -45,16 +58,22 @@ namespace services
     {
         busy = true;
 
+        if (onStopped)
+            services::GlobalTracer().Trace() << "==== FlashEcho Stop 5";
+
         flash.WriteBuffer(contents, address, [this]()
             {
                 if (onStopped)
                 {
+                        services::GlobalTracer().Trace() << "==== FlashEcho Stop 6";
                     busy = false;
                     onStopped();
                 }
                 else
                     flashResult.RequestSend([this]()
                         {
+                            if (onStopped)
+                                services::GlobalTracer().Trace() << "==== FlashEcho Stop 7";
                             busy = false;
                             flashResult.WriteDone();
                             MethodDone();
@@ -68,17 +87,22 @@ namespace services
     void FlashEcho::EraseSectors(uint32_t sector, uint32_t numberOfSectors)
     {
         busy = true;
+        if (onStopped)
+            services::GlobalTracer().Trace() << "==== FlashEcho Stop 8";
 
         flash.EraseSectors(sector, sector + numberOfSectors, [this]()
             {
                 if (onStopped)
                 {
+                        services::GlobalTracer().Trace() << "==== FlashEcho Stop 9";
                     busy = false;
                     onStopped();
                 }
                 else
                     flashResult.RequestSend([this]()
                         {
+                            if (onStopped)
+                                services::GlobalTracer().Trace() << "==== FlashEcho Stop 10";
                             busy = false;
                             flashResult.EraseSectorsDone();
                             MethodDone();
