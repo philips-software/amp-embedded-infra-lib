@@ -33,10 +33,11 @@ namespace services
                 if (onStopped)
                     services::GlobalTracer().Trace() << "==== FlashEcho Stop 2";
 
+                busy = false;
+
                 if (onStopped)
                 {
                     services::GlobalTracer().Trace() << "==== FlashEcho Stop 3";
-                    busy = false;
                     onStopped();
                 }
                 else
@@ -44,7 +45,6 @@ namespace services
                         {
                             if (onStopped)
                                 services::GlobalTracer().Trace() << "==== FlashEcho Stop 4";
-                            busy = false;
                             flashResult.ReadDone(infra::Head(infra::MakeRange(buffer), size));
                             MethodDone();
 
@@ -63,10 +63,10 @@ namespace services
 
         flash.WriteBuffer(contents, address, [this]()
             {
+                busy = false;
                 if (onStopped)
                 {
-                        services::GlobalTracer().Trace() << "==== FlashEcho Stop 6";
-                    busy = false;
+                    services::GlobalTracer().Trace() << "==== FlashEcho Stop 6";
                     onStopped();
                 }
                 else
@@ -74,7 +74,6 @@ namespace services
                         {
                             if (onStopped)
                                 services::GlobalTracer().Trace() << "==== FlashEcho Stop 7";
-                            busy = false;
                             flashResult.WriteDone();
                             MethodDone();
 
@@ -92,10 +91,10 @@ namespace services
 
         flash.EraseSectors(sector, sector + numberOfSectors, [this]()
             {
+                busy = false;
                 if (onStopped)
                 {
-                        services::GlobalTracer().Trace() << "==== FlashEcho Stop 9";
-                    busy = false;
+                    services::GlobalTracer().Trace() << "==== FlashEcho Stop 9";
                     onStopped();
                 }
                 else
@@ -103,7 +102,6 @@ namespace services
                         {
                             if (onStopped)
                                 services::GlobalTracer().Trace() << "==== FlashEcho Stop 10";
-                            busy = false;
                             flashResult.EraseSectorsDone();
                             MethodDone();
 
