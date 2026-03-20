@@ -23,15 +23,13 @@ namespace services
 
         flash.ReadBuffer(infra::Head(infra::MakeRange(buffer), size), address, [this, size]()
             {
+                busy = false;
+
                 if (onStopped)
-                {
-                    busy = false;
                     onStopped();
-                }
                 else
                     flashResult.RequestSend([this, size]()
                         {
-                            busy = false;
                             flashResult.ReadDone(infra::Head(infra::MakeRange(buffer), size));
                             MethodDone();
 
@@ -47,15 +45,13 @@ namespace services
 
         flash.WriteBuffer(contents, address, [this]()
             {
+                busy = false;
+
                 if (onStopped)
-                {
-                    busy = false;
                     onStopped();
-                }
                 else
                     flashResult.RequestSend([this]()
                         {
-                            busy = false;
                             flashResult.WriteDone();
                             MethodDone();
 
@@ -71,15 +67,12 @@ namespace services
 
         flash.EraseSectors(sector, sector + numberOfSectors, [this]()
             {
+                busy = false;
                 if (onStopped)
-                {
-                    busy = false;
                     onStopped();
-                }
                 else
                     flashResult.RequestSend([this]()
                         {
-                            busy = false;
                             flashResult.EraseSectorsDone();
                             MethodDone();
 
