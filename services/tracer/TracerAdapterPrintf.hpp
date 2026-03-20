@@ -15,9 +15,10 @@ namespace services
 
     private:
         void HandleFormat(const char*& format, va_list* args);
-        int ReadLength(const char*& format) const;
         infra::Width ReadSize(const char*& format) const;
-        void ParseFormat(char format, int lengthSpecifier, const infra::Width& width, va_list* args);
+        int ReadPrecision(const char*& format, va_list* args) const;
+        int ReadLength(const char*& format) const;
+        void ParseFormat(char format, int lengthSpecifier, const infra::Width& width, int precision, va_list* args);
 
     private:
         services::Tracer& tracer;
