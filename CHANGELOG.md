@@ -7,6 +7,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [9.1.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v9.0.0...v9.1.0) (2026-03-20)
+
+
+### Features
+
+* Add HttpClient attached guard for status available ([#1139](https://github.com/philips-software/amp-embedded-infra-lib/issues/1139)) ([cfed7f2](https://github.com/philips-software/amp-embedded-infra-lib/commit/cfed7f2ad7d7dd3087e5be396a78478e14d87a33))
+
+
+### Bug Fixes
+
+* Event dispatcher on bsd not idling ([#1138](https://github.com/philips-software/amp-embedded-infra-lib/issues/1138)) ([856010b](https://github.com/philips-software/amp-embedded-infra-lib/commit/856010bc3aa81078d4fee69aea4941992d78f706))
+* FlashEcho can be stopped immediately when waiting for echo request ([43cf133](https://github.com/philips-software/amp-embedded-infra-lib/commit/43cf133b50c115fd2ba6e58e737fc52718d1aef6))
+* FlashEcho can be stopped immediately when waiting for echo request ([#1143](https://github.com/philips-software/amp-embedded-infra-lib/issues/1143)) ([43cf133](https://github.com/philips-software/amp-embedded-infra-lib/commit/43cf133b50c115fd2ba6e58e737fc52718d1aef6))
+
 ## [9.0.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v8.0.0...v9.0.0) (2026-03-13)
 
 
