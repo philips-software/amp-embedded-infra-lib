@@ -13,6 +13,18 @@
 
 namespace hal
 {
+    class Flushable
+    {
+    protected:
+        Flushable() = default;
+        ~Flushable() = default;
+
+    public:
+        // It also calls pending callbacks, which may result in duplicate callbacks due to
+        // EventDispatcher. Implementations of this function should handle this edge case.
+        virtual void Flush() = 0;
+    };
+
     class SerialCommunication
     {
     protected:

@@ -21,6 +21,13 @@ namespace hal
         infra::Function<void(infra::ConstByteRange data)> dataReceived;
     };
 
+    class FlushableMock
+        : public Flushable
+    {
+    public:
+        MOCK_METHOD(void, Flush, (), (override));
+    };
+
     class SerialCommunicationMockWithAssert
         : public SerialCommunicationMock
     {
