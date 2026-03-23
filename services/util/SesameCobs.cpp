@@ -82,7 +82,6 @@ namespace services
         receivedMessage.clear();
         receiveSizeEncoded = 0;
         currentMessageSize = 0;
-        receivedDataReader.OnAllocatable([]() {});
         sendReqestedSize.reset();
 
         if (sendingUserData)
@@ -93,7 +92,6 @@ namespace services
 
     void SesameCobs::Stop(const infra::Function<void()>& onDone)
     {
-        receivedDataReader.OnAllocatable([]() {});
         sendStream.OnAllocatable([]() {});
 
         if (!sendingUserData && !resetting)
@@ -106,7 +104,7 @@ namespace services
     {
         receiving = true;
 
-        while (receivedDataReader.Allocatable())
+        while (true)
         {
             auto& reader = hal::BufferedSerialCommunicationObserver::Subject().Reader();
             auto data = reader.ExtractContiguousRange(std::numeric_limits<uint32_t>::max());
@@ -125,11 +123,7 @@ namespace services
         while (!data.empty())
         {
             if (nextOverhead == 1)
-            {
                 ExtractOverhead(data);
-                if (!receivedDataReader.Allocatable())
-                    break;
-            }
             else
                 ExtractData(data);
         }
@@ -194,13 +188,11 @@ namespace services
 
         if (messageSize != 0)
         {
-            receivedDataReader.OnAllocatable([this, messageSize]()
-                {
-                    receivedMessage.erase(receivedMessage.begin(), receivedMessage.begin() + messageSize);
-                    if (!receiving)
-                        DataReceived();
-                });
-            GetObserver().ReceivedMessage(receivedDataReader.Emplace(std::in_place, receivedMessage, messageSize), std::exchange(receiveSizeEncoded, 0));
+            infra::LimitedStreamReaderWithRewinding::WithInput<infra::BoundedDequeInputStreamReader> receivedDataReader(std::in_place, receivedMessage, messageSize);
+            GetObserver().ReceivedMessage(receivedDataReader, std::exchange(receiveSizeEncoded, 0));
+            receivedMessage.erase(receivedMessage.begin(), receivedMessage.begin() + messageSize);
+            if (!receiving)
+                DataReceived();
         }
     }
 

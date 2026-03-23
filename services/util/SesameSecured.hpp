@@ -68,7 +68,7 @@ namespace services
         void SetReceiveKey(const KeyType& newReceiveKey, const IvType& newReceiveIv);
 
         // Implementation of Sesame
-        void Initialized() override;
+        void Initialized(infra::StreamReaderWithRewinding& initInfo) override;
         void RequestSendMessage(std::size_t size) override;
         std::size_t MaxSendMessageSize() const override;
         void Reset() override;

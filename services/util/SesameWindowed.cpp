@@ -54,8 +54,9 @@ namespace services
         const char ExtraCharacterReader::character = '\x4';
     }
 
-    SesameWindowed::SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, SesameEncoded& delegate)
+    SesameWindowed::SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, SesameEncoded& delegate, infra::ConstByteRange initInfo)
         : SesameEncodedObserver(delegate)
+        , initInfo(initInfo)
         , receivedMessage(receivedMessage)
         , ownBufferSize(static_cast<uint16_t>(SesameEncodedObserver::Subject().MaxSendMessageSize()))
         , releaseWindowSize(static_cast<uint16_t>(SesameEncodedObserver::Subject().WorstCaseEncodedMessageSize(sizeof(PacketReleaseWindow))))
@@ -111,22 +112,22 @@ namespace services
         state->MessageSent(encodedSize);
     }
 
-    void SesameWindowed::ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, std::size_t encodedSize)
+    void SesameWindowed::ReceivedMessage(infra::StreamReaderWithRewinding& reader, std::size_t encodedSize)
     {
-        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+        infra::DataInputStream::WithErrorPolicy stream(reader, infra::noFail);
         switch (stream.Extract<Operation>())
         {
             case Operation::init:
                 otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
                 ReceivedInit(otherAvailableWindow);
                 sendInitResponse = true;
-                ReceivedInitialize();
+                ReceivedInitialize(reader);
                 break;
             case Operation::initResponse:
                 otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
                 ReceivedInitResponse(otherAvailableWindow);
                 releasedWindow = static_cast<uint16_t>(encodedSize);
-                ReceivedInitialize();
+                ReceivedInitialize(reader);
                 break;
             case Operation::releaseWindow:
                 if (initialized)
@@ -139,18 +140,18 @@ namespace services
                 break;
             case Operation::message:
                 if (initialized)
-                    SaveReceivedMessage(*reader);
+                    SaveReceivedMessage(reader);
                 break;
         }
 
         SetNextState();
     }
 
-    void SesameWindowed::ReceivedInitialize()
+    void SesameWindowed::ReceivedInitialize(infra::StreamReaderWithRewinding& initInfo)
     {
         maxUsableBufferSize = otherAvailableWindow;
         initialized = true;
-        GetObserver().Initialized();
+        GetObserver().Initialized(initInfo);
     }
 
     void SesameWindowed::SaveReceivedMessage(infra::StreamReader& reader)
@@ -257,14 +258,14 @@ namespace services
 
     void SesameWindowed::StateSendingInit::Request()
     {
-        communication.SesameEncodedObserver::Subject().RequestSendMessage(3);
+        communication.SesameEncodedObserver::Subject().RequestSendMessage(3 + communication.initInfo.size());
     }
 
     void SesameWindowed::StateSendingInit::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         communication.SendingInit(communication.ownBufferSize);
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
-        stream << PacketInit(communication.ownBufferSize);
+        stream << PacketInit(communication.ownBufferSize) << communication.initInfo;
     }
 
     void SesameWindowed::StateSendingInit::MessageSent(std::size_t encodedSize)
@@ -282,14 +283,14 @@ namespace services
 
     void SesameWindowed::StateSendingInitResponse::Request()
     {
-        communication.SesameEncodedObserver::Subject().RequestSendMessage(3);
+        communication.SesameEncodedObserver::Subject().RequestSendMessage(3 + communication.initInfo.size());
     }
 
     void SesameWindowed::StateSendingInitResponse::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         communication.SendingInitResponse(communication.ownBufferSize);
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
-        stream << PacketInitResponse(communication.ownBufferSize);
+        stream << PacketInitResponse(communication.ownBufferSize) << communication.initInfo;
 
         communication.releasedWindow = 0;
         communication.sendInitResponse = false;

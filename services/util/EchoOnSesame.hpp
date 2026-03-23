@@ -17,7 +17,7 @@ namespace services
         void Reset();
 
         // Implementation of SesameObserver
-        void Initialized() override;
+        void Initialized(infra::StreamReaderWithRewinding& initInfo) override;
         void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
 

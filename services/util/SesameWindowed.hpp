@@ -21,7 +21,7 @@ namespace services
         template<std::size_t MaxMessageSize>
         using WithMaxMessageSize = infra::WithStorage<SesameWindowed, infra::BoundedDeque<uint8_t>::WithMaxSize<MaxMessageSize>>;
 
-        explicit SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, SesameEncoded& delegate);
+        explicit SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, SesameEncoded& delegate, infra::ConstByteRange initInfo = {});
 
         // Implementation of Sesame
         void RequestSendMessage(std::size_t size) override;
@@ -48,10 +48,10 @@ namespace services
         void Initialized() override;
         void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         void MessageSent(std::size_t encodedSize) override;
-        void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, std::size_t encodedSize) override;
+        void ReceivedMessage(infra::StreamReaderWithRewinding& reader, std::size_t encodedSize) override;
 
     private:
-        void ReceivedInitialize();
+        void ReceivedInitialize(infra::StreamReaderWithRewinding& initInfo);
         void SaveReceivedMessage(infra::StreamReader& reader);
         void TryForwardReceivedMessage();
         void ForwardReceivedMessage(uint16_t encodedSize);
@@ -165,6 +165,7 @@ namespace services
         };
 
     private:
+        infra::ConstByteRange initInfo;
         infra::BoundedDeque<uint8_t>& receivedMessage;
         const uint16_t ownBufferSize;
         const uint16_t releaseWindowSize;

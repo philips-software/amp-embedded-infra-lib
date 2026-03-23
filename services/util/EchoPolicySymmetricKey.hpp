@@ -19,7 +19,7 @@ namespace services
 
     private:
         // Implementation of EchoInitializationObserver
-        void Initialized() override;
+        void Initialized(infra::StreamReaderWithRewinding& initInfo) override;
 
         // Implementation of EchoPolicy
         void RequestSend(ServiceProxy& proxy, const infra::Function<void(ServiceProxy& proxy)>& onRequest) override;

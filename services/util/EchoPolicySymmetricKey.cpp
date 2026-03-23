@@ -24,7 +24,7 @@ namespace services
         echo.SetPolicy(*this);
     }
 
-    void EchoPolicySymmetricKey::Initialized()
+    void EchoPolicySymmetricKey::Initialized(infra::StreamReaderWithRewinding& initInfo)
     {
         initializingSending = true;
 

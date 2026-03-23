@@ -47,7 +47,8 @@ public:
 
     void ReceivePacket(const std::vector<uint8_t>& data)
     {
-        base.GetObserver().ReceivedMessage(reader.Emplace(std::in_place, data), data.size() + data.size() / 254 + 2);
+        infra::StdVectorInputStreamReader::WithStorage reader(std::in_place, data);
+        base.GetObserver().ReceivedMessage(reader, data.size() + data.size() / 254 + 2);
     }
 
     void ReceiveInitRequest(uint16_t availableWindow)
@@ -83,17 +84,17 @@ public:
 
     void ExpectRequestSendMessageForInit(uint16_t availableWindow)
     {
-        EXPECT_CALL(base, RequestSendMessage(3)).WillOnce(testing::Invoke([this, availableWindow](uint16_t size)
+        EXPECT_CALL(base, RequestSendMessage(3 + initInfo.size())).WillOnce(testing::Invoke([this, availableWindow](uint16_t size)
             {
-                SendMessageStreamAvailableWithWriter(infra::ConstructBin().Value<uint8_t>(1).Value<infra::LittleEndian<uint16_t>>(availableWindow).Vector());
+                SendMessageStreamAvailableWithWriter(infra::ConstructBin().Value<uint8_t>(1).Value<infra::LittleEndian<uint16_t>>(availableWindow)(initInfo).Vector());
             }));
     }
 
     void ExpectRequestSendMessageForInitResponse(uint16_t availableWindow)
     {
-        EXPECT_CALL(base, RequestSendMessage(3)).WillOnce(testing::Invoke([this, availableWindow](uint16_t size)
+        EXPECT_CALL(base, RequestSendMessage(3 + initInfo.size())).WillOnce(testing::Invoke([this, availableWindow](uint16_t size)
             {
-                SendMessageStreamAvailableWithWriter(infra::ConstructBin().Value<uint8_t>(2).Value<infra::LittleEndian<uint16_t>>(availableWindow).Vector());
+                SendMessageStreamAvailableWithWriter(infra::ConstructBin().Value<uint8_t>(2).Value<infra::LittleEndian<uint16_t>>(availableWindow)(initInfo).Vector());
             }));
     }
 
@@ -154,8 +155,8 @@ public:
             EXPECT_CALL(base, WorstCaseEncodedMessageSize(3)).WillOnce(testing::Return(5));
             ExpectRequestSendMessageForInit(24);
         } };
-    infra::SharedOptional<infra::StdVectorInputStreamReader::WithStorage> reader;
-    services::SesameWindowed::WithMaxMessageSize<24> communication{ base };
+    std::array<uint8_t, 2> initInfo{ 6, 7 };
+    services::SesameWindowed::WithMaxMessageSize<24> communication{ base, infra::MakeRange(initInfo) };
     testing::StrictMock<services::SesameObserverMock> observer{ communication };
     infra::SharedPtr<infra::StreamWriter> savedWriter;
     infra::SharedPtr<infra::StreamReaderWithRewinding> savedReader;
@@ -316,7 +317,7 @@ TEST_F(SesameWindowedTest, init_response_consumes_window)
 
     ExpectRequestSendMessageForMessage(7, { 1, 2, 3, 4, 5, 6 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4, 5, 6 });
-    ReceiveReleaseWindow(5); // release window consumed by initResponse
+    ReceiveReleaseWindow(7); // release window consumed by initResponse
 }
 
 TEST_F(SesameWindowedTest, received_init_request_while_sending_message_finishes_message_then_sends_init_response)

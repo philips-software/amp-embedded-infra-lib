@@ -10,7 +10,7 @@ class SesameSecuredTest
 public:
     SesameSecuredTest()
     {
-        EXPECT_CALL(upper, Initialized());
+        EXPECT_CALL(upper, Initialized(testing::_));
         lower.GetObserver().Initialized();
     }
 
@@ -147,7 +147,7 @@ TEST_F(SesameSecuredTest, initialization_results_in_default_keys)
     services::SesameSecured::IvType iv2{ 1, 3, 1 };
     secured.SetSendKey(key2, iv2);
 
-    EXPECT_CALL(upper, Initialized());
+    EXPECT_CALL(upper, Initialized(testing::_));
     lower.GetObserver().Initialized();
 
     Send("abcd");

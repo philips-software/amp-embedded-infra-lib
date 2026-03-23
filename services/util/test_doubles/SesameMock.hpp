@@ -22,7 +22,7 @@ namespace services
     public:
         using SesameObserver::SesameObserver;
 
-        MOCK_METHOD(void, Initialized, (), (override));
+        MOCK_METHOD(void, Initialized, (infra::StreamReaderWithRewinding & initInfo), (override));
         MOCK_METHOD(void, SendMessageStreamAvailable, (infra::SharedPtr<infra::StreamWriter> && writer), (override));
         MOCK_METHOD(void, ReceivedMessage, (infra::SharedPtr<infra::StreamReaderWithRewinding> && reader), (override));
     };
@@ -48,7 +48,7 @@ namespace services
         MOCK_METHOD(void, Initialized, (), (override));
         MOCK_METHOD(void, SendMessageStreamAvailable, (infra::SharedPtr<infra::StreamWriter> && writer), (override));
         MOCK_METHOD(void, MessageSent, (std::size_t encodedSize), (override));
-        MOCK_METHOD(void, ReceivedMessage, (infra::SharedPtr<infra::StreamReaderWithRewinding> && reader, std::size_t encodedSize), (override));
+        MOCK_METHOD(void, ReceivedMessage, (infra::StreamReaderWithRewinding& reader, std::size_t encodedSize), (override));
     };
 
     class IntegrityObserverMock

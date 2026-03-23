@@ -73,12 +73,12 @@ namespace services
         receiveIv = newReceiveIv;
     }
 
-    void SesameSecured::Initialized()
+    void SesameSecured::Initialized(infra::StreamReaderWithRewinding& initInfo)
     {
         integrityCheckFailed = false;
         SetSendKey(initialSendKey, initialSendIv);
         SetReceiveKey(initialReceiveKey, initialReceiveIv);
-        GetObserver().Initialized();
+        GetObserver().Initialized(initInfo);
     }
 
     void SesameSecured::RequestSendMessage(std::size_t size)
