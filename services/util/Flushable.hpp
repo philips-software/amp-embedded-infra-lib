@@ -1,7 +1,7 @@
-#ifndef INFRA_STREAM_FLUSHABLE_HPP
-#define INFRA_STREAM_FLUSHABLE_HPP
+#ifndef SERVICES_UTIL_FLUSHABLE_HPP
+#define SERVICES_UTIL_FLUSHABLE_HPP
 
-namespace infra
+namespace services
 {
     class Flushable
     {
@@ -14,4 +14,4 @@ namespace infra
     };
 }
 
-#endif // INFRA_STREAM_FLUSHABLE_HPP
+#endif // SERVICES_UTIL_FLUSHABLE_HPP
