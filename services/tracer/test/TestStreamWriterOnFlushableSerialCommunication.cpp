@@ -1,10 +1,32 @@
 #include "hal/interfaces/test_doubles/SerialCommunicationMock.hpp"
+#include "infra/util/CyclicBuffer.hpp"
 #include "services/tracer/StreamWriterOnFlushableSerialCommunication.hpp"
 #include "services/util/test_doubles/FlushableMock.hpp"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
+
+class FlushableStreamWriterAccessor
+    : public services::StreamWriterOnFlushableSerialCommunication
+{
+public:
+    template<std::size_t StorageSize>
+    using WithStorage = infra::WithStorage<FlushableStreamWriterAccessor, std::array<uint8_t, StorageSize>>;
+    using StreamWriterOnFlushableSerialCommunication::StreamWriterOnFlushableSerialCommunication;
+
+    uint32_t GetCurrentlySendingBytes() const
+    {
+        return currentlySendingBytes;
+    }
+
+    infra::CyclicByteBuffer& GetBuffer()
+    {
+        return buffer;
+    }
+};
 
 class StreamWriterOnFlushableSerialCommunicationTest
     : public testing::Test
+
 {
 public:
     StreamWriterOnFlushableSerialCommunicationTest()
@@ -13,7 +35,7 @@ public:
 
     testing::StrictMock<hal::SerialCommunicationMock> communication;
     testing::StrictMock<services::FlushableMock> flushable;
-    services::StreamWriterOnFlushableSerialCommunication::WithStorage<4> streamWriter;
+    FlushableStreamWriterAccessor::WithStorage<4> streamWriter;
     infra::StreamErrorPolicy errorPolicy;
 };
 
@@ -68,20 +90,23 @@ TEST_F(StreamWriterOnFlushableSerialCommunicationTest, insert_after_flush_on_emp
 {
     streamWriter.Flush();
 
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 5 }));
-    streamWriter.Insert(infra::MakeByteRange(static_cast<uint8_t>(5)), errorPolicy);
+    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 1, 2 }));
+    streamWriter.Insert(std::vector<uint8_t>{ 1, 2 }, errorPolicy);
+
+    EXPECT_THAT(streamWriter.GetBuffer().Size(), testing::Eq(2));
+    EXPECT_THAT(streamWriter.GetCurrentlySendingBytes(), testing::Eq(2));
 }
 
 TEST_F(StreamWriterOnFlushableSerialCommunicationTest, flush_completes_pending_communication_when_FlushSendBuffer_supported)
 {
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 5 }));
-    streamWriter.Insert(infra::MakeByteRange(static_cast<uint8_t>(5)), errorPolicy);
+    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 1, 2 }));
+    streamWriter.Insert(std::vector<uint8_t>{ 1, 2 }, errorPolicy);
 
-    EXPECT_CALL(flushable, Flush()).WillOnce([this]()
-        {
-            communication.actionOnCompletion();
-        });
+    EXPECT_CALL(flushable, Flush());
     streamWriter.Flush();
+
+    EXPECT_THAT(streamWriter.GetBuffer().Size(), testing::Eq(0));
+    EXPECT_THAT(streamWriter.GetCurrentlySendingBytes(), testing::Eq(0));
 }
 
 TEST_F(StreamWriterOnFlushableSerialCommunicationTest, stale_completion_after_flush_does_nothing)
@@ -94,48 +119,44 @@ TEST_F(StreamWriterOnFlushableSerialCommunicationTest, stale_completion_after_fl
             });
     streamWriter.Insert(infra::MakeByteRange(static_cast<uint8_t>(5)), errorPolicy);
 
-    // Flush completes the in-progress send synchronously via FlushSendBuffer
-    EXPECT_CALL(flushable, Flush()).WillOnce([this]()
-        {
-            communication.actionOnCompletion();
-        });
+    EXPECT_CALL(flushable, Flush());
     streamWriter.Flush();
 
     // The stale callback from the event queue fires — this should be a no-op
     savedCallback();
 
-    // Verify state is clean: a new Insert should immediately trigger SendData
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 6 }));
-    streamWriter.Insert(infra::MakeByteRange(static_cast<uint8_t>(6)), errorPolicy);
+    EXPECT_THAT(streamWriter.GetBuffer().Size(), testing::Eq(0));
+    EXPECT_THAT(streamWriter.GetCurrentlySendingBytes(), testing::Eq(0));
 }
 
 TEST_F(StreamWriterOnFlushableSerialCommunicationTest, stale_completion_does_not_interfere_with_new_transaction)
 {
     infra::Function<void()> savedCallback;
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 5 }))
+    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 1, 2 }))
         .WillOnce([this, &savedCallback]()
             {
                 savedCallback = communication.actionOnCompletion.Clone();
             });
-    streamWriter.Insert(infra::MakeByteRange(static_cast<uint8_t>(5)), errorPolicy);
+    streamWriter.Insert(std::vector<uint8_t>{ 1, 2 }, errorPolicy);
 
-    // Flush completes the in-progress send synchronously via Flush
-    EXPECT_CALL(flushable, Flush()).WillOnce([this]()
-        {
-            communication.actionOnCompletion();
-        });
+    EXPECT_CALL(flushable, Flush());
     streamWriter.Flush();
+    EXPECT_THAT(streamWriter.GetBuffer().Size(), testing::Eq(0));
+    EXPECT_THAT(streamWriter.GetCurrentlySendingBytes(), testing::Eq(0));
 
-    // A new transaction starts; savedCallback now belongs to the previous transaction
+    // A new transaction starts; the stray queued event (savedCallback) now belongs to the previous transaction
     EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 8 }));
     streamWriter.Insert(infra::MakeByteRange(static_cast<uint8_t>(8)), errorPolicy);
+    EXPECT_THAT(streamWriter.GetBuffer().Size(), testing::Eq(1));
+    EXPECT_THAT(streamWriter.GetCurrentlySendingBytes(), testing::Eq(1));
 
-    // The stale callback fires — it should be ignored because the transaction ID no longer matches
+    // Stray callback is ignored
     savedCallback();
-    // Verify the new transaction is still in progress: Insert queues data without triggering SendData
-    streamWriter.Insert(infra::MakeByteRange(static_cast<uint8_t>(6)), errorPolicy);
+    EXPECT_THAT(streamWriter.GetBuffer().Size(), testing::Eq(1));
+    EXPECT_THAT(streamWriter.GetCurrentlySendingBytes(), testing::Eq(1));
 
     // The real completion for the new transaction fires, flushing the queued byte
-    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 6 }));
     communication.actionOnCompletion();
+    EXPECT_THAT(streamWriter.GetBuffer().Size(), testing::Eq(0));
+    EXPECT_THAT(streamWriter.GetCurrentlySendingBytes(), testing::Eq(0));
 }

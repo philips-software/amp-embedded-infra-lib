@@ -21,12 +21,15 @@ namespace services
 
     private:
         void TrySend();
-        void CommunicationDone(uint32_t size);
 
-    private:
+    protected:
+        void OnCommunicationDone(uint32_t completedTransactionId);
+
+    protected:
         infra::CyclicByteBuffer buffer;
         hal::SerialCommunication& communication;
-        bool communicating = false;
+        uint32_t currentlySendingBytes = 0;
+        uint32_t transactionId = 0;
     };
 }
 
