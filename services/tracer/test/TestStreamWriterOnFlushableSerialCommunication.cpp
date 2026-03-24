@@ -160,3 +160,69 @@ TEST_F(StreamWriterOnFlushableSerialCommunicationTest, stale_completion_does_not
     EXPECT_THAT(streamWriter.GetBuffer().Size(), testing::Eq(0));
     EXPECT_THAT(streamWriter.GetCurrentlySendingBytes(), testing::Eq(0));
 }
+
+TEST_F(StreamWriterOnFlushableSerialCommunicationTest, flush_drains_all_queued_data_across_multiple_sends)
+{
+    // Insert A: starts sending immediately
+    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 1, 2 }));
+    streamWriter.Insert(std::vector<uint8_t>{ 1, 2 }, errorPolicy);
+
+    // Insert B while A is still in-flight: queued behind A
+    streamWriter.Insert(std::vector<uint8_t>{ 3, 4 }, errorPolicy);
+
+    // Flush() must drain both chunks; flushable.Flush() should be called twice
+    // (once per in-flight chunk as the while-loop iterates)
+    EXPECT_CALL(flushable, Flush()).Times(2);
+    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 3, 4 }));
+    streamWriter.Flush();
+
+    EXPECT_THAT(streamWriter.GetBuffer().Size(), testing::Eq(0));
+    EXPECT_THAT(streamWriter.GetCurrentlySendingBytes(), testing::Eq(0));
+}
+
+TEST_F(StreamWriterOnFlushableSerialCommunicationTest, flush_tolerates_completion_callback_fired_by_flushable)
+{
+    // This test verifies that if flushable.Flush() triggers the serial completion
+    // callback (which calls OnCommunicationDone), the subsequent manual
+    // OnCommunicationDone(transactionId) in Flush() is a no-op thanks to the
+    // transactionId guard -- no double-pop / data corruption occurs.
+    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 1, 2 }));
+    streamWriter.Insert(std::vector<uint8_t>{ 1, 2 }, errorPolicy);
+
+    // When flushable.Flush() is called, simulate the underlying driver
+    // completing the send synchronously (i.e., fires the actionOnCompletion callback)
+    EXPECT_CALL(flushable, Flush())
+        .WillOnce([this]()
+            {
+                communication.actionOnCompletion();
+            });
+    streamWriter.Flush();
+
+    // Despite the double-completion attempt, state must be clean
+    EXPECT_THAT(streamWriter.GetBuffer().Size(), testing::Eq(0));
+    EXPECT_THAT(streamWriter.GetCurrentlySendingBytes(), testing::Eq(0));
+}
+
+TEST_F(StreamWriterOnFlushableSerialCommunicationTest, flush_tolerates_completion_callback_during_multi_transaction_drain)
+{
+    // Insert A: starts sending immediately
+    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 1, 2 }));
+    streamWriter.Insert(std::vector<uint8_t>{ 1, 2 }, errorPolicy);
+
+    // Insert B while A is still in-flight
+    streamWriter.Insert(std::vector<uint8_t>{ 3, 4 }, errorPolicy);
+
+    // For each chunk, flushable.Flush() triggers the serial completion callback
+    // synchronously. Flush() should still drain everything safely.
+    EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 3, 4 }));
+    EXPECT_CALL(flushable, Flush())
+        .Times(2)
+        .WillRepeatedly([this]()
+            {
+                communication.actionOnCompletion();
+            });
+    streamWriter.Flush();
+
+    EXPECT_THAT(streamWriter.GetBuffer().Size(), testing::Eq(0));
+    EXPECT_THAT(streamWriter.GetCurrentlySendingBytes(), testing::Eq(0));
+}

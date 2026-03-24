@@ -25,7 +25,7 @@ namespace services
         {
             auto contiguousBytesToSend = buffer.ContiguousRange();
             currentlySendingBytes = contiguousBytesToSend.size();
-            communication.SendData(contiguousBytesToSend, [this, completedTransactionId = ++transactionId]()
+            communication.SendData(contiguousBytesToSend, [this, completedTransactionId = transactionId]()
                 {
                     OnCommunicationDone(completedTransactionId);
                 });
@@ -39,6 +39,7 @@ namespace services
 
         buffer.Pop(currentlySendingBytes);
         currentlySendingBytes = 0;
+        transactionId++;
 
         TrySend();
     }
