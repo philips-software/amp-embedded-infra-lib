@@ -11,9 +11,9 @@ namespace services
     {
         while (currentlySendingBytes != 0)
         {
-            auto snapshotTransactionId = transactionId;
+            auto currentTransactionId = transactionId;
             flushable.Flush();
-            OnCommunicationDone(snapshotTransactionId);
+            OnCommunicationDone(currentTransactionId);
         }
     }
 }

@@ -23,12 +23,12 @@ namespace services
         void TrySend();
 
     protected:
-        void OnCommunicationDone(uint32_t completedTransactionId);
+        void OnCommunicationDone(std::size_t completedTransactionId);
 
     protected:
         infra::CyclicByteBuffer buffer;
         hal::SerialCommunication& communication;
-        uint32_t currentlySendingBytes = 0;
+        std::size_t currentlySendingBytes = 0;
         uint32_t transactionId = 0;
     };
 }
