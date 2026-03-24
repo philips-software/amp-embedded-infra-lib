@@ -1,6 +1,6 @@
-#include "hal/interfaces/SerialCommunication.hpp"
 #include "hal/interfaces/test_doubles/SerialCommunicationMock.hpp"
 #include "services/tracer/StreamWriterOnFlushableSerialCommunication.hpp"
+#include "services/util/test_doubles/FlushableMock.hpp"
 #include "gmock/gmock.h"
 
 class StreamWriterOnFlushableSerialCommunicationTest
@@ -8,11 +8,11 @@ class StreamWriterOnFlushableSerialCommunicationTest
 {
 public:
     StreamWriterOnFlushableSerialCommunicationTest()
-        : streamWriter(communication, flushableCommunication)
+        : streamWriter(communication, flushable)
     {}
 
     testing::StrictMock<hal::SerialCommunicationMock> communication;
-    testing::StrictMock<hal::FlushableMock> flushableCommunication;
+    testing::StrictMock<services::FlushableMock> flushable;
     services::StreamWriterOnFlushableSerialCommunication::WithStorage<4> streamWriter;
     infra::StreamErrorPolicy errorPolicy;
 };
@@ -77,7 +77,7 @@ TEST_F(StreamWriterOnFlushableSerialCommunicationTest, flush_completes_pending_c
     EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 5 }));
     streamWriter.Insert(infra::MakeByteRange(static_cast<uint8_t>(5)), errorPolicy);
 
-    EXPECT_CALL(flushableCommunication, Flush()).WillOnce([this]()
+    EXPECT_CALL(flushable, Flush()).WillOnce([this]()
         {
             communication.actionOnCompletion();
         });
@@ -95,7 +95,7 @@ TEST_F(StreamWriterOnFlushableSerialCommunicationTest, stale_completion_after_fl
     streamWriter.Insert(infra::MakeByteRange(static_cast<uint8_t>(5)), errorPolicy);
 
     // Flush completes the in-progress send synchronously via FlushSendBuffer
-    EXPECT_CALL(flushableCommunication, Flush()).WillOnce([this]()
+    EXPECT_CALL(flushable, Flush()).WillOnce([this]()
         {
             communication.actionOnCompletion();
         });
@@ -120,7 +120,7 @@ TEST_F(StreamWriterOnFlushableSerialCommunicationTest, stale_completion_does_not
     streamWriter.Insert(infra::MakeByteRange(static_cast<uint8_t>(5)), errorPolicy);
 
     // Flush completes the in-progress send synchronously via Flush
-    EXPECT_CALL(flushableCommunication, Flush()).WillOnce([this]()
+    EXPECT_CALL(flushable, Flush()).WillOnce([this]()
         {
             communication.actionOnCompletion();
         });
