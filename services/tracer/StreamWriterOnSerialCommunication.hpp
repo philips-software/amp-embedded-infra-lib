@@ -23,7 +23,7 @@ namespace services
         void TrySend();
 
     protected:
-        void OnCommunicationDone(std::size_t completedTransactionId);
+        void OnCommunicationDone(uint32_t completedTransactionId);
 
     protected:
         infra::CyclicByteBuffer buffer;

@@ -32,7 +32,7 @@ namespace services
         }
     }
 
-    void StreamWriterOnSerialCommunication::OnCommunicationDone(std::size_t completedTransactionId)
+    void StreamWriterOnSerialCommunication::OnCommunicationDone(uint32_t completedTransactionId)
     {
         if (completedTransactionId != transactionId)
             return;

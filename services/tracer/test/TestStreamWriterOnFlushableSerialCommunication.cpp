@@ -13,7 +13,7 @@ public:
     using WithStorage = infra::WithStorage<FlushableStreamWriterAccessor, std::array<uint8_t, StorageSize>>;
     using StreamWriterOnFlushableSerialCommunication::StreamWriterOnFlushableSerialCommunication;
 
-    uint32_t GetCurrentlySendingBytes() const
+    auto GetCurrentlySendingBytes() const
     {
         return currentlySendingBytes;
     }
