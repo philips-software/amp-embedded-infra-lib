@@ -11,11 +11,6 @@ namespace
         : public testing::Test
     {
     public:
-        ~LogAndAbortTracerTest()
-        {
-            services::RegisterLogAndAbortTracerProvider(nullptr);
-        }
-
         infra::StdStringOutputStream::WithStorage stream;
         services::TracerToStream tracer{ stream };
     };
@@ -31,7 +26,7 @@ TEST_F(LogAndAbortTracerTest, log_and_abort_without_registered_tracer_doesnt_cal
 
 TEST_F(LogAndAbortTracerTest, log_and_abort_with_registered_tracer_calls_tracer)
 {
-    services::RegisterLogAndAbortTracerProvider([this]() -> services::Tracer&
+    services::LogAndAbortTracer logAndAbortTracer([this]() -> services::Tracer&
         {
             return tracer;
         });
