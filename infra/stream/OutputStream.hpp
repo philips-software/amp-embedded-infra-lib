@@ -3,12 +3,10 @@
 
 #include "infra/stream/StreamErrorPolicy.hpp"
 #include "infra/stream/StreamManipulators.hpp"
-#include "infra/util/Base64.hpp"
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/IntegerNormalization.hpp"
-#include <optional>
 #include <type_traits>
 
 namespace infra
@@ -26,7 +24,6 @@ namespace infra
     public:
         virtual void Insert(ConstByteRange range, StreamErrorPolicy& errorPolicy) = 0;
         virtual std::size_t Available() const = 0;
-        virtual void Flush() {};
 
         bool Empty() const
         {
@@ -156,8 +153,6 @@ namespace infra
         using WithErrorPolicy = OutputStreamWithErrorPolicy<TextOutputStream>;
 
         TextOutputStream(StreamWriter& writer, StreamErrorPolicy& errorPolicy);
-
-        void Flush();
 
         TextOutputStream operator<<(Hex);
         TextOutputStream operator<<(Bin);

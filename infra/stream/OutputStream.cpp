@@ -1,4 +1,5 @@
 #include "infra/stream/OutputStream.hpp"
+#include "infra/util/Base64.hpp"
 #include <cmath>
 #include <limits>
 
@@ -119,11 +120,6 @@ namespace infra
     TextOutputStream::TextOutputStream(StreamWriter& writer, StreamErrorPolicy& errorPolicy)
         : OutputStream(writer, errorPolicy)
     {}
-
-    void TextOutputStream::Flush()
-    {
-        Writer().Flush();
-    }
 
     TextOutputStream TextOutputStream::operator<<(Hex)
     {

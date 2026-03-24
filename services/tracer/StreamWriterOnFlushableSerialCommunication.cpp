@@ -2,7 +2,7 @@
 
 namespace services
 {
-    StreamWriterOnFlushableSerialCommunication::StreamWriterOnFlushableSerialCommunication(infra::ByteRange bufferStorage, hal::SerialCommunication& communication, hal::Flushable& flushableCommunication)
+    StreamWriterOnFlushableSerialCommunication::StreamWriterOnFlushableSerialCommunication(infra::ByteRange bufferStorage, hal::SerialCommunication& communication, infra::Flushable& flushableCommunication)
         : buffer(bufferStorage)
         , communication(communication)
         , flushableCommunication(flushableCommunication)
