@@ -1,5 +1,6 @@
 #include "services/util/FlashEcho.hpp"
 #include <utility>
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -131,6 +132,8 @@ namespace services
 
     void FlashEchoProxy::ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
+        services::GlobalTracer().Trace() << "==== FlashEchoProxy::ReadBuffer";
+
         bufferPosition = 0;
         readingBuffer = buffer;
         this->onDone = onDone;
@@ -154,8 +157,13 @@ namespace services
         infra::Copy(contents, infra::Head(infra::DiscardHead(readingBuffer, bufferPosition), contents.size()));
         bufferPosition += contents.size();
 
+        services::GlobalTracer().Trace() << "==== FlashEchoProxy::ReadDone " << bufferPosition << " " << readingBuffer.size();
+
         if (bufferPosition == readingBuffer.size())
+        {
+            services::GlobalTracer().Trace() << "==== FlashEchoProxy::ReadDone invoking onDone";
             onDone();
+        }
 
         MethodDone();
     }
@@ -181,8 +189,10 @@ namespace services
         if (readingBuffer.size() > start)
         {
             this->start = start;
+            services::GlobalTracer().Trace() << "==== FlashEchoProxy::ReadPartialBuffer";
             proxy.RequestSend([this, address]()
                 {
+                    services::GlobalTracer().Trace() << "==== FlashEchoProxy::ReadPartialBuffer granted";
                     auto size = std::min<uint32_t>(readingBuffer.size() - this->start, flash::WriteRequest::contentsSize);
                     proxy.Read(address + this->start, size);
                     ReadPartialBuffer(address, this->start + size);
