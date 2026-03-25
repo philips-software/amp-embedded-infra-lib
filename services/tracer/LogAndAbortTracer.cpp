@@ -74,8 +74,9 @@ namespace services
     LogAndAbortTracer::~LogAndAbortTracer()
     {
 #ifndef EMIL_HOST_BUILD
-        LOG_AND_ABORT("Not destructable");
+        LOG_AND_ABORT("Not destructible");
 #endif
         instantiated = false;
+        infra::RegisterLogAndAbortHook(nullptr);
     }
 }
