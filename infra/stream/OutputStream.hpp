@@ -38,12 +38,6 @@ namespace infra
         virtual infra::ByteRange Overwrite(std::size_t marker);
     };
 
-    class FlushableStreamWriter
-        : public StreamWriter
-        , public services::Flushable
-    {
-    };
-
     class StreamWriterDummy
         : public StreamWriter
     {

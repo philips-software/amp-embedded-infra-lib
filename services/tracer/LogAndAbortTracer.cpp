@@ -8,7 +8,7 @@
 
 namespace
 {
-    static std::atomic<bool> instansiated{};
+    static std::atomic<bool> instantiated{};
 }
 
 namespace services
@@ -16,11 +16,11 @@ namespace services
     LogAndAbortTracer::LogAndAbortTracer(services::Tracer& tracer)
         : tracer(&tracer)
     {
-        really_assert(!instansiated);
-        instansiated = true;
+        really_assert(!instantiated);
+        instantiated = true;
         infra::RegisterLogAndAbortHook([this](const char* reason, const char* file, int line, const char* format, va_list* args)
             {
-                really_assert(instansiated);
+                really_assert(instantiated);
                 really_assert(this->tracer);
                 TraceAbort(*this->tracer, reason, file, line, format, args);
             });
@@ -30,11 +30,11 @@ namespace services
         : tracer(&tracer)
         , flushable(&flushable)
     {
-        really_assert(!instansiated);
-        instansiated = true;
+        really_assert(!instantiated);
+        instantiated = true;
         infra::RegisterLogAndAbortHook([this](const char* reason, const char* file, int line, const char* format, va_list* args)
             {
-                really_assert(instansiated);
+                really_assert(instantiated);
                 really_assert(this->tracer);
                 TraceAbort(*this->tracer, reason, file, line, format, args);
                 really_assert(this->flushable);
@@ -45,11 +45,11 @@ namespace services
     LogAndAbortTracer::LogAndAbortTracer(TracerProvider tracerProvider)
         : tracerProvider(std::move(tracerProvider))
     {
-        really_assert(!instansiated);
-        instansiated = true;
+        really_assert(!instantiated);
+        instantiated = true;
         infra::RegisterLogAndAbortHook([this](const char* reason, const char* file, int line, const char* format, va_list* args)
             {
-                really_assert(instansiated);
+                really_assert(instantiated);
                 really_assert(this->tracerProvider);
                 auto& tracer = this->tracerProvider();
                 TraceAbort(tracer, reason, file, line, format, args);
@@ -76,6 +76,6 @@ namespace services
 #ifndef EMIL_HOST_BUILD
         LOG_AND_ABORT("Not destructable");
 #endif
-        instansiated = false;
+        instantiated = false;
     }
 }

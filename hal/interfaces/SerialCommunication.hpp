@@ -25,12 +25,6 @@ namespace hal
         virtual void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) = 0;
     };
 
-    class FlushableSerialCommunication
-        : public SerialCommunication
-        , public services::Flushable
-    {
-    };
-
     class BufferedSerialCommunication;
 
     class BufferedSerialCommunicationObserver
