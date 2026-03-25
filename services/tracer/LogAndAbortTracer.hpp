@@ -1,8 +1,10 @@
 #ifndef SERVICES_UTIL_LOGANDABORTTRACER_HPP
 #define SERVICES_UTIL_LOGANDABORTTRACER_HPP
 
+#include "infra/util/Function.hpp"
 #include "services/tracer/Tracer.hpp"
 #include "services/util/Flushable.hpp"
+#include <cstdarg>
 
 namespace services
 {
@@ -10,8 +12,8 @@ namespace services
     {
         using TracerProvider = infra::Function<services::Tracer&()>;
 
-        services::Tracer* tracer;
-        services::Flushable* flushable;
+        services::Tracer* tracer{};
+        services::Flushable* flushable{};
         TracerProvider tracerProvider;
 
     public:

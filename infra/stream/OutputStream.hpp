@@ -7,6 +7,7 @@
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/IntegerNormalization.hpp"
+#include "services/util/Flushable.hpp"
 #include <type_traits>
 
 namespace infra
@@ -35,6 +36,12 @@ namespace infra
         virtual infra::ByteRange SaveState(std::size_t marker);
         virtual void RestoreState(infra::ByteRange range);
         virtual infra::ByteRange Overwrite(std::size_t marker);
+    };
+
+    class FlushableStreamWriter
+        : public StreamWriter
+        , public services::Flushable
+    {
     };
 
     class StreamWriterDummy

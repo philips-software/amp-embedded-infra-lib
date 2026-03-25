@@ -12,6 +12,11 @@ namespace
         : public testing::Test
     {
     public:
+        ~LogAndAbortTracerTest()
+        {
+            infra::RegisterLogAndAbortHook(nullptr);
+        }
+
         services::FlushableMock flushable;
         infra::StdStringOutputStream::WithStorage stream;
         services::TracerToStream tracer{ stream };

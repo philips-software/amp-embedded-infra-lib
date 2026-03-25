@@ -8,6 +8,7 @@
 #include "infra/util/Function.hpp"
 #include "infra/util/Observer.hpp"
 #include "infra/util/WithStorage.hpp"
+#include "services/util/Flushable.hpp"
 #include "services/util/Stoppable.hpp"
 #include <cstddef>
 
@@ -22,6 +23,12 @@ namespace hal
     public:
         virtual void SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion) = 0;
         virtual void ReceiveData(infra::Function<void(infra::ConstByteRange data)> dataReceived) = 0;
+    };
+
+    class FlushableSerialCommunication
+        : public SerialCommunication
+        , public services::Flushable
+    {
     };
 
     class BufferedSerialCommunication;
