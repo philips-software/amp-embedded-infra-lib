@@ -21,6 +21,8 @@ namespace services
         explicit LogAndAbortTracer(services::Tracer& tracer, services::Flushable& flushable);
         explicit LogAndAbortTracer(TracerProvider tracerProvider);
 
+        ~LogAndAbortTracer();
+
     private:
         void TraceAbort(services::Tracer& tracer, const char* reason, const char* file, int line, const char* format, va_list* args);
     };

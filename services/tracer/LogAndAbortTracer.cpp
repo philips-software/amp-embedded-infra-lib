@@ -2,16 +2,25 @@
 #include "infra/util/LogAndAbort.hpp"
 #include "infra/util/ReallyAssert.hpp"
 #include "services/tracer/TracerAdapterPrintf.hpp"
+#include <atomic>
 #include <cstdarg>
 #include <utility>
+
+namespace
+{
+    static std::atomic<bool> instansiated{};
+}
 
 namespace services
 {
     LogAndAbortTracer::LogAndAbortTracer(services::Tracer& tracer)
         : tracer(&tracer)
     {
+        really_assert(!instansiated);
+        instansiated = true;
         infra::RegisterLogAndAbortHook([this](const char* reason, const char* file, int line, const char* format, va_list* args)
             {
+                really_assert(instansiated);
                 really_assert(this->tracer);
                 TraceAbort(*this->tracer, reason, file, line, format, args);
             });
@@ -21,8 +30,11 @@ namespace services
         : tracer(&tracer)
         , flushable(&flushable)
     {
+        really_assert(!instansiated);
+        instansiated = true;
         infra::RegisterLogAndAbortHook([this](const char* reason, const char* file, int line, const char* format, va_list* args)
             {
+                really_assert(instansiated);
                 really_assert(this->tracer);
                 TraceAbort(*this->tracer, reason, file, line, format, args);
                 really_assert(this->flushable);
@@ -33,8 +45,11 @@ namespace services
     LogAndAbortTracer::LogAndAbortTracer(TracerProvider tracerProvider)
         : tracerProvider(std::move(tracerProvider))
     {
+        really_assert(!instansiated);
+        instansiated = true;
         infra::RegisterLogAndAbortHook([this](const char* reason, const char* file, int line, const char* format, va_list* args)
             {
+                really_assert(instansiated);
                 really_assert(this->tracerProvider);
                 auto& tracer = this->tracerProvider();
                 TraceAbort(tracer, reason, file, line, format, args);
@@ -54,5 +69,10 @@ namespace services
             tracer.Continue() << "at " << file << ":" << line;
 
         tracer.Trace();
+    }
+
+    LogAndAbortTracer::~LogAndAbortTracer()
+    {
+        instansiated = false;
     }
 }
