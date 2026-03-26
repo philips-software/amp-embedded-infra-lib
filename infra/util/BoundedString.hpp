@@ -14,6 +14,7 @@
 #include <limits>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 #ifdef EMIL_HOST_BUILD
 #include <ostream>
@@ -452,7 +453,7 @@ namespace infra
 
     template<class T>
     constexpr BoundedStringBase<T>::BoundedStringBase(T* s)
-        : range(s, s + std::char_traits<T>::length(s))
+        : range(s, s + std::char_traits<std::remove_const_t<T>>::length(s))
         , length(range.size())
     {}
 
