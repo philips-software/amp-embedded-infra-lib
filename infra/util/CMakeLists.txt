@@ -54,6 +54,7 @@ target_sources(infra.util PRIVATE
     LogAndAbort.hpp
     MemoryRange.hpp
     MultiFunction.hpp
+    NonDestructible.hpp
     Observer.hpp
     Overloaded.hpp
     PolymorphicVariant.hpp
@@ -74,6 +75,7 @@ target_sources(infra.util PRIVATE
     SharedPtr.cpp
     SharedPtr.hpp
     StaticStorage.hpp
+    SingleInstance.hpp
     Tokenizer.cpp
     Tokenizer.hpp
     Unit.hpp

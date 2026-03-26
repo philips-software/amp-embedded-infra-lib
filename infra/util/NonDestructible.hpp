@@ -5,18 +5,18 @@
 
 namespace infra
 {
-    class NonDestructable
+    class NonDestructible
     {
         bool canSafetyDeconstruct = false;
 
     public:
-        ~NonDestructable()
+        ~NonDestructible()
         {
             really_assert_with_msg(canSafetyDeconstruct, "Destruction not allowed");
         }
 
 #ifdef EMIL_HOST_BUILD
-        void AllowDestructionOfNonDestructable()
+        void AllowDestructionOfNonDestructible()
         {
             canSafetyDeconstruct = true;
         }

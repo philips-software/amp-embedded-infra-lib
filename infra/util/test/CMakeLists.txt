@@ -36,7 +36,7 @@ target_sources(infra.util_test PRIVATE
     TestIntrusiveUnorderedSet.cpp
     TestLogAndAbort.cpp
     TestMemoryRange.cpp
-    TestNotDeconstructable.cpp
+    TestNotDestructible.cpp
     TestObserver.cpp
     TestPolymorphicVariant.cpp
     TestProxyCreator.cpp
