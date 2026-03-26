@@ -22,6 +22,11 @@ namespace infra
             really_assert_with_msg(numberOfInstances <= 1, "Only single instance allowed");
         }
 
+        SingleInstance(const SingleInstance&) = delete;
+        SingleInstance(SingleInstance&&) = delete;
+        SingleInstance& operator=(const SingleInstance&) = delete;
+        SingleInstance& operator=(SingleInstance&&) = delete;
+
         ~SingleInstance()
         {
             auto& numberOfInstances = NumberOfInstances();
