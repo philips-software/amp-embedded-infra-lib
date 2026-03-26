@@ -47,7 +47,7 @@ target_sources(infra.util_test PRIVATE
     TestSharedObjectAllocatorHeap.cpp
     TestSharedOptional.cpp
     TestSharedPtr.cpp
-    # TestSingleInstance.cpp
+    TestSingleInstance.cpp
     TestStaticStorage.cpp
     TestTokenizer.cpp
     TestUnit.cpp

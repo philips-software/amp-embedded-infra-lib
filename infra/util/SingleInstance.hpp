@@ -28,6 +28,13 @@ namespace infra
             numberOfInstances--;
             really_assert(numberOfInstances >= 0);
         }
+
+#ifdef EMIL_HOST_BUILD
+        void ResetSingleInstanceCounter()
+        {
+            GetNumberOfInstances() = 0;
+        }
+#endif
     };
 }
 

@@ -10,17 +10,17 @@ namespace infra
         bool canSafetyDeconstruct = false;
 
     public:
+        ~NonDestructable()
+        {
+            really_assert_with_msg(canSafetyDeconstruct, "Destruction not allowed");
+        }
+
 #ifdef EMIL_HOST_BUILD
         void AllowDestructionOfNonDestructable()
         {
             canSafetyDeconstruct = true;
         }
 #endif
-
-        ~NonDestructable()
-        {
-            really_assert_with_msg(canSafetyDeconstruct, "Destruction not allowed");
-        }
     };
 }
 

@@ -8,14 +8,22 @@ class Foo : public infra::SingleInstance<Foo>
 class Bar : public infra::SingleInstance<Bar>
 {};
 
-TEST(SingleInstanceTest, once_instance_allowed)
+class SingleInstanceTest
+    : public testing::Test
 {
+public:
+    ~SingleInstanceTest()
     {
-        Foo foo;
+        Foo().ResetSingleInstanceCounter();
     }
+};
+
+TEST_F(SingleInstanceTest, once_instance_allowed)
+{
+    Foo foo;
 }
 
-TEST(SingleInstanceTest, after_destruction_new_instance_allowed)
+TEST_F(SingleInstanceTest, after_destruction_new_instance_allowed)
 {
     {
         Foo foo1;
@@ -23,13 +31,13 @@ TEST(SingleInstanceTest, after_destruction_new_instance_allowed)
     Foo foo2;
 }
 
-TEST(SingleInstanceTest, multiple_tags_allowed)
+TEST_F(SingleInstanceTest, multiple_tags_allowed)
 {
     Foo foo;
     Bar bar;
 }
 
-TEST(SingleInstanceTest, two_instances_not_allowed)
+TEST_F(SingleInstanceTest, two_instances_not_allowed)
 {
     Foo foo1;
 
