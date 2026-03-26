@@ -8,7 +8,7 @@ namespace infra
     template<class Tag>
     class SingleInstance
     {
-        int& GetNumberOfInstances()
+        static int& NumberOfInstances()
         {
             static int numberOfInstances = 0;
             return numberOfInstances;
@@ -17,22 +17,22 @@ namespace infra
     public:
         SingleInstance()
         {
-            auto& numberOfInstances = GetNumberOfInstances();
+            auto& numberOfInstances = NumberOfInstances();
             numberOfInstances++;
             really_assert_with_msg(numberOfInstances <= 1, "Only single instance allowed");
         }
 
         ~SingleInstance()
         {
-            auto& numberOfInstances = GetNumberOfInstances();
+            auto& numberOfInstances = NumberOfInstances();
             numberOfInstances--;
             really_assert(numberOfInstances >= 0);
         }
 
 #ifdef EMIL_HOST_BUILD
-        void ResetSingleInstanceCounter()
+        static void ResetSingleInstanceCounter()
         {
-            GetNumberOfInstances() = 0;
+            NumberOfInstances() = 0;
         }
 #endif
     };

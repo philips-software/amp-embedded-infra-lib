@@ -2,21 +2,25 @@
 #include "infra/util/SingleInstance.hpp"
 #include "gtest/gtest.h"
 
-class Foo : public infra::SingleInstance<Foo>
-{};
-
-class Bar : public infra::SingleInstance<Bar>
-{};
-
-class SingleInstanceTest
-    : public testing::Test
+namespace
 {
-public:
-    ~SingleInstanceTest()
+    class Foo : public infra::SingleInstance<Foo>
+    {};
+
+    class Bar : public infra::SingleInstance<Bar>
+    {};
+
+    class SingleInstanceTest
+        : public testing::Test
     {
-        Foo().ResetSingleInstanceCounter();
-    }
-};
+    public:
+        ~SingleInstanceTest()
+        {
+            Foo::ResetSingleInstanceCounter();
+            Bar::ResetSingleInstanceCounter();
+        }
+    };
+}
 
 TEST_F(SingleInstanceTest, once_instance_allowed)
 {

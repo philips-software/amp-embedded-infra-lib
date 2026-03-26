@@ -2,8 +2,11 @@
 #include "infra/util/NonDestructable.hpp"
 #include "gtest/gtest.h"
 
-class Foo : public infra::NonDestructable
-{};
+namespace
+{
+    class Foo : public infra::NonDestructable
+    {};
+}
 
 TEST(NonDestructableTest, not_deconstructable)
 {
