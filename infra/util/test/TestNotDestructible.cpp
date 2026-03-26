@@ -1,19 +1,19 @@
 
-#include "infra/util/NonDestructible.hpp"
+#include "infra/util/NotDestructible.hpp"
 #include "gtest/gtest.h"
 
 namespace
 {
-    class Foo : public infra::NonDestructible
+    class Foo : public infra::NotDestructible
     {};
 }
 
-TEST(NonDestructibleTest, not_destructible)
+TEST(NotDestructibleTest, not_destructible)
 {
     EXPECT_DEATH(Foo foo;, "");
 }
 
-TEST(NonDestructibleTest, destructible_when_allowed)
+TEST(NotDestructibleTest, destructible_when_allowed)
 {
     Foo foo;
     foo.AllowDestructionOfNonDestructible();

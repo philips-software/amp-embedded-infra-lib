@@ -1,16 +1,16 @@
-#ifndef INFRA_UTIL_NON_DESTRUCTABLE_HPP
-#define INFRA_UTIL_NON_DESTRUCTABLE_HPP
+#ifndef INFRA_UTIL_NOt_DESTRUCTIBLE_HPP
+#define INFRA_UTIL_NOt_DESTRUCTIBLE_HPP
 
 #include "infra/util/ReallyAssert.hpp"
 
 namespace infra
 {
-    class NonDestructible
+    class NotDestructible
     {
         bool canSafetyDeconstruct = false;
 
     public:
-        ~NonDestructible()
+        ~NotDestructible()
         {
             really_assert_with_msg(canSafetyDeconstruct, "Destruction not allowed");
         }
@@ -24,4 +24,4 @@ namespace infra
     };
 }
 
-#endif // INFRA_UTIL_NON_DESTRUCTABLE_HPP
+#endif // INFRA_UTIL_NOt_DESTRUCTIBLE_HPP

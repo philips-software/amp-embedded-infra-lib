@@ -54,7 +54,7 @@ target_sources(infra.util PRIVATE
     LogAndAbort.hpp
     MemoryRange.hpp
     MultiFunction.hpp
-    NonDestructible.hpp
+    NotDestructible.hpp
     Observer.hpp
     Overloaded.hpp
     PolymorphicVariant.hpp
