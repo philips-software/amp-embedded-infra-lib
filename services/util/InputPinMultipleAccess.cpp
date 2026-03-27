@@ -60,9 +60,9 @@ namespace services
     {
         onInterrupt = [this, &pin]
         {
-            NotifyObservers([&pin](auto& observer)
+            auto actualTrigger = pin.Get() ? hal::InterruptTrigger::risingEdge : hal::InterruptTrigger::fallingEdge;
+            NotifyObservers([actualTrigger](auto& observer)
                 {
-                    auto actualTrigger = pin.Get() ? hal::InterruptTrigger::risingEdge : hal::InterruptTrigger::fallingEdge;
                     hal::InterruptTrigger requiredTrigger = observer.GetInterruptTrigger();
 
                     if (actualTrigger != requiredTrigger && requiredTrigger != hal::InterruptTrigger::bothEdges)
