@@ -8,16 +8,11 @@ namespace infra
     template<class Tag>
     class SingleInstance
     {
-        static int& NumberOfInstances()
-        {
-            static int numberOfInstances = 0;
-            return numberOfInstances;
-        }
+        static int numberOfInstances;
 
     public:
         SingleInstance()
         {
-            auto& numberOfInstances = NumberOfInstances();
             numberOfInstances++;
             really_assert_with_msg(numberOfInstances <= 1, "Only single instance allowed");
         }
@@ -29,7 +24,6 @@ namespace infra
 
         ~SingleInstance()
         {
-            auto& numberOfInstances = NumberOfInstances();
             numberOfInstances--;
             really_assert(numberOfInstances >= 0);
         }
@@ -37,10 +31,13 @@ namespace infra
 #ifdef EMIL_HOST_BUILD
         static void ResetSingleInstanceCounter()
         {
-            NumberOfInstances() = 0;
+            numberOfInstances = 0;
         }
 #endif
     };
+
+    template<class Tag>
+    int SingleInstance<Tag>::numberOfInstances = 0;
 }
 
 #endif // INFRA_UTIL_SINGLE_INSTANCE_HPP
