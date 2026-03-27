@@ -16,5 +16,5 @@ TEST(NotDestructibleTest, not_destructible)
 TEST(NotDestructibleTest, destructible_when_allowed)
 {
     Foo foo;
-    foo.AllowDestructionOfNonDestructible();
+    foo.AllowDestructionOfNotDestructible();
 }
