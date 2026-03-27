@@ -35,6 +35,7 @@ target_sources(services.util_test PRIVATE
     TestFlashRegion.cpp
     TestFlashSpi.cpp
     TestI2cMultipleAccess.cpp
+    TestInputPinMultipleAccess.cpp
     TestInverseLogicPin.cpp
     TestLowPowerSerialCommunication.cpp
     TestLowPowerSpiMaster.cpp

@@ -59,10 +59,10 @@ namespace hal
         InputPin& operator=(const InputPin& other) = delete;
         ~InputPin();
 
-        bool Get() const;
+        virtual bool Get() const;
 
-        void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type = InterruptType::dispatched);
-        void DisableInterrupt();
+        virtual void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type = InterruptType::dispatched);
+        virtual void DisableInterrupt();
 
     private:
         GpioPin& pin;
