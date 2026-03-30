@@ -391,6 +391,20 @@ TEST_F(HttpClientCachedConnectionTest, connection_is_closed_during_StatusAvailab
     clientSubject.Detach();
 }
 
+TEST_F(HttpClientCachedConnectionTest, StatusAvailable_after_detach_is_ignored)
+{
+    CreateConnection(factory);
+
+    FinishRequest();
+    EXPECT_CALL(*clientObserver, Detaching());
+    clientObserver->Detach();
+
+    // Late callbacks may still arrive from the lower layer after detach.
+    clientSubject.Observer().StatusAvailable(services::HttpStatusCode::OK);
+
+    clientSubject.Detach();
+}
+
 TEST_F(HttpClientCachedConnectionTest, Close_is_forwarded_to_client)
 {
     CreateConnection(factory);

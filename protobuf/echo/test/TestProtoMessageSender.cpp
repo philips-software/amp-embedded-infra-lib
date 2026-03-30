@@ -191,12 +191,14 @@ TEST_F(ProtoMessageSenderTest, dont_format_on_buffer_full)
     message.value = true;
     services::ProtoMessageSender sender{ message };
 
-    infra::ByteOutputStream::WithStorage<1> partialStream;
+    infra::ByteOutputStream::WithStorage<1> partialStream(infra::noFail);
     sender.Fill(partialStream);
+    EXPECT_TRUE(partialStream.Failed());
 
     infra::StdVectorOutputStream::WithStorage stream;
     sender.Fill(stream);
     EXPECT_EQ((std::vector<uint8_t>{ 30, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 2 << 3, 1 }), stream.Storage());
+    EXPECT_FALSE(stream.Failed());
 }
 
 TEST_F(ProtoMessageSenderTest, format_many_repeated_uint32)
@@ -205,13 +207,15 @@ TEST_F(ProtoMessageSenderTest, format_many_repeated_uint32)
     message.value.insert(message.value.end(), 50, static_cast<uint8_t>(5));
     services::ProtoMessageSender sender{ message };
 
-    infra::ByteOutputStream::WithStorage<10> partialStream;
+    infra::ByteOutputStream::WithStorage<10> partialStream(infra::noFail);
     sender.Fill(partialStream);
     EXPECT_EQ((std::array<uint8_t, 10>{ 1 << 3, 5, 1 << 3, 5, 1 << 3, 5, 1 << 3, 5, 1 << 3, 5 }), partialStream.Storage());
+    EXPECT_TRUE(partialStream.Failed());
 
     infra::StdVectorOutputStream::WithStorage stream;
     sender.Fill(stream);
     EXPECT_EQ(infra::ConstructBin().Repeat(45, { 1 << 3, 5 }).Vector(), stream.Storage());
+    EXPECT_FALSE(stream.Failed());
 }
 
 TEST_F(ProtoMessageSenderTest, format_many_bytes)
@@ -220,11 +224,13 @@ TEST_F(ProtoMessageSenderTest, format_many_bytes)
     message.value.insert(message.value.end(), 50, static_cast<uint8_t>(5));
     services::ProtoMessageSender sender{ message };
 
-    infra::ByteOutputStream::WithStorage<10> partialStream;
+    infra::ByteOutputStream::WithStorage<10> partialStream(infra::noFail);
     sender.Fill(partialStream);
     EXPECT_EQ((std::array<uint8_t, 10>{ 10, 50, 5, 5, 5, 5, 5, 5, 5, 5 }), partialStream.Storage());
+    EXPECT_TRUE(partialStream.Failed());
 
     infra::StdVectorOutputStream::WithStorage stream;
     sender.Fill(stream);
     EXPECT_EQ((std::vector<uint8_t>{ 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5 }), stream.Storage());
+    EXPECT_FALSE(stream.Failed());
 }

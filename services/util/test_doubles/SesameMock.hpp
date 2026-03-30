@@ -33,7 +33,9 @@ namespace services
     public:
         MOCK_METHOD(void, RequestSendMessage, (std::size_t size), (override));
         MOCK_METHOD(std::size_t, MaxSendMessageSize, (), (const, override));
-        MOCK_METHOD(std::size_t, MessageSize, (std::size_t), (const, override));
+        MOCK_METHOD(std::size_t, WorstCaseEncodedMessageSize, (std::size_t), (const, override));
+        MOCK_METHOD(std::size_t, WorstCaseDecodedMessageSize, (std::size_t), (const, override));
+        MOCK_METHOD(std::size_t, MessageSize, (infra::StreamReader && message), (const, override));
         MOCK_METHOD(void, Reset, (), (override));
     };
 

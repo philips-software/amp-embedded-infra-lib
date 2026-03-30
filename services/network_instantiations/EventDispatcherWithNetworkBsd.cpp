@@ -181,7 +181,8 @@ namespace services
             if (infra::SharedPtr<ConnectionBsd> connection = weakConnection)
             {
                 AddFileDescriptorToSet(connection->socket, readFileDescriptors);
-                AddFileDescriptorToSet(connection->socket, writeFileDescriptors);
+                if (!connection->SendBufferEmpty())
+                    AddFileDescriptorToSet(connection->socket, writeFileDescriptors);
             }
         }
 
@@ -194,7 +195,8 @@ namespace services
             if (infra::SharedPtr<DatagramBsd> datagram = weakDatagram)
             {
                 AddFileDescriptorToSet(datagram->socket, readFileDescriptors);
-                AddFileDescriptorToSet(datagram->socket, writeFileDescriptors);
+                if (!datagram->SendBufferEmpty())
+                    AddFileDescriptorToSet(datagram->socket, writeFileDescriptors);
             }
         }
 
