@@ -51,7 +51,7 @@ jobs:
   host_build_test_container:
     name: Host Build & Test (amp-devcontainer-cpp)
     runs-on: ubuntu-latest
-    container: ghcr.io/philips-software/amp-devcontainer-cpp:v6.8.2@sha256:8d6d0b49bef9b1f572793dee8dcc05edcbe4f44f108f075640dda284ff3e2d4e # v6.8.2
+    container: ghcr.io/philips-software/amp-devcontainer-cpp:6.10.0@sha256:59cd09cf8adae8cee2bca68ceebd8f5328471135353af2c6594402dcdcbe63f1 # 6.10.0
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -74,7 +74,7 @@ jobs:
   host_build_test_clang_msvc:
     name: Host Build & Test (clang-msvc)
     runs-on: ubuntu-latest
-    container: ghcr.io/philips-software/amp-devcontainer-cpp:v6.8.2@sha256:8d6d0b49bef9b1f572793dee8dcc05edcbe4f44f108f075640dda284ff3e2d4e # v6.8.2
+    container: ghcr.io/philips-software/amp-devcontainer-cpp:6.10.0@sha256:59cd09cf8adae8cee2bca68ceebd8f5328471135353af2c6594402dcdcbe63f1 # 6.10.0
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
