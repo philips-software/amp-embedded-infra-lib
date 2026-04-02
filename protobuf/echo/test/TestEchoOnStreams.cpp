@@ -1,4 +1,5 @@
 #include "generated/echo/TestMessages.pb.hpp"
+#include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
 #include "protobuf/echo/EchoOnStreams.hpp"
 #include "protobuf/echo/test_doubles/EchoMock.hpp"
@@ -28,6 +29,11 @@ namespace services
         {
             return EchoOnStreams::GrantSend(proxy);
         }
+
+        void InheritedReleaseDeserializer()
+        {
+            EchoOnStreams::ReleaseDeserializer();
+        }
     };
 }
 
@@ -35,6 +41,7 @@ class EchoOnStreamsTest
     : public testing::Test
 {
 public:
+    infra::SharedOptional<infra::ByteInputStreamReader> reader;
     testing::StrictMock<services::EchoErrorPolicyMock> errorPolicy;
     services::MethodSerializerFactory::ForServices<services::ServiceStub>::AndProxies<services::ServiceStubProxy> serializerFactory;
     testing::StrictMock<services::EchoOnStreamsMock> echo{ serializerFactory, errorPolicy };
@@ -59,4 +66,17 @@ TEST_F(EchoOnStreamsTest, send_method_without_parameter)
         }));
     echo.SendStreamAvailable(writer.Emplace(data));
     EXPECT_EQ((std::vector<uint8_t>{ 1, 26, 0 }), data);
+}
+
+TEST_F(EchoOnStreamsTest, destruct_with_data_in_buffer)
+{
+    std::array<uint8_t, 64> data{ 1, (1 << 3) | 2, 64 };
+    EXPECT_CALL(echo, StartingMethod(1, 1, testing::_)).WillOnce(testing::Invoke([](uint32_t serviceId, uint32_t methodId, infra::SharedPtr<services::MethodDeserializer>&& deserializer)
+        {
+            return std::move(deserializer);
+        }));
+    EXPECT_CALL(echo, MethodContents(testing::_));
+    echo.DataReceived(reader.Emplace(infra::MakeRange(data)));
+
+    // When echo is destructed, the reader still contains data. This test tests that the destruction does not save all that data in the buffer, causing a crash
 }
