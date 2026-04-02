@@ -63,7 +63,7 @@ TEST_F(EchoOnStreamsTest, send_method_without_parameter)
     EXPECT_EQ((std::vector<uint8_t>{ 1, 26, 0 }), data);
 }
 
-TEST_F(EchoOnStreamsTest, destruct_with_data_in_buffer)
+TEST_F(EchoOnStreamsTest, ReleaseReader_with_data_in_buffer)
 {
     std::array<uint8_t, 64> data{ 1, (1 << 3) | 2, 64 };
     EXPECT_CALL(echo, StartingMethod(1, 1, testing::_)).WillOnce(testing::Invoke([](uint32_t serviceId, uint32_t methodId, infra::SharedPtr<services::MethodDeserializer>&& deserializer)
