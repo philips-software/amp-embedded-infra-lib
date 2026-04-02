@@ -29,11 +29,6 @@ namespace services
         {
             return EchoOnStreams::GrantSend(proxy);
         }
-
-        void InheritedReleaseDeserializer()
-        {
-            EchoOnStreams::ReleaseDeserializer();
-        }
     };
 }
 
