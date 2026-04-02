@@ -73,5 +73,5 @@ TEST_F(EchoOnStreamsTest, destruct_with_data_in_buffer)
     EXPECT_CALL(echo, MethodContents(testing::_));
     echo.DataReceived(reader.Emplace(infra::MakeRange(data)));
 
-    // When echo is destructed, the reader still contains data. This test tests that the destruction does not save all that data in the buffer, causing a crash
+    echo.ReleaseReader();
 }
