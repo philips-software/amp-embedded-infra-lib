@@ -171,6 +171,19 @@ TEST_F(EchoOnSesameTest, service_method_without_parameter_is_invoked)
     ReceiveMessage(infra::ConstructBin()({ 1, (3 << 3) | 2, 0 }).Range());
 }
 
+TEST_F(EchoOnSesameTest, two_service_methods_are_invoked_in_one_receive)
+{
+    EXPECT_CALL(service, Method(5)).WillOnce(testing::Invoke([this]()
+        {
+            service.MethodDone();
+        }));
+    EXPECT_CALL(service, Method(6)).WillOnce(testing::Invoke([this]()
+        {
+            service.MethodDone();
+        }));
+    ReceiveMessage(infra::ConstructBin()({ 1, (1 << 3) | 2, 2, 8, 5, 1, (1 << 3) | 2, 2, 8, 6 }).Range());
+}
+
 TEST_F(EchoOnSesameTest, MessageFormatError_is_reported_when_message_is_not_a_LengthDelimited)
 {
     EXPECT_CALL(errorPolicy, MessageFormatError(testing::StrEq("Format failed or contents not PartialProtoLengthDelimited")));
