@@ -19,6 +19,8 @@ target_sources(services.tracer PRIVATE
     GlobalTracer.hpp
     LogAndAbortTracer.cpp
     LogAndAbortTracer.hpp
+    StreamWriterOnFlushableSerialCommunication.cpp
+    StreamWriterOnFlushableSerialCommunication.hpp
     StreamWriterOnSerialCommunication.cpp
     StreamWriterOnSerialCommunication.hpp
     StreamWriterOnSynchronousSerialCommunication.cpp
