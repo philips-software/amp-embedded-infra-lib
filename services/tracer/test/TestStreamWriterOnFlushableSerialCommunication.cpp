@@ -1,5 +1,4 @@
 #include "hal/interfaces/test_doubles/SerialCommunicationMock.hpp"
-#include "infra/util/CyclicBuffer.hpp"
 #include "services/tracer/StreamWriterOnFlushableSerialCommunication.hpp"
 #include "services/util/test_doubles/FlushableMock.hpp"
 #include "gmock/gmock.h"

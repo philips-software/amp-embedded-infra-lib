@@ -2,8 +2,6 @@
 #define SERVICES_STREAM_WRITER_ON_FLUSHABLE_SERIAL_COMMUNICATION_HPP
 
 #include "hal/interfaces/SerialCommunication.hpp"
-#include "infra/stream/OutputStream.hpp"
-#include "infra/util/CyclicBuffer.hpp"
 #include "services/tracer/StreamWriterOnSerialCommunication.hpp"
 #include "services/util/Flushable.hpp"
 
