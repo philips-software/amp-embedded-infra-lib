@@ -12,6 +12,8 @@ namespace services
     {
         using TracerProvider = infra::Function<services::Tracer&()>;
 
+        LogAndAbortTracer(TracerProvider tracerProvider, services::Flushable* flushable);
+
     public:
         explicit LogAndAbortTracer(TracerProvider tracerProvider);
         explicit LogAndAbortTracer(services::Tracer& tracer);

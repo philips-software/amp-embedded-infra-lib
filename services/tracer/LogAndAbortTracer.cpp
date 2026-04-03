@@ -13,8 +13,9 @@ namespace
 
 namespace services
 {
-    LogAndAbortTracer::LogAndAbortTracer(TracerProvider tracerProvider)
+    LogAndAbortTracer::LogAndAbortTracer(TracerProvider tracerProvider, services::Flushable* flushable)
         : tracerProvider(std::move(tracerProvider))
+        , flushable(flushable)
     {
         really_assert(!instantiated);
         instantiated = true;
@@ -24,26 +25,30 @@ namespace services
                 really_assert(this->tracerProvider);
                 auto& tracer = this->tracerProvider();
                 TraceAbort(tracer, reason, file, line, format, args);
-                if (flushable)
-                    flushable->Flush();
+                if (this->flushable)
+                    this->flushable->Flush();
             });
     }
+
+    LogAndAbortTracer::LogAndAbortTracer(TracerProvider tracerProvider)
+        : LogAndAbortTracer(std::move(tracerProvider), nullptr)
+    {}
 
     LogAndAbortTracer::LogAndAbortTracer(services::Tracer& tracer)
         : LogAndAbortTracer([&tracer]() -> services::Tracer&
               {
                   return tracer;
-              })
+              },
+              nullptr)
     {}
 
     LogAndAbortTracer::LogAndAbortTracer(services::Tracer& tracer, services::Flushable& flushable)
         : LogAndAbortTracer([&tracer]() -> services::Tracer&
               {
                   return tracer;
-              })
-    {
-        this->flushable = &flushable;
-    }
+              },
+              &flushable)
+    {}
 
     void LogAndAbortTracer::TraceAbort(services::Tracer& tracer, const char* reason, const char* file, int line, const char* format, va_list* args)
     {
