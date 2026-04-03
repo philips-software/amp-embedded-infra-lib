@@ -13,35 +13,6 @@ namespace
 
 namespace services
 {
-    LogAndAbortTracer::LogAndAbortTracer(services::Tracer& tracer)
-        : tracer(&tracer)
-    {
-        really_assert(!instantiated);
-        instantiated = true;
-        infra::RegisterLogAndAbortHook([this](const char* reason, const char* file, int line, const char* format, va_list* args)
-            {
-                really_assert(instantiated);
-                really_assert(this->tracer);
-                TraceAbort(*this->tracer, reason, file, line, format, args);
-            });
-    }
-
-    LogAndAbortTracer::LogAndAbortTracer(services::Tracer& tracer, services::Flushable& flushable)
-        : tracer(&tracer)
-        , flushable(&flushable)
-    {
-        really_assert(!instantiated);
-        instantiated = true;
-        infra::RegisterLogAndAbortHook([this](const char* reason, const char* file, int line, const char* format, va_list* args)
-            {
-                really_assert(instantiated);
-                really_assert(this->tracer);
-                TraceAbort(*this->tracer, reason, file, line, format, args);
-                really_assert(this->flushable);
-                this->flushable->Flush();
-            });
-    }
-
     LogAndAbortTracer::LogAndAbortTracer(TracerProvider tracerProvider)
         : tracerProvider(std::move(tracerProvider))
     {
@@ -53,7 +24,25 @@ namespace services
                 really_assert(this->tracerProvider);
                 auto& tracer = this->tracerProvider();
                 TraceAbort(tracer, reason, file, line, format, args);
+                if (flushable)
+                    flushable->Flush();
             });
+    }
+
+    LogAndAbortTracer::LogAndAbortTracer(services::Tracer& tracer)
+        : LogAndAbortTracer([&tracer]() -> services::Tracer&
+              {
+                  return tracer;
+              })
+    {}
+
+    LogAndAbortTracer::LogAndAbortTracer(services::Tracer& tracer, services::Flushable& flushable)
+        : LogAndAbortTracer([&tracer]() -> services::Tracer&
+              {
+                  return tracer;
+              })
+    {
+        this->flushable = &flushable;
     }
 
     void LogAndAbortTracer::TraceAbort(services::Tracer& tracer, const char* reason, const char* file, int line, const char* format, va_list* args)

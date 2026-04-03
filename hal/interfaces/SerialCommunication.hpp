@@ -8,7 +8,6 @@
 #include "infra/util/Function.hpp"
 #include "infra/util/Observer.hpp"
 #include "infra/util/WithStorage.hpp"
-#include "services/util/Flushable.hpp"
 #include "services/util/Stoppable.hpp"
 #include <cstddef>
 

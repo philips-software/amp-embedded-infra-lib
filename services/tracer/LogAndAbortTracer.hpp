@@ -12,19 +12,20 @@ namespace services
     {
         using TracerProvider = infra::Function<services::Tracer&()>;
 
-        services::Tracer* tracer{};
-        services::Flushable* flushable{};
-        TracerProvider tracerProvider;
-
     public:
-        explicit LogAndAbortTracer(services::Tracer& tracer);
-        explicit LogAndAbortTracer(services::Tracer& tracer, services::Flushable& flushable);
         explicit LogAndAbortTracer(TracerProvider tracerProvider);
+        explicit LogAndAbortTracer(services::Tracer& tracer);
+        LogAndAbortTracer(services::Tracer& tracer, services::Flushable& flushable);
 
         ~LogAndAbortTracer();
 
     private:
         void TraceAbort(services::Tracer& tracer, const char* reason, const char* file, int line, const char* format, va_list* args);
+
+    private:
+        services::Tracer* tracer{};
+        services::Flushable* flushable{};
+        TracerProvider tracerProvider;
     };
 }
 
