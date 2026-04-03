@@ -806,6 +806,19 @@ TEST(BoundedStringTest, ConstexprConstruct)
     }
 
     {
+        // BoundedStringBase<T>::BoundedStringBase(T* s);
+        constexpr infra::BoundedConstString s1{ "abc" };
+        static_assert(s1.size() == 3);
+        static_assert(s1[0] == 'a');
+        static_assert(s1[1] == 'b');
+
+        constexpr infra::BoundedConstString s2{ "abc\0e" };
+        static_assert(s2.size() == 3);
+        static_assert(s2[0] == 'a');
+        static_assert(s2[2] == 'c');
+    }
+
+    {
         // BoundedStringBase<T>::BoundedStringBase(T* s, size_type count);
         constexpr infra::BoundedConstString s1{ "abc", 3 };
         static_assert(s1.size() == 3);

@@ -99,6 +99,11 @@ namespace services
         return socket != 0;
     }
 
+    bool ConnectionBsd::SendBufferEmpty() const
+    {
+        return sendBuffer.empty();
+    }
+
     void ConnectionBsd::Receive()
     {
         while (!receiveBuffer.full())

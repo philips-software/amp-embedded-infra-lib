@@ -143,7 +143,8 @@ namespace services
 
     void HttpClientCachedConnection::StatusAvailable(HttpStatusCode statusCode)
     {
-        Observer().StatusAvailable(statusCode);
+        if (HttpClient::IsAttached())
+            Observer().StatusAvailable(statusCode);
     }
 
     void HttpClientCachedConnection::HeaderAvailable(HttpHeader header)
