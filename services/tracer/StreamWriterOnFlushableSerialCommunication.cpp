@@ -9,9 +9,9 @@ namespace services
 
     void StreamWriterOnFlushableSerialCommunication::Flush()
     {
-        while (currentlySendingBytes != 0)
+        while (IsCurrentlySending())
         {
-            auto currentTransactionId = transactionId;
+            auto currentTransactionId = GetCurrentTransactionId();
             flushable.Flush();
             OnCommunicationDone(currentTransactionId);
         }

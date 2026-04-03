@@ -43,4 +43,14 @@ namespace services
 
         TrySend();
     }
+
+    bool StreamWriterOnSerialCommunication::IsCurrentlySending() const
+    {
+        return currentlySendingBytes != 0;
+    }
+
+    uint32_t StreamWriterOnSerialCommunication::GetCurrentTransactionId() const
+    {
+        return transactionId;
+    }
 }

@@ -24,8 +24,10 @@ namespace services
 
     protected:
         void OnCommunicationDone(uint32_t completedTransactionId);
+        bool IsCurrentlySending() const;
+        uint32_t GetCurrentTransactionId() const;
 
-    protected:
+    private:
         infra::CyclicByteBuffer buffer;
         hal::SerialCommunication& communication;
         std::size_t currentlySendingBytes = 0;

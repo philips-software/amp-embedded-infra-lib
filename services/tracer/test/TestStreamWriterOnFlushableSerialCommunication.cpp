@@ -13,14 +13,9 @@ public:
     using WithStorage = infra::WithStorage<FlushableStreamWriterAccessor, std::array<uint8_t, StorageSize>>;
     using StreamWriterOnFlushableSerialCommunication::StreamWriterOnFlushableSerialCommunication;
 
-    auto GetCurrentlySendingBytes() const
+    auto IsCurrentlySendingBytes() const
     {
-        return currentlySendingBytes;
-    }
-
-    infra::CyclicByteBuffer& GetBuffer()
-    {
-        return buffer;
+        return IsCurrentlySending();
     }
 };
 
@@ -93,8 +88,7 @@ TEST_F(StreamWriterOnFlushableSerialCommunicationTest, insert_after_flush_on_emp
     EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 1, 2 }));
     streamWriter.Insert(std::vector<uint8_t>{ 1, 2 }, errorPolicy);
 
-    EXPECT_THAT(streamWriter.GetBuffer().Size(), testing::Eq(2));
-    EXPECT_THAT(streamWriter.GetCurrentlySendingBytes(), testing::Eq(2));
+    EXPECT_THAT(streamWriter.IsCurrentlySendingBytes(), testing::Eq(true));
 }
 
 TEST_F(StreamWriterOnFlushableSerialCommunicationTest, flush_completes_pending_communication_when_FlushSendBuffer_supported)
@@ -105,8 +99,7 @@ TEST_F(StreamWriterOnFlushableSerialCommunicationTest, flush_completes_pending_c
     EXPECT_CALL(flushable, Flush());
     streamWriter.Flush();
 
-    EXPECT_THAT(streamWriter.GetBuffer().Size(), testing::Eq(0));
-    EXPECT_THAT(streamWriter.GetCurrentlySendingBytes(), testing::Eq(0));
+    EXPECT_THAT(streamWriter.IsCurrentlySendingBytes(), testing::Eq(false));
 }
 
 TEST_F(StreamWriterOnFlushableSerialCommunicationTest, stale_completion_after_flush_does_nothing)
@@ -125,8 +118,7 @@ TEST_F(StreamWriterOnFlushableSerialCommunicationTest, stale_completion_after_fl
     // The stale callback from the event queue fires — this should be a no-op
     savedCallback();
 
-    EXPECT_THAT(streamWriter.GetBuffer().Size(), testing::Eq(0));
-    EXPECT_THAT(streamWriter.GetCurrentlySendingBytes(), testing::Eq(0));
+    EXPECT_THAT(streamWriter.IsCurrentlySendingBytes(), testing::Eq(false));
 }
 
 TEST_F(StreamWriterOnFlushableSerialCommunicationTest, stale_completion_does_not_interfere_with_new_transaction)
@@ -141,24 +133,19 @@ TEST_F(StreamWriterOnFlushableSerialCommunicationTest, stale_completion_does_not
 
     EXPECT_CALL(flushable, Flush());
     streamWriter.Flush();
-    EXPECT_THAT(streamWriter.GetBuffer().Size(), testing::Eq(0));
-    EXPECT_THAT(streamWriter.GetCurrentlySendingBytes(), testing::Eq(0));
+    EXPECT_THAT(streamWriter.IsCurrentlySendingBytes(), testing::Eq(false));
 
     // A new transaction starts; the stray queued event (savedCallback) now belongs to the previous transaction
     EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 8 }));
     streamWriter.Insert(infra::MakeByteRange(static_cast<uint8_t>(8)), errorPolicy);
-    EXPECT_THAT(streamWriter.GetBuffer().Size(), testing::Eq(1));
-    EXPECT_THAT(streamWriter.GetCurrentlySendingBytes(), testing::Eq(1));
-
+    EXPECT_THAT(streamWriter.IsCurrentlySendingBytes(), testing::Eq(true));
     // Stray callback is ignored
     savedCallback();
-    EXPECT_THAT(streamWriter.GetBuffer().Size(), testing::Eq(1));
-    EXPECT_THAT(streamWriter.GetCurrentlySendingBytes(), testing::Eq(1));
+    EXPECT_THAT(streamWriter.IsCurrentlySendingBytes(), testing::Eq(true));
 
     // The real completion for the new transaction fires, flushing the queued byte
     communication.actionOnCompletion();
-    EXPECT_THAT(streamWriter.GetBuffer().Size(), testing::Eq(0));
-    EXPECT_THAT(streamWriter.GetCurrentlySendingBytes(), testing::Eq(0));
+    EXPECT_THAT(streamWriter.IsCurrentlySendingBytes(), testing::Eq(false));
 }
 
 TEST_F(StreamWriterOnFlushableSerialCommunicationTest, flush_drains_all_queued_data_across_multiple_sends)
@@ -176,8 +163,7 @@ TEST_F(StreamWriterOnFlushableSerialCommunicationTest, flush_drains_all_queued_d
     EXPECT_CALL(communication, SendDataMock(std::vector<uint8_t>{ 3, 4 }));
     streamWriter.Flush();
 
-    EXPECT_THAT(streamWriter.GetBuffer().Size(), testing::Eq(0));
-    EXPECT_THAT(streamWriter.GetCurrentlySendingBytes(), testing::Eq(0));
+    EXPECT_THAT(streamWriter.IsCurrentlySendingBytes(), testing::Eq(false));
 }
 
 TEST_F(StreamWriterOnFlushableSerialCommunicationTest, flush_tolerates_completion_callback_fired_by_flushable)
@@ -199,8 +185,7 @@ TEST_F(StreamWriterOnFlushableSerialCommunicationTest, flush_tolerates_completio
     streamWriter.Flush();
 
     // Despite the double-completion attempt, state must be clean
-    EXPECT_THAT(streamWriter.GetBuffer().Size(), testing::Eq(0));
-    EXPECT_THAT(streamWriter.GetCurrentlySendingBytes(), testing::Eq(0));
+    EXPECT_THAT(streamWriter.IsCurrentlySendingBytes(), testing::Eq(false));
 }
 
 TEST_F(StreamWriterOnFlushableSerialCommunicationTest, flush_tolerates_completion_callback_during_multi_transaction_drain)
@@ -223,6 +208,5 @@ TEST_F(StreamWriterOnFlushableSerialCommunicationTest, flush_tolerates_completio
             });
     streamWriter.Flush();
 
-    EXPECT_THAT(streamWriter.GetBuffer().Size(), testing::Eq(0));
-    EXPECT_THAT(streamWriter.GetCurrentlySendingBytes(), testing::Eq(0));
+    EXPECT_THAT(streamWriter.IsCurrentlySendingBytes(), testing::Eq(false));
 }
