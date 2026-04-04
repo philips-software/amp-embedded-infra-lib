@@ -54,9 +54,10 @@ namespace services
         const char ExtraCharacterReader::character = '\x4';
     }
 
-    SesameWindowed::SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, SesameEncoded& delegate)
+    SesameWindowed::SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, SesameEncoded& delegate, SesameInitializer& sesameInitializer)
         : SesameEncodedObserver(delegate)
         , receivedMessage(receivedMessage)
+        , sesameInitializer(sesameInitializer)
         , ownBufferSize(static_cast<uint16_t>(SesameEncodedObserver::Subject().MaxSendMessageSize()))
         , releaseWindowSize(static_cast<uint16_t>(SesameEncodedObserver::Subject().WorstCaseEncodedMessageSize(sizeof(PacketReleaseWindow))))
         , state(std::in_place_type_t<StateSendingInit>(), *this)
@@ -119,8 +120,12 @@ namespace services
             case Operation::init:
                 otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
                 ReceivedInit(otherAvailableWindow);
-                sendInitResponse = true;
-                ReceivedInitialize();
+                sesameInitializer.InitializationRequested([this]()
+                    {
+                        sendInitResponse = true;
+                        ReceivedInitialize();
+                        SetNextState();
+                    });
                 break;
             case Operation::initResponse:
                 otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
