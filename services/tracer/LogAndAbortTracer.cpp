@@ -17,8 +17,9 @@ namespace services
         : tracerProvider(std::move(tracerProvider))
         , flushable(flushable)
     {
-        really_assert(!instantiated);
-        instantiated = true;
+        if (instantiated.exchange(true))
+            LOG_AND_ABORT("Only one instance allowed");
+
         infra::RegisterLogAndAbortHook([this](const char* reason, const char* file, int line, const char* format, va_list* args)
             {
                 really_assert(instantiated);
@@ -70,7 +71,7 @@ namespace services
 #ifndef EMIL_HOST_BUILD
         LOG_AND_ABORT("Not destructible");
 #endif
-        instantiated = false;
         infra::RegisterLogAndAbortHook(nullptr);
+        instantiated = false;
     }
 }
