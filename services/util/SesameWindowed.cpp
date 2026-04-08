@@ -118,6 +118,7 @@ namespace services
         switch (stream.Extract<Operation>())
         {
             case Operation::init:
+            {
                 auto window = stream.Extract<infra::LittleEndian<uint16_t>>();
                 ReceivedInit(window);
                 sesameInitializer.InitializationRequested([this, window]()
@@ -128,6 +129,7 @@ namespace services
                         SetNextState();
                     });
                 break;
+            }
             case Operation::initResponse:
                 otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
                 ReceivedInitResponse(otherAvailableWindow);
