@@ -51,6 +51,7 @@ namespace services
         shortenedLocalName = 0x08u,
         completeLocalName = 0x09u,
         publicTargetAddress = 0x17u,
+        randomTargetAddress = 0x18u,
         appearance = 0x19u,
         manufacturerSpecificData = 0xffu
     };
@@ -333,6 +334,7 @@ namespace services
         void AppendListOfServicesUuid(infra::MemoryRange<AttAttribute::Uuid16> services);
         void AppendListOfServicesUuid(infra::MemoryRange<AttAttribute::Uuid128> services);
         void AppendPublicTargetAddress(hal::MacAddress address);
+        void AppendRandomTargetAddress(hal::MacAddress address);
         void AppendAppearance(uint16_t appearance);
 
         infra::ConstByteRange FormattedAdvertisementData() const;
@@ -372,7 +374,7 @@ namespace services
         virtual void Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType, infra::Duration initiatingTimeout) = 0;
         virtual void CancelConnect() = 0;
         virtual void Disconnect() = 0;
-        virtual void SetAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) = 0;
+        virtual void SetAddress(services::GapAddress address) = 0;
         virtual void StartDeviceDiscovery() = 0;
         virtual void StopDeviceDiscovery() = 0;
         virtual std::optional<hal::MacAddress> ResolvePrivateAddress(hal::MacAddress address) const = 0;
@@ -393,7 +395,7 @@ namespace services
         void Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType, infra::Duration initiatingTimeout) override;
         void CancelConnect() override;
         void Disconnect() override;
-        void SetAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) override;
+        void SetAddress(services::GapAddress address) override;
         void StartDeviceDiscovery() override;
         void StopDeviceDiscovery() override;
         std::optional<hal::MacAddress> ResolvePrivateAddress(hal::MacAddress address) const override;
