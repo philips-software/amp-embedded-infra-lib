@@ -60,11 +60,10 @@ namespace infra
         BoundedStringBase(MemoryRange<NonConstT> range, const BoundedStringBase& other, size_type pos, size_type count = BoundedStringBase::npos);
         BoundedStringBase(MemoryRange<NonConstT> range, const char* s, size_type count);
         BoundedStringBase(MemoryRange<NonConstT> range, const char* s);
-        BoundedStringBase(MemoryRange<NonConstT> range, const std::string& s);
+        BoundedStringBase(MemoryRange<NonConstT> range, std::string_view s);
         constexpr BoundedStringBase(T* s, size_type count);
         constexpr BoundedStringBase(T* s);
         constexpr BoundedStringBase(std::string_view s);
-        BoundedStringBase(const std::string& s);
         BoundedStringBase(std::string& s);
         template<class InputIterator>
         BoundedStringBase(MemoryRange<NonConstT> range, InputIterator first, InputIterator last);
@@ -77,16 +76,16 @@ namespace infra
         BoundedStringBase(const BoundedStringBase<U>& other);
         ~BoundedStringBase() = default;
 
-        BoundedStringBase& operator=(const BoundedStringBase& other);
+        BoundedStringBase& operator=(const BoundedStringBase& other) noexcept = default;
         BoundedStringBase& operator=(BoundedStringBase&& other) noexcept = default;
         BoundedStringBase& operator=(const char* s);
         BoundedStringBase& operator=(char ch);
-        BoundedStringBase& operator=(const std::string& s);
+        BoundedStringBase& operator=(std::string_view s);
         template<class U>
         void AssignFromStorage(const BoundedStringBase<U>& other);
         void AssignFromStorage(const char* s);
         void AssignFromStorage(char ch);
-        void AssignFromStorage(const std::string& s);
+        void AssignFromStorage(std::string_view s);
 
         BoundedStringBase& assign(size_type count, char ch);
         template<class U>
@@ -95,7 +94,7 @@ namespace infra
         BoundedStringBase& assign(const BoundedStringBase<U>& other, size_type pos, size_type count);
         BoundedStringBase& assign(const char* s, size_type count);
         BoundedStringBase& assign(const char* s);
-        BoundedStringBase& assign(const std::string& s);
+        BoundedStringBase& assign(std::string_view s);
         template<class InputIterator>
         BoundedStringBase& assign(InputIterator first, InputIterator last);
 
@@ -132,8 +131,8 @@ namespace infra
         BoundedStringBase& insert(size_type index, const char* s, size_type count);
         BoundedStringBase& insert(size_type index, const BoundedStringBase& other);
         BoundedStringBase& insert(size_type index, const BoundedStringBase& other, size_type index_str, size_type count);
-        BoundedStringBase& insert(size_type index, const std::string& other);
-        BoundedStringBase& insert(size_type index, const std::string& other, size_type index_str, size_type count);
+        BoundedStringBase& insert(size_type index, std::string_view other);
+        BoundedStringBase& insert(size_type index, std::string_view other, size_type index_str, size_type count);
         iterator insert(const_iterator pos, char ch);
         iterator insert(const_iterator pos, size_type count, char ch);
         template<class InputIterator>
@@ -153,7 +152,7 @@ namespace infra
         BoundedStringBase& append(const BoundedStringBase<U>& other, size_type pos, size_type count);
         BoundedStringBase& append(const char* s, size_type count);
         BoundedStringBase& append(const char* s);
-        BoundedStringBase& append(const std::string& s);
+        BoundedStringBase& append(std::string_view s);
         template<class InputIterator>
         BoundedStringBase& append(InputIterator first, InputIterator last);
 
@@ -161,7 +160,7 @@ namespace infra
         BoundedStringBase& operator+=(const BoundedStringBase<U>& other);
         BoundedStringBase& operator+=(char ch);
         BoundedStringBase& operator+=(const char* s);
-        BoundedStringBase& operator+=(const std::string& s);
+        BoundedStringBase& operator+=(std::string_view s);
 
         constexpr int compare(const BoundedStringBase& other) const;
         constexpr int compare(size_type pos1, size_type count1, const BoundedStringBase& other) const;
@@ -169,9 +168,9 @@ namespace infra
         int compare(const char* s) const;
         int compare(size_type pos1, size_type count1, const char* s) const;
         constexpr int compare(size_type pos1, size_type count1, const char* s, size_type count2) const;
-        constexpr int compare(const std::string& s) const;
-        constexpr int compare(size_type pos1, size_type count1, const std::string& s) const;
-        constexpr int compare(size_type pos1, size_type count1, const std::string& s, size_type count2) const;
+        constexpr int compare(std::string_view s) const;
+        constexpr int compare(size_type pos1, size_type count1, std::string_view s) const;
+        constexpr int compare(size_type pos1, size_type count1, std::string_view s, size_type count2) const;
 
         template<class U>
         BoundedStringBase& replace(size_type pos, size_type count, const BoundedStringBase<U>& other);
@@ -185,10 +184,10 @@ namespace infra
         BoundedStringBase& replace(const_iterator first, const_iterator last, const char* cstr, size_type count2);
         BoundedStringBase& replace(size_type pos, size_type count, const char* cstr);
         BoundedStringBase& replace(const_iterator first, const_iterator last, const char* cstr);
-        BoundedStringBase& replace(size_type pos, size_type count, const std::string& s, size_type count2);
-        BoundedStringBase& replace(const_iterator first, const_iterator last, const std::string& s, size_type count2);
-        BoundedStringBase& replace(size_type pos, size_type count, const std::string& s);
-        BoundedStringBase& replace(const_iterator first, const_iterator last, const std::string& s);
+        BoundedStringBase& replace(size_type pos, size_type count, std::string_view s, size_type count2);
+        BoundedStringBase& replace(const_iterator first, const_iterator last, std::string_view s, size_type count2);
+        BoundedStringBase& replace(size_type pos, size_type count, std::string_view s);
+        BoundedStringBase& replace(const_iterator first, const_iterator last, std::string_view s);
         BoundedStringBase& replace(size_type pos, size_type count, size_type count2, char ch);
         BoundedStringBase& replace(const_iterator first, const_iterator last, size_type count2, char ch);
 
@@ -259,7 +258,7 @@ namespace infra
         static void AssignToRange(MemoryRange<NonConstT> range, size_type& length, const BoundedStringBase<U>& other, size_type pos, size_type count);
         static void AssignToRange(MemoryRange<NonConstT> range, size_type& length, const char* s, size_type count);
         static void AssignToRange(MemoryRange<NonConstT> range, size_type& length, const char* s);
-        static void AssignToRange(MemoryRange<NonConstT> range, size_type& length, const std::string& s);
+        static void AssignToRange(MemoryRange<NonConstT> range, size_type& length, std::string_view s);
         template<class InputIterator>
         static void AssignToRange(MemoryRange<NonConstT> range, size_type& length, InputIterator first, InputIterator last);
 
@@ -295,51 +294,51 @@ namespace infra
     template<class T>
     constexpr bool operator==(const BoundedStringBase<T>& lhs, const char* rhs);
     template<class T>
-    constexpr bool operator==(const std::string& lhs, const BoundedStringBase<T>& rhs);
+    constexpr bool operator==(std::string_view lhs, const BoundedStringBase<T>& rhs);
     template<class T>
-    constexpr bool operator==(const BoundedStringBase<T>& lhs, const std::string& rhs);
+    constexpr bool operator==(const BoundedStringBase<T>& lhs, std::string_view rhs);
     template<class T>
     constexpr bool operator!=(const char* lhs, const BoundedStringBase<T>& rhs);
     template<class T>
     constexpr bool operator!=(const BoundedStringBase<T>& lhs, const char* rhs);
     template<class T>
-    constexpr bool operator!=(const std::string& lhs, const BoundedStringBase<T>& rhs);
+    constexpr bool operator!=(std::string_view lhs, const BoundedStringBase<T>& rhs);
     template<class T>
-    constexpr bool operator!=(const BoundedStringBase<T>& lhs, const std::string& rhs);
+    constexpr bool operator!=(const BoundedStringBase<T>& lhs, std::string_view rhs);
     template<class T>
     constexpr bool operator<(const char* lhs, const BoundedStringBase<T>& rhs);
     template<class T>
     constexpr bool operator<(const BoundedStringBase<T>& lhs, const char* rhs);
     template<class T>
-    constexpr bool operator<(const std::string& lhs, const BoundedStringBase<T>& rhs);
+    constexpr bool operator<(std::string_view lhs, const BoundedStringBase<T>& rhs);
     template<class T>
-    constexpr bool operator<(const BoundedStringBase<T>& lhs, const std::string& rhs);
+    constexpr bool operator<(const BoundedStringBase<T>& lhs, std::string_view rhs);
     template<class T>
     constexpr bool operator<=(const char* lhs, const BoundedStringBase<T>& rhs);
     template<class T>
     constexpr bool operator<=(const BoundedStringBase<T>& lhs, const char* rhs);
     template<class T>
-    constexpr bool operator<=(const std::string& lhs, const BoundedStringBase<T>& rhs);
+    constexpr bool operator<=(std::string_view lhs, const BoundedStringBase<T>& rhs);
     template<class T>
-    constexpr bool operator<=(const BoundedStringBase<T>& lhs, const std::string& rhs);
+    constexpr bool operator<=(const BoundedStringBase<T>& lhs, std::string_view rhs);
     template<class T>
     constexpr bool operator>(const char* lhs, const BoundedStringBase<T>& rhs);
     template<class T>
     constexpr bool operator>(const BoundedStringBase<T>& lhs, const char* rhs);
     template<class T>
-    constexpr bool operator>(const std::string& lhs, const BoundedStringBase<T>& rhs);
+    constexpr bool operator>(std::string_view lhs, const BoundedStringBase<T>& rhs);
     template<class T>
-    constexpr bool operator>(const BoundedStringBase<T>& lhs, const std::string& rhs);
+    constexpr bool operator>(const BoundedStringBase<T>& lhs, std::string_view rhs);
     template<class T>
     constexpr bool operator>=(const char* lhs, const BoundedStringBase<T>& rhs);
     template<class T>
     constexpr bool operator>=(const BoundedStringBase<T>& lhs, const char* rhs);
     template<class T>
-    constexpr bool operator>=(const std::string& lhs, const BoundedStringBase<T>& rhs);
+    constexpr bool operator>=(std::string_view lhs, const BoundedStringBase<T>& rhs);
     template<class T>
-    constexpr bool operator>=(const BoundedStringBase<T>& lhs, const std::string& rhs);
+    constexpr bool operator>=(const BoundedStringBase<T>& lhs, std::string_view rhs);
     template<class T>
-    std::string operator+(const std::string& lhs, const BoundedStringBase<T>& rhs);
+    std::string operator+(std::string_view lhs, const BoundedStringBase<T>& rhs);
 
     template<class T>
     void swap(BoundedStringBase<T>& lhs, BoundedStringBase<T>& rhs) noexcept;
@@ -394,7 +393,10 @@ namespace infra
 
     namespace literals
     {
-        infra::BoundedConstString operator""_s(const char* str, std::size_t count);
+        constexpr infra::BoundedConstString operator""_s(const char* str, std::size_t count)
+        {
+            return infra::BoundedConstString(str, count);
+        }
     }
 
     ////    Implementation    ////
@@ -439,7 +441,7 @@ namespace infra
     }
 
     template<class T>
-    BoundedStringBase<T>::BoundedStringBase(MemoryRange<NonConstT> range, const std::string& s)
+    BoundedStringBase<T>::BoundedStringBase(MemoryRange<NonConstT> range, std::string_view s)
         : range(range)
     {
         AssignToRange(range, length, s);
@@ -460,12 +462,6 @@ namespace infra
     template<class T>
     constexpr BoundedStringBase<T>::BoundedStringBase(std::string_view s)
         : range(s.data(), s.data() + s.size())
-        , length(s.size())
-    {}
-
-    template<class T>
-    BoundedStringBase<T>::BoundedStringBase(const std::string& s)
-        : range(const_cast<char*>(s.data()), const_cast<char*>(s.data()) + s.size())
         , length(s.size())
     {}
 
@@ -497,14 +493,6 @@ namespace infra
     {}
 
     template<class T>
-    BoundedStringBase<T>& BoundedStringBase<T>::operator=(const BoundedStringBase<T>& other)
-    {
-        range = other.range;
-        length = other.length;
-        return *this;
-    }
-
-    template<class T>
     BoundedStringBase<T>& BoundedStringBase<T>::operator=(const char* s)
     {
         return assign(s);
@@ -517,7 +505,7 @@ namespace infra
     }
 
     template<class T>
-    BoundedStringBase<T>& BoundedStringBase<T>::operator=(const std::string& s)
+    BoundedStringBase<T>& BoundedStringBase<T>::operator=(std::string_view s)
     {
         return assign(s);
     }
@@ -542,7 +530,7 @@ namespace infra
     }
 
     template<class T>
-    void BoundedStringBase<T>::AssignFromStorage(const std::string& s)
+    void BoundedStringBase<T>::AssignFromStorage(std::string_view s)
     {
         *this = s;
     }
@@ -590,7 +578,7 @@ namespace infra
     }
 
     template<class T>
-    BoundedStringBase<T>& BoundedStringBase<T>::assign(const std::string& s)
+    BoundedStringBase<T>& BoundedStringBase<T>::assign(std::string_view s)
     {
         AssignToRange(range, length, s);
 
@@ -778,13 +766,13 @@ namespace infra
     }
 
     template<class T>
-    BoundedStringBase<T>& BoundedStringBase<T>::insert(size_type index, const std::string& other)
+    BoundedStringBase<T>& BoundedStringBase<T>::insert(size_type index, std::string_view other)
     {
         return insert(index, other.data(), other.size());
     }
 
     template<class T>
-    BoundedStringBase<T>& BoundedStringBase<T>::insert(size_type index, const std::string& other, size_type index_str, size_type count)
+    BoundedStringBase<T>& BoundedStringBase<T>::insert(size_type index, std::string_view other, size_type index_str, size_type count)
     {
         return insert(index, other.data() + index_str, count);
     }
@@ -898,7 +886,7 @@ namespace infra
     }
 
     template<class T>
-    BoundedStringBase<T>& BoundedStringBase<T>::append(const std::string& s)
+    BoundedStringBase<T>& BoundedStringBase<T>::append(std::string_view s)
     {
         return append(s.data(), s.size());
     }
@@ -923,7 +911,7 @@ namespace infra
     }
 
     template<class T>
-    BoundedStringBase<T>& BoundedStringBase<T>::operator+=(const std::string& s)
+    BoundedStringBase<T>& BoundedStringBase<T>::operator+=(std::string_view s)
     {
         return append(s);
     }
@@ -965,19 +953,19 @@ namespace infra
     }
 
     template<class T>
-    constexpr int BoundedStringBase<T>::compare(const std::string& s) const
+    constexpr int BoundedStringBase<T>::compare(std::string_view s) const
     {
         return CompareImpl(begin(), end(), s.data(), s.data() + s.size());
     }
 
     template<class T>
-    constexpr int BoundedStringBase<T>::compare(size_type pos1, size_type count1, const std::string& s) const
+    constexpr int BoundedStringBase<T>::compare(size_type pos1, size_type count1, std::string_view s) const
     {
         return CompareImpl(begin() + pos1, begin() + pos1 + count1, s.data(), s.data() + s.size());
     }
 
     template<class T>
-    constexpr int BoundedStringBase<T>::compare(size_type pos1, size_type count1, const std::string& s, size_type count2) const
+    constexpr int BoundedStringBase<T>::compare(size_type pos1, size_type count1, std::string_view s, size_type count2) const
     {
         return CompareImpl(begin() + pos1, begin() + pos1 + count1, s.data(), s.data() + count2);
     }
@@ -1035,28 +1023,28 @@ namespace infra
     }
 
     template<class T>
-    BoundedStringBase<T>& BoundedStringBase<T>::replace(size_type pos, size_type count, const std::string& s, size_type count2)
+    BoundedStringBase<T>& BoundedStringBase<T>::replace(size_type pos, size_type count, std::string_view s, size_type count2)
     {
         ReplaceImpl(begin() + pos, count, s.data(), count2);
         return *this;
     }
 
     template<class T>
-    BoundedStringBase<T>& BoundedStringBase<T>::replace(const_iterator first, const_iterator last, const std::string& s, size_type count2)
+    BoundedStringBase<T>& BoundedStringBase<T>::replace(const_iterator first, const_iterator last, std::string_view s, size_type count2)
     {
         ReplaceImpl(begin() + std::distance(cbegin(), first), std::distance(first, last), s.data(), count2);
         return *this;
     }
 
     template<class T>
-    BoundedStringBase<T>& BoundedStringBase<T>::replace(size_type pos, size_type count, const std::string& s)
+    BoundedStringBase<T>& BoundedStringBase<T>::replace(size_type pos, size_type count, std::string_view s)
     {
         ReplaceImpl(begin() + pos, count, s.data(), s.size());
         return *this;
     }
 
     template<class T>
-    BoundedStringBase<T>& BoundedStringBase<T>::replace(const_iterator first, const_iterator last, const std::string& s)
+    BoundedStringBase<T>& BoundedStringBase<T>::replace(const_iterator first, const_iterator last, std::string_view s)
     {
         ReplaceImpl(begin() + std::distance(cbegin(), first), std::distance(first, last), s.data(), s.size());
         return *this;
@@ -1417,7 +1405,7 @@ namespace infra
     }
 
     template<class T>
-    void BoundedStringBase<T>::AssignToRange(infra::MemoryRange<NonConstT> range, size_type& length, const std::string& s)
+    void BoundedStringBase<T>::AssignToRange(infra::MemoryRange<NonConstT> range, size_type& length, std::string_view s)
     {
         AssignToRange(range, length, s.data(), s.size());
     }
@@ -1586,13 +1574,13 @@ namespace infra
     }
 
     template<class T>
-    constexpr bool operator==(const std::string& lhs, const BoundedStringBase<T>& rhs)
+    constexpr bool operator==(std::string_view lhs, const BoundedStringBase<T>& rhs)
     {
         return lhs.size() == rhs.size() && std::equal(rhs.begin(), rhs.end(), lhs.begin());
     }
 
     template<class T>
-    constexpr bool operator==(const BoundedStringBase<T>& lhs, const std::string& rhs)
+    constexpr bool operator==(const BoundedStringBase<T>& lhs, std::string_view rhs)
     {
         return lhs.size() == rhs.size() && std::equal(lhs.begin(), lhs.end(), rhs.begin());
     }
@@ -1610,13 +1598,13 @@ namespace infra
     }
 
     template<class T>
-    constexpr bool operator!=(const std::string& lhs, const BoundedStringBase<T>& rhs)
+    constexpr bool operator!=(std::string_view lhs, const BoundedStringBase<T>& rhs)
     {
         return !(lhs == rhs);
     }
 
     template<class T>
-    constexpr bool operator!=(const BoundedStringBase<T>& lhs, const std::string& rhs)
+    constexpr bool operator!=(const BoundedStringBase<T>& lhs, std::string_view rhs)
     {
         return !(lhs == rhs);
     }
@@ -1634,13 +1622,13 @@ namespace infra
     }
 
     template<class T>
-    constexpr bool operator<(const std::string& lhs, const BoundedStringBase<T>& rhs)
+    constexpr bool operator<(std::string_view lhs, const BoundedStringBase<T>& rhs)
     {
         return std::lexicographical_compare(lhs.data(), lhs.data() + lhs.size(), rhs.begin(), rhs.end());
     }
 
     template<class T>
-    constexpr bool operator<(const BoundedStringBase<T>& lhs, const std::string& rhs)
+    constexpr bool operator<(const BoundedStringBase<T>& lhs, std::string_view rhs)
     {
         return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.data(), rhs.data() + rhs.size());
     }
@@ -1658,13 +1646,13 @@ namespace infra
     }
 
     template<class T>
-    constexpr bool operator<=(const std::string& lhs, const BoundedStringBase<T>& rhs)
+    constexpr bool operator<=(std::string_view lhs, const BoundedStringBase<T>& rhs)
     {
         return !(rhs < lhs);
     }
 
     template<class T>
-    constexpr bool operator<=(const BoundedStringBase<T>& lhs, const std::string& rhs)
+    constexpr bool operator<=(const BoundedStringBase<T>& lhs, std::string_view rhs)
     {
         return !(rhs < lhs);
     }
@@ -1682,13 +1670,13 @@ namespace infra
     }
 
     template<class T>
-    constexpr bool operator>(const std::string& lhs, const BoundedStringBase<T>& rhs)
+    constexpr bool operator>(std::string_view lhs, const BoundedStringBase<T>& rhs)
     {
         return rhs < lhs;
     }
 
     template<class T>
-    constexpr bool operator>(const BoundedStringBase<T>& lhs, const std::string& rhs)
+    constexpr bool operator>(const BoundedStringBase<T>& lhs, std::string_view rhs)
     {
         return rhs < lhs;
     }
@@ -1706,19 +1694,19 @@ namespace infra
     }
 
     template<class T>
-    constexpr bool operator>=(const std::string& lhs, const BoundedStringBase<T>& rhs)
+    constexpr bool operator>=(std::string_view lhs, const BoundedStringBase<T>& rhs)
     {
         return !(lhs < rhs);
     }
 
     template<class T>
-    constexpr bool operator>=(const BoundedStringBase<T>& lhs, const std::string& rhs)
+    constexpr bool operator>=(const BoundedStringBase<T>& lhs, std::string_view rhs)
     {
         return !(lhs < rhs);
     }
 
     template<class T>
-    std::string operator+(const std::string& lhs, const BoundedStringBase<T>& rhs)
+    std::string operator+(std::string_view lhs, const BoundedStringBase<T>& rhs)
     {
         std::string result(lhs);
         result.append(rhs.begin(), rhs.end());
