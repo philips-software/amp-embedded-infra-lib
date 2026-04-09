@@ -214,6 +214,12 @@ TEST_F(EchoOnSesameTest, MethodNotFound_is_reported)
     ReceiveMessage(infra::ConstructBin()({ 1, 18, 2, 8, 5 }).Range());
 }
 
+TEST_F(EchoOnSesameTest, Reset_is_forwarded)
+{
+    EXPECT_CALL(sesame, Reset());
+    echo.Reset();
+}
+
 TEST_F(EchoOnSesameTest, Reset_releases_reader)
 {
     EXPECT_CALL(service, Method(5));
@@ -222,6 +228,7 @@ TEST_F(EchoOnSesameTest, Reset_releases_reader)
 
     ASSERT_FALSE(reader.Allocatable());
 
+    EXPECT_CALL(sesame, Reset());
     echo.Reset();
 
     EXPECT_TRUE(reader.Allocatable());
@@ -234,6 +241,7 @@ TEST_F(EchoOnSesameTest, Reset_forgets_send_requests)
             serviceProxy.MethodNoParameter();
         });
 
+    EXPECT_CALL(sesame, Reset());
     echo.Reset();
     sesame.GetObserver().Initialized();
 
@@ -265,6 +273,7 @@ TEST_F(EchoOnSesameTest, after_Reset_RequestSendMessage_is_delayed_until_Initial
     sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writer));
 
     // operate
+    EXPECT_CALL(sesame, Reset());
     echo.Reset();
 
     // check

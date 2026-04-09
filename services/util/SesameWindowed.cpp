@@ -88,8 +88,8 @@ namespace services
         sendInitResponse = false;
         sending = false;
         requestedSendMessageSize.reset();
-        state.Emplace<StateSendingInit>(*this);
-        state->Request();
+        // Now wait for an init message to be received; use state Operational for this
+        state.Emplace<StateOperational>(*this);
     }
 
     void SesameWindowed::Stop()

@@ -512,10 +512,11 @@ TEST_F(SesameWindowedTest, Reset_forwards_to_cobs_and_requests_initialize)
 {
     ReceiveInitResponse(24);
 
-    ExpectRequestSendMessageForInit(24);
-
     EXPECT_CALL(base, Reset());
     communication.Reset();
+
+    ExpectRequestSendMessageForInitResponse(24);
+    ReceiveInitRequest(8);
 
     ReceiveInitResponse(24);
 
