@@ -13,6 +13,7 @@ target_link_libraries(services.tracer_test PUBLIC
 target_sources(services.tracer_test PRIVATE
     TestLogAndAbortTracer.cpp
     TestStreamWriterOnSerialCommunication.cpp
+    TestStreamWriterOnFlushableSerialCommunication.cpp
     TestStreamWriterOnSynchronousSerialCommunication.cpp
     TestTracer.cpp
     TestTracerAdapterPrintf.cpp
