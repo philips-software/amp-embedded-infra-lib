@@ -10,10 +10,12 @@
 #include "services/util/test_doubles/SesameMock.hpp"
 #include "gmock/gmock.h"
 #include <deque>
+#include "infra/timer/test_helper/ClockFixture.hpp"
 
 class SesameWindowedTest
     : public testing::Test
     , public infra::EventDispatcherFixture
+    , public infra::ClockFixture
 {
 public:
     SesameWindowedTest()

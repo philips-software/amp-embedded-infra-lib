@@ -1,5 +1,6 @@
 #include "services/util/SesameWindowed.hpp"
 #include "infra/stream/BoundedDequeOutputStream.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -88,6 +89,7 @@ namespace services
         sendInitResponse = false;
         sending = false;
         requestedSendMessageSize.reset();
+        requestedTimer.Cancel();
         // Now wait for an init message to be received; use state Operational for this
         state.Emplace<StateOperational>(*this);
     }
@@ -243,6 +245,10 @@ namespace services
     void SesameWindowed::State::RequestSendMessage(std::size_t size)
     {
         communication.requestedSendMessageSize = size;
+        communication.requestedTimer.Start(std::chrono::seconds(1), []()
+            {
+                services::GlobalTracer().Trace() << "Sesame message still hasn't been sent";
+            });
     }
 
     void SesameWindowed::State::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -312,6 +318,10 @@ namespace services
     void SesameWindowed::StateOperational::RequestSendMessage(std::size_t size)
     {
         communication.requestedSendMessageSize = size;
+        communication.requestedTimer.Start(std::chrono::seconds(1), []()
+            {
+                services::GlobalTracer().Trace() << "Sesame message still hasn't been sent";
+            });
         communication.SetNextState();
     }
 
@@ -334,6 +344,7 @@ namespace services
         stream << Operation::message;
 
         communication.requestedSendMessageSize.reset();
+        communication.requestedTimer.Cancel();
         communication.GetObserver().SendMessageStreamAvailable(std::move(writer));
     }
 

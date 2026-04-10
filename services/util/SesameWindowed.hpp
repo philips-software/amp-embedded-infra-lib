@@ -3,6 +3,7 @@
 
 #include "infra/stream/BoundedDequeInputStream.hpp"
 #include "infra/stream/LimitedInputStream.hpp"
+#include "infra/timer/Timer.hpp"
 #include "infra/util/Aligned.hpp"
 #include "infra/util/BoundedDeque.hpp"
 #include "infra/util/Endian.hpp"
@@ -180,6 +181,7 @@ namespace services
         bool sending = false;
         std::optional<std::size_t> requestedSendMessageSize;
         infra::PolymorphicVariant<State, StateSendingInit, StateSendingInitResponse, StateOperational, StateSendingMessage, StateSendingReleaseWindow> state;
+        infra::TimerRepeating requestedTimer;
     };
 }
 
