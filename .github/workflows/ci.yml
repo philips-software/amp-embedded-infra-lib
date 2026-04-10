@@ -27,11 +27,11 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: hendrikmuhs/ccache-action@1bbbcda0748b3e340dee71a314fa68ffcbd6df79 # v1.2.21
+      - uses: hendrikmuhs/ccache-action@33522472633dbd32578e909b315f5ee43ba878ce # v1.2.22
         with:
           key: ${{ github.job }}-ubuntu-latest
       - uses: seanmiddleditch/gha-setup-ninja@3b1f8f94a2f8254bd26914c4ab9474d4f0015f67 # v6
-      - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
+      - uses: lukka/run-cmake@5d55ea7949e25f69f0ecb516d8d572297e03a956 # v10.9
         with:
           configurePreset: "host"
           buildPreset: "host-Debug-WithPackage"
@@ -51,15 +51,15 @@ jobs:
   host_build_test_container:
     name: Host Build & Test (amp-devcontainer-cpp)
     runs-on: ubuntu-latest
-    container: ghcr.io/philips-software/amp-devcontainer-cpp:6.10.0@sha256:59cd09cf8adae8cee2bca68ceebd8f5328471135353af2c6594402dcdcbe63f1 # 6.10.0
+    container: ghcr.io/philips-software/amp-devcontainer-cpp:6.10.1@sha256:d89d53408da02726c70abc9994c811420494df10f672aad86077c4a32fe22ae8 # 6.10.1
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: hendrikmuhs/ccache-action@1bbbcda0748b3e340dee71a314fa68ffcbd6df79 # v1.2.21
+      - uses: hendrikmuhs/ccache-action@33522472633dbd32578e909b315f5ee43ba878ce # v1.2.22
         with:
           key: ${{ github.job }}-ubuntu-latest
-      - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
+      - uses: lukka/run-cmake@5d55ea7949e25f69f0ecb516d8d572297e03a956 # v10.9
         with:
           configurePreset: "host"
           buildPreset: "host-RelWithDebInfo"
@@ -74,7 +74,7 @@ jobs:
   host_build_test_clang_msvc:
     name: Host Build & Test (clang-msvc)
     runs-on: ubuntu-latest
-    container: ghcr.io/philips-software/amp-devcontainer-cpp:6.10.0@sha256:59cd09cf8adae8cee2bca68ceebd8f5328471135353af2c6594402dcdcbe63f1 # 6.10.0
+    container: ghcr.io/philips-software/amp-devcontainer-cpp:6.10.1@sha256:d89d53408da02726c70abc9994c811420494df10f672aad86077c4a32fe22ae8 # 6.10.1
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -86,10 +86,10 @@ jobs:
           key: cache-winsdk-10.0.26100-14.43.17.13
       - if: ${{ steps.cache-winsdk.outputs.cache-hit != 'true' }}
         run: xwin --accept-license --sdk-version "10.0.26100" --crt-version "14.43.17.13" splat --preserve-ms-arch-notation --include-debug-libs && mv .xwin-cache/splat/ /winsdk
-      - uses: hendrikmuhs/ccache-action@1bbbcda0748b3e340dee71a314fa68ffcbd6df79 # v1.2.21
+      - uses: hendrikmuhs/ccache-action@33522472633dbd32578e909b315f5ee43ba878ce # v1.2.22
         with:
           key: ${{ github.job }}-clang-msvc
-      - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
+      - uses: lukka/run-cmake@5d55ea7949e25f69f0ecb516d8d572297e03a956 # v10.9
         with:
           configurePreset: "host-ClangMsvc"
           buildPreset: "host-ClangMsvc-Debug"
@@ -107,10 +107,10 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: hendrikmuhs/ccache-action@1bbbcda0748b3e340dee71a314fa68ffcbd6df79 # v1.2.21
+      - uses: hendrikmuhs/ccache-action@33522472633dbd32578e909b315f5ee43ba878ce # v1.2.22
         with:
           key: ${{ github.job }}-${{ matrix.os }}
-      - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
+      - uses: lukka/run-cmake@5d55ea7949e25f69f0ecb516d8d572297e03a956 # v10.9
         with:
           configurePreset: "host-single-Debug"
           buildPreset: "host-single-Debug"
@@ -129,11 +129,11 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: hendrikmuhs/ccache-action@1bbbcda0748b3e340dee71a314fa68ffcbd6df79 # v1.2.21
+      - uses: hendrikmuhs/ccache-action@33522472633dbd32578e909b315f5ee43ba878ce # v1.2.22
         with:
           key: ${{ github.job }}-ubuntu-latest
       - uses: seanmiddleditch/gha-setup-ninja@3b1f8f94a2f8254bd26914c4ab9474d4f0015f67 # v6
-      - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
+      - uses: lukka/run-cmake@5d55ea7949e25f69f0ecb516d8d572297e03a956 # v10.9
         with:
           configurePreset: "host-no-mbedtls"
           buildPreset: "host-no-mbedtls-Debug"
@@ -155,7 +155,7 @@ jobs:
         with:
           release: ${{ matrix.gcc }}
       - run: sudo apt-get update && sudo apt-get install ninja-build
-      - uses: hendrikmuhs/ccache-action@1bbbcda0748b3e340dee71a314fa68ffcbd6df79 # v1.2.21
+      - uses: hendrikmuhs/ccache-action@33522472633dbd32578e909b315f5ee43ba878ce # v1.2.22
         with:
           key: ${{ github.job }}-${{ matrix.gcc }}-${{ matrix.configuration }}
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -163,7 +163,7 @@ jobs:
           name: emil
       - run: tar -zxvf emil-*.tar.gz
       - run: mkdir install && mv emil-*/* install/
-      - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
+      - uses: lukka/run-cmake@5d55ea7949e25f69f0ecb516d8d572297e03a956 # v10.9
         with:
           configurePreset: "embedded"
           buildPreset: "embedded-${{ matrix.configuration }}"
@@ -180,10 +180,10 @@ jobs:
         with:
           release: "10.3-2021.10"
       - run: sudo apt-get update && sudo apt-get install ninja-build
-      - uses: hendrikmuhs/ccache-action@1bbbcda0748b3e340dee71a314fa68ffcbd6df79 # v1.2.21
+      - uses: hendrikmuhs/ccache-action@33522472633dbd32578e909b315f5ee43ba878ce # v1.2.22
         with:
           key: ${{ github.job }}
-      - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
+      - uses: lukka/run-cmake@5d55ea7949e25f69f0ecb516d8d572297e03a956 # v10.9
         with:
           configurePreset: "embedded"
           buildPreset: "embedded-RelWithDebInfo"
@@ -204,7 +204,7 @@ jobs:
         with:
           release: "10.3-2021.10"
       - run: sudo apt-get update && sudo apt-get install ninja-build
-      - uses: hendrikmuhs/ccache-action@1bbbcda0748b3e340dee71a314fa68ffcbd6df79 # v1.2.21
+      - uses: hendrikmuhs/ccache-action@33522472633dbd32578e909b315f5ee43ba878ce # v1.2.22
         with:
           key: ${{ github.job }}
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -212,7 +212,7 @@ jobs:
           name: emil
       - run: tar -zxvf emil-*.tar.gz
       - run: mkdir install && mv emil-*/* install/
-      - uses: lukka/run-cmake@af1be47fd7c933593f687731bc6fdbee024d3ff4 # v10.8
+      - uses: lukka/run-cmake@5d55ea7949e25f69f0ecb516d8d572297e03a956 # v10.9
         with:
           configurePreset: "embedded-${{ matrix.rtos }}"
           buildPreset: "embedded-${{ matrix.rtos }}-RelWithDebInfo"

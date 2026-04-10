@@ -1,6 +1,7 @@
 #include "hal/synchronous_interfaces/test_doubles/SynchronousRandomDataGeneratorMock.hpp"
 #include "infra/stream/StdVectorInputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
+#include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/ReallyAssert.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "mbedtls/pk.h"
@@ -27,6 +28,7 @@ namespace
 
 class EchoPolicyDiffieHellmanTestBase
     : public testing::Test
+    , public infra::ClockFixture
 {
 public:
     EchoPolicyDiffieHellmanTestBase()
