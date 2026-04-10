@@ -14,7 +14,6 @@
 
 class SesameWindowedTest
     : public testing::Test
-    , public infra::EventDispatcherFixture
     , public infra::ClockFixture
 {
 public:
