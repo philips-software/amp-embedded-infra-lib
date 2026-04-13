@@ -49,8 +49,8 @@ public:
 
     void Initialized()
     {
-        lowerLeft.GetObserver().Initialized();
-        lowerRight.GetObserver().Initialized();
+        lowerLeft.GetObserver().Initialized(initInfoReader);
+        lowerRight.GetObserver().Initialized(initInfoReader);
     }
 
     void ExpectGenerationOfKeyMaterial()
@@ -87,6 +87,9 @@ public:
         y.GetObserver().ReceivedMessage(reader.Emplace(sentData));
         ASSERT_TRUE(reader.Allocatable());
     }
+
+    std::vector<uint8_t> initInfo;
+    infra::StdVectorInputStreamReader initInfoReader{ initInfo };
 
     services::MethodSerializerFactory::ForServices<services::ServiceStub, sesame_security::DiffieHellmanKeyEstablishment>::AndProxies<services::ServiceStubProxy, sesame_security::DiffieHellmanKeyEstablishmentProxy> serializerFactoryLeft;
     services::MethodSerializerFactory::ForServices<services::ServiceStub, sesame_security::DiffieHellmanKeyEstablishment>::AndProxies<services::ServiceStubProxy, sesame_security::DiffieHellmanKeyEstablishmentProxy> serializerFactoryRight;

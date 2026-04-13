@@ -53,13 +53,13 @@ public:
 
     void ReceiveInitRequest(uint16_t availableWindow)
     {
-        EXPECT_CALL(observer, Initialized());
+        EXPECT_CALL(observer, Initialized(testing::_));
         ReceivePacket(infra::ConstructBin().Value<uint8_t>(1).Value<infra::LittleEndian<uint16_t>>(availableWindow).Vector());
     }
 
     void ReceiveInitResponse(uint16_t availableWindow)
     {
-        EXPECT_CALL(observer, Initialized());
+        EXPECT_CALL(observer, Initialized(testing::_));
         ReceivePacket(infra::ConstructBin().Value<uint8_t>(2).Value<infra::LittleEndian<uint16_t>>(availableWindow).Vector());
     }
 

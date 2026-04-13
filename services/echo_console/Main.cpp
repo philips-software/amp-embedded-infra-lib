@@ -35,7 +35,7 @@ public:
 
 private:
     // Implementation of SesameObserver
-    void Initialized() override;
+    void Initialized(infra::StreamReaderWithRewinding& initInfo) override;
     void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
     void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
 
@@ -84,11 +84,11 @@ void ConsoleClientUart::Send(const std::string& message)
     CheckDataToBeSent();
 }
 
-void ConsoleClientUart::Initialized()
+void ConsoleClientUart::Initialized(infra::StreamReaderWithRewinding& initInfo)
 {
-    services::EchoInitialization::NotifyObservers([](auto& observer)
+    services::EchoInitialization::NotifyObservers([&initInfo](auto& observer)
         {
-            observer.Initialized();
+            observer.Initialized(initInfo);
         });
 }
 

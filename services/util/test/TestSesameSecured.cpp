@@ -11,7 +11,7 @@ public:
     SesameSecuredTest()
     {
         EXPECT_CALL(upper, Initialized(testing::_));
-        lower.GetObserver().Initialized();
+        lower.GetObserver().Initialized(initInfoReader);
     }
 
     void ReceivedMessage(const std::vector<uint8_t>& message)
@@ -76,6 +76,9 @@ public:
     infra::SharedOptional<infra::StdVectorInputStreamReader> reader;
     std::vector<uint8_t> sentData;
     infra::SharedOptional<infra::StdVectorOutputStreamWriter> writer;
+
+    std::vector<uint8_t> initInfo;
+    infra::StdVectorInputStreamReader initInfoReader{ initInfo };
 };
 
 TEST_F(SesameSecuredTest, send_receive_message)
@@ -148,7 +151,7 @@ TEST_F(SesameSecuredTest, initialization_results_in_default_keys)
     secured.SetSendKey(key2, iv2);
 
     EXPECT_CALL(upper, Initialized(testing::_));
-    lower.GetObserver().Initialized();
+    lower.GetObserver().Initialized(initInfoReader);
 
     Send("abcd");
     auto second = sentData;
@@ -180,8 +183,8 @@ TEST_F(SesameSecuredTest, truncated_message_followed_by_init_is_not_reported)
     EXPECT_CALL(upper, ReceivedMessage(testing::_)).Times(0);
     ReceivedMessage(sentData);
 
-    EXPECT_CALL(upper, Initialized());
-    lower.GetObserver().Initialized();
+    EXPECT_CALL(upper, Initialized(testing::_));
+    lower.GetObserver().Initialized(initInfoReader);
     sentData.clear();
 
     Send("efgh");
