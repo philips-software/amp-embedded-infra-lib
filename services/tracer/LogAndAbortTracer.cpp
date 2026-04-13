@@ -14,8 +14,8 @@ namespace
 namespace services
 {
     LogAndAbortTracer::LogAndAbortTracer(TracerProvider tracerProvider, services::Flushable* flushable)
-        : tracerProvider(std::move(tracerProvider))
-        , flushable(flushable)
+        : flushable(flushable)
+        , tracerProvider(std::move(tracerProvider))
     {
         if (instantiated.exchange(true))
             LOG_AND_ABORT("Only one instance allowed");
