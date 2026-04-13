@@ -4,13 +4,15 @@
 #include "infra/stream/StdVectorOutputStream.hpp"
 #include "protobuf/echo/ServiceForwarder.hpp"
 #include "protobuf/echo/test_doubles/EchoMock.hpp"
+#include "infra/timer/test_helper/ClockFixture.hpp"
 
 class ServiceForwarderAllTest
     : public testing::Test
+    , public infra::ClockFixture
 {
 public:
     testing::StrictMock<services::EchoMock> echoFrom;
-    testing::StrictMock<services::EchoMock> echoTo;
+    testing::StrictMock<services::EchoMock> echoTo; 
     services::ServiceForwarderAll forwarder{ echoFrom, echoTo };
     testing::StrictMock<services::EchoErrorPolicyMock> errorPolicy;
 };
@@ -72,6 +74,7 @@ TEST_F(ServiceForwarderAllTest, forward_message_with_limited_readbuffer)
 
 class ServiceForwarderTest
     : public testing::Test
+    , public infra::ClockFixture
 {
 public:
     testing::StrictMock<services::EchoMock> echoFrom;

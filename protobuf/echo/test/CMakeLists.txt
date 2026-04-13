@@ -16,6 +16,7 @@ target_link_libraries(protobuf.echo_test PUBLIC
     gmock_main
     infra.event_test_helper
     infra.util_test_helper
+    infra.timer_test_helper
     protobuf.echo
     protobuf.test_doubles
 )

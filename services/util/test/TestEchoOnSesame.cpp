@@ -2,6 +2,7 @@
 #include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/LimitedOutputStream.hpp"
+#include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/ConstructBin.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "protobuf/echo/test_doubles/EchoMock.hpp"
@@ -25,7 +26,7 @@ namespace services
 
 class EchoOnSesameTest
     : public testing::Test
-    , public infra::EventDispatcherWithWeakPtrFixture
+    , public infra::ClockFixture
 {
 public:
     void ReceiveMessage(infra::ConstByteRange data)

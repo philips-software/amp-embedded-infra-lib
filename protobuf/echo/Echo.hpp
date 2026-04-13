@@ -1,6 +1,7 @@
 #ifndef PROTOBUF_ECHO_HPP
 #define PROTOBUF_ECHO_HPP
 
+#include "infra/timer/Timer.hpp"
 #include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/Observer.hpp"
@@ -49,6 +50,7 @@ namespace services
         infra::AutoResetFunction<void()> onGranted;
         uint32_t currentRequestedSize = 0;
         infra::SharedPtr<MethodSerializer> methodSerializer;
+        infra::TimerRepeating requestTimer;
     };
 
     class EchoPolicy

@@ -1,6 +1,7 @@
 #include "generated/echo/TestMessages.pb.hpp"
 #include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
+#include "infra/timer/test_helper/ClockFixture.hpp"
 #include "protobuf/echo/EchoOnStreams.hpp"
 #include "protobuf/echo/test_doubles/EchoMock.hpp"
 #include "protobuf/echo/test_doubles/ServiceStub.hpp"
@@ -34,6 +35,7 @@ namespace services
 
 class EchoOnStreamsTest
     : public testing::Test
+    , public infra::ClockFixture
 {
 public:
     infra::SharedOptional<infra::ByteInputStreamReader> reader;

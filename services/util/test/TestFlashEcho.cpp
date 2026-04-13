@@ -5,6 +5,7 @@
 #include "protobuf/echo/test_doubles/EchoSingleLoopback.hpp"
 #include "services/util/FlashEcho.hpp"
 #include "gtest/gtest.h"
+#include "infra/timer/test_helper/ClockFixture.hpp"
 
 namespace
 {
@@ -33,6 +34,7 @@ namespace
 
 class FlashEchoTest
     : public testing::Test
+    , public infra::ClockFixture
 {
 public:
     services::MethodSerializerFactory::OnHeap serializerFactory;
@@ -130,6 +132,7 @@ TEST_F(FlashEchoTest, stop_while_erasing)
 
 class FlashProxyTest
     : public testing::Test
+    , public infra::ClockFixture
 {
 public:
     services::MethodSerializerFactory::OnHeap serializerFactory;

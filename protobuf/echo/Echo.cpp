@@ -1,4 +1,5 @@
 #include "protobuf/echo/Echo.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -35,6 +36,10 @@ namespace services
 
     void ServiceProxy::RequestSend(infra::Function<void()> onGranted, uint32_t requestedSize)
     {
+        requestTimer.Start(std::chrono::seconds(1), []()
+            {
+                services::GlobalTracer().Trace() << "ServiceProxy still waiting for granting";
+            });
         this->onGranted = onGranted;
         currentRequestedSize = requestedSize;
         echo.RequestSend(*this);
@@ -42,6 +47,7 @@ namespace services
 
     infra::SharedPtr<MethodSerializer> ServiceProxy::GrantSend()
     {
+        requestTimer.Cancel();
         onGranted();
         return std::move(methodSerializer);
     }
