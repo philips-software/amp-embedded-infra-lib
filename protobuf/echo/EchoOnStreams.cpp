@@ -84,6 +84,17 @@ namespace services
             delayedDataReceived = true;
     }
 
+    void EchoOnStreams::Reset()
+    {
+        sendRequesters.clear();
+        sendingProxy = nullptr;
+        partlySent = false;
+        skipNextStream = false;
+        methodSerializer = nullptr;
+
+        ReleaseReader();
+    }
+
     void EchoOnStreams::ReleaseReader()
     {
         // Ensure that the destruction of bufferedReader does not result in overflowing receiveBuffer
