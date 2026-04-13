@@ -23,6 +23,7 @@ namespace services
         LogAndAbortTracer& operator=(const LogAndAbortTracer&) = delete;
         LogAndAbortTracer(LogAndAbortTracer&&) = delete;
         LogAndAbortTracer& operator=(LogAndAbortTracer&&) = delete;
+
     private:
         LogAndAbortTracer(TracerProvider tracerProvider, services::Flushable* flushable);
 
