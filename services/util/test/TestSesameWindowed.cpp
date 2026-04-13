@@ -513,14 +513,36 @@ TEST_F(SesameWindowedTest, Reset_forwards_to_cobs_and_requests_initialize)
 {
     ReceiveInitResponse(24);
 
-    ExpectRequestSendMessageForInit(24);
-
     EXPECT_CALL(base, Reset());
     communication.Reset();
+
+    ExpectRequestSendMessageForInitResponse(24);
+    ReceiveInitRequest(8);
 
     ReceiveInitResponse(24);
 
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
     communication.RequestSendMessage(4);
+}
+
+TEST_F(SesameWindowedTest, hold_initialization_until_initializer_grants)
+{
+    observer.Detach();
+    services::SesameInitializerMock initializer;
+    EXPECT_CALL(base, MaxSendMessageSize()).WillOnce(testing::Return(24));
+    EXPECT_CALL(base, WorstCaseEncodedMessageSize(3)).WillOnce(testing::Return(5));
+    ExpectRequestSendMessageForInit(24);
+    infra::ReConstruct(communication, base, initializer);
+    observer.Attach(communication);
+
+    infra::Function<void()> onGranted;
+    EXPECT_CALL(initializer, InitializationRequested(testing::_)).WillOnce(testing::SaveArg<0>(&onGranted));
+    ReceiveInitRequest(24);
+
+    // A message received before sending InitResponse is discarded
+    ReceivePacket(infra::ConstructBin()(4)("abcd").Vector());
+
+    ExpectRequestSendMessageForInitResponse(24);
+    onGranted();
 }

@@ -1,11 +1,13 @@
 #include "infra/stream/StdVectorInputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
+#include "infra/timer/test_helper/ClockFixture.hpp"
 #include "services/util/SesameSecured.hpp"
 #include "services/util/test_doubles/SesameMock.hpp"
 #include "gmock/gmock.h"
 
 class SesameSecuredTest
     : public testing::Test
+    , public infra::ClockFixture
 {
 public:
     SesameSecuredTest()
@@ -172,6 +174,18 @@ TEST_F(SesameSecuredTest, damaged_message_does_not_propagate)
     Send("efgh");
     EXPECT_CALL(integrityObserver, IntegrityCheckFailed());
     ReceivedMessage(sentData);
+}
+
+TEST_F(SesameSecuredTest, damaged_message_is_reported_after_1_second)
+{
+    Send("abcd");
+
+    sentData[7] = 7;
+
+    ReceivedMessage(sentData);
+
+    EXPECT_CALL(integrityObserver, IntegrityCheckFailed());
+    ForwardTime(std::chrono::seconds(1));
 }
 
 TEST_F(SesameSecuredTest, truncated_message_followed_by_init_is_not_reported)

@@ -54,10 +54,11 @@ namespace services
         const char ExtraCharacterReader::character = '\x4';
     }
 
-    SesameWindowed::SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, SesameEncoded& delegate, infra::ConstByteRange initInfo)
+    SesameWindowed::SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, SesameEncoded& delegate, infra::ConstByteRange initInfo, SesameInitializer& sesameInitializer) =======
         : SesameEncodedObserver(delegate)
         , initInfo(initInfo)
         , receivedMessage(receivedMessage)
+        , sesameInitializer(sesameInitializer)
         , ownBufferSize(static_cast<uint16_t>(SesameEncodedObserver::Subject().MaxSendMessageSize()))
         , releaseWindowSize(static_cast<uint16_t>(SesameEncodedObserver::Subject().WorstCaseEncodedMessageSize(sizeof(PacketReleaseWindow))))
         , state(std::in_place_type_t<StateSendingInit>(), *this)
@@ -88,8 +89,8 @@ namespace services
         sendInitResponse = false;
         sending = false;
         requestedSendMessageSize.reset();
-        state.Emplace<StateSendingInit>(*this);
-        state->Request();
+        // Now wait for an init message to be received; use state Operational for this
+        state.Emplace<StateOperational>(*this);
     }
 
     void SesameWindowed::Stop()
@@ -118,11 +119,25 @@ namespace services
         switch (stream.Extract<Operation>())
         {
             case Operation::init:
+<<<<<<< HEAD
                 otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
                 ReceivedInit(otherAvailableWindow);
                 sendInitResponse = true;
                 ReceivedInitialize(reader);
+=======
+            {
+                auto window = stream.Extract<infra::LittleEndian<uint16_t>>();
+                ReceivedInit(window);
+                sesameInitializer.InitializationRequested([this, window]()
+                    {
+                        otherAvailableWindow = window;
+                        sendInitResponse = true;
+                        ReceivedInitialize();
+                        SetNextState();
+                    });
+>>>>>>> origin/main
                 break;
+            }
             case Operation::initResponse:
                 otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
                 ReceivedInitResponse(otherAvailableWindow);

@@ -5,6 +5,7 @@
 #include "infra/stream/BoundedVectorInputStream.hpp"
 #include "infra/stream/BoundedVectorOutputStream.hpp"
 #include "infra/stream/LimitedOutputStream.hpp"
+#include "infra/timer/Timer.hpp"
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "infra/util/WithStorage.hpp"
@@ -81,6 +82,7 @@ namespace services
         void ActivateSendKey();
         void SendMessageStreamReleased();
         void IncreaseIv(infra::ByteRange iv) const;
+        void ReportIntegrityCheckFailed();
 
     private:
         class ReceiveBufferReader
@@ -113,6 +115,7 @@ namespace services
         std::array<uint8_t, ivSize> receiveIv;
         infra::SharedOptional<ReceiveBufferReader> receiveBufferReader;
         bool integrityCheckFailed = false;
+        infra::TimerSingleShot integrityCheckFailedTimer;
     };
 
 #ifdef EMIL_USE_MBEDTLS

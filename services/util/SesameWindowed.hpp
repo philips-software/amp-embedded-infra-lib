@@ -21,7 +21,7 @@ namespace services
         template<std::size_t MaxMessageSize>
         using WithMaxMessageSize = infra::WithStorage<SesameWindowed, infra::BoundedDeque<uint8_t>::WithMaxSize<MaxMessageSize>>;
 
-        explicit SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, SesameEncoded& delegate, infra::ConstByteRange initInfo = {});
+        explicit SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, SesameEncoded& delegate, infra::ConstByteRange initInfo = {}, SesameInitializer& sesameInitializer = immediatelyGranted);
 
         // Implementation of Sesame
         void RequestSendMessage(std::size_t size) override;
@@ -167,6 +167,7 @@ namespace services
     private:
         infra::ConstByteRange initInfo;
         infra::BoundedDeque<uint8_t>& receivedMessage;
+        SesameInitializer& sesameInitializer;
         const uint16_t ownBufferSize;
         const uint16_t releaseWindowSize;
         bool initialized = false;

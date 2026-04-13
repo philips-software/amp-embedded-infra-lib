@@ -51,6 +51,15 @@ namespace services
         MOCK_METHOD(void, ReceivedMessage, (infra::StreamReaderWithRewinding& reader, std::size_t encodedSize), (override));
     };
 
+    class SesameInitializerMock
+        : public SesameInitializer
+    {
+    public:
+        using SesameInitializer::SesameInitializer;
+
+        MOCK_METHOD(void, InitializationRequested, (const infra::Function<void()>& onGranted), (override));
+    };
+
     class IntegrityObserverMock
         : public IntegrityObserver
     {

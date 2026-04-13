@@ -76,6 +76,7 @@ namespace services
     void SesameSecured::Initialized(infra::StreamReaderWithRewinding& initInfo)
     {
         integrityCheckFailed = false;
+        integrityCheckFailedTimer.Cancel();
         SetSendKey(initialSendKey, initialSendIv);
         SetReceiveKey(initialReceiveKey, initialReceiveIv);
         GetObserver().Initialized(initInfo);
@@ -110,11 +111,7 @@ namespace services
         {
             // If a message with a failed integrity check is followed by another message instead of a reset,
             // then the integrity failure was not due to a truncated message
-            IntegritySubject::NotifyObservers([](auto& observer)
-                {
-                    observer.IntegrityCheckFailed();
-                });
-
+            ReportIntegrityCheckFailed();
             return;
         }
 
@@ -151,6 +148,13 @@ namespace services
         if (numSame != computedMac.size())
         {
             integrityCheckFailed = true;
+            integrityCheckFailedTimer.Start(std::chrono::seconds(1), [this]()
+                {
+                    // If a message with a failed integrity check that message could have
+                    // been a truncated message. However, if that message was terminated by a 0,
+                    // but not followed by an init message, then this was not a truncated message
+                    ReportIntegrityCheckFailed();
+                });
             return;
         }
 
@@ -179,6 +183,14 @@ namespace services
         for (auto i = iv.begin() + iv.size(); i != iv.begin(); --i)
             if (++*std::prev(i) != 0)
                 break;
+    }
+
+    void SesameSecured::ReportIntegrityCheckFailed()
+    {
+        IntegritySubject::NotifyObservers([](auto& observer)
+            {
+                observer.IntegrityCheckFailed();
+            });
     }
 
     SesameSecured::ReceiveBufferReader::ReceiveBufferReader(const infra::BoundedVector<uint8_t>& buffer, const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader)
