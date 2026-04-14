@@ -84,9 +84,11 @@ TEST_F(EchoOnStreamsTest, request_send_while_already_awaiting_grant_aborts)
             serviceProxy.MethodNoParameter();
         });
 
-    EXPECT_DEATH(serviceProxy.RequestSend([this]()
+    EXPECT_DEATH(
         {
-            serviceProxy.MethodNoParameter();
-        });
-        , "");
+            serviceProxy.RequestSend([this]()
+                {
+                    serviceProxy.MethodNoParameter();
+                });
+        }, "");
 }
