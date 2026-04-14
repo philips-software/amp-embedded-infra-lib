@@ -28,14 +28,24 @@ namespace services
 
     EchoOnStreams::~EchoOnStreams()
     {
-        ReleaseReader();
+        Reset();
     }
 
     void EchoOnStreams::Reset()
     {
+        ReleaseReader();
+
         partlySent = false;
         skipNextStream = false;
-        CancelAllSendRequests();
+        delayDataReceived = false;
+        delayedDataReceived = false;
+
+        while (!sendRequesters.empty())
+            sendRequesters.front().CancelRequestSend();
+
+        if (sendingProxy != nullptr)
+            sendingProxy->CancelRequestSend();
+        sendingProxy = nullptr;
     }
 
     void EchoOnStreams::SetPolicy(EchoPolicy& policy)
@@ -100,15 +110,6 @@ namespace services
         limitedReaderAccess.SetAction(infra::emptyFunction);
         bufferedReader.reset();
         readerPtr = nullptr;
-    }
-
-    void EchoOnStreams::CancelAllSendRequests()
-    {
-        while (!sendRequesters.empty())
-            sendRequesters.front().CancelRequestSend();
-
-        if (sendingProxy != nullptr)
-            sendingProxy->CancelRequestSend();
     }
 
     void EchoOnStreams::Initialized()
