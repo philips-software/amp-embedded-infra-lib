@@ -38,6 +38,7 @@ namespace services
         Echo& Rpc();
         virtual void RequestSend(infra::Function<void()> onGranted);
         virtual void RequestSend(infra::Function<void()> onGranted, uint32_t requestedSize);
+        void CancelRequestSend();
         virtual infra::SharedPtr<MethodSerializer> GrantSend();
         uint32_t MaxMessageSize() const;
         uint32_t CurrentRequestedSize() const;

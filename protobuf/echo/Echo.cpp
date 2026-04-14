@@ -20,8 +20,16 @@ namespace services
 
     ServiceProxy::~ServiceProxy()
     {
+        CancelRequestSend();
+    }
+
+    void ServiceProxy::CancelRequestSend()
+    {
         if (onGranted != nullptr)
+        {
+            onGranted = nullptr;
             echo.CancelRequestSend(*this);
+        }
     }
 
     Echo& ServiceProxy::Rpc()
