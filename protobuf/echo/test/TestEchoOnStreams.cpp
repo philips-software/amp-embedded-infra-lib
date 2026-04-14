@@ -75,3 +75,18 @@ TEST_F(EchoOnStreamsTest, ReleaseReader_with_data_in_buffer)
 
     echo.ReleaseReader();
 }
+
+TEST_F(EchoOnStreamsTest, request_send_while_already_awaiting_grant_aborts)
+{
+    EXPECT_CALL(echo, RequestSendStream(testing::_));
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.MethodNoParameter();
+        });
+
+    EXPECT_DEATH(serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.MethodNoParameter();
+        });
+        , "");
+}
