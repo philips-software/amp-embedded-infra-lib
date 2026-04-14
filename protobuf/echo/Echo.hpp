@@ -33,7 +33,7 @@ namespace services
     {
     public:
         ServiceProxy(Echo& echo, uint32_t maxMessageSize);
-        ~ServiceProxy();
+        virtual ~ServiceProxy();
 
         Echo& Rpc();
         virtual void RequestSend(infra::Function<void()> onGranted);
