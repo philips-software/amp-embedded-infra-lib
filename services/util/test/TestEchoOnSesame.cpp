@@ -317,7 +317,7 @@ TEST_F(EchoOnSesameTest, Reset_cancels_in_flight_send_request_and_allows_retry)
     infra::ByteOutputStreamWriter::WithStorage<128> writer;
     sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writer));
     EXPECT_EQ((std::vector<uint8_t>{ 1, (1 << 3) | 2, 2, 8, 5 }),
-              (std::vector<uint8_t>(writer.Processed().begin(), writer.Processed().end())));
+        (std::vector<uint8_t>(writer.Processed().begin(), writer.Processed().end())));
 }
 
 // Edge case: Reset when a second proxy is still waiting in the send queue (sendRequesters, not
@@ -359,7 +359,7 @@ TEST_F(EchoOnSesameTest, Reset_cancels_proxy_waiting_in_send_queue)
     infra::ByteOutputStreamWriter::WithStorage<128> writer;
     sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writer));
     EXPECT_EQ((std::vector<uint8_t>{ 1, (3 << 3) | 2, 0 }),
-              (std::vector<uint8_t>(writer.Processed().begin(), writer.Processed().end())));
+        (std::vector<uint8_t>(writer.Processed().begin(), writer.Processed().end())));
 }
 
 // Edge case: Reset clears the skipNextStream flag. A stale skipNextStream = true (set during
@@ -393,7 +393,7 @@ TEST_F(EchoOnSesameTest, Reset_does_not_suppress_first_stream_after_reinit)
     infra::ByteOutputStreamWriter::WithStorage<128> writer;
     sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writer));
     EXPECT_EQ((std::vector<uint8_t>{ 1, (1 << 3) | 2, 2, 8, 5 }),
-              (std::vector<uint8_t>(writer.Processed().begin(), writer.Processed().end())));
+        (std::vector<uint8_t>(writer.Processed().begin(), writer.Processed().end())));
 }
 
 TEST_F(EchoOnSesameTest, invoke_service_proxy_method_after_previous_service_proxy_was_destroyed)
