@@ -9,6 +9,7 @@ namespace services
 
     void EchoOnSesame::Reset()
     {
+        CancelAllSendRequests();
         initialized = false;
         requestedSize.reset();
         ReleaseReader();

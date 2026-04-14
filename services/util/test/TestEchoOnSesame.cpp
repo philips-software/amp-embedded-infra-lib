@@ -287,6 +287,115 @@ TEST_F(EchoOnSesameTest, after_Reset_RequestSendMessage_is_delayed_until_Initial
     sesame.GetObserver().Initialized();
 }
 
+// Edge case: Reset when sesame *is* initialized (RequestSendMessage already called, stream in
+// flight) must clear onGranted so the proxy can call RequestSend again without hitting the assert.
+TEST_F(EchoOnSesameTest, Reset_cancels_in_flight_send_request_and_allows_retry)
+{
+    sesame.GetObserver().Initialized();
+
+    EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
+    EXPECT_CALL(sesame, RequestSendMessage(98));
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.MethodNoParameter();
+        });
+    // Stream not yet delivered: sendingProxy == &serviceProxy, onGranted is set.
+
+    EXPECT_CALL(sesame, Reset());
+    echo.Reset();
+
+    // Re-init and re-queue — must not hit really_assert(!this->onGranted).
+    sesame.GetObserver().Initialized();
+
+    EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
+    EXPECT_CALL(sesame, RequestSendMessage(98));
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.Method(5);
+        });
+
+    infra::ByteOutputStreamWriter::WithStorage<128> writer;
+    sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writer));
+    EXPECT_EQ((std::vector<uint8_t>{ 1, (1 << 3) | 2, 2, 8, 5 }),
+              (std::vector<uint8_t>(writer.Processed().begin(), writer.Processed().end())));
+}
+
+// Edge case: Reset when a second proxy is still waiting in the send queue (sendRequesters, not
+// yet promoted to sendingProxy). Its onGranted must also be cleared.
+TEST_F(EchoOnSesameTest, Reset_cancels_proxy_waiting_in_send_queue)
+{
+    services::ServiceStubProxy serviceProxy2{ echo };
+
+    sesame.GetObserver().Initialized();
+
+    // serviceProxy becomes sendingProxy immediately.
+    EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
+    EXPECT_CALL(sesame, RequestSendMessage(98));
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.MethodNoParameter();
+        });
+
+    // serviceProxy2 is queued in sendRequesters (sendingProxy is already taken).
+    serviceProxy2.RequestSend([&serviceProxy2]()
+        {
+            serviceProxy2.MethodNoParameter();
+        });
+
+    EXPECT_CALL(sesame, Reset());
+    echo.Reset();
+
+    // After Reset both proxies have onGranted == nullptr.
+    // Calling RequestSend on either must not trigger the assert.
+    sesame.GetObserver().Initialized();
+
+    EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
+    EXPECT_CALL(sesame, RequestSendMessage(98));
+    serviceProxy2.RequestSend([&serviceProxy2]()
+        {
+            serviceProxy2.MethodNoParameter();
+        });
+
+    infra::ByteOutputStreamWriter::WithStorage<128> writer;
+    sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writer));
+    EXPECT_EQ((std::vector<uint8_t>{ 1, (3 << 3) | 2, 0 }),
+              (std::vector<uint8_t>(writer.Processed().begin(), writer.Processed().end())));
+}
+
+// Edge case: Reset clears the skipNextStream flag. A stale skipNextStream = true (set during
+// CancelRequestSend for sendingProxy) must not silently swallow the first real stream of the
+// new session when there are no pending sends at all before re-queuing.
+TEST_F(EchoOnSesameTest, Reset_does_not_suppress_first_stream_after_reinit)
+{
+    sesame.GetObserver().Initialized();
+
+    EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
+    EXPECT_CALL(sesame, RequestSendMessage(98));
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.MethodNoParameter();
+        });
+    // Stream not yet delivered.
+
+    EXPECT_CALL(sesame, Reset());
+    echo.Reset();
+    sesame.GetObserver().Initialized();
+
+    // Fresh send — must reach the proxy's GrantSend without being eaten by skipNextStream.
+    EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
+    EXPECT_CALL(sesame, RequestSendMessage(98));
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.Method(5);
+        });
+
+    bool streamDelivered = false;
+    infra::ByteOutputStreamWriter::WithStorage<128> writer;
+    sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writer));
+    EXPECT_EQ((std::vector<uint8_t>{ 1, (1 << 3) | 2, 2, 8, 5 }),
+              (std::vector<uint8_t>(writer.Processed().begin(), writer.Processed().end())));
+}
+
 TEST_F(EchoOnSesameTest, invoke_service_proxy_method_after_previous_service_proxy_was_destroyed)
 {
     sesame.GetObserver().Initialized();

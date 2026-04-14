@@ -95,6 +95,19 @@ namespace services
         readerPtr = nullptr;
     }
 
+    void EchoOnStreams::CancelAllSendRequests()
+    {
+        while (!sendRequesters.empty())
+            sendRequesters.front().CancelRequestSend();
+
+        if (sendingProxy != nullptr)
+            sendingProxy->CancelRequestSend();
+
+        // After a full transport reset no stream is in flight, so a stale skipNextStream
+        // flag must not suppress the first send of the new session.
+        skipNextStream = false;
+    }
+
     void EchoOnStreams::Initialized()
     {
         if (partlySent)
