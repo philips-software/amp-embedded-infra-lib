@@ -44,7 +44,6 @@ namespace services
 
     infra::SharedPtr<MethodSerializer> ServiceProxy::GrantSend()
     {
-        really_assert(onGranted);
         onGranted();
         return std::move(methodSerializer);
     }
