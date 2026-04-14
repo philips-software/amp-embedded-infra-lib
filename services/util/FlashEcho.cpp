@@ -1,5 +1,6 @@
 #include "services/util/FlashEcho.hpp"
 #include <utility>
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -19,6 +20,7 @@ namespace services
 
     void FlashEcho::Read(uint32_t address, uint32_t size)
     {
+        services::GlobalTracer().Trace() << "==== FlashEcho::Read";
         busy = true;
 
         flash.ReadBuffer(infra::Head(infra::MakeRange(buffer), size), address, [this, size]()
@@ -28,14 +30,19 @@ namespace services
                 if (onStopped)
                     onStopped();
                 else
+                {
+                    services::GlobalTracer().Trace() << "==== FlashEcho::Read RequestSend";
+
                     flashResult.RequestSend([this, size]()
                         {
+                            services::GlobalTracer().Trace() << "==== FlashEcho::Read RequestSend granted";
                             flashResult.ReadDone(infra::Head(infra::MakeRange(buffer), size));
                             MethodDone();
 
                             if (onStopped)
                                 onStopped();
                         });
+                }
             });
     }
 
@@ -181,8 +188,10 @@ namespace services
         if (readingBuffer.size() > start)
         {
             this->start = start;
+            services::GlobalTracer().Trace() << "==== FlashEchoProxy::ReadPartialBuffer RequestSend";
             proxy.RequestSend([this, address]()
                 {
+                    services::GlobalTracer().Trace() << "==== FlashEchoProxy::ReadPartialBuffer RequestSend granted";
                     auto size = std::min<uint32_t>(readingBuffer.size() - this->start, flash::WriteRequest::contentsSize);
                     proxy.Read(address + this->start, size);
                     ReadPartialBuffer(address, this->start + size);

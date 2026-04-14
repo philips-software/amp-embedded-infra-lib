@@ -1,4 +1,5 @@
 #include "services/util/EchoPolicyDiffieHellman.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -38,8 +39,13 @@ namespace services
 
     void EchoPolicyDiffieHellman::Initialized()
     {
+        services::GlobalTracer().Trace() << "==== EchoPolicyDiffieHellman::Initialized";
+
         if (busy)
+        {
+            services::GlobalTracer().Trace() << "==== EchoPolicyDiffieHellman::Initialized CancelRequestSend";
             DiffieHellmanKeyEstablishmentProxy::Rpc().CancelRequestSend(*this);
+        }
 
         initializingKeys = true;
         nextKeyPair.reset();
@@ -50,10 +56,12 @@ namespace services
         busy = true;
         DiffieHellmanKeyEstablishmentProxy::RequestSend([this]()
             {
+                services::GlobalTracer().Trace() << "==== EchoPolicyDiffieHellman::Initialized RequestSend PresentCertificate granted";
                 DiffieHellmanKeyEstablishmentProxy::PresentCertificate(dsaCertificate);
 
                 DiffieHellmanKeyEstablishmentProxy::RequestSend([this]()
                     {
+                        services::GlobalTracer().Trace() << "==== EchoPolicyDiffieHellman::Initialized RequestSend Exchange granted";
                         auto encodedDhPublicKey = (*keyExchange)->PublicKey();
                         auto [r, s] = signer.Sign(encodedDhPublicKey);
 
@@ -98,6 +106,7 @@ namespace services
 
     void EchoPolicyDiffieHellman::Exchange(infra::ConstByteRange otherPublicKey, infra::ConstByteRange signatureR, infra::ConstByteRange signatureS)
     {
+        services::GlobalTracer().Trace() << "==== EchoPolicyDiffieHellman::Exchange";
         if (verifier == std::nullopt || !(*verifier)->Verify(otherPublicKey, signatureR, signatureS))
         {
             KeyExchangeFailed();
@@ -129,6 +138,7 @@ namespace services
 
     void EchoPolicyDiffieHellman::PresentCertificate(infra::ConstByteRange otherDsaCertificate)
     {
+        services::GlobalTracer().Trace() << "==== EchoPolicyDiffieHellman::PresentCertificate";
         verifier.emplace(verifierCreator, otherDsaCertificate, rootCaCertificate);
 
         MethodDone();
