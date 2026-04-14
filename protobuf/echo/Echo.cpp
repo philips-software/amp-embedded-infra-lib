@@ -28,6 +28,7 @@ namespace services
         if (onGranted != nullptr)
         {
             onGranted = nullptr;
+            currentRequestedSize = 0;
             echo.CancelRequestSend(*this);
         }
     }

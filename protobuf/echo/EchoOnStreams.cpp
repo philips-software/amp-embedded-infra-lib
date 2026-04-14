@@ -31,6 +31,11 @@ namespace services
         ReleaseReader();
     }
 
+    void EchoOnStreams::Reset()
+    {
+        CancelAllSendRequests();
+    }
+
     void EchoOnStreams::SetPolicy(EchoPolicy& policy)
     {
         this->policy = &policy;
