@@ -389,7 +389,6 @@ TEST_F(EchoOnSesameTest, Reset_does_not_suppress_first_stream_after_reinit)
             serviceProxy.Method(5);
         });
 
-    bool streamDelivered = false;
     infra::ByteOutputStreamWriter::WithStorage<128> writer;
     sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writer));
     EXPECT_EQ((std::vector<uint8_t>{ 1, (1 << 3) | 2, 2, 8, 5 }),

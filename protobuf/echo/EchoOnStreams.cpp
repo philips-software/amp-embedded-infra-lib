@@ -2,6 +2,7 @@
 #include "infra/stream/InputStream.hpp"
 #include "infra/stream/OutputStream.hpp"
 #include "infra/stream/StreamErrorPolicy.hpp"
+#include "infra/syntax/Json.hpp"
 #include "infra/syntax/ProtoFormatter.hpp"
 #include "infra/syntax/ProtoParser.hpp"
 #include "infra/util/Function.hpp"
@@ -35,17 +36,18 @@ namespace services
     {
         ReleaseReader();
 
-        partlySent = false;
-        skipNextStream = false;
-        delayDataReceived = false;
-        delayedDataReceived = false;
-
         while (!sendRequesters.empty())
             sendRequesters.front().CancelRequestSend();
 
         if (sendingProxy != nullptr)
             sendingProxy->CancelRequestSend();
+
         sendingProxy = nullptr;
+        methodSerializer = nullptr;
+        partlySent = false;
+        skipNextStream = false;
+        delayDataReceived = false;
+        delayedDataReceived = false;
     }
 
     void EchoOnStreams::SetPolicy(EchoPolicy& policy)
