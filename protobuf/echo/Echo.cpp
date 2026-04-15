@@ -1,4 +1,5 @@
 #include "protobuf/echo/Echo.hpp"
+#include "infra/util/ReallyAssert.hpp"
 #include "services/tracer/GlobalTracer.hpp"
 
 namespace services
@@ -20,8 +21,17 @@ namespace services
 
     ServiceProxy::~ServiceProxy()
     {
+        CancelRequestSend();
+    }
+
+    void ServiceProxy::CancelRequestSend()
+    {
         if (onGranted != nullptr)
+        {
+            onGranted = nullptr;
+            currentRequestedSize = 0;
             echo.CancelRequestSend(*this);
+        }
     }
 
     Echo& ServiceProxy::Rpc()
@@ -36,6 +46,7 @@ namespace services
 
     void ServiceProxy::RequestSend(infra::Function<void()> onGranted, uint32_t requestedSize)
     {
+        really_assert(!this->onGranted);
         requestTimer.Start(std::chrono::seconds(1), []()
             {
                 services::GlobalTracer().Trace() << "ServiceProxy still waiting for granting";

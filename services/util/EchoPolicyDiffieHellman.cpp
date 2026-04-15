@@ -44,7 +44,7 @@ namespace services
         if (busy)
         {
             services::GlobalTracer().Trace() << "==== EchoPolicyDiffieHellman::Initialized CancelRequestSend";
-            DiffieHellmanKeyEstablishmentProxy::Rpc().CancelRequestSend(*this);
+            DiffieHellmanKeyEstablishmentProxy::CancelRequestSend();
         }
 
         initializingKeys = true;
