@@ -60,7 +60,6 @@ namespace services
         MOCK_METHOD(void, InitializationRequested, (const infra::Function<void()>& onGranted), (override));
         MOCK_METHOD(void, InitInformationReceived, (infra::StreamReaderWithRewinding & initInfo), (override));
         MOCK_METHOD(infra::ConstByteRange, InitInformation, (), (const, override));
-
     };
 
     class IntegrityObserverMock
