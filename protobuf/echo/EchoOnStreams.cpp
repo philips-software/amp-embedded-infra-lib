@@ -11,6 +11,7 @@
 #include "protobuf/echo/Echo.hpp"
 #include "protobuf/echo/EchoErrorPolicy.hpp"
 #include "protobuf/echo/Serialization.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 #include <cassert>
 #include <cstdint>
 #include <limits>
@@ -111,6 +112,7 @@ namespace services
 
         limitedReaderAccess.SetAction(infra::emptyFunction);
         bufferedReader.reset();
+        services::GlobalTracer().Trace() << "====== EchoOnStreams::ReleaseReader resetting readerPtr";
         readerPtr = nullptr;
     }
 

@@ -80,8 +80,8 @@ namespace services
     void SesameWindowed::Reset()
     {
         SesameEncodedObserver::Subject().Reset();
-        assert(currentReceiveMessageReader == std::nullopt);
-        assert(!readerAccess.Referenced());
+        really_assert(!readerAccess.Referenced());
+        really_assert(currentReceiveMessageReader == std::nullopt);
         initialized = false;
         otherAvailableWindow = 0;
         maxUsableBufferSize = 0;
@@ -91,7 +91,6 @@ namespace services
         requestedSendMessageSize.reset();
         requestedTimer.Cancel();
         receivedMessage.clear();
-        really_assert(currentReceiveMessageReader == std::nullopt);
         // Now wait for an init message to be received; use state Operational for this
         state.Emplace<StateOperational>(*this);
     }
@@ -195,6 +194,7 @@ namespace services
     {
         readerAccess.SetAction([this, encodedSize]()
             {
+                services::GlobalTracer().Trace() << "====== SesameWindowed::ForwardReceivedMessage releasing reader";
                 releasedWindow += encodedSize;
                 currentReceiveMessageReader = std::nullopt;
                 receivedMessage.erase(receivedMessage.begin(), receivedMessage.begin() + currentReceiveMessageSize);
