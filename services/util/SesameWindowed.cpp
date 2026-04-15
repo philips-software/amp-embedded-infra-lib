@@ -54,7 +54,7 @@ namespace services
         const char ExtraCharacterReader::character = '\x4';
     }
 
-    SesameWindowed::SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, SesameEncoded& delegate, infra::ConstByteRange initInfo, SesameInitializer& sesameInitializer) =======
+    SesameWindowed::SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, SesameEncoded& delegate, infra::ConstByteRange initInfo, SesameInitializer& sesameInitializer)
         : SesameEncodedObserver(delegate)
         , initInfo(initInfo)
         , receivedMessage(receivedMessage)
@@ -119,14 +119,9 @@ namespace services
         switch (stream.Extract<Operation>())
         {
             case Operation::init:
-<<<<<<< HEAD
-                otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
-                ReceivedInit(otherAvailableWindow);
-                sendInitResponse = true;
-                ReceivedInitialize(reader);
-=======
             {
                 auto window = stream.Extract<infra::LittleEndian<uint16_t>>();
+                sesameInitializer.InitInformation(reader);
                 ReceivedInit(window);
                 sesameInitializer.InitializationRequested([this, window]()
                     {
@@ -135,14 +130,14 @@ namespace services
                         ReceivedInitialize();
                         SetNextState();
                     });
->>>>>>> origin/main
                 break;
             }
             case Operation::initResponse:
                 otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
                 ReceivedInitResponse(otherAvailableWindow);
                 releasedWindow = static_cast<uint16_t>(encodedSize);
-                ReceivedInitialize(reader);
+                sesameInitializer.InitInformation(reader);
+                ReceivedInitialize();
                 break;
             case Operation::releaseWindow:
                 if (initialized)
@@ -162,11 +157,11 @@ namespace services
         SetNextState();
     }
 
-    void SesameWindowed::ReceivedInitialize(infra::StreamReaderWithRewinding& initInfo)
+    void SesameWindowed::ReceivedInitialize()
     {
         maxUsableBufferSize = otherAvailableWindow;
         initialized = true;
-        GetObserver().Initialized(initInfo);
+        GetObserver().Initialized();
     }
 
     void SesameWindowed::SaveReceivedMessage(infra::StreamReader& reader)

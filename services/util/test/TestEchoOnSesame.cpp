@@ -44,14 +44,11 @@ public:
 
     infra::SharedOptional<testing::StrictMock<services::MethodSerializerMock>> serializer;
     infra::SharedOptional<infra::ByteInputStreamReader> reader;
-
-    std::vector<uint8_t> initInfo;
-    infra::StdVectorInputStreamReader initInfoReader{ initInfo };
 };
 
 TEST_F(EchoOnSesameTest, invoke_service_proxy_method)
 {
-    sesame.GetObserver().Initialized(initInfoReader);
+    sesame.GetObserver().Initialized();
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
     EXPECT_CALL(sesame, RequestSendMessage(98));
@@ -67,7 +64,7 @@ TEST_F(EchoOnSesameTest, invoke_service_proxy_method)
 
 TEST_F(EchoOnSesameTest, invoke_service_proxy_method_is_split_over_two_packets)
 {
-    sesame.GetObserver().Initialized(initInfoReader);
+    sesame.GetObserver().Initialized();
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillRepeatedly(testing::Return(4));
     EXPECT_CALL(sesame, RequestSendMessage(4));
@@ -86,7 +83,7 @@ TEST_F(EchoOnSesameTest, invoke_service_proxy_method_is_split_over_two_packets)
 
 TEST_F(EchoOnSesameTest, invoke_service_proxy_method_without_parameters)
 {
-    sesame.GetObserver().Initialized(initInfoReader);
+    sesame.GetObserver().Initialized();
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
     EXPECT_CALL(sesame, RequestSendMessage(98));
@@ -109,12 +106,12 @@ TEST_F(EchoOnSesameTest, RequestSendMessage_is_delayed_until_Initialized)
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
     EXPECT_CALL(sesame, RequestSendMessage(98));
-    sesame.GetObserver().Initialized(initInfoReader);
+    sesame.GetObserver().Initialized();
 }
 
 TEST_F(EchoOnSesameTest, partial_message_is_discarded_after_Initialize)
 {
-    sesame.GetObserver().Initialized(initInfoReader);
+    sesame.GetObserver().Initialized();
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillRepeatedly(testing::Return(4));
     EXPECT_CALL(sesame, RequestSendMessage(4));
@@ -128,7 +125,7 @@ TEST_F(EchoOnSesameTest, partial_message_is_discarded_after_Initialize)
     infra::LimitedStreamWriter limitedWriter(writer, 4);
     sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(limitedWriter));
 
-    sesame.GetObserver().Initialized(initInfoReader);
+    sesame.GetObserver().Initialized();
 
     sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writer));
     EXPECT_EQ((std::vector<uint8_t>{ 1, (1 << 3) | 2, 2, 8 }), (std::vector<uint8_t>(writer.Processed().begin(), writer.Processed().end())));
@@ -247,7 +244,7 @@ TEST_F(EchoOnSesameTest, Reset_forgets_send_requests)
 
     EXPECT_CALL(sesame, Reset());
     echo.Reset();
-    sesame.GetObserver().Initialized(initInfoReader);
+    sesame.GetObserver().Initialized();
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
     EXPECT_CALL(sesame, RequestSendMessage(98));
@@ -264,7 +261,7 @@ TEST_F(EchoOnSesameTest, Reset_forgets_send_requests)
 TEST_F(EchoOnSesameTest, after_Reset_RequestSendMessage_is_delayed_until_Initialized)
 {
     // build
-    sesame.GetObserver().Initialized(initInfoReader);
+    sesame.GetObserver().Initialized();
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
     EXPECT_CALL(sesame, RequestSendMessage(98));
@@ -288,12 +285,12 @@ TEST_F(EchoOnSesameTest, after_Reset_RequestSendMessage_is_delayed_until_Initial
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
     EXPECT_CALL(sesame, RequestSendMessage(98));
-    sesame.GetObserver().Initialized(initInfoReader);
+    sesame.GetObserver().Initialized();
 }
 
 TEST_F(EchoOnSesameTest, invoke_service_proxy_method_after_previous_service_proxy_was_destroyed)
 {
-    sesame.GetObserver().Initialized(initInfoReader);
+    sesame.GetObserver().Initialized();
 
     testing::StrictMock<testing::MockFunction<void(std::string)>> check;
     EXPECT_CALL(sesame, MaxSendMessageSize).WillRepeatedly(testing::Return(1000));

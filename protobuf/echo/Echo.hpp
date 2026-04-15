@@ -82,7 +82,7 @@ namespace services
     public:
         using infra::Observer<EchoInitializationObserver, EchoInitialization>::Observer;
 
-        virtual void Initialized(infra::StreamReaderWithRewinding& initInfo) = 0;
+        virtual void Initialized() = 0;
     };
 
     class EchoInitialization

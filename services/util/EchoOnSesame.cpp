@@ -15,11 +15,11 @@ namespace services
         SesameObserver::Subject().Reset();
     }
 
-    void EchoOnSesame::Initialized(infra::StreamReaderWithRewinding& initInfo)
+    void EchoOnSesame::Initialized()
     {
-        infra::Subject<EchoInitializationObserver>::NotifyObservers([&initInfo](auto& observer)
+        infra::Subject<EchoInitializationObserver>::NotifyObservers([](auto& observer)
             {
-                observer.Initialized(initInfo);
+                observer.Initialized();
             });
 
         initialized = true;

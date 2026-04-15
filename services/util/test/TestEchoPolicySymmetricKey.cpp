@@ -29,7 +29,7 @@ public:
                 ExpectGenerationOfKeyMaterial({ 4 }, { 5 });
                 LoopBackData();
             }));
-        lower.GetObserver().Initialized(initInfoReader);
+        lower.GetObserver().Initialized();
     }
 
     void ExpectGenerationOfKeyMaterial(const services::SesameSecured::KeyType& key, const services::SesameSecured::IvType& iv)
@@ -57,9 +57,6 @@ public:
         lower.GetObserver().ReceivedMessage(reader.Emplace(sentData));
         ASSERT_TRUE(reader.Allocatable());
     }
-
-    std::vector<uint8_t> initInfo;
-    infra::StdVectorInputStreamReader initInfoReader{ initInfo };
 
     services::MethodSerializerFactory::ForServices<services::ServiceStub, sesame_security::SymmetricKeyEstablishment>::AndProxies<services::ServiceStubProxy, sesame_security::SymmetricKeyEstablishmentProxy> serializerFactory;
     testing::StrictMock<services::EchoErrorPolicyMock> errorPolicy;
@@ -122,7 +119,7 @@ TEST_F(EchoPolicySymmetricKeyTest, send_and_receive_large_message)
 TEST_F(EchoPolicySymmetricKeyTest, send_while_initializing)
 {
     EXPECT_CALL(lower, RequestSendMessage(testing::_));
-    lower.GetObserver().Initialized(initInfoReader);
+    lower.GetObserver().Initialized();
 
     serviceProxy.RequestSend([this]()
         {

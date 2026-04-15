@@ -8,4 +8,7 @@ namespace services
     {
         onGranted();
     }
+
+    void SesameInitializer::InitInformation(infra::StreamReaderWithRewinding& initInfo)
+    {}
 }

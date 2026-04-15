@@ -18,7 +18,7 @@ namespace services
     public:
         using infra::SingleObserver<SesameObserver, Sesame>::SingleObserver;
 
-        virtual void Initialized(infra::StreamReaderWithRewinding& initInfo) = 0;
+        virtual void Initialized() = 0;
         virtual void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) = 0;
         virtual void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) = 0;
     };
@@ -66,6 +66,7 @@ namespace services
 
     public:
         virtual void InitializationRequested(const infra::Function<void()>& onGranted);
+        virtual void InitInformation(infra::StreamReaderWithRewinding& initInfo);
     };
 
     extern SesameInitializer immediatelyGranted;

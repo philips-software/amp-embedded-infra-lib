@@ -53,13 +53,13 @@ public:
 
     void ReceiveInitRequest(uint16_t availableWindow)
     {
-        EXPECT_CALL(observer, Initialized(testing::_));
+        EXPECT_CALL(observer, Initialized());
         ReceivePacket(infra::ConstructBin().Value<uint8_t>(1).Value<infra::LittleEndian<uint16_t>>(availableWindow).Vector());
     }
 
     void ReceiveInitResponse(uint16_t availableWindow)
     {
-        EXPECT_CALL(observer, Initialized(testing::_));
+        EXPECT_CALL(observer, Initialized());
         ReceivePacket(infra::ConstructBin().Value<uint8_t>(2).Value<infra::LittleEndian<uint16_t>>(availableWindow).Vector());
     }
 
@@ -533,11 +533,12 @@ TEST_F(SesameWindowedTest, hold_initialization_until_initializer_grants)
     EXPECT_CALL(base, MaxSendMessageSize()).WillOnce(testing::Return(24));
     EXPECT_CALL(base, WorstCaseEncodedMessageSize(3)).WillOnce(testing::Return(5));
     ExpectRequestSendMessageForInit(24);
-    infra::ReConstruct(communication, base, initializer);
+    infra::ReConstruct(communication, base, initInfo, initializer);
     observer.Attach(communication);
 
     infra::Function<void()> onGranted;
     EXPECT_CALL(initializer, InitializationRequested(testing::_)).WillOnce(testing::SaveArg<0>(&onGranted));
+    EXPECT_CALL(initializer, InitInformation(testing::_));
     ReceiveInitRequest(24);
 
     // A message received before sending InitResponse is discarded

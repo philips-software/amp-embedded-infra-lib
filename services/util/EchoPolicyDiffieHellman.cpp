@@ -36,7 +36,7 @@ namespace services
         echo.SetPolicy(*this);
     }
 
-    void EchoPolicyDiffieHellman::Initialized(infra::StreamReaderWithRewinding& initInfo)
+    void EchoPolicyDiffieHellman::Initialized()
     {
         if (busy)
             DiffieHellmanKeyEstablishmentProxy::Rpc().CancelRequestSend(*this);
