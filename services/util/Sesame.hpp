@@ -66,7 +66,8 @@ namespace services
 
     public:
         virtual void InitializationRequested(const infra::Function<void()>& onGranted);
-        virtual void InitInformation(infra::StreamReaderWithRewinding& initInfo);
+        virtual void InitInformationReceived(infra::StreamReaderWithRewinding& initInfo);
+        virtual infra::ConstByteRange InitInformation() const;
     };
 
     extern SesameInitializer immediatelyGranted;

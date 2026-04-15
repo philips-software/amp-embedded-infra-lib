@@ -54,12 +54,14 @@ public:
     void ReceiveInitRequest(uint16_t availableWindow)
     {
         EXPECT_CALL(observer, Initialized());
+        EXPECT_CALL(initializer, InitInformationReceived(testing::_));
         ReceivePacket(infra::ConstructBin().Value<uint8_t>(1).Value<infra::LittleEndian<uint16_t>>(availableWindow).Vector());
     }
 
     void ReceiveInitResponse(uint16_t availableWindow)
     {
         EXPECT_CALL(observer, Initialized());
+        EXPECT_CALL(initializer, InitInformationReceived(testing::_));
         ReceivePacket(infra::ConstructBin().Value<uint8_t>(2).Value<infra::LittleEndian<uint16_t>>(availableWindow).Vector());
     }
 
@@ -149,14 +151,16 @@ public:
     std::vector<uint8_t> expectedMessage;
     std::vector<uint8_t> sentData;
     infra::NotifyingSharedOptional<infra::StdVectorOutputStreamWriter> writer;
+    std::array<uint8_t, 2> initInfo{ 6, 7 };
+    testing::StrictMock<services::SesameInitializerMock> initializer;
     infra::Execute execute{ [this]()
         {
             EXPECT_CALL(base, MaxSendMessageSize()).WillOnce(testing::Return(24));
             EXPECT_CALL(base, WorstCaseEncodedMessageSize(3)).WillOnce(testing::Return(5));
+            EXPECT_CALL(initializer, InitInformation()).WillRepeatedly(testing::Return(infra::MakeRange(initInfo)));
             ExpectRequestSendMessageForInit(24);
         } };
-    std::array<uint8_t, 2> initInfo{ 6, 7 };
-    services::SesameWindowed::WithMaxMessageSize<24> communication{ base, infra::MakeRange(initInfo) };
+    services::SesameWindowed::WithMaxMessageSize<24> communication{ base, initializer };
     testing::StrictMock<services::SesameObserverMock> observer{ communication };
     infra::SharedPtr<infra::StreamWriter> savedWriter;
     infra::SharedPtr<infra::StreamReaderWithRewinding> savedReader;
@@ -299,6 +303,7 @@ TEST_F(SesameWindowedTest, handle_init_request_after_initialization)
     ReceiveInitResponse(8);
 
     ExpectRequestSendMessageForInitResponse(24);
+    EXPECT_CALL(initializer, InitializationRequested(testing::_)).WillOnce(testing::InvokeArgument<0>());
     ReceiveInitRequest(8);
 }
 
@@ -307,6 +312,7 @@ TEST_F(SesameWindowedTest, init_response_consumes_window)
     ReceiveInitResponse(24);
 
     ExpectRequestSendMessageForInitResponse(24);
+    EXPECT_CALL(initializer, InitializationRequested(testing::_)).WillOnce(testing::InvokeArgument<0>());
     ReceiveInitRequest(5 + 9 + 9); // window for two messages and saving for releaseWindow
 
     ExpectRequestSendMessageForMessage(7, { 1, 2, 3, 4, 5, 6 });
@@ -331,6 +337,7 @@ TEST_F(SesameWindowedTest, received_init_request_while_sending_message_finishes_
     communication.RequestSendMessage(4);
 
     // operate
+    EXPECT_CALL(initializer, InitializationRequested(testing::_)).WillOnce(testing::InvokeArgument<0>());
     ReceiveInitRequest(24);
 
     ExpectRequestSendMessageForInitResponse(24);
@@ -384,6 +391,7 @@ TEST_F(SesameWindowedTest, init_response_while_sending)
 TEST_F(SesameWindowedTest, received_init_request_while_sending_init)
 {
     ExpectRequestSendMessageForInitResponse(24);
+    EXPECT_CALL(initializer, InitializationRequested(testing::_)).WillOnce(testing::InvokeArgument<0>());
     ReceiveInitRequest(8);
 
     ReceiveInitResponse(24);
@@ -407,6 +415,7 @@ TEST_F(SesameWindowedTest, requesting_message_while_sending_init_response)
 {
     // build
     ExpectRequestSendMessageForInitResponse(24);
+    EXPECT_CALL(initializer, InitializationRequested(testing::_)).WillOnce(testing::InvokeArgument<0>());
     ReceiveInitRequest(8);
 
     ReceiveInitResponse(24);
@@ -421,12 +430,14 @@ TEST_F(SesameWindowedTest, init_request_while_sending_init_response_results_in_n
 {
     // build
     ExpectRequestSendMessageForInitResponse(24);
+    EXPECT_CALL(initializer, InitializationRequested(testing::_)).WillOnce(testing::InvokeArgument<0>());
     ReceiveInitRequest(8);
 
     ReceiveInitResponse(24);
 
     // operate
     ExpectRequestSendMessageForInitResponse(24);
+    EXPECT_CALL(initializer, InitializationRequested(testing::_)).WillOnce(testing::InvokeArgument<0>());
     ReceiveInitRequest(8);
 }
 
@@ -434,6 +445,7 @@ TEST_F(SesameWindowedTest, release_window_while_sending_init_response_is_ignored
 {
     // build
     ExpectRequestSendMessageForInitResponse(24);
+    EXPECT_CALL(initializer, InitializationRequested(testing::_)).WillOnce(testing::InvokeArgument<0>());
     ReceiveInitRequest(8);
 
     ReceiveInitResponse(24);
@@ -517,6 +529,7 @@ TEST_F(SesameWindowedTest, Reset_forwards_to_cobs_and_requests_initialize)
     communication.Reset();
 
     ExpectRequestSendMessageForInitResponse(24);
+    EXPECT_CALL(initializer, InitializationRequested(testing::_)).WillOnce(testing::InvokeArgument<0>());
     ReceiveInitRequest(8);
 
     ReceiveInitResponse(24);
@@ -529,16 +542,14 @@ TEST_F(SesameWindowedTest, Reset_forwards_to_cobs_and_requests_initialize)
 TEST_F(SesameWindowedTest, hold_initialization_until_initializer_grants)
 {
     observer.Detach();
-    services::SesameInitializerMock initializer;
     EXPECT_CALL(base, MaxSendMessageSize()).WillOnce(testing::Return(24));
     EXPECT_CALL(base, WorstCaseEncodedMessageSize(3)).WillOnce(testing::Return(5));
     ExpectRequestSendMessageForInit(24);
-    infra::ReConstruct(communication, base, initInfo, initializer);
+    infra::ReConstruct(communication, base, initializer);
     observer.Attach(communication);
 
     infra::Function<void()> onGranted;
     EXPECT_CALL(initializer, InitializationRequested(testing::_)).WillOnce(testing::SaveArg<0>(&onGranted));
-    EXPECT_CALL(initializer, InitInformation(testing::_));
     ReceiveInitRequest(24);
 
     // A message received before sending InitResponse is discarded
