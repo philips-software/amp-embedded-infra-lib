@@ -90,6 +90,8 @@ namespace services
         sending = false;
         requestedSendMessageSize.reset();
         requestedTimer.Cancel();
+        receivedMessage.clear();
+        really_assert(currentReceiveMessageReader == std::nullopt);
         // Now wait for an init message to be received; use state Operational for this
         state.Emplace<StateOperational>(*this);
     }
@@ -97,11 +99,6 @@ namespace services
     void SesameWindowed::Stop()
     {
         readerAccess.SetAction([]() {});
-    }
-
-    void SesameWindowed::Initialized()
-    {
-        std::abort();
     }
 
     void SesameWindowed::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -149,7 +146,12 @@ namespace services
                 break;
             case Operation::message:
                 if (initialized)
+                {
+                    services::GlobalTracer().Trace() << "====== SesameWindowed::ReceivedMessage receiving message of size " << reader->Available();
                     SaveReceivedMessage(*reader);
+                }
+                else
+                    services::GlobalTracer().Trace() << "====== SesameWindowed::ReceivedMessage discarding message of size " << reader->Available();
                 break;
         }
 
@@ -184,6 +186,7 @@ namespace services
             receivedMessage.erase(receivedMessage.begin(), receivedMessage.begin() + 2);
 
             currentReceiveMessageReader.emplace(std::in_place, receivedMessage, currentReceiveMessageSize);
+            services::GlobalTracer().Trace() << "====== SesameWindowed::TryForwardReceivedMessage forwarding message of size " << encodedSize;
             ForwardReceivedMessage(static_cast<uint16_t>(encodedSize));
         }
     }

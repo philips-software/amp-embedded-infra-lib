@@ -46,7 +46,6 @@ namespace services
 
     private:
         // Implementation of SesameEncodedObserver
-        void Initialized() override;
         void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         void MessageSent(std::size_t encodedSize) override;
         void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, std::size_t encodedSize) override;

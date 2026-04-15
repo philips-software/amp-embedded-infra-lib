@@ -38,7 +38,6 @@ namespace services
     public:
         using infra::SingleObserver<SesameEncodedObserver, SesameEncoded>::SingleObserver;
 
-        virtual void Initialized() = 0;
         virtual void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) = 0;
         virtual void MessageSent(std::size_t encodedSize) = 0;
         virtual void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, std::size_t encodedSize) = 0;
