@@ -67,8 +67,6 @@ namespace services
             ipv6Endpoint.emplace(*this, factory, multicast, IPVersions::ipv6, MakeUdpSocket(mdnsMulticastAddressIpv6, mdnsPort));
     }
 
-    BonjourServer::~BonjourServer() = default;
-
     BonjourServer::DatagramEndpoint::DatagramEndpoint(BonjourServer& server, DatagramFactory& factory, Multicast& multicast, IPVersions ipVersion, UdpSocket multicastSocket)
         : server(server)
         , multicast(multicast)

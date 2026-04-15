@@ -14,7 +14,6 @@ namespace services
     public:
         BonjourServer(DatagramFactory& factory, Multicast& multicast, infra::BoundedConstString instance, infra::BoundedConstString serviceName, infra::BoundedConstString type,
             std::optional<IPv4Address> ipv4Address, std::optional<IPv6Address> ipv6Address, uint16_t port, const DnsHostnameParts& text);
-        ~BonjourServer();
 
     private:
         class Answer
