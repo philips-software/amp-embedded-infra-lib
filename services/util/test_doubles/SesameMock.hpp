@@ -48,7 +48,7 @@ namespace services
         MOCK_METHOD(void, Initialized, (), (override));
         MOCK_METHOD(void, SendMessageStreamAvailable, (infra::SharedPtr<infra::StreamWriter> && writer), (override));
         MOCK_METHOD(void, MessageSent, (std::size_t encodedSize), (override));
-        MOCK_METHOD(void, ReceivedMessage, (infra::StreamReaderWithRewinding& reader, std::size_t encodedSize), (override));
+        MOCK_METHOD(void, ReceivedMessage, (infra::StreamReaderWithRewinding & reader, std::size_t encodedSize), (override));
     };
 
     class SesameInitializerMock
