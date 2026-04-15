@@ -39,7 +39,6 @@ namespace services
 
         void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer);
         void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
-        void Reset();
         void ReleaseReader();
         void Initialized();
         virtual void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);

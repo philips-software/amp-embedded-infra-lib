@@ -11,7 +11,7 @@ namespace services
     {
         initialized = false;
         requestedSize.reset();
-        EchoOnStreams::Reset();
+        ReleaseReader();
         SesameObserver::Subject().Reset();
     }
 
