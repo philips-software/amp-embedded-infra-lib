@@ -95,7 +95,7 @@ namespace services
         state.Emplace<StateOperational>(*this);
     }
 
-    void SesameWindowed::Stop()
+    void SesameWindowed::ResetReading()
     {
         readerAccess.SetAction([]() {});
     }

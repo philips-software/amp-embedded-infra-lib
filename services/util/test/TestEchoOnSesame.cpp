@@ -48,6 +48,7 @@ public:
 
 TEST_F(EchoOnSesameTest, invoke_service_proxy_method)
 {
+    EXPECT_CALL(sesame, ResetReading());
     sesame.GetObserver().Initialized();
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
@@ -64,6 +65,7 @@ TEST_F(EchoOnSesameTest, invoke_service_proxy_method)
 
 TEST_F(EchoOnSesameTest, invoke_service_proxy_method_is_split_over_two_packets)
 {
+    EXPECT_CALL(sesame, ResetReading());
     sesame.GetObserver().Initialized();
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillRepeatedly(testing::Return(4));
@@ -83,6 +85,7 @@ TEST_F(EchoOnSesameTest, invoke_service_proxy_method_is_split_over_two_packets)
 
 TEST_F(EchoOnSesameTest, invoke_service_proxy_method_without_parameters)
 {
+    EXPECT_CALL(sesame, ResetReading());
     sesame.GetObserver().Initialized();
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
@@ -106,11 +109,13 @@ TEST_F(EchoOnSesameTest, RequestSendMessage_is_delayed_until_Initialized)
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
     EXPECT_CALL(sesame, RequestSendMessage(98));
+    EXPECT_CALL(sesame, ResetReading());
     sesame.GetObserver().Initialized();
 }
 
 TEST_F(EchoOnSesameTest, partial_message_is_discarded_after_Initialize)
 {
+    EXPECT_CALL(sesame, ResetReading());
     sesame.GetObserver().Initialized();
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillRepeatedly(testing::Return(4));
@@ -125,6 +130,7 @@ TEST_F(EchoOnSesameTest, partial_message_is_discarded_after_Initialize)
     infra::LimitedStreamWriter limitedWriter(writer, 4);
     sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(limitedWriter));
 
+    EXPECT_CALL(sesame, ResetReading());
     sesame.GetObserver().Initialized();
 
     sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writer));
@@ -217,6 +223,7 @@ TEST_F(EchoOnSesameTest, MethodNotFound_is_reported)
 
 TEST_F(EchoOnSesameTest, Reset_is_forwarded)
 {
+    EXPECT_CALL(sesame, ResetReading());
     EXPECT_CALL(sesame, Reset());
     echo.Reset();
 }
@@ -229,6 +236,7 @@ TEST_F(EchoOnSesameTest, Reset_releases_reader)
 
     ASSERT_FALSE(reader.Allocatable());
 
+    EXPECT_CALL(sesame, ResetReading());
     EXPECT_CALL(sesame, Reset());
     echo.Reset();
 
@@ -242,8 +250,10 @@ TEST_F(EchoOnSesameTest, Reset_forgets_send_requests)
             serviceProxy.MethodNoParameter();
         });
 
+    EXPECT_CALL(sesame, ResetReading());
     EXPECT_CALL(sesame, Reset());
     echo.Reset();
+    EXPECT_CALL(sesame, ResetReading());
     sesame.GetObserver().Initialized();
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
@@ -261,6 +271,7 @@ TEST_F(EchoOnSesameTest, Reset_forgets_send_requests)
 TEST_F(EchoOnSesameTest, after_Reset_RequestSendMessage_is_delayed_until_Initialized)
 {
     // build
+    EXPECT_CALL(sesame, ResetReading());
     sesame.GetObserver().Initialized();
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
@@ -274,6 +285,7 @@ TEST_F(EchoOnSesameTest, after_Reset_RequestSendMessage_is_delayed_until_Initial
     sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writer));
 
     // operate
+    EXPECT_CALL(sesame, ResetReading());
     EXPECT_CALL(sesame, Reset());
     echo.Reset();
 
@@ -285,6 +297,7 @@ TEST_F(EchoOnSesameTest, after_Reset_RequestSendMessage_is_delayed_until_Initial
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
     EXPECT_CALL(sesame, RequestSendMessage(98));
+    EXPECT_CALL(sesame, ResetReading());
     sesame.GetObserver().Initialized();
 }
 
@@ -292,6 +305,7 @@ TEST_F(EchoOnSesameTest, after_Reset_RequestSendMessage_is_delayed_until_Initial
 // flight) must clear onGranted so the proxy can call RequestSend again without hitting the assert.
 TEST_F(EchoOnSesameTest, Reset_cancels_in_flight_send_request_and_allows_retry)
 {
+    EXPECT_CALL(sesame, ResetReading());
     sesame.GetObserver().Initialized();
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
@@ -302,10 +316,12 @@ TEST_F(EchoOnSesameTest, Reset_cancels_in_flight_send_request_and_allows_retry)
         });
     // Stream not yet delivered: sendingProxy == &serviceProxy, onGranted is set.
 
+    EXPECT_CALL(sesame, ResetReading());
     EXPECT_CALL(sesame, Reset());
     echo.Reset();
 
     // Re-init and re-queue — must not hit really_assert(!this->onGranted).
+    EXPECT_CALL(sesame, ResetReading());
     sesame.GetObserver().Initialized();
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
@@ -327,6 +343,7 @@ TEST_F(EchoOnSesameTest, Reset_cancels_proxy_waiting_in_send_queue)
 {
     services::ServiceStubProxy serviceProxy2{ echo };
 
+    EXPECT_CALL(sesame, ResetReading());
     sesame.GetObserver().Initialized();
 
     // serviceProxy becomes sendingProxy immediately.
@@ -343,11 +360,13 @@ TEST_F(EchoOnSesameTest, Reset_cancels_proxy_waiting_in_send_queue)
             serviceProxy2.MethodNoParameter();
         });
 
+    EXPECT_CALL(sesame, ResetReading());
     EXPECT_CALL(sesame, Reset());
     echo.Reset();
 
     // After Reset both proxies have onGranted == nullptr.
     // Calling RequestSend on either must not trigger the assert.
+    EXPECT_CALL(sesame, ResetReading());
     sesame.GetObserver().Initialized();
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
@@ -368,6 +387,7 @@ TEST_F(EchoOnSesameTest, Reset_cancels_proxy_waiting_in_send_queue)
 // new session when there are no pending sends at all before re-queuing.
 TEST_F(EchoOnSesameTest, Reset_does_not_suppress_first_stream_after_reinit)
 {
+    EXPECT_CALL(sesame, ResetReading());
     sesame.GetObserver().Initialized();
 
     EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
@@ -378,8 +398,10 @@ TEST_F(EchoOnSesameTest, Reset_does_not_suppress_first_stream_after_reinit)
         });
     // Stream not yet delivered.
 
+    EXPECT_CALL(sesame, ResetReading());
     EXPECT_CALL(sesame, Reset());
     echo.Reset();
+    EXPECT_CALL(sesame, ResetReading());
     sesame.GetObserver().Initialized();
 
     // Fresh send — must reach the proxy's GrantSend without being eaten by skipNextStream.
@@ -398,6 +420,7 @@ TEST_F(EchoOnSesameTest, Reset_does_not_suppress_first_stream_after_reinit)
 
 TEST_F(EchoOnSesameTest, invoke_service_proxy_method_after_previous_service_proxy_was_destroyed)
 {
+    EXPECT_CALL(sesame, ResetReading());
     sesame.GetObserver().Initialized();
 
     testing::StrictMock<testing::MockFunction<void(std::string)>> check;

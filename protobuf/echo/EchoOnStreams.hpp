@@ -44,6 +44,7 @@ namespace services
         void Initialized();
         virtual void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
         virtual void ReleaseDeserializer();
+        virtual void ResetReading();
 
     private:
         void TryGrantSend();
