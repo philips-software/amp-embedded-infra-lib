@@ -341,6 +341,7 @@ namespace infra
     {
         for (auto i = size; i < width.width; ++i)
             Writer().Insert(MakeByteRange(width.padding), ErrorPolicy());
+        width = Width(0);
     }
 
     AsAsciiHelper::AsAsciiHelper(ConstByteRange data)
