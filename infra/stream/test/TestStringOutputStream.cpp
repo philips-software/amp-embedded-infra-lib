@@ -2,6 +2,7 @@
 #include "infra/stream/SavedMarkerStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/util/BoundedString.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include <cstdint>
 #include <limits>
@@ -234,6 +235,14 @@ TEST(StringOutputStreamTest, stream_hex_with_leading_zeroes)
 
     stream << infra::hex << infra::Width(4, '0') << uint8_t(0x1A);
     EXPECT_EQ("001a", stream.Storage());
+}
+
+TEST(StringOutputStreamTest, stream_with_leading_zeros_followed_by_endl)
+{
+    infra::StringOutputStream::WithStorage<16> stream;
+
+    stream << infra::Width(4, '0') << 12 << infra::endl;
+    EXPECT_EQ("0012\r\n", stream.Storage());
 }
 
 TEST(StringOutputStreamTest, stream_short_bin)
