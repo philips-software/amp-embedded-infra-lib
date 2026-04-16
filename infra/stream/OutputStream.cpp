@@ -1,5 +1,6 @@
 #include "infra/stream/OutputStream.hpp"
 #include "infra/util/Base64.hpp"
+#include "infra/util/LogAndAbort.hpp"
 #include <cmath>
 #include <limits>
 
@@ -100,6 +101,7 @@ namespace infra
 
     TextOutputStream& TextOutputStream::operator<<(BoundedConstString string)
     {
+        OutputOptionalPadding(string.size());
         Writer().Insert(ReinterpretCastByteRange(MakeRange(string.begin(), string.end())), ErrorPolicy());
 
         return *this;
@@ -107,6 +109,7 @@ namespace infra
 
     TextOutputStream& TextOutputStream::operator<<(const std::string& string)
     {
+        OutputOptionalPadding(string.size());
         Writer().Insert(ReinterpretCastByteRange(MakeRange(string.data(), string.data() + string.size())), ErrorPolicy());
 
         return *this;
@@ -150,6 +153,7 @@ namespace infra
 
     TextOutputStream& TextOutputStream::operator<<(char c)
     {
+        OutputOptionalPadding(1);
         Writer().Insert(MakeByteRange(c), ErrorPolicy());
         return *this;
     }
@@ -201,7 +205,7 @@ namespace infra
                 OutputAsHexadecimal(v, negative);
                 break;
             default:
-                std::abort();
+                LOG_AND_ABORT_ENUM(radix);
         }
 
         return *this;
@@ -221,7 +225,7 @@ namespace infra
                 OutputAsHexadecimal(v, false);
                 break;
             default:
-                std::abort();
+                LOG_AND_ABORT_ENUM(radix);
         }
 
         return *this;
@@ -370,10 +374,8 @@ namespace infra
 
     TextOutputStream& operator<<(TextOutputStream& stream, const AsHexHelper& asHexHelper)
     {
-        TextOutputStream hexStream = stream << hex << Width(2, '0');
-
         for (uint8_t byte : asHexHelper.data)
-            hexStream << byte;
+            stream << hex << Width(2, '0') << byte;
 
         return stream;
     }

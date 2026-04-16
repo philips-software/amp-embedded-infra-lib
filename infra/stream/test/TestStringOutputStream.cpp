@@ -236,7 +236,7 @@ TEST(StringOutputStreamTest, stream_hex_with_leading_zeroes)
     EXPECT_EQ("001a", stream.Storage());
 }
 
-TEST(StringOutputStreamTest, stream_with_leading_zeros_followed_by_endl)
+TEST(StringOutputStreamTest, stream_with_leading_zeroes_followed_by_endl)
 {
     infra::StringOutputStream::WithStorage<16> stream;
 
@@ -318,6 +318,39 @@ TEST(StringOutputStreamTest, format_simple_string_width)
 
     stream << infra::Width(10) << "simple";
     EXPECT_EQ("    simple", stream.Storage());
+}
+
+TEST(StringOutputStreamTest, stream_bounded_string_with_width)
+{
+    infra::StringOutputStream::WithStorage<64> stream;
+
+    infra::BoundedConstString s = "hi";
+    stream << infra::Width(6) << s;
+    EXPECT_EQ("    hi", stream.Storage());
+}
+
+TEST(StringOutputStreamTest, stream_std_string_with_width)
+{
+    infra::StringOutputStream::WithStorage<64> stream;
+
+    stream << infra::Width(6) << std::string("hi");
+    EXPECT_EQ("    hi", stream.Storage());
+}
+
+TEST(StringOutputStreamTest, stream_char_with_width)
+{
+    infra::StringOutputStream::WithStorage<64> stream;
+
+    stream << infra::Width(4) << 'x';
+    EXPECT_EQ("   x", stream.Storage());
+}
+
+TEST(StringOutputStreamTest, stream_width_is_reset_after_use)
+{
+    infra::StringOutputStream::WithStorage<64> stream;
+
+    stream << infra::Width(4) << 'x' << 'y';
+    EXPECT_EQ("   xy", stream.Storage());
 }
 
 TEST(StringOutputStreamTest, format_string_with_one_parameter)
