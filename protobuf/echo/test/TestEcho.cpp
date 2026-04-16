@@ -47,11 +47,6 @@ TEST_F(EchoTest, cancel_clears_requested_size)
     EXPECT_EQ(serviceProxy.CurrentRequestedSize(), 0);
 }
 
-TEST_F(EchoTest, cancel_without_pending_request_is_a_noop)
-{
-    serviceProxy.CancelRequestSend(); // no expectations set — must not call echo at all
-}
-
 TEST_F(EchoTest, cancel_and_retry_request_send_succeeds)
 {
     // First request

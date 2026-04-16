@@ -20,7 +20,8 @@ namespace services
 
     ServiceProxy::~ServiceProxy()
     {
-        CancelRequestSend();
+        if (onGranted != nullptr)
+            CancelRequestSend();
     }
 
     Echo& ServiceProxy::Rpc()
@@ -49,12 +50,10 @@ namespace services
 
     void ServiceProxy::CancelRequestSend()
     {
-        if (onGranted != nullptr)
-        {
-            onGranted = nullptr;
-            currentRequestedSize = 0;
-            echo.CancelRequestSend(*this);
-        }
+        assert(onGranted);
+        onGranted = nullptr;
+        currentRequestedSize = 0;
+        echo.CancelRequestSend(*this);
     }
 
     uint32_t ServiceProxy::MaxMessageSize() const
