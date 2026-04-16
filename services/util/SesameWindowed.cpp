@@ -97,6 +97,8 @@ namespace services
         readerAccess.SetAction([this]()
             {
                 currentReceiveMessageReader = std::nullopt;
+                currentReceiveMessageSize = 0;
+                receivedMessage.clear();
             });
     }
 
