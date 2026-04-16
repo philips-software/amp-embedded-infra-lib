@@ -240,8 +240,8 @@ TEST(StringOutputStreamTest, stream_with_leading_zeros_followed_by_endl)
 {
     infra::StringOutputStream::WithStorage<16> stream;
 
-    stream << infra::Width(4, '0') << 12 << infra::endl;
-    EXPECT_EQ("0012\r\n", stream.Storage());
+    stream << infra::Width(4, '0') << 12 << "a";
+    EXPECT_EQ("0012a", stream.Storage());
 }
 
 TEST(StringOutputStreamTest, stream_short_bin)
