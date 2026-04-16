@@ -33,7 +33,7 @@ namespace services
 
     void EchoOnStreams::Reset()
     {
-        ReleaseReader();
+        ResetReading();
 
         while (!sendRequesters.empty())
             sendRequesters.front().CancelRequestSend();
@@ -122,7 +122,7 @@ namespace services
             skipNextStream = true;
         }
 
-        ReleaseReader();
+        ResetReading();
         limitedReader.reset();
         ReleaseDeserializer();
     }
@@ -130,6 +130,11 @@ namespace services
     void EchoOnStreams::ReleaseDeserializer()
     {
         methodDeserializer = nullptr;
+    }
+
+    void EchoOnStreams::ResetReading()
+    {
+        ReleaseReader();
     }
 
     void EchoOnStreams::TryGrantSend()

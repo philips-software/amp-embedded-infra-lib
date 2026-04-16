@@ -48,4 +48,10 @@ namespace services
             // Before initialization, the maximum window advertised is not yet known, so postpone the RequestSendMessage until initialized
             requestedSize = size;
     }
+
+    void EchoOnSesame::ResetReading()
+    {
+        SesameObserver::Subject().ResetReading();
+        EchoOnStreams::ResetReading();
+    }
 }
