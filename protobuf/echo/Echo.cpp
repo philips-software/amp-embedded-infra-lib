@@ -23,16 +23,6 @@ namespace services
         CancelRequestSend();
     }
 
-    void ServiceProxy::CancelRequestSend()
-    {
-        if (onGranted != nullptr)
-        {
-            onGranted = nullptr;
-            currentRequestedSize = 0;
-            echo.CancelRequestSend(*this);
-        }
-    }
-
     Echo& ServiceProxy::Rpc()
     {
         return echo;
@@ -55,6 +45,16 @@ namespace services
     {
         onGranted();
         return std::move(methodSerializer);
+    }
+
+    void ServiceProxy::CancelRequestSend()
+    {
+        if (onGranted != nullptr)
+        {
+            onGranted = nullptr;
+            currentRequestedSize = 0;
+            echo.CancelRequestSend(*this);
+        }
     }
 
     uint32_t ServiceProxy::MaxMessageSize() const
