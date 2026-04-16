@@ -94,7 +94,10 @@ namespace services
 
     void SesameWindowed::ResetReading()
     {
-        readerAccess.SetAction([]() {});
+        readerAccess.SetAction([this]()
+            {
+                currentReceiveMessageReader = std::nullopt;
+            });
     }
 
     void SesameWindowed::Initialized()
