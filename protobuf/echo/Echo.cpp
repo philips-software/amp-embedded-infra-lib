@@ -50,7 +50,6 @@ namespace services
 
     void ServiceProxy::CancelRequestSend()
     {
-        assert(onGranted);
         onGranted = nullptr;
         currentRequestedSize = 0;
         echo.CancelRequestSend(*this);

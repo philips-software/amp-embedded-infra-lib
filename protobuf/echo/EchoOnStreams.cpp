@@ -2,7 +2,6 @@
 #include "infra/stream/InputStream.hpp"
 #include "infra/stream/OutputStream.hpp"
 #include "infra/stream/StreamErrorPolicy.hpp"
-#include "infra/syntax/Json.hpp"
 #include "infra/syntax/ProtoFormatter.hpp"
 #include "infra/syntax/ProtoParser.hpp"
 #include "infra/util/Function.hpp"
