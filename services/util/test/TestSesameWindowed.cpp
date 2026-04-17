@@ -507,7 +507,7 @@ TEST_F(SesameWindowedTest, window_is_released_after_message_has_been_processed)
     savedReader = nullptr;
 }
 
-TEST_F(SesameWindowedTest, no_new_message_after_stop)
+TEST_F(SesameWindowedTest, no_new_message_after_ResetReading)
 {
     ReceiveInitResponse(24);
 
@@ -515,7 +515,7 @@ TEST_F(SesameWindowedTest, no_new_message_after_stop)
     ReceiveMessage("abcd");
 
     // ExpectRequestSendMessageForReleaseWindow(12);
-    communication.Stop();
+    communication.ResetReading();
     savedReader = nullptr;
 
     ExecuteAllActions();

@@ -51,7 +51,9 @@ public:
 
     void Initialized()
     {
+        EXPECT_CALL(lowerLeft, ResetReading());
         lowerLeft.GetObserver().Initialized();
+        EXPECT_CALL(lowerRight, ResetReading());
         lowerRight.GetObserver().Initialized();
     }
 

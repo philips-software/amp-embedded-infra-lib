@@ -44,7 +44,7 @@ namespace infra
 
     void TimerService::UpdateTriggerTime(Timer& timer, TimePoint oldTriggerTime)
     {
-        if (nextTrigger == oldTriggerTime)
+        if (nextTrigger == oldTriggerTime || timer.NextTrigger() < nextTrigger)
             ComputeNextTrigger();
     }
 
