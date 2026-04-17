@@ -7,6 +7,31 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [9.1.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v9.0.0...v9.1.0) (2026-04-17)
+
+
+### Features
+
+* Add flushable StreamWriter ([#1116](https://github.com/philips-software/amp-embedded-infra-lib/issues/1116)) ([74c80ee](https://github.com/philips-software/amp-embedded-infra-lib/commit/74c80eeb311a7da2870aec8587393c0dcac90149))
+* Add HttpClient attached guard for status available ([#1139](https://github.com/philips-software/amp-embedded-infra-lib/issues/1139)) ([cfed7f2](https://github.com/philips-software/amp-embedded-infra-lib/commit/cfed7f2ad7d7dd3087e5be396a78478e14d87a33))
+* Add precision for strings in printfAdapter ([#1141](https://github.com/philips-software/amp-embedded-infra-lib/issues/1141)) ([d2ae465](https://github.com/philips-software/amp-embedded-infra-lib/commit/d2ae4652927524cb491fc8ce09388aeec592c69e))
+* Allow constexpr BoundedString without explicit size ([#1149](https://github.com/philips-software/amp-embedded-infra-lib/issues/1149)) ([eb50c72](https://github.com/philips-software/amp-embedded-infra-lib/commit/eb50c724391b560607345364f99af03c4dd88723))
+* Harden Echo RequestSend against multiple calls before granted ([#1167](https://github.com/philips-software/amp-embedded-infra-lib/issues/1167)) ([63b95d9](https://github.com/philips-software/amp-embedded-infra-lib/commit/63b95d9243b274f70c204737fb9bd9a328923b1a))
+* Hold init response in sesame until confirmed ([#1158](https://github.com/philips-software/amp-embedded-infra-lib/issues/1158)) ([2e1d898](https://github.com/philips-software/amp-embedded-infra-lib/commit/2e1d898fdc5f835421c4311dc1e9e3012253a70b))
+* Make Crc methods constexpr for improved compile-time evaluation ([#1153](https://github.com/philips-software/amp-embedded-infra-lib/issues/1153)) ([9580b15](https://github.com/philips-software/amp-embedded-infra-lib/commit/9580b15c4241fec2bb068cf164c45d3589ac13ec))
+* Refactor LogAndAbortTracer to add flushing ([#1148](https://github.com/philips-software/amp-embedded-infra-lib/issues/1148)) ([b127c70](https://github.com/philips-software/amp-embedded-infra-lib/commit/b127c70af147c4e17c32c960e0896243da02ab07))
+* Report integrity error if suspected incomplete message is not followed by an init ([#1161](https://github.com/philips-software/amp-embedded-infra-lib/issues/1161)) ([ead7946](https://github.com/philips-software/amp-embedded-infra-lib/commit/ead7946903938201413a480be0778ce3447ad5a2))
+* Support independent dual-stack endpoints in BonjourServer ([#1169](https://github.com/philips-software/amp-embedded-infra-lib/issues/1169)) ([7a339ef](https://github.com/philips-software/amp-embedded-infra-lib/commit/7a339efff25c65cd01d7c9d474b2b85b2bb99dbb))
+
+
+### Bug Fixes
+
+* Destruction of EchoOnStreams with buffered data must not crash ([#1146](https://github.com/philips-software/amp-embedded-infra-lib/issues/1146)) ([e3dea07](https://github.com/philips-software/amp-embedded-infra-lib/commit/e3dea07304c18374ffd4d8775c764d2808203e10))
+* Event dispatcher on bsd not idling ([#1138](https://github.com/philips-software/amp-embedded-infra-lib/issues/1138)) ([856010b](https://github.com/philips-software/amp-embedded-infra-lib/commit/856010bc3aa81078d4fee69aea4941992d78f706))
+* FlashEcho can be stopped immediately when waiting for echo request ([43cf133](https://github.com/philips-software/amp-embedded-infra-lib/commit/43cf133b50c115fd2ba6e58e737fc52718d1aef6))
+* FlashEcho can be stopped immediately when waiting for echo request ([#1143](https://github.com/philips-software/amp-embedded-infra-lib/issues/1143)) ([43cf133](https://github.com/philips-software/amp-embedded-infra-lib/commit/43cf133b50c115fd2ba6e58e737fc52718d1aef6))
+* TimerService recompute of next trigger on timer update ([#1165](https://github.com/philips-software/amp-embedded-infra-lib/issues/1165)) ([7c22939](https://github.com/philips-software/amp-embedded-infra-lib/commit/7c2293981534356e6255f71255ff9167af332dde))
+
 ## [9.0.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v8.0.0...v9.0.0) (2026-03-13)
 
 
