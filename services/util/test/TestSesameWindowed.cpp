@@ -54,15 +54,27 @@ public:
     void ReceiveInitRequest(uint16_t availableWindow)
     {
         EXPECT_CALL(observer, Initialized());
-        EXPECT_CALL(initializer, InitInformationReceived(testing::_));
-        ReceivePacket(infra::ConstructBin().Value<uint8_t>(1).Value<infra::LittleEndian<uint16_t>>(availableWindow).Vector());
+        EXPECT_CALL(initializer, InitInformationReceived(testing::_)).WillOnce(testing::Invoke([this](infra::StreamReaderWithRewinding& initInfoReader)
+            {
+                infra::DataInputStream::WithErrorPolicy stream(initInfoReader);
+                std::vector<uint8_t> data(stream.Available());
+                stream >> infra::MakeRange(data);
+                EXPECT_TRUE(infra::ContentsEqual(infra::MakeRange(initInfo), infra::MakeRange(data)));
+            }));
+        ReceivePacket(infra::ConstructBin().Value<uint8_t>(1).Value<infra::LittleEndian<uint16_t>>(availableWindow)(initInfo).Vector());
     }
 
     void ReceiveInitResponse(uint16_t availableWindow)
     {
         EXPECT_CALL(observer, Initialized());
-        EXPECT_CALL(initializer, InitInformationReceived(testing::_));
-        ReceivePacket(infra::ConstructBin().Value<uint8_t>(2).Value<infra::LittleEndian<uint16_t>>(availableWindow).Vector());
+        EXPECT_CALL(initializer, InitInformationReceived(testing::_)).WillOnce(testing::Invoke([this](infra::StreamReaderWithRewinding& initInfoReader)
+            {
+                infra::DataInputStream::WithErrorPolicy stream(initInfoReader);
+                std::vector<uint8_t> data(stream.Available());
+                stream >> infra::MakeRange(data);
+                EXPECT_TRUE(infra::ContentsEqual(infra::MakeRange(initInfo), infra::MakeRange(data)));
+            }));
+        ReceivePacket(infra::ConstructBin().Value<uint8_t>(2).Value<infra::LittleEndian<uint16_t>>(availableWindow)(initInfo).Vector());
     }
 
     void ReceiveReleaseWindow(uint16_t availableWindow)
@@ -192,7 +204,7 @@ TEST_F(SesameWindowedTest, message_waits_until_window_is_freed)
 
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
-    ExpectRequestSendMessageForReleaseWindow(10);
+    ExpectRequestSendMessageForReleaseWindow(12);
     ReceiveReleaseWindow(6);
 }
 
@@ -206,7 +218,7 @@ TEST_F(SesameWindowedTest, long_message_waits_until_window_is_freed_taking_into_
 
     ExpectRequestSendMessageForMessage(254, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
-    ExpectRequestSendMessageForReleaseWindow(10);
+    ExpectRequestSendMessageForReleaseWindow(12);
     ReceiveReleaseWindow(1);
 }
 
@@ -266,7 +278,7 @@ TEST_F(SesameWindowedTest, receive_message_after_initialized)
     ReceiveInitResponse(26);
 
     ExpectReceivedMessage("abcd");
-    ExpectRequestSendMessageForReleaseWindow(12);
+    ExpectRequestSendMessageForReleaseWindow(14);
     ReceiveMessage("abcd");
 }
 
@@ -277,7 +289,7 @@ TEST_F(SesameWindowedTest, release_window_packet_waits_for_window_available)
     ExpectReceivedMessage("abcd");
     ReceiveMessage("abcd");
 
-    ExpectRequestSendMessageForReleaseWindow(17);
+    ExpectRequestSendMessageForReleaseWindow(19);
     ReceiveReleaseWindow(5);
 }
 
@@ -360,8 +372,8 @@ TEST_F(SesameWindowedTest, increase_window_while_sending)
     communication.RequestSendMessage(4);
 
     // operate
-    ExpectRequestSendMessageForReleaseWindow(10);
-    ReceiveReleaseWindow(11);
+    ExpectRequestSendMessageForReleaseWindow(12);
+    ReceiveReleaseWindow(17);
 
     // Send a new message that uses the newly announced window
     ExpectRequestSendMessageForMessage(3, { 5, 6 });
@@ -451,7 +463,7 @@ TEST_F(SesameWindowedTest, release_window_while_sending_init_response_is_ignored
     ReceiveInitResponse(24);
 
     // operate
-    ExpectRequestSendMessageForReleaseWindow(10);
+    ExpectRequestSendMessageForReleaseWindow(12);
     ReceiveReleaseWindow(4);
 }
 
@@ -460,12 +472,12 @@ TEST_F(SesameWindowedTest, no_window_release_after_small_message)
     // build
     ReceiveInitResponse(24);
     ExpectReceivedMessage("ab");
-    ExpectRequestSendMessageForReleaseWindow(10);
+    ExpectRequestSendMessageForReleaseWindow(12);
     ReceiveMessage("ab");
 
     // operate
     ExpectReceivedMessage("ab");
-    // ExpectRequestSendMessageForReleaseWindow(10);
+    // ExpectRequestSendMessageForReleaseWindow(12);
     ReceiveMessage("ab");
 }
 
@@ -474,7 +486,7 @@ TEST_F(SesameWindowedTest, no_window_release_after_just_release_window)
     // build
     ReceiveInitResponse(24);
     ExpectReceivedMessage("ab");
-    ExpectRequestSendMessageForReleaseWindow(10);
+    ExpectRequestSendMessageForReleaseWindow(12);
     ReceiveMessage("ab");
 
     // operate
@@ -487,7 +499,7 @@ TEST_F(SesameWindowedTest, window_release_after_second_release_window)
     // build
     ReceiveInitResponse(24);
     ExpectReceivedMessage("ab");
-    ExpectRequestSendMessageForReleaseWindow(10);
+    ExpectRequestSendMessageForReleaseWindow(12);
     ReceiveMessage("ab");
 
     // operate
@@ -503,7 +515,7 @@ TEST_F(SesameWindowedTest, window_is_released_after_message_has_been_processed)
     ExpectReceivedMessageAndSaveReader("abcd");
     ReceiveMessage("abcd");
 
-    ExpectRequestSendMessageForReleaseWindow(12);
+    ExpectRequestSendMessageForReleaseWindow(14);
     savedReader = nullptr;
 }
 
@@ -514,7 +526,7 @@ TEST_F(SesameWindowedTest, no_new_message_after_ResetReading)
     ExpectReceivedMessageAndSaveReader("abcd");
     ReceiveMessage("abcd");
 
-    // ExpectRequestSendMessageForReleaseWindow(12);
+    // ExpectRequestSendMessageForReleaseWindow(14);
     communication.ResetReading();
     savedReader = nullptr;
 
