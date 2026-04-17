@@ -73,6 +73,7 @@ namespace services
         void RequestSendMessage(std::size_t size) override;
         std::size_t MaxSendMessageSize() const override;
         void Reset() override;
+        void ResetReading() override;
 
     private:
         // Implementation of SesameObserver

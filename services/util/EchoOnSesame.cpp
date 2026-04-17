@@ -9,9 +9,9 @@ namespace services
 
     void EchoOnSesame::Reset()
     {
+        EchoOnStreams::Reset();
         initialized = false;
         requestedSize.reset();
-        ReleaseReader();
         SesameObserver::Subject().Reset();
     }
 
@@ -47,5 +47,11 @@ namespace services
         else
             // Before initialization, the maximum window advertised is not yet known, so postpone the RequestSendMessage until initialized
             requestedSize = size;
+    }
+
+    void EchoOnSesame::ResetReading()
+    {
+        SesameObserver::Subject().ResetReading();
+        EchoOnStreams::ResetReading();
     }
 }

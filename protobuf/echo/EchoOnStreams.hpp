@@ -33,6 +33,7 @@ namespace services
         services::MethodSerializerFactory& SerializerFactory() override;
 
     protected:
+        void Reset();
         virtual infra::SharedPtr<MethodSerializer> GrantSend(ServiceProxy& proxy);
         virtual infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, infra::SharedPtr<MethodDeserializer>&& deserializer);
         virtual void RequestSendStream(std::size_t size) = 0;
@@ -43,6 +44,7 @@ namespace services
         void Initialized();
         virtual void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
         virtual void ReleaseDeserializer();
+        virtual void ResetReading();
 
     private:
         void TryGrantSend();
