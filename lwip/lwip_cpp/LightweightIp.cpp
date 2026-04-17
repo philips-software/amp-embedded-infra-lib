@@ -103,10 +103,9 @@ namespace services
 
     IPv6Address LightweightIp::LinkLocalAddress() const
     {
-        for (s8_t i = 0; i < LWIP_IPV6_NUM_ADDRESSES; ++i)
-            if (ip6_addr_isvalid(netif_ip6_addr_state(netif_default, i)) &&
-                ip6_addr_islinklocal(netif_ip6_addr(netif_default, i)))
-                return Convert(*netif_ip6_addr(netif_default, i));
+        for (const auto& address : netif_default->ip6_addr)
+            if (ip6_addr_islinklocal(&address.u_addr.ip6))
+                return Convert(address.u_addr.ip6);
         return {};
     }
 

@@ -243,7 +243,7 @@ namespace services
         netInterface.hwaddr[5] = macAddress[5];
 
         netInterface.mtu = 1500;
-        netInterface.flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_IGMP | NETIF_FLAG_MLD6;
+        netInterface.flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_IGMP;
 
         return ERR_OK;
     }

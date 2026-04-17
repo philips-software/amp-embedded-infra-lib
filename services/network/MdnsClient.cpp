@@ -120,8 +120,7 @@ namespace services
 
     void MdnsQueryImpl::CheckAnswer(services::IPVersions ipVersion, infra::BoundedString& hostname, DnsRecordPayload& payload, infra::ConstByteRange data)
     {
-        const uint16_t dnsClassMask = 0x7fff; // mask off mDNS cache-flush bit (RFC 6762 §11)
-        if (this->ipVersion == ipVersion && hostname == dnsHostname && payload.type == dnsType && (static_cast<uint16_t>(payload.class_) & dnsClassMask) == infra::enum_cast(DnsClass::dnsClassIn))
+        if (this->ipVersion == ipVersion && hostname == dnsHostname && payload.type == dnsType && payload.class_ == DnsClass::dnsClassIn)
         {
             processingQuery = true;
             queryHit(data);

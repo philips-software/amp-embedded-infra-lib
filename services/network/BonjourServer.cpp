@@ -53,7 +53,10 @@ namespace services
 
     BonjourServer::BonjourServer(DatagramFactory& factory, Multicast& multicast, infra::BoundedConstString instance, infra::BoundedConstString serviceName, infra::BoundedConstString type,
         std::optional<IPv4Address> ipv4Address, std::optional<IPv6Address> ipv6Address, uint16_t port, const DnsHostnameParts& text)
-        : instance(instance)
+        : datagramExchangeIpv4(ipv4Address != std::nullopt ? factory.Listen(*this, mdnsPort, IPVersions::ipv4) : nullptr)
+        , datagramExchangeIpv6(ipv6Address != std::nullopt ? factory.Listen(*this, mdnsPort, IPVersions::ipv6) : nullptr)
+        , multicast(multicast)
+        , instance(instance)
         , serviceName(serviceName)
         , type(type)
         , ipv4Address(ipv4Address)
@@ -62,57 +65,32 @@ namespace services
         , text(text)
     {
         if (ipv4Address != std::nullopt)
-            ipv4Endpoint.emplace(*this, factory, multicast, IPVersions::ipv4, MakeUdpSocket(mdnsMulticastAddressIpv4, mdnsPort));
+            multicast.JoinMulticastGroup(datagramExchangeIpv4, mdnsMulticastAddressIpv4);
         if (ipv6Address != std::nullopt)
-            ipv6Endpoint.emplace(*this, factory, multicast, IPVersions::ipv6, MakeUdpSocket(mdnsMulticastAddressIpv6, mdnsPort));
+            multicast.JoinMulticastGroup(datagramExchangeIpv6, mdnsMulticastAddressIpv6);
+
+        if (datagramExchangeIpv4 != nullptr)
+            state.Emplace<StateAnnounceIPv4>(*this);
+        else
+            state.Emplace<StateAnnounceIPv6>(*this);
     }
 
-    BonjourServer::DatagramEndpoint::DatagramEndpoint(BonjourServer& server, DatagramFactory& factory, Multicast& multicast, IPVersions ipVersion, UdpSocket multicastSocket)
-        : server(server)
-        , multicast(multicast)
-        , multicastSocket(multicastSocket)
-        , exchange(factory.Listen(observer, mdnsPort, ipVersion))
-        , state(std::in_place_type_t<StateIdle>(), *this)
+    BonjourServer::~BonjourServer()
     {
-        std::visit([&](const auto& socket)
-            {
-                multicast.JoinMulticastGroup(exchange, socket.first);
-            },
-            this->multicastSocket);
-        state.Emplace<StateAnnounce>(*this);
+        if (ipv4Address != std::nullopt)
+            multicast.LeaveMulticastGroup(datagramExchangeIpv4, mdnsMulticastAddressIpv4);
+        if (ipv6Address != std::nullopt)
+            multicast.LeaveMulticastGroup(datagramExchangeIpv6, mdnsMulticastAddressIpv6);
     }
 
-    BonjourServer::DatagramEndpoint::~DatagramEndpoint()
+    void BonjourServer::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from)
     {
-        std::visit([&](const auto& socket)
-            {
-                multicast.LeaveMulticastGroup(exchange, socket.first);
-            },
-            multicastSocket);
+        state->DataReceived(std::move(reader), from);
     }
 
-    void BonjourServer::DatagramEndpoint::WriteAnnounceQuery(infra::StreamWriter& writer)
+    void BonjourServer::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
-        Answer answer(server, 0, writer, 5, 0);
-        answer.AddPtrAnswer();
-        answer.AddSrvAnswer();
-        answer.AddTxtAnswer();
-        answer.AddAAnswer();
-        answer.AddAaaaAnswer();
-    }
-
-    BonjourServer::DatagramEndpoint::Observer::Observer(DatagramEndpoint& endpoint)
-        : endpoint(endpoint)
-    {}
-
-    void BonjourServer::DatagramEndpoint::Observer::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from)
-    {
-        endpoint.state->DataReceived(std::move(reader), from);
-    }
-
-    void BonjourServer::DatagramEndpoint::Observer::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
-    {
-        endpoint.state->SendStreamAvailable(std::move(writer));
+        state->SendStreamAvailable(std::move(writer));
     }
 
     BonjourServer::Answer::Answer(BonjourServer& server, uint16_t queryId, infra::StreamWriter& writer, uint16_t answersCount, uint16_t additionalRecordsCount)
@@ -490,29 +468,11 @@ namespace services
         return parts.Empty() && components.empty();
     }
 
-    BonjourServer::DatagramEndpoint::StateAnnounce::StateAnnounce(DatagramEndpoint& endpoint)
-        : endpoint(endpoint)
-    {
-        infra::CountingStreamWriter countingWriter;
-        endpoint.WriteAnnounceQuery(countingWriter);
-        endpoint.exchange->RequestSendStream(countingWriter.Processed(), endpoint.multicastSocket);
-    }
-
-    void BonjourServer::DatagramEndpoint::StateAnnounce::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from)
+    BonjourServer::StateIdle::StateIdle(BonjourServer& server)
+        : server(server)
     {}
 
-    void BonjourServer::DatagramEndpoint::StateAnnounce::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
-    {
-        endpoint.WriteAnnounceQuery(*writer);
-        writer = nullptr;
-        endpoint.state.Emplace<StateIdle>(endpoint);
-    }
-
-    BonjourServer::DatagramEndpoint::StateIdle::StateIdle(DatagramEndpoint& endpoint)
-        : endpoint(endpoint)
-    {}
-
-    void BonjourServer::DatagramEndpoint::StateIdle::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from)
+    void BonjourServer::StateIdle::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from)
     {
         if (GetPort(from) != mdnsPort)
             return;
@@ -521,18 +481,78 @@ namespace services
             return;
 
         waitingReader = std::move(reader);
-        QuestionParser question(endpoint.server, *waitingReader);
+        QuestionParser question(server, *waitingReader);
         if (question.HasAnswer())
-            question.RequestSendStream(*endpoint.exchange, from, endpoint.multicastSocket);
+        {
+            if (std::holds_alternative<services::IPv4Address>(GetAddress(from)))
+                question.RequestSendStream(*server.datagramExchangeIpv4, from, MakeUdpSocket(mdnsMulticastAddressIpv4, mdnsPort));
+            else
+                question.RequestSendStream(*server.datagramExchangeIpv6, from, MakeUdpSocket(mdnsMulticastAddressIpv6, mdnsPort));
+        }
         else
             waitingReader = nullptr;
     }
 
-    void BonjourServer::DatagramEndpoint::StateIdle::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+    void BonjourServer::StateIdle::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         assert(waitingReader != nullptr);
 
-        QuestionParser question(endpoint.server, *waitingReader, *writer);
+        QuestionParser question(server, *waitingReader, *writer);
+
         waitingReader = nullptr;
+    }
+
+    BonjourServer::StateAnnounce::StateAnnounce(BonjourServer& server)
+        : server(server)
+    {}
+
+    void BonjourServer::StateAnnounce::DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from)
+    {}
+
+    void BonjourServer::StateAnnounce::WriteAnnounceQuery(infra::StreamWriter& writer)
+    {
+        Answer answer(server, 0, writer, 5, 0);
+        answer.AddPtrAnswer();
+        answer.AddSrvAnswer();
+        answer.AddTxtAnswer();
+        answer.AddAAnswer();
+        answer.AddAaaaAnswer();
+    }
+
+    BonjourServer::StateAnnounceIPv4::StateAnnounceIPv4(BonjourServer& server)
+        : StateAnnounce(server)
+    {
+        infra::CountingStreamWriter countingWriter;
+        WriteAnnounceQuery(countingWriter);
+
+        server.datagramExchangeIpv4->RequestSendStream(countingWriter.Processed(), MakeUdpSocket(mdnsMulticastAddressIpv4, mdnsPort));
+    }
+
+    void BonjourServer::StateAnnounceIPv4::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+    {
+        WriteAnnounceQuery(*writer);
+        writer = nullptr;
+
+        if (server.datagramExchangeIpv6 != nullptr)
+            server.state.Emplace<StateAnnounceIPv6>(server);
+        else
+            server.state.Emplace<StateIdle>(server);
+    }
+
+    BonjourServer::StateAnnounceIPv6::StateAnnounceIPv6(BonjourServer& server)
+        : StateAnnounce(server)
+    {
+        infra::CountingStreamWriter countingWriter;
+        WriteAnnounceQuery(countingWriter);
+
+        server.datagramExchangeIpv6->RequestSendStream(countingWriter.Processed(), MakeUdpSocket(mdnsMulticastAddressIpv6, mdnsPort));
+    }
+
+    void BonjourServer::StateAnnounceIPv6::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+    {
+        WriteAnnounceQuery(*writer);
+        writer = nullptr;
+
+        server.state.Emplace<StateIdle>(server);
     }
 }

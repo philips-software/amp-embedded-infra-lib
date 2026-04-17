@@ -10,10 +10,15 @@
 namespace services
 {
     class BonjourServer
+        : public DatagramExchangeObserver
     {
     public:
         BonjourServer(DatagramFactory& factory, Multicast& multicast, infra::BoundedConstString instance, infra::BoundedConstString serviceName, infra::BoundedConstString type,
             std::optional<IPv4Address> ipv4Address, std::optional<IPv6Address> ipv6Address, uint16_t port, const DnsHostnameParts& text);
+        ~BonjourServer();
+
+        void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
+        void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
     private:
         class Answer
@@ -94,74 +99,66 @@ namespace services
             uint16_t additionalRecordsCount = 0;
         };
 
-        class DatagramEndpoint
+        class State
         {
         public:
-            DatagramEndpoint(BonjourServer& server, DatagramFactory& factory, Multicast& multicast, IPVersions ipVersion, UdpSocket multicastSocket);
-            ~DatagramEndpoint();
+            virtual ~State() = default;
 
-        private:
-            void WriteAnnounceQuery(infra::StreamWriter& writer);
+            virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) = 0;
+            virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) = 0;
+        };
 
-            class Observer
-                : public DatagramExchangeObserver
-            {
-            public:
-                explicit Observer(DatagramEndpoint& endpoint);
+        class StateIdle
+            : public State
+        {
+        public:
+            explicit StateIdle(BonjourServer& server);
 
-                void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
-                void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-
-            private:
-                DatagramEndpoint& endpoint;
-            };
-
-            class State
-            {
-            public:
-                virtual ~State() = default;
-
-                virtual void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) = 0;
-                virtual void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) = 0;
-            };
-
-            class StateAnnounce
-                : public State
-            {
-            public:
-                explicit StateAnnounce(DatagramEndpoint& endpoint);
-
-                void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
-                void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-
-            private:
-                DatagramEndpoint& endpoint;
-            };
-
-            class StateIdle
-                : public State
-            {
-            public:
-                explicit StateIdle(DatagramEndpoint& endpoint);
-
-                void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
-                void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-
-            private:
-                DatagramEndpoint& endpoint;
-                infra::SharedPtr<infra::StreamReaderWithRewinding> waitingReader;
-            };
+            void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
+            void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
 
         private:
             BonjourServer& server;
-            Multicast& multicast;
-            UdpSocket multicastSocket;
-            Observer observer{ *this };
-            infra::SharedPtr<DatagramExchange> exchange;
-            infra::PolymorphicVariant<State, StateAnnounce, StateIdle> state;
+            infra::SharedPtr<infra::StreamReaderWithRewinding> waitingReader;
+        };
+
+        class StateAnnounce
+            : public State
+        {
+        public:
+            explicit StateAnnounce(BonjourServer& server);
+
+            void DataReceived(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, UdpSocket from) override;
+
+        protected:
+            void WriteAnnounceQuery(infra::StreamWriter& writer);
+
+        protected:
+            BonjourServer& server;
+        };
+
+        class StateAnnounceIPv4
+            : public StateAnnounce
+        {
+        public:
+            explicit StateAnnounceIPv4(BonjourServer& server);
+
+            void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
+        };
+
+        class StateAnnounceIPv6
+            : public StateAnnounce
+        {
+        public:
+            explicit StateAnnounceIPv6(BonjourServer& server);
+
+            void SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
         };
 
     private:
+        infra::SharedPtr<DatagramExchange> datagramExchangeIpv4;
+        infra::SharedPtr<DatagramExchange> datagramExchangeIpv6;
+        Multicast& multicast;
         infra::BoundedConstString instance;
         infra::BoundedConstString serviceName;
         infra::BoundedConstString type;
@@ -169,8 +166,7 @@ namespace services
         std::optional<IPv6Address> ipv6Address;
         uint16_t port;
         const DnsHostnameParts& text;
-        std::optional<DatagramEndpoint> ipv4Endpoint;
-        std::optional<DatagramEndpoint> ipv6Endpoint;
+        infra::PolymorphicVariant<State, StateIdle, StateAnnounceIPv4, StateAnnounceIPv6> state{ std::in_place_type_t<StateIdle>(), *this };
     };
 }
 
