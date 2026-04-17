@@ -2,7 +2,6 @@
 #include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/LimitedOutputStream.hpp"
-#include "infra/stream/StdVectorInputStream.hpp"
 #include "infra/util/ConstructBin.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "protobuf/echo/test_doubles/EchoMock.hpp"
