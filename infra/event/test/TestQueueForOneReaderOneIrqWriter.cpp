@@ -149,28 +149,68 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, Size)
 
     EXPECT_TRUE(queue->Empty());
     EXPECT_FALSE(queue->Full());
-    EXPECT_EQ(0, queue->Size());
+    EXPECT_EQ(0, queue->QueuedCount());
 
     queue->AddFromInterrupt(full);
     EXPECT_FALSE(queue->Empty());
     EXPECT_TRUE(queue->Full());
-    EXPECT_EQ(4, queue->Size());
+    EXPECT_EQ(4, queue->QueuedCount());
 
     queue->Consume(2);
-    EXPECT_EQ(2, queue->Size());
+    EXPECT_EQ(2, queue->QueuedCount());
     queue->AddFromInterrupt(data1);
-    EXPECT_EQ(3, queue->Size());
+    EXPECT_EQ(3, queue->QueuedCount());
 
     queue->Consume(1);
-    EXPECT_EQ(2, queue->Size());
+    EXPECT_EQ(2, queue->QueuedCount());
     queue->AddFromInterrupt(data2);
-    EXPECT_EQ(4, queue->Size());
+    EXPECT_EQ(4, queue->QueuedCount());
 }
 
 TEST_F(QueueForOneReaderOneIrqWriterTest, EmptySize)
 {
     queue.emplace(buffer, [this]() {});
-    EXPECT_EQ(sizeof(buffer) - 1, queue->EmptySize());
+    EXPECT_EQ(sizeof(buffer) - 1, queue->Capacity());
+}
+
+TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_asserts_when_insufficient_space)
+{
+    queue.emplace(buffer, [this]() {});
+
+    std::array<uint8_t, 3> data = { { 0, 1, 2 } };
+    queue->AddFromInterrupt(data);
+
+    std::array<uint8_t, 3> moreData = { { 3, 4, 5 } };
+    EXPECT_DEATH(queue->AddFromInterrupt(moreData), "");
+}
+
+TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_wrapping_around_buffer)
+{
+    queue.emplace(buffer, [this]() {});
+
+    std::array<uint8_t, 3> data = { { 0, 1, 2 } };
+    queue->AddFromInterrupt(data);
+    queue->Consume(3);
+
+    std::array<uint8_t, 4> wrapData = { { 3, 4, 5, 6 } };
+    queue->AddFromInterrupt(wrapData);
+
+    EXPECT_EQ(4, queue->QueuedCount());
+    EXPECT_EQ(3, queue->Get());
+    EXPECT_EQ(4, queue->Get());
+    EXPECT_EQ(5, queue->Get());
+    EXPECT_EQ(6, queue->Get());
+}
+
+TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_unchecked_asserts_when_overflow)
+{
+    queue.emplace(buffer, [this]() {});
+
+    std::array<uint8_t, 3> data = { { 0, 1, 2 } };
+    queue->AddFromInterruptUnchecked(data);
+
+    std::array<uint8_t, 3> moreData = { { 3, 4, 5 } };
+    EXPECT_DEATH(queue->AddFromInterruptUnchecked(moreData), "");
 }
 
 TEST_F(QueueForOneReaderOneIrqWriterTest, StreamReader)
