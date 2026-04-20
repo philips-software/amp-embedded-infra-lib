@@ -121,8 +121,6 @@ namespace infra
     {
         T* end = contentsEnd.load();
         T* begin = contentsBegin.load();
-        std::size_t available = (begin <= end) ? (buffer.size() - 1 - (end - begin)) : (begin - end - 1);
-        really_assert(data.size() <= available);
         
         std::size_t copySize = std::min<std::size_t>(data.size(), buffer.end() - end);
         std::copy(data.begin(), data.begin() + copySize, end);

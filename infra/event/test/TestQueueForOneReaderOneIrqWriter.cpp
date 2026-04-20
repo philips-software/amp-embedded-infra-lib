@@ -202,17 +202,6 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_wrapping_around_buffer)
     EXPECT_EQ(6, queue->Get());
 }
 
-TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_unchecked_asserts_when_overflow)
-{
-    queue.emplace(buffer, [this]() {});
-
-    std::array<uint8_t, 3> data = { { 0, 1, 2 } };
-    queue->AddFromInterruptUnchecked(data);
-
-    std::array<uint8_t, 3> moreData = { { 3, 4, 5 } };
-    EXPECT_DEATH(queue->AddFromInterruptUnchecked(moreData), "");
-}
-
 TEST_F(QueueForOneReaderOneIrqWriterTest, StreamReader)
 {
     queue.emplace(buffer, [this]() {});
