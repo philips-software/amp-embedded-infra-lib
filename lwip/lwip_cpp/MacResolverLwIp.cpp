@@ -26,6 +26,8 @@ namespace services
         // lwIP has no public API to trigger a standalone ND6 solicitation.
         // We therefore create a zero-length PBUF_REF probe and call
         // nd6_get_next_hop_addr_or_queue(), which drives neighbor discovery.
+        // lwIP determines whether this is a direct on-link neighbor or a
+        // routed next-hop lookup.
         // If queued, lwIP clones this volatile probe, so the caller still
         // releases the original pbuf after the lookup call returns.
         std::optional<hal::MacAddress> Nd6Lookup(const ip6_addr_t& target)
@@ -50,6 +52,8 @@ namespace services
         }
     }
 
+    // ARP is link-local. This resolver requests the MAC for the provided
+    // IPv4 address as-is and does not perform IPv4 route/next-hop lookup.
     void ArpMacResolverLwIp::SendRequest(IPv4Address address)
     {
         ip4_addr_t target;
