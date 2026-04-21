@@ -12,7 +12,7 @@ namespace services
     public:
         void SendRequest(IPv4Address address) override;
         std::optional<hal::MacAddress> Lookup(IPv4Address address) override;
-        void Resolve(IPv4Address address, uint8_t retries, infra::Duration retryInterval, const infra::Function<void(std::optional<hal::MacAddress>)>& onDone) override;
+        bool Resolve(IPv4Address address, uint8_t retries, infra::Duration retryInterval, const infra::Function<void(std::optional<hal::MacAddress>)>& onDone) override;
 
     private:
         void OnRetry();
@@ -27,7 +27,7 @@ namespace services
         : public Nd6MacResolver
     {
     public:
-        void Resolve(const IPv6Address& address, uint8_t retries, infra::Duration retryInterval, const infra::Function<void(std::optional<hal::MacAddress>)>& onDone) override;
+        bool Resolve(const IPv6Address& address, uint8_t retries, infra::Duration retryInterval, const infra::Function<void(std::optional<hal::MacAddress>)>& onDone) override;
 
     private:
         void OnRetry();

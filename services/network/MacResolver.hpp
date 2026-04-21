@@ -20,7 +20,7 @@ namespace services
     public:
         virtual void SendRequest(IPv4Address address) = 0;
         virtual std::optional<hal::MacAddress> Lookup(IPv4Address address) = 0;
-        virtual void Resolve(IPv4Address address, uint8_t retries, infra::Duration retryInterval, const infra::Function<void(std::optional<hal::MacAddress>)>& onDone) = 0;
+        virtual bool Resolve(IPv4Address address, uint8_t retries, infra::Duration retryInterval, const infra::Function<void(std::optional<hal::MacAddress>)>& onDone) = 0;
     };
 
     class Nd6MacResolver
@@ -32,7 +32,7 @@ namespace services
         ~Nd6MacResolver() = default;
 
     public:
-        virtual void Resolve(const IPv6Address& address, uint8_t retries, infra::Duration retryInterval, const infra::Function<void(std::optional<hal::MacAddress>)>& onDone) = 0;
+        virtual bool Resolve(const IPv6Address& address, uint8_t retries, infra::Duration retryInterval, const infra::Function<void(std::optional<hal::MacAddress>)>& onDone) = 0;
     };
 }
 

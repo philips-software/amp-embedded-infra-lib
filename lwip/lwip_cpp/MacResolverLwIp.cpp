@@ -24,9 +24,10 @@ namespace services
         }
 
         // lwIP has no public API to trigger a standalone ND6 solicitation.
-        // We therefore create a probe pbuf and call
-        // nd6_get_next_hop_addr_or_queue(), which queues this probe and
-        // drives neighbor discovery until the cache can be resolved.
+        // We therefore create a zero-length PBUF_REF probe and call
+        // nd6_get_next_hop_addr_or_queue(), which drives neighbor discovery.
+        // If queued, lwIP clones this volatile probe, so the caller still
+        // releases the original pbuf after the lookup call returns.
         std::optional<hal::MacAddress> Nd6Lookup(const ip6_addr_t& target)
         {
             const u8_t* hwaddrp = nullptr;
@@ -72,13 +73,18 @@ namespace services
         return std::nullopt;
     }
 
-    void ArpMacResolverLwIp::Resolve(IPv4Address address, uint8_t retries, infra::Duration retryInterval, const infra::Function<void(std::optional<hal::MacAddress>)>& onDone)
+    bool ArpMacResolverLwIp::Resolve(IPv4Address address, uint8_t retries, infra::Duration retryInterval, const infra::Function<void(std::optional<hal::MacAddress>)>& onDone)
     {
+        if (retryTimer_.Armed())
+        {
+            return false;
+        }
+
         auto mac = Lookup(address);
         if (mac)
         {
             onDone(mac);
-            return;
+            return true;
         }
 
         pendingAddress_ = address;
@@ -91,6 +97,8 @@ namespace services
             {
                 OnRetry();
             });
+
+        return true;
     }
 
     void ArpMacResolverLwIp::OnRetry()
@@ -115,14 +123,19 @@ namespace services
         }
     }
 
-    void Nd6MacResolverLwIp::Resolve(const IPv6Address& address, uint8_t retries, infra::Duration retryInterval, const infra::Function<void(std::optional<hal::MacAddress>)>& onDone)
+    bool Nd6MacResolverLwIp::Resolve(const IPv6Address& address, uint8_t retries, infra::Duration retryInterval, const infra::Function<void(std::optional<hal::MacAddress>)>& onDone)
     {
+        if (retryTimer_.Armed())
+        {
+            return false;
+        }
+
         auto target = ToLwipIp6(address);
         auto mac = Nd6Lookup(target);
         if (mac)
         {
             onDone(mac);
-            return;
+            return true;
         }
 
         pendingAddress_ = address;
@@ -133,6 +146,8 @@ namespace services
             {
                 OnRetry();
             });
+
+        return true;
     }
 
     void Nd6MacResolverLwIp::OnRetry()
