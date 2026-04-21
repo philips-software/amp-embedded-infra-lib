@@ -170,7 +170,7 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, Size)
 TEST_F(QueueForOneReaderOneIrqWriterTest, Capacity)
 {
     queue.emplace(buffer, [this]() {});
-    EXPECT_EQ(sizeof(buffer) - 1, queue->Capacity());
+    EXPECT_EQ(buffer.size() - 1, queue->Capacity());
 }
 
 TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_asserts_when_insufficient_space)
