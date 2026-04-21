@@ -99,13 +99,14 @@ namespace services
             return;
         }
 
-        if (--retriesLeft_ == 0)
+        if (retriesLeft_ == 0)
         {
             retryTimer_.Cancel();
             onDone_(std::nullopt);
         }
         else
         {
+            --retriesLeft_;
             SendRequest(pendingAddress_);
         }
     }
@@ -141,10 +142,14 @@ namespace services
             return;
         }
 
-        if (--retriesLeft_ == 0)
+        if (retriesLeft_ == 0)
         {
             retryTimer_.Cancel();
             onDone_(std::nullopt);
+        }
+        else
+        {
+            --retriesLeft_;
         }
     }
 }
