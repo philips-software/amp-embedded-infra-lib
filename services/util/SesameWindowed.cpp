@@ -92,9 +92,14 @@ namespace services
         state.Emplace<StateOperational>(*this);
     }
 
-    void SesameWindowed::Stop()
+    void SesameWindowed::ResetReading()
     {
-        readerAccess.SetAction([]() {});
+        readerAccess.SetAction([this]()
+            {
+                currentReceiveMessageReader = std::nullopt;
+                currentReceiveMessageSize = 0;
+                receivedMessage.clear();
+            });
     }
 
     void SesameWindowed::Initialized()

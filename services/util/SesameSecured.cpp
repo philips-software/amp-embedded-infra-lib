@@ -99,6 +99,11 @@ namespace services
         SesameObserver::Subject().Reset();
     }
 
+    void SesameSecured::ResetReading()
+    {
+        SesameObserver::Subject().ResetReading();
+    }
+
     void SesameSecured::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         sendWriter = std::move(writer);
