@@ -23,6 +23,10 @@ namespace services
             return target;
         }
 
+        // lwIP has no public API to trigger a standalone ND6 solicitation.
+        // We therefore create a probe pbuf and call
+        // nd6_get_next_hop_addr_or_queue(), which queues this probe and
+        // drives neighbor discovery until the cache can be resolved.
         std::optional<hal::MacAddress> Nd6Lookup(const ip6_addr_t& target)
         {
             const u8_t* hwaddrp = nullptr;
