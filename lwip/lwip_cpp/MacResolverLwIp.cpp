@@ -19,7 +19,7 @@ namespace services
                 PP_HTONL(address[3] | (static_cast<uint32_t>(address[2]) << 16)),
                 PP_HTONL(address[5] | (static_cast<uint32_t>(address[4]) << 16)),
                 PP_HTONL(address[7] | (static_cast<uint32_t>(address[6]) << 16)));
-            ip6_addr_assign_zone(&target, IP6_UNICAST, netif_default);
+            ip6_addr_set_zone(&target, netif_default->ip6_addr->u_addr.ip6.zone);
             return target;
         }
 
