@@ -198,6 +198,25 @@ namespace application
         Class* serviceFormatter;
     };
 
+    class NullTracingServiceGenerator
+    {
+    public:
+        NullTracingServiceGenerator(const std::shared_ptr<const EchoService>& service, Entities& formatter);
+        NullTracingServiceGenerator(const NullTracingServiceGenerator& other) = delete;
+        NullTracingServiceGenerator& operator=(const NullTracingServiceGenerator& other) = delete;
+        ~NullTracingServiceGenerator() = default;
+
+    private:
+        void GenerateServiceConstructors();
+        void GenerateServiceFunctions();
+        void GenerateFieldConstants();
+        void GenerateDataMembers();
+
+    private:
+        std::shared_ptr<const EchoService> service;
+        Class* serviceFormatter;
+    };
+
     class EchoGenerator
     {
     public:
@@ -248,7 +267,8 @@ namespace application
         Entities formatter;
         const google::protobuf::FileDescriptor* file;
 
-        std::vector<std::shared_ptr<TracingServiceGenerator>> serviceGenerators;
+        std::vector<std::shared_ptr<TracingServiceGenerator>> tracingServiceGenerators;
+        std::vector<std::shared_ptr<NullTracingServiceGenerator>> nullTracingServiceGenerators;
     };
 }
 

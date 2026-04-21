@@ -1,6 +1,7 @@
 #include "services/ble/Gap.hpp"
 #include "infra/stream/ByteInputStream.hpp"
 #include "infra/util/BoundedString.hpp"
+#include "infra/util/LogAndAbort.hpp"
 #include "infra/util/MemoryRange.hpp"
 #include <optional>
 
@@ -432,8 +433,10 @@ namespace infra
             stream << "ADV_SCAN_IND";
         else if (eventType == services::GapAdvertisingEventType::scanResponse)
             stream << "SCAN_RESPONSE";
-        else
+        else if (eventType == services::GapAdvertisingEventType::advNonconnInd)
             stream << "ADV_NONCONN_IND";
+        else
+            LOG_AND_ABORT_ENUM(eventType);
 
         return stream;
     }
@@ -442,8 +445,10 @@ namespace infra
     {
         if (addressType == services::GapDeviceAddressType::publicAddress)
             stream << "Public Device Address";
-        else
+        else if (addressType == services::GapDeviceAddressType::randomAddress)
             stream << "Random Device Address";
+        else
+            LOG_AND_ABORT_ENUM(addressType);
 
         return stream;
     }
@@ -458,8 +463,10 @@ namespace infra
             stream << "Advertising";
         else if (state == services::GapState::initiating)
             stream << "Initiating";
-        else
+        else if (state == services::GapState::connected)
             stream << "Connected";
+        else
+            LOG_AND_ABORT_ENUM(state);
 
         return stream;
     }

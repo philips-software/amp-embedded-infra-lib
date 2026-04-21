@@ -1,8 +1,10 @@
 #ifndef SERVICES_SESAME_WINDOWED_HPP
 #define SERVICES_SESAME_WINDOWED_HPP
 
+#include "infra/stream/BoundedDequeInputStream.hpp"
 #include "infra/stream/LimitedInputStream.hpp"
 #include "infra/util/Aligned.hpp"
+#include "infra/util/BoundedDeque.hpp"
 #include "infra/util/Endian.hpp"
 #include "infra/util/PolymorphicVariant.hpp"
 #include "infra/util/SharedOptional.hpp"
@@ -16,13 +18,16 @@ namespace services
         , private SesameEncodedObserver
     {
     public:
-        explicit SesameWindowed(SesameEncoded& delegate);
+        template<std::size_t MaxMessageSize>
+        using WithMaxMessageSize = infra::WithStorage<SesameWindowed, infra::BoundedDeque<uint8_t>::WithMaxSize<MaxMessageSize>>;
+
+        explicit SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, SesameEncoded& delegate, SesameInitializer& sesameInitializer = immediatelyGranted);
 
         // Implementation of Sesame
         void RequestSendMessage(std::size_t size) override;
         std::size_t MaxSendMessageSize() const override;
         void Reset() override;
-        void Stop();
+        void ResetReading() override;
 
     protected:
         // clang-format off
@@ -47,6 +52,8 @@ namespace services
 
     private:
         void ReceivedInitialize();
+        void SaveReceivedMessage(infra::StreamReader& reader);
+        void TryForwardReceivedMessage();
         void ForwardReceivedMessage(uint16_t encodedSize);
         void SetNextState();
 
@@ -158,10 +165,13 @@ namespace services
         };
 
     private:
+        infra::BoundedDeque<uint8_t>& receivedMessage;
+        SesameInitializer& sesameInitializer;
         const uint16_t ownBufferSize;
         const uint16_t releaseWindowSize;
         bool initialized = false;
-        infra::SharedPtr<infra::StreamReaderWithRewinding> receivedMessageReader;
+        uint16_t currentReceiveMessageSize;
+        std::optional<infra::LimitedStreamReaderWithRewinding::WithInput<infra::BoundedDequeInputStreamReader>> currentReceiveMessageReader;
         infra::AccessedBySharedPtr readerAccess;
         uint16_t otherAvailableWindow{ 0 };
         uint16_t maxUsableBufferSize = 0;

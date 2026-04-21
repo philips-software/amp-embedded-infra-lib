@@ -14,6 +14,7 @@
 #include <limits>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 #ifdef EMIL_HOST_BUILD
 #include <ostream>
@@ -61,7 +62,7 @@ namespace infra
         BoundedStringBase(MemoryRange<NonConstT> range, const char* s);
         BoundedStringBase(MemoryRange<NonConstT> range, const std::string& s);
         constexpr BoundedStringBase(T* s, size_type count);
-        BoundedStringBase(T* s);
+        constexpr BoundedStringBase(T* s);
         constexpr BoundedStringBase(std::string_view s);
         BoundedStringBase(const std::string& s);
         BoundedStringBase(std::string& s);
@@ -451,8 +452,8 @@ namespace infra
     {}
 
     template<class T>
-    BoundedStringBase<T>::BoundedStringBase(T* s)
-        : range(s, s + std::strlen(s)) //NOSONAR
+    constexpr BoundedStringBase<T>::BoundedStringBase(T* s)
+        : range(s, s + std::char_traits<std::remove_const_t<T>>::length(s))
         , length(range.size())
     {}
 

@@ -3,6 +3,7 @@
 
 #include "infra/stream/InputStream.hpp"
 #include "infra/stream/OutputStream.hpp"
+#include "infra/util/Function.hpp"
 #include "infra/util/Observer.hpp"
 #include "infra/util/SharedPtr.hpp"
 
@@ -29,6 +30,7 @@ namespace services
         virtual void RequestSendMessage(std::size_t size) = 0;
         virtual std::size_t MaxSendMessageSize() const = 0;
         virtual void Reset() = 0;
+        virtual void ResetReading() = 0;
     };
 
     class SesameEncodedObserver
@@ -49,9 +51,25 @@ namespace services
     public:
         virtual void RequestSendMessage(std::size_t size) = 0;
         virtual std::size_t MaxSendMessageSize() const = 0;
-        virtual std::size_t MessageSize(std::size_t size) const = 0;
+        virtual std::size_t WorstCaseEncodedMessageSize(std::size_t size) const = 0;
+        virtual std::size_t WorstCaseDecodedMessageSize(std::size_t encodedMessageSize) const = 0;
+        virtual std::size_t MessageSize(infra::StreamReader&& message) const = 0;
         virtual void Reset() = 0;
     };
+
+    class SesameInitializer
+    {
+    public:
+        SesameInitializer() = default;
+        SesameInitializer(const SesameInitializer& other) = delete;
+        SesameInitializer& operator=(const SesameInitializer& other) = delete;
+        ~SesameInitializer() = default;
+
+    public:
+        virtual void InitializationRequested(const infra::Function<void()>& onGranted);
+    };
+
+    extern SesameInitializer immediatelyGranted;
 }
 
 #endif

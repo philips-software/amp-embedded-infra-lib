@@ -50,6 +50,7 @@ target_sources(services.util PRIVATE
     FlashSpi.hpp
     FlashRegion.cpp
     FlashRegion.hpp
+    Flushable.hpp
     GpioPinInverted.cpp
     GpioPinInverted.hpp
     I2cMultipleAccess.cpp
@@ -67,6 +68,7 @@ target_sources(services.util PRIVATE
     RepeatingButton.hpp
     SerialCommunicationLoopback.cpp
     SerialCommunicationLoopback.hpp
+    Sesame.cpp
     Sesame.hpp
     SesameCobs.cpp
     SesameCobs.hpp

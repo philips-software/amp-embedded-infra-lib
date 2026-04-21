@@ -14,6 +14,7 @@ namespace services
         MOCK_METHOD(void, RequestSendMessage, (std::size_t size), (override));
         MOCK_METHOD(std::size_t, MaxSendMessageSize, (), (const, override));
         MOCK_METHOD(void, Reset, (), (override));
+        MOCK_METHOD(void, ResetReading, (), (override));
     };
 
     class SesameObserverMock
@@ -33,7 +34,9 @@ namespace services
     public:
         MOCK_METHOD(void, RequestSendMessage, (std::size_t size), (override));
         MOCK_METHOD(std::size_t, MaxSendMessageSize, (), (const, override));
-        MOCK_METHOD(std::size_t, MessageSize, (std::size_t), (const, override));
+        MOCK_METHOD(std::size_t, WorstCaseEncodedMessageSize, (std::size_t), (const, override));
+        MOCK_METHOD(std::size_t, WorstCaseDecodedMessageSize, (std::size_t), (const, override));
+        MOCK_METHOD(std::size_t, MessageSize, (infra::StreamReader && message), (const, override));
         MOCK_METHOD(void, Reset, (), (override));
     };
 
@@ -47,6 +50,15 @@ namespace services
         MOCK_METHOD(void, SendMessageStreamAvailable, (infra::SharedPtr<infra::StreamWriter> && writer), (override));
         MOCK_METHOD(void, MessageSent, (std::size_t encodedSize), (override));
         MOCK_METHOD(void, ReceivedMessage, (infra::SharedPtr<infra::StreamReaderWithRewinding> && reader, std::size_t encodedSize), (override));
+    };
+
+    class SesameInitializerMock
+        : public SesameInitializer
+    {
+    public:
+        using SesameInitializer::SesameInitializer;
+
+        MOCK_METHOD(void, InitializationRequested, (const infra::Function<void()>& onGranted), (override));
     };
 
     class IntegrityObserverMock

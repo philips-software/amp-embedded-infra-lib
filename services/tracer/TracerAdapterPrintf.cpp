@@ -1,5 +1,15 @@
 #include "services/tracer/TracerAdapterPrintf.hpp"
 #include "infra/util/Compatibility.hpp"
+#include <cstring>
+
+namespace
+{
+    size_t GetStringLengthBounded(const char* str, int maxSize)
+    {
+        const char* end = static_cast<const char*>(std::memchr(str, 0, maxSize));
+        return end == nullptr ? maxSize : static_cast<size_t>(end - str);
+    }
+}
 
 namespace services
 {
@@ -15,7 +25,11 @@ namespace services
         for (; *format != 0; ++format)
         {
             if (*format == '%')
+            {
                 HandleFormat(format, args);
+                if (*format == '\0')
+                    break;
+            }
             else if (*format == '\n')
                 tracer.Trace();
             else
@@ -28,8 +42,9 @@ namespace services
         ++format;
 
         const auto width = ReadSize(format);
+        const auto precision = ReadPrecision(format, args);
         const auto lengthSpecifier = ReadLength(format);
-        ParseFormat(*format, lengthSpecifier, width, args);
+        ParseFormat(*format, lengthSpecifier, width, precision, args);
     }
 
     int TracerAdapterPrintf::ReadLength(const char*& format) const
@@ -45,6 +60,29 @@ namespace services
         return lengthSpecifier;
     }
 
+    int TracerAdapterPrintf::ReadPrecision(const char*& format, va_list* args) const
+    {
+        if (*format != '.')
+            return -1;
+
+        ++format;
+
+        if (*format == '*')
+        {
+            ++format;
+            return va_arg(*args, int);
+        }
+
+        int precision = 0;
+        while (*format >= '0' && *format <= '9')
+        {
+            precision = (precision * 10) + (*format - '0');
+            ++format;
+        }
+
+        return precision;
+    }
+
     infra::Width TracerAdapterPrintf::ReadSize(const char*& format) const
     {
         infra::Width w(0);
@@ -55,24 +93,18 @@ namespace services
             format++;
         }
 
-        while (*format > '0' && *format <= '9')
+        while (*format >= '0' && *format <= '9')
         {
-            w.width = w.width * 10 + *format - '0';
+            w.width = (w.width * 10) + (*format - '0');
             ++format;
-        }
-
-        if (*format == '.')
-        {
-            ++format;
-            while (*format > '0' && *format <= '9')
-                ++format;
         }
 
         return w;
     }
 
-    void TracerAdapterPrintf::ParseFormat(char format, int lengthSpecifier, const infra::Width& width, va_list* args)
+    void TracerAdapterPrintf::ParseFormat(char format, int lengthSpecifier, const infra::Width& width, int precision, va_list* args)
     {
+        // Note: precision is only supported for string currently.
         switch (format)
         {
             case '\0':
@@ -85,8 +117,17 @@ namespace services
                 break;
             case 's':
             {
-                const auto* s = va_arg(*args, char*);
-                tracer.Continue() << (s != nullptr ? s : "(null)");
+                const auto* str = va_arg(*args, const char*);
+                if (str == nullptr)
+                    tracer.Continue() << "(null)";
+                else if (precision >= 0)
+                {
+                    auto boundedStringSize = GetStringLengthBounded(str, precision);
+                    auto trimmedString = infra::BoundedConstString(str, boundedStringSize);
+                    tracer.Continue() << trimmedString;
+                }
+                else
+                    tracer.Continue() << str;
                 break;
             }
             case 'd':
