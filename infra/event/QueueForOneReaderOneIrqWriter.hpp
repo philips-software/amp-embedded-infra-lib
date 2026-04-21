@@ -120,8 +120,10 @@ namespace infra
     void QueueForOneReaderOneIrqWriter<T>::AddFromInterruptUnchecked(infra::MemoryRange<const T> data)
     {
         T* end = contentsEnd.load();
-        T* begin = contentsBegin.load();
-        
+
+        if (data.size() > Capacity() - QueuedCount())
+            return;
+
         std::size_t copySize = std::min<std::size_t>(data.size(), buffer.end() - end);
         std::copy(data.begin(), data.begin() + copySize, end);
 
