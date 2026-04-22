@@ -272,7 +272,7 @@ namespace services
 
     void SesameWindowed::StateSendingInit::Request()
     {
-        communication.SesameEncodedObserver::Subject().RequestSendMessage(3 + communication.sesameInitializer.InitInformation().size());
+        communication.SesameEncodedObserver::Subject().RequestSendMessage(sizeof(PacketInit) + communication.sesameInitializer.InitInformation().size());
     }
 
     void SesameWindowed::StateSendingInit::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -297,7 +297,7 @@ namespace services
 
     void SesameWindowed::StateSendingInitResponse::Request()
     {
-        communication.SesameEncodedObserver::Subject().RequestSendMessage(3 + communication.sesameInitializer.InitInformation().size());
+        communication.SesameEncodedObserver::Subject().RequestSendMessage(sizeof(PacketInitResponse) + communication.sesameInitializer.InitInformation().size());
     }
 
     void SesameWindowed::StateSendingInitResponse::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -360,7 +360,7 @@ namespace services
 
     void SesameWindowed::StateSendingReleaseWindow::Request()
     {
-        communication.SesameEncodedObserver::Subject().RequestSendMessage(3);
+        communication.SesameEncodedObserver::Subject().RequestSendMessage(sizeof(PacketReleaseWindow));
     }
 
     void SesameWindowed::StateSendingReleaseWindow::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
