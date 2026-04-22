@@ -149,22 +149,22 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, Size)
 
     EXPECT_TRUE(queue->Empty());
     EXPECT_FALSE(queue->Full());
-    EXPECT_EQ(0, queue->QueuedCount());
+    EXPECT_EQ(0, queue->Size());
 
     queue->AddFromInterrupt(full);
     EXPECT_FALSE(queue->Empty());
     EXPECT_TRUE(queue->Full());
-    EXPECT_EQ(4, queue->QueuedCount());
+    EXPECT_EQ(4, queue->Size());
 
     queue->Consume(2);
-    EXPECT_EQ(2, queue->QueuedCount());
+    EXPECT_EQ(2, queue->Size());
     queue->AddFromInterrupt(data1);
-    EXPECT_EQ(3, queue->QueuedCount());
+    EXPECT_EQ(3, queue->Size());
 
     queue->Consume(1);
-    EXPECT_EQ(2, queue->QueuedCount());
+    EXPECT_EQ(2, queue->Size());
     queue->AddFromInterrupt(data2);
-    EXPECT_EQ(4, queue->QueuedCount());
+    EXPECT_EQ(4, queue->Size());
 }
 
 TEST_F(QueueForOneReaderOneIrqWriterTest, Capacity)
@@ -195,7 +195,7 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_wrapping_around_buffer)
     std::array<uint8_t, 4> wrapData = { { 3, 4, 5, 6 } };
     queue->AddFromInterrupt(wrapData);
 
-    EXPECT_EQ(4, queue->QueuedCount());
+    EXPECT_EQ(4, queue->Size());
     EXPECT_EQ(3, queue->Get());
     EXPECT_EQ(4, queue->Get());
     EXPECT_EQ(5, queue->Get());
@@ -212,7 +212,7 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_unchecked_does_not_write_out
     std::array<uint8_t, 4> overflow = { { 2, 3, 4, 5 } };
     queue->AddFromInterruptUnchecked(overflow);
 
-    EXPECT_EQ(2, queue->QueuedCount());
+    EXPECT_EQ(2, queue->Size());
     EXPECT_EQ(0, queue->Get());
     EXPECT_EQ(1, queue->Get());
 }

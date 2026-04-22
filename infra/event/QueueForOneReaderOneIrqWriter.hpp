@@ -36,7 +36,7 @@ namespace infra
         T Get();
         infra::MemoryRange<const T> ContiguousRange(uint32_t offset = 0) const;
         void Consume(uint32_t amount);
-        std::size_t QueuedCount() const;
+        std::size_t Size() const;
         std::size_t Capacity() const;
 
         T operator[](size_t position) const;
@@ -75,7 +75,7 @@ namespace infra
 
     private:
         QueueForOneReaderOneIrqWriter<T>& queue;
-        std::size_t available{ queue.QueuedCount() };
+        std::size_t available{ queue.Size() };
         std::size_t offset{ 0 };
     };
 
@@ -112,7 +112,7 @@ namespace infra
     template<class T>
     void QueueForOneReaderOneIrqWriter<T>::AddFromInterrupt(infra::MemoryRange<const T> data)
     {
-        really_assert(Capacity() - QueuedCount() >= data.size());
+        really_assert(Capacity() - Size() >= data.size());
         AddFromInterruptUnchecked(data);
     }
 
@@ -121,7 +121,7 @@ namespace infra
     {
         T* end = contentsEnd.load();
         T* begin = contentsBegin.load();
-        
+
         std::size_t available = (begin <= end) ? (buffer.size() - 1 - (end - begin)) : (begin - end - 1);
         if (data.size() > available)
             return;
@@ -181,8 +181,8 @@ namespace infra
     template<class T>
     T QueueForOneReaderOneIrqWriter<T>::operator[](size_t position) const
     {
-        assert(QueuedCount() > 0);
-        assert(position < QueuedCount());
+        assert(Size() > 0);
+        assert(position < Size());
 
         T* begin = contentsBegin;
         if (begin + position >= buffer.end())
@@ -229,7 +229,7 @@ namespace infra
     }
 
     template<class T>
-    std::size_t QueueForOneReaderOneIrqWriter<T>::QueuedCount() const
+    std::size_t QueueForOneReaderOneIrqWriter<T>::Size() const
     {
         const T* begin = contentsBegin.load();
         const T* end = contentsEnd.load();
