@@ -24,6 +24,7 @@ public:
 
     void Initialized()
     {
+        EXPECT_CALL(lower, ResetReading());
         EXPECT_CALL(lower, RequestSendMessage(testing::_)).WillOnce(testing::Invoke([this]()
             {
                 ExpectGenerationOfKeyMaterial({ 4 }, { 5 });
@@ -119,6 +120,7 @@ TEST_F(EchoPolicySymmetricKeyTest, send_and_receive_large_message)
 TEST_F(EchoPolicySymmetricKeyTest, send_while_initializing)
 {
     EXPECT_CALL(lower, RequestSendMessage(testing::_));
+    EXPECT_CALL(lower, ResetReading());
     lower.GetObserver().Initialized();
 
     serviceProxy.RequestSend([this]()

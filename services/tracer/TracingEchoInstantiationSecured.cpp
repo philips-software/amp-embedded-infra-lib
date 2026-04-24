@@ -21,7 +21,7 @@ namespace main_
         this->onStopDone = onDone;
         cobs.Stop([this]()
             {
-                windowed.Stop();
+                windowed.ResetReading();
                 this->onStopDone();
             });
     }

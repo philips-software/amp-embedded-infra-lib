@@ -1,4 +1,5 @@
 #include "protobuf/echo/Echo.hpp"
+#include "infra/util/ReallyAssert.hpp"
 
 namespace services
 {
@@ -20,7 +21,7 @@ namespace services
     ServiceProxy::~ServiceProxy()
     {
         if (onGranted != nullptr)
-            echo.CancelRequestSend(*this);
+            CancelRequestSend();
     }
 
     Echo& ServiceProxy::Rpc()
@@ -35,6 +36,7 @@ namespace services
 
     void ServiceProxy::RequestSend(infra::Function<void()> onGranted, uint32_t requestedSize)
     {
+        really_assert(!this->onGranted);
         this->onGranted = onGranted;
         currentRequestedSize = requestedSize;
         echo.RequestSend(*this);
@@ -44,6 +46,13 @@ namespace services
     {
         onGranted();
         return std::move(methodSerializer);
+    }
+
+    void ServiceProxy::CancelRequestSend()
+    {
+        onGranted = nullptr;
+        currentRequestedSize = 0;
+        echo.CancelRequestSend(*this);
     }
 
     uint32_t ServiceProxy::MaxMessageSize() const

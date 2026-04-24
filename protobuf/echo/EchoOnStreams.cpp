@@ -28,7 +28,25 @@ namespace services
 
     EchoOnStreams::~EchoOnStreams()
     {
-        ReleaseReader();
+        Reset();
+    }
+
+    void EchoOnStreams::Reset()
+    {
+        ResetReading();
+
+        while (!sendRequesters.empty())
+            sendRequesters.front().CancelRequestSend();
+
+        if (sendingProxy != nullptr)
+            sendingProxy->CancelRequestSend();
+
+        sendingProxy = nullptr;
+        methodSerializer = nullptr;
+        partlySent = false;
+        skipNextStream = false;
+        delayDataReceived = false;
+        delayedDataReceived = false;
     }
 
     void EchoOnStreams::SetPolicy(EchoPolicy& policy)
@@ -104,7 +122,7 @@ namespace services
             skipNextStream = true;
         }
 
-        ReleaseReader();
+        ResetReading();
         limitedReader.reset();
         ReleaseDeserializer();
     }
@@ -112,6 +130,11 @@ namespace services
     void EchoOnStreams::ReleaseDeserializer()
     {
         methodDeserializer = nullptr;
+    }
+
+    void EchoOnStreams::ResetReading()
+    {
+        ReleaseReader();
     }
 
     void EchoOnStreams::TryGrantSend()

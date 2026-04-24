@@ -39,7 +39,7 @@ namespace services
     void EchoPolicyDiffieHellman::Initialized()
     {
         if (busy)
-            DiffieHellmanKeyEstablishmentProxy::Rpc().CancelRequestSend(*this);
+            DiffieHellmanKeyEstablishmentProxy::CancelRequestSend();
 
         initializingKeys = true;
         nextKeyPair.reset();

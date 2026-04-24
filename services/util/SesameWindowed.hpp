@@ -27,7 +27,7 @@ namespace services
         void RequestSendMessage(std::size_t size) override;
         std::size_t MaxSendMessageSize() const override;
         void Reset() override;
-        void Stop();
+        void ResetReading() override;
 
     protected:
         // clang-format off
