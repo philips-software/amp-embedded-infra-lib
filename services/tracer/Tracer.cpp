@@ -14,6 +14,11 @@ namespace services
     {
         return EmptyTracing{};
     }
+
+    Tracer::EmptyTracing Tracer::Continue()
+    {
+        return EmptyTracing{};
+    }
 #endif
 
     void Tracer::InsertHeader()
