@@ -28,19 +28,23 @@ namespace services
         : stream(stream)
     {}
 
+#if defined(EMIL_ENABLE_TRACING)
     infra::TextOutputStream TracerToStream::Continue()
     {
         return stream;
     }
+#endif
 
     TracerToDelegate::TracerToDelegate(Tracer& delegate)
         : delegate(delegate)
     {}
 
+#if defined(EMIL_ENABLE_TRACING)
     infra::TextOutputStream TracerToDelegate::Continue()
     {
         return delegate.Continue();
     }
+#endif
 
     void TracerToDelegate::InsertHeader()
     {
