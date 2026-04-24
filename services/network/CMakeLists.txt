@@ -59,6 +59,7 @@ target_sources(services.network PRIVATE
     HttpServer.hpp
     LlmnrResponder.cpp
     LlmnrResponder.hpp
+    MacResolver.hpp
     MdnsClient.cpp
     MdnsClient.hpp
     Mqtt.hpp
