@@ -22,11 +22,23 @@ namespace services
         class EmptyTracing
         {
         public:
+            EmptyTracing(infra::TextOutputStream& stream)
+                : stream(stream)
+            {}
+
             template<class T>
             EmptyTracing operator<<(T x)
             {
                 return *this;
             }
+
+            infra::StreamWriter& Writer()
+            {
+                return stream.Writer();
+            }
+
+        private:
+            infra::TextOutputStream& stream;
         };
 
         EmptyTracing Trace();
@@ -35,6 +47,7 @@ namespace services
     private:
         infra::StreamWriterDummy dummy;
         infra::TextOutputStream::WithErrorPolicy dummyStream{ dummy };
+        EmptyTracing emptyTracing{ dummyStream };
 #else
 #error no tracing option defined
 #endif

@@ -12,12 +12,12 @@ namespace services
 #elif defined(EMIL_DISABLE_TRACING)
     Tracer::EmptyTracing Tracer::Trace()
     {
-        return EmptyTracing{};
+        return emptyTracing;
     }
 
     Tracer::EmptyTracing Tracer::Continue()
     {
-        return EmptyTracing{};
+        return emptyTracing;
     }
 #endif
 
