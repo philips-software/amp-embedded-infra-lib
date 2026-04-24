@@ -57,8 +57,8 @@ TEST(TracerDisabledTest, stream_from_continue_does_not_write)
     infra::StringOutputStream::WithStorage<32> stream;
     TracerDisabledTestImpl tracer(stream);
 
-    infra::TextOutputStream stream = tracer.Continue();
-    stream << "Text";
+    infra::TextOutputStream returnedStream = tracer.Continue();
+    returnedStream << "Text";
 
     EXPECT_EQ("", stream.Storage());
 }
