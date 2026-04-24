@@ -51,3 +51,14 @@ TEST(TracerDisabledTest, writer_from_continue_does_not_write)
 
     EXPECT_EQ("", stream.Storage());
 }
+
+TEST(TracerDisabledTest, stream_from_continue_does_not_write)
+{
+    infra::StringOutputStream::WithStorage<32> stream;
+    TracerDisabledTestImpl tracer(stream);
+
+    infra::TextOutputStream stream = tracer.Continue();
+    stream << "Text";
+
+    EXPECT_EQ("", stream.Storage());
+}

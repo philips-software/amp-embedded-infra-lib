@@ -42,7 +42,7 @@ namespace services
         };
 
         EmptyTracing Trace();
-        EmptyTracing Continue();
+        infra::TextOutputStream Continue();
 
     private:
         infra::StreamWriterDummy dummy;

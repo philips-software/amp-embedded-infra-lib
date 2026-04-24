@@ -15,9 +15,9 @@ namespace services
         return emptyTracing;
     }
 
-    Tracer::EmptyTracing Tracer::Continue()
+    infra::TextOutputStream Tracer::Continue()
     {
-        return emptyTracing;
+        return dummyStream;
     }
 #endif
 
