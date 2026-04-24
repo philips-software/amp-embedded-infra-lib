@@ -39,6 +39,7 @@ target_sources(hal.interfaces_test_doubles PRIVATE
     SerialCommunicationStub.cpp
     SerialCommunicationStub.hpp
     SleepableMock.hpp
+    SmiBusMock.hpp
     SpiMock.cpp
     SpiMock.hpp
 )
