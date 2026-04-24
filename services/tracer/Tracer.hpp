@@ -27,7 +27,7 @@ namespace services
             {}
 
             template<class T>
-            EmptyTracing operator<<(T x)
+            EmptyTracing operator<<([[maybe_unused]] T x)
             {
                 return *this;
             }
