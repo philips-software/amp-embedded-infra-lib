@@ -67,6 +67,7 @@ namespace services
 
     void SesameWindowed::RequestSendMessage(std::size_t size)
     {
+        assert(size <= MaxSendMessageSize());
         state->RequestSendMessage(size);
     }
 
@@ -161,7 +162,7 @@ namespace services
 
     void SesameWindowed::ReceivedInitialize()
     {
-        maxUsableBufferSize = otherAvailableWindow;
+        maxUsableBufferSize = std::min<uint16_t>(SesameEncodedObserver::Subject().MaxSendMessageSize(), otherAvailableWindow);
         initialized = true;
         GetObserver().Initialized();
     }

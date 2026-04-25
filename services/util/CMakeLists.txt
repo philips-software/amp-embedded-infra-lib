@@ -73,6 +73,8 @@ target_sources(services.util PRIVATE
     SesameCobs.cpp
     SesameCobs.hpp
     SesameCrypto.hpp
+    SesameInstantiation.cpp
+    SesameInstantiation.hpp
     SesameSecured.cpp
     SesameSecured.hpp
     SesameWindowed.cpp
@@ -127,6 +129,8 @@ if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
         MbedTlsRandomDataGeneratorWrapper.hpp
         SesameCryptoMbedTls.cpp
         SesameCryptoMbedTls.hpp
+        SesameInstantiationSecured.cpp
+        SesameInstantiationSecured.hpp
         Sha256MbedTls.cpp
         Sha256MbedTls.hpp
     )
