@@ -32,6 +32,16 @@ namespace main_
             infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameCobs::receiveBufferSize<encodedMessageSize>> windowedReceivedMessage;
         };
     };
+
+    template<std::size_t MessageSize>
+    struct Sesame::WithMessageSize
+        : private Sesame::CobsStorage<MessageSize>
+        , Sesame
+    {
+        WithMessageSize(hal::BufferedSerialCommunication& serialCommunication)
+            : Sesame(this->cobsSendStorage, this->cobsReceivedMessage, this->windowedReceivedMessage, serialCommunication)
+        {}
+    };
 }
 
 #endif

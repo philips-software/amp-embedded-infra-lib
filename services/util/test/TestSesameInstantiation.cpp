@@ -2,42 +2,37 @@
 #include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "services/util/SerialCommunicationLoopback.hpp"
-#include "services/util/SesameInstantiationSecured.hpp"
-#include "services/util/SesameSecured.hpp"
+#include "services/util/SesameInstantiation.hpp"
 #include "services/util/test_doubles/SesameMock.hpp"
 #include "gmock/gmock.h"
 
 namespace
 {
     template<std::size_t LeftSize, std::size_t RightSize>
-    class SesameInstantiationSecured
+    class SesameInstantiation
     {
     public:
         services::SerialCommunicationLoopback serial;
-        services::SesameSecured::KeyType keyA{ 1, 2 };
-        services::SesameSecured::KeyType keyB{ 3, 4 };
-        services::SesameSecured::IvType ivA{ 5, 6 };
-        services::SesameSecured::IvType ivB{ 7, 8 };
 
         constexpr static std::size_t leftSize = LeftSize;
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<leftSize> leftSerial{ serial.Server() };
-        main_::SesameSecured::WithMessageSize<leftSize> leftSesame{ leftSerial, services::SesameSecured::KeyMaterial{ keyA, ivA, keyB, ivB } };
-        testing::StrictMock<services::SesameObserverMock> leftUpper{ leftSesame.secured };
+        main_::Sesame::WithMessageSize<leftSize> leftSesame{ leftSerial };
+        testing::StrictMock<services::SesameObserverMock> leftUpper{ leftSesame.windowed };
 
         constexpr static std::size_t rightSize = RightSize;
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<rightSize> rightSerial{ serial.Client() };
-        main_::SesameSecured::WithMessageSize<rightSize> rightSesame{ rightSerial, services::SesameSecured::KeyMaterial{ keyB, ivB, keyA, ivA } };
-        testing::StrictMock<services::SesameObserverMock> rightUpper{ rightSesame.secured };
+        main_::Sesame::WithMessageSize<rightSize> rightSesame{ rightSerial };
+        testing::StrictMock<services::SesameObserverMock> rightUpper{ rightSesame.windowed };
     };
 }
 
-class SesameInstantiationSecuredTest
+class SesameInstantiationTest
     : public testing::Test
     , public infra::ClockFixture
-    , public SesameInstantiationSecured<256, 1024>
+    , public SesameInstantiation<256, 1024>
 {
 public:
-    SesameInstantiationSecuredTest()
+    SesameInstantiationTest()
     {
         EXPECT_CALL(leftUpper, Initialized()).Times(testing::AnyNumber());
         EXPECT_CALL(rightUpper, Initialized()).Times(testing::AnyNumber());
@@ -45,7 +40,7 @@ public:
     }
 };
 
-TEST_F(SesameInstantiationSecuredTest, send_big_message_right)
+TEST_F(SesameInstantiationTest, send_big_message_right)
 {
     std::string sentData;
 
@@ -66,10 +61,10 @@ TEST_F(SesameInstantiationSecuredTest, send_big_message_right)
         }));
     ExecuteAllActions();
 
-    EXPECT_EQ(105, sentData.size());
+    EXPECT_EQ(121, sentData.size());
 }
 
-TEST_F(SesameInstantiationSecuredTest, send_big_message_left)
+TEST_F(SesameInstantiationTest, send_big_message_left)
 {
     std::string sentData;
 
@@ -90,16 +85,16 @@ TEST_F(SesameInstantiationSecuredTest, send_big_message_left)
         }));
     ExecuteAllActions();
 
-    EXPECT_EQ(105, sentData.size());
+    EXPECT_EQ(121, sentData.size());
 }
 
-class SesameInstantiationSecuredTestMessageSize
+class SesameInstantiationTestMessageSize
     : public testing::TestWithParam<std::size_t>
     , public infra::ClockFixture
-    , public SesameInstantiationSecured<2048, 2048>
+    , public SesameInstantiation<2048, 2048>
 {
 public:
-    SesameInstantiationSecuredTestMessageSize()
+    SesameInstantiationTestMessageSize()
     {
         EXPECT_CALL(leftUpper, Initialized()).Times(testing::AnyNumber());
         EXPECT_CALL(rightUpper, Initialized()).Times(testing::AnyNumber());
@@ -109,9 +104,9 @@ public:
     const std::size_t messageSize = GetParam();
 };
 
-TEST_P(SesameInstantiationSecuredTestMessageSize, send_message_of_size_right)
+TEST_P(SesameInstantiationTestMessageSize, send_message_of_size_right)
 {
-    EXPECT_EQ(994, leftUpper.Subject().MaxSendMessageSize());
+    EXPECT_EQ(1010, leftUpper.Subject().MaxSendMessageSize());
 
     std::string sentData1;
     std::string sentData2;
@@ -153,4 +148,4 @@ TEST_P(SesameInstantiationSecuredTestMessageSize, send_message_of_size_right)
     EXPECT_EQ(messageSize, sentData2.size());
 }
 
-INSTANTIATE_TEST_SUITE_P(SesameInstantiationSecuredTestMessageSize, SesameInstantiationSecuredTestMessageSize, testing::Range<std::size_t>(1, 994));
+INSTANTIATE_TEST_SUITE_P(SesameInstantiationTestMessageSize, SesameInstantiationTestMessageSize, testing::Range<std::size_t>(1, 1010));
