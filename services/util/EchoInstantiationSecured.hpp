@@ -4,7 +4,7 @@
 #include "services/util/EchoInstantiation.hpp"
 #include "services/util/EchoPolicyDiffieHellman.hpp"
 #include "services/util/EchoPolicySymmetricKey.hpp"
-#include "services/util/SesameSecured.hpp"
+#include "services/util/SesameInstantiationSecured.hpp"
 
 namespace main_
 {
@@ -19,12 +19,8 @@ namespace main_
         // Implementation of Stoppable
         void Stop(const infra::Function<void()>& onDone) override;
 
-        services::SesameCobs cobs;
-        services::SesameWindowed windowed;
-        services::SesameSecured::WithCryptoMbedTls secured;
+        SesameSecured sesame;
         services::EchoOnSesame echo;
-
-        infra::AutoResetFunction<void()> onStopDone;
 
         template<std::size_t MessageSize>
         struct SecuredStorage
@@ -49,7 +45,7 @@ namespace main_
 
     template<std::size_t MessageSize>
     struct EchoOnSesameSecuredSymmetricKey::WithMessageSize
-        : private EchoOnSesame::CobsStorage<MessageSize>
+        : private Sesame::CobsStorage<MessageSize>
         , private EchoOnSesameSecured::SecuredStorage<MessageSize>
         , EchoOnSesameSecuredSymmetricKey
     {
@@ -76,7 +72,7 @@ namespace main_
 
     template<std::size_t MessageSize>
     struct EchoOnSesameSecuredDiffieHellman::WithMessageSize
-        : private EchoOnSesame::CobsStorage<MessageSize>
+        : private Sesame::CobsStorage<MessageSize>
         , private EchoOnSesameSecured::SecuredStorage<MessageSize>
         , EchoOnSesameSecuredDiffieHellman
     {

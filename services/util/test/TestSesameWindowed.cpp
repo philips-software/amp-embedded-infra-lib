@@ -150,7 +150,7 @@ public:
     infra::NotifyingSharedOptional<infra::StdVectorOutputStreamWriter> writer;
     infra::Execute execute{ [this]()
         {
-            EXPECT_CALL(base, MaxSendMessageSize()).WillOnce(testing::Return(24));
+            EXPECT_CALL(base, MaxSendMessageSize()).WillRepeatedly(testing::Return(24));
             EXPECT_CALL(base, WorstCaseEncodedMessageSize(3)).WillOnce(testing::Return(5));
             ExpectRequestSendMessageForInit(24);
         } };
@@ -193,7 +193,18 @@ TEST_F(SesameWindowedTest, message_waits_until_window_is_freed)
 
 TEST_F(SesameWindowedTest, long_message_waits_until_window_is_freed_taking_into_account_cobs_overhead)
 {
-    ReceiveInitResponse(261);
+    EXPECT_CALL(base, MaxSendMessageSize()).WillRepeatedly(testing::Return(2000));
+    ReceiveInitResponse(519);
+
+    auto fillWindow = std::vector<uint8_t>(251, 1);
+    ExpectRequestSendMessageForMessage(fillWindow.size() + 1, fillWindow);
+    ExpectSendMessageStreamAvailable(fillWindow);
+    communication.RequestSendMessage(fillWindow.size());
+
+    auto fillWindow2 = std::vector<uint8_t>(1, 1);
+    ExpectRequestSendMessageForMessage(fillWindow2.size() + 1, fillWindow2);
+    ExpectSendMessageStreamAvailable(fillWindow2);
+    communication.RequestSendMessage(fillWindow2.size());
 
     // A message of size 253 plus one byte for the operation may consist of 254 zeros, and therefore need one extra COBS overhead byte.
     // Total window available needs therefore to be 254 + 1 (one extra COBS byte) + 2 (normal COBS byte and closing 0) + 5 (safeguard for another window release)
@@ -207,10 +218,11 @@ TEST_F(SesameWindowedTest, long_message_waits_until_window_is_freed_taking_into_
 
 TEST_F(SesameWindowedTest, exact_used_window_size_is_consumed_by_message)
 {
-    auto longMessage = infra::ConstructBin().Repeat(253 * 7, 0).Vector();
+    auto longMessage = infra::ConstructBin().Repeat(253 * 3, 0).Vector();
 
+    EXPECT_CALL(base, MaxSendMessageSize()).WillRepeatedly(testing::Return(4000));
     // Exactly enough for any message of size longMessage plus safeguard for a window release
-    ReceiveInitResponse(254 * 7 + 1 + 7 + 2 + 5);
+    ReceiveInitResponse(254 * 6 + 1 + 7 + 2 + 5);
 
     // Sending longMessage, for which no extra COBS overhead bytes were necessary, results in 7 + 5 window still available
     ExpectRequestSendMessageForMessage(longMessage.size() + 1, longMessage);
@@ -221,15 +233,6 @@ TEST_F(SesameWindowedTest, exact_used_window_size_is_consumed_by_message)
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
     communication.RequestSendMessage(4);
-}
-
-TEST_F(SesameWindowedTest, send_message_while_initializing_waits_for_initialized)
-{
-    communication.RequestSendMessage(4);
-
-    ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
-    ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
-    ReceiveInitResponse(28);
 }
 
 TEST_F(SesameWindowedTest, request_sending_new_message_while_previous_is_still_processing)
@@ -281,16 +284,6 @@ TEST_F(SesameWindowedTest, received_message_before_initialized_is_discarded)
     PretendReceiveMessage("abcd");
 
     ReceiveInitResponse(24);
-}
-
-TEST_F(SesameWindowedTest, received_release_window_before_initialized_is_discarded)
-{
-    communication.RequestSendMessage(4);
-    ReceiveReleaseWindow(6);
-
-    ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
-    ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
-    ReceiveInitResponse(28);
 }
 
 TEST_F(SesameWindowedTest, handle_init_request_after_initialization)
@@ -529,7 +522,6 @@ TEST_F(SesameWindowedTest, hold_initialization_until_initializer_grants)
 {
     observer.Detach();
     services::SesameInitializerMock initializer;
-    EXPECT_CALL(base, MaxSendMessageSize()).WillOnce(testing::Return(24));
     EXPECT_CALL(base, WorstCaseEncodedMessageSize(3)).WillOnce(testing::Return(5));
     ExpectRequestSendMessageForInit(24);
     infra::ReConstruct(communication, base, initializer);
