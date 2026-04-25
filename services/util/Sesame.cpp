@@ -8,4 +8,12 @@ namespace services
     {
         onGranted();
     }
+
+    void SesameInitializer::InitInformationReceived(infra::StreamReaderWithRewinding& initInfo)
+    {}
+
+    infra::ConstByteRange SesameInitializer::InitInformation() const
+    {
+        return {};
+    }
 }
