@@ -157,4 +157,4 @@ TEST_P(SesameInstantiationSecuredTestMessageSize, send_message_of_size_right)
     EXPECT_EQ(messageSize, sentData2.size());
 }
 
-INSTANTIATE_TEST_SUITE_P(SesameInstantiationSecuredTestMessageSize, SesameInstantiationSecuredTestMessageSize, testing::Range<std::size_t>(1, 994));
+INSTANTIATE_TEST_SUITE_P(SesameInstantiationSecuredTestMessageSize, SesameInstantiationSecuredTestMessageSize, testing::Range<std::size_t>(1, 995));
