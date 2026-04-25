@@ -1,5 +1,6 @@
 #include "services/util/SesameWindowed.hpp"
 #include "infra/stream/BoundedDequeOutputStream.hpp"
+#include <algorithm>
 
 namespace services
 {
