@@ -56,7 +56,8 @@ TEST_F(SesameInstantiationTest, send_big_message_right)
         {
             infra::TextInputStream::WithErrorPolicy stream(*reader);
             std::string text(stream.Available(), ' ');
-            stream >> infra::BoundedString(text);
+            infra::BoundedString textString(text);
+            stream >> textString;
             EXPECT_EQ(sentData, text);
         }));
     ExecuteAllActions();
@@ -80,7 +81,8 @@ TEST_F(SesameInstantiationTest, send_big_message_left)
         {
             infra::TextInputStream::WithErrorPolicy stream(*reader);
             std::string text(stream.Available(), ' ');
-            stream >> infra::BoundedString(text);
+            infra::BoundedString textString(text);
+            stream >> textString;
             EXPECT_EQ(sentData, text);
         }));
     ExecuteAllActions();
@@ -132,14 +134,16 @@ TEST_P(SesameInstantiationTestMessageSize, send_message_of_size_right)
             {
                 infra::TextInputStream::WithErrorPolicy stream(*reader);
                 std::string text(stream.Available(), ' ');
-                stream >> infra::BoundedString(text);
+                infra::BoundedString textString(text);
+                stream >> textString;
                 EXPECT_EQ(sentData1, text);
             }))
         .WillOnce(testing::Invoke([this, &sentData2](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
             {
                 infra::TextInputStream::WithErrorPolicy stream(*reader);
                 std::string text(stream.Available(), ' ');
-                stream >> infra::BoundedString(text);
+                infra::BoundedString textString(text);
+                stream >> textString;
                 EXPECT_EQ(sentData2, text);
             }));
     ExecuteAllActions();
