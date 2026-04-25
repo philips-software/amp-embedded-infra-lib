@@ -18,11 +18,7 @@ namespace main_
             infra::BoundedVector<uint8_t>& securedSendBuffer, infra::BoundedVector<uint8_t>& securedReceiveBuffer,
             hal::BufferedSerialCommunication& serialCommunication, const services::SesameSecured::KeyMaterial& keyMaterial);
 
-        void Stop(const infra::Function<void()>& onDone);
-
         services::SesameSecured::WithCryptoMbedTls secured;
-
-        infra::AutoResetFunction<void()> onStopDone;
 
         template<std::size_t MessageSize>
         struct SecuredStorage

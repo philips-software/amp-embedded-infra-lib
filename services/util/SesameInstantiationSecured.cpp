@@ -7,14 +7,4 @@ namespace main_
         : Sesame(cobsSendStorage, cobsReceivedMessage, windowedReceivedMessage, serialCommunication)
         , secured(securedSendBuffer, securedReceiveBuffer, windowed, keyMaterial)
     {}
-
-    void SesameSecured::Stop(const infra::Function<void()>& onDone)
-    {
-        this->onStopDone = onDone;
-        cobs.Stop([this]()
-            {
-                windowed.ResetReading();
-                this->onStopDone();
-            });
-    }
 }

@@ -3,6 +3,7 @@
 
 #include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"
 #include "gmock/gmock.h"
+#include <algorithm>
 #include <random>
 
 namespace hal
