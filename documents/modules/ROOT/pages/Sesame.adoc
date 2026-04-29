@@ -67,7 +67,7 @@ further packets may not be sent.
 .Init packet
 [bytefield]
 ----
-(def boxes-per-row 3)
+(def boxes-per-row 6)
 (draw-column-headers {:labels ["0" "1" "2" "3" "..." "n"]})
 (draw-box 1)
 (draw-box "size" {:span 2})
@@ -93,7 +93,7 @@ has one 16-bit unsigned parameter `size` encoded in little endian which advertis
 .InitResponse packet
 [bytefield]
 ----
-(def boxes-per-row 3)
+(def boxes-per-row 6)
 (draw-column-headers {:labels ["0" "1" "2" "3" "..." "n"]})
 (draw-box 2)
 (draw-box "size" {:span 2})
