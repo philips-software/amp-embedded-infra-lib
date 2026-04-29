@@ -49,30 +49,17 @@ public:
         onSent();
     }
 
-    void ExpectReceivedMessage(const std::vector<uint8_t>& expected, std::size_t encodedSize)
+    void ExpectReceivedMessage(const std::vector<uint8_t>& expected, std::size_t encodedSize, bool returnEmptyReader = true)
     {
-        EXPECT_CALL(observer, ReceivedMessage(testing::_, encodedSize)).WillOnce(testing::Invoke([this, expected](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, uint16_t encodedSize)
+        EXPECT_CALL(observer, ReceivedMessage(testing::_, encodedSize)).WillOnce(testing::Invoke([this, expected, returnEmptyReader](infra::StreamReaderWithRewinding& reader, uint16_t encodedSize)
             {
-                infra::DataInputStream::WithErrorPolicy stream(*reader);
+                infra::DataInputStream::WithErrorPolicy stream(reader);
                 std::vector<uint8_t> data(stream.Available(), 0);
                 stream >> infra::MakeRange(data);
 
                 EXPECT_EQ(expected, data);
-                EXPECT_CALL(serial, Reader()).WillOnce(testing::ReturnRef(emptyReader)).RetiresOnSaturation();
-            }));
-    }
-
-    void ExpectReceivedMessageKeepReader(const std::vector<uint8_t>& expected, std::size_t encodedSize)
-    {
-        EXPECT_CALL(observer, ReceivedMessage(testing::_, encodedSize)).WillOnce(testing::Invoke([this, expected](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, uint16_t encodedSize)
-            {
-                infra::DataInputStream::WithErrorPolicy stream(*reader);
-                std::vector<uint8_t> data(stream.Available(), 0);
-                stream >> infra::MakeRange(data);
-
-                EXPECT_EQ(expected, data);
-
-                this->reader = std::move(reader);
+                if (returnEmptyReader)
+                    EXPECT_CALL(serial, Reader()).WillOnce(testing::ReturnRef(emptyReader)).RetiresOnSaturation();
             }));
     }
 
@@ -99,7 +86,6 @@ public:
     infra::StdVectorInputStreamReader::WithStorage receivedDataReader;
     infra::StdVectorInputStreamReader::WithStorage emptyReader;
     infra::SharedPtr<infra::StreamWriter> writer;
-    infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
 };
 
 TEST_F(SesameCobsTest, MaxSendMessageSize)
@@ -213,13 +199,9 @@ TEST_F(SesameCobsTest, receive_interrupted_data)
 
 TEST_F(SesameCobsTest, receive_two_messages)
 {
-    ExpectReceivedMessageKeepReader({ 1, 2, 3, 4 }, 7);
-    ReceiveData(infra::ConstructBin()({ 0, 5, 1, 2, 3, 4, 0, 3, 5, 6, 0 }).Vector());
-
+    ExpectReceivedMessage({ 1, 2, 3, 4 }, 7, false);
     ExpectReceivedMessage({ 5, 6 }, 4);
-    EXPECT_CALL(serial, Reader()).WillOnce(testing::ReturnRef(receivedDataReader)).RetiresOnSaturation();
-    EXPECT_CALL(serial, AckReceived());
-    reader = nullptr;
+    ReceiveData(infra::ConstructBin()({ 0, 5, 1, 2, 3, 4, 0, 3, 5, 6, 0 }).Vector());
 }
 
 TEST_F(SesameCobsTest, malformed_empty_message_is_discarded)
@@ -232,19 +214,6 @@ TEST_F(SesameCobsTest, malformed_message_is_forwarded)
 {
     ExpectReceivedMessage({ 1 }, 4);
     ReceiveData(infra::ConstructBin()({ 0, 5, 1, 0 }).Vector());
-}
-
-TEST_F(SesameCobsTest, no_new_received_message_after_stop)
-{
-    infra::VerifyingFunction<void()> onDone;
-
-    ExpectReceivedMessageKeepReader({ 1, 2, 3, 4 }, 7);
-    ReceiveData(infra::ConstructBin()({ 0, 5, 1, 2, 3, 4, 0, 3, 5, 6, 0 }).Vector());
-
-    communication.Stop(onDone);
-    reader = nullptr;
-
-    ExecuteAllActions();
 }
 
 TEST_F(SesameCobsTest, no_new_send_message_after_stop)
