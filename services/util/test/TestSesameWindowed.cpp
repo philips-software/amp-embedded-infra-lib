@@ -59,7 +59,7 @@ public:
                 infra::DataInputStream::WithErrorPolicy stream(initInfoReader);
                 std::vector<uint8_t> data(stream.Available());
                 stream >> infra::MakeRange(data);
-                EXPECT_TRUE(infra::ContentsEqual(infra::MakeRange(initInfo), infra::MakeRange(data)));
+                EXPECT_THAT(data, testing::ElementsAreArray(initInfo));
             }));
         ReceivePacket(infra::ConstructBin().Value<uint8_t>(1).Value<infra::LittleEndian<uint16_t>>(availableWindow)(initInfo).Vector());
     }
@@ -72,7 +72,7 @@ public:
                 infra::DataInputStream::WithErrorPolicy stream(initInfoReader);
                 std::vector<uint8_t> data(stream.Available());
                 stream >> infra::MakeRange(data);
-                EXPECT_TRUE(infra::ContentsEqual(infra::MakeRange(initInfo), infra::MakeRange(data)));
+                EXPECT_THAT(data, testing::ElementsAreArray(initInfo));
             }));
         ReceivePacket(infra::ConstructBin().Value<uint8_t>(2).Value<infra::LittleEndian<uint16_t>>(availableWindow)(initInfo).Vector());
     }
