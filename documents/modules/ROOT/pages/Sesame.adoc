@@ -68,7 +68,7 @@ further packets may not be sent.
 [bytefield]
 ----
 (def boxes-per-row 3)
-(draw-column-headers {:column-labels ["0" "1" "2" "3" "..." "n"]})
+(draw-column-headers {:labels ["0" "1" "2" "3" "..." "n"]})
 (draw-box 1)
 (draw-box "size" {:span 2})
 (draw-box "init info" {:span 3})
@@ -94,7 +94,7 @@ has one 16-bit unsigned parameter `size` encoded in little endian which advertis
 [bytefield]
 ----
 (def boxes-per-row 3)
-(draw-column-headers {:column-labels ["0" "1" "2" "3" "..." "n"]})
+(draw-column-headers {:labels ["0" "1" "2" "3" "..." "n"]})
 (draw-box 2)
 (draw-box "size" {:span 2})
 (draw-box "init info" {:span 3})
