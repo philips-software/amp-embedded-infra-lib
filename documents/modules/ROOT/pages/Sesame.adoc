@@ -101,7 +101,7 @@ has one 16-bit unsigned parameter `size` encoded in little endian which advertis
 
 ----
 
-An `InitResponse` packet consumes 5 window bytes: 3 for the packet contents, 2 for the 
+An `InitResponse` packet consumes 5 window bytes, plus any bytes for sending the init info: 3 for the packet contents, 0 or more for init info, 2 for the 
 COBS layer (1 for the COBS overhead byte, one for the terminating 0).
 
 Similar to the `Init` packet, the `InitResponse` packet may contain extra information.
