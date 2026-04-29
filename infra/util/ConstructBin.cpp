@@ -2,6 +2,12 @@
 
 namespace infra
 {
+    ConstructBin& ConstructBin::operator()(infra::ConstByteRange v)
+    {
+        contents.insert(contents.end(), v.begin(), v.end());
+        return *this;
+    }
+
     ConstructBin& ConstructBin::operator()(const std::vector<uint8_t>& v)
     {
         contents.insert(contents.end(), v.begin(), v.end());

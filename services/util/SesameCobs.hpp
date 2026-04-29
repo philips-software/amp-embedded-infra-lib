@@ -80,11 +80,9 @@ namespace services
         std::size_t sendSizeEncoded = 0;
         uint8_t nextOverhead = 1;
         bool overheadPositionIsPseudo = true;
-        bool receiving = false;
         infra::BoundedDeque<uint8_t>& receivedMessage;
         std::size_t receiveSizeEncoded = 0;
         std::size_t currentMessageSize = 0;
-        infra::NotifyingSharedOptional<infra::LimitedStreamReaderWithRewinding::WithInput<infra::BoundedDequeInputStreamReader>> receivedDataReader;
 
         infra::BoundedVector<uint8_t>& sendStorage;
         infra::NotifyingSharedOptional<infra::LimitedStreamWriter::WithOutput<infra::BoundedVectorStreamWriter>> sendStream{ [this]()
