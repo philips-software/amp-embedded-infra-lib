@@ -17,6 +17,7 @@ namespace services
     private:
         void OnRetry();
 
+    private:
         IPv4Address pendingAddress_{};
         infra::Function<void(std::optional<hal::MacAddress>)> onDone_;
         infra::TimerRepeating retryTimer_;
