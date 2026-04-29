@@ -1,4 +1,5 @@
 #include "lwip/lwip_cpp/MacResolverLwIp.hpp"
+#include "infra/util/ReallyAssert.hpp"
 #include "lwip/ip4_addr.h"
 #include "lwip/ip6_addr.h"
 #include "lwip/nd6.h"
@@ -22,53 +23,73 @@ namespace services
             ip6_addr_set_zone(&target, netif_default->ip6_addr->u_addr.ip6.zone);
             return target;
         }
+    }
 
-        // lwIP has no public API to trigger a standalone ND6 solicitation.
-        // We therefore create a zero-length PBUF_REF probe and call
-        // nd6_get_next_hop_addr_or_queue(), which drives neighbor discovery.
-        // lwIP determines whether this is a direct on-link neighbor or a
-        // routed next-hop lookup.
-        // If queued, lwIP clones this volatile probe, so the caller still
-        // releases the original pbuf after the lookup call returns.
-        std::optional<hal::MacAddress> Nd6Lookup(const ip6_addr_t& target)
+    MacResolverRetryHelper::MacResolverRetryHelper(uint8_t retries, infra::Duration retryInterval, LookupFunction lookup, SendRequestFunction sendRequest)
+        : retries(retries)
+        , retryInterval(retryInterval)
+        , lookup(lookup)
+        , sendRequest(sendRequest)
+    {}
+
+    void MacResolverRetryHelper::Resolve(const MacResolver::Address& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone)
+    {
+        really_assert(!onDone);
+
+        if (auto mac = lookup(address); mac)
         {
-            const u8_t* hwaddrp = nullptr;
-            auto* probe = pbuf_alloc_reference(nullptr, 0, PBUF_REF);
-            if (probe == nullptr)
-            {
-                return std::nullopt;
-            }
+            onResolveDone(mac);
+            return;
+        }
 
-            auto result = nd6_get_next_hop_addr_or_queue(netif_default, probe, &target, &hwaddrp);
-            pbuf_free(probe);
+        pendingAddress = address;
+        onDone = onResolveDone;
+        retriesLeft = retries;
 
-            if (result >= 0 && hwaddrp != nullptr)
-            {
-                hal::MacAddress mac;
-                std::copy(hwaddrp, hwaddrp + mac.size(), mac.begin());
-                return mac;
-            }
-            return std::nullopt;
+        sendRequest(address);
+        retryTimer.Start(retryInterval, [this] { OnRetry(); });
+    }
+
+    void MacResolverRetryHelper::OnRetry()
+    {
+        if (auto mac = lookup(pendingAddress); mac)
+        {
+            retryTimer.Cancel();
+            onDone(mac);
+            return;
+        }
+
+        if (retriesLeft == 0)
+        {
+            retryTimer.Cancel();
+            onDone(std::nullopt);
+        }
+        else
+        {
+            --retriesLeft;
+            sendRequest(pendingAddress);
         }
     }
 
-    // ARP is link-local. This resolver requests the MAC for the provided
-    // IPv4 address as-is and does not perform IPv4 route/next-hop lookup.
-    void ArpMacResolverLwIp::SendRequest(IPv4Address address)
+    ArpMacResolverLwIp::ArpMacResolverLwIp(uint8_t retries, infra::Duration retryInterval)
+        : helper(retries, retryInterval,
+            [this](const Address& address) { return Lookup(address); },
+            [this](const Address& address) { SendRequest(address); })
+    {}
+
+    void ArpMacResolverLwIp::Resolve(const Address& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone)
     {
-        ip4_addr_t target;
-        IP4_ADDR(&target, address[0], address[1], address[2], address[3]);
-        etharp_request(netif_default, &target);
+        helper.Resolve(address, onResolveDone);
     }
 
-    std::optional<hal::MacAddress> ArpMacResolverLwIp::Lookup(IPv4Address address)
+    std::optional<hal::MacAddress> ArpMacResolverLwIp::Lookup(const Address& address) const
     {
         ip4_addr_t target;
-        IP4_ADDR(&target, address[0], address[1], address[2], address[3]);
+        auto& ipv4 = std::get<IPv4Address>(address);
+        IP4_ADDR(&target, ipv4[0], ipv4[1], ipv4[2], ipv4[3]);
 
         struct eth_addr* ethaddr = nullptr;
-        const ip4_addr_t* ipaddr = nullptr;
-        if (etharp_find_addr(netif_default, &target, &ethaddr, &ipaddr) >= 0 && ethaddr != nullptr)
+        if (const ip4_addr_t* ipaddr = nullptr; etharp_find_addr(netif_default, &target, &ethaddr, &ipaddr) >= 0 && ethaddr != nullptr)
         {
             hal::MacAddress mac;
             std::copy(ethaddr->addr, ethaddr->addr + mac.size(), mac.begin());
@@ -77,102 +98,67 @@ namespace services
         return std::nullopt;
     }
 
-    bool ArpMacResolverLwIp::Resolve(IPv4Address address, uint8_t retries, infra::Duration retryInterval, const infra::Function<void(std::optional<hal::MacAddress>)>& onDone)
+    void ArpMacResolverLwIp::SendRequest(const Address& address) const
     {
-        if (retryTimer_.Armed())
+        ip4_addr_t target;
+        auto& ipv4 = std::get<IPv4Address>(address);
+        IP4_ADDR(&target, ipv4[0], ipv4[1], ipv4[2], ipv4[3]);
+        etharp_request(netif_default, &target);
+    }
+
+    Nd6MacResolverLwIp::Nd6MacResolverLwIp(uint8_t retries, infra::Duration retryInterval)
+        : helper(retries, retryInterval,
+            [this](const Address& address) { return Lookup(address); },
+            [this](const Address& address) { SendRequest(address); })
+    {}
+
+    void Nd6MacResolverLwIp::Resolve(const Address& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone)
+    {
+        helper.Resolve(address, onResolveDone);
+    }
+
+    std::optional<hal::MacAddress> Nd6MacResolverLwIp::Lookup(const Address& address) const
+    {
+        auto& ipv6 = std::get<IPv6Address>(address);
+        auto target = ToLwipIp6(ipv6);
+
+        // Check if target is on-link by matching against netif prefixes
+        bool onLink = false;
+        for (int i = 0; i < LWIP_IPV6_NUM_ADDRESSES; ++i)
         {
-            return false;
-        }
-
-        auto mac = Lookup(address);
-        if (mac)
-        {
-            onDone(mac);
-            return true;
-        }
-
-        pendingAddress_ = address;
-        onDone_ = onDone;
-        retriesLeft_ = retries;
-
-        SendRequest(address);
-
-        retryTimer_.Start(retryInterval, [this]
+            if (ip6_addr_isvalid(netif_ip6_addr_state(netif_default, i)))
             {
-                OnRetry();
-            });
+                auto* netifAddr = netif_ip6_addr(netif_default, i);
+                if (ip6_addr_netcmp(&target, netifAddr))
+                {
+                    onLink = true;
+                    break;
+                }
+            }
+        }
 
-        return true;
+        if (!onLink)
+            return std::nullopt;
+
+        const u8_t* hwaddrp = nullptr;
+        auto* probe = pbuf_alloc_reference(nullptr, 0, PBUF_REF);
+        if (probe == nullptr)
+            return std::nullopt;
+
+        auto result = nd6_get_next_hop_addr_or_queue(netif_default, probe, &target, &hwaddrp);
+        pbuf_free(probe);
+
+        if (result == ERR_OK && hwaddrp != nullptr)
+        {
+            hal::MacAddress mac;
+            std::copy(hwaddrp, hwaddrp + mac.size(), mac.begin());
+            return mac;
+        }
+        return std::nullopt;
     }
 
-    void ArpMacResolverLwIp::OnRetry()
+    void Nd6MacResolverLwIp::SendRequest(const Address& /* address */) const
     {
-        auto mac = Lookup(pendingAddress_);
-        if (mac)
-        {
-            retryTimer_.Cancel();
-            onDone_(mac);
-            return;
-        }
-
-        if (retriesLeft_ == 0)
-        {
-            retryTimer_.Cancel();
-            onDone_(std::nullopt);
-        }
-        else
-        {
-            --retriesLeft_;
-            SendRequest(pendingAddress_);
-        }
-    }
-
-    bool Nd6MacResolverLwIp::Resolve(const IPv6Address& address, uint8_t retries, infra::Duration retryInterval, const infra::Function<void(std::optional<hal::MacAddress>)>& onDone)
-    {
-        if (retryTimer_.Armed())
-        {
-            return false;
-        }
-
-        auto target = ToLwipIp6(address);
-        auto mac = Nd6Lookup(target);
-        if (mac)
-        {
-            onDone(mac);
-            return true;
-        }
-
-        pendingAddress_ = address;
-        onDone_ = onDone;
-        retriesLeft_ = retries;
-
-        retryTimer_.Start(retryInterval, [this]
-            {
-                OnRetry();
-            });
-
-        return true;
-    }
-
-    void Nd6MacResolverLwIp::OnRetry()
-    {
-        auto mac = Nd6Lookup(ToLwipIp6(pendingAddress_));
-
-        if (mac)
-        {
-            retryTimer_.Cancel();
-            onDone_(mac);
-            return;
-        }
-
-        if (retriesLeft_ == 0)
-        {
-            retryTimer_.Cancel();
-            onDone_(std::nullopt);
-        }
-        else
-        {
-            --retriesLeft_;
-        }
+        // ND6 solicitation is triggered implicitly via Lookup (nd6_get_next_hop_addr_or_queue)
     }
 }

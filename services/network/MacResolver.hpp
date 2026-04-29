@@ -2,37 +2,25 @@
 #define SERVICES_MAC_RESOLVER_HPP
 
 #include "hal/interfaces/MacAddress.hpp"
-#include "infra/timer/Timer.hpp"
 #include "infra/util/Function.hpp"
 #include "services/network/Address.hpp"
 #include <optional>
+#include <variant>
 
 namespace services
 {
-    class ArpMacResolver
+    class MacResolver
     {
     protected:
-        ArpMacResolver() = default;
-        ArpMacResolver(const ArpMacResolver& other) = delete;
-        ArpMacResolver& operator=(const ArpMacResolver& other) = delete;
-        ~ArpMacResolver() = default;
+        MacResolver() = default;
+        MacResolver(const MacResolver& other) = delete;
+        MacResolver& operator=(const MacResolver& other) = delete;
 
     public:
-        virtual void SendRequest(IPv4Address address) = 0;
-        virtual std::optional<hal::MacAddress> Lookup(IPv4Address address) = 0;
-        virtual bool Resolve(IPv4Address address, uint8_t retries, infra::Duration retryInterval, const infra::Function<void(std::optional<hal::MacAddress>)>& onDone) = 0;
-    };
+        virtual ~MacResolver() = default;
 
-    class Nd6MacResolver
-    {
-    protected:
-        Nd6MacResolver() = default;
-        Nd6MacResolver(const Nd6MacResolver& other) = delete;
-        Nd6MacResolver& operator=(const Nd6MacResolver& other) = delete;
-        ~Nd6MacResolver() = default;
-
-    public:
-        virtual bool Resolve(const IPv6Address& address, uint8_t retries, infra::Duration retryInterval, const infra::Function<void(std::optional<hal::MacAddress>)>& onDone) = 0;
+        using Address = std::variant<IPv4Address, IPv6Address>;
+        virtual void Resolve(const Address& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onDone) = 0;
     };
 }
 
