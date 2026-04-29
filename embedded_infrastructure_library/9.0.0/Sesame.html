@@ -183,7 +183,7 @@ further packets may not be sent.</p>
 </div>
 <div class="imageblock kroki">
 <div class="content">
-<img src="_images/diag-c4dcb445dc0445446624f57c469c3303d2a2fefe.svg" alt="Init packet">
+<img src="_images/diag-9b2ead14d441e700ad7ac9ba6d6495f984303f24.svg" alt="Init packet">
 </div>
 <div class="title">Figure 1. Init packet</div>
 </div>
@@ -195,6 +195,10 @@ with an <code>Init</code> packet of its own, advertising its available window, a
 <code>InitResponse</code> packet. This way, the data lost in the overflown <code>Init</code> packet is retrieved. Since a sender has an empty
 buffer before sending an <code>Init</code> packet, that will not result in a repeated exchange of <code>Init</code> packets.</p>
 </div>
+<div class="paragraph">
+<p>Optionally, an <code>Init</code> packet can contain initialization information. This information is sent to its peer, and can for
+example be used to send version information.</p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_initresponse"><a class="anchor" href="#_initresponse"></a>InitResponse</h3>
@@ -205,13 +209,16 @@ has one 16-bit unsigned parameter <code>size</code> encoded in little endian whi
 </div>
 <div class="imageblock kroki">
 <div class="content">
-<img src="_images/diag-b8345fb28f5398a873560ecfceb16a2ae01695a9.svg" alt="InitResponse packet">
+<img src="_images/diag-5b308989bd7386cc87b9043dd892ac9a172504b3.svg" alt="InitResponse packet">
 </div>
 <div class="title">Figure 2. InitResponse packet</div>
 </div>
 <div class="paragraph">
-<p>An <code>InitResponse</code> packet consumes 5 window bytes: 3 for the packet contents, 2 for the
+<p>An <code>InitResponse</code> packet consumes 5 window bytes, plus any bytes for sending the init info: 3 for the packet contents, 0 or more for init info, 2 for the
 COBS layer (1 for the COBS overhead byte, one for the terminating 0).</p>
+</div>
+<div class="paragraph">
+<p>Similar to the <code>Init</code> packet, the <code>InitResponse</code> packet may contain extra information.</p>
 </div>
 </div>
 <div class="sect2">
