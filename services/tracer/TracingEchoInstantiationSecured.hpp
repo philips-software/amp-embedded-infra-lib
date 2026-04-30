@@ -51,7 +51,7 @@ namespace main_
 
     template<std::size_t MessageSize>
     struct TracingEchoOnSesameSecuredSymmetricKey::WithMessageSize
-        : private EchoOnSesame::CobsStorage<MessageSize>
+        : private Sesame::CobsStorage<MessageSize>
         , private EchoOnSesameSecured::SecuredStorage<MessageSize>
         , TracingEchoOnSesameSecuredSymmetricKey
     {
@@ -78,7 +78,7 @@ namespace main_
 
     template<std::size_t MessageSize>
     struct TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize
-        : private EchoOnSesame::CobsStorage<MessageSize>
+        : private Sesame::CobsStorage<MessageSize>
         , private EchoOnSesameSecured::SecuredStorage<MessageSize>
         , TracingEchoOnSesameSecuredDiffieHellman
     {

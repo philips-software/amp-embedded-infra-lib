@@ -5,7 +5,6 @@
 
 namespace services
 {
-
     class SerialCommunicationLoopback
     {
     public:
