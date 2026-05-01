@@ -1,11 +1,11 @@
 #include "infra/util/LogAndAbort.hpp"
-#include "infra/util/test_helper/MockCallback.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include <array>
 #include <cstdarg>
 #include <cstdint>
 #include <cstdio>
+#include <iostream>
 
 namespace
 {
@@ -105,6 +105,10 @@ TEST_F(LogAndAbortTest, log_and_abort_enum)
         Value2
     };
     EXPECT_DEATH(LOG_AND_ABORT_ENUM(TestEnumUnsigned::Value1), "");
+
+    auto foo = TestEnumSigned::Value2;
+    auto& bar = foo;
+    EXPECT_DEATH(LOG_AND_ABORT_ENUM(bar), "");
 }
 
 TEST_F(LogAndAbortTest, log_and_abort_enum_accepts_integral_types)
@@ -114,4 +118,7 @@ TEST_F(LogAndAbortTest, log_and_abort_enum_accepts_integral_types)
 
     uint64_t bar = 99;
     EXPECT_DEATH(LOG_AND_ABORT_ENUM(bar), "");
+
+    uint64_t& baz = bar;
+    EXPECT_DEATH(LOG_AND_ABORT_ENUM(baz), "");
 }

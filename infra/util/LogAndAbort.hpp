@@ -8,25 +8,27 @@
 
 namespace infra::detail
 {
-    template<class T, bool = std::is_enum_v<T>>
+    template<class T, bool = std::is_enum_v<std::decay_t<T>>>
     struct LogAndAbortEnumOrIntegralType
     {
-        static_assert(std::is_integral_v<T>, "T must be an integral type");
+        using Type = std::decay_t<T>;
+        static_assert(std::is_integral_v<Type>, "T must be an integral type");
 
-        static T ToUnderlying(T value)
+        static Type ToUnderlying(T value)
         {
-            return static_cast<T>(value);
+            return static_cast<Type>(value);
         }
     };
 
     template<class T>
     struct LogAndAbortEnumOrIntegralType<T, true>
     {
+        using Type = std::underlying_type_t<std::decay_t<T>>;
         static_assert(std::is_enum_v<std::decay_t<T>>, "T must be an enum type");
 
-        static std::underlying_type_t<T> ToUnderlying(T value)
+        static Type ToUnderlying(T value)
         {
-            return static_cast<std::underlying_type_t<T>>(value);
+            return static_cast<Type>(value);
         }
     };
 }
