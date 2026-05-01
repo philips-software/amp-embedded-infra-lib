@@ -6,7 +6,7 @@
 #include <cstdlib>
 #include <type_traits>
 
-namespace
+namespace infra::detail
 {
     template<class T, bool = std::is_enum_v<T>>
     struct LogAndAbortEnumOrIntegralType

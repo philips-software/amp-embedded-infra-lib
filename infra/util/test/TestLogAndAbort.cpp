@@ -4,6 +4,7 @@
 #include "gtest/gtest.h"
 #include <array>
 #include <cstdarg>
+#include <cstdint>
 #include <cstdio>
 
 namespace
