@@ -49,7 +49,7 @@ namespace services
         infra::TextOutputStream::WithErrorPolicy dummyStream{ dummy };
         EmptyTracing emptyTracing{ dummyStream };
 #else
-#error no tracing option defined
+#error no tracing option defined. Are you sure you properly linked the tracer library?
 #endif
 
     protected:
