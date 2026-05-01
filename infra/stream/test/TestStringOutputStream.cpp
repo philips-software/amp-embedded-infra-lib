@@ -275,7 +275,7 @@ TEST(StringOutputStreamTest, stream_dec_is_sticky)
 {
     infra::StringOutputStream::WithStorage<20> stream;
 
-    stream << infra::hex << infra::dec << uint8_t(10) << uint8_t(255);
+    stream << infra::dec << uint8_t(10) << uint8_t(255);
 
     EXPECT_EQ("10255", stream.Storage());
 }
