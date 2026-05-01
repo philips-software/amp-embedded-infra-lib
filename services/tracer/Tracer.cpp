@@ -2,14 +2,14 @@
 
 namespace services
 {
-#if defined(EMIL_ENABLE_TRACING)
+#if defined(EMBEDDED_INFRA_SERVICES_TRACER_ENABLED)
     infra::TextOutputStream Tracer::Trace()
     {
         StartTrace();
         InsertHeader();
         return Continue();
     }
-#elif defined(EMIL_DISABLE_TRACING)
+#elif defined(EMBEDDED_INFRA_SERVICES_TRACER_DISABLED)
     Tracer::EmptyTracing Tracer::Trace()
     {
         return emptyTracing;
@@ -33,7 +33,7 @@ namespace services
         : stream(stream)
     {}
 
-#if defined(EMIL_ENABLE_TRACING)
+#if defined(EMBEDDED_INFRA_SERVICES_TRACER_ENABLED)
     infra::TextOutputStream TracerToStream::Continue()
     {
         return stream;
@@ -44,7 +44,7 @@ namespace services
         : delegate(delegate)
     {}
 
-#if defined(EMIL_ENABLE_TRACING)
+#if defined(EMBEDDED_INFRA_SERVICES_TRACER_ENABLED)
     infra::TextOutputStream TracerToDelegate::Continue()
     {
         return delegate.Continue();

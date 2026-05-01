@@ -15,10 +15,10 @@ namespace services
         Tracer& operator=(const Tracer& other) = delete;
         virtual ~Tracer() = default;
 
-#if defined(EMIL_ENABLE_TRACING)
+#if defined(EMBEDDED_INFRA_SERVICES_TRACER_ENABLED)
         infra::TextOutputStream Trace();
         virtual infra::TextOutputStream Continue() = 0;
-#elif defined(EMIL_DISABLE_TRACING)
+#elif defined(EMBEDDED_INFRA_SERVICES_TRACER_DISABLED)
         class EmptyTracing
         {
         public:
@@ -65,7 +65,7 @@ namespace services
     public:
         explicit TracerToStream(infra::TextOutputStream& stream);
 
-#if defined(EMIL_ENABLE_TRACING)
+#if defined(EMBEDDED_INFRA_SERVICES_TRACER_ENABLED)
         infra::TextOutputStream Continue() override;
 #endif
 
@@ -79,7 +79,7 @@ namespace services
     public:
         explicit TracerToDelegate(Tracer& delegate);
 
-#if defined(EMIL_ENABLE_TRACING)
+#if defined(EMBEDDED_INFRA_SERVICES_TRACER_ENABLED)
         infra::TextOutputStream Continue() override;
 #endif
 

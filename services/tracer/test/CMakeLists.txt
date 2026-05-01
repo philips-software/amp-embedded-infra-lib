@@ -23,7 +23,7 @@ target_sources(services.tracer_test PRIVATE
 )
 
 add_library(services.tracer_disabled ${EMIL_EXCLUDE_FROM_ALL} STATIC)
-target_compile_definitions(services.tracer_disabled PUBLIC EMIL_DISABLE_TRACING=1)
+target_compile_definitions(services.tracer_disabled PUBLIC EMBEDDED_INFRA_SERVICES_TRACER_DISABLED=1)
 target_link_libraries(services.tracer_disabled PUBLIC
     infra.stream
 )
