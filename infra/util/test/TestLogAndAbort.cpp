@@ -93,7 +93,7 @@ TEST_F(LogAndAbortTest, log_and_abort_enum)
 {
     enum class TestEnumSigned : int
     {
-        Value1,
+        Value1 = -1,
         Value2
     };
     EXPECT_DEATH(LOG_AND_ABORT_ENUM(TestEnumSigned::Value1), "");
