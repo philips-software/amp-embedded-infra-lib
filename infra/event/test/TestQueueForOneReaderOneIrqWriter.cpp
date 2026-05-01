@@ -202,7 +202,7 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_wrapping_around_buffer)
     EXPECT_EQ(6, queue->Get());
 }
 
-TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_unchecked_does_not_write_out_bounds)
+TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_unchecked_does_not_write_out_of_bounds)
 {
     queue.emplace(buffer, [this]() {});
 
