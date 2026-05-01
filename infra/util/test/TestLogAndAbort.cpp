@@ -105,3 +105,12 @@ TEST_F(LogAndAbortTest, log_and_abort_enum)
     };
     EXPECT_DEATH(LOG_AND_ABORT_ENUM(TestEnumUnsigned::Value1), "");
 }
+
+TEST_F(LogAndAbortTest, log_and_abort_enum_accepts_integral_types)
+{
+    int foo = 42;
+    EXPECT_DEATH(LOG_AND_ABORT_ENUM(foo), "");
+
+    uint64_t bar = 99;
+    EXPECT_DEATH(LOG_AND_ABORT_ENUM(bar), "");
+}
