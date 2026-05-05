@@ -32,7 +32,7 @@ namespace main_
 
     template<std::size_t MessageSize>
     struct TracingEchoOnSesame::WithMessageSize
-        : private EchoOnSesame::CobsStorage<MessageSize>
+        : private Sesame::CobsStorage<MessageSize>
         , TracingEchoOnSesame
     {
         WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, services::Tracer& tracer)
