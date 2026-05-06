@@ -186,7 +186,9 @@ namespace services
         {
             infra::LimitedStreamReaderWithRewinding::WithInput<infra::BoundedDequeInputStreamReader> receivedDataReader(std::in_place, receivedMessage, messageSize);
             GetObserver().ReceivedMessage(receivedDataReader, std::exchange(receiveSizeEncoded, 0));
-            receivedMessage.erase(receivedMessage.begin(), receivedMessage.begin() + messageSize);
+            // If ReceivedMessage resulted in a Reset(), then receivedMessage is empty
+            if (!receivedMessage.empty())
+                receivedMessage.erase(receivedMessage.begin(), receivedMessage.begin() + messageSize);
         }
     }
 
