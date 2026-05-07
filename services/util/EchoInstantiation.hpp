@@ -11,8 +11,7 @@
 #include "services/util/EchoOnSesame.hpp"
 #include "services/util/MessageCommunicationCobs.hpp"
 #include "services/util/MessageCommunicationWindowed.hpp"
-#include "services/util/SesameCobs.hpp"
-#include "services/util/SesameWindowed.hpp"
+#include "services/util/SesameInstantiation.hpp"
 
 namespace main_
 {
@@ -42,26 +41,13 @@ namespace main_
         // Implementation of Stoppable
         void Stop(const infra::Function<void()>& onDone) override;
 
-        services::SesameCobs cobs;
-        services::SesameWindowed windowed;
+        Sesame sesame;
         services::EchoOnSesame echo;
-
-        infra::AutoResetFunction<void()> onStopDone;
-
-        template<std::size_t MessageSize>
-        struct CobsStorage
-        {
-            static constexpr std::size_t encodedMessageSize = services::SesameWindowed::bufferSizeForMessage<MessageSize, services::SesameCobs::EncodedMessageSize>;
-
-            infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameCobs::sendBufferSize<MessageSize>> cobsSendStorage;
-            infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameCobs::receiveBufferSize<encodedMessageSize>> cobsReceivedMessage;
-            infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameCobs::receiveBufferSize<encodedMessageSize>> windowedReceivedMessage;
-        };
     };
 
     template<std::size_t MessageSize>
     struct EchoOnSesame::WithMessageSize
-        : private EchoOnSesame::CobsStorage<MessageSize>
+        : private Sesame::CobsStorage<MessageSize>
         , EchoOnSesame
     {
         WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory)
