@@ -14,7 +14,7 @@ namespace infra::detail
         using Type = std::decay_t<T>;
         static_assert(std::is_integral_v<Type>, "T must be an integral type");
 
-        static Type ToUnderlying(T value)
+        constexpr static Type ToUnderlying(T value)
         {
             return static_cast<Type>(value);
         }
@@ -26,7 +26,7 @@ namespace infra::detail
         using Type = std::underlying_type_t<std::decay_t<T>>;
         static_assert(std::is_enum_v<std::decay_t<T>>, "T must be an enum type");
 
-        static Type ToUnderlying(T value)
+        constexpr static Type ToUnderlying(T value)
         {
             return static_cast<Type>(value);
         }
