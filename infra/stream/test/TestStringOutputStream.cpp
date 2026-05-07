@@ -253,6 +253,42 @@ TEST(StringOutputStreamTest, stream_short_bin)
     EXPECT_EQ("1", stream.Storage());
 }
 
+TEST(StringOutputStreamTest, stream_dec_after_hex)
+{
+    infra::StringOutputStream::WithStorage<10> stream;
+
+    stream << infra::hex << infra::dec << uint8_t(10);
+
+    EXPECT_EQ("10", stream.Storage());
+}
+
+TEST(StringOutputStreamTest, stream_dec_after_bin)
+{
+    infra::StringOutputStream::WithStorage<10> stream;
+
+    stream << infra::bin << infra::dec << uint8_t(10);
+
+    EXPECT_EQ("10", stream.Storage());
+}
+
+TEST(StringOutputStreamTest, stream_dec_is_sticky)
+{
+    infra::StringOutputStream::WithStorage<20> stream;
+
+    stream << infra::dec << uint8_t(10) << uint8_t(255);
+
+    EXPECT_EQ("10255", stream.Storage());
+}
+
+TEST(StringOutputStreamTest, stream_literal_in_dec_stream)
+{
+    infra::StringOutputStream::WithStorage<10> stream;
+
+    stream << infra::dec << "abcd";
+
+    EXPECT_EQ("abcd", stream.Storage());
+}
+
 TEST(StringOutputStreamTest, stream_longer_bin)
 {
     infra::StringOutputStream::WithStorage<10> stream;
