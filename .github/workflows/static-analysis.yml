@@ -58,7 +58,7 @@ jobs:
           jq -s 'reduce .[] as $item ({}; . * $item)' reports/mull/*.json > reports/mull/merged-mutation.json
           jq --arg workspace "$GITHUB_WORKSPACE" -f .github/formatters/mutation-report-to-generic-issue.jq reports/mull/merged-mutation.json > mutation-sonar.json
           cp build/coverage/compile_commands.json compile_commands.json
-      - uses: sonarsource/sonarqube-scan-action@299e4b793aaa83bf2aba7c9c14bedbb485688ec4 # v7.1.0
+      - uses: sonarsource/sonarqube-scan-action@59db25f34e16620e48ab4bb9e4a5dce155cb5432 # v8.0.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   codeql:
