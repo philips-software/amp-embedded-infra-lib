@@ -12,7 +12,7 @@
 
 #define INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED 1
 #if defined(EMIL_HOST_BUILD)
-// For host builds, always log filenames upon abort
+// For host builds, always provide full paths upon abort
 #define EMIL_ENABLE_LOGGING_FILE_UPON_ABORT
 #endif
 
