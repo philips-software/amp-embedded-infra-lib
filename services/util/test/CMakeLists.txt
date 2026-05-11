@@ -44,6 +44,8 @@ target_sources(services.util_test PRIVATE
     TestSerialCommunicationLoopback.cpp
     TestSesameCobs.cpp
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestSesameCryptoMbedTls.cpp>
+    TestSesameInstantiation.cpp
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestSesameInstantiationSecured.cpp>
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestSesameSecured.cpp>
     TestSesameWindowed.cpp
     TestSignalLed.cpp

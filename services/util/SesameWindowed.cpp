@@ -1,5 +1,6 @@
 #include "services/util/SesameWindowed.hpp"
 #include "infra/stream/BoundedDequeOutputStream.hpp"
+#include <algorithm>
 
 namespace services
 {
@@ -67,6 +68,7 @@ namespace services
 
     void SesameWindowed::RequestSendMessage(std::size_t size)
     {
+        assert(size <= MaxSendMessageSize());
         state->RequestSendMessage(size);
     }
 
@@ -117,14 +119,15 @@ namespace services
         state->MessageSent(encodedSize);
     }
 
-    void SesameWindowed::ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, std::size_t encodedSize)
+    void SesameWindowed::ReceivedMessage(infra::StreamReaderWithRewinding& reader, std::size_t encodedSize)
     {
-        infra::DataInputStream::WithErrorPolicy stream(*reader, infra::noFail);
+        infra::DataInputStream::WithErrorPolicy stream(reader, infra::noFail);
         switch (stream.Extract<Operation>())
         {
             case Operation::init:
             {
                 auto window = stream.Extract<infra::LittleEndian<uint16_t>>();
+                sesameInitializer.InitInformationReceived(reader);
                 ReceivedInit(window);
                 sesameInitializer.InitializationRequested([this, window]()
                     {
@@ -139,6 +142,7 @@ namespace services
                 otherAvailableWindow = stream.Extract<infra::LittleEndian<uint16_t>>();
                 ReceivedInitResponse(otherAvailableWindow);
                 releasedWindow = static_cast<uint16_t>(encodedSize);
+                sesameInitializer.InitInformationReceived(reader);
                 ReceivedInitialize();
                 break;
             case Operation::releaseWindow:
@@ -152,7 +156,7 @@ namespace services
                 break;
             case Operation::message:
                 if (initialized)
-                    SaveReceivedMessage(*reader);
+                    SaveReceivedMessage(reader);
                 break;
         }
 
@@ -161,7 +165,7 @@ namespace services
 
     void SesameWindowed::ReceivedInitialize()
     {
-        maxUsableBufferSize = otherAvailableWindow;
+        maxUsableBufferSize = std::min<uint16_t>(SesameEncodedObserver::Subject().MaxSendMessageSize(), otherAvailableWindow);
         initialized = true;
         GetObserver().Initialized();
     }
@@ -270,14 +274,14 @@ namespace services
 
     void SesameWindowed::StateSendingInit::Request()
     {
-        communication.SesameEncodedObserver::Subject().RequestSendMessage(3);
+        communication.SesameEncodedObserver::Subject().RequestSendMessage(sizeof(PacketInit) + communication.sesameInitializer.InitInformation().size());
     }
 
     void SesameWindowed::StateSendingInit::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         communication.SendingInit(communication.ownBufferSize);
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
-        stream << PacketInit(communication.ownBufferSize);
+        stream << PacketInit(communication.ownBufferSize) << communication.sesameInitializer.InitInformation();
     }
 
     void SesameWindowed::StateSendingInit::MessageSent(std::size_t encodedSize)
@@ -295,14 +299,14 @@ namespace services
 
     void SesameWindowed::StateSendingInitResponse::Request()
     {
-        communication.SesameEncodedObserver::Subject().RequestSendMessage(3);
+        communication.SesameEncodedObserver::Subject().RequestSendMessage(sizeof(PacketInitResponse) + communication.sesameInitializer.InitInformation().size());
     }
 
     void SesameWindowed::StateSendingInitResponse::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         communication.SendingInitResponse(communication.ownBufferSize);
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
-        stream << PacketInitResponse(communication.ownBufferSize);
+        stream << PacketInitResponse(communication.ownBufferSize) << communication.sesameInitializer.InitInformation();
 
         communication.releasedWindow = 0;
         communication.sendInitResponse = false;
@@ -358,7 +362,7 @@ namespace services
 
     void SesameWindowed::StateSendingReleaseWindow::Request()
     {
-        communication.SesameEncodedObserver::Subject().RequestSendMessage(3);
+        communication.SesameEncodedObserver::Subject().RequestSendMessage(sizeof(PacketReleaseWindow));
     }
 
     void SesameWindowed::StateSendingReleaseWindow::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
