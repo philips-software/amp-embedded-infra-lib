@@ -17,7 +17,7 @@ namespace services
         ~MacResolver() = default;
 
     public:
-        virtual void Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onDone) = 0;
+        [[nodiscard]] virtual bool Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onDone) = 0;
     };
 }
 

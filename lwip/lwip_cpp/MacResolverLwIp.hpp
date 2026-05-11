@@ -1,7 +1,7 @@
 #ifndef LWIP_MAC_RESOLVER_LW_IP_HPP
 #define LWIP_MAC_RESOLVER_LW_IP_HPP
 
-#include "infra/timer/Timer.hpp"
+#include "infra/timer/Retry.hpp"
 #include "infra/util/AutoResetFunction.hpp"
 #include "services/network/MacResolver.hpp"
 
@@ -15,19 +15,18 @@ namespace services
 
         MacResolverRetryHelper(uint8_t retries, infra::Duration retryInterval, LookupFunction lookup, SendRequestFunction sendRequest);
 
-        void Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone);
+        [[nodiscard]] bool Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone);
 
     private:
         void OnRetry();
 
     private:
         uint8_t retries;
-        infra::Duration retryInterval;
         LookupFunction lookup;
         SendRequestFunction sendRequest;
         IPAddress pendingAddress;
         infra::AutoResetFunction<void(std::optional<hal::MacAddress>)> onDone;
-        infra::TimerRepeating retryTimer;
+        infra::RetryFixedInterval retryTimer;
         uint8_t retriesLeft = 0;
     };
 
@@ -37,7 +36,7 @@ namespace services
     public:
         ArpMacResolverLwIp(uint8_t retries, infra::Duration retryInterval);
 
-        void Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone) override;
+        [[nodiscard]] bool Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone) override;
 
     private:
         std::optional<hal::MacAddress> Lookup(const IPAddress& address) const;
@@ -53,7 +52,7 @@ namespace services
     public:
         Nd6MacResolverLwIp(uint8_t retries, infra::Duration retryInterval);
 
-        void Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone) override;
+        [[nodiscard]] bool Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone) override;
 
     private:
         std::optional<hal::MacAddress> Lookup(const IPAddress& address) const;

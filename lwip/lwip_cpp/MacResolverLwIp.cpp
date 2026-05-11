@@ -1,5 +1,4 @@
 #include "lwip/lwip_cpp/MacResolverLwIp.hpp"
-#include "infra/util/ReallyAssert.hpp"
 #include "lwip/ip4_addr.h"
 #include "lwip/ip6_addr.h"
 #include "lwip/nd6.h"
@@ -27,19 +26,20 @@ namespace services
 
     MacResolverRetryHelper::MacResolverRetryHelper(uint8_t retries, infra::Duration retryInterval, LookupFunction lookup, SendRequestFunction sendRequest)
         : retries(retries)
-        , retryInterval(retryInterval)
         , lookup(lookup)
         , sendRequest(sendRequest)
+        , retryTimer(retryInterval)
     {}
 
-    void MacResolverRetryHelper::Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone)
+    bool MacResolverRetryHelper::Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone)
     {
-        really_assert(!onDone);
+        if (onDone)
+            return false;
 
         if (auto mac = lookup(address); mac)
         {
             onResolveDone(mac);
-            return;
+            return true;
         }
 
         pendingAddress = address;
@@ -47,30 +47,33 @@ namespace services
         retriesLeft = retries;
 
         sendRequest(address);
-        retryTimer.Start(retryInterval, [this]
+        retryTimer.Start(infra::FailureType::intermittentFailure, [this]
             {
                 OnRetry();
             });
+        return true;
     }
 
     void MacResolverRetryHelper::OnRetry()
     {
         if (auto mac = lookup(pendingAddress); mac)
         {
-            retryTimer.Cancel();
             onDone(mac);
             return;
         }
 
         if (retriesLeft == 0)
         {
-            retryTimer.Cancel();
             onDone(std::nullopt);
         }
         else
         {
             --retriesLeft;
             sendRequest(pendingAddress);
+            retryTimer.Start(infra::FailureType::intermittentFailure, [this]
+                {
+                    OnRetry();
+                });
         }
     }
 
@@ -85,9 +88,14 @@ namespace services
               })
     {}
 
-    void ArpMacResolverLwIp::Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone)
+    bool ArpMacResolverLwIp::Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone)
     {
-        helper.Resolve(address, onResolveDone);
+        if (std::get_if<IPv4Address>(&address) == nullptr)
+        {
+            onResolveDone(std::nullopt);
+            return true;
+        }
+        return helper.Resolve(address, onResolveDone);
     }
 
     std::optional<hal::MacAddress> ArpMacResolverLwIp::Lookup(const IPAddress& address) const
@@ -129,9 +137,14 @@ namespace services
               })
     {}
 
-    void Nd6MacResolverLwIp::Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone)
+    bool Nd6MacResolverLwIp::Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone)
     {
-        helper.Resolve(address, onResolveDone);
+        if (std::get_if<IPv6Address>(&address) == nullptr)
+        {
+            onResolveDone(std::nullopt);
+            return true;
+        }
+        return helper.Resolve(address, onResolveDone);
     }
 
     std::optional<hal::MacAddress> Nd6MacResolverLwIp::Lookup(const IPAddress& address) const
