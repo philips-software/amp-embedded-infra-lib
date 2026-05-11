@@ -15,10 +15,10 @@ namespace services
         {
             ip6_addr_t target;
             IP6_ADDR(&target,
-                PP_HTONL(address[1] | (static_cast<uint32_t>(address[0]) << 16)),
-                PP_HTONL(address[3] | (static_cast<uint32_t>(address[2]) << 16)),
-                PP_HTONL(address[5] | (static_cast<uint32_t>(address[4]) << 16)),
-                PP_HTONL(address[7] | (static_cast<uint32_t>(address[6]) << 16)));
+                PP_HTONL(address[1] + (static_cast<uint32_t>(address[0]) << 16)),
+                PP_HTONL(address[3] + (static_cast<uint32_t>(address[2]) << 16)),
+                PP_HTONL(address[5] + (static_cast<uint32_t>(address[4]) << 16)),
+                PP_HTONL(address[7] + (static_cast<uint32_t>(address[6]) << 16)));
             ip6_addr_set_zone(&target, netif_default->ip6_addr->u_addr.ip6.zone);
             return target;
         }
@@ -115,6 +115,9 @@ namespace services
         ip4_addr_t target;
         IP4_ADDR(&target, (*ipv4)[0], (*ipv4)[1], (*ipv4)[2], (*ipv4)[3]);
 
+        if (!ip4_addr_netcmp(&target, netif_ip4_addr(netif_default), netif_ip4_netmask(netif_default)))
+            return std::nullopt;
+
         struct eth_addr* ethaddr = nullptr;
         if (const ip4_addr_t* ipaddr = nullptr; etharp_find_addr(netif_default, &target, &ethaddr, &ipaddr) >= 0 && ethaddr != nullptr)
         {
@@ -132,6 +135,8 @@ namespace services
             return;
         ip4_addr_t target;
         IP4_ADDR(&target, (*ipv4)[0], (*ipv4)[1], (*ipv4)[2], (*ipv4)[3]);
+        if (!ip4_addr_netcmp(&target, netif_ip4_addr(netif_default), netif_ip4_netmask(netif_default)))
+            return;
         etharp_request(netif_default, &target);
     }
 
