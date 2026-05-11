@@ -16,6 +16,7 @@ namespace services
         MacResolverRetryHelper(uint8_t retries, infra::Duration retryInterval, LookupFunction lookup, SendRequestFunction sendRequest);
 
         [[nodiscard]] bool Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone);
+        [[nodiscard]] bool Busy() const;
 
     private:
         void OnRetry();

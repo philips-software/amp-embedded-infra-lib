@@ -58,12 +58,14 @@ namespace services
     {
         if (auto mac = lookup(pendingAddress); mac)
         {
+            retryTimer.Stop();
             onDone(mac);
             return;
         }
 
         if (retriesLeft == 0)
         {
+            retryTimer.Stop();
             onDone(std::nullopt);
         }
         else
@@ -75,6 +77,11 @@ namespace services
                     OnRetry();
                 });
         }
+    }
+
+    bool MacResolverRetryHelper::Busy() const
+    {
+        return static_cast<bool>(onDone);
     }
 
     ArpMacResolverLwIp::ArpMacResolverLwIp(uint8_t retries, infra::Duration retryInterval)
@@ -90,6 +97,8 @@ namespace services
 
     bool ArpMacResolverLwIp::Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone)
     {
+        if (helper.Busy())
+            return false;
         if (std::get_if<IPv4Address>(&address) == nullptr)
         {
             onResolveDone(std::nullopt);
@@ -139,6 +148,8 @@ namespace services
 
     bool Nd6MacResolverLwIp::Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone)
     {
+        if (helper.Busy())
+            return false;
         if (std::get_if<IPv6Address>(&address) == nullptr)
         {
             onResolveDone(std::nullopt);
@@ -177,6 +188,9 @@ namespace services
         if (probe == nullptr)
             return std::nullopt;
 
+        // nd6_get_next_hop_addr_or_queue() enqueues its own copy of the packet if neighbour
+        // discovery needs to be triggered; it does not retain the caller's pbuf. probe can
+        // therefore be freed unconditionally after this call.
         auto result = nd6_get_next_hop_addr_or_queue(netif_default, probe, &target, &hwaddrp);
         pbuf_free(probe);
 
