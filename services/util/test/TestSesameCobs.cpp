@@ -63,6 +63,21 @@ public:
             }));
     }
 
+    void ExpectReceivedMessageAndSendReset(const std::vector<uint8_t>& expected, std::size_t encodedSize)
+    {
+        EXPECT_CALL(observer, ReceivedMessage(testing::_, encodedSize)).WillOnce(testing::Invoke([this, expected](infra::StreamReaderWithRewinding& reader, uint16_t encodedSize)
+            {
+                infra::DataInputStream::WithErrorPolicy stream(reader);
+                std::vector<uint8_t> data(stream.Available(), 0);
+                stream >> infra::MakeRange(data);
+
+                EXPECT_EQ(expected, data);
+
+                communication.Reset();
+                EXPECT_CALL(serial, Reader()).WillOnce(testing::ReturnRef(emptyReader)).RetiresOnSaturation();
+            }));
+    }
+
     void RequestSendMessage(uint16_t size, uint16_t encodedSize)
     {
         EXPECT_CALL(observer, SendMessageStreamAvailable).WillOnce(testing::SaveArg<0>(&writer));
@@ -423,4 +438,10 @@ TEST_F(SesameCobsTest, new_request_after_reset_is_handled)
     }
 
     ExpectSendSequence({ { 0 }, { 3 }, { 1, 2 }, { 0 } });
+}
+
+TEST_F(SesameCobsTest, reset_as_a_result_of_ReceiveData)
+{
+    ExpectReceivedMessageAndSendReset({ 1, 2, 3, 4 }, 7);
+    ReceiveData(infra::ConstructBin()({ 0, 5, 1, 2, 3, 4, 0 }).Vector());
 }
