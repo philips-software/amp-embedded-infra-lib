@@ -49,7 +49,7 @@ namespace services
         : public EcSecP256r1DsaVerifier
     {
     public:
-        EcSecP256r1DsaVerifierMbedTls(infra::ConstByteRange dsaPublicKey);
+        explicit EcSecP256r1DsaVerifierMbedTls(infra::ConstByteRange dsaPublicKey);
         EcSecP256r1DsaVerifierMbedTls(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate);
         ~EcSecP256r1DsaVerifierMbedTls();
 
@@ -90,6 +90,8 @@ namespace services
     class EcSecP256r1PrivateKey
     {
     public:
+        using DerEncoded = std::array<uint8_t, 121>;
+
         explicit EcSecP256r1PrivateKey(hal::SynchronousRandomDataGenerator& randomDataGenerator);
         explicit EcSecP256r1PrivateKey(infra::ConstByteRange key, hal::SynchronousRandomDataGenerator& randomDataGenerator);
         EcSecP256r1PrivateKey(const EcSecP256r1PrivateKey& other) = delete;
@@ -97,7 +99,7 @@ namespace services
         ~EcSecP256r1PrivateKey();
 
         infra::BoundedString::WithStorage<228> Pem() const;
-        std::array<uint8_t, 121> Der() const;
+        DerEncoded Der() const;
         const mbedtls_pk_context& Context() const;
 
     private:
@@ -123,12 +125,14 @@ namespace services
     class EcSecP256r1PublicKey
     {
     public:
+        using DerEncoded = std::array<uint8_t, 91>;
+
         EcSecP256r1PublicKey(const EcSecP256r1PrivateKey& privateKey, hal::SynchronousRandomDataGenerator& randomDataGenerator);
         EcSecP256r1PublicKey(const EcSecP256r1PublicKey& other) = delete;
         EcSecP256r1PublicKey& operator=(const EcSecP256r1PublicKey& other) = delete;
         ~EcSecP256r1PublicKey();
 
-        std::array<uint8_t, 91> Der() const;
+        DerEncoded Der() const;
 
     private:
         mbedtls_pk_context context;

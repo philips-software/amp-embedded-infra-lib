@@ -292,9 +292,9 @@ namespace services
         return result;
     }
 
-    std::array<uint8_t, 121> EcSecP256r1PrivateKey::Der() const
+    EcSecP256r1PrivateKey::DerEncoded EcSecP256r1PrivateKey::Der() const
     {
-        std::array<uint8_t, 121> result{};
+        DerEncoded result{};
         auto size = mbedtls_pk_write_key_der(&context, result.data(), result.size());
         really_assert(size == result.size());
         return result;
@@ -357,9 +357,9 @@ namespace services
         mbedtls_pk_free(&context);
     }
 
-    std::array<uint8_t, 91> EcSecP256r1PublicKey::Der() const
+    EcSecP256r1PublicKey::DerEncoded EcSecP256r1PublicKey::Der() const
     {
-        std::array<uint8_t, 91> result{};
+        DerEncoded result{};
         auto size = mbedtls_pk_write_pubkey_der(&context, result.data(), result.size());
         really_assert(size == result.size());
         return result;
