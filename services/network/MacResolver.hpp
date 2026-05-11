@@ -5,7 +5,6 @@
 #include "infra/util/Function.hpp"
 #include "services/network/Address.hpp"
 #include <optional>
-#include <variant>
 
 namespace services
 {
@@ -15,12 +14,10 @@ namespace services
         MacResolver() = default;
         MacResolver(const MacResolver& other) = delete;
         MacResolver& operator=(const MacResolver& other) = delete;
+        ~MacResolver() = default;
 
     public:
-        virtual ~MacResolver() = default;
-
-        using Address = std::variant<IPv4Address, IPv6Address>;
-        virtual void Resolve(const Address& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onDone) = 0;
+        virtual void Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onDone) = 0;
     };
 }
 
