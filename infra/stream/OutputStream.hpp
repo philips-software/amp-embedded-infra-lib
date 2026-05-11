@@ -156,6 +156,7 @@ namespace infra
 
         TextOutputStream operator<<(Hex);
         TextOutputStream operator<<(Bin);
+        TextOutputStream operator<<(Dec);
         TextOutputStream operator<<(Width width);
         DataOutputStream operator<<(Data);
         TextOutputStream& operator<<(Endl);
