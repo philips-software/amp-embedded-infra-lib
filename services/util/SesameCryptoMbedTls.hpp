@@ -49,13 +49,13 @@ namespace services
         : public EcSecP256r1DsaVerifier
     {
     public:
+        EcSecP256r1DsaVerifierMbedTls(infra::ConstByteRange dsaPublicKey);
         EcSecP256r1DsaVerifierMbedTls(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate);
         ~EcSecP256r1DsaVerifierMbedTls();
 
         bool Verify(infra::ConstByteRange data, infra::ConstByteRange r, infra::ConstByteRange s) const override;
 
     private:
-        mbedtls_x509_crt rootCertificate;
         mbedtls_ecp_group group;
         mbedtls_ecp_point publicKey;
 
@@ -118,6 +118,20 @@ namespace services
     private:
         mbedtls_x509write_cert dsaCertificate;
         hal::SynchronousRandomDataGenerator& randomDataGenerator;
+    };
+
+    class EcSecP256r1PublicKey
+    {
+    public:
+        EcSecP256r1PublicKey(const EcSecP256r1PrivateKey& privateKey, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        EcSecP256r1PublicKey(const EcSecP256r1PublicKey& other) = delete;
+        EcSecP256r1PublicKey& operator=(const EcSecP256r1PublicKey& other) = delete;
+        ~EcSecP256r1PublicKey();
+
+        std::array<uint8_t, 91> Der() const;
+
+    private:
+        mbedtls_pk_context context;
     };
 }
 

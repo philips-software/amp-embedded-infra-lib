@@ -121,8 +121,32 @@ namespace services
         return { encodedR, encodedS };
     }
 
+    EcSecP256r1DsaVerifierMbedTls::EcSecP256r1DsaVerifierMbedTls(infra::ConstByteRange dsaPublicKey)
+        : valid(true) // No verification of root certificate is performed when directly given a public key
+    {
+        mbedtls_ecp_group_init(&group);
+        really_assert(mbedtls_ecp_group_load(&group, MBEDTLS_ECP_DP_SECP256R1) == 0);
+
+        mbedtls_ecp_point_init(&publicKey);
+
+        mbedtls_ecp_group otherGroup;
+        mbedtls_mpi otherDsaPrivateKey;
+        mbedtls_ecp_group_init(&otherGroup);
+        mbedtls_mpi_init(&otherDsaPrivateKey);
+
+        mbedtls_pk_context publicKeyContext;
+        mbedtls_pk_init(&publicKeyContext);
+        really_assert(mbedtls_pk_parse_public_key(&publicKeyContext, dsaPublicKey.begin(), dsaPublicKey.size()) == 0);
+
+        really_assert(mbedtls_ecp_export(mbedtls_pk_ec(publicKeyContext), &otherGroup, &otherDsaPrivateKey, &publicKey) == 0);
+
+        mbedtls_mpi_free(&otherDsaPrivateKey);
+        mbedtls_ecp_group_free(&otherGroup);
+    }
+
     EcSecP256r1DsaVerifierMbedTls::EcSecP256r1DsaVerifierMbedTls(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)
     {
+        mbedtls_x509_crt rootCertificate;
         mbedtls_x509_crt_init(&rootCertificate);
         really_assert(mbedtls_x509_crt_parse(&rootCertificate, rootCaCertificate.begin(), rootCaCertificate.size()) == 0);
         really_assert(mbedtls_pk_get_type(&rootCertificate.pk) == MBEDTLS_PK_ECKEY);
@@ -154,13 +178,13 @@ namespace services
 
         mbedtls_mpi_free(&otherDsaPrivateKey);
         mbedtls_ecp_group_free(&otherGroup);
+        mbedtls_x509_crt_free(&rootCertificate);
     }
 
     EcSecP256r1DsaVerifierMbedTls::~EcSecP256r1DsaVerifierMbedTls()
     {
         mbedtls_ecp_point_free(&publicKey);
         mbedtls_ecp_group_free(&group);
-        mbedtls_x509_crt_free(&rootCertificate);
     }
 
     bool EcSecP256r1DsaVerifierMbedTls::Verify(infra::ConstByteRange data, infra::ConstByteRange signatureR, infra::ConstByteRange signatureS) const
@@ -317,6 +341,27 @@ namespace services
         infra::BoundedVector<uint8_t>::WithMaxSize<512> result(512, static_cast<uint8_t>(0));
         auto size = mbedtls_x509write_crt_der(&const_cast<mbedtls_x509write_cert&>(dsaCertificate), result.data(), result.size(), &services::MbedTlsRandomDataGeneratorWrapper, &randomDataGenerator);
         result.erase(result.begin(), result.begin() + result.size() - size);
+        return result;
+    }
+
+    EcSecP256r1PublicKey::EcSecP256r1PublicKey(const EcSecP256r1PrivateKey& privateKey, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    {
+        mbedtls_pk_init(&context);
+        really_assert(mbedtls_pk_setup(&context, mbedtls_pk_info_from_type(MBEDTLS_PK_ECKEY)) == 0);
+        auto key = privateKey.Der();
+        really_assert(mbedtls_pk_parse_key(&context, key.data(), key.size(), nullptr, 0, &services::MbedTlsRandomDataGeneratorWrapper, &randomDataGenerator) == 0);
+    }
+
+    EcSecP256r1PublicKey::~EcSecP256r1PublicKey()
+    {
+        mbedtls_pk_free(&context);
+    }
+
+    std::array<uint8_t, 91> EcSecP256r1PublicKey::Der() const
+    {
+        std::array<uint8_t, 91> result{};
+        auto size = mbedtls_pk_write_pubkey_der(&context, result.data(), result.size());
+        really_assert(size == result.size());
         return result;
     }
 }
