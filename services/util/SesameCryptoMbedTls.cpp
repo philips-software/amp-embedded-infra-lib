@@ -129,19 +129,19 @@ namespace services
 
         mbedtls_ecp_point_init(&publicKey);
 
-        mbedtls_ecp_group otherGroup;
-        mbedtls_mpi otherDsaPrivateKey;
-        mbedtls_ecp_group_init(&otherGroup);
-        mbedtls_mpi_init(&otherDsaPrivateKey);
+        mbedtls_ecp_group unusedGroup;
+        mbedtls_mpi unusedDsaPrivateKey;
+        mbedtls_ecp_group_init(&unusedGroup);
+        mbedtls_mpi_init(&unusedDsaPrivateKey);
 
         mbedtls_pk_context publicKeyContext;
         mbedtls_pk_init(&publicKeyContext);
         really_assert(mbedtls_pk_parse_public_key(&publicKeyContext, dsaPublicKey.begin(), dsaPublicKey.size()) == 0);
+        really_assert(mbedtls_ecp_export(mbedtls_pk_ec(publicKeyContext), &unusedGroup, &unusedDsaPrivateKey, &publicKey) == 0);
+        mbedtls_pk_free(&publicKeyContext);
 
-        really_assert(mbedtls_ecp_export(mbedtls_pk_ec(publicKeyContext), &otherGroup, &otherDsaPrivateKey, &publicKey) == 0);
-
-        mbedtls_mpi_free(&otherDsaPrivateKey);
-        mbedtls_ecp_group_free(&otherGroup);
+        mbedtls_mpi_free(&unusedDsaPrivateKey);
+        mbedtls_ecp_group_free(&unusedGroup);
     }
 
     EcSecP256r1DsaVerifierMbedTls::EcSecP256r1DsaVerifierMbedTls(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)
@@ -156,10 +156,10 @@ namespace services
 
         mbedtls_ecp_point_init(&publicKey);
 
-        mbedtls_ecp_group otherGroup;
-        mbedtls_mpi otherDsaPrivateKey;
-        mbedtls_ecp_group_init(&otherGroup);
-        mbedtls_mpi_init(&otherDsaPrivateKey);
+        mbedtls_ecp_group unusedGroup;
+        mbedtls_mpi unusedDsaPrivateKey;
+        mbedtls_ecp_group_init(&unusedGroup);
+        mbedtls_mpi_init(&unusedDsaPrivateKey);
 
         mbedtls_x509_crt certificate;
         mbedtls_x509_crt_init(&certificate);
@@ -172,12 +172,12 @@ namespace services
         mbedtls_md(mdInfo, certificate.tbs.p, certificate.tbs.len, hash.data());
         valid = mbedtls_pk_verify(&rootCertificate.pk, MBEDTLS_MD_SHA256, hash.data(), hash.size(), certificate.MBEDTLS_PRIVATE(sig).p, certificate.MBEDTLS_PRIVATE(sig).len) == 0;
 
-        really_assert(mbedtls_ecp_export(mbedtls_pk_ec(certificate.pk), &otherGroup, &otherDsaPrivateKey, &publicKey) == 0);
+        really_assert(mbedtls_ecp_export(mbedtls_pk_ec(certificate.pk), &unusedGroup, &unusedDsaPrivateKey, &publicKey) == 0);
 
         mbedtls_x509_crt_free(&certificate);
 
-        mbedtls_mpi_free(&otherDsaPrivateKey);
-        mbedtls_ecp_group_free(&otherGroup);
+        mbedtls_mpi_free(&unusedDsaPrivateKey);
+        mbedtls_ecp_group_free(&unusedGroup);
         mbedtls_x509_crt_free(&rootCertificate);
     }
 
