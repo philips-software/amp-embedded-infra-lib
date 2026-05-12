@@ -416,22 +416,36 @@ service GapCentral
     // 2. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
     rpc PairAndBond(Nothing) returns (Nothing) { option (method_id) = 6; }
 
+    // Allowed in link layer states: standby
     rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 7; }
+
+    // Allowed in link layer states: standby
     rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 8; }
+
     rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 9; }
     rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 10; }
-    rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 11; }
+
+    // Allowed in link layer states: standby
+    // If value is true only oldest bond will be removed, if value is false all bonds will be removed
+    rpc RemoveBonds(BoolValue) returns (Nothing) { option (method_id) = 11; }
+
+    // Allowed in link layer states: standby
     rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 12; }
 
+    // Allowed in link layer states: standby, initiating, connected
     // This will only succeed if Address is a private resolvable address, and if the device is bonded
     rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; }
 
+    // Allowed in link layer states: standby, initiating, connected
     // This will work with both public and random addresses
     rpc IsDeviceBonded(PeerNodeParameters) returns (Nothing) { option (method_id) = 14; }
+
+    // Allowed in link layer states: standby, initiating, connected
     rpc GenerateOutOfBandData(Nothing) returns (Nothing) { option (method_id) = 15; }
+    // Allowed in link layer states: standby, initiating, connected
     rpc SetOutOfBandData(OutOfBandData) returns (Nothing) { option (method_id) = 16; }
 
-    
+    // Allowed in link layer states: standby, initiating, connected
     // Results in GapCentralResponse.BondInformation
     rpc GetBondInformation(Nothing) returns (Nothing) { option (method_id) = 13; }
 }
