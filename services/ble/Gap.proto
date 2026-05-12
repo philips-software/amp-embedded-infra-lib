@@ -142,12 +142,6 @@ message BondsStatus
 // GAP PERIPHERAL
 // ==================================================
 
-message Passkey
-{
-    int32 passkey = 1;
-    bool numericComparison = 2;
-}
-
 message AdvertisementMode
 {
     AdvertisementType type = 1;
@@ -306,6 +300,12 @@ service GapPeripheralReadiness {
 // GAP CENTRAL
 // ==================================================
 
+message Passkey
+{
+    uint32 passkey = 1;
+    bool isNumericComparison = 2;
+}
+
 message SecurityModeAndLevel
 {
     enum SecurityLevelEnum
@@ -373,9 +373,26 @@ message OutOfBandData
     bytes confirmData = 4 [(bytes_size) = 16];
 }
 
+// ==================================================
+// GAP CENTRAL SERVICE DEFINITION
+// ==================================================
+// State constraints:
+//  Unless otherwise specified, all methods are allowed in all link layer states.
+//  Non-conformance may cause undefined behavior
+// Callback constraints:
+//  Unless otherwise specified, methods do not by default result in any callbacks on the response service
+//  When a callback is specified for a method and only for that method, another call of the same method is not allowed until the callback has been received.
+//  When a callback is specified for more than one method, any of the associated method calls is not allowed until the callback for the previous call has been received
+//  Non-conformance may cause undefined behavior
+// ==================================================
 service GapCentral
 {
     option (service_id) = 33;
+
+    // ==================================================
+    // CORE FEATURE SET
+    // All servers must implement these methods  
+    // ==================================================
 
     // Allowed states: standby
     rpc StartDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 1; }
@@ -413,6 +430,10 @@ service GapCentral
     rpc IsDeviceBonded(PeerNodeParameters) returns (Nothing) { option (method_id) = 14; }
     rpc GenerateOutOfBandData(Nothing) returns (Nothing) { option (method_id) = 15; }
     rpc SetOutOfBandData(OutOfBandData) returns (Nothing) { option (method_id) = 16; }
+
+    
+    // Results in GapCentralResponse.BondInformation
+    rpc GetBondInformation(Nothing) returns (Nothing) { option (method_id) = 13; }
 }
 
 service GapCentralResponse {
@@ -429,6 +450,7 @@ service GapCentralResponse {
     rpc ResolvePrivateAddressFailed(Nothing) returns (Nothing) { option (method_id) = 9; }
     rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 10; }
     rpc OutOfBandDataGenerated(OutOfBandData) returns (Nothing) { option (method_id) = 11; }
+    rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 12; }
 }
 
 
