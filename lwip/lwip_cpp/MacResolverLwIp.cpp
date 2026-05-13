@@ -32,14 +32,14 @@ namespace services
         , retryTimer(retryInterval)
     {}
 
-    bool MacResolverRetryHelper::Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone)
+    void MacResolverRetryHelper::Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone)
     {
         really_assert(!onDone);
 
         if (auto mac = lookup(address); mac)
         {
             onResolveDone(mac);
-            return true;
+            return;
         }
 
         pendingAddress = address;
@@ -51,7 +51,6 @@ namespace services
             {
                 OnRetry();
             });
-        return true;
     }
 
     void MacResolverRetryHelper::OnRetry()
@@ -90,15 +89,15 @@ namespace services
               })
     {}
 
-    bool ArpMacResolverLwIp::Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone)
+    void ArpMacResolverLwIp::Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone)
     {
         const auto* ipv4 = std::get_if<IPv4Address>(&address);
         if (ipv4 == nullptr || !IsOnSubnet(*ipv4))
         {
             onResolveDone(std::nullopt);
-            return true;
+            return;
         }
-        return helper.Resolve(address, onResolveDone);
+        helper.Resolve(address, onResolveDone);
     }
 
     bool ArpMacResolverLwIp::IsOnSubnet(const IPv4Address& address) const
@@ -148,15 +147,15 @@ namespace services
               })
     {}
 
-    bool Nd6MacResolverLwIp::Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone)
+    void Nd6MacResolverLwIp::Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone)
     {
         const auto* ipv6 = std::get_if<IPv6Address>(&address);
         if (ipv6 == nullptr || !IsOnLink(*ipv6))
         {
             onResolveDone(std::nullopt);
-            return true;
+            return;
         }
-        return helper.Resolve(address, onResolveDone);
+        helper.Resolve(address, onResolveDone);
     }
 
     bool Nd6MacResolverLwIp::IsOnLink(const IPv6Address& address) const
