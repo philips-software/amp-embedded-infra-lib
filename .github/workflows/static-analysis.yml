@@ -18,7 +18,7 @@ jobs:
   sonar:
     name: SonarCloud
     runs-on: ubuntu-latest
-    container: ghcr.io/philips-software/amp-devcontainer-cpp:6.10.2@sha256:6dcb2bba0b158b055995b728631e1b92c7e8bae97119b0f171429423ed9d5e19 # 6.10.2
+    container: ghcr.io/philips-software/amp-devcontainer-cpp:6.10.3@sha256:e1f388179dbeabaddcdd37b8b563ed89ca3cd36dcf158aa2e5c4f70eb513efec # 6.10.3
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -64,7 +64,7 @@ jobs:
   codeql:
     name: CodeQL
     runs-on: ubuntu-latest
-    container: ghcr.io/philips-software/amp-devcontainer-cpp:6.10.2@sha256:6dcb2bba0b158b055995b728631e1b92c7e8bae97119b0f171429423ed9d5e19 # 6.10.2
+    container: ghcr.io/philips-software/amp-devcontainer-cpp:6.10.3@sha256:e1f388179dbeabaddcdd37b8b563ed89ca3cd36dcf158aa2e5c4f70eb513efec # 6.10.3
     permissions:
       security-events: write
     steps:
