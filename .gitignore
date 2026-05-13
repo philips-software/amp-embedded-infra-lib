@@ -3,6 +3,7 @@
 .xwin-cache/
 build/
 install/
+!rpi/install/
 megalinter-reports/
 out/
 reports/
