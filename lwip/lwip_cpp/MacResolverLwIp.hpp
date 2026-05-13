@@ -16,7 +16,6 @@ namespace services
         MacResolverRetryHelper(uint8_t retries, infra::Duration retryInterval, LookupFunction lookup, SendRequestFunction sendRequest);
 
         [[nodiscard]] bool Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone);
-        [[nodiscard]] bool Busy() const;
 
     private:
         void OnRetry();
@@ -40,6 +39,7 @@ namespace services
         [[nodiscard]] bool Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone) override;
 
     private:
+        bool IsOnSubnet(const IPv4Address& address) const;
         std::optional<hal::MacAddress> Lookup(const IPAddress& address) const;
         void SendRequest(const IPAddress& address) const;
 
@@ -56,6 +56,7 @@ namespace services
         [[nodiscard]] bool Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone) override;
 
     private:
+        bool IsOnLink(const IPv6Address& address) const;
         std::optional<hal::MacAddress> Lookup(const IPAddress& address) const;
         void SendRequest(const IPAddress& address) const;
 

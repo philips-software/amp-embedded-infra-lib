@@ -1,4 +1,5 @@
 #include "lwip/lwip_cpp/MacResolverLwIp.hpp"
+#include "infra/util/ReallyAssert.hpp"
 #include "lwip/ip4_addr.h"
 #include "lwip/ip6_addr.h"
 #include "lwip/nd6.h"
@@ -33,8 +34,7 @@ namespace services
 
     bool MacResolverRetryHelper::Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone)
     {
-        if (onDone)
-            return false;
+        really_assert(!onDone);
 
         if (auto mac = lookup(address); mac)
         {
@@ -79,11 +79,6 @@ namespace services
         }
     }
 
-    bool MacResolverRetryHelper::Busy() const
-    {
-        return static_cast<bool>(onDone);
-    }
-
     ArpMacResolverLwIp::ArpMacResolverLwIp(uint8_t retries, infra::Duration retryInterval)
         : helper(retries, retryInterval, [this](const IPAddress& address)
               {
@@ -97,9 +92,8 @@ namespace services
 
     bool ArpMacResolverLwIp::Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone)
     {
-        if (helper.Busy())
-            return false;
-        if (std::get_if<IPv4Address>(&address) == nullptr)
+        const auto* ipv4 = std::get_if<IPv4Address>(&address);
+        if (ipv4 == nullptr || !IsOnSubnet(*ipv4))
         {
             onResolveDone(std::nullopt);
             return true;
@@ -107,16 +101,21 @@ namespace services
         return helper.Resolve(address, onResolveDone);
     }
 
+    bool ArpMacResolverLwIp::IsOnSubnet(const IPv4Address& address) const
+    {
+        ip4_addr_t target;
+        IP4_ADDR(&target, address[0], address[1], address[2], address[3]);
+        return ip4_addr_netcmp(&target, netif_ip4_addr(netif_default), netif_ip4_netmask(netif_default));
+    }
+
     std::optional<hal::MacAddress> ArpMacResolverLwIp::Lookup(const IPAddress& address) const
     {
         const auto* ipv4 = std::get_if<IPv4Address>(&address);
-        if (ipv4 == nullptr)
+        if (ipv4 == nullptr || !IsOnSubnet(*ipv4))
             return std::nullopt;
+
         ip4_addr_t target;
         IP4_ADDR(&target, (*ipv4)[0], (*ipv4)[1], (*ipv4)[2], (*ipv4)[3]);
-
-        if (!ip4_addr_netcmp(&target, netif_ip4_addr(netif_default), netif_ip4_netmask(netif_default)))
-            return std::nullopt;
 
         struct eth_addr* ethaddr = nullptr;
         if (const ip4_addr_t* ipaddr = nullptr; etharp_find_addr(netif_default, &target, &ethaddr, &ipaddr) >= 0 && ethaddr != nullptr)
@@ -131,12 +130,10 @@ namespace services
     void ArpMacResolverLwIp::SendRequest(const IPAddress& address) const
     {
         const auto* ipv4 = std::get_if<IPv4Address>(&address);
-        if (ipv4 == nullptr)
+        if (ipv4 == nullptr || !IsOnSubnet(*ipv4))
             return;
         ip4_addr_t target;
         IP4_ADDR(&target, (*ipv4)[0], (*ipv4)[1], (*ipv4)[2], (*ipv4)[3]);
-        if (!ip4_addr_netcmp(&target, netif_ip4_addr(netif_default), netif_ip4_netmask(netif_default)))
-            return;
         etharp_request(netif_default, &target);
     }
 
@@ -153,9 +150,8 @@ namespace services
 
     bool Nd6MacResolverLwIp::Resolve(const IPAddress& address, const infra::Function<void(std::optional<hal::MacAddress>)>& onResolveDone)
     {
-        if (helper.Busy())
-            return false;
-        if (std::get_if<IPv6Address>(&address) == nullptr)
+        const auto* ipv6 = std::get_if<IPv6Address>(&address);
+        if (ipv6 == nullptr || !IsOnLink(*ipv6))
         {
             onResolveDone(std::nullopt);
             return true;
@@ -163,30 +159,27 @@ namespace services
         return helper.Resolve(address, onResolveDone);
     }
 
-    std::optional<hal::MacAddress> Nd6MacResolverLwIp::Lookup(const IPAddress& address) const
+    bool Nd6MacResolverLwIp::IsOnLink(const IPv6Address& address) const
     {
-        const auto* ipv6 = std::get_if<IPv6Address>(&address);
-        if (ipv6 == nullptr)
-            return std::nullopt;
-        auto target = ToLwipIp6(*ipv6);
-
-        // Check if target is on-link by matching against netif prefixes
-        bool onLink = false;
+        auto target = ToLwipIp6(address);
         for (int i = 0; i < LWIP_IPV6_NUM_ADDRESSES; ++i)
         {
             if (ip6_addr_isvalid(netif_ip6_addr_state(netif_default, i)))
             {
                 auto* netifAddr = netif_ip6_addr(netif_default, i);
                 if (ip6_addr_netcmp(&target, netifAddr))
-                {
-                    onLink = true;
-                    break;
-                }
+                    return true;
             }
         }
+        return false;
+    }
 
-        if (!onLink)
+    std::optional<hal::MacAddress> Nd6MacResolverLwIp::Lookup(const IPAddress& address) const
+    {
+        const auto* ipv6 = std::get_if<IPv6Address>(&address);
+        if (ipv6 == nullptr || !IsOnLink(*ipv6))
             return std::nullopt;
+        auto target = ToLwipIp6(*ipv6);
 
         const u8_t* hwaddrp = nullptr;
         auto* probe = pbuf_alloc_reference(nullptr, 0, PBUF_REF);
