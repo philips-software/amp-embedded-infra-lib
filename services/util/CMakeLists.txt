@@ -84,6 +84,10 @@ target_sources(services.util PRIVATE
     SleepableFlashSpi.hpp
     SleepOnInactivityFlashDecorator.cpp
     SleepOnInactivityFlashDecorator.hpp
+    SmiPhy.cpp
+    SmiPhy.hpp
+    SmiPhyLinkMonitor.cpp
+    SmiPhyLinkMonitor.hpp
     SpiMasterWithChipSelect.cpp
     SpiMasterWithChipSelect.hpp
     SpiMultipleAccess.cpp
