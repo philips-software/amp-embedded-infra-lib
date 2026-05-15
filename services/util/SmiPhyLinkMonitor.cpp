@@ -2,9 +2,9 @@
 
 namespace services
 {
-    SmiPhyLinkMonitor::SmiPhyLinkMonitor(hal::SmiBus& smi, uint8_t vphyAddress, uint8_t portPhyAddress, infra::Duration pollInterval)
-        : vphyAddress_(vphyAddress)
-        , phy_(smi, portPhyAddress)
+    SmiPhyLinkMonitor::SmiPhyLinkMonitor(hal::SmiBus& smi, uint8_t portPhyAddress, infra::Duration pollInterval)
+        : phyAddress_(portPhyAddress)
+        , phy_(smi, phyAddress_)
     {
         pollingTimer_.Start(pollInterval, [this]
             {
@@ -14,7 +14,7 @@ namespace services
 
     uint16_t SmiPhyLinkMonitor::PhyAddress() const
     {
-        return vphyAddress_;
+        return phyAddress_;
     }
 
     void SmiPhyLinkMonitor::PollPort()

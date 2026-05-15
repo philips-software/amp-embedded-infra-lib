@@ -10,22 +10,18 @@
 
 namespace services
 {
-    // Polls a single SMI-accessible port PHY at a fixed interval and exposes the
-    // link state via the hal::EthernetSmi observer interface.
-    // PhyAddress() returns the virtual PHY address (VPHY) used by the MAC-side
-    // RMII connection, not the polled port PHY address.
     class SmiPhyLinkMonitor
         : public hal::EthernetSmi
     {
     public:
-        SmiPhyLinkMonitor(hal::SmiBus& smi, uint8_t vphyAddress, uint8_t portPhyAddress, infra::Duration pollInterval = std::chrono::milliseconds{ 200 });
+        SmiPhyLinkMonitor(hal::SmiBus& smi, uint8_t portPhyAddress, infra::Duration pollInterval = std::chrono::milliseconds{ 200 });
 
         uint16_t PhyAddress() const override;
 
     private:
         void PollPort();
 
-        uint8_t vphyAddress_;
+        uint8_t phyAddress_;
         SmiPhy phy_;
         infra::TimerRepeating pollingTimer_;
     };
