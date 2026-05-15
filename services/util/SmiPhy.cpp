@@ -105,7 +105,10 @@ namespace services
     void SmiPhy::EnableAutoNegIfCapable()
     {
         if (BasicStatusRegister::IsAutoNegCapable(ReadBsr()))
-            WriteBcr(infra::Bit<uint16_t>(BasicControlRegister::AutoNegEnableBit));
+        {
+            const uint16_t bcr = ReadBcr();
+            WriteBcr(bcr | infra::Bit<uint16_t>(BasicControlRegister::AutoNegEnableBit));
+        }
     }
 
     hal::LinkSpeed SmiPhy::LinkSpeed() const

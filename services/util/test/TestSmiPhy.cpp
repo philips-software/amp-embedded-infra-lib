@@ -201,6 +201,7 @@ TEST_F(SmiPhyTest, ReadLinkStateReturnsNulloptOnRepeatDown)
 TEST_F(SmiPhyTest, EnableAutoNegIfCapableWritesBcrWhenCapable)
 {
     EXPECT_CALL(smi, Read(phyAddress, SmiPhy::BasicStatusRegister::Address)).WillOnce(Return(bsrAutoNegCapable));
+    EXPECT_CALL(smi, Read(phyAddress, SmiPhy::BasicControlRegister::Address)).WillOnce(Return(0));
     EXPECT_CALL(smi, Write(phyAddress, SmiPhy::BasicControlRegister::Address, bcrAutoNegEnable));
     phy.EnableAutoNegIfCapable();
 }
