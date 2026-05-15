@@ -138,6 +138,13 @@ namespace infra
         return result;
     }
 
+    TextOutputStream TextOutputStream::operator<<(Dec)
+    {
+        TextOutputStream result(*this);
+        result.radix = Radix::dec;
+        return result;
+    }
+
     TextOutputStream TextOutputStream::operator<<(Width width)
     {
         TextOutputStream result(*this);
