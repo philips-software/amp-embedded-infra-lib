@@ -14,7 +14,7 @@ namespace services
         : public hal::EthernetSmi
     {
     public:
-        SmiPhyLinkMonitor(hal::SmiBus& smi, uint8_t portPhyAddress, infra::Duration pollInterval = std::chrono::milliseconds{ 200 });
+        SmiPhyLinkMonitor(hal::SmiBus& smi, uint8_t phyAddress, infra::Duration pollInterval = std::chrono::milliseconds{ 200 });
 
         uint16_t PhyAddress() const override;
 

@@ -14,21 +14,21 @@ class SmiPhyLinkMonitorTest
     , public infra::ClockFixture
 {
 protected:
-    static constexpr uint8_t vphyAddress = 2;
     static constexpr uint8_t portPhyAddress = 9;
     static constexpr uint16_t bsrLinkUp = 0x0004u;          // bit 2: link status
     static constexpr uint16_t bsrAutoNegComplete = 0x0020u; // bit 5: autoneg complete
     static constexpr uint16_t bsrNotPresent = 0xFFFFu;
+    static constexpr uint16_t bcrFullDuplex100MHz = 0x2100u; // bit 8 (duplex) + bit 13 (speed)
 
     StrictMock<SmiBusMock> smi;
-    SmiPhyLinkMonitor monitor{ smi, vphyAddress, portPhyAddress };
+    SmiPhyLinkMonitor monitor{ smi, portPhyAddress };
 };
 
 // ---- PhyAddress ------------------------------------------------------------
 
-TEST_F(SmiPhyLinkMonitorTest, PhyAddressReturnsVphyAddress)
+TEST_F(SmiPhyLinkMonitorTest, PhyAddressReturnsPortPhyAddress)
 {
-    ASSERT_THAT(monitor.PhyAddress(), Eq(vphyAddress));
+    ASSERT_THAT(monitor.PhyAddress(), Eq(portPhyAddress));
 }
 
 // ---- Polling timing --------------------------------------------------------
@@ -64,11 +64,12 @@ TEST_F(SmiPhyLinkMonitorTest, PollsRepeatinglyAtInterval)
 
 TEST_F(SmiPhyLinkMonitorTest, CustomPollIntervalIsRespected)
 {
-    SmiPhyLinkMonitor fastMonitor{ smi, vphyAddress, portPhyAddress, std::chrono::milliseconds{ 50 } };
+    SmiPhyLinkMonitor fastMonitor{ smi, portPhyAddress, std::chrono::milliseconds{ 50 } };
     StrictMock<EthernetSmiObserverMock> observer{ fastMonitor };
 
-    EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicStatusRegister::Address)).Times(4).WillRepeatedly(Return(0));
-    EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicControlRegister::Address)).Times(4).WillRepeatedly(Return(0));
+    // fastMonitor polls 4 times (50, 100, 150, 200ms) and the fixture monitor polls once (200ms)
+    EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicStatusRegister::Address)).Times(5).WillRepeatedly(Return(0));
+    EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicControlRegister::Address)).Times(5).WillRepeatedly(Return(0));
 
     ForwardTime(std::chrono::milliseconds{ 200 });
 }
@@ -92,7 +93,7 @@ TEST_F(SmiPhyLinkMonitorTest, PhyUpCallsLinkUp)
     StrictMock<EthernetSmiObserverMock> observer{ monitor };
 
     EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicStatusRegister::Address)).WillOnce(Return(bsrLinkUp));
-    EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicControlRegister::Address)).WillOnce(Return(0));
+    EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicControlRegister::Address)).Times(2).WillRepeatedly(Return(bcrFullDuplex100MHz));
     EXPECT_CALL(observer, LinkUp(LinkSpeed::fullDuplex100MHz));
 
     ForwardTime(std::chrono::milliseconds{ 200 });
@@ -103,12 +104,12 @@ TEST_F(SmiPhyLinkMonitorTest, NoDuplicateLinkUpCallback)
     StrictMock<EthernetSmiObserverMock> observer{ monitor };
 
     EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicStatusRegister::Address)).WillOnce(Return(bsrLinkUp));
-    EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicControlRegister::Address)).WillOnce(Return(0));
+    EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicControlRegister::Address)).Times(2).WillRepeatedly(Return(bcrFullDuplex100MHz));
     EXPECT_CALL(observer, LinkUp(LinkSpeed::fullDuplex100MHz));
     ForwardTime(std::chrono::milliseconds{ 200 });
 
     EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicStatusRegister::Address)).WillOnce(Return(bsrLinkUp));
-    EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicControlRegister::Address)).WillOnce(Return(0));
+    EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicControlRegister::Address)).WillOnce(Return(bcrFullDuplex100MHz));
     ForwardTime(std::chrono::milliseconds{ 200 });
 }
 
@@ -119,7 +120,7 @@ TEST_F(SmiPhyLinkMonitorTest, LinkUpThenDownCallsLinkDown)
     StrictMock<EthernetSmiObserverMock> observer{ monitor };
 
     EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicStatusRegister::Address)).WillOnce(Return(bsrLinkUp));
-    EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicControlRegister::Address)).WillOnce(Return(0));
+    EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicControlRegister::Address)).Times(2).WillRepeatedly(Return(bcrFullDuplex100MHz));
     EXPECT_CALL(observer, LinkUp(LinkSpeed::fullDuplex100MHz));
     ForwardTime(std::chrono::milliseconds{ 200 });
 
@@ -134,7 +135,7 @@ TEST_F(SmiPhyLinkMonitorTest, NoDuplicateLinkDownCallback)
     StrictMock<EthernetSmiObserverMock> observer{ monitor };
 
     EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicStatusRegister::Address)).WillOnce(Return(bsrLinkUp));
-    EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicControlRegister::Address)).WillOnce(Return(0));
+    EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicControlRegister::Address)).Times(2).WillRepeatedly(Return(bcrFullDuplex100MHz));
     EXPECT_CALL(observer, LinkUp(LinkSpeed::fullDuplex100MHz));
     ForwardTime(std::chrono::milliseconds{ 200 });
 
@@ -153,7 +154,7 @@ TEST_F(SmiPhyLinkMonitorTest, LinkUpDownUpReportsAllTransitions)
     StrictMock<EthernetSmiObserverMock> observer{ monitor };
 
     EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicStatusRegister::Address)).WillOnce(Return(bsrLinkUp));
-    EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicControlRegister::Address)).WillOnce(Return(0));
+    EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicControlRegister::Address)).Times(2).WillRepeatedly(Return(bcrFullDuplex100MHz));
     EXPECT_CALL(observer, LinkUp(LinkSpeed::fullDuplex100MHz));
     ForwardTime(std::chrono::milliseconds{ 200 });
 
@@ -163,7 +164,7 @@ TEST_F(SmiPhyLinkMonitorTest, LinkUpDownUpReportsAllTransitions)
     ForwardTime(std::chrono::milliseconds{ 200 });
 
     EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicStatusRegister::Address)).WillOnce(Return(bsrLinkUp));
-    EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicControlRegister::Address)).WillOnce(Return(0));
+    EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicControlRegister::Address)).Times(2).WillRepeatedly(Return(bcrFullDuplex100MHz));
     EXPECT_CALL(observer, LinkUp(LinkSpeed::fullDuplex100MHz));
     ForwardTime(std::chrono::milliseconds{ 200 });
 }
@@ -184,7 +185,7 @@ TEST_F(SmiPhyLinkMonitorTest, PhyDisappearsAfterLinkUpCallsLinkDown)
     StrictMock<EthernetSmiObserverMock> observer{ monitor };
 
     EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicStatusRegister::Address)).WillOnce(Return(bsrLinkUp));
-    EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicControlRegister::Address)).WillOnce(Return(0));
+    EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicControlRegister::Address)).Times(2).WillRepeatedly(Return(bcrFullDuplex100MHz));
     EXPECT_CALL(observer, LinkUp(LinkSpeed::fullDuplex100MHz));
     ForwardTime(std::chrono::milliseconds{ 200 });
 
@@ -221,7 +222,7 @@ TEST_F(SmiPhyLinkMonitorTest, PortPhyAddressIsUsedForPolling)
 {
     static constexpr uint8_t otherAddress = 3;
     StrictMock<EthernetSmiObserverMock> observer{ monitor };
-    SmiPhyLinkMonitor otherMonitor{ smi, vphyAddress, otherAddress };
+    SmiPhyLinkMonitor otherMonitor{ smi, otherAddress };
 
     EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicStatusRegister::Address)).WillOnce(Return(0));
     EXPECT_CALL(smi, Read(portPhyAddress, SmiPhy::BasicControlRegister::Address)).WillOnce(Return(0));
