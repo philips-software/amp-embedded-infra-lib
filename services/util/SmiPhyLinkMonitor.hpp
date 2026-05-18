@@ -21,9 +21,10 @@ namespace services
     private:
         void PollPort();
 
-        uint8_t phyAddress_;
-        SmiPhy phy_;
-        infra::TimerRepeating pollingTimer_;
+    private:
+        uint8_t phyAddress;
+        SmiPhy phy;
+        infra::TimerRepeating pollingTimer;
     };
 }
 

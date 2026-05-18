@@ -82,13 +82,13 @@ namespace services
     private:
         hal::LinkSpeed NegotiatedLinkSpeed() const;
         hal::LinkSpeed LocalLinkSpeed(uint16_t bcr) const;
-        std::optional<LinkState> UpdateLinkState(bool isLinked);
         uint16_t Read(uint16_t reg) const;
         void Write(uint16_t reg, uint16_t value);
 
-        hal::SmiBus& smiBus_;
-        uint8_t phyAddress_;
-        bool linkUp_ = false;
+    private:
+        hal::SmiBus& smiBus;
+        uint8_t phyAddress;
+        bool linkUp = false;
     };
 }
 

@@ -3,10 +3,10 @@
 namespace services
 {
     SmiPhyLinkMonitor::SmiPhyLinkMonitor(hal::SmiBus& smi, uint8_t phyAddress, infra::Duration pollInterval)
-        : phyAddress_(phyAddress)
-        , phy_(smi, phyAddress_)
+        : phyAddress(phyAddress)
+        , phy(smi, phyAddress)
     {
-        pollingTimer_.Start(pollInterval, [this]
+        pollingTimer.Start(pollInterval, [this]
             {
                 PollPort();
             });
@@ -14,14 +14,14 @@ namespace services
 
     uint16_t SmiPhyLinkMonitor::PhyAddress() const
     {
-        return phyAddress_;
+        return phyAddress;
     }
 
     void SmiPhyLinkMonitor::PollPort()
     {
-        const auto linkState = phy_.ReadLinkState();
+        const auto linkState = phy.ReadLinkState();
         if (linkState == SmiPhy::LinkState::Up && HasObserver())
-            GetObserver().LinkUp(phy_.LinkSpeed());
+            GetObserver().LinkUp(phy.LinkSpeed());
         else if (linkState == SmiPhy::LinkState::Down && HasObserver())
             GetObserver().LinkDown();
     }

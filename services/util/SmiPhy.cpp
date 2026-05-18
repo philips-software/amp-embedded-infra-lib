@@ -40,8 +40,8 @@ namespace services
     // SmiPhy
 
     SmiPhy::SmiPhy(hal::SmiBus& smiBus, uint8_t phyAddress)
-        : smiBus_(smiBus)
-        , phyAddress_(phyAddress)
+        : smiBus(smiBus)
+        , phyAddress(phyAddress)
     {}
 
     uint16_t SmiPhy::ReadBcr() const
@@ -94,12 +94,12 @@ namespace services
     {
         const uint16_t bsr = ReadBsr();
         if (!BasicStatusRegister::IsResponding(bsr))
-            return UpdateLinkState(false);
+            return std::nullopt;
         const uint16_t bcr = ReadBcr();
         const bool autoNegEnabled = infra::IsBitSet(bcr, BasicControlRegister::AutoNegEnableBit);
         const bool autoNegComplete = autoNegEnabled ? BasicStatusRegister::IsAutoNegComplete(bsr) : true;
         const bool linked = BasicStatusRegister::IsLinked(bsr) && autoNegComplete;
-        return UpdateLinkState(linked);
+        return linked ? std::optional<LinkState>(LinkState::Up) : std::optional<LinkState>(LinkState::Down);
     }
 
     void SmiPhy::EnableAutoNegIfCapable()
@@ -120,21 +120,13 @@ namespace services
             return LocalLinkSpeed(bcr);
     }
 
-    std::optional<SmiPhy::LinkState> SmiPhy::UpdateLinkState(bool isLinked)
-    {
-        if (isLinked == linkUp_)
-            return std::nullopt;
-        linkUp_ = isLinked;
-        return isLinked ? LinkState::Up : LinkState::Down;
-    }
-
     uint16_t SmiPhy::Read(uint16_t reg) const
     {
-        return smiBus_.Read(phyAddress_, reg);
+        return smiBus.Read(phyAddress, reg);
     }
 
     void SmiPhy::Write(uint16_t reg, uint16_t value)
     {
-        smiBus_.Write(phyAddress_, reg, value);
+        smiBus.Write(phyAddress, reg, value);
     }
 }
