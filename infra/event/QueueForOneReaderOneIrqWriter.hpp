@@ -37,7 +37,7 @@ namespace infra
         infra::MemoryRange<const T> ContiguousRange(uint32_t offset = 0) const;
         void Consume(uint32_t amount);
         std::size_t Size() const;
-        std::size_t Capacity() const;
+        std::size_t EmptySize() const;
 
         T operator[](size_t position) const;
 
@@ -112,34 +112,31 @@ namespace infra
     template<class T>
     void QueueForOneReaderOneIrqWriter<T>::AddFromInterrupt(infra::MemoryRange<const T> data)
     {
-        really_assert(Capacity() - Size() >= data.size());
+        really_assert(!Full());
         AddFromInterruptUnchecked(data);
     }
 
     template<class T>
     void QueueForOneReaderOneIrqWriter<T>::AddFromInterruptUnchecked(infra::MemoryRange<const T> data)
     {
-        T* end = contentsEnd.load();
+        std::size_t copySize = std::min<std::size_t>(data.size(), buffer.end() - contentsEnd);
         T* begin = contentsBegin.load();
-
-        std::size_t available = (begin <= end) ? (buffer.size() - 1 - (end - begin)) : (begin - end - 1);
-        if (data.size() > available)
+        if (!(begin <= contentsEnd.load() || begin > contentsEnd.load() + copySize))
             return;
 
-        std::size_t copySize = std::min<std::size_t>(data.size(), buffer.end() - end);
-        std::copy(data.begin(), data.begin() + copySize, end);
+        std::copy(data.begin(), data.begin() + copySize, contentsEnd.load());
 
-        if (end == buffer.end() - copySize)
-            end = buffer.begin();
+        if (contentsEnd == buffer.end() - copySize)
+            contentsEnd = buffer.begin();
         else
-            end += copySize;
+            contentsEnd += copySize;
 
         data.pop_front(copySize);
 
-        std::copy(data.begin(), data.end(), end);
-        end += data.size();
+        assert(begin <= contentsEnd.load() || begin > contentsEnd.load() + data.size());
+        std::copy(data.begin(), data.end(), contentsEnd.load());
+        contentsEnd += data.size();
 
-        contentsEnd = end;
         NotifyDataAvailable();
     }
 
@@ -235,7 +232,7 @@ namespace infra
         const T* end = contentsEnd.load();
 
         if (Full(begin, end))
-            return Capacity();
+            return EmptySize();
         else if (end >= begin)
             return end - begin;
 
@@ -243,7 +240,7 @@ namespace infra
     }
 
     template<class T>
-    std::size_t QueueForOneReaderOneIrqWriter<T>::Capacity() const
+    std::size_t QueueForOneReaderOneIrqWriter<T>::EmptySize() const
     {
         return buffer.size() - 1;
     }
