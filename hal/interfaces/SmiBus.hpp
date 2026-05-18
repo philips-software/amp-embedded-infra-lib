@@ -11,7 +11,7 @@ namespace hal
         SmiBus() = default;
         SmiBus(const SmiBus&) = delete;
         SmiBus& operator=(const SmiBus&) = delete;
-        SmiBus() = default;
+        ~SmiBus() = default;
 
     public:
         virtual uint16_t Read(uint8_t phyAddress, uint16_t reg) const = 0;
