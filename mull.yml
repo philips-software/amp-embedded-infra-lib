@@ -8,3 +8,4 @@ excludePaths:
   - .*/test_doubles/.*
   - .*/test_helper/.*
   - .*/test/.*
+  - .*/QueueForOneReaderOneIrqWriter.hpp
