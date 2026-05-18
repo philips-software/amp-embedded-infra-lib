@@ -1,4 +1,8 @@
 #include "services/util/ConfigurationStore.hpp"
+#include "infra/stream/OutputStream.hpp"
+#include "infra/util/BoundedString.hpp"
+#include "infra/util/ReallyAssert.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 #include <algorithm>
 
 namespace services
@@ -24,6 +28,8 @@ namespace services
 
     void ConfigurationBlobFlash::Recover(const infra::Function<void(bool success)>& onRecovered)
     {
+        services::GlobalTracer().Trace() << "ConfigurationBlobFlash::Recover";
+
         this->onRecovered = onRecovered;
         flash.ReadBuffer(blob, 0, [this]()
             {
@@ -33,12 +39,17 @@ namespace services
                     this->onRecovered(true);
                 }
                 else
+                {
+                    services::GlobalTracer().Trace() << "ConfigurationBlobFlash::Recover - Blob is invalid";
                     this->onRecovered(false);
+                }
             });
     }
 
     void ConfigurationBlobFlash::Write(uint32_t size, const infra::Function<void()>& onDone)
     {
+        services::GlobalTracer().Trace() << "ConfigurationBlobFlash::Write size=" << size;
+
         currentSize = size;
         this->onDone = onDone;
         PrepareBlobForWriting();
@@ -50,11 +61,13 @@ namespace services
 
     void ConfigurationBlobFlash::Erase(const infra::Function<void()>& onDone)
     {
+        services::GlobalTracer().Trace() << "ConfigurationBlobFlash::Erase";
         flash.EraseAll(onDone);
     }
 
     void ConfigurationBlobFlash::IsErased(const infra::Function<void(bool)>& onDone)
     {
+        services::GlobalTracer().Trace() << "ConfigurationBlobFlash::IsErased";
         onErased = onDone;
         currentVerificationIndex = 0;
 
@@ -115,11 +128,20 @@ namespace services
 
     void ConfigurationBlobFlash::VerifyBlock()
     {
+        services::GlobalTracer().Trace() << "ConfigurationBlobFlash::VerifyBlock - Verifying block at index " << currentVerificationIndex;
+
         if (currentVerificationIndex != blob.size())
             flash.ReadBuffer(infra::Head(verificationBuffer, blob.size() - currentVerificationIndex), currentVerificationIndex, [this]()
                 {
                     auto verificationBlock = infra::Head(verificationBuffer, blob.size() - currentVerificationIndex);
-                    really_assert(infra::ContentsEqual(verificationBlock, infra::Head(infra::DiscardHead(blob, currentVerificationIndex), verificationBuffer.size())));
+                    if (!infra::ContentsEqual(verificationBlock, infra::Head(infra::DiscardHead(blob, currentVerificationIndex), verificationBuffer.size())))
+                    {
+                        services::GlobalTracer().Trace() << "ConfigurationBlobFlash::VerifyBlock - Verification failed at index " << currentVerificationIndex;
+                        services::GlobalTracer().Trace() << "Expected: " << infra::AsHex(infra::Head(infra::DiscardHead(blob, currentVerificationIndex), verificationBuffer.size()));
+                        services::GlobalTracer().Trace() << "Actual: " << infra::AsHex(verificationBlock);
+                        really_assert(false);
+                    }
+
                     currentVerificationIndex += verificationBlock.size();
                     VerifyBlock();
                 });
