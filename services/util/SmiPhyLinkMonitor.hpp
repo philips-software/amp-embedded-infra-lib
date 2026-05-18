@@ -25,6 +25,7 @@ namespace services
         uint8_t phyAddress;
         SmiPhy phy;
         infra::TimerRepeating pollingTimer;
+        SmiPhy::LinkState lastReportedState = SmiPhy::LinkState::Down;
     };
 }
 

@@ -158,44 +158,6 @@ TEST_F(SmiPhyTest, ReadLinkStateLinkUpAutoNegEnabledAndCompleteReturnsUp)
     EXPECT_THAT(phy.ReadLinkState(), Eq(SmiPhy::LinkState::Up));
 }
 
-TEST_F(SmiPhyTest, ReadLinkStateReturnsNulloptWhenStateUnchanged)
-{
-    // First call: down → down, already starts down so no change
-    EXPECT_CALL(smi, Read(phyAddress, SmiPhy::BasicStatusRegister::Address)).WillOnce(Return(0));
-    EXPECT_CALL(smi, Read(phyAddress, SmiPhy::BasicControlRegister::Address)).WillOnce(Return(0));
-    EXPECT_THAT(phy.ReadLinkState(), Eq(std::nullopt));
-}
-
-TEST_F(SmiPhyTest, ReadLinkStateReturnsNulloptOnRepeatUp)
-{
-    // Transition to up
-    EXPECT_CALL(smi, Read(phyAddress, SmiPhy::BasicStatusRegister::Address)).WillOnce(Return(bsrLinked));
-    EXPECT_CALL(smi, Read(phyAddress, SmiPhy::BasicControlRegister::Address)).WillOnce(Return(0));
-    ASSERT_THAT(phy.ReadLinkState(), Eq(SmiPhy::LinkState::Up));
-
-    // Still up → no change
-    EXPECT_CALL(smi, Read(phyAddress, SmiPhy::BasicStatusRegister::Address)).WillOnce(Return(bsrLinked));
-    EXPECT_CALL(smi, Read(phyAddress, SmiPhy::BasicControlRegister::Address)).WillOnce(Return(0));
-    EXPECT_THAT(phy.ReadLinkState(), Eq(std::nullopt));
-}
-
-TEST_F(SmiPhyTest, ReadLinkStateReturnsNulloptOnRepeatDown)
-{
-    // Transition up then down
-    EXPECT_CALL(smi, Read(phyAddress, SmiPhy::BasicStatusRegister::Address)).WillOnce(Return(bsrLinked));
-    EXPECT_CALL(smi, Read(phyAddress, SmiPhy::BasicControlRegister::Address)).WillOnce(Return(0));
-    phy.ReadLinkState();
-
-    EXPECT_CALL(smi, Read(phyAddress, SmiPhy::BasicStatusRegister::Address)).WillOnce(Return(0));
-    EXPECT_CALL(smi, Read(phyAddress, SmiPhy::BasicControlRegister::Address)).WillOnce(Return(0));
-    ASSERT_THAT(phy.ReadLinkState(), Eq(SmiPhy::LinkState::Down));
-
-    // Still down → no change
-    EXPECT_CALL(smi, Read(phyAddress, SmiPhy::BasicStatusRegister::Address)).WillOnce(Return(0));
-    EXPECT_CALL(smi, Read(phyAddress, SmiPhy::BasicControlRegister::Address)).WillOnce(Return(0));
-    EXPECT_THAT(phy.ReadLinkState(), Eq(std::nullopt));
-}
-
 // ---- EnableAutoNegIfCapable ------------------------------------------------
 
 TEST_F(SmiPhyTest, EnableAutoNegIfCapableWritesBcrWhenCapable)

@@ -20,9 +20,16 @@ namespace services
     void SmiPhyLinkMonitor::PollPort()
     {
         const auto linkState = phy.ReadLinkState();
-        if (linkState == SmiPhy::LinkState::Up && HasObserver())
+        if (linkState == lastReportedState)
+            return;
+
+        lastReportedState = linkState;
+        if (!HasObserver())
+            return;
+
+        if (linkState == SmiPhy::LinkState::Up)
             GetObserver().LinkUp(phy.LinkSpeed());
-        else if (linkState == SmiPhy::LinkState::Down && HasObserver())
+        else
             GetObserver().LinkDown();
     }
 }

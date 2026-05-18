@@ -4,7 +4,6 @@
 #include "hal/interfaces/Ethernet.hpp"
 #include "hal/interfaces/SmiBus.hpp"
 #include <cstdint>
-#include <optional>
 
 namespace services
 {
@@ -69,8 +68,8 @@ namespace services
         uint16_t ReadBsr() const;
 
         // Read BSR, check whether autoneg has completed (via BCR), and return
-        // the link state transition if any. Returns nullopt when unchanged.
-        std::optional<LinkState> ReadLinkState();
+        // the current link state.
+        LinkState ReadLinkState();
 
         // If the PHY advertises autoneg capability, enable it via BCR.
         void EnableAutoNegIfCapable();
@@ -88,7 +87,6 @@ namespace services
     private:
         hal::SmiBus& smiBus;
         uint8_t phyAddress;
-        bool linkUp = false;
     };
 }
 

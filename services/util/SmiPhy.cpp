@@ -90,16 +90,16 @@ namespace services
             return hal::LinkSpeed::halfDuplex10MHz;
     }
 
-    std::optional<SmiPhy::LinkState> SmiPhy::ReadLinkState()
+    SmiPhy::LinkState SmiPhy::ReadLinkState()
     {
         const uint16_t bsr = ReadBsr();
         if (!BasicStatusRegister::IsResponding(bsr))
-            return std::nullopt;
+            return LinkState::Down;
+
         const uint16_t bcr = ReadBcr();
         const bool autoNegEnabled = infra::IsBitSet(bcr, BasicControlRegister::AutoNegEnableBit);
         const bool autoNegComplete = autoNegEnabled ? BasicStatusRegister::IsAutoNegComplete(bsr) : true;
-        const bool linked = BasicStatusRegister::IsLinked(bsr) && autoNegComplete;
-        return linked ? std::optional<LinkState>(LinkState::Up) : std::optional<LinkState>(LinkState::Down);
+        return BasicStatusRegister::IsLinked(bsr) && autoNegComplete ? LinkState::Up : LinkState::Down;
     }
 
     void SmiPhy::EnableAutoNegIfCapable()
