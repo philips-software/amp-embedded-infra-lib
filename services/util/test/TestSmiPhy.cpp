@@ -174,6 +174,12 @@ TEST_F(SmiPhyTest, EnableAutoNegIfCapableDoesNotWriteWhenNotCapable)
     phy.EnableAutoNegIfCapable();
 }
 
+TEST_F(SmiPhyTest, EnableAutoNegIfCapableDoesNothingWhenPhyNotResponding)
+{
+    EXPECT_CALL(smi, Read(phyAddress, SmiPhy::BasicStatusRegister::Address)).WillOnce(Return(bsrNotPresent));
+    phy.EnableAutoNegIfCapable();
+}
+
 // ---- LinkSpeed (manual, autoneg disabled) ----------------------------------
 
 TEST_F(SmiPhyTest, LinkSpeedManualFullDuplex100MHz)

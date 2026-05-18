@@ -1,4 +1,5 @@
 #include "services/util/SmiPhyLinkMonitor.hpp"
+#include "infra/util/ReallyAssert.hpp"
 
 namespace services
 {
@@ -6,6 +7,7 @@ namespace services
         : phyAddress(phyAddress)
         , phy(smi, phyAddress)
     {
+        really_assert(pollInterval > infra::Duration{});
         pollingTimer.Start(pollInterval, [this]
             {
                 PollPort();

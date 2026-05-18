@@ -9,8 +9,8 @@ namespace services
 {
     // Wraps a single IEEE 802.3 PHY accessible over a SmiBus.
     // Owns all register address and bit-field knowledge for standard PHY
-    // registers (BCR, BSR, Advertisement, Link Partner Ability) and tracks
-    // link state changes.
+    // registers (BCR, BSR, Advertisement, Link Partner Ability), and reads
+    // and derives the current link state from those registers.
     class SmiPhy
     {
     public:
