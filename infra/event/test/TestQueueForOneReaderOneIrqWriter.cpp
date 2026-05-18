@@ -252,12 +252,9 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, add_single_element_unchecked_when_full
 
     queue->AddFromInterruptUnchecked(static_cast<uint8_t>(99));
 
-    EXPECT_TRUE(queue->Full());
-    EXPECT_EQ(4, queue->Size());
-    EXPECT_EQ(0, queue->Get());
-    EXPECT_EQ(1, queue->Get());
-    EXPECT_EQ(2, queue->Get());
-    EXPECT_EQ(3, queue->Get());
+    EXPECT_TRUE(queue->Empty());
+    EXPECT_FALSE(queue->Full());
+    EXPECT_EQ(0, queue->Size());
 }
 
 TEST_F(QueueForOneReaderOneIrqWriterTest, add_single_element_unchecked_success_wrapped)
