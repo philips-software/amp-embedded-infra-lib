@@ -252,9 +252,33 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, add_single_element_unchecked_when_full
 
     queue->AddFromInterruptUnchecked(static_cast<uint8_t>(99));
 
-    EXPECT_TRUE(queue->Empty());
-    EXPECT_FALSE(queue->Full());
-    EXPECT_EQ(0, queue->Size());
+    EXPECT_TRUE(queue->Full());
+    EXPECT_EQ(4, queue->Size());
+    EXPECT_EQ(0, queue->Get());
+    EXPECT_EQ(1, queue->Get());
+    EXPECT_EQ(2, queue->Get());
+    EXPECT_EQ(3, queue->Get());
+}
+
+TEST_F(QueueForOneReaderOneIrqWriterTest, add_single_element_unchecked_when_full_wrapped)
+{
+    queue.emplace(buffer, [this]() {});
+
+    std::array<uint8_t, 4> full = { { 0, 1, 2, 3 } };
+    queue->AddFromInterrupt(full);
+    queue->Consume(2);
+    std::array<uint8_t, 2> more = { { 4, 5 } };
+    queue->AddFromInterrupt(more);
+    EXPECT_TRUE(queue->Full());
+
+    queue->AddFromInterruptUnchecked(static_cast<uint8_t>(99));
+
+    EXPECT_TRUE(queue->Full());
+    EXPECT_EQ(4, queue->Size());
+    EXPECT_EQ(2, queue->Get());
+    EXPECT_EQ(3, queue->Get());
+    EXPECT_EQ(4, queue->Get());
+    EXPECT_EQ(5, queue->Get());
 }
 
 TEST_F(QueueForOneReaderOneIrqWriterTest, add_single_element_unchecked_success_wrapped)

@@ -99,6 +99,9 @@ namespace infra
     template<class T>
     void QueueForOneReaderOneIrqWriter<T>::AddFromInterruptUnchecked(T element)
     {
+        if (Full())
+            return;
+
         *contentsEnd = element;
 
         if (contentsEnd == buffer.end() - 1)
