@@ -167,10 +167,218 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, Size)
     EXPECT_EQ(4, queue->Size());
 }
 
-TEST_F(QueueForOneReaderOneIrqWriterTest, EmptySize)
+TEST_F(QueueForOneReaderOneIrqWriterTest, Capacity)
 {
     queue.emplace(buffer, [this]() {});
-    EXPECT_EQ(sizeof(buffer) - 1, queue->EmptySize());
+    EXPECT_EQ(buffer.size() - 1, queue->Capacity());
+}
+
+TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_asserts_when_insufficient_space)
+{
+    queue.emplace(buffer, [this]() {});
+
+    std::array<uint8_t, 3> data = { { 0, 1, 2 } };
+    queue->AddFromInterrupt(data);
+
+    std::array<uint8_t, 3> moreData = { { 3, 4, 5 } };
+    EXPECT_DEATH(queue->AddFromInterrupt(moreData), "");
+}
+
+TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_wrapping_around_buffer)
+{
+    queue.emplace(buffer, [this]() {});
+
+    std::array<uint8_t, 3> data = { { 0, 1, 2 } };
+    queue->AddFromInterrupt(data);
+    queue->Consume(3);
+
+    std::array<uint8_t, 4> wrapData = { { 3, 4, 5, 6 } };
+    queue->AddFromInterrupt(wrapData);
+
+    EXPECT_EQ(4, queue->Size());
+    EXPECT_EQ(3, queue->Get());
+    EXPECT_EQ(4, queue->Get());
+    EXPECT_EQ(5, queue->Get());
+    EXPECT_EQ(6, queue->Get());
+}
+
+TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_unchecked_does_not_write_out_of_bounds)
+{
+    queue.emplace(buffer, [this]() {});
+
+    std::array<uint8_t, 2> setup = { { 0, 1 } };
+    queue->AddFromInterruptUnchecked(setup);
+
+    std::array<uint8_t, 4> overflow = { { 2, 3, 4, 5 } };
+    queue->AddFromInterruptUnchecked(overflow);
+
+    EXPECT_EQ(2, queue->Size());
+    EXPECT_EQ(0, queue->Get());
+    EXPECT_EQ(1, queue->Get());
+}
+
+TEST_F(QueueForOneReaderOneIrqWriterTest, add_single_element_asserts_when_full_linear)
+{
+    queue.emplace(buffer, [this]() {});
+
+    std::array<uint8_t, 4> full = { { 0, 1, 2, 3 } };
+    queue->AddFromInterrupt(full);
+    EXPECT_TRUE(queue->Full());
+
+    EXPECT_DEATH(queue->AddFromInterrupt(static_cast<uint8_t>(4)), "");
+}
+
+TEST_F(QueueForOneReaderOneIrqWriterTest, add_single_element_asserts_when_full_wrapped)
+{
+    queue.emplace(buffer, [this]() {});
+
+    std::array<uint8_t, 4> full = { { 0, 1, 2, 3 } };
+    queue->AddFromInterrupt(full);
+    queue->Consume(2);
+    std::array<uint8_t, 2> more = { { 4, 5 } };
+    queue->AddFromInterrupt(more);
+    EXPECT_TRUE(queue->Full());
+
+    EXPECT_DEATH(queue->AddFromInterrupt(static_cast<uint8_t>(6)), "");
+}
+
+TEST_F(QueueForOneReaderOneIrqWriterTest, add_single_element_unchecked_when_full_linear)
+{
+    queue.emplace(buffer, [this]() {});
+
+    std::array<uint8_t, 4> full = { { 0, 1, 2, 3 } };
+    queue->AddFromInterrupt(full);
+    EXPECT_TRUE(queue->Full());
+
+    queue->AddFromInterruptUnchecked(static_cast<uint8_t>(99));
+}
+
+TEST_F(QueueForOneReaderOneIrqWriterTest, add_single_element_unchecked_success_wrapped)
+{
+    queue.emplace(buffer, [this]() {});
+
+    std::array<uint8_t, 3> data = { { 0, 1, 2 } };
+    queue->AddFromInterrupt(data);
+    queue->Consume(3);
+
+    queue->AddFromInterruptUnchecked(static_cast<uint8_t>(10));
+    EXPECT_EQ(1, queue->Size());
+    EXPECT_EQ(10, queue->Get());
+}
+
+TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_asserts_when_insufficient_space_wrapped)
+{
+    queue.emplace(buffer, [this]() {});
+
+    std::array<uint8_t, 3> setup = { { 0, 1, 2 } };
+    queue->AddFromInterrupt(setup);
+    queue->Consume(3);
+    std::array<uint8_t, 2> partial = { { 3, 4 } };
+    queue->AddFromInterrupt(partial);
+
+    std::array<uint8_t, 3> tooMuch = { { 5, 6, 7 } };
+    EXPECT_DEATH(queue->AddFromInterrupt(tooMuch), "");
+}
+
+TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_exact_fill_wrapped)
+{
+    queue.emplace(buffer, [this]() {});
+
+    std::array<uint8_t, 3> setup = { { 0, 1, 2 } };
+    queue->AddFromInterrupt(setup);
+    queue->Consume(3);
+    std::array<uint8_t, 1> one = { { 10 } };
+    queue->AddFromInterrupt(one);
+
+    std::array<uint8_t, 3> fill = { { 20, 21, 22 } };
+    queue->AddFromInterrupt(fill);
+
+    EXPECT_TRUE(queue->Full());
+    EXPECT_EQ(4, queue->Size());
+    EXPECT_EQ(10, queue->Get());
+    EXPECT_EQ(20, queue->Get());
+    EXPECT_EQ(21, queue->Get());
+    EXPECT_EQ(22, queue->Get());
+}
+
+TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_unchecked_overflow_dropped_wrapped)
+{
+    queue.emplace(buffer, [this]() {});
+
+    std::array<uint8_t, 3> setup = { { 0, 1, 2 } };
+    queue->AddFromInterrupt(setup);
+    queue->Consume(3);
+    std::array<uint8_t, 2> partial = { { 3, 4 } };
+    queue->AddFromInterrupt(partial);
+
+    std::array<uint8_t, 3> overflow = { { 5, 6, 7 } };
+    queue->AddFromInterruptUnchecked(overflow);
+    EXPECT_EQ(2, queue->Size());
+    EXPECT_EQ(3, queue->Get());
+    EXPECT_EQ(4, queue->Get());
+}
+
+TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_unchecked_success_wrapped)
+{
+    queue.emplace(buffer, [this]() {});
+
+    std::array<uint8_t, 3> setup = { { 0, 1, 2 } };
+    queue->AddFromInterrupt(setup);
+    queue->Consume(3);
+    std::array<uint8_t, 2> partial = { { 3, 4 } };
+    queue->AddFromInterruptUnchecked(partial);
+
+    EXPECT_EQ(2, queue->Size());
+    EXPECT_EQ(3, queue->Get());
+    EXPECT_EQ(4, queue->Get());
+}
+
+TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_unchecked_exact_fill_linear)
+{
+    queue.emplace(buffer, [this]() {});
+
+    std::array<uint8_t, 4> full = { { 10, 20, 30, 40 } };
+    queue->AddFromInterruptUnchecked(full);
+
+    EXPECT_TRUE(queue->Full());
+    EXPECT_EQ(4, queue->Size());
+    EXPECT_EQ(10, queue->Get());
+    EXPECT_EQ(20, queue->Get());
+    EXPECT_EQ(30, queue->Get());
+    EXPECT_EQ(40, queue->Get());
+}
+
+TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_unchecked_exact_fill_wrapped)
+{
+    queue.emplace(buffer, [this]() {});
+
+    std::array<uint8_t, 3> setup = { { 0, 1, 2 } };
+    queue->AddFromInterrupt(setup);
+    queue->Consume(3);
+
+    std::array<uint8_t, 4> full = { { 10, 20, 30, 40 } };
+    queue->AddFromInterruptUnchecked(full);
+
+    EXPECT_TRUE(queue->Full());
+    EXPECT_EQ(4, queue->Size());
+    EXPECT_EQ(10, queue->Get());
+    EXPECT_EQ(20, queue->Get());
+    EXPECT_EQ(30, queue->Get());
+    EXPECT_EQ(40, queue->Get());
+}
+
+TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_unchecked_overflow_dropped_would_wrap)
+{
+    queue.emplace(buffer, [this]() {});
+
+    std::array<uint8_t, 2> setup = { { 0, 1 } };
+    queue->AddFromInterrupt(setup);
+    std::array<uint8_t, 3> overflow = { { 5, 6, 7 } };
+    queue->AddFromInterruptUnchecked(overflow);
+
+    EXPECT_EQ(2, queue->Size());
+    EXPECT_EQ(0, queue->Get());
+    EXPECT_EQ(1, queue->Get());
 }
 
 TEST_F(QueueForOneReaderOneIrqWriterTest, StreamReader)
