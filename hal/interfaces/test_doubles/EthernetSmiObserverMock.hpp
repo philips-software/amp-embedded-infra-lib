@@ -10,9 +10,7 @@ namespace hal
         : public EthernetSmiObserver
     {
     public:
-        explicit EthernetSmiObserverMock(EthernetSmi& smi)
-            : EthernetSmiObserver(smi)
-        {}
+        using EthernetSmiObserver::EthernetSmiObserver;
 
         MOCK_METHOD(void, LinkUp, (LinkSpeed linkSpeed), (override));
         MOCK_METHOD(void, LinkDown, (), (override));
