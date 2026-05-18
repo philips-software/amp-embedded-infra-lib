@@ -465,6 +465,7 @@ service GapCentralResponse {
     rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 10; }
     rpc OutOfBandDataGenerated(OutOfBandData) returns (Nothing) { option (method_id) = 11; }
     rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 12; }
+    rpc DisplayPasskey(Passkey) returns (Nothing) { option (method_id) = 12; }
 }
 
 
