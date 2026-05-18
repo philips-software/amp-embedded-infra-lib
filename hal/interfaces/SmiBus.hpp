@@ -7,12 +7,13 @@ namespace hal
 {
     class SmiBus
     {
-    public:
+    protected:
         SmiBus() = default;
         SmiBus(const SmiBus&) = delete;
         SmiBus& operator=(const SmiBus&) = delete;
-        virtual ~SmiBus() = default;
+        SmiBus() = default;
 
+    public:
         virtual uint16_t Read(uint8_t phyAddress, uint16_t reg) const = 0;
         virtual void Write(uint8_t phyAddress, uint16_t reg, uint16_t value) = 0;
     };
