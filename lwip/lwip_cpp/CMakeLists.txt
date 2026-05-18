@@ -29,6 +29,8 @@ target_sources(lwip.lwip_cpp PRIVATE
     LightweightIp.hpp
     LightweightIpOverEthernet.cpp
     LightweightIpOverEthernet.hpp
+    MacResolverLwIp.cpp
+    MacResolverLwIp.hpp
     MulticastLwIp.cpp
     MulticastLwIp.hpp
 )
