@@ -152,4 +152,6 @@ TEST_P(SesameInstantiationTestMessageSize, send_message_of_size_right)
     EXPECT_EQ(messageSize, sentData2.size());
 }
 
+#ifndef EMIL_MUTATION_TESTING
 INSTANTIATE_TEST_SUITE_P(SesameInstantiationTestMessageSize, SesameInstantiationTestMessageSize, testing::Range<std::size_t>(1, 1011));
+#endif
