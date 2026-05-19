@@ -128,6 +128,26 @@ namespace services
     private:
         uint8_t colour;
     };
+
+    class TracerPrefixed
+        : public TracerToDelegate
+    {
+    public:
+        TracerPrefixed(infra::BoundedConstString prefix, services::Tracer& delegate)
+            : TracerToDelegate(delegate)
+            , prefix(prefix)
+        {}
+
+    protected:
+        void InsertHeader() override
+        {
+            TracerToDelegate::InsertHeader();
+            Continue() << prefix;
+        }
+
+    private:
+        infra::BoundedConstString prefix;
+    };
 }
 
 #endif
