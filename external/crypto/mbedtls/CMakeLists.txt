@@ -50,6 +50,8 @@ function(add_mbedtls_target_properties)
             # Warnings treated as error since clang-22
             $<$<CXX_COMPILER_ID:Clang>:$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,22.0.0>:-Wno-uninitialized-const-pointer>>
             $<$<CXX_COMPILER_ID:Clang>:$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,22.0.0>:-Wno-unterminated-string-initialization>>
+            # Warnings treated as error since gcc-14
+            $<$<CXX_COMPILER_ID:GNU>:$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,14.0.0>:-Wno-unterminated-string-initialization>>
             $<$<CXX_COMPILER_ID:MSVC>:/wd4244 /wd4267>
         )
 
