@@ -8,3 +8,4 @@ excludePaths:
   - .*/test_doubles/.*
   - .*/test_helper/.*
   - .*/test/.*
+  - .*/HttpRequestParser.cpp # cxx_add_to_sub on substr offsets in while-loops causes unrecoverable infinite loops
