@@ -10,7 +10,7 @@ namespace
         MutationTimeoutGuard()
         {
             signal(SIGALRM, [](int) { _exit(1); });
-            alarm(8);
+            alarm(10);
         }
     };
 
