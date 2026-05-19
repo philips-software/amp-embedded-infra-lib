@@ -8,4 +8,5 @@ excludePaths:
   - .*/test_doubles/.*
   - .*/test_helper/.*
   - .*/test/.*
+  - .*/MutationTestingTimeoutGuard.cpp # prevent mutating the timeout guard itself, which is the last line of defense against infinite loops
   - .*/HttpRequestParser.cpp # cxx_add_to_sub on substr offsets in while-loops causes unrecoverable infinite loops

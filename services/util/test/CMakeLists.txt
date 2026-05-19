@@ -57,8 +57,3 @@ target_sources(services.util_test PRIVATE
     TestTimeWithLocalization.cpp
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestWritableConfiguration.cpp>
 )
-
-if (EMIL_ENABLE_MUTATION_TESTING)
-    target_compile_definitions(services.util_test PRIVATE EMIL_MUTATION_TESTING)
-    target_sources(services.util_test PRIVATE MutationTestingTimeoutGuard.cpp)
-endif()

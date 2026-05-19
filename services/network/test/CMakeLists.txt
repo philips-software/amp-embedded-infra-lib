@@ -49,11 +49,6 @@ target_sources(services.network_test PRIVATE
     TestWiFiNetwork.cpp
 )
 
-if (EMIL_ENABLE_MUTATION_TESTING)
-    target_compile_definitions(services.network_test PRIVATE EMIL_MUTATION_TESTING)
-    target_sources(services.network_test PRIVATE MutationTestingTimeoutGuard.cpp)
-endif()
-
 add_executable(services.network_test_certificates)
 emil_build_for(services.network_test_certificates BOOL EMIL_BUILD_TESTS)
 emil_add_test(services.network_test_certificates)
