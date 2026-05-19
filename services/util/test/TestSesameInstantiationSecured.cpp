@@ -159,4 +159,6 @@ TEST_P(SesameInstantiationSecuredTestMessageSize, send_message_of_size_right)
 
 #ifndef EMIL_MUTATION_TESTING
 INSTANTIATE_TEST_SUITE_P(SesameInstantiationSecuredTestMessageSize, SesameInstantiationSecuredTestMessageSize, testing::Range<std::size_t>(1, 995));
+#else
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SesameInstantiationSecuredTestMessageSize);
 #endif
