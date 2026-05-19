@@ -408,81 +408,81 @@ service GapCentral
 
     // Allowed states: standby
     // Can result in GapCentralResponse.CurrentState
-    rpc StartDeviceDiscovery(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 1; }
+    rpc StartDeviceDiscovery(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 2; }
 
     // Allowed states: scanning
     // Can result in GapCentralResponse.CurrentState
-    rpc StopDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 2; }
+    rpc StopDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 3; }
 
     // Allowed states: standby
     // For successful connection establishment, state will follow: standby -> initiating -> connected
     // For failed connection establishment, state will follow: standby -> initiating -> standby
     // Results in GapCentralResponse.CurrentState
-    rpc Connect(ConnectionParameters) returns (Nothing) { option (method_id) = 3; }
+    rpc Connect(ConnectionParameters) returns (Nothing) { option (method_id) = 4; }
 
     // Allowed states: initiating
     // Results in GapCentralResponse.CurrentState with state standby
-    rpc CancelConnect(Nothing) returns (Nothing) { option (method_id) = 4; }
+    rpc CancelConnect(Nothing) returns (Nothing) { option (method_id) = 5; }
 
     // Allowed states: connected
     // Results in GapCentralResponse.CurrentState with state standby
-    rpc Disconnect(Nothing) returns (Nothing) { option (method_id) = 5; }
+    rpc Disconnect(Nothing) returns (Nothing) { option (method_id) = 6; }
 
     // Allowed states: connected
     // 1. If there is a pre-existing bond, then the connection will be encrypted.
     // 2. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
     // Results in GapCentralResponse.PairingCompleted (incl. if it failed)
     // Can result in GapCentralResponse.NumberOfBondsChanged or GapCentralResponse.CurrentState device disconnected
-    rpc PairAndBond(Nothing) returns (Nothing) { option (method_id) = 6; }
+    rpc PairAndBond(Nothing) returns (Nothing) { option (method_id) = 7; }
 
     // Allowed in link layer states: standby
-    rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 7; }
+    rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 8; }
 
     // Allowed in link layer states: standby
-    rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 8; }
+    rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 9; }
 
     // Allowed in link layer states: connected
     // Results in GapCentralResponse.AuthenticatedWithPasskeyDone
-    rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 9; }
+    rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 10; }
 
-    // Allowed in link layer states: standby
+    // Allowed in link layer states: connected
     // Results in GapCentralResponse.ConfirmedNumericalComparisonDone
-    rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 10; }
+    rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 11; }
 
     // Allowed in link layer states: standby
     // If value is true only oldest bond will be removed, if value is false all bonds will be removed
     // Results in GapCentralResponse.NumberOfBondsChanged
-    rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 11; }
+    rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 12; }
   
     // Allowed in link layer states: standby
     // Results in GapCentralResponse.NumberOfBondsChanged
-    rpc RemoveBondWithAddress(AddressWithType) returns (Nothing) { option (method_id) = 11; }
+    rpc RemoveBondWithAddress(AddressWithType) returns (Nothing) { option (method_id) = 13; }
 
     // Allowed in link layer states: standby, initiating, connected
     // Resolves a resolvable private address to the identity address of a bonded device.
     // This will only succeed if Address is a private resolvable address, and if the device is bonded
     // Results in GapCentralResponse.ResolvedPrivateAddress or GapCentralResponse.ResolvePrivateAddressFailed
-    rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; }
+    rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 14; }
 
     // Allowed in link layer states: standby, initiating, connected
     // Results in GapCentralResponse.BondList
-    rpc GetBondList(Nothing) returns (Nothing) { option (method_id) = 6; }
+    rpc GetBondList(Nothing) returns (Nothing) { option (method_id) = 15; }
 }
 
 service GapCentralResponse {
     option(service_id) = 35;
 
+    rpc CurrentState(State) returns (Nothing) { option (method_id) = 1; }
     rpc DeviceDiscovered(DiscoveredDevice) returns (Nothing) { option (method_id) = 2; }
-    rpc CurrentState(State) returns (Nothing) { option (method_id) = 3; }
     
-    rpc PairingCompleted(PairingStatus) returns (Nothing) { option (method_id) = 4; }
-    rpc AuthenticatedWithPasskeyDone(Nothing) returns (Nothing) { option (method_id) = 5; }
+    rpc PairingCompleted(PairingStatus) returns (Nothing) { option (method_id) = 3; }
+    rpc AuthenticatedWithPasskeyDone(Nothing) returns (Nothing) { option (method_id) = 4; }
     rpc ConfirmedNumericalComparisonDone(Nothing) returns (Nothing) { option (method_id) = 5; }
 
-    rpc ResolvedPrivateAddress(Address) returns (Nothing) { option (method_id) = 8; }
-    rpc ResolvePrivateAddressFailed(Nothing) returns (Nothing) { option (method_id) = 9; }
+    rpc ResolvedPrivateAddress(Address) returns (Nothing) { option (method_id) = 6; }
+    rpc ResolvePrivateAddressFailed(Nothing) returns (Nothing) { option (method_id) = 7; }
     
-    rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
-    rpc BondList(BondList) returns (Nothing) { option(method_id) = 13; }
-    rpc AuthenticationRequired(AuthenticationInfo) returns (Nothing) { option (method_id) = 12; }
+    rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 8; }
+    rpc BondList(BondList) returns (Nothing) { option(method_id) = 9; }
+    rpc AuthenticationRequired(AuthenticationInfo) returns (Nothing) { option (method_id) = 10; }
 }
