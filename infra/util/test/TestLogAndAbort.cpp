@@ -29,10 +29,12 @@ namespace
     };
 }
 
+#ifndef EMIL_MUTATION_TESTING
 TEST_F(LogAndAbortTest, log_and_abort_aborts)
 {
     EXPECT_DEATH(LOG_AND_ABORT("Fly you fools!"), "");
 }
+#endif
 
 TEST_F(LogAndAbortTest, log_and_abort_no_handler_does_nothing)
 {
@@ -85,6 +87,7 @@ TEST_F(LogAndAbortTest, log_and_abort_recursive_call_skipped)
     infra::ExecuteLogAndAbortHook("condition", "file.cpp", 32, "initial %s", "call");
 }
 
+#ifndef EMIL_MUTATION_TESTING
 TEST_F(LogAndAbortTest, log_and_abort_not_implemented)
 {
     EXPECT_DEATH(LOG_AND_ABORT_NOT_IMPLEMENTED(), "");
@@ -126,3 +129,4 @@ TEST_F(LogAndAbortTest, log_and_abort_enum_accepts_integral_types)
 
     static_assert(infra::detail::LogAndAbortEnumOrIntegralType<std::decay_t<int>>::ToUnderlying(42) == int(42));
 }
+#endif

@@ -173,6 +173,7 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, Capacity)
     EXPECT_EQ(buffer.size() - 1, queue->Capacity());
 }
 
+#ifndef EMIL_MUTATION_TESTING
 TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_asserts_when_insufficient_space)
 {
     queue.emplace(buffer, [this]() {});
@@ -183,6 +184,7 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_asserts_when_insufficient_sp
     std::array<uint8_t, 3> moreData = { { 3, 4, 5 } };
     EXPECT_DEATH(queue->AddFromInterrupt(moreData), ".*");
 }
+#endif
 
 TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_wrapping_around_buffer)
 {
@@ -217,6 +219,7 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_unchecked_does_not_write_out
     EXPECT_EQ(1, queue->Get());
 }
 
+#ifndef EMIL_MUTATION_TESTING
 TEST_F(QueueForOneReaderOneIrqWriterTest, add_single_element_asserts_when_full_linear)
 {
     queue.emplace(buffer, [this]() {});
@@ -241,6 +244,7 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, add_single_element_asserts_when_full_w
 
     EXPECT_DEATH(queue->AddFromInterrupt(static_cast<uint8_t>(6)), ".*");
 }
+#endif
 
 TEST_F(QueueForOneReaderOneIrqWriterTest, add_single_element_unchecked_when_full_linear)
 {
@@ -294,6 +298,7 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, add_single_element_unchecked_success_w
     EXPECT_EQ(10, queue->Get());
 }
 
+#ifndef EMIL_MUTATION_TESTING
 TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_asserts_when_insufficient_space_wrapped)
 {
     queue.emplace(buffer, [this]() {});
@@ -307,6 +312,7 @@ TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_asserts_when_insufficient_sp
     std::array<uint8_t, 3> tooMuch = { { 5, 6, 7 } };
     EXPECT_DEATH(queue->AddFromInterrupt(tooMuch), ".*");
 }
+#endif
 
 TEST_F(QueueForOneReaderOneIrqWriterTest, add_range_exact_fill_wrapped)
 {
