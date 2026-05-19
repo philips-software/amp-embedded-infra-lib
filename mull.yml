@@ -9,3 +9,5 @@ excludePaths:
   - .*/test_helper/.*
   - .*/test/.*
   - .*/HttpRequestParser.cpp # cxx_add_to_sub on substr offsets in while-loops causes unrecoverable infinite loops
+  - .*/SesameSecured.cpp # cxx_add_to_sub on buffer size arithmetic causes underflows leading to unrecoverable hangs
+  - .*/SesameWindowed.cpp # cxx_add_to_sub on size calculations causes underflows leading to unrecoverable hangs
