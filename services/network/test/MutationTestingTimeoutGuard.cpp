@@ -3,18 +3,19 @@
 #include <csignal>
 #include <unistd.h>
 
-namespace
+static void MutationTimeoutHandler(int)
 {
-    struct MutationTimeoutGuard
-    {
-        MutationTimeoutGuard()
-        {
-            signal(SIGALRM, [](int) { _exit(1); });
-            alarm(8);
-        }
-    };
+    _exit(1);
+}
 
-    static MutationTimeoutGuard guard;
+__attribute__((constructor(65535))) static void SetupMutationTimeoutGuard()
+{
+    struct sigaction sa = {};
+    sa.sa_handler = MutationTimeoutHandler;
+    sa.sa_flags = 0;
+    sigemptyset(&sa.sa_mask);
+    sigaction(SIGALRM, &sa, nullptr);
+    alarm(8);
 }
 
 #endif
