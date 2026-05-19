@@ -13,3 +13,8 @@ target_sources(services.synchronous_util_test PRIVATE
     TestSynchronousFlashDelegate.cpp
     TestSynchronousFlashSpi.cpp
 )
+
+if (EMIL_ENABLE_MUTATION_TESTING)
+    target_compile_definitions(services.synchronous_util_test PRIVATE EMIL_MUTATION_TESTING)
+    target_sources(services.synchronous_util_test PRIVATE MutationTestingTimeoutGuard.cpp)
+endif()
