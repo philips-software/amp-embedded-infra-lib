@@ -365,14 +365,6 @@ message DeviceDiscoveryFilter
     bytes data = 2 [(bytes_size) = 32];
 };
 
-message OutOfBandData
-{
-    AddressWithType addressWithType = 1; // Identitity address
-    bytes randomData = 3 [(bytes_size) = 16];
-    bytes confirmData = 4 [(bytes_size) = 16];
-}
-
-
 message BondListItem
 {
     AddressWithType addressWithType = 1; // Identitity address
@@ -476,16 +468,6 @@ service GapCentral
     rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; }
 
     // Allowed in link layer states: standby, initiating, connected
-    // Generates local Out-of-Band data to be shared with the peer device through an out-of-band channel.
-    // Results in GapCentralResponse.OutOfBandDataGenerated
-    rpc GenerateOutOfBandData(Nothing) returns (Nothing) { option (method_id) = 15; }
-
-    // Allowed in link layer states: standby, initiating, connected
-    // Provides the peer device's Out-of-Band data to the stack for use during pairing.
-    // Results in GapCentralResponse.Done
-    rpc SetOutOfBandData(OutOfBandData) returns (Nothing) { option (method_id) = 16; }
-
-    // Allowed in link layer states: standby, initiating, connected
     // Results in GapCentralResponse.BondList
     rpc GetBondList(Nothing) returns (Nothing) { option (method_id) = 6; }
 }
@@ -499,7 +481,6 @@ service GapCentralResponse {
     // - SetDeviceDiscoveryFilter
     // - SetSecurityMode
     // - SetIoCapabilities
-    // - SetOutOfBandData
     rpc Done(Nothing) returns (Nothing) { option (method_id) = 1; } // TODO: When is this used?
 
     rpc DeviceDiscovered(DiscoveredDevice) returns (Nothing) { option (method_id) = 2; }
@@ -509,7 +490,6 @@ service GapCentralResponse {
 
     rpc ResolvedPrivateAddress(Address) returns (Nothing) { option (method_id) = 8; }
     rpc ResolvePrivateAddressFailed(Nothing) returns (Nothing) { option (method_id) = 9; }
-    rpc OutOfBandDataGenerated(OutOfBandData) returns (Nothing) { option (method_id) = 11; }
     
     rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
     rpc BondList(BondList) returns (Nothing) { option(method_id) = 13; }
