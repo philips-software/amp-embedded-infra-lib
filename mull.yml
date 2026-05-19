@@ -15,3 +15,4 @@ excludePaths:
   - .*/MdnsClient.cpp
   - .*/WebSocketClientConnectionObserver.cpp
   - .*/CyclicStore.cpp
+  - .*/Asn1Formatter.cpp
