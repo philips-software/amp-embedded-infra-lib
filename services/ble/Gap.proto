@@ -355,10 +355,11 @@ message DeviceDiscoveryFilter
 {
     enum Filter
     {
-        address = 0;
+        none = 0;
+        address = 1;
 
         // Filtering on contents of Manufacturer specific data
-        advertisingData = 1; 
+        advertisingData = 2; 
     }
 
     Filter filter = 1;
@@ -402,54 +403,50 @@ service GapCentral
     // All servers must implement these methods  
     // ==================================================
 
-    // Allowed states: standby
-    // Results in GapCentralResponse.Done
-    // Can result in GapCentralResponse.StateChanged
-    rpc StartDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 1; }
+    // Results in GapCentralResponse.CurrentState with current state
+    rpc GetState(Nothing) returns (Nothing) { option (method_id) = 1; }
 
     // Allowed states: standby
-    // Can result in GapCentralResponse.StateChanged
+    // Can result in GapCentralResponse.CurrentState
+    rpc StartDeviceDiscovery(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 1; }
+
+    // Allowed states: scanning
+    // Can result in GapCentralResponse.CurrentState
     rpc StopDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 2; }
-
-    // Allowed in link layer states: standby
-    // Results in GapCentralResponse.Done
-    rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 12; }
 
     // Allowed states: standby
     // For successful connection establishment, state will follow: standby -> initiating -> connected
     // For failed connection establishment, state will follow: standby -> initiating -> standby
-    // Results in GapCentralResponse.State
+    // Results in GapCentralResponse.CurrentState
     rpc Connect(ConnectionParameters) returns (Nothing) { option (method_id) = 3; }
 
     // Allowed states: initiating
-    // Results in GapCentralResponse.State with state standby
+    // Results in GapCentralResponse.CurrentState with state standby
     rpc CancelConnect(Nothing) returns (Nothing) { option (method_id) = 4; }
 
     // Allowed states: connected
-    // Results in GapCentralResponse.State with state standby
+    // Results in GapCentralResponse.CurrentState with state standby
     rpc Disconnect(Nothing) returns (Nothing) { option (method_id) = 5; }
 
     // Allowed states: connected
     // 1. If there is a pre-existing bond, then the connection will be encrypted.
     // 2. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
     // Results in GapCentralResponse.PairingCompleted (incl. if it failed)
-    // Can result in GapCentral.NumberOfBondsChanged
+    // Can result in GapCentralResponse.NumberOfBondsChanged or GapCentralResponse.CurrentState device disconnected
     rpc PairAndBond(Nothing) returns (Nothing) { option (method_id) = 6; }
 
     // Allowed in link layer states: standby
-    // Results in GapCentralResponse.Done
     rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 7; }
 
     // Allowed in link layer states: standby
-    // Results in GapCentralResponse.Done
     rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 8; }
 
     // Allowed in link layer states: connected
-    // Results in GapCentralResponse.Done
+    // Results in GapCentralResponse.AuthenticatedWithPasskeyDone
     rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 9; }
 
     // Allowed in link layer states: standby
-    // Results in GapCentralResponse.Done
+    // Results in GapCentralResponse.ConfirmedNumericalComparisonDone
     rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 10; }
 
     // Allowed in link layer states: standby
@@ -475,18 +472,12 @@ service GapCentral
 service GapCentralResponse {
     option(service_id) = 35;
 
-    // TODO: Do we need this? Called after every request. Isn't this already handled by MethodDone?
-    // TODO: Try to refactor this away. Every request should have response, or wait until other request.
-    // Functions that really need this:
-    // - SetDeviceDiscoveryFilter
-    // - SetSecurityMode
-    // - SetIoCapabilities
-    rpc Done(Nothing) returns (Nothing) { option (method_id) = 1; } // TODO: When is this used?
-
     rpc DeviceDiscovered(DiscoveredDevice) returns (Nothing) { option (method_id) = 2; }
-    rpc StateChanged(State) returns (Nothing) { option (method_id) = 3; }
+    rpc CurrentState(State) returns (Nothing) { option (method_id) = 3; }
     
     rpc PairingCompleted(PairingStatus) returns (Nothing) { option (method_id) = 4; }
+    rpc AuthenticatedWithPasskeyDone(Nothing) returns (Nothing) { option (method_id) = 5; }
+    rpc ConfirmedNumericalComparisonDone(Nothing) returns (Nothing) { option (method_id) = 5; }
 
     rpc ResolvedPrivateAddress(Address) returns (Nothing) { option (method_id) = 8; }
     rpc ResolvePrivateAddressFailed(Nothing) returns (Nothing) { option (method_id) = 9; }
