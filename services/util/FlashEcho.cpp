@@ -125,6 +125,7 @@ namespace services
         bufferPosition = 0;
         writingBuffer = buffer;
         this->onDone = onDone;
+        this->address = address;
 
         WritePartialBuffer(address, 0);
     }
@@ -132,6 +133,7 @@ namespace services
     void FlashEchoProxy::ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
         bufferPosition = 0;
+        this->address = address;
         readingBuffer = buffer;
         this->onDone = onDone;
 
@@ -156,6 +158,8 @@ namespace services
 
         if (bufferPosition == readingBuffer.size())
             onDone();
+        else
+            ReadPartialBuffer(address, bufferPosition);
 
         MethodDone();
     }
@@ -166,6 +170,8 @@ namespace services
 
         if (bufferPosition == writingBuffer.size())
             onDone();
+        else
+            WritePartialBuffer(address, bufferPosition);
 
         MethodDone();
     }
@@ -185,7 +191,6 @@ namespace services
                 {
                     auto size = std::min<uint32_t>(readingBuffer.size() - this->start, flash::WriteRequest::contentsSize);
                     proxy.Read(address + this->start, size);
-                    ReadPartialBuffer(address, this->start + size);
                 });
         }
     }
@@ -199,7 +204,6 @@ namespace services
                 {
                     auto size = std::min<std::size_t>(writingBuffer.size() - this->start, flash::WriteRequest::contentsSize);
                     proxy.Write(address + this->start, infra::Head(infra::DiscardHead(writingBuffer, this->start), size));
-                    WritePartialBuffer(address, this->start + size);
                 });
         }
     }

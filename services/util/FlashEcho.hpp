@@ -63,6 +63,7 @@ namespace services
         infra::ByteRange readingBuffer;
         uint32_t bufferPosition = 0;
         uint32_t start;
+        uint32_t address;
         uint32_t endIndex;
     };
 
