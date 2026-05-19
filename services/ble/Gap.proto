@@ -300,7 +300,7 @@ service GapPeripheralReadiness {
 // GAP CENTRAL
 // ==================================================
 
-message Passkey
+message AuthenticationInfo
 {
     uint32 passkey = 1;
     bool isNumericComparison = 2;
@@ -326,7 +326,7 @@ message SecurityModeAndLevel
     SecurityLevelEnum level = 2;
 }
 
-message PeerNodeParameters
+message PeerNodeParameters // TODO: Rename to GapAddress to align with Gap.hh. Or just use AddressWithType instead
 {
     Address address = 1;
     AddressType addressType = 2;
@@ -373,6 +373,21 @@ message OutOfBandData
     bytes confirmData = 4 [(bytes_size) = 16];
 }
 
+
+message BondListItem
+{
+    AddressWithType addressWithType = 1;
+    bytes friendlyName = 2 [(bytes_size) = 32];
+    bool isDevicePaired = 3;
+}
+
+message BondList
+{
+    repeated BondListItem items = 1 [(array_size) = 32];
+}
+
+
+
 // ==================================================
 // GAP CENTRAL SERVICE DEFINITION
 // ==================================================
@@ -395,6 +410,7 @@ service GapCentral
     // ==================================================
 
     // Allowed states: standby
+    // Results in GapCentralResponse.DeviceDiscovered
     rpc StartDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 1; }
 
     // Allowed states: standby
@@ -414,6 +430,7 @@ service GapCentral
     // Allowed states: connected
     // 1. If there is a pre-existing bond, then the connection will be encrypted.
     // 2. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
+    // Can result in GapCentralResponse.PairingSuccessfullyCompleted, GapCentralResponse.PairingFailed, GapCentral.NumberOfBondsChanged
     rpc PairAndBond(Nothing) returns (Nothing) { option (method_id) = 6; }
 
     // Allowed in link layer states: standby
@@ -427,23 +444,34 @@ service GapCentral
 
     // Allowed in link layer states: standby
     // If value is true only oldest bond will be removed, if value is false all bonds will be removed
-    rpc RemoveBonds(BoolValue) returns (Nothing) { option (method_id) = 11; }
+    // Results in GapCentralResponse.NumberOfBondsChanged
+    rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 11; } // 
+    rpc RemoveBondWithAddress(AddressWithType) returns (Nothing) { option (method_id) = 11; }
 
     // Allowed in link layer states: standby
     rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 12; }
 
     // Allowed in link layer states: standby, initiating, connected
+    // Resolves a resolvable private address to the identity address of a bonded device.
     // This will only succeed if Address is a private resolvable address, and if the device is bonded
+    // Results in GapCentralResponse.ResolvedPrivateAddress or GapCentralResponse.ResolvePrivateAddressFailed
     rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; }
 
     // Allowed in link layer states: standby, initiating, connected
-    // This will work with both public and random addresses
-    rpc IsDeviceBonded(PeerNodeParameters) returns (Nothing) { option (method_id) = 14; }
-
-    // Allowed in link layer states: standby, initiating, connected
+    // Results in GapCentralResponse.OutOfBandDataGenerated
     rpc GenerateOutOfBandData(Nothing) returns (Nothing) { option (method_id) = 15; }
     // Allowed in link layer states: standby, initiating, connected
     rpc SetOutOfBandData(OutOfBandData) returns (Nothing) { option (method_id) = 16; }
+
+    // Allowed in link layer states: standby, initiating, connected
+    // Results in GapCentralResponse.BondList
+    rpc GetBondList(Nothing) returns (Nothing) { option (method_id) = 6; }
+
+    // Allowed in link layer states: standby, initiating, connected
+    // This will work with both public and random addresses    
+    // Results in GapCentralResponse.DeviceIsBonded with value true or false
+    rpc IsDeviceBonded(PeerNodeParameters) returns (Nothing) { option (method_id) = 14; } // TODO: Why does this need initiatingTimeoutInMs?
+                                                                                          // TODO: Don't need this if we have BondList, but it's a useful method.
 
     // Allowed in link layer states: standby, initiating, connected
     // Results in GapCentralResponse.BondInformation
@@ -453,19 +481,21 @@ service GapCentral
 service GapCentralResponse {
     option(service_id) = 35;
 
-    rpc Done(Nothing) returns (Nothing) { option (method_id) = 1; }
+    // TODO: Do we need this? Called after every request. Isn't this already handled by MethodDone?
+    rpc Done(Nothing) returns (Nothing) { option (method_id) = 1; } // TODO: When is this used?
+
+
     rpc DeviceDiscovered(DiscoveredDevice) returns (Nothing) { option (method_id) = 2; }
     rpc StateChanged(State) returns (Nothing) { option (method_id) = 3; }
     rpc PairingSuccessfullyCompleted(Nothing) returns (Nothing) { option (method_id) =  4; }
     rpc PairingFailed(PairingStatus) returns (Nothing) { option (method_id) = 5; }
-    rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
     rpc DeviceStarted(Nothing) returns (Nothing) { option (method_id) = 7; }
     rpc ResolvedPrivateAddress(Address) returns (Nothing) { option (method_id) = 8; }
     rpc ResolvePrivateAddressFailed(Nothing) returns (Nothing) { option (method_id) = 9; }
-    rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 10; }
+    rpc DeviceIsBonded(BoolValue) returns (Nothing) { option (method_id) = 10; }
     rpc OutOfBandDataGenerated(OutOfBandData) returns (Nothing) { option (method_id) = 11; }
+    rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
     rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 12; }
-    rpc DisplayPasskey(Passkey) returns (Nothing) { option (method_id) = 12; }
+    rpc BondList(BondList) returns (Nothing) { option(method_id) = 13; }
+    rpc AuthenticationRequired(AuthenticationInfo) returns (Nothing) { option (method_id) = 12; }
 }
-
-
