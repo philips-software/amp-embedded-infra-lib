@@ -215,7 +215,7 @@ namespace services
             this->start = start;
             proxy.RequestSend([this, address]()
                 {
-                    auto size = std::min<std::size_t>(writingBuffer.size() - this->start, flash::WriteRequest::contentsSize);
+                    auto size = std::min<uint32_t>(writingBuffer.size() - this->start, flash::WriteRequest::contentsSize);
                     proxy.Write(address + this->start, infra::Head(infra::DiscardHead(writingBuffer, this->start), size));
                     OnWriteChunkSent(address, this->start + size);
                 });
