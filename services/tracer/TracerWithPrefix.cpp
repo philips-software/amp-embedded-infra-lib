@@ -9,8 +9,8 @@ namespace services
 
     void TracerWithPrefix::InsertHeader()
     {
-        Continue() << prefix;
-
         TracerToDelegate::InsertHeader();
+
+        Continue() << prefix;
     }
 }

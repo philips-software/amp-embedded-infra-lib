@@ -2,10 +2,6 @@
 #include "services/tracer/TracerWithPrefix.hpp"
 #include "gmock/gmock.h"
 
-class TracerWithPrefixTest
-    : public testing::Test
-{};
-
 TEST(TracerWithPrefixTest, prefix_is_inserted_before_message)
 {
     infra::StringOutputStream::WithStorage<64> stream;
