@@ -321,11 +321,11 @@ TEST_F(FlashSequentialProxyTest, ReadBuffer)
                 });
         }));
 
-    std::array<uint8_t, 4> buffer{ 5, 8, 2, 3 };
-    flashProxy.ReadBuffer(infra::MakeRange(buffer), 1234, [&]()
-        {
-            EXPECT_TRUE(infra::ContentsEqual(infra::MakeRange(buffer), infra::MakeRange(data)));
-        });
+    std::array<uint8_t, 4> buffer{};
+    infra::VerifyingFunction<void()> onDone;
+    flashProxy.ReadBuffer(infra::MakeRange(buffer), 1234, onDone);
+
+    EXPECT_TRUE(infra::ContentsEqual(infra::MakeRange(buffer), infra::MakeRange(data)));
 }
 
 TEST_F(FlashSequentialProxyTest, WriteBuffer)
