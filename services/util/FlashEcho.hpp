@@ -30,13 +30,14 @@ namespace services
         infra::AutoResetFunction<void()> onStopped;
     };
 
-    class FlashEchoProxy
+    class FlashEchoProxyBase
         : public hal::Flash
         , private flash::FlashResult
     {
-    public:
-        FlashEchoProxy(services::Echo& echo, infra::MemoryRange<const uint32_t> sectorSizes);
+    protected:
+        FlashEchoProxyBase(services::Echo& echo, infra::MemoryRange<const uint32_t> sectorSizes);
 
+    public:
         // Implementation of hal::Flash
         uint32_t NumberOfSectors() const override;
         uint32_t SizeOfSector(uint32_t sectorIndex) const override;
@@ -46,14 +47,20 @@ namespace services
         void ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone) override;
         void EraseSectors(uint32_t beginIndex, uint32_t endIndex, infra::Function<void()> onDone) override;
 
+    protected:
+        void ReadPartialBuffer(uint32_t address, uint32_t start);
+        void WritePartialBuffer(uint32_t address, uint32_t start);
+
     private:
         // Implementation of flash::FlashResult
         void ReadDone(infra::ConstByteRange contents) override;
         void WriteDone() override;
         void EraseSectorsDone() override;
 
-        void ReadPartialBuffer(uint32_t address, uint32_t start);
-        void WritePartialBuffer(uint32_t address, uint32_t start);
+        virtual void OnReadIncomplete(uint32_t address, uint32_t nextStart);
+        virtual void OnWriteIncomplete(uint32_t address, uint32_t nextStart);
+        virtual void OnReadChunkSent(uint32_t address, uint32_t nextStart);
+        virtual void OnWriteChunkSent(uint32_t address, uint32_t nextStart);
 
     private:
         infra::MemoryRange<const uint32_t> sectorSizes;
@@ -62,8 +69,31 @@ namespace services
         infra::ConstByteRange writingBuffer;
         infra::ByteRange readingBuffer;
         uint32_t bufferPosition = 0;
-        uint32_t start;
-        uint32_t endIndex;
+        uint32_t start = 0;
+        uint32_t address = 0;
+        uint32_t endIndex = 0;
+    };
+
+    class FlashEchoProxy
+        : public FlashEchoProxyBase
+    {
+    public:
+        FlashEchoProxy(services::Echo& echo, infra::MemoryRange<const uint32_t> sectorSizes);
+
+    private:
+        void OnReadChunkSent(uint32_t address, uint32_t nextStart) override;
+        void OnWriteChunkSent(uint32_t address, uint32_t nextStart) override;
+    };
+
+    class FlashEchoSequentialProxy
+        : public FlashEchoProxyBase
+    {
+    public:
+        FlashEchoSequentialProxy(services::Echo& echo, infra::MemoryRange<const uint32_t> sectorSizes);
+
+    private:
+        void OnReadIncomplete(uint32_t address, uint32_t bufferPosition) override;
+        void OnWriteIncomplete(uint32_t address, uint32_t bufferPosition) override;
     };
 
     class FlashEchoHomogeneousProxy
