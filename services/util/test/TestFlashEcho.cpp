@@ -237,8 +237,8 @@ TEST_F(FlashProxyTest, ReadBuffer_TwoChunks_BothRequestedBeforeDone)
     flashProxy.ReadBuffer(infra::MakeRange(buffer), 1234, onDone);
 
     // Both reads were requested before any ReadDone (pipelined)
-    ASSERT_TRUE(sendReadDone1);
-    ASSERT_TRUE(sendReadDone2);
+    EXPECT_TRUE(sendReadDone1);
+    EXPECT_TRUE(sendReadDone2);
 
     sendReadDone1();
     sendReadDone2();
@@ -281,8 +281,8 @@ TEST_F(FlashProxyTest, WriteBuffer_TwoChunks_BothRequestedBeforeDone)
     flashProxy.WriteBuffer(infra::MakeRange(writeData), 1234, onDone);
 
     // Both writes were requested before any WriteDone (pipelined)
-    ASSERT_TRUE(sendWriteDone1);
-    ASSERT_TRUE(sendWriteDone2);
+    EXPECT_TRUE(sendWriteDone1);
+    EXPECT_TRUE(sendWriteDone2);
 
     sendWriteDone1();
     sendWriteDone2();
@@ -384,8 +384,8 @@ TEST_F(FlashSequentialProxyTest, ReadBuffer_TwoChunks_SecondOnlyAfterFirstDone)
     flashProxy.ReadBuffer(infra::MakeRange(buffer), 1234, onDone);
 
     // Only the first read was requested; the second is waiting for the first ReadDone
-    ASSERT_TRUE(sendReadDone1);
-    ASSERT_FALSE(sendReadDone2);
+    EXPECT_TRUE(sendReadDone1);
+    EXPECT_FALSE(sendReadDone2);
 
     EXPECT_CALL(flash, Read(1234 + flash::WriteRequest::contentsSize, 4))
         .WillOnce([&](uint32_t address, uint32_t size)
@@ -434,8 +434,8 @@ TEST_F(FlashSequentialProxyTest, WriteBuffer_TwoChunks_SecondOnlyAfterFirstDone)
     flashProxy.WriteBuffer(infra::MakeRange(writeData), 1234, onDone);
 
     // Only the first write was requested; the second is waiting for the first WriteDone
-    ASSERT_TRUE(sendWriteDone1);
-    ASSERT_FALSE(sendWriteDone2);
+    EXPECT_TRUE(sendWriteDone1);
+    EXPECT_FALSE(sendWriteDone2);
 
     EXPECT_CALL(flash, Write(1234 + flash::WriteRequest::contentsSize, testing::_))
         .WillOnce([&](uint32_t address, infra::ConstByteRange contents)
@@ -453,7 +453,7 @@ TEST_F(FlashSequentialProxyTest, WriteBuffer_TwoChunks_SecondOnlyAfterFirstDone)
     sendWriteDone1();
 
     // Now the second write was requested after the first completed
-    ASSERT_TRUE(sendWriteDone2);
+    EXPECT_TRUE(sendWriteDone2);
 
     sendWriteDone2();
 }

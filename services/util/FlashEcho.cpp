@@ -159,7 +159,7 @@ namespace services
         if (bufferPosition == readingBuffer.size())
             onDone();
         else
-            OnReadIncomplete();
+            OnReadIncomplete(address, bufferPosition);
 
         MethodDone();
     }
@@ -171,7 +171,7 @@ namespace services
         if (bufferPosition == writingBuffer.size())
             onDone();
         else
-            OnWriteIncomplete();
+            OnWriteIncomplete(address, bufferPosition);
 
         MethodDone();
     }
@@ -181,6 +181,18 @@ namespace services
         onDone();
         MethodDone();
     }
+
+    void FlashEchoProxyBase::OnReadIncomplete(uint32_t, uint32_t)
+    {}
+
+    void FlashEchoProxyBase::OnWriteIncomplete(uint32_t, uint32_t)
+    {}
+
+    void FlashEchoProxyBase::OnReadChunkSent(uint32_t, uint32_t)
+    {}
+
+    void FlashEchoProxyBase::OnWriteChunkSent(uint32_t, uint32_t)
+    {}
 
     void FlashEchoProxyBase::ReadPartialBuffer(uint32_t address, uint32_t start)
     {
@@ -210,12 +222,6 @@ namespace services
         }
     }
 
-    void FlashEchoProxy::OnReadIncomplete()
-    {}
-
-    void FlashEchoProxy::OnWriteIncomplete()
-    {}
-
     void FlashEchoProxy::OnReadChunkSent(uint32_t address, uint32_t nextStart)
     {
         ReadPartialBuffer(address, nextStart);
@@ -226,12 +232,12 @@ namespace services
         WritePartialBuffer(address, nextStart);
     }
 
-    void FlashEchoSequentialProxy::OnReadIncomplete()
+    void FlashEchoSequentialProxy::OnReadIncomplete(uint32_t address, uint32_t bufferPosition)
     {
         ReadPartialBuffer(address, bufferPosition);
     }
 
-    void FlashEchoSequentialProxy::OnWriteIncomplete()
+    void FlashEchoSequentialProxy::OnWriteIncomplete(uint32_t address, uint32_t bufferPosition)
     {
         WritePartialBuffer(address, bufferPosition);
     }
