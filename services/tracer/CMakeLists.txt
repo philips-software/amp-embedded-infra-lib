@@ -31,6 +31,8 @@ target_sources(services.tracer PRIVATE
     TracerOnIoOutputInfrastructure.hpp
     TracerWithDateTime.cpp
     TracerWithDateTime.hpp
+    TracerWithPrefix.cpp
+    TracerWithPrefix.hpp
     TracerWithTime.cpp
     TracerWithTime.hpp
     TracerAdapterPrintf.cpp
