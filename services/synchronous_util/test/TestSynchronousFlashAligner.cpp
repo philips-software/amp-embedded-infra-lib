@@ -291,6 +291,7 @@ namespace
         }
     }
 
+#ifndef EMIL_MUTATION_TESTING
     class SynchronousFlashAlignerDeathTest
         : public testing::Test
     {
@@ -627,4 +628,5 @@ namespace
         // Without the fix, this would abort due to incorrect bufferedStart check
         boundaryAligner.WriteBuffer(infra::MakeRange(data), 0xFFF0);
     }
+#endif
 }
