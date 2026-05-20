@@ -30,12 +30,12 @@ namespace services
         infra::AutoResetFunction<void()> onStopped;
     };
 
-    class FlashEchoProxy
+    class FlashEchoProxyBase
         : public hal::Flash
         , private flash::FlashResult
     {
     public:
-        FlashEchoProxy(services::Echo& echo, infra::MemoryRange<const uint32_t> sectorSizes);
+        FlashEchoProxyBase(services::Echo& echo, infra::MemoryRange<const uint32_t> sectorSizes);
 
         // Implementation of hal::Flash
         uint32_t NumberOfSectors() const override;
@@ -46,24 +46,51 @@ namespace services
         void ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone) override;
         void EraseSectors(uint32_t beginIndex, uint32_t endIndex, infra::Function<void()> onDone) override;
 
+    protected:
+        virtual void ReadPartialBuffer(uint32_t address, uint32_t start);
+        virtual void WritePartialBuffer(uint32_t address, uint32_t start);
+
     private:
         // Implementation of flash::FlashResult
         void ReadDone(infra::ConstByteRange contents) override;
         void WriteDone() override;
         void EraseSectorsDone() override;
 
-        void ReadPartialBuffer(uint32_t address, uint32_t start);
-        void WritePartialBuffer(uint32_t address, uint32_t start);
+        virtual void OnReadIncomplete();
+        virtual void OnWriteIncomplete();
 
-    private:
+    protected:
         infra::MemoryRange<const uint32_t> sectorSizes;
         flash::FlashProxy proxy;
         infra::AutoResetFunction<void()> onDone;
         infra::ConstByteRange writingBuffer;
         infra::ByteRange readingBuffer;
         uint32_t bufferPosition = 0;
-        uint32_t start;
-        uint32_t endIndex;
+        uint32_t start = 0;
+        uint32_t address = 0;
+        uint32_t endIndex = 0;
+    };
+
+    class FlashEchoProxy
+        : public FlashEchoProxyBase
+    {
+    public:
+        using FlashEchoProxyBase::FlashEchoProxyBase;
+
+    protected:
+        void ReadPartialBuffer(uint32_t address, uint32_t start) override;
+        void WritePartialBuffer(uint32_t address, uint32_t start) override;
+    };
+
+    class FlashEchoSequentialProxy
+        : public FlashEchoProxyBase
+    {
+    public:
+        using FlashEchoProxyBase::FlashEchoProxyBase;
+
+    private:
+        void OnReadIncomplete() override;
+        void OnWriteIncomplete() override;
     };
 
     class FlashEchoHomogeneousProxy
