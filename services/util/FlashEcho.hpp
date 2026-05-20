@@ -56,8 +56,8 @@ namespace services
         void WriteDone() override;
         void EraseSectorsDone() override;
 
-        virtual void OnReadIncomplete(uint32_t address, uint32_t bufferPosition);
-        virtual void OnWriteIncomplete(uint32_t address, uint32_t bufferPosition);
+        virtual void OnReadIncomplete(uint32_t address, uint32_t nextStart);
+        virtual void OnWriteIncomplete(uint32_t address, uint32_t nextStart);
         virtual void OnReadChunkSent(uint32_t address, uint32_t nextStart);
         virtual void OnWriteChunkSent(uint32_t address, uint32_t nextStart);
 

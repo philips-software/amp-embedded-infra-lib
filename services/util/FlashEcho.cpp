@@ -182,16 +182,16 @@ namespace services
         MethodDone();
     }
 
-    void FlashEchoProxyBase::OnReadIncomplete(uint32_t, uint32_t)
+    void FlashEchoProxyBase::OnReadIncomplete([[maybe_unused]] uint32_t address, [[maybe_unused]] uint32_t bufferPosition)
     {}
 
-    void FlashEchoProxyBase::OnWriteIncomplete(uint32_t, uint32_t)
+    void FlashEchoProxyBase::OnWriteIncomplete([[maybe_unused]] uint32_t address, [[maybe_unused]] uint32_t bufferPosition)
     {}
 
-    void FlashEchoProxyBase::OnReadChunkSent(uint32_t, uint32_t)
+    void FlashEchoProxyBase::OnReadChunkSent([[maybe_unused]] uint32_t address, [[maybe_unused]] uint32_t nextStart)
     {}
 
-    void FlashEchoProxyBase::OnWriteChunkSent(uint32_t, uint32_t)
+    void FlashEchoProxyBase::OnWriteChunkSent([[maybe_unused]] uint32_t address, [[maybe_unused]] uint32_t nextStart)
     {}
 
     void FlashEchoProxyBase::ReadPartialBuffer(uint32_t address, uint32_t start)
@@ -232,14 +232,14 @@ namespace services
         WritePartialBuffer(address, nextStart);
     }
 
-    void FlashEchoSequentialProxy::OnReadIncomplete(uint32_t address, uint32_t bufferPosition)
+    void FlashEchoSequentialProxy::OnReadIncomplete(uint32_t address, uint32_t nextStart)
     {
-        ReadPartialBuffer(address, bufferPosition);
+        ReadPartialBuffer(address, nextStart);
     }
 
-    void FlashEchoSequentialProxy::OnWriteIncomplete(uint32_t address, uint32_t bufferPosition)
+    void FlashEchoSequentialProxy::OnWriteIncomplete(uint32_t address, uint32_t nextStart)
     {
-        WritePartialBuffer(address, bufferPosition);
+        WritePartialBuffer(address, nextStart);
     }
 
     FlashEchoHomogeneousProxy::FlashEchoHomogeneousProxy(services::Echo& echo, uint32_t numberOfSectors, uint32_t sizeOfEachSector)
