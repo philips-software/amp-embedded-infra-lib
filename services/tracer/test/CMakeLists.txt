@@ -18,6 +18,7 @@ target_sources(services.tracer_test PRIVATE
     TestTracer.cpp
     TestTracerAdapterPrintf.cpp
     TestTracerWithDateTime.cpp
+    TestTracerWithPrefix.cpp
     TestTracerWithTime.cpp
     TestTracingReset.cpp
 )
