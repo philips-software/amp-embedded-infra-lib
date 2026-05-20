@@ -125,6 +125,7 @@ namespace services
         bufferPosition = 0;
         writingBuffer = buffer;
         this->onDone = onDone;
+        this->address = address;
 
         WritePartialBuffer(address, 0);
     }
@@ -132,6 +133,7 @@ namespace services
     void FlashEchoProxyBase::ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
         bufferPosition = 0;
+        this->address = address;
         readingBuffer = buffer;
         this->onDone = onDone;
 
@@ -189,7 +191,7 @@ namespace services
                 {
                     auto size = std::min<uint32_t>(readingBuffer.size() - this->start, flash::WriteRequest::contentsSize);
                     proxy.Read(address + this->start, size);
-                    ReadPartialBuffer(address, this->start + size);
+                    OnReadChunkSent(address, this->start + size);
                 });
         }
     }
@@ -203,77 +205,25 @@ namespace services
                 {
                     auto size = std::min<std::size_t>(writingBuffer.size() - this->start, flash::WriteRequest::contentsSize);
                     proxy.Write(address + this->start, infra::Head(infra::DiscardHead(writingBuffer, this->start), size));
-                    WritePartialBuffer(address, this->start + size);
+                    OnWriteChunkSent(address, this->start + size);
                 });
         }
     }
 
-    void FlashEchoProxyBase::OnReadIncomplete()
+    void FlashEchoProxy::OnReadIncomplete()
     {}
 
-    void FlashEchoProxyBase::OnWriteIncomplete()
+    void FlashEchoProxy::OnWriteIncomplete()
     {}
 
-    void FlashEchoProxyBase::ReadPartialBuffer(uint32_t address, uint32_t start)
+    void FlashEchoProxy::OnReadChunkSent(uint32_t address, uint32_t nextStart)
     {
-        if (readingBuffer.size() > start)
-        {
-            this->start = start;
-            proxy.RequestSend([this, address]()
-                {
-                    auto size = std::min<uint32_t>(readingBuffer.size() - this->start, flash::WriteRequest::contentsSize);
-                    proxy.Read(address + this->start, size);
-                    ReadPartialBuffer(address, this->start + size);
-                });
-        }
+        ReadPartialBuffer(address, nextStart);
     }
 
-    void FlashEchoProxyBase::WritePartialBuffer(uint32_t address, uint32_t start)
+    void FlashEchoProxy::OnWriteChunkSent(uint32_t address, uint32_t nextStart)
     {
-        if (writingBuffer.size() > start)
-        {
-            this->start = start;
-            proxy.RequestSend([this, address]()
-                {
-                    auto size = std::min<std::size_t>(writingBuffer.size() - this->start, flash::WriteRequest::contentsSize);
-                    proxy.Write(address + this->start, infra::Head(infra::DiscardHead(writingBuffer, this->start), size));
-                    WritePartialBuffer(address, this->start + size);
-                });
-        }
-    }
-
-    void FlashEchoProxyBase::OnReadIncomplete()
-    {}
-
-    void FlashEchoProxyBase::OnWriteIncomplete()
-    {}
-
-    void FlashEchoProxy::ReadPartialBuffer(uint32_t address, uint32_t start)
-    {
-        if (readingBuffer.size() > start)
-        {
-            this->start = start;
-            proxy.RequestSend([this, address]()
-                {
-                    auto size = std::min<uint32_t>(readingBuffer.size() - this->start, flash::WriteRequest::contentsSize);
-                    proxy.Read(address + this->start, size);
-                    ReadPartialBuffer(address, this->start + size);
-                });
-        }
-    }
-
-    void FlashEchoProxy::WritePartialBuffer(uint32_t address, uint32_t start)
-    {
-        if (writingBuffer.size() > start)
-        {
-            this->start = start;
-            proxy.RequestSend([this, address]()
-                {
-                    auto size = std::min<std::size_t>(writingBuffer.size() - this->start, flash::WriteRequest::contentsSize);
-                    proxy.Write(address + this->start, infra::Head(infra::DiscardHead(writingBuffer, this->start), size));
-                    WritePartialBuffer(address, this->start + size);
-                });
-        }
+        WritePartialBuffer(address, nextStart);
     }
 
     void FlashEchoSequentialProxy::OnReadIncomplete()

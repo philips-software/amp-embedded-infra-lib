@@ -47,8 +47,8 @@ namespace services
         void EraseSectors(uint32_t beginIndex, uint32_t endIndex, infra::Function<void()> onDone) override;
 
     protected:
-        virtual void ReadPartialBuffer(uint32_t address, uint32_t start);
-        virtual void WritePartialBuffer(uint32_t address, uint32_t start);
+        void ReadPartialBuffer(uint32_t address, uint32_t start);
+        void WritePartialBuffer(uint32_t address, uint32_t start);
 
     private:
         // Implementation of flash::FlashResult
@@ -56,8 +56,10 @@ namespace services
         void WriteDone() override;
         void EraseSectorsDone() override;
 
-        virtual void OnReadIncomplete();
-        virtual void OnWriteIncomplete();
+        virtual void OnReadIncomplete() = 0;
+        virtual void OnWriteIncomplete() = 0;
+        virtual void OnReadChunkSent(uint32_t address, uint32_t nextStart) = 0;
+        virtual void OnWriteChunkSent(uint32_t address, uint32_t nextStart) = 0;
 
     protected:
         infra::MemoryRange<const uint32_t> sectorSizes;
@@ -77,9 +79,11 @@ namespace services
     public:
         using FlashEchoProxyBase::FlashEchoProxyBase;
 
-    protected:
-        void ReadPartialBuffer(uint32_t address, uint32_t start) override;
-        void WritePartialBuffer(uint32_t address, uint32_t start) override;
+    private:
+        void OnReadIncomplete() override;
+        void OnWriteIncomplete() override;
+        void OnReadChunkSent(uint32_t address, uint32_t nextStart) override;
+        void OnWriteChunkSent(uint32_t address, uint32_t nextStart) override;
     };
 
     class FlashEchoSequentialProxy
@@ -91,6 +95,8 @@ namespace services
     private:
         void OnReadIncomplete() override;
         void OnWriteIncomplete() override;
+        void OnReadChunkSent(uint32_t address, uint32_t nextStart) override {}
+        void OnWriteChunkSent(uint32_t address, uint32_t nextStart) override {}
     };
 
     class FlashEchoHomogeneousProxy
