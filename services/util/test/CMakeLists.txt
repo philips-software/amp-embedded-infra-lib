@@ -53,6 +53,8 @@ target_sources(services.util_test PRIVATE
     TestSleepOnInactivityFlashDecorator.cpp
     TestSpiMasterWithChipSelect.cpp
     TestSpiMultipleAccess.cpp
+    TestSmiPhy.cpp
+    TestSmiPhyLinkMonitor.cpp
     TestTerminal.cpp
     TestTimeWithLocalization.cpp
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestWritableConfiguration.cpp>
