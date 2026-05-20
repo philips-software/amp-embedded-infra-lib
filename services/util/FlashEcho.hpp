@@ -96,11 +96,12 @@ namespace services
         void OnWriteIncomplete(uint32_t address, uint32_t bufferPosition) override;
     };
 
-    class FlashEchoHomogeneousProxy
-        : public FlashEchoProxy
+    template<class T>
+    class FlashEchoHomogeneousProxyBase
+        : public T
     {
     public:
-        FlashEchoHomogeneousProxy(services::Echo& echo, uint32_t numberOfSectors, uint32_t sizeOfEachSector);
+        FlashEchoHomogeneousProxyBase(services::Echo& echo, uint32_t numberOfSectors, uint32_t sizeOfEachSector);
 
         uint32_t NumberOfSectors() const override;
         uint32_t SizeOfSector(uint32_t sectorIndex) const override;
@@ -111,6 +112,9 @@ namespace services
         uint32_t numberOfSectors;
         uint32_t sizeOfEachSector;
     };
+
+    using FlashEchoHomogeneousProxy = FlashEchoHomogeneousProxyBase<FlashEchoProxy>;
+    using FlashEchoHomogeneousSequentialProxy = FlashEchoHomogeneousProxyBase<FlashEchoSequentialProxy>;
 }
 
 #endif
