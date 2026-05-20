@@ -16,7 +16,7 @@ namespace services
     struct CertificateAndPrivateKey
     {
         infra::BoundedVector<uint8_t>::WithMaxSize<512> certificate;
-        std::array<uint8_t, 121> privateKey;
+        EcSecP256r1PrivateKey::DerEncoded privateKey;
     };
 
     CertificateAndPrivateKey GenerateRootCertificate(hal::SynchronousRandomDataGenerator& randomDataGenerator);

@@ -28,10 +28,12 @@ TEST_F(ReallyAssertTest, assert_passed_no_abort)
     really_assert(true);
 }
 
+#ifndef EMIL_MUTATION_TESTING
 TEST_F(ReallyAssertTest, assert_failed_abort)
 {
     EXPECT_DEATH(really_assert(false), "");
 }
+#endif
 
 TEST_F(ReallyAssertTest, assert_failed_without_handler_does_nothing)
 {
@@ -52,10 +54,12 @@ TEST_F(ReallyAssertTest, assert_failed_with_handler_calls_handler)
     infra::HandleAssertionFailure("condition", "file", 42);
 }
 
+#ifndef EMIL_MUTATION_TESTING
 TEST_F(ReallyAssertTest, assert_failed_with_message_aborts)
 {
     EXPECT_DEATH(really_assert_with_msg(false, "%s", "foo"), "");
 }
+#endif
 
 TEST_F(ReallyAssertTest, assert_passed_with_message_aborts)
 {

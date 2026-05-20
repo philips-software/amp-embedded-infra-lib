@@ -120,14 +120,14 @@ public:
     services::CertificateAndPrivateKey deviceCertificateMaterial{ services::GenerateDeviceCertificate(rootCaPrivateKey, randomDataGenerator) };
     services::EcSecP256r1PrivateKey privateKeyLeft{ randomDataGenerator };
     std::string privateKeyLeftPem{ infra::AsStdString(privateKeyLeft.Pem()) };
-    std::array<uint8_t, 121> privateKeyLeftDer{ privateKeyLeft.Der() };
+    services::EcSecP256r1PrivateKey::DerEncoded privateKeyLeftDer{ privateKeyLeft.Der() };
     services::EcSecP256r1Certificate certificateLeft{ privateKeyLeft, "CN=left", rootCaPrivateKey, "CN=Root", randomDataGenerator };
     std::string certificateLeftPem{ infra::AsStdString(certificateLeft.Pem()) };
     infra::BoundedVector<uint8_t>::WithMaxSize<512> certificateLeftDer{ certificateLeft.Der() };
 
     services::EcSecP256r1PrivateKey privateKeyRight{ randomDataGenerator };
     std::string privateKeyRightPem{ infra::AsStdString(privateKeyRight.Pem()) };
-    std::array<uint8_t, 121> privateKeyRightDer{ privateKeyRight.Der() };
+    services::EcSecP256r1PrivateKey::DerEncoded privateKeyRightDer{ privateKeyRight.Der() };
     services::EcSecP256r1Certificate certificateRight{ privateKeyRight, "CN=right", rootCaPrivateKey, "CN=Root", randomDataGenerator };
     std::string certificateRightPem{ infra::AsStdString(certificateRight.Pem()) };
     infra::BoundedVector<uint8_t>::WithMaxSize<512> certificateRightDer{ certificateRight.Der() };
