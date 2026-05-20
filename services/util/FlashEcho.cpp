@@ -88,6 +88,14 @@ namespace services
         , proxy(echo)
     {}
 
+    FlashEchoProxy::FlashEchoProxy(services::Echo& echo, infra::MemoryRange<const uint32_t> sectorSizes)
+        : FlashEchoProxyBase(echo, sectorSizes)
+    {}
+
+    FlashEchoSequentialProxy::FlashEchoSequentialProxy(services::Echo& echo, infra::MemoryRange<const uint32_t> sectorSizes)
+        : FlashEchoProxyBase(echo, sectorSizes)
+    {}
+
     uint32_t FlashEchoProxyBase::NumberOfSectors() const
     {
         return sectorSizes.size();

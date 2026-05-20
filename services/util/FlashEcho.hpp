@@ -34,9 +34,10 @@ namespace services
         : public hal::Flash
         , private flash::FlashResult
     {
-    public:
+    protected:
         FlashEchoProxyBase(services::Echo& echo, infra::MemoryRange<const uint32_t> sectorSizes);
 
+    public:
         // Implementation of hal::Flash
         uint32_t NumberOfSectors() const override;
         uint32_t SizeOfSector(uint32_t sectorIndex) const override;
@@ -77,7 +78,7 @@ namespace services
         : public FlashEchoProxyBase
     {
     public:
-        using FlashEchoProxyBase::FlashEchoProxyBase;
+        FlashEchoProxy(services::Echo& echo, infra::MemoryRange<const uint32_t> sectorSizes);
 
     private:
         void OnReadChunkSent(uint32_t address, uint32_t nextStart) override;
@@ -88,7 +89,7 @@ namespace services
         : public FlashEchoProxyBase
     {
     public:
-        using FlashEchoProxyBase::FlashEchoProxyBase;
+        FlashEchoSequentialProxy(services::Echo& echo, infra::MemoryRange<const uint32_t> sectorSizes);
 
     private:
         void OnReadIncomplete(uint32_t address, uint32_t bufferPosition) override;
