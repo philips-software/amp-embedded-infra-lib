@@ -25,7 +25,6 @@ namespace services
         initialized = true;
 
         EchoOnStreams::Initialized();
-        
         if (requestedSize != std::nullopt)
             RequestSendStream(*std::exchange(requestedSize, std::nullopt));
     }
