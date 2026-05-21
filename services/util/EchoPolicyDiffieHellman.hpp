@@ -78,7 +78,6 @@ namespace services
         infra::Function<void(ServiceProxy& proxy)> onRequest;
 
         bool initializingKeys = true;
-        bool busy = false;
         std::optional<std::pair<SesameSecured::KeyType, SesameSecured::IvType>> nextKeyPair;
         infra::IntrusiveList<ServiceProxy> waitingProxies;
 

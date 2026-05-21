@@ -79,7 +79,7 @@ namespace services
             sendRequesters.erase(serviceProxy);
         else
         {
-            assert(&serviceProxy == sendingProxy);
+            really_assert(&serviceProxy == sendingProxy);
             sendingProxy = nullptr;
             skipNextStream = true;
         }
