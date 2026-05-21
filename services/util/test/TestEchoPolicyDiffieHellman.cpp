@@ -171,6 +171,14 @@ TEST_F(EchoPolicyDiffieHellmanTest, send_and_receive)
 
 TEST_F(EchoPolicyDiffieHellmanTest, intialize_while_initializing_starts_over)
 {
+    lowerLeftRequest = false;
+    lowerRightRequest = false;
+    EXPECT_CALL(lowerLeft, ResetReading());
+    EXPECT_CALL(lowerLeft, Reset());
+    echoOnSesameLeft.Reset();
+    EXPECT_CALL(lowerRight, ResetReading());
+    EXPECT_CALL(lowerRight, Reset());
+    echoOnSesameRight.Reset();
     Initialized(); // second initialization
 
     EXPECT_CALL(echoPolicyLeft, KeyExchangeSuccessful());
