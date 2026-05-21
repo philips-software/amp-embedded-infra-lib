@@ -1,5 +1,6 @@
 #include "protobuf/echo/Echo.hpp"
 #include "infra/util/ReallyAssert.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -50,6 +51,7 @@ namespace services
 
     void ServiceProxy::CancelRequestSend()
     {
+        services::GlobalTracer().Trace() << "==== ServiceProxy::CancelRequestSend()";
         onGranted = nullptr;
         currentRequestedSize = 0;
         echo.CancelRequestSend(*this);

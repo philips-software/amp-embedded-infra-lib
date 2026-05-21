@@ -1,6 +1,7 @@
 #include "services/util/SesameWindowed.hpp"
 #include "infra/stream/BoundedDequeOutputStream.hpp"
 #include <algorithm>
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -80,6 +81,8 @@ namespace services
 
     void SesameWindowed::Reset()
     {
+        services::GlobalTracer().Trace() << "==== SesameWindowed::Reset()";
+
         SesameEncodedObserver::Subject().Reset();
         assert(currentReceiveMessageReader == std::nullopt);
         assert(!readerAccess.Referenced());

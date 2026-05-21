@@ -1,4 +1,5 @@
 #include "services/util/SesameCobs.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -64,6 +65,8 @@ namespace services
 
     void SesameCobs::Reset()
     {
+        services::GlobalTracer().Trace() << "==== SesameCobs::Reset()";
+
         if (!sendStream.Allocatable())
             sendStream.OnAllocatable([this]()
                 {
@@ -92,6 +95,8 @@ namespace services
 
     void SesameCobs::Stop(const infra::Function<void()>& onDone)
     {
+        services::GlobalTracer().Trace() << "==== SesameCobs::Stop()";
+
         sendStream.OnAllocatable([]() {});
 
         if (!sendingUserData && !resetting)

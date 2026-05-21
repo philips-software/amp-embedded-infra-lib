@@ -1,5 +1,6 @@
 #include "services/util/SesameSecured.hpp"
 #include <algorithm>
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -75,6 +76,8 @@ namespace services
 
     void SesameSecured::Initialized()
     {
+        services::GlobalTracer().Trace() << "==== SesameSecured::Initialized()";
+
         integrityCheckFailed = false;
         integrityCheckFailedTimer.Cancel();
         SetSendKey(initialSendKey, initialSendIv);

@@ -1,4 +1,5 @@
 #include "services/util/EchoOnSesame.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -9,6 +10,7 @@ namespace services
 
     void EchoOnSesame::Reset()
     {
+        services::GlobalTracer().Trace() << "==== EchoOnSesame::Reset()";
         EchoOnStreams::Reset();
         initialized = false;
         requestedSize.reset();
@@ -17,14 +19,16 @@ namespace services
 
     void EchoOnSesame::Initialized()
     {
+        services::GlobalTracer().Trace() << "==== EchoOnSesame::Initialized()";
+
+        EchoOnStreams::Initialized();
+
         infra::Subject<EchoInitializationObserver>::NotifyObservers([](auto& observer)
             {
                 observer.Initialized();
             });
 
         initialized = true;
-
-        EchoOnStreams::Initialized();
 
         if (requestedSize != std::nullopt)
             RequestSendStream(*std::exchange(requestedSize, std::nullopt));

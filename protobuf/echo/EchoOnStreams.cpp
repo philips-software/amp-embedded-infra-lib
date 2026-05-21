@@ -16,6 +16,7 @@
 #include <optional>
 #include <utility>
 #include <variant>
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -33,6 +34,7 @@ namespace services
 
     void EchoOnStreams::Reset()
     {
+        services::GlobalTracer().Trace() << "==== EchoOnStreams::Reset()";
         ResetReading();
 
         while (!sendRequesters.empty())

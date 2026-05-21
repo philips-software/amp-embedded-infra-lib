@@ -1,4 +1,5 @@
 #include "services/util/EchoPolicyDiffieHellman.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -38,6 +39,8 @@ namespace services
 
     void EchoPolicyDiffieHellman::Initialized()
     {
+        services::GlobalTracer().Trace() << "==== EchoPolicyDiffieHellman::Initialized()";
+
         if (busy)
             DiffieHellmanKeyEstablishmentProxy::CancelRequestSend();
 
@@ -50,6 +53,8 @@ namespace services
         busy = true;
         DiffieHellmanKeyEstablishmentProxy::RequestSend([this]()
             {
+                services::GlobalTracer().Trace() << "==== EchoPolicyDiffieHellman::Initialized() RequestSend granted";
+
                 DiffieHellmanKeyEstablishmentProxy::PresentCertificate(dsaCertificate);
 
                 DiffieHellmanKeyEstablishmentProxy::RequestSend([this]()
