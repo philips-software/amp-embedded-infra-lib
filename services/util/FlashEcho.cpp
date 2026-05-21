@@ -250,29 +250,37 @@ namespace services
         WritePartialBuffer(address, nextStart);
     }
 
-    FlashEchoHomogeneousProxy::FlashEchoHomogeneousProxy(services::Echo& echo, uint32_t numberOfSectors, uint32_t sizeOfEachSector)
-        : FlashEchoProxy(echo, infra::MemoryRange<const uint32_t>{})
+    template<class T>
+    FlashEchoHomogeneousProxyBase<T>::FlashEchoHomogeneousProxyBase(services::Echo& echo, uint32_t numberOfSectors, uint32_t sizeOfEachSector)
+        : T(echo, infra::MemoryRange<const uint32_t>{})
         , numberOfSectors(numberOfSectors)
         , sizeOfEachSector(sizeOfEachSector)
     {}
 
-    uint32_t FlashEchoHomogeneousProxy::NumberOfSectors() const
+    template<class T>
+    uint32_t FlashEchoHomogeneousProxyBase<T>::NumberOfSectors() const
     {
         return numberOfSectors;
     }
 
-    uint32_t FlashEchoHomogeneousProxy::SizeOfSector(uint32_t sectorIndex) const
+    template<class T>
+    uint32_t FlashEchoHomogeneousProxyBase<T>::SizeOfSector(uint32_t sectorIndex) const
     {
         return sizeOfEachSector;
     }
 
-    uint32_t FlashEchoHomogeneousProxy::SectorOfAddress(uint32_t address) const
+    template<class T>
+    uint32_t FlashEchoHomogeneousProxyBase<T>::SectorOfAddress(uint32_t address) const
     {
         return address / sizeOfEachSector;
     }
 
-    uint32_t FlashEchoHomogeneousProxy::AddressOfSector(uint32_t sectorIndex) const
+    template<class T>
+    uint32_t FlashEchoHomogeneousProxyBase<T>::AddressOfSector(uint32_t sectorIndex) const
     {
         return sectorIndex * sizeOfEachSector;
     }
+
+    template class FlashEchoHomogeneousProxyBase<FlashEchoProxy>;
+    template class FlashEchoHomogeneousProxyBase<FlashEchoSequentialProxy>;
 }
