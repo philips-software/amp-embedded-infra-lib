@@ -39,6 +39,7 @@ namespace services
     void EchoPolicyDiffieHellman::Reset()
     {
         busy = false;
+        initializingKeys = true;
     }
 
     void EchoPolicyDiffieHellman::Initialized()
