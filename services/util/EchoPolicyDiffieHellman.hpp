@@ -53,6 +53,7 @@ namespace services
 
     private:
         // Implementation of SesameObserver
+        void Reset() override;
         void Initialized() override;
 
         // Implementation of EchoPolicy
@@ -78,6 +79,7 @@ namespace services
         infra::Function<void(ServiceProxy& proxy)> onRequest;
 
         bool initializingKeys = true;
+        bool busy = false;
         std::optional<std::pair<SesameSecured::KeyType, SesameSecured::IvType>> nextKeyPair;
         infra::IntrusiveList<ServiceProxy> waitingProxies;
 

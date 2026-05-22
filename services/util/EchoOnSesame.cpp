@@ -12,6 +12,12 @@ namespace services
         EchoOnStreams::Reset();
         initialized = false;
         requestedSize.reset();
+
+        infra::Subject<EchoInitializationObserver>::NotifyObservers([](auto& observer)
+            {
+                observer.Reset();
+            });
+
         SesameObserver::Subject().Reset();
     }
 

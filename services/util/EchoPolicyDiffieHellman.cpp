@@ -36,14 +36,23 @@ namespace services
         echo.SetPolicy(*this);
     }
 
+    void EchoPolicyDiffieHellman::Reset()
+    {
+        busy = false;
+    }
+
     void EchoPolicyDiffieHellman::Initialized()
     {
+        if (busy)
+            DiffieHellmanKeyEstablishmentProxy::CancelRequestSend();
+
         initializingKeys = true;
         nextKeyPair.reset();
         verifier.reset();
 
         keyExchange.emplace(keyExchangeCreator, randomDataGenerator);
 
+        busy = true;
         DiffieHellmanKeyEstablishmentProxy::RequestSend([this]()
             {
                 DiffieHellmanKeyEstablishmentProxy::PresentCertificate(dsaCertificate);
@@ -54,6 +63,7 @@ namespace services
                         auto [r, s] = signer.Sign(encodedDhPublicKey);
 
                         DiffieHellmanKeyEstablishmentProxy::Exchange(encodedDhPublicKey, r, s);
+                        busy = false;
                     });
             });
     }

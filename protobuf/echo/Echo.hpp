@@ -85,6 +85,7 @@ namespace services
     public:
         using infra::Observer<EchoInitializationObserver, EchoInitialization>::Observer;
 
+        virtual void Reset() = 0;
         virtual void Initialized() = 0;
     };
 
