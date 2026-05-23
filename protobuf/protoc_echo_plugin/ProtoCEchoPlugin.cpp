@@ -1428,130 +1428,6 @@ SetSerializer(serializer);
         return result.str();
     }
 
-    TracingServiceGenerator::TracingServiceGenerator(const std::shared_ptr<const EchoService>& service, Entities& formatter)
-        : service(service)
-    {
-        auto serviceClass = std::make_shared<Class>(service->name + "Tracer");
-        serviceClass->Parent("public services::ServiceTracer");
-        serviceFormatter = serviceClass.get();
-        formatter.Add(serviceClass);
-
-        GenerateServiceConstructors();
-        GenerateServiceFunctions();
-        GenerateFieldConstants();
-        GenerateDataMembers();
-    }
-
-    void TracingServiceGenerator::GenerateServiceConstructors()
-    {
-        auto constructors = std::make_shared<Access>("public");
-        auto constructor = std::make_shared<Constructor>(service->name + "Tracer", "tracingEcho.AddServiceTracer(*this);\n", 0);
-        constructor->Parameter("services::TracingEchoOnStreams& tracingEcho");
-        constructor->Initializer("services::ServiceTracer(serviceId)");
-        constructor->Initializer("tracingEcho(tracingEcho)");
-        constructors->Add(constructor);
-
-        constructors->Add(std::make_shared<Constructor>("~" + service->name + "Tracer", "tracingEcho.RemoveServiceTracer(*this);\n", 0));
-
-        serviceFormatter->Add(constructors);
-    }
-
-    void TracingServiceGenerator::GenerateServiceFunctions()
-    {
-        auto functions = std::make_shared<Access>("public");
-
-        auto handle = std::make_shared<Function>("TraceMethod", TraceMethodBody(), "void", Function::fOverride | Function::fConst);
-        handle->Parameter("uint32_t methodId");
-        handle->Parameter("infra::ProtoLengthDelimited& contents");
-        handle->Parameter("services::Tracer& tracer");
-        functions->Add(handle);
-
-        serviceFormatter->Add(functions);
-    }
-
-    void TracingServiceGenerator::GenerateFieldConstants()
-    {
-        auto fields = std::make_shared<Access>("public");
-
-        fields->Add(std::make_shared<DataMember>("serviceId", "static const uint32_t", absl::StrCat(service->serviceId)));
-
-        for (auto& method : service->methods)
-            fields->Add(std::make_shared<DataMember>("id" + method.name, "static const uint32_t", absl::StrCat(method.methodId)));
-
-        serviceFormatter->Add(fields);
-    }
-
-    void TracingServiceGenerator::GenerateDataMembers()
-    {
-        auto dataMembers = std::make_shared<Access>("public");
-
-        dataMembers->Add(std::make_shared<DataMember>("tracingEcho", "services::TracingEchoOnStreams&"));
-
-        serviceFormatter->Add(dataMembers);
-    }
-
-    std::string TracingServiceGenerator::TraceMethodBody() const
-    {
-        std::ostringstream result;
-        {
-            google::protobuf::io::OstreamOutputStream stream(&result);
-            google::protobuf::io::Printer printer(&stream, '$', nullptr);
-
-            if (!service->methods.empty())
-            {
-                printer.Print(R"(infra::ProtoParser parser(contents.Parser());
-
-switch (methodId)
-{
-)");
-
-                for (auto& method : service->methods)
-                {
-                    printer.Print(R"(    case id$name$:
-    {
-)",
-                        "name", method.name);
-                    if (method.parameter)
-                        printer.Print("        $argument$ argument(parser);\n", "argument", method.parameter->qualifiedName);
-                    printer.Print(R"(        if (!parser.FormatFailed())
-        {
-            tracer.Continue() << "$servicename$.$name$(";
-)",
-                        "servicename", service->name, "name", method.name);
-
-                    if (method.parameter)
-                        for (auto& field : method.parameter->fields)
-                        {
-                            if (&field != &method.parameter->fields.front())
-                                printer.Print(R"(            tracer.Continue() << ", ";
-)");
-                            printer.Print("            services::PrintField(argument.$field$, tracer);\n", "field", field->name);
-                        }
-
-                    printer.Print(R"_(            tracer.Continue() << ")";
-        }
-        else
-            tracer.Continue() << "$servicename$.$name$(parse error)";
-        break;
-    }
-)_",
-                        "servicename", service->name, "name", method.name);
-                }
-
-                printer.Print(R"(    default:
-        tracer.Continue() << "$servicename$ method " << methodId << " not found";
-)",
-                    "servicename", service->name);
-
-                printer.Print("}\n");
-            }
-            else
-                printer.Print(R"(tracer.Continue() << "$servicename$ method " << methodId << " not found";\ncontents.SkipEverything();\n)", "servicename", service->name);
-        }
-
-        return result.str();
-    }
-
     NullTracingServiceGenerator::NullTracingServiceGenerator(const std::shared_ptr<const EchoService>& service, Entities& formatter)
         : service(service)
     {
@@ -1584,7 +1460,7 @@ switch (methodId)
     {
         auto functions = std::make_shared<Access>("public");
 
-        auto handle = std::make_shared<Function>("TraceMethod", "contents.SkipEverything();", "void", Function::fOverride | Function::fConst);
+        auto handle = std::make_shared<Function>("TraceMethod", "contents.SkipEverything();\n", "void", Function::fOverride | Function::fConst);
         handle->Parameter("uint32_t methodId");
         handle->Parameter("infra::ProtoLengthDelimited& contents");
         handle->Parameter("services::Tracer& tracer");
@@ -1609,6 +1485,142 @@ switch (methodId)
         dataMembers->Add(std::make_shared<DataMember>("tracingEcho", "services::TracingEchoOnStreams&"));
 
         serviceFormatter->Add(dataMembers);
+    }
+
+    NameTracingServiceGenerator::NameTracingServiceGenerator(const std::shared_ptr<const EchoService>& service, Entities& formatter, const std::string& namePrefix)
+        : service(service)
+    {
+        auto serviceClass = std::make_shared<Class>(service->name + namePrefix + "Tracer");
+        serviceClass->Parent("public services::ServiceTracer");
+        serviceFormatter = serviceClass.get();
+        formatter.Add(serviceClass);
+
+        GenerateServiceConstructors(namePrefix);
+        GenerateServiceFunctions();
+        GenerateFieldConstants();
+        GenerateDataMembers();
+    }
+
+    void NameTracingServiceGenerator::TraceParameters(const EchoMethod& method, google::protobuf::io::Printer& printer) const
+    {}
+
+    void NameTracingServiceGenerator::GenerateServiceConstructors(const std::string& namePrefix)
+    {
+        auto constructors = std::make_shared<Access>("public");
+        auto constructor = std::make_shared<Constructor>(service->name + namePrefix + "Tracer", "tracingEcho.AddServiceTracer(*this);\n", 0);
+        constructor->Parameter("services::TracingEchoOnStreams& tracingEcho");
+        constructor->Initializer("services::ServiceTracer(serviceId)");
+        constructor->Initializer("tracingEcho(tracingEcho)");
+        constructors->Add(constructor);
+
+        constructors->Add(std::make_shared<Constructor>("~" + service->name + namePrefix + "Tracer", "tracingEcho.RemoveServiceTracer(*this);\n", 0));
+
+        serviceFormatter->Add(constructors);
+    }
+
+    void NameTracingServiceGenerator::GenerateServiceFunctions()
+    {
+        auto functions = std::make_shared<Access>("public");
+
+        auto handle = std::make_shared<Function>("TraceMethod", TraceMethodBody(), "void", Function::fOverride | Function::fConst);
+        handle->Parameter("uint32_t methodId");
+        handle->Parameter("infra::ProtoLengthDelimited& contents");
+        handle->Parameter("services::Tracer& tracer");
+        functions->Add(handle);
+
+        serviceFormatter->Add(functions);
+    }
+
+    void NameTracingServiceGenerator::GenerateFieldConstants()
+    {
+        auto fields = std::make_shared<Access>("public");
+
+        fields->Add(std::make_shared<DataMember>("serviceId", "static const uint32_t", absl::StrCat(service->serviceId)));
+
+        for (auto& method : service->methods)
+            fields->Add(std::make_shared<DataMember>("id" + method.name, "static const uint32_t", absl::StrCat(method.methodId)));
+
+        serviceFormatter->Add(fields);
+    }
+
+    void NameTracingServiceGenerator::GenerateDataMembers()
+    {
+        auto dataMembers = std::make_shared<Access>("public");
+
+        dataMembers->Add(std::make_shared<DataMember>("tracingEcho", "services::TracingEchoOnStreams&"));
+
+        serviceFormatter->Add(dataMembers);
+    }
+
+    std::string NameTracingServiceGenerator::TraceMethodBody() const
+    {
+        std::ostringstream result;
+        {
+            google::protobuf::io::OstreamOutputStream stream(&result);
+            google::protobuf::io::Printer printer(&stream, '$', nullptr);
+
+            if (!service->methods.empty())
+            {
+                printer.Print(R"(infra::ProtoParser parser(contents.Parser());
+
+switch (methodId)
+{
+)");
+
+                for (auto& method : service->methods)
+                {
+                    printer.Print(R"(    case id$name$:
+    {
+)",
+                        "name", method.name);
+                    if (method.parameter)
+                        printer.Print("        $argument$ argument(parser);\n", "argument", method.parameter->qualifiedName);
+                    printer.Print(R"(        if (!parser.FormatFailed())
+        {
+            tracer.Continue() << "$servicename$.$name$(";
+)",
+                        "servicename", service->name, "name", method.name);
+
+                    TraceParameters(method, printer);
+
+                    printer.Print(R"_(            tracer.Continue() << ")";
+        }
+        else
+            tracer.Continue() << "$servicename$.$name$(parse error)";
+        break;
+    }
+)_",
+                        "servicename", service->name, "name", method.name);
+                }
+
+                printer.Print(R"(    default:
+        tracer.Continue() << "$servicename$ method " << methodId << " not found";
+)",
+                    "servicename", service->name);
+
+                printer.Print("}\n");
+            }
+            else
+                printer.Print(R"(tracer.Continue() << "$servicename$ method " << methodId << " not found";\ncontents.SkipEverything();\n)", "servicename", service->name);
+        }
+
+        return result.str();
+    }
+
+    TracingServiceGenerator::TracingServiceGenerator(const std::shared_ptr<const EchoService>& service, Entities& formatter)
+        : NameTracingServiceGenerator(service, formatter, "")
+    {}
+
+    void TracingServiceGenerator::TraceParameters(const EchoMethod& method, google::protobuf::io::Printer& printer) const
+    {
+        if (method.parameter)
+            for (auto& field : method.parameter->fields)
+            {
+                if (&field != &method.parameter->fields.front())
+                    printer.Print(R"(            tracer.Continue() << ", ";
+)");
+                printer.Print("            services::PrintField(argument.$field$, tracer);\n", "field", field->name);
+            }
     }
 
     EchoGenerator::EchoGenerator(google::protobuf::compiler::GeneratorContext* generatorContext, const std::string& name, const google::protobuf::FileDescriptor* file)
@@ -1731,6 +1743,7 @@ switch (methodId)
         {
             tracingServiceGenerators.emplace_back(std::make_shared<TracingServiceGenerator>(service, *currentEntity));
             nullTracingServiceGenerators.emplace_back(std::make_shared<NullTracingServiceGenerator>(service, *currentEntity));
+            nameTracingServiceGenerators.emplace_back(std::make_shared<NameTracingServiceGenerator>(service, *currentEntity));
         }
     }
 

@@ -177,27 +177,6 @@ namespace application
         Class* serviceProxyFormatter;
     };
 
-    class TracingServiceGenerator
-    {
-    public:
-        TracingServiceGenerator(const std::shared_ptr<const EchoService>& service, Entities& formatter);
-        TracingServiceGenerator(const TracingServiceGenerator& other) = delete;
-        TracingServiceGenerator& operator=(const TracingServiceGenerator& other) = delete;
-        ~TracingServiceGenerator() = default;
-
-    private:
-        void GenerateServiceConstructors();
-        void GenerateServiceFunctions();
-        void GenerateFieldConstants();
-        void GenerateDataMembers();
-
-        std::string TraceMethodBody() const;
-
-    private:
-        std::shared_ptr<const EchoService> service;
-        Class* serviceFormatter;
-    };
-
     class NullTracingServiceGenerator
     {
     public:
@@ -215,6 +194,40 @@ namespace application
     private:
         std::shared_ptr<const EchoService> service;
         Class* serviceFormatter;
+    };
+
+    class NameTracingServiceGenerator
+    {
+    public:
+        NameTracingServiceGenerator(const std::shared_ptr<const EchoService>& service, Entities& formatter, const std::string& namePrefix = "Name");
+        NameTracingServiceGenerator(const NameTracingServiceGenerator& other) = delete;
+        NameTracingServiceGenerator& operator=(const NameTracingServiceGenerator& other) = delete;
+        ~NameTracingServiceGenerator() = default;
+
+    protected:
+        virtual void TraceParameters(const EchoMethod& method, google::protobuf::io::Printer& printer) const;
+
+    private:
+        void GenerateServiceConstructors(const std::string& namePrefix);
+        void GenerateServiceFunctions();
+        void GenerateFieldConstants();
+        void GenerateDataMembers();
+
+        std::string TraceMethodBody() const;
+
+    private:
+        std::shared_ptr<const EchoService> service;
+        Class* serviceFormatter;
+    };
+
+    class TracingServiceGenerator
+        : private NameTracingServiceGenerator
+    {
+    public:
+        TracingServiceGenerator(const std::shared_ptr<const EchoService>& service, Entities& formatter);
+
+    private:
+        void TraceParameters(const EchoMethod& method, google::protobuf::io::Printer& printer) const override;
     };
 
     class EchoGenerator
@@ -269,6 +282,7 @@ namespace application
 
         std::vector<std::shared_ptr<TracingServiceGenerator>> tracingServiceGenerators;
         std::vector<std::shared_ptr<NullTracingServiceGenerator>> nullTracingServiceGenerators;
+        std::vector<std::shared_ptr<NameTracingServiceGenerator>> nameTracingServiceGenerators;
     };
 }
 
