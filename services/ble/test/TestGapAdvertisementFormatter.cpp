@@ -130,6 +130,24 @@ namespace services
         EXPECT_EQ(data[7], 0x06);
     }
 
+    TEST_F(GapAdvertisementFormatterTest, append_random_target_address)
+    {
+        hal::MacAddress address({ 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 });
+
+        formatter.AppendRandomTargetAddress(address);
+
+        auto data = formatter.FormattedAdvertisementData();
+        EXPECT_EQ(data.size(), 8);
+        EXPECT_EQ(data[0], 7);
+        EXPECT_EQ(data[1], 0x18);
+        EXPECT_EQ(data[2], 0x01);
+        EXPECT_EQ(data[3], 0x02);
+        EXPECT_EQ(data[4], 0x03);
+        EXPECT_EQ(data[5], 0x04);
+        EXPECT_EQ(data[6], 0x05);
+        EXPECT_EQ(data[7], 0x06);
+    }
+
     TEST_F(GapAdvertisementFormatterTest, multiple_append_operations)
     {
         formatter.AppendFlags(GapPeripheral::AdvertisementFlags::leGeneralDiscoverableMode);

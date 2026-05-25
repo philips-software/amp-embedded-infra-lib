@@ -210,9 +210,9 @@ namespace services
         GapCentralObserver::Subject().Disconnect();
     }
 
-    void GapCentralDecorator::SetAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType)
+    void GapCentralDecorator::SetAddress(services::GapAddress address)
     {
-        GapCentralObserver::Subject().SetAddress(macAddress, addressType);
+        GapCentralObserver::Subject().SetAddress(address);
     }
 
     void GapCentralDecorator::StartDeviceDiscovery()
@@ -391,6 +391,14 @@ namespace services
         really_assert(sizeof(address) + headerSize <= RemainingSpaceAvailable());
 
         AddHeader(payload, sizeof(address), GapAdvertisementDataType::publicTargetAddress);
+        AddData(payload, infra::ReinterpretCastMemoryRange<const uint8_t>(infra::MakeRangeFromSingleObject(address)));
+    }
+
+    void GapAdvertisementFormatter::AppendRandomTargetAddress(hal::MacAddress address)
+    {
+        really_assert(sizeof(address) + headerSize <= RemainingSpaceAvailable());
+
+        AddHeader(payload, sizeof(address), GapAdvertisementDataType::randomTargetAddress);
         AddData(payload, infra::ReinterpretCastMemoryRange<const uint8_t>(infra::MakeRangeFromSingleObject(address)));
     }
 
