@@ -325,19 +325,19 @@ message ConnectionParameters
     uint32 initiatingTimeoutInMs = 2;
 }
 
-message AdvertisingEventType
+message AdvertisingReportType
 {
-    enum AdvertisingEventTypeEnum
+    // Types defined in Bluetooth Core Specification v6.3, Vol 4, Part E, Section 7.7.65.2
+    enum AdvertisingReportTypeEnum
     {
-        advInd = 0;
-        advDirectInd = 1;
-        advNonconnInd = 3;
-
-        advScanInd = 2; // TODO(HW): SHould be grouped like this?
-        scanResponse = 4;
+        advInd = 0;         // Connectable and scannable undirected advertising
+        advDirectInd = 1;   // Connectable directed advertising
+        advScanInd = 2;     // Scannable undirected advertising
+        advNonconnInd = 3;  // Non-connectable undirected advertising
+        scanResponse = 4;   // Scan response 
     }
 
-    AdvertisingEventTypeEnum type = 1;
+    AdvertisingReportTypeEnum type = 1;
 }
 
 message DiscoveredDevice
@@ -346,7 +346,7 @@ message DiscoveredDevice
     AddressType addressType = 2;
     bytes data = 3 [(bytes_size) = 32]; // Raw advertisement data as received from the controller. TODO(HW): See spec for data types
     int32 rssi = 4;
-    AdvertisingEventType advertisingEventType = 5;
+    AdvertisingReportType advertisingReportType = 5;
 }
 
 message DeviceDiscoveryFilter
