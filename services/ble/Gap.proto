@@ -342,11 +342,14 @@ message AdvertisingReportType
 
 message DiscoveredDevice
 {
-    Address address = 1;
-    AddressType addressType = 2;
-    bytes data = 3 [(bytes_size) = 32]; // Raw advertisement data as received from the controller. TODO(HW): See spec for data types
-    int32 rssi = 4;
-    AdvertisingReportType advertisingReportType = 5;
+    AddressWithType address = 1;
+
+    // Raw advertisement data as received from the controller.
+    // Layout of data defined in Bluetooth Core Specification v6.3, Vol 3, Part C, Section 11
+    bytes data = 2 [(bytes_size) = 32];
+
+    int32 rssi = 3;
+    AdvertisingReportType advertisingReportType = 4;
 }
 
 message DeviceDiscoveryFilter
