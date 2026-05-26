@@ -180,7 +180,7 @@ namespace application
     class TracingServiceGenerator
     {
     public:
-        TracingServiceGenerator(const std::shared_ptr<const EchoService>& service);
+        explicit TracingServiceGenerator(const std::shared_ptr<const EchoService>& service);
         TracingServiceGenerator(const TracingServiceGenerator& other) = delete;
         TracingServiceGenerator& operator=(const TracingServiceGenerator& other) = delete;
         ~TracingServiceGenerator() = default;
@@ -227,7 +227,7 @@ namespace application
         : public TracingServiceGenerator
     {
     public:
-        NameTracingServiceGenerator(const std::shared_ptr<const EchoService>& service);
+        explicit NameTracingServiceGenerator(const std::shared_ptr<const EchoService>& service);
 
     private:
         std::string NamePrefix() const override;

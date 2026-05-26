@@ -1633,7 +1633,7 @@ switch (methodId)
         return "Name";
     }
 
-    void NameTracingServiceGenerator::TraceParameters(const EchoMethod& method, google::protobuf::io::Printer& printer) const
+    void NameTracingServiceGenerator::TraceParameters([[maybe_unused]] const EchoMethod& method, [[maybe_unused]] google::protobuf::io::Printer& printer) const
     {}
 
     EchoGenerator::EchoGenerator(google::protobuf::compiler::GeneratorContext* generatorContext, const std::string& name, const google::protobuf::FileDescriptor* file)
