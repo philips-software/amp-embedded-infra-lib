@@ -196,15 +196,18 @@ namespace application
         Class* serviceFormatter;
     };
 
-    class NameTracingServiceGenerator
+    class TracingServiceGenerator
     {
     public:
-        NameTracingServiceGenerator(const std::shared_ptr<const EchoService>& service, Entities& formatter, const std::string& namePrefix = "Name");
-        NameTracingServiceGenerator(const NameTracingServiceGenerator& other) = delete;
-        NameTracingServiceGenerator& operator=(const NameTracingServiceGenerator& other) = delete;
-        ~NameTracingServiceGenerator() = default;
+        TracingServiceGenerator(const std::shared_ptr<const EchoService>& service);
+        TracingServiceGenerator(const TracingServiceGenerator& other) = delete;
+        TracingServiceGenerator& operator=(const TracingServiceGenerator& other) = delete;
+        ~TracingServiceGenerator() = default;
+
+        void Generate(Entities& formatter);
 
     protected:
+        virtual std::string NamePrefix() const;
         virtual void TraceParameters(const EchoMethod& method, google::protobuf::io::Printer& printer) const;
 
     private:
@@ -220,13 +223,14 @@ namespace application
         Class* serviceFormatter;
     };
 
-    class TracingServiceGenerator
-        : private NameTracingServiceGenerator
+    class NameTracingServiceGenerator
+        : public TracingServiceGenerator
     {
     public:
-        TracingServiceGenerator(const std::shared_ptr<const EchoService>& service, Entities& formatter);
+        NameTracingServiceGenerator(const std::shared_ptr<const EchoService>& service);
 
     private:
+        std::string NamePrefix() const override;
         void TraceParameters(const EchoMethod& method, google::protobuf::io::Printer& printer) const override;
     };
 

@@ -1487,24 +1487,41 @@ SetSerializer(serializer);
         serviceFormatter->Add(dataMembers);
     }
 
-    NameTracingServiceGenerator::NameTracingServiceGenerator(const std::shared_ptr<const EchoService>& service, Entities& formatter, const std::string& namePrefix)
+    TracingServiceGenerator::TracingServiceGenerator(const std::shared_ptr<const EchoService>& service)
         : service(service)
+    {}
+
+    void TracingServiceGenerator::Generate(Entities& formatter)
     {
-        auto serviceClass = std::make_shared<Class>(service->name + namePrefix + "Tracer");
+        auto serviceClass = std::make_shared<Class>(service->name + NamePrefix() + "Tracer");
         serviceClass->Parent("public services::ServiceTracer");
         serviceFormatter = serviceClass.get();
         formatter.Add(serviceClass);
 
-        GenerateServiceConstructors(namePrefix);
+        GenerateServiceConstructors(NamePrefix());
         GenerateServiceFunctions();
         GenerateFieldConstants();
         GenerateDataMembers();
     }
 
-    void NameTracingServiceGenerator::TraceParameters(const EchoMethod& method, google::protobuf::io::Printer& printer) const
-    {}
+    std::string TracingServiceGenerator::NamePrefix() const
+    {
+        return "";
+    }
 
-    void NameTracingServiceGenerator::GenerateServiceConstructors(const std::string& namePrefix)
+    void TracingServiceGenerator::TraceParameters(const EchoMethod& method, google::protobuf::io::Printer& printer) const
+    {
+        if (method.parameter)
+            for (auto& field : method.parameter->fields)
+            {
+                if (&field != &method.parameter->fields.front())
+                    printer.Print(R"(            tracer.Continue() << ", ";
+)");
+                printer.Print("            services::PrintField(argument.$field$, tracer);\n", "field", field->name);
+            }
+    }
+
+    void TracingServiceGenerator::GenerateServiceConstructors(const std::string& namePrefix)
     {
         auto constructors = std::make_shared<Access>("public");
         auto constructor = std::make_shared<Constructor>(service->name + namePrefix + "Tracer", "tracingEcho.AddServiceTracer(*this);\n", 0);
@@ -1518,7 +1535,7 @@ SetSerializer(serializer);
         serviceFormatter->Add(constructors);
     }
 
-    void NameTracingServiceGenerator::GenerateServiceFunctions()
+    void TracingServiceGenerator::GenerateServiceFunctions()
     {
         auto functions = std::make_shared<Access>("public");
 
@@ -1531,7 +1548,7 @@ SetSerializer(serializer);
         serviceFormatter->Add(functions);
     }
 
-    void NameTracingServiceGenerator::GenerateFieldConstants()
+    void TracingServiceGenerator::GenerateFieldConstants()
     {
         auto fields = std::make_shared<Access>("public");
 
@@ -1543,7 +1560,7 @@ SetSerializer(serializer);
         serviceFormatter->Add(fields);
     }
 
-    void NameTracingServiceGenerator::GenerateDataMembers()
+    void TracingServiceGenerator::GenerateDataMembers()
     {
         auto dataMembers = std::make_shared<Access>("public");
 
@@ -1552,7 +1569,7 @@ SetSerializer(serializer);
         serviceFormatter->Add(dataMembers);
     }
 
-    std::string NameTracingServiceGenerator::TraceMethodBody() const
+    std::string TracingServiceGenerator::TraceMethodBody() const
     {
         std::ostringstream result;
         {
@@ -1607,21 +1624,17 @@ switch (methodId)
         return result.str();
     }
 
-    TracingServiceGenerator::TracingServiceGenerator(const std::shared_ptr<const EchoService>& service, Entities& formatter)
-        : NameTracingServiceGenerator(service, formatter, "")
+    NameTracingServiceGenerator::NameTracingServiceGenerator(const std::shared_ptr<const EchoService>& service)
+        : TracingServiceGenerator(service)
     {}
 
-    void TracingServiceGenerator::TraceParameters(const EchoMethod& method, google::protobuf::io::Printer& printer) const
+    std::string NameTracingServiceGenerator::NamePrefix() const
     {
-        if (method.parameter)
-            for (auto& field : method.parameter->fields)
-            {
-                if (&field != &method.parameter->fields.front())
-                    printer.Print(R"(            tracer.Continue() << ", ";
-)");
-                printer.Print("            services::PrintField(argument.$field$, tracer);\n", "field", field->name);
-            }
+        return "Name";
     }
+
+    void NameTracingServiceGenerator::TraceParameters(const EchoMethod& method, google::protobuf::io::Printer& printer) const
+    {}
 
     EchoGenerator::EchoGenerator(google::protobuf::compiler::GeneratorContext* generatorContext, const std::string& name, const google::protobuf::FileDescriptor* file)
         : stream(generatorContext->Open(name))
@@ -1741,9 +1754,11 @@ switch (methodId)
 
         for (auto& service : root.GetFile(*file)->services)
         {
-            tracingServiceGenerators.emplace_back(std::make_shared<TracingServiceGenerator>(service, *currentEntity));
+            tracingServiceGenerators.emplace_back(std::make_shared<TracingServiceGenerator>(service));
+            tracingServiceGenerators.back()->Generate(*currentEntity);
             nullTracingServiceGenerators.emplace_back(std::make_shared<NullTracingServiceGenerator>(service, *currentEntity));
-            nameTracingServiceGenerators.emplace_back(std::make_shared<NameTracingServiceGenerator>(service, *currentEntity));
+            nameTracingServiceGenerators.emplace_back(std::make_shared<NameTracingServiceGenerator>(service));
+            nameTracingServiceGenerators.back()->Generate(*currentEntity);
         }
     }
 
