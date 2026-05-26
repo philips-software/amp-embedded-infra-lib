@@ -90,21 +90,36 @@ message AddressWithType
     AddressType addressType = 2;
 }
 
-message PairingStatus // TODO rename?
+message PairingFailedReason
 {
-    enum Status
+    enum Reason
     {
-        passkeyEntryFailed = 0;
-        authenticationRequirementsNotMet = 1;
-        pairingNotSupported = 2;
-        insufficientEncryptionKeySize = 3;
-        numericComparisonFailed = 4;
-        timeout = 5;
-        encryptionFailed = 6;
-        unknown = 7;
+        // Based on Bluetooth Spec v6.3, Vol 3, Part H, Section 3.5.5
+        passkeyEntryFailed = 0;                         // The user input of passkey failed, for example, the user cancelled the operation.
+        oobNotAvailable = 1;
+        authenticationRequirementsNotMet = 2;           // The pairing procedure cannot be performed as authentication requirements cannot be met due to IO capabilities of one or both devices.
+        confirmValueFailed = 3;                         // The confirm value does not match the calculated compare value.
+        pairingNotSupported = 4;
+        insufficientEncryptionKeySize = 5;              // The resultant encryption key size is not long enough for the security requirements of this device.
+        commandNotSupported = 6;                        // The SMP command received is not supported on this device.
+        unspecifiedReason = 7;                          // Pairing failed due to an unspecified reason.
+        repeatedAttempts = 8;                           // Pairing or authentication procedure is disallowed because too little time has elapsed since last pairing request or security request.
+        invalidParameters = 9;                          // The Invalid Parameters error code indicates that the command length is invalid or that a parameter is outside of the specified range.
+        dhkeyCheckFailed = 10;                          // Indicates to the remote device that the DHKey Check value received doesn’t match the one calculated by the local device.
+        numericComparisonFailed = 11;                   // The numeric comparison of the passkey failed.
+        brEdrPairingInProgress = 12;                    // Indicates that the pairing over the LE transport failed due to a Pairing Request sent over the BR/EDR transport in progress.
+        crossTransportKeyDerivationNotAllowed = 13;     // Indicates that the BR/EDR Link Key generated on the BR/EDR transport cannot be used to derive and distribute keys for the LE transport or the LE LTK generated on the LE transport cannot be used to derive a key for the BR/EDR transport.
+        keyRejected = 14;                               // Indicates that the device chose not to accept a distributed key.
+
+        // Not part of the SMP Pairing Failed PDU, but valid failure outcomes of the PairAndBond procedure
+        timeout = 15;           // SMP protocol timeout (Vol 3, Part H, Section 3.4)
+        encryptionFailed = 16;  // SMP pairing succeeded but HCI link encryption failed
+
+        // If the failure reason does not fit any of the above categories, this value can will be used
+        unknown = 17;
     }
 
-    Status status = 1;
+    Reason reason = 1;
 }
 
 message BondsStatus
@@ -281,7 +296,7 @@ service GapPeripheralResponse
 
 
     rpc PairingSuccessfullyCompleted(Nothing) returns(Nothing) { option(method_id) = 5; }
-    rpc PairingFailed(PairingStatus) returns(Nothing) { option(method_id) = 6; }
+    rpc PairingFailed(PairingFailedReason) returns(Nothing) { option(method_id) = 6; }
 
 
     rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 7; }
@@ -488,7 +503,7 @@ service GapCentralResponse {
     rpc DeviceDiscovered(DiscoveredDevice) returns (Nothing) { option (method_id) = 2; }
     
     rpc PairingSuccess(Nothing) returns (Nothing) { option (method_id) =  3; }
-    rpc PairingFailed(PairingStatus) returns (Nothing) { option (method_id) = 4; }
+    rpc PairingFailed(PairingFailedReason) returns (Nothing) { option (method_id) = 4; }
 
     rpc ResolvedPrivateAddress(Address) returns (Nothing) { option (method_id) = 7; }
     rpc ResolvePrivateAddressFailed(Nothing) returns (Nothing) { option (method_id) = 8; }
