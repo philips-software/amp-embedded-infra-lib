@@ -177,25 +177,6 @@ namespace application
         Class* serviceProxyFormatter;
     };
 
-    class NullTracingServiceGenerator
-    {
-    public:
-        NullTracingServiceGenerator(const std::shared_ptr<const EchoService>& service, Entities& formatter);
-        NullTracingServiceGenerator(const NullTracingServiceGenerator& other) = delete;
-        NullTracingServiceGenerator& operator=(const NullTracingServiceGenerator& other) = delete;
-        ~NullTracingServiceGenerator() = default;
-
-    private:
-        void GenerateServiceConstructors();
-        void GenerateServiceFunctions();
-        void GenerateFieldConstants();
-        void GenerateDataMembers();
-
-    private:
-        std::shared_ptr<const EchoService> service;
-        Class* serviceFormatter;
-    };
-
     class TracingServiceGenerator
     {
     public:
@@ -217,6 +198,25 @@ namespace application
         void GenerateDataMembers();
 
         std::string TraceMethodBody() const;
+
+    private:
+        std::shared_ptr<const EchoService> service;
+        Class* serviceFormatter;
+    };
+
+    class NullTracingServiceGenerator
+    {
+    public:
+        NullTracingServiceGenerator(const std::shared_ptr<const EchoService>& service, Entities& formatter);
+        NullTracingServiceGenerator(const NullTracingServiceGenerator& other) = delete;
+        NullTracingServiceGenerator& operator=(const NullTracingServiceGenerator& other) = delete;
+        ~NullTracingServiceGenerator() = default;
+
+    private:
+        void GenerateServiceConstructors();
+        void GenerateServiceFunctions();
+        void GenerateFieldConstants();
+        void GenerateDataMembers();
 
     private:
         std::shared_ptr<const EchoService> service;
