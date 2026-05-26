@@ -73,17 +73,6 @@ message SecurityLevel
     SecurityLevelEnum level = 1;
 }
 
-message AdvertisementType
-{
-    enum AdvertisementTypeEnum
-    {
-        AdvInd = 0;
-        AdvNonconnInd = 1;
-    }
-
-    AdvertisementTypeEnum type = 1;
-}
-
 message AddressType
 {
     enum AddressTypeEnum
@@ -101,21 +90,7 @@ message AddressWithType
     AddressType addressType = 2;
 }
 
-message AdvertisingEventType
-{
-    enum AdvertisingEventTypeEnum
-    {
-        advInd = 0;
-        advDirectInd = 1;
-        advScanInd = 2;
-        advNonconnInd = 3;
-        scanResponse = 4;
-    }
-
-    AdvertisingEventTypeEnum type = 1;
-}
-
-message PairingStatus
+message PairingStatus // TODO rename?
 {
     enum Status
     {
@@ -153,10 +128,23 @@ service GapDevice {
 // GAP PERIPHERAL
 // ==================================================
 
+message AdvertisementType   // Maybe merge with AdvertisingEventType?
+                            // Maybe better to just improve naming
+                            // Does ST SDK have structs like this? Or maybe in BLE spec?
+{
+    enum AdvertisementTypeEnum
+    {
+        AdvInd = 0;
+        AdvNonconnInd = 1;
+    }
+
+    AdvertisementTypeEnum type = 1;
+}
+
 message AdvertisementMode
 {
     AdvertisementType type = 1;
-    uint32 advInterval = 2;
+    uint32 advInterval = 2; // In increments of 0.625 ms, as per Bluetooth Core Specification.
 }
 
 message AdvertisementData
@@ -337,17 +325,28 @@ message ConnectionParameters
     uint32 initiatingTimeoutInMs = 2;
 }
 
+message AdvertisingEventType
+{
+    enum AdvertisingEventTypeEnum
+    {
+        advInd = 0;
+        advDirectInd = 1;
+        advNonconnInd = 3;
+
+        advScanInd = 2; // TODO(HW): SHould be grouped like this?
+        scanResponse = 4;
+    }
+
+    AdvertisingEventTypeEnum type = 1;
+}
+
 message DiscoveredDevice
 {
     Address address = 1;
     AddressType addressType = 2;
-    bytes data = 3 [(bytes_size) = 32];
+    bytes data = 3 [(bytes_size) = 32]; // Raw advertisement data as received from the controller. TODO(HW): See spec for data types
     int32 rssi = 4;
-    
-    // deprecated isScanResponse in favour of advertisingEventType
-    reserved 5;
-
-    AdvertisingEventType advertisingEventType = 6;
+    AdvertisingEventType advertisingEventType = 5;
 }
 
 message DeviceDiscoveryFilter
@@ -357,7 +356,9 @@ message DeviceDiscoveryFilter
         none = 0;
         address = 1;
 
-        // Filtering on contents of Manufacturer specific data
+        // Filtering on contents of Manufacturer specific data.
+        // Filters on both advertising data and scan response data.
+        // Passes if manufacturer ID matches exactly.
         advertisingData = 2; 
     }
 
@@ -367,7 +368,7 @@ message DeviceDiscoveryFilter
 
 message BondListItem
 {
-    AddressWithType addressWithType = 1; // Identitity address
+    AddressWithType addressWithType = 1; // Identity address
     bytes deviceName = 2 [(bytes_size) = 32]; // Device Name from Gap Service (not unique).
     bool isDeviceConnected = 3;
 }
@@ -376,7 +377,7 @@ message BondList
 {
     // Will be sorted by age, oldest -> newest.
     repeated BondListItem items = 1 [(array_size) = 32];
-    uint32 maxBonds = 2;
+    uint32 maximumAllowedBonds = 2; // Maximum number of bonds supported by the device.
 }
 
 // ==================================================
@@ -414,11 +415,6 @@ service GapCentral
     // Results in GapCentralResponse.CurrentState with state scanning
     rpc StartDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 3; }
 
-    // Allowed states: scanning
-    // Stops scanning for advertising peripheral devices.
-    // Can result in GapCentralResponse.CurrentState with state standby
-    rpc StopDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 4; }
-
     // Allowed states: standby
     // Initiates a connection to a peripheral device with the given address.
     // For successful connection establishment, state will follow: standby -> initiating -> connected
@@ -426,7 +422,7 @@ service GapCentral
     // Results in GapCentralResponse.CurrentState
     rpc Connect(ConnectionParameters) returns (Nothing) { option (method_id) = 5; }
 
-    // Allowed states: initiating, connected
+    // Allowed states: scanning, initiating, connected
     // Terminates the current (or initiating) connection.
     // Results in GapCentralResponse.CurrentState with state standby
     rpc Standby(Nothing) returns (Nothing) { option (method_id) = 6; }
@@ -435,12 +431,13 @@ service GapCentral
     // 1. If there is a pre-existing bond, then the connection will be encrypted.
     // 2. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
     // During pairing, GapCentralResponse.AuthenticationRequired may be called if user interaction is required.
-    // Always results in GapCentralResponse.PairingSuccess or GapCentralResponse.PairingFailed
-    // Can result in GapCentralResponse.NumberOfBondsChanged or GapCentralResponse.CurrentState with standby if device disconnected
+    // Can result in GapCentralResponse.NumberOfBondsChanged or GapCentralResponse.CurrentState with standby if pairing failed
+    // TODO: Is this true for GapSt? That it will always disconnect?
+    // Always ends with GapCentralResponse.PairingSuccess or GapCentralResponse.PairingFailed
     rpc PairAndBond(Nothing) returns (Nothing) { option (method_id) = 7; }
 
     // Allowed in link layer states: standby
-    // Configures the security mode and level required for connections.
+    // Configures the minimum security mode and level required for connections.
     rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 8; }
 
     // Allowed in link layer states: standby
@@ -469,13 +466,13 @@ service GapCentral
     // Results in GapCentralResponse.NumberOfBondsChanged
     rpc RemoveBondWithAddress(AddressWithType) returns (Nothing) { option (method_id) = 13; }
 
-    // Allowed in link layer states: standby, initiating, connected
+    // Allowed in link layer states: standby, scanning, initiating, connected
     // Resolves a resolvable private address to the identity address of a bonded device.
     // Will only succeed if the address is a resolvable private address and the device is bonded.
     // Results in GapCentralResponse.ResolvedPrivateAddress on success, or GapCentralResponse.ResolvePrivateAddressFailed on failure.
     rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 14; }
 
-    // Allowed in link layer states: standby, initiating, connected
+    // Allowed in link layer states: standby, scanning, initiating, connected
     // Returns the list of bonded devices including their identity address and device name, sorted oldest to newest.
     // Results in GapCentralResponse.BondList
     rpc GetBondList(Nothing) returns (Nothing) { option (method_id) = 15; }
