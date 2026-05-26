@@ -12,19 +12,25 @@ namespace services
         EchoOnStreams::Reset();
         initialized = false;
         requestedSize.reset();
+
+        infra::Subject<EchoInitializationObserver>::NotifyObservers([](auto& observer)
+            {
+                observer.Reset();
+            });
+
         SesameObserver::Subject().Reset();
     }
 
     void EchoOnSesame::Initialized()
     {
+        EchoOnStreams::Initialized();
+
         infra::Subject<EchoInitializationObserver>::NotifyObservers([](auto& observer)
             {
                 observer.Initialized();
             });
 
         initialized = true;
-
-        EchoOnStreams::Initialized();
 
         if (requestedSize != std::nullopt)
             RequestSendStream(*std::exchange(requestedSize, std::nullopt));

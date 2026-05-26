@@ -11,6 +11,7 @@ public:
     services::ServiceStubProxy serviceProxy{ echo };
 };
 
+#ifndef EMIL_MUTATION_TESTING
 TEST_F(EchoTest, request_send_while_already_awaiting_grant_aborts)
 {
     EXPECT_CALL(echo, RequestSend(testing::Ref(serviceProxy)));
@@ -26,6 +27,7 @@ TEST_F(EchoTest, request_send_while_already_awaiting_grant_aborts)
     EXPECT_CALL(echo, CancelRequestSend(testing::Ref(serviceProxy)));
     serviceProxy.CancelRequestSend();
 }
+#endif
 
 TEST_F(EchoTest, cancel_clears_pending_grant_and_notifies_echo)
 {

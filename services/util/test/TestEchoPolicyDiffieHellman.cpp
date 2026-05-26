@@ -120,14 +120,14 @@ public:
     services::CertificateAndPrivateKey deviceCertificateMaterial{ services::GenerateDeviceCertificate(rootCaPrivateKey, randomDataGenerator) };
     services::EcSecP256r1PrivateKey privateKeyLeft{ randomDataGenerator };
     std::string privateKeyLeftPem{ infra::AsStdString(privateKeyLeft.Pem()) };
-    std::array<uint8_t, 121> privateKeyLeftDer{ privateKeyLeft.Der() };
+    services::EcSecP256r1PrivateKey::DerEncoded privateKeyLeftDer{ privateKeyLeft.Der() };
     services::EcSecP256r1Certificate certificateLeft{ privateKeyLeft, "CN=left", rootCaPrivateKey, "CN=Root", randomDataGenerator };
     std::string certificateLeftPem{ infra::AsStdString(certificateLeft.Pem()) };
     infra::BoundedVector<uint8_t>::WithMaxSize<512> certificateLeftDer{ certificateLeft.Der() };
 
     services::EcSecP256r1PrivateKey privateKeyRight{ randomDataGenerator };
     std::string privateKeyRightPem{ infra::AsStdString(privateKeyRight.Pem()) };
-    std::array<uint8_t, 121> privateKeyRightDer{ privateKeyRight.Der() };
+    services::EcSecP256r1PrivateKey::DerEncoded privateKeyRightDer{ privateKeyRight.Der() };
     services::EcSecP256r1Certificate certificateRight{ privateKeyRight, "CN=right", rootCaPrivateKey, "CN=Root", randomDataGenerator };
     std::string certificateRightPem{ infra::AsStdString(certificateRight.Pem()) };
     infra::BoundedVector<uint8_t>::WithMaxSize<512> certificateRightDer{ certificateRight.Der() };
@@ -169,8 +169,27 @@ TEST_F(EchoPolicyDiffieHellmanTest, send_and_receive)
     ExchangeData();
 }
 
-TEST_F(EchoPolicyDiffieHellmanTest, intialize_while_initializing_starts_over)
+TEST_F(EchoPolicyDiffieHellmanTest, initialize_while_initializing_starts_over)
 {
+    Initialized(); // second initialization
+
+    EXPECT_CALL(echoPolicyLeft, KeyExchangeSuccessful());
+    EXPECT_CALL(echoPolicyRight, KeyExchangeSuccessful());
+
+    ExchangeData();
+}
+
+TEST_F(EchoPolicyDiffieHellmanTest, reset_and_initialize_while_initializing_starts_over)
+{
+    lowerLeftRequest = false;
+    lowerRightRequest = false;
+    EXPECT_CALL(lowerLeft, ResetReading());
+    EXPECT_CALL(lowerLeft, Reset());
+    echoOnSesameLeft.Reset();
+    EXPECT_CALL(lowerRight, ResetReading());
+    EXPECT_CALL(lowerRight, Reset());
+    echoOnSesameRight.Reset();
+
     Initialized(); // second initialization
 
     EXPECT_CALL(echoPolicyLeft, KeyExchangeSuccessful());
