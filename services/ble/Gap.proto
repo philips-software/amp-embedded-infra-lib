@@ -256,6 +256,7 @@ service GapPeripheral
 
     // Allowed in link layer states: standby
     // Default is to allow pairing
+    // If pairing is attempted but failed the peripheral will disconnect and go to standby. TODO: Is this true?
     rpc SetAllowPairing(BoolValue) returns (Nothing) { option (method_id) = 9; }
 
     // Allowed in link layer states: connected
@@ -428,7 +429,7 @@ service GapCentral
     rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 2; }
 
     // Allowed states: standby
-    // Starts scanning for advertising peripheral devices.
+    // Starts scanning for advertising peripheral devices until Standby is called.
     // Discovered devices will be reported via GapCentralResponse.DeviceDiscovered.
     // Results in GapCentralResponse.CurrentState with state scanning
     rpc StartDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 3; }
@@ -446,12 +447,12 @@ service GapCentral
     rpc Standby(Nothing) returns (Nothing) { option (method_id) = 6; }
 
     // Allowed states: connected
-    // 1. If there is a pre-existing bond, then the connection will be encrypted.
-    // 2. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
+    // Must always be explicitly called to secure a connection. Encryption is never started automatically.
+    // 1. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
+    // 2. If there is a pre-existing bond, then the connection will be encrypted using the existing keys.
     // During pairing, GapCentralResponse.AuthenticationRequired may be called if user interaction is required.
-    // Can result in GapCentralResponse.NumberOfBondsChanged or GapCentralResponse.CurrentState with standby if pairing failed
-    // TODO: Is this true for GapSt? That it will always disconnect?
-    // Always ends with GapCentralResponse.PairingSuccess or GapCentralResponse.PairingFailed
+    // Results in GapCentralResponse.PairingSuccess or GapCentralResponse.PairingFailed
+    // Can result in GapCentralResponse.NumberOfBondsChanged or GapCentralResponse.CurrentState with standby if device disconnected
     rpc PairAndBond(Nothing) returns (Nothing) { option (method_id) = 7; }
 
     // Allowed in link layer states: standby
