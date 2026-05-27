@@ -268,7 +268,6 @@ service GapPeripheral
 
     // Allowed in link layer states: standby
     // Default is to allow pairing
-    // If pairing is attempted but failed the peripheral will disconnect and go to standby. TODO: Is this true?
     rpc SetAllowPairing(BoolValue) returns (Nothing) { option (method_id) = 9; }
 
     // Allowed in link layer states: connected
@@ -368,7 +367,7 @@ message ConnectionParameters
     // After the central sends the connection request, the peripheral may take time to process and confirm it.
     // If the peripheral does not respond within this timeout, the connection attempt is aborted.
     // A value of zero waits indefinitely.
-    // TODO: Recommended value depends on the peripheral's advertising interval — a longer advertising interval requires a longer timeout.
+    // Recommended: set to at least several multiples of the peripheral's advertising interval.
     uint32 initiatingTimeoutInMs = 2;
 }
 
@@ -407,18 +406,21 @@ message DeviceDiscoveryFilter
     enum Filter
     {
         none = 0;
-     
-        // TODO: Is this the indentity address?
+
+        // Filters on the device address (public or random). Passes if the address matches exactly.
+        // data: the device address to match (see Address).
         address = 1;
 
-        // Filtering on contents of Manufacturer specific data.
-        // Filters on both advertising data and scan response data.
-        // Passes if manufacturer data matches exactly.
-        advertisingData = 2; // TODO: Rename to ManufacturerId?
-        // TODO: What about types, like oxygen sensor. Called profile? Service UUID?
+        // Filters on the full contents of the Manufacturer Specific Data field in the advertising or scan response data.
+        // Passes if the manufacturer specific data matches exactly.
+        // data: the manufacturer specific data to match, including the 2-byte manufacturer ID.
+        manufacturerSpecificData = 2;
+
+        // TODO: Add filter for Service UUID to allow filtering on device type/profile.
     }
 
     Filter filter = 1;
+    // The filter value to match against, interpreted according to the selected filter.
     bytes data = 2 [(bytes_size) = 32];
 };
 
