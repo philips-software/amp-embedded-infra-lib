@@ -78,7 +78,7 @@ message AddressType
     enum AddressTypeEnum
     {
         publicAddress = 0;
-        randomAddress = 1;
+        randomAddress = 1; // Explain detail
     }
 
     AddressTypeEnum type = 1;
@@ -310,6 +310,7 @@ service GapPeripheralResponse
 
 message AuthenticationInfo
 {
+    // TODO: Need to expand
     uint32 passkey = 1;
     bool isNumericComparison = 2;
 }
@@ -337,7 +338,12 @@ message SecurityModeAndLevel
 message ConnectionParameters
 {
     AddressWithType addressWithType = 1;
-    uint32 initiatingTimeoutInMs = 2;
+
+    // TODO: Explain
+    // Central sees advertisement packet, then sends connect
+    // Central then waits for confirmation. Sometimes peripheral takes long to respond
+    // TODO: Give recommended value. Depends on the connection interval.
+    uint32 initiatingTimeoutInMs = 2; // TODO: If set to zero waits indefinitely?
 }
 
 message AdvertisingReportType
@@ -357,7 +363,8 @@ message AdvertisingReportType
 
 message DiscoveredDevice
 {
-    AddressWithType address = 1;
+    // TODO: This address should be used to connect in the future.
+    AddressWithType addressWithType = 1;
 
     // Raw advertisement data as received from the controller.
     // Layout of data defined in Bluetooth Core Specification v6.3, Vol 3, Part C, Section 11
@@ -372,12 +379,15 @@ message DeviceDiscoveryFilter
     enum Filter
     {
         none = 0;
+     
+        // TODO: Is this the indentity address?
         address = 1;
 
         // Filtering on contents of Manufacturer specific data.
         // Filters on both advertising data and scan response data.
-        // Passes if manufacturer ID matches exactly.
-        advertisingData = 2; 
+        // Passes if manufacturer data matches exactly.
+        advertisingData = 2; // TODO: Rename to ManufacturerId?
+        // TODO: What about types, like oxygen sensor. Called profile? Service UUID?
     }
 
     Filter filter = 1;
@@ -430,6 +440,7 @@ service GapCentral
     // Allowed states: standby
     // Starts scanning for advertising peripheral devices until Standby is called.
     // Discovered devices will be reported via GapCentralResponse.DeviceDiscovered.
+    // It's recommended to add a filter, otherwise devices might be missed due to too many being discovered.
     // Results in GapCentralResponse.CurrentState with state scanning
     rpc StartDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 3; }
 
@@ -449,6 +460,7 @@ service GapCentral
     // Must always be explicitly called to secure a connection. Encryption is never started automatically.
     // 1. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
     // 2. If there is a pre-existing bond, then the connection will be encrypted using the existing keys.
+    // TODO: If peripheral send securty request, automatic pairing
     // During pairing, GapCentralResponse.AuthenticationRequired may be called if user interaction is required.
     // Results in GapCentralResponse.PairingSuccess or GapCentralResponse.PairingFailed
     // Can result in GapCentralResponse.NumberOfBondsChanged or GapCentralResponse.CurrentState with standby if device disconnected
@@ -456,6 +468,7 @@ service GapCentral
 
     // Allowed in link layer states: standby
     // Configures the minimum security mode and level required for connections.
+    // TODO: Expand
     rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 7; }
 
     // Allowed in link layer states: standby
@@ -487,6 +500,7 @@ service GapCentral
     // Allowed in link layer states: standby, scanning, initiating, connected
     // Resolves a resolvable private address to the identity address of a bonded device.
     // Will only succeed if the address is a resolvable private address and the device is bonded.
+    // TODO: Expand. Explain combinations of Random/Public, etc. When to use it
     // Results in GapCentralResponse.ResolvedPrivateAddress on success, or GapCentralResponse.ResolvePrivateAddressFailed on failure.
     rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; }
 
