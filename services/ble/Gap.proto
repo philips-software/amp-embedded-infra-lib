@@ -354,13 +354,16 @@ message SecurityModeAndLevel
 
 message ConnectionParameters
 {
+    // The address of the peripheral to connect to, as discovered during scanning (e.g. from DiscoveredDevice).
+    // If the peripheral uses a private resolvable address, it must be resolved before connecting.
     AddressWithType addressWithType = 1;
 
-    // TODO: Explain
-    // Central sees advertisement packet, then sends connect
-    // Central then waits for confirmation. Sometimes peripheral takes long to respond
-    // TODO: Give recommended value. Depends on the connection interval.
-    uint32 initiatingTimeoutInMs = 2; // TODO: If set to zero waits indefinitely?
+    // How long the central will wait for the peripheral to respond to the connection request, in milliseconds.
+    // After the central sends the connection request, the peripheral may take time to process and confirm it.
+    // If the peripheral does not respond within this timeout, the connection attempt is aborted.
+    // A value of zero waits indefinitely.
+    // TODO: Recommended value depends on the peripheral's advertising interval — a longer advertising interval requires a longer timeout.
+    uint32 initiatingTimeoutInMs = 2;
 }
 
 message AdvertisingReportType
