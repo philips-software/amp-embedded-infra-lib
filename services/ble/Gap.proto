@@ -470,7 +470,7 @@ service GapCentral
     // Allowed states: standby
     // Starts scanning for advertising peripheral devices until Standby is called.
     // Discovered devices will be reported via GapCentralResponse.DeviceDiscovered.
-    // It's recommended to add a filter, otherwise devices might be missed due to too many being discovered.
+    // It's recommended to add a DeviceDiscoveryFilter, otherwise devices might be missed due to too many being discovered.
     // Results in GapCentralResponse.CurrentState with state scanning
     rpc StartDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 3; }
 
