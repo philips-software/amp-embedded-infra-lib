@@ -491,7 +491,6 @@ service GapCentral
     // 1. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
     // 2. If there is a pre-existing bond, then the connection will be encrypted using the existing keys.
     // If the peripheral sends a security request, this procedure is triggered automatically without needing to call PairAndBond explicitly.
-    //    In that case, the result will still be reported as GapCentralResponse.PairingSuccess or GapCentralResponse.PairingFailed.
     // During pairing, GapCentralResponse.AuthenticationRequired may be called if user interaction is required.
     // Results in GapCentralResponse.PairingSuccess or GapCentralResponse.PairingFailed
     // Can result in GapCentralResponse.NumberOfBondsChanged or GapCentralResponse.CurrentState with standby if device disconnected
@@ -548,8 +547,9 @@ service GapCentralResponse {
     option(service_id) = 35;
 
     rpc CurrentState(State) returns (Nothing) { option (method_id) = 1; }
-    rpc DeviceDiscovered(DiscoveredDevice) returns (Nothing) { option (method_id) = 2; }
     
+    rpc DeviceDiscovered(DiscoveredDevice) returns (Nothing) { option (method_id) = 2; }
+    rpc AuthenticationRequired(AuthenticationRequest) returns (Nothing) { option (method_id) = 11; }
     rpc PairingSuccess(Nothing) returns (Nothing) { option (method_id) =  3; }
     rpc PairingFailed(PairingFailedReason) returns (Nothing) { option (method_id) = 4; }
 
@@ -558,5 +558,4 @@ service GapCentralResponse {
     
     rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 9; }
     rpc BondList(BondList) returns (Nothing) { option(method_id) = 10; }
-    rpc AuthenticationRequired(AuthenticationRequest) returns (Nothing) { option (method_id) = 11; }
 }
