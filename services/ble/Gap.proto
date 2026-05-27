@@ -12,6 +12,7 @@ option java_outer_classname = "GapProto";
 
 message Address
 {
+    // A 48-bit Bluetooth device address, as defined in Bluetooth Core Specification v6.3, Vol 6, Part B, Section 1.3
     bytes address = 1 [(bytes_size) = 6];
 }
 
@@ -73,14 +74,19 @@ message SecurityLevel
     SecurityLevelEnum level = 1;
 }
 
+// Based on Bluetooth Core Specification v6.3, Vol 6, Part B, Section 1.3
 message AddressType
 {
     enum AddressTypeEnum
     {
         publicAddress = 0;
+
         // Random addresses can be either static random or private (resolvable or non-resolvable).
-        // Private addresses are rotated periodically and must be resolved using the peer's IRK (Identity Resolving Key)
-        // before they can be used to identify or reconnect to a device.
+        // The subtype is encoded in the two most significant bits of the address (bits 47-46):
+        //   00 - Non-resolvable private: rotated periodically, cannot be resolved.
+        //   01 - Resolvable private (RPA): rotated periodically, can be resolved using the peer's IRK (Identity Resolving Key).
+        //   11 - Static random: fixed for the lifetime of the device or until a power cycle.
+        // See Bluetooth Core Specification v6.3, Vol 6, Part B, Section 1.3.2.
         randomAddress = 1;
     }
 
@@ -89,7 +95,7 @@ message AddressType
 
 // A Bluetooth device address and its type.
 // The interpretation of 'address' depends on 'addressType':
-//   - publicAddress: a fixed IEEE 802-assigned 48-bit address.
+//   - publicAddress: a fixed IEEE 802-assigned address.
 //   - randomAddress: a random or private address (see AddressTypeEnum.randomAddress).
 message AddressWithType
 {
@@ -383,12 +389,14 @@ message AdvertisingReportType
 
 message DiscoveredDevice
 {
-    // TODO: This address should be used to connect in the future.
+    // The address as received in the advertising packet. Use this address directly when connecting via ConnectionParameters.
+    // If the peripheral uses a resolvable private address (RPA), the controller will resolve it automatically
+    // after a bond has been established and the peer's IRK is stored.
     AddressWithType addressWithType = 1;
 
     // Raw advertisement data as received from the controller.
     // Layout of data defined in Bluetooth Core Specification v6.3, Vol 3, Part C, Section 11
-    bytes data = 2 [(bytes_size) = 32];
+    bytes advertisementData = 2 [(bytes_size) = 32];
 
     int32 rssi = 3;
     AdvertisingReportType advertisingReportType = 4;
@@ -518,9 +526,9 @@ service GapCentral
     rpc RemoveBondWithAddress(AddressWithType) returns (Nothing) { option (method_id) = 12; }
 
     // Allowed in link layer states: standby, scanning, initiating, connected
-    // Resolves a resolvable private address to the identity address of a bonded device.
+    // Resolves a resolvable private address to the identity address of an already bonded device.
+    // Useful to identify whether a device seen during scanning is already bonded, without needing to connect first.
     // Will only succeed if the address is a resolvable private address and the device is bonded.
-    // TODO: Expand. Explain combinations of Random/Public, etc. When to use it
     // Results in GapCentralResponse.ResolvedPrivateAddress on success, or GapCentralResponse.ResolvePrivateAddressFailed on failure.
     rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; }
 
