@@ -143,14 +143,13 @@ service GapDevice {
 // GAP PERIPHERAL
 // ==================================================
 
-message AdvertisementType   // Maybe merge with AdvertisingEventType?
-                            // Maybe better to just improve naming
-                            // Does ST SDK have structs like this? Or maybe in BLE spec?
+message AdvertisementType
 {
+    // Types defined in Bluetooth Core Specification Vol 6.3, Part B, Section 2.3.1
     enum AdvertisementTypeEnum
     {
-        AdvInd = 0;
-        AdvNonconnInd = 1;
+        AdvInd = 0;             // Connectable and scannable undirected advertising
+        AdvNonconnInd = 1;      // Non-connectable and non-scannable undirected advertising
     }
 
     AdvertisementTypeEnum type = 1;
