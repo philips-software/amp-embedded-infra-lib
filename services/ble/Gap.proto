@@ -78,12 +78,19 @@ message AddressType
     enum AddressTypeEnum
     {
         publicAddress = 0;
-        randomAddress = 1; // Explain detail
+        // Random addresses can be either static random or private (resolvable or non-resolvable).
+        // Private addresses are rotated periodically and must be resolved using the peer's IRK (Identity Resolving Key)
+        // before they can be used to identify or reconnect to a device.
+        randomAddress = 1;
     }
 
     AddressTypeEnum type = 1;
 }
 
+// A Bluetooth device address and its type.
+// The interpretation of 'address' depends on 'addressType':
+//   - publicAddress: a fixed IEEE 802-assigned 48-bit address.
+//   - randomAddress: a random or private address (see AddressTypeEnum.randomAddress).
 message AddressWithType
 {
     Address address = 1;
