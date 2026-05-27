@@ -490,7 +490,8 @@ service GapCentral
     // Must always be explicitly called to secure a connection. Encryption is never started automatically.
     // 1. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
     // 2. If there is a pre-existing bond, then the connection will be encrypted using the existing keys.
-    // TODO: If peripheral send securty request, automatic pairing
+    // If the peripheral sends a security request, this procedure is triggered automatically without needing to call PairAndBond explicitly.
+    //    In that case, the result will still be reported as GapCentralResponse.PairingSuccess or GapCentralResponse.PairingFailed.
     // During pairing, GapCentralResponse.AuthenticationRequired may be called if user interaction is required.
     // Results in GapCentralResponse.PairingSuccess or GapCentralResponse.PairingFailed
     // Can result in GapCentralResponse.NumberOfBondsChanged or GapCentralResponse.CurrentState with standby if device disconnected
@@ -498,11 +499,14 @@ service GapCentral
 
     // Allowed in link layer states: standby
     // Configures the minimum security mode and level required for connections.
-    // TODO: Expand
+    // Should be called once during initialization before any connections are made.
+    // If a connected peer does not meet the required security level, the connection will be rejected.
     rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 7; }
 
     // Allowed in link layer states: standby
-    // Configures the I/O capabilities of this device, used to determine the pairing method.
+    // Configures the I/O capabilities of this device, used to determine the pairing method during PairAndBond.
+    // Should be called once during initialization before any pairing takes place.
+    // The selected capabilities influence which pairing method is chosen (e.g. Just Works, Passkey Entry, or Numeric Comparison).
     rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 8; }
 
     // Allowed in link layer states: connected
