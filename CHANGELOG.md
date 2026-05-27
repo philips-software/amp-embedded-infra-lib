@@ -7,6 +7,51 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [9.1.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v9.0.0...v9.1.0) (2026-05-26)
+
+
+### Features
+
+* Add 'infra::dec' to 'OutputStream' ([#1184](https://github.com/philips-software/amp-embedded-infra-lib/issues/1184)) ([40708f9](https://github.com/philips-software/amp-embedded-infra-lib/commit/40708f968dec9cb6c544fc5b655d1a142078e9f5))
+* Add EcSecP256r1PublicKey ([#1195](https://github.com/philips-software/amp-embedded-infra-lib/issues/1195)) ([30931d5](https://github.com/philips-software/amp-embedded-infra-lib/commit/30931d56cb46e66116d5bbc91fcb56866bd71dfa))
+* Add flushable StreamWriter ([#1116](https://github.com/philips-software/amp-embedded-infra-lib/issues/1116)) ([74c80ee](https://github.com/philips-software/amp-embedded-infra-lib/commit/74c80eeb311a7da2870aec8587393c0dcac90149))
+* Add HttpClient attached guard for status available ([#1139](https://github.com/philips-software/amp-embedded-infra-lib/issues/1139)) ([cfed7f2](https://github.com/philips-software/amp-embedded-infra-lib/commit/cfed7f2ad7d7dd3087e5be396a78478e14d87a33))
+* Add MacResolver interface and lwIP implementation ([#1175](https://github.com/philips-software/amp-embedded-infra-lib/issues/1175)) ([e8c4483](https://github.com/philips-software/amp-embedded-infra-lib/commit/e8c448300088a06a958b81b039fdee1b554f37f3))
+* Add precision for strings in printfAdapter ([#1141](https://github.com/philips-software/amp-embedded-infra-lib/issues/1141)) ([d2ae465](https://github.com/philips-software/amp-embedded-infra-lib/commit/d2ae4652927524cb491fc8ce09388aeec592c69e))
+* Add SmiBus interface, SmiPhy, and SmiPhyLinkMonitor ([#1200](https://github.com/philips-software/amp-embedded-infra-lib/issues/1200)) ([5b8d62c](https://github.com/philips-software/amp-embedded-infra-lib/commit/5b8d62c0a7103e961d588abb62ebec92f657a311))
+* Add tracer classes that only trace the name of the service and method ([#1217](https://github.com/philips-software/amp-embedded-infra-lib/issues/1217)) ([fa5b6ae](https://github.com/philips-software/amp-embedded-infra-lib/commit/fa5b6aea6949e5add7ad0a9afdd5ac9fe20aa682))
+* Add TracerWithPrefix ([#1209](https://github.com/philips-software/amp-embedded-infra-lib/issues/1209)) ([86de861](https://github.com/philips-software/amp-embedded-infra-lib/commit/86de861641fb98708b3acb5b22edc79ac00a66ee))
+* Adding displaypasskey to gapproto ([#1192](https://github.com/philips-software/amp-embedded-infra-lib/issues/1192)) ([90e3100](https://github.com/philips-software/amp-embedded-infra-lib/commit/90e3100817b7a075811426be8da0d85649d6f944))
+* Allow constexpr BoundedString without explicit size ([#1149](https://github.com/philips-software/amp-embedded-infra-lib/issues/1149)) ([eb50c72](https://github.com/philips-software/amp-embedded-infra-lib/commit/eb50c724391b560607345364f99af03c4dd88723))
+* Flash echo homogeneous sequential proxy ([#1212](https://github.com/philips-software/amp-embedded-infra-lib/issues/1212)) ([1130e61](https://github.com/philips-software/amp-embedded-infra-lib/commit/1130e61bd3065460885cf1480c3db39f03a27739))
+* Harden Echo RequestSend against multiple calls before granted ([#1167](https://github.com/philips-software/amp-embedded-infra-lib/issues/1167)) ([63b95d9](https://github.com/philips-software/amp-embedded-infra-lib/commit/63b95d9243b274f70c204737fb9bd9a328923b1a))
+* Hold init response in sesame until confirmed ([#1158](https://github.com/philips-software/amp-embedded-infra-lib/issues/1158)) ([2e1d898](https://github.com/philips-software/amp-embedded-infra-lib/commit/2e1d898fdc5f835421c4311dc1e9e3012253a70b))
+* Log and aborting with enum now supports integers ([#1186](https://github.com/philips-software/amp-embedded-infra-lib/issues/1186)) ([ea8cd4b](https://github.com/philips-software/amp-embedded-infra-lib/commit/ea8cd4b8f5a80608060a51f5e1fc78f31931be88))
+* Make Crc methods constexpr for improved compile-time evaluation ([#1153](https://github.com/philips-software/amp-embedded-infra-lib/issues/1153)) ([9580b15](https://github.com/philips-software/amp-embedded-infra-lib/commit/9580b15c4241fec2bb068cf164c45d3589ac13ec))
+* Refactor LogAndAbortTracer to add flushing ([#1148](https://github.com/philips-software/amp-embedded-infra-lib/issues/1148)) ([b127c70](https://github.com/philips-software/amp-embedded-infra-lib/commit/b127c70af147c4e17c32c960e0896243da02ab07))
+* Report integrity error if suspected incomplete message is not followed by an init ([#1161](https://github.com/philips-software/amp-embedded-infra-lib/issues/1161)) ([ead7946](https://github.com/philips-software/amp-embedded-infra-lib/commit/ead7946903938201413a480be0778ce3447ad5a2))
+* Sequential requests on flash over echo ([#1211](https://github.com/philips-software/amp-embedded-infra-lib/issues/1211)) ([8c786a6](https://github.com/philips-software/amp-embedded-infra-lib/commit/8c786a6277c59c5e7ab6ac00b407b313a65d2763))
+* Support independent dual-stack endpoints in BonjourServer ([#1169](https://github.com/philips-software/amp-embedded-infra-lib/issues/1169)) ([7a339ef](https://github.com/philips-software/amp-embedded-infra-lib/commit/7a339efff25c65cd01d7c9d474b2b85b2bb99dbb))
+* Version exchange in sesame init/init response ([#1164](https://github.com/philips-software/amp-embedded-infra-lib/issues/1164)) ([ccdf2e6](https://github.com/philips-software/amp-embedded-infra-lib/commit/ccdf2e6cc408276736ac9d7c57cbd8424415e47b))
+
+
+### Bug Fixes
+
+* Destruction of EchoOnStreams with buffered data must not crash ([#1146](https://github.com/philips-software/amp-embedded-infra-lib/issues/1146)) ([e3dea07](https://github.com/philips-software/amp-embedded-infra-lib/commit/e3dea07304c18374ffd4d8775c764d2808203e10))
+* Disabling cmake variable EMIL_ENABLE_TRACING not fully disabling tracer ([#1178](https://github.com/philips-software/amp-embedded-infra-lib/issues/1178)) ([64c94d3](https://github.com/philips-software/amp-embedded-infra-lib/commit/64c94d30a7c996455b9c008263db78972dfa6478))
+* Event dispatcher on bsd not idling ([#1138](https://github.com/philips-software/amp-embedded-infra-lib/issues/1138)) ([856010b](https://github.com/philips-software/amp-embedded-infra-lib/commit/856010bc3aa81078d4fee69aea4941992d78f706))
+* First initialize EchoOnStreams, then observers ([#1210](https://github.com/philips-software/amp-embedded-infra-lib/issues/1210)) ([b195a3b](https://github.com/philips-software/amp-embedded-infra-lib/commit/b195a3beb383ac5d193743b7ef5005b4a159f67b))
+* FlashEcho can be stopped immediately when waiting for echo request ([43cf133](https://github.com/philips-software/amp-embedded-infra-lib/commit/43cf133b50c115fd2ba6e58e737fc52718d1aef6))
+* FlashEcho can be stopped immediately when waiting for echo request ([#1143](https://github.com/philips-software/amp-embedded-infra-lib/issues/1143)) ([43cf133](https://github.com/philips-software/amp-embedded-infra-lib/commit/43cf133b50c115fd2ba6e58e737fc52718d1aef6))
+* Imbalanced window sizes resulted in a crash ([#1179](https://github.com/philips-software/amp-embedded-infra-lib/issues/1179)) ([14b20a7](https://github.com/philips-software/amp-embedded-infra-lib/commit/14b20a7a70856d43afc5075d3748cdf820d298d3))
+* In EchoPolicyDiffieHellman, distinguish between Initialized and Reset + Initialized ([#1216](https://github.com/philips-software/amp-embedded-infra-lib/issues/1216)) ([f4650bc](https://github.com/philips-software/amp-embedded-infra-lib/commit/f4650bc03877a595634d26b39fd6a690f5a417e2))
+* Really_assert_with_msg not respecting selected file logging options ([#1194](https://github.com/philips-software/amp-embedded-infra-lib/issues/1194)) ([a58c24a](https://github.com/philips-software/amp-embedded-infra-lib/commit/a58c24a9a8bc82e3209f781cb9ef13f383e520a4))
+* Resetting sesame crashed while erasing from empty data ([#1189](https://github.com/philips-software/amp-embedded-infra-lib/issues/1189)) ([eb56351](https://github.com/philips-software/amp-embedded-infra-lib/commit/eb563513989a03ed3123f4bace7f7241af7bb652))
+* Text output stream width not being reset ([#1170](https://github.com/philips-software/amp-embedded-infra-lib/issues/1170)) ([fc57d81](https://github.com/philips-software/amp-embedded-infra-lib/commit/fc57d813ff64c291ec346336ed9e6c575e1ec9ef))
+* TimerService recompute of next trigger on timer update ([#1165](https://github.com/philips-software/amp-embedded-infra-lib/issues/1165)) ([7c22939](https://github.com/philips-software/amp-embedded-infra-lib/commit/7c2293981534356e6255f71255ff9167af332dde))
+* Update .mega-linter.yml to fix zizmor and osv-scanner failures ([d0096a5](https://github.com/philips-software/amp-embedded-infra-lib/commit/d0096a57d5a8170f133577d567e264aa882ee3b2))
+* When EchoPolicyDiffieHellman is initialized, it should not cancel a previous request ([#1214](https://github.com/philips-software/amp-embedded-infra-lib/issues/1214)) ([b4edf7b](https://github.com/philips-software/amp-embedded-infra-lib/commit/b4edf7b27fc29c4b70b2c26fe1a7ff5da160d14e))
+
 ## [9.0.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v8.0.0...v9.0.0) (2026-03-13)
 
 
