@@ -307,7 +307,7 @@ service GapPeripheralResponse
     rpc IdentityAddress(AddressWithType) returns(Nothing) { option(method_id) = 4; }
 
 
-    rpc PairingSuccessfullyCompleted(Nothing) returns(Nothing) { option(method_id) = 5; }
+    rpc PairingSuccess(Nothing) returns(Nothing) { option(method_id) = 5; }
     rpc PairingFailed(PairingFailedReason) returns(Nothing) { option(method_id) = 6; }
 
 
@@ -360,7 +360,6 @@ message SecurityModeAndLevel
 message ConnectionParameters
 {
     // The address of the peripheral to connect to, as discovered during scanning (e.g. from DiscoveredDevice).
-    // If the peripheral uses a private resolvable address, it must be resolved before connecting.
     AddressWithType addressWithType = 1;
 
     // How long the central will wait for the peripheral to respond to the connection request, in milliseconds.
@@ -426,9 +425,9 @@ message DeviceDiscoveryFilter
 
 message BondListItem
 {
-    AddressWithType addressWithType = 1; // Identity address
-    bytes deviceName = 2 [(bytes_size) = 32]; // Device Name from Gap Service (not unique).
-    bool isDeviceConnected = 3;
+    AddressWithType addressWithType = 1;        // Identity address
+    bytes deviceName = 2 [(bytes_size) = 32];   // Device Name from Gap Service (not unique).
+    bool isDeviceConnected = 3;                 // Is this device currently connected.
 }
 
 message BondList
@@ -490,7 +489,7 @@ service GapCentral
     // Must always be explicitly called to secure a connection. Encryption is never started automatically.
     // 1. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
     // 2. If there is a pre-existing bond, then the connection will be encrypted using the existing keys.
-    // If the peripheral sends a security request, this procedure is triggered automatically without needing to call PairAndBond explicitly.
+    // If the peripheral sends a security request, this procedure is triggered automatically without needing to call PairAndBond explicitly. In this case the responses will be the same.
     // During pairing, GapCentralResponse.AuthenticationRequired may be called if user interaction is required.
     // Results in GapCentralResponse.PairingSuccess or GapCentralResponse.PairingFailed
     // Can result in GapCentralResponse.NumberOfBondsChanged or GapCentralResponse.CurrentState with standby if device disconnected
