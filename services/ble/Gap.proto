@@ -413,7 +413,7 @@ service GapCentral
     rpc IsDeviceBonded(PeerNodeParameters) returns (Nothing) { option (method_id) = 14; }
     rpc GenerateOutOfBandData(Nothing) returns (Nothing) { option (method_id) = 15; }
     rpc SetOutOfBandData(OutOfBandData) returns (Nothing) { option (method_id) = 16; }
-    rpc SetAddress(AddressWithType) returns (Nothing) { option (method_id) = 17; }
+    rpc SetIdentityAddress(AddressWithType) returns (Nothing) { option (method_id) = 17; }
     rpc SetPrivacyMode(BoolValue) returns (Nothing) { option (method_id) = 18; }
 }
 

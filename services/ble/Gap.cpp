@@ -210,9 +210,9 @@ namespace services
         GapCentralObserver::Subject().Disconnect();
     }
 
-    void GapCentralDecorator::SetAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType)
+    void GapCentralDecorator::SetIdentityAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType)
     {
-        GapCentralObserver::Subject().SetAddress(macAddress, addressType);
+        GapCentralObserver::Subject().SetIdentityAddress(macAddress, addressType);
     }
 
     void GapCentralDecorator::StartDeviceDiscovery()
