@@ -230,6 +230,11 @@ namespace services
         return GapCentralObserver::Subject().ResolvePrivateAddress(address);
     }
 
+    void GapCentralDecorator::SetPrivacyMode(bool enabled)
+    {
+        GapCentralObserver::Subject().SetPrivacyMode(enabled);
+    }
+
     GapAdvertisingDataParser::GapAdvertisingDataParser(infra::ConstByteRange data)
         : data(data)
     {}
