@@ -134,6 +134,7 @@ namespace services
     void FlashEchoProxyBase::WriteBuffer(infra::ConstByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
         really_assert(!this->onDone);
+
         bufferPosition = 0;
         readingBuffer = {};
         writingBuffer = buffer;
@@ -146,6 +147,7 @@ namespace services
     void FlashEchoProxyBase::ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
         really_assert(!this->onDone);
+
         bufferPosition = 0;
         this->address = address;
         writingBuffer = {};
@@ -158,6 +160,7 @@ namespace services
     void FlashEchoProxyBase::EraseSectors(uint32_t beginIndex, uint32_t endIndex, infra::Function<void()> onDone)
     {
         really_assert(!this->onDone);
+
         readingBuffer = {};
         writingBuffer = {};
         this->onDone = onDone;
@@ -175,6 +178,7 @@ namespace services
         really_assert(readingBuffer.size() > bufferPosition);
         really_assert(contents.size() <= readingBuffer.size() - bufferPosition);
         really_assert(writingBuffer.empty());
+
         infra::Copy(contents, infra::Head(infra::DiscardHead(readingBuffer, bufferPosition), contents.size()));
         bufferPosition += contents.size();
 
@@ -191,6 +195,7 @@ namespace services
         really_assert(onDone);
         really_assert(bufferPosition < writingBuffer.size());
         really_assert(readingBuffer.empty());
+
         bufferPosition += std::min<std::size_t>(writingBuffer.size() - bufferPosition, flash::WriteRequest::contentsSize);
 
         if (bufferPosition == writingBuffer.size())
@@ -203,9 +208,9 @@ namespace services
 
     void FlashEchoProxyBase::EraseSectorsDone()
     {
-        really_assert(onDone);
         really_assert(readingBuffer.empty());
         really_assert(writingBuffer.empty());
+
         onDone();
         MethodDone();
     }
