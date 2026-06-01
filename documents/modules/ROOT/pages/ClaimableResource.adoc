@@ -15,7 +15,7 @@ depending on current ownership and queue state.
 2. Do not assume there are no scheduled claim-related callbacks after releasing interest.
 3. Do not destroy objects while it is still possible that claim handling is queued.
 
-== Recommended workarounds
+== Recommended solutions
 
 1. Design claim callbacks so they are safe regardless of whether execution is effectively immediate or delayed.
 2. Explicitly release claimers during shutdown.
