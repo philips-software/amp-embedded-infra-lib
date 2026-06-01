@@ -1,5 +1,6 @@
 #include "services/util/FlashEcho.hpp"
 #include "infra/util/ReallyAssert.hpp"
+#include <algorithm>
 
 namespace services
 {
