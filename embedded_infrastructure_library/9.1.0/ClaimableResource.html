@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Execution Model :: Embedded Infrastructure Library</title>
-    <link rel="canonical" href="https://philips-software.github.io/amp-embedded-infra-lib/embedded_infrastructure_library/9.1.0/ExecutionModel.html">
+    <title>ClaimableResource :: Embedded Infrastructure Library</title>
+    <link rel="canonical" href="https://philips-software.github.io/amp-embedded-infra-lib/embedded_infrastructure_library/9.1.0/ClaimableResource.html">
     <meta name="generator" content="Antora 3.1.14">
     <link rel="stylesheet" href="../../_/css/centralesans.css">
     <link rel="stylesheet" href="../../_/css/site.css">
@@ -55,10 +55,10 @@
   <nav class="breadcrumbs" aria-label="breadcrumbs">
   <ul>
     <li><a href="index.html">Embedded Infrastructure Library documentation</a></li>
-    <li><a href="ExecutionModel.html">Execution Model</a></li>
+    <li><a href="ClaimableResource.html">ClaimableResource</a></li>
   </ul>
 </nav>
-      <div class="edit-this-page"><a href="file:///home/runner/work/amp-embedded-infra-lib/amp-embedded-infra-lib/documents/modules/ROOT/pages/ExecutionModel.adoc">Edit this page</a></div>
+      <div class="edit-this-page"><a href="file:///home/runner/work/amp-embedded-infra-lib/amp-embedded-infra-lib/documents/modules/ROOT/pages/ClaimableResource.adoc">Edit this page</a></div>
   </div>
 </div>
   <div class="content">
@@ -72,13 +72,13 @@
 <ul class="nav-list">
   <li class="nav-item" data-depth="0">
 <ul class="nav-list">
-  <li class="nav-item is-current-page" data-depth="1">
+  <li class="nav-item" data-depth="1">
     <a class="nav-link" href="ExecutionModel.html">Execution Model</a>
   </li>
   <li class="nav-item" data-depth="1">
     <a class="nav-link" href="EventDispatcher.html">Event Dispatcher</a>
   </li>
-  <li class="nav-item" data-depth="1">
+  <li class="nav-item is-current-page" data-depth="1">
     <a class="nav-link" href="ClaimableResource.html">ClaimableResource</a>
   </li>
   <li class="nav-item" data-depth="1">
@@ -112,75 +112,54 @@
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<h1 class="page">Execution Model</h1>
+<h1 class="page">ClaimableResource</h1>
 <div class="sect1">
-<h2 id="_execution_by_using_an_event_dispatcher"><a class="anchor" href="#_execution_by_using_an_event_dispatcher"></a>Execution by using an event dispatcher</h2>
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Embedded Infrastructure Library supports various execution models, but the most important execution model is execution by
-scheduling blocks of work on an event dispatcher. This is a lightweight way of being able to perform multiple tasks
-in parallel, without needing multiple stacks or synchronization.</p>
+<p><code>infra::ClaimableResource</code> queues claimers until the resource can be granted.
+This is useful for serialized access, but it introduces ordering and lifetime subtleties.</p>
 </div>
 <div class="paragraph">
-<p>The event dispatcher queues actions for later execution, typically on the application&#8217;s main thread, and executes them one
-after another. This way, a scheduled action is completely finished before the next action is started, so in contrast with
-running actions in different threads no synchronization is needed.</p>
-</div>
-<div class="paragraph">
-<p>An action executed by an event dispatcher should never waste any time; no action should ever sleep, waiting for an external task, such as
-a write towards flash, to finish. Instead, after having started a write towards flash, a new action is scheduled when the write has
-been finished. In the meantime, other actions can execute. This creates a decoupling between various different pieces of business
-logic: while one piece is busy with writing to flash, another piece may be answering an HTTP request, or reading out a temperature
-sensor. No real-time behaviour is guaranteed on the event dispatcher (any real-time behaviour required is implemented outside of
-event dispatchers, by either interrupt handlers or by using threads), but multiple components can flawlessly share execution
-time, with each component making steady progress.</p>
-</div>
-<div class="paragraph">
-<p>While it is possible to have multiple event dispatchers (when using multiple threads, a specific thread may have its own event
-dispatcher for dedicated tasks), applications often also have a general-purpose event dispatcher for generic tasks. For example,
-the <code>ConfigurationStore</code> uses the <code>Flash</code> interface to read and write towards flash; the completion of a read or write action is
-dispatched on such a general-purpose event dispatcher.</p>
-</div>
-<div class="paragraph">
-<p>For practical usage guidance, lifetime patterns, and pitfalls around asynchronous scheduling,
-see <a href="EventDispatcher.html" class="xref page">Event Dispatcher</a>.</p>
+<p>For broader dispatcher usage and lifetime patterns, see <a href="EventDispatcher.html" class="xref page">Event Dispatcher</a>.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_multi_threaded_execution"><a class="anchor" href="#_multi_threaded_execution"></a>Multi-threaded execution</h2>
+<h2 id="_common_pitfalls"><a class="anchor" href="#_common_pitfalls"></a>Common pitfalls</h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>While currently no component in Embedded Infrastructure Library requires the usage of multiple threads, it is perfectly viable
-to use an operating system to start more than one thread. A reason to use multiple threads include having a dedicated thread for
-executing tasks that require real-time behaviour. By separating execution of the event dispatcher and execution of time-critical
-tasks, enough execution time can be guaranteed for real-time behaviour.</p>
-</div>
-<div class="paragraph">
-<p>Another reason for using multiple threads is when a certain action takes a considerable amount of time, for instance generating
-a certificate takes multiple seconds. Executing that action on the main event dispatcher would delay the execution of other actions;
-a solution to this could be to generate the certificate in its own thread, and its completion can be scheduled on the main event dispatcher.</p>
-</div>
-<div class="paragraph">
-<p>A thread may have its own event dispatcher. This removes the need for starting and stopping a thread; when a thread-aware event dispatcher is idle,
-it will pause its thread, and it will wake up its thread when new work is scheduled.</p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Do not assume a fixed timing model for <code>Claim()</code>. A claim can be granted very soon (next dispatcher turn) or later,
+depending on current ownership and queue state.</p>
+</li>
+<li>
+<p>Do not assume there are no scheduled claim-related callbacks after releasing interest.</p>
+</li>
+<li>
+<p>Do not destroy objects while it is still possible that claim handling is queued.</p>
+</li>
+</ol>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_execution_without_an_event_dispatcher"><a class="anchor" href="#_execution_without_an_event_dispatcher"></a>Execution without an event dispatcher</h2>
+<h2 id="_recommended_solutions"><a class="anchor" href="#_recommended_solutions"></a>Recommended solutions</h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>Some applications do not benefit from having an event dispatcher. A boot loader&#8217;s main focus is to be small and execute one thing;
-it only loads an application and therefore has no need to execute multiple actions in parallel. The small overhead that an event
-dispatcher brings does not bring any benefits, and should therefore not be needed in a boot loader. For this kind of usecase,
-variations of the interfaces for interacting with peripherals exist which work synchronously; they do not need to schedule their
-completion on an event dispatcher, but they complete their activities before returning. While for other libraries this is often
-the default behaviour, for Embedded Infrastructure Library this is the exception.</p>
-</div>
-<div class="paragraph">
-<p>A number of components in Embedded Infrastructure Library assume the presence of an event dispatcher. This includes any component
-that makes use of an asynchronous interface. Obviously, without an event dispatcher such components cannot be used.</p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Design claim callbacks so they are safe regardless of whether execution is effectively immediate or delayed.</p>
+</li>
+<li>
+<p>Explicitly release claimers during shutdown.</p>
+</li>
+<li>
+<p>If it is not certain that no claim-related work is scheduled anymore, implement an asynchronous stop phase with
+<code>services::Stoppable</code> and wait for stop completion before destruction.</p>
+</li>
+</ol>
 </div>
 </div>
 </div>
