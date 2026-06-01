@@ -192,7 +192,7 @@ namespace services
 
     void FlashEchoProxyBase::WriteDone()
     {
-        really_assert(onDone);
+        really_assert(onDone != nullptr);
         really_assert(bufferPosition < writingBuffer.size());
         really_assert(readingBuffer.empty());
 
