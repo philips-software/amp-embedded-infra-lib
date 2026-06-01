@@ -174,7 +174,7 @@ namespace services
 
     void FlashEchoProxyBase::ReadDone(infra::ConstByteRange contents)
     {
-        really_assert(onDone);
+        really_assert(onDone != nullptr);
         really_assert(readingBuffer.size() > bufferPosition);
         really_assert(contents.size() <= readingBuffer.size() - bufferPosition);
         really_assert(writingBuffer.empty());
