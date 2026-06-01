@@ -1,12 +1,12 @@
 # Copilot Instructions for amp-embedded-infra-lib
 
-This repository is a set of C++ libraries and headers that provide heap-less, STL like, infrastructure for embedded software development.
+This repository is a set of C++ libraries and headers that provide heap-less, STL-like, infrastructure for embedded software development.
 
 ## Build System Conventions
 
 **CMake Presets**: Use CMake presets extensively. Key presets:
-- `Host` - Host tooling/tests (use for development)
-- `Coverage` - Test coverage analysis
+- `host` - Host tooling/tests (use for development)
+- `coverage` - Test coverage analysis
 
 **EmIL Patterns**: All CMake uses EmIL conventions:
 ```cmake
@@ -25,7 +25,7 @@ if (TARGET_MCU_VENDOR STREQUAL ti)
 
 **Container Development**: Strongly recommended to use devcontainer - contains all cross-compilation toolchains and tools. Commands assume container environment.
 
-**Code Style and Formatting**: MUST follow the `./amp-embedded-infra-lib/documents/modules/ROOT/pages/CodingStandard.adoc`. Use `clang-format` for formatting; configured via `.clang-format`.
+**Code Style and Formatting**: MUST follow the `./documents/modules/ROOT/pages/CodingStandard.adoc`. Use `clang-format` for formatting; configured via `.clang-format`.
 
 **Build Commands**:
 ```bash
@@ -36,11 +36,11 @@ cmake --list-presets
 cmake --preset=<preset>
 cmake --build --preset=<preset>
 
-# Run all tests (Host preset only)
-ctest --preset Host-Debug --test-dir build/Host
+# Run all tests (host preset only)
+ctest --preset host --test-dir build/host
 
 # Run a single test by name
-ctest --preset Host-Debug --test-dir build/Host -R <test_name>
+ctest --preset host --test-dir build/host -R <test_name>
 ```
 
 **Pull Requests and Commits**:
