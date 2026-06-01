@@ -458,6 +458,8 @@ TEST_F(FlashSequentialProxyTest, WriteBuffer_TwoChunks_SecondOnlyAfterFirstDone)
     sendWriteDone2();
 }
 
+#ifndef EMIL_MUTATION_TESTING
+
 class FlashEchoDeathTest
     : public testing::Test
 {
@@ -528,3 +530,5 @@ TEST_F(FlashProxyDeathTest, erase_sectors_done_while_idle_aborts)
                      }),
         "");
 }
+
+#endif
