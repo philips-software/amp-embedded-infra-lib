@@ -64,7 +64,7 @@ Important constraints:
 1. `Stop()` is asynchronous and therefore should not be called from a destructor.
 2. Destruction should happen only after `onDone` is called.
 
-Trade-offs:
+Tradeoffs:
 
 1. Memory cost is low.
 2. The model is usually straightforward to understand.
