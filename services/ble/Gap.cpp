@@ -210,9 +210,9 @@ namespace services
         GapCentralObserver::Subject().Disconnect();
     }
 
-    void GapCentralDecorator::SetAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType)
+    void GapCentralDecorator::SetIdentityAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType)
     {
-        GapCentralObserver::Subject().SetAddress(macAddress, addressType);
+        GapCentralObserver::Subject().SetIdentityAddress(macAddress, addressType);
     }
 
     void GapCentralDecorator::StartDeviceDiscovery()
@@ -228,6 +228,11 @@ namespace services
     std::optional<hal::MacAddress> GapCentralDecorator::ResolvePrivateAddress(hal::MacAddress address) const
     {
         return GapCentralObserver::Subject().ResolvePrivateAddress(address);
+    }
+
+    void GapCentralDecorator::SetPrivacyMode(bool enabled)
+    {
+        GapCentralObserver::Subject().SetPrivacyMode(enabled);
     }
 
     GapAdvertisingDataParser::GapAdvertisingDataParser(infra::ConstByteRange data)

@@ -1,0 +1,73 @@
+= Event Dispatcher
+:source-highlighter: highlight.js
+
+== Introduction
+
+This page provides practical guidance for using the event dispatcher in Embedded Infrastructure Library,
+with a focus on lifetime management and common pitfalls.
+
+For the high-level execution model, see xref:ExecutionModel.adoc[Execution Model].
+
+== Scheduling work
+
+Use `Schedule()` to queue small units of work on the dispatcher. Scheduled actions are executed one by one,
+which avoids most synchronization concerns that are common in multi-threaded code.
+
+`Schedule()` takes an `infra::Function<void()>`, and is therefore often used with lambda functions.
+Applications typically create an event dispatcher during startup. This event dispatcher is globally available via `infra::EventDispatcher::Instance()`. By invoking `Run()` on that event dispatcher from `main()`, that event dispatcher indefinitely executes all scheduled actions.
+
+Actions on the dispatcher should be short and non-blocking. Long-running work should start asynchronously,
+and completion should schedule follow-up work back on the dispatcher.
+
+=== Capturing state in scheduled lambdas
+
+Be careful when capturing state in lambdas passed to `Schedule()`. Scheduled work runs later,
+so both lifetime and value stability must be considered.
+
+1. Capturing by reference (or by capturing `this`) means the lambda observes the value at the time it executes, not at the time it is scheduled.
+2. This is often undesirable for critical updates, such as reporting a specific status, where the original value must be preserved. In that case, capture that status explicitly by value.
+3. Capture size is typically limited, so large state is sometimes stored on `this` instead of inside the lambda. When doing that, remember that the state read by the lambda may have changed before execution.
+
+When scheduling work on an object that may be destroyed before execution, use one of the lifetime management patterns below.
+
+== Lifetime management patterns
+
+The most common source of bugs is scheduled work outliving the object that scheduled it.
+The patterns below are typical ways to manage that.
+
+=== Keep object alive for the full runtime
+
+The simplest strategy is to keep an object alive until application shutdown.
+This avoids lifetime races at the cost of less flexible ownership.
+
+=== Use `infra::EventDispatcherWithWeakPtr`
+
+`infra::EventDispatcherWithWeakPtr` supports scheduling actions with an `infra::WeakPtr<T>`.
+When the action is about to run, the weak pointer is promoted to `infra::SharedPtr<T>`:
+
+1. If promotion succeeds, the object is still alive and the action runs.
+2. If promotion fails, the object already expired and the action is skipped.
+
+This pattern avoids executing callbacks on destroyed objects. Memory overhead is generally negligible,
+but the ownership model is more complex than direct scheduling.
+
+When objects contain other objects managed by shared pointers, `infra::MakeContainedSharedObject()`
+can simplify ownership by tying lifetimes together.
+
+=== Make objects stoppable
+
+Use `services::Stoppable` when teardown must be explicit and asynchronous.
+`Stop(onDone)` allows pending asynchronous work to complete or cancel before destruction.
+
+Important constraints:
+
+1. `Stop()` is asynchronous and therefore should not be called from a destructor.
+2. Destruction should happen only after `onDone` is called.
+
+Tradeoffs:
+
+1. Memory cost is low.
+2. The model is usually straightforward to understand.
+3. Destruction flow is more complex because shutdown must wait for asynchronous completion.
+
+

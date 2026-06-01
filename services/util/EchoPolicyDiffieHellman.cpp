@@ -36,6 +36,12 @@ namespace services
         echo.SetPolicy(*this);
     }
 
+    void EchoPolicyDiffieHellman::Reset()
+    {
+        busy = false;
+        initializingKeys = true;
+    }
+
     void EchoPolicyDiffieHellman::Initialized()
     {
         if (busy)

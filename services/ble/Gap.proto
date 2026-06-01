@@ -540,6 +540,21 @@ service GapCentral
     // Returns the list of bonded devices including their identity address and device name, sorted oldest to newest.
     // Results in GapCentralResponse.BondList
     rpc GetBondList(Nothing) returns (Nothing) { option (method_id) = 14; }
+
+    // Allowed in link layer states: standby
+    // Sets the local identity address used by the central when privacy mode is disabled.
+    // The address type may be public or random.
+    // This does not set a resolvable private address; when privacy mode is enabled, the controller generates and rotates resolvable private addresses automatically.
+    // TODO Default value?
+    // TODO What happens when currently in private mode?
+    rpc SetIdentityAddress(AddressWithType) returns (Nothing) { option (method_id) = 15; }
+
+    // Allowed in link layer states: standby
+    // Enables or disables use of a resolvable private address for the central.
+    // When enabled, the controller generates and rotates the private address automatically based on the local IRK.
+    // When disabled, the central uses its configured identity address.
+    // TODO What happens with configured idendity address?
+    rpc SetPrivacyMode(BoolValue) returns (Nothing) { option (method_id) = 16; }
 }
 
 service GapCentralResponse {

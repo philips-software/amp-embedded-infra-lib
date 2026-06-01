@@ -52,7 +52,8 @@ namespace services
         EchoPolicyDiffieHellman(const Crypto& crypto, Echo& echo, EchoInitialization& echoInitialization, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
     private:
-        // Implementation of SesameObserver
+        // Implementation of EchoInitializationObserver
+        void Reset() override;
         void Initialized() override;
 
         // Implementation of EchoPolicy

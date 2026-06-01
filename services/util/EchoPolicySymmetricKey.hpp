@@ -19,6 +19,7 @@ namespace services
 
     private:
         // Implementation of EchoInitializationObserver
+        void Reset() override;
         void Initialized() override;
 
         // Implementation of EchoPolicy
