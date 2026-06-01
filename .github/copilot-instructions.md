@@ -55,13 +55,13 @@ ctest --preset Host-Debug --test-dir build/Host -R <test_name>
 
 **Echo/Sesame**: RPC mechanisms from EmIL. Echo for TCP/IP and/or Echo on top of Sesame for serial communication. Refer to `./documents/modules/ROOT/pages/Sesame.adoc` for details on Sesame and `./documents/modules/ROOT/pages/Echo.adoc` for details on Echo.
 
-TODO: Expand?
+**EventDispatcher**: Centralized event handling system. Always read `./documents/modules/ROOT/pages/EventDispatcher.adoc` if usage of EventDispatcher is involved.
+
+**ClaimableResource**: Resource management pattern for shared software resources. Refer to `./documents/modules/ROOT/pages/ClaimableResource.adoc` for details.
 
 ## Testing Strategy
 
 **Micro Tests**: Unit tests alongside source code in `test/` subdirectories. Use `emil_add_test()`.
-
-**Integration Tests**: Cucumber-based tests in `cucumber_test/` for end-to-end scenarios. Tests are executed through self hosted runners on GitHub Actions.
 
 **Test Doubles**: Mock implementations in `test_doubles/` directories.
 
