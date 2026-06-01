@@ -25,7 +25,7 @@ Be careful when capturing state in lambdas passed to `Schedule()`. Scheduled wor
 so both lifetime and value stability must be considered.
 
 1. Capturing by reference (or by capturing `this`) means the lambda observes the value at the time it executes, not at the time it is scheduled.
-2. This is often undesirable for critical updates, such as reporting a specific status, where the original value must be preserved. In that case, capture that value explicitly by value.
+2. This is often undesirable for critical updates, such as reporting a specific status, where the original value must be preserved. In that case, capture that status explicitly by value.
 3. Capture size is typically limited, so large state is sometimes stored on `this` instead of inside the lambda. When doing that, remember that the state read by the lambda may have changed before execution.
 
 When scheduling work on an object that may be destroyed before execution, use one of the lifetime management patterns below.
