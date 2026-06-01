@@ -14,9 +14,7 @@ Use `Schedule()` to queue small units of work on the dispatcher. Scheduled actio
 which avoids most synchronization concerns that are common in multi-threaded code.
 
 `Schedule()` takes an `infra::Function<void()>`, and is therefore often used with lambda functions.
-Applications typically create an event dispatcher during startup and enter its `Run()` loop from `main()`.
-
-For generic tasks there is also a globally available dispatcher via `infra::EventDispatcher::Instance()`.
+Applications typically create an event dispatcher during startup. This event dispatcher is globally available via `infra::EventDispatcher::Instance()`. By invoking `Run()` on that event dispatcher from `main()`, that event dispatcher indefinitely executes all scheduled actions.
 
 Actions on the dispatcher should be short and non-blocking. Long-running work should start asynchronously,
 and completion should schedule follow-up work back on the dispatcher.
