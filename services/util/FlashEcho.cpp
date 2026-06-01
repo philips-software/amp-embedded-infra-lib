@@ -208,6 +208,7 @@ namespace services
 
     void FlashEchoProxyBase::EraseSectorsDone()
     {
+        really_assert(onDone != nullptr);
         really_assert(readingBuffer.empty());
         really_assert(writingBuffer.empty());
 
