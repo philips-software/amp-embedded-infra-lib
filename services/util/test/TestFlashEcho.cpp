@@ -519,3 +519,12 @@ TEST_F(FlashProxyDeathTest, write_done_while_idle_aborts)
                      }),
         "");
 }
+
+TEST_F(FlashProxyDeathTest, erase_sectors_done_while_idle_aborts)
+{
+    EXPECT_DEATH(flashResult.RequestSend([this]()
+                     {
+                         flashResult.EraseSectorsDone();
+                     }),
+        "");
+}
