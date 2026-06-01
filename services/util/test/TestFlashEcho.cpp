@@ -457,3 +457,74 @@ TEST_F(FlashSequentialProxyTest, WriteBuffer_TwoChunks_SecondOnlyAfterFirstDone)
 
     sendWriteDone2();
 }
+
+class FlashEchoDeathTest
+    : public testing::Test
+{
+public:
+    services::MethodSerializerFactory::OnHeap serializerFactory;
+    application::EchoSingleLoopback echo{ serializerFactory };
+    testing::NiceMock<hal::CleanFlashMock> delegate;
+    services::FlashEcho flash{ echo, delegate };
+
+    const std::array<uint8_t, 4> data{ 5, 8, 2, 3 };
+    infra::Function<void()> onDone;
+};
+
+TEST_F(FlashEchoDeathTest, write_while_read_in_progress_aborts)
+{
+    EXPECT_CALL(delegate, ReadBuffer(testing::_, 1234, testing::_)).WillOnce(testing::SaveArg<2>(&onDone));
+    flash.Read(1234, data.size());
+
+    EXPECT_DEATH(flash.Write(1234, data), "");
+}
+
+class FlashProxyDeathTest
+    : public testing::Test
+{
+public:
+    services::MethodSerializerFactory::OnHeap serializerFactory;
+    application::EchoSingleLoopback echo{ serializerFactory };
+    services::FlashEchoHomogeneousProxy flashProxy{ echo, 4, 4096 };
+    testing::NiceMock<FlashMock> flash{ echo };
+    flash::FlashResultProxy flashResult{ echo };
+
+    const std::array<uint8_t, 4> data{ 5, 8, 2, 3 };
+};
+
+TEST_F(FlashProxyDeathTest, write_buffer_while_read_buffer_in_progress_aborts)
+{
+    EXPECT_CALL(flash, Read(1234, 4));
+
+    std::array<uint8_t, 4> buffer{};
+    flashProxy.ReadBuffer(infra::MakeRange(buffer), 1234, []() {});
+
+    EXPECT_DEATH(flashProxy.WriteBuffer(infra::MakeRange(data), 1234, []() {}), "");
+}
+
+TEST_F(FlashProxyDeathTest, read_done_while_idle_aborts)
+{
+    EXPECT_DEATH(flashResult.RequestSend([this]()
+                     {
+                         flashResult.ReadDone(infra::MakeRange(data));
+                     }),
+        "");
+}
+
+TEST_F(FlashProxyDeathTest, write_done_while_idle_aborts)
+{
+    EXPECT_DEATH(flashResult.RequestSend([this]()
+                     {
+                         flashResult.WriteDone();
+                     }),
+        "");
+}
+
+TEST_F(FlashProxyDeathTest, erase_sectors_done_while_idle_aborts)
+{
+    EXPECT_DEATH(flashResult.RequestSend([this]()
+                     {
+                         flashResult.EraseSectorsDone();
+                     }),
+        "");
+}
