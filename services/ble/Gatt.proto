@@ -63,7 +63,7 @@ message Characteristic
 }
 
 message Descriptr
-//'Descriptor' keyword is not allowed by Echo code generator 
+//'Descriptor' keyword is not allowed by Echo code generator
 {
     bytes uuid = 1 [(bytes_size) = 16];
     Handle handle = 2;
@@ -92,12 +92,24 @@ service GattClient
 
     rpc MtuSizeExchangeRequest(Nothing) returns (Nothing) { option (method_id) = 1; }
 
-    // In the below block, all methods shall be called after the previous one is completed
+    // Discovery must follow the sequence: Service -> Characteristic -> Descriptor.
+    // Each step must complete (indicated by the corresponding *Complete response) before initiating the next.
+    //
+    // Discovers all services on the remote device.
+    // Responses: zero or more ServiceDiscovered, followed by ServiceDiscoveryComplete.
     rpc StartServiceDiscovery(Nothing) returns (Nothing) { option (method_id) = 2; }
+    // Discovers all characteristics within a single service's handle range.
+    // Must be called once per discovered service, sequentially, after ServiceDiscoveryComplete.
+    // Responses: zero or more CharacteristicDiscovered, followed by CharacteristicDiscoveryComplete.
     rpc StartCharacteristicDiscovery(HandleRange) returns (Nothing) { option (method_id) = 4; }
+    // Discovers all descriptors within the given handle range of a characteristic.
+    // The handle range spans from the characteristic's handle + 1 to the next characteristic's handle - 1
+    // (or the service's end handle for the last characteristic in a service).
+    // Responses: zero or more DescriptorDiscovered, followed by DescriptorDiscoveryComplete.
     rpc StartDescriptorDiscovery(HandleRange) returns (Nothing) { option (method_id) = 6; }
 
-    // In the below block, the methods with a response, shall be called after the previous one is completed
+    // Characteristic operations are sequential; wait for CharacteristicOperationComplete before issuing the next.
+    // WriteWithoutResponse is fire-and-forget and does not trigger CharacteristicOperationComplete.
     // Example 1: If Read is called, EnableIndication shall only be called after CharacteristicOperationComplete
     // Example 2: If DisableNotification is called, Write shall only be called after CharacteristicOperationComplete
     // Example 3: If EnableNotification is called, EnableIndication shall only be called after CharacteristicOperationComplete
@@ -109,7 +121,7 @@ service GattClient
     rpc EnableIndication(Handle) returns (Nothing) { option (method_id) = 13; };
     rpc DisableIndication(Handle) returns (Nothing) { option (method_id) = 14; };
 
-    // IndicationDone shall be called for every IndicationReceived
+    // IndicationDone must be called for every IndicationReceived to acknowledge the indication.
     rpc IndicationDone(Nothing) returns (Nothing) { option (method_id) = 15; };
 }
 
@@ -121,7 +133,7 @@ service GattClientResponse
 
     rpc ServiceDiscovered(Service) returns (Nothing) { option (method_id) = 2; }
     rpc ServiceDiscoveryComplete(Nothing) returns (Nothing) { option (method_id) = 3; }
-    
+
     rpc CharacteristicDiscovered(Characteristic) returns (Nothing) { option (method_id) = 4; }
     rpc CharacteristicDiscoveryComplete(Nothing) returns (Nothing) { option (method_id) = 5; }
 
