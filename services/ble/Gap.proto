@@ -171,7 +171,10 @@ message AdvertisementType
 message AdvertisementMode
 {
     AdvertisementType type = 1;
-    uint32 advInterval = 2; // In increments of 0.625 ms, as per Bluetooth Core Specification.
+
+    // In increments of 0.625 ms, as per Bluetooth Core Specification.
+    // This will be used for both minimum and maximum advertising interval.
+    uint32 advInterval = 2;
 }
 
 message AdvertisementData
@@ -510,12 +513,14 @@ service GapCentral
     // Allowed in link layer states: connected
     // Provides the passkey entered by the user in response to GapCentralResponse.AuthenticationRequired.
     // Only valid when AuthenticationInfo.isNumericComparison is false.
+    // Must be called within the SMP protocol timeout (30 seconds, Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4) of receiving AuthenticationRequired, otherwise pairing will fail with PairingFailedReason.timeout.
     // Influences GapCentralResponse.PairingSuccess or GapCentralResponse.PairingFailed response of PairAndBond
     rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 9; }
 
     // Allowed in link layer states: connected
     // Confirms or rejects the numeric comparison in response to GapCentralResponse.AuthenticationRequired.
     // Only valid when AuthenticationInfo.isNumericComparison is true.
+    // Must be called within the SMP protocol timeout (30 seconds, Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4) of receiving AuthenticationRequired, otherwise pairing will fail with PairingFailedReason.timeout.
     // Influences GapCentralResponse.PairingSuccess or GapCentralResponse.PairingFailed response of PairAndBond
     rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 10; }
 
