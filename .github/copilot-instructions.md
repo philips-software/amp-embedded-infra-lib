@@ -33,8 +33,8 @@ if (TARGET_MCU_VENDOR STREQUAL ti)
 cmake --list-presets
 
 # Configure and build for target
-cmake --preset <configure_preset>
-cmake --build --preset <build_preset>
+cmake --preset=<configure_preset>
+cmake --build --preset=<build_preset>
 
 # Run all tests (host preset only)
 ctest --preset host
