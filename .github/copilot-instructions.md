@@ -44,7 +44,7 @@ ctest --preset host --test-dir build/host -R <test_name>
 ```
 
 **Pull Requests and Commits**:
-- Follow Conventional Commit style from `CONTRIBUTING.md` when proposing pull request titles and when creating commit messages.
+- Follow Conventional Commit style from `.github/CONTRIBUTING.md` when proposing pull request titles and when creating commit messages.
 
 **VS Code Integration**:
 - CMake extension manages presets via status bar
