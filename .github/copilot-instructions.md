@@ -78,8 +78,8 @@ ctest --preset host --test-dir build/host -R <test_name>
 
 ## General Coding Rules
 
-- Code shall not contain comments unless they are absolutely necessary and the user specifically asks for them.
-- STL containers from amp-embedded-infra-lib shall be used instead of standard library containers except Host applications and tests.
+- Avoid adding code comments unless they are necessary to clarify non-obvious intent.
+- Prefer `infra` containers (e.g., `infra::Bounded*`, `infra::Intrusive*`) over standard library containers, except in host applications and tests.
 - When declaring a class with base classes, place the colon and inheritance list on a separate line with proper indentation.
 - Constructors with one parameter must be an explicit constructor.
 - No exceptions shall be used in the codebase, except in Host applications and tests.

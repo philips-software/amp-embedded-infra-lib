@@ -1,5 +1,7 @@
 ---
-applyTo: "**/test/**, **/test_doubles/**"
+applyTo:
+  - "**/test/**"
+  - "**/test_doubles/**"
 ---
 
 ## Google Test Suite Coding Rules
@@ -12,7 +14,7 @@ applyTo: "**/test/**, **/test_doubles/**"
 - Avoid death tests unless absolutely necessary, as they can slow down the test suite significantly.
 - Avoid iterating over elements in tests; use matchers that can handle collections instead.
 - Whenever a parameter is needed for multiple tests, use test fixtures or parameterized functions to avoid code duplication.
-- Whenever a behaviour is needed for multiple tests, use parameterized functions to avoid code duplication.
+- Whenever a behavior is needed for multiple tests, use parameterized functions to avoid code duplication.
 - Default parameters are allowed when writing test helper functions to increase readability.
 - Prefer using test helper functions as public members of the test fixture class instead of free functions in the test file.
 - Always use `MOCK_METHOD`; never use outdated `MOCK_METHOD*` macros (e.g. `MOCK_METHOD0`, `MOCK_METHOD1`) to keep tests readable and maintainable.
