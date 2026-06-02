@@ -107,7 +107,8 @@ message PairingFailedReason
 {
     enum Reason
     {
-        // Based on Bluetooth Spec v6.3, Vol 3, Part H, Section 3.5.5
+        // SMP Pairing Failed reason codes as defined in
+        // See Bluetooth Spec v6.3, Vol 3, Part H, Section 3.5.5
         passkeyEntryFailed = 0;                         // The user input of passkey failed, for example, the user cancelled the operation.
         oobNotAvailable = 1;
         authenticationRequirementsNotMet = 2;           // The pairing procedure cannot be performed as authentication requirements cannot be met due to IO capabilities of one or both devices.
@@ -124,9 +125,14 @@ message PairingFailedReason
         crossTransportKeyDerivationNotAllowed = 13;     // Indicates that the BR/EDR Link Key generated on the BR/EDR transport cannot be used to derive and distribute keys for the LE transport or the LE LTK generated on the LE transport cannot be used to derive a key for the BR/EDR transport.
         keyRejected = 14;                               // Indicates that the device chose not to accept a distributed key.
 
-        // Not part of the SMP Pairing Failed PDU, but valid failure outcomes of the PairAndBond procedure
-        timeout = 15;           // SMP protocol timeout (Vol 3, Part H, Section 3.4)
-        encryptionFailed = 16;  // SMP pairing succeeded but HCI link encryption failed
+        // The following values are not SMP Pairing Failed reason codes.
+        // They represent other failure outcomes of the overall PairAndBond procedure.
+
+        // The SMP pairing procedure did not complete within the protocol timeout.
+        timeout = 15;           // Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4
+
+        // SMP pairing completed successfully, but enabling link-layer encryption failed afterwards.
+        encryptionFailed = 16;
 
         // If the failure reason does not fit any of the above categories, this value can will be used
         unknown = 17;
