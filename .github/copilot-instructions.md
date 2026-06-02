@@ -61,7 +61,7 @@ ctest --preset host --test-dir build/host -R <test_name>
 
 ## Testing Strategy
 
-**Micro Tests**: Unit tests alongside source code in `test/` subdirectories. Use `emil_add_test()`.
+**Micro Tests**: Unit tests alongside source code in `test/` subdirectories. Use `emil_add_test()`. For more information on micro tests, see `./.github/instructions/microtest.instructions.md`.
 
 **Test Doubles**: Mock implementations in `test_doubles/` directories.
 
