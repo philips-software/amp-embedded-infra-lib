@@ -85,6 +85,5 @@ ctest --preset host --test-dir build/host -R <test_name>
 - No exceptions shall be used in the codebase, except in Host applications and tests.
 - Avoid protected members in classes except test classes; prefer private members with public/protected accessors if needed.
 - Use SFINAE to restrict template parameters if the template is only valid for specific types.
-- Always use `override` keyword for overridden virtual functions and do not use `final` keyword.
 - Use `assert` for non-critical preconditions and `really_assert` for critical preconditions that must never be violated.
 - Use `LOG_AND_ABORT(...)` when the code reached an unexpected location/state.
