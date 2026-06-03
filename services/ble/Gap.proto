@@ -556,13 +556,11 @@ service GapCentral
     // Sets the local identity address used by the central when privacy mode is disabled.
     // The address type may be public or random.
     // This does not set a resolvable private address; when privacy mode is enabled, the controller generates and rotates resolvable private addresses automatically.
-    // Is reset when set to PrivacyMode
-    // TODO Return value? GapCentralResponse.OwnAddressChanged
     rpc SetIdentityAddress(AddressWithType) returns (Nothing) { option (method_id) = 15; }
 
     // Allowed in link layer states: standby
     // Enables or disables use of a resolvable private address for the central.
-    // When enabled, the controller generates and rotates the private address automatically based on the local IRK.
+    // When enabled, the controller generates and rotates the private address automatically based on the local IRK. It will reset any set identity address.
     // When disabled, the central uses its configured identity address.
     rpc SetPrivacyMode(BoolValue) returns (Nothing) { option (method_id) = 16; }
 }
