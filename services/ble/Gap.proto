@@ -109,6 +109,7 @@ message PairingFailedReason
     {
         // SMP Pairing Failed reason codes as defined in
         // See Bluetooth Spec v6.3, Vol 3, Part H, Section 3.5.5
+        // Note: enum numeric values are an internal representation and are not guaranteed to match the spec's assigned error code values.
         passkeyEntryFailed = 0;                         // The user input of passkey failed, for example, the user cancelled the operation.
         oobNotAvailable = 1;
         authenticationRequirementsNotMet = 2;           // The pairing procedure cannot be performed as authentication requirements cannot be met due to IO capabilities of one or both devices.
@@ -134,7 +135,7 @@ message PairingFailedReason
         // SMP pairing completed successfully, but enabling link-layer encryption failed afterwards.
         encryptionFailed = 16;
 
-        // If the failure reason does not fit any of the above categories, this value can will be used
+        // If the failure reason does not fit any of the above categories, this value will be used
         unknown = 17;
     }
 
@@ -413,6 +414,7 @@ message DeviceDiscoveryFilter
 {
     enum Filter
     {
+        // Resets any set filters
         none = 0;
 
         // Filters on the device address (public or random). Passes if the address matches exactly.
@@ -430,7 +432,7 @@ message DeviceDiscoveryFilter
     Filter filter = 1;
     // The filter value to match against, interpreted according to the selected filter.
     bytes data = 2 [(bytes_size) = 32];
-};
+}
 
 message BondListItem
 {
@@ -472,7 +474,7 @@ service GapCentral
 
     // Allowed states: standby
     // Only devices matching the filter will be reported via GapCentralResponse.DeviceDiscovered.
-    // Filters are reset when scanning completes
+    // Filters are reset when scanning is stopped
     rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 2; }
 
     // Allowed states: standby
@@ -495,10 +497,10 @@ service GapCentral
     rpc Standby(Nothing) returns (Nothing) { option (method_id) = 5; }
 
     // Allowed states: connected
-    // Must always be explicitly called to secure a connection. Encryption is never started automatically.
+    // Can be called to secure a existing connection.
+    // If the peripheral sends a security request, this procedure is triggered automatically.
     // 1. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
     // 2. If there is a pre-existing bond, then the connection will be encrypted using the existing keys.
-    // If the peripheral sends a security request, this procedure is triggered automatically without needing to call PairAndBond explicitly. In this case the responses will be the same.
     // During pairing, GapCentralResponse.AuthenticationRequired may be called if user interaction is required.
     // Results in GapCentralResponse.PairingSuccess or GapCentralResponse.PairingFailed
     // Can result in GapCentralResponse.NumberOfBondsChanged or GapCentralResponse.CurrentState with standby if device disconnected
@@ -518,14 +520,14 @@ service GapCentral
 
     // Allowed in link layer states: connected
     // Provides the passkey entered by the user in response to GapCentralResponse.AuthenticationRequired.
-    // Only valid when AuthenticationInfo.isNumericComparison is false.
+    // Only valid when AuthenticationRequest.isNumericComparison is false.
     // Must be called within the SMP protocol timeout (30 seconds, Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4) of receiving AuthenticationRequired, otherwise pairing will fail with PairingFailedReason.timeout.
     // Influences GapCentralResponse.PairingSuccess or GapCentralResponse.PairingFailed response of PairAndBond
     rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 9; }
 
     // Allowed in link layer states: connected
     // Confirms or rejects the numeric comparison in response to GapCentralResponse.AuthenticationRequired.
-    // Only valid when AuthenticationInfo.isNumericComparison is true.
+    // Only valid when AuthenticationRequest.isNumericComparison is true.
     // Must be called within the SMP protocol timeout (30 seconds, Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4) of receiving AuthenticationRequired, otherwise pairing will fail with PairingFailedReason.timeout.
     // Influences GapCentralResponse.PairingSuccess or GapCentralResponse.PairingFailed response of PairAndBond
     rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 10; }
