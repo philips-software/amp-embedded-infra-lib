@@ -149,17 +149,6 @@ message BondsStatus
 }
 
 // ==================================================
-// GAP DEVICE
-// ==================================================
-
-service GapDevice {
-    option(service_id) = 36;
-
-    // Called when the device started and the BLE is initialized
-    rpc Initialized(Nothing) returns(Nothing) { option(method_id) = 1; }
-}
-
-// ==================================================
 // GAP PERIPHERAL
 // ==================================================
 
@@ -181,7 +170,9 @@ message AdvertisementMode
 
     // In increments of 0.625 ms, as per Bluetooth Core Specification.
     // This will be used for both minimum and maximum advertising interval.
-    uint32 advInterval = 2;
+    // TODO: Explain what min/max is. Or link to standard
+    // TODO: Show actual minimum and maximum values 
+    uint32 advInterval = 2; // TODO: Abbreviate?
 }
 
 message AdvertisementData
@@ -217,10 +208,14 @@ message SecurityPreference
     IoCapabilitiesEnum ioCapabilities = 3;
 }
 
+// TODO: Check enum postfixes
+// TODO: Enum naming consistency
+
 // ==================================================
 // GAP PERIPHERAL SERVICE DEFINITION
 // ==================================================
 // State constraints:
+//  After startup this service is only available after GapPeripheralResponse.CurrentState with state standby is received.
 //  Unless otherwise specified, all methods are allowed in all link layer states.
 //  Non-conformance may cause undefined behavior
 // Callback constraints:
@@ -324,6 +319,13 @@ service GapPeripheralResponse
     rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 7; }
 
     rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 8; }
+}
+
+// DEPRECATED: Wait for CurrentState(standby) after startup
+service GapPeripheralReadiness {
+    option(service_id) = 36;
+
+    rpc DeviceStarted(Nothing) returns(Nothing) { option(method_id) = 1; }
 }
 
 // ==================================================
@@ -452,6 +454,7 @@ message BondList
 // GAP CENTRAL SERVICE DEFINITION
 // ==================================================
 // State constraints:
+//  After startup this service is only available after GapPeripheralResponse.CurrentState with state standby is received.
 //  Unless otherwise specified, all methods are allowed in all link layer states.
 //  Non-conformance may cause undefined behavior
 // Callback constraints:
@@ -581,6 +584,7 @@ service GapCentralResponse {
     rpc PairingSuccess(Nothing) returns (Nothing) { option (method_id) =  3; }
     rpc PairingFailed(PairingFailedReason) returns (Nothing) { option (method_id) = 4; }
 
+    // TODO: Change into one response?
     rpc ResolvedPrivateAddress(Address) returns (Nothing) { option (method_id) = 7; }
     rpc ResolvePrivateAddressFailed(Nothing) returns (Nothing) { option (method_id) = 8; }
     
