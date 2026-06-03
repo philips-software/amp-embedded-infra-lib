@@ -563,6 +563,10 @@ service GapCentral
     // When enabled, the controller generates and rotates the private address automatically based on the local IRK. It will reset any set identity address.
     // When disabled, the central uses its configured identity address.
     rpc SetPrivacyMode(BoolValue) returns (Nothing) { option (method_id) = 16; }
+
+    // DEPRECATED: Do not use this for new code. It will be removed in the near future.
+    // Responds with GapCentralResponse.DeviceBonded
+    rpc IsDeviceBonded(AddressWithType) returns (Nothing) { option (method_id) = 17; }
 }
 
 service GapCentralResponse {
@@ -580,4 +584,7 @@ service GapCentralResponse {
     
     rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 9; }
     rpc BondList(BondList) returns (Nothing) { option(method_id) = 10; }
+
+    // DEPRECATED: Do not use this for new code. It will be removed in the near future.
+    rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 11; }
 }
