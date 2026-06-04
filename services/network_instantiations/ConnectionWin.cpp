@@ -69,7 +69,7 @@ namespace services
             result = closesocket(socket);
             if (result == SOCKET_ERROR)
             {
-                DWORD error = GetLastError();
+                DWORD error = WSAGetLastError();
                 std::abort();
             }
         }
@@ -121,13 +121,14 @@ namespace services
 
         if (address.ss_family == AF_INET)
         {
-            const auto& ipv4Address = reinterpret_cast<const sockaddr_in&>(address);
+            sockaddr_in ipv4Address{};
+            std::memcpy(&ipv4Address, &address, sizeof(ipv4Address));
             return services::ConvertFromUint32(htonl(ipv4Address.sin_addr.s_addr));
         }
 
-        const auto& ipv6Address = reinterpret_cast<const sockaddr_in6&>(address);
-        auto ipv4Address = ToIpv4AddressWhenV4Mapped(ipv6Address.sin6_addr);
-        if (ipv4Address)
+        sockaddr_in6 ipv6Address{};
+        std::memcpy(&ipv6Address, &address, sizeof(ipv6Address));
+        if (auto ipv4Address = ToIpv4AddressWhenV4Mapped(ipv6Address.sin6_addr); ipv4Address)
             return *ipv4Address;
 
         return ToIpv6Address(ipv6Address.sin6_addr);
@@ -367,7 +368,7 @@ namespace services
             saddress.sin_port = htons(factory.Port());
             if (connect(connectSocket, reinterpret_cast<sockaddr*>(&saddress), sizeof(saddress)) == SOCKET_ERROR)
             {
-                if (GetLastError() != WSAEWOULDBLOCK)
+                if (WSAGetLastError() != WSAEWOULDBLOCK)
                     std::abort();
             }
 
@@ -391,7 +392,7 @@ namespace services
         saddress.sin6_port = htons(factory.Port());
         if (connect(connectSocket, reinterpret_cast<sockaddr*>(&saddress), sizeof(saddress)) == SOCKET_ERROR)
         {
-            if (GetLastError() != WSAEWOULDBLOCK)
+            if (WSAGetLastError() != WSAEWOULDBLOCK)
                 std::abort();
         }
     }

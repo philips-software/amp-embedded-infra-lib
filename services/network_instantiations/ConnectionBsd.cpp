@@ -98,8 +98,7 @@ namespace
         if (!IN6_IS_ADDR_V4MAPPED(&address))
             return std::nullopt;
 
-        const std::array<uint8_t, 4> ipv4Bytes{ address.s6_addr[12], address.s6_addr[13], address.s6_addr[14], address.s6_addr[15] };
-        return services::IPv4Address{ ipv4Bytes[0], ipv4Bytes[1], ipv4Bytes[2], ipv4Bytes[3] };
+        return services::IPv4Address{ address.s6_addr[12], address.s6_addr[13], address.s6_addr[14], address.s6_addr[15] };
     }
 }
 
