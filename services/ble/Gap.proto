@@ -168,11 +168,11 @@ message AdvertisementMode
 {
     AdvertisementType type = 1;
 
-    // In increments of 0.625 ms, as per Bluetooth Core Specification.
-    // This will be used for both minimum and maximum advertising interval.
-    // TODO: Explain what min/max is. Or link to standard
-    // TODO: Show actual minimum and maximum values 
-    uint32 advInterval = 2; // TODO: Abbreviate?
+    // Advertising interval in units of 0.625 ms, as defined by the Bluetooth Core Specification.
+    // This value is used for both the minimum and maximum advertising interval, resulting in a fixed interval.
+    // Valid range: 0x0020 to 0x4000 (20 ms to 10.24 s).
+    // See Bluetooth Core Specification v6.3, Vol 4, Part E, Section 7.8.5.
+    uint32 advertisingInterval = 2;
 }
 
 message AdvertisementData
