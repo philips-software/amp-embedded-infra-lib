@@ -433,6 +433,12 @@ message DeviceDiscoveryFilter
     bytes data = 2 [(bytes_size) = 32];
 }
 
+message ResolvedPrivateAddress
+{
+    bool success = 1; // True if the address was successfully resolved to a bond, false otherwise.
+    AddressWithType addressWithType = 2; // The resolved identity address
+}
+
 message BondListItem
 {
     AddressWithType addressWithType = 1;        // Identity address
@@ -547,7 +553,7 @@ service GapCentral
     // Resolves a resolvable private address to the identity address of an already bonded device.
     // Useful to identify whether a device seen during scanning is already bonded, without needing to connect first.
     // Will only succeed if the address is a resolvable private address and the device is bonded.
-    // Results in GapCentralResponse.ResolvedPrivateAddress on success, or GapCentralResponse.ResolvePrivateAddressFailed on failure.
+    // Results in GapCentralResponse.ResolvePrivateAddressAttempt
     rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; }
 
     // Allowed in link layer states: standby, scanning, initiating, connected
@@ -580,14 +586,11 @@ service GapCentralResponse {
     rpc DeviceDiscovered(DiscoveredDevice) returns (Nothing) { option (method_id) = 2; }
     rpc AuthenticationRequired(AuthenticationRequest) returns (Nothing) { option (method_id) = 3; }
     rpc PairingAttempt(PairingResult) returns (Nothing) { option (method_id) =  4; }
-
-    // TODO: Change into one response?
-    rpc ResolvedPrivateAddress(Address) returns (Nothing) { option (method_id) = 7; }
-    rpc ResolvePrivateAddressFailed(Nothing) returns (Nothing) { option (method_id) = 8; }
+    rpc ResolvePrivateAddressAttempt(ResolvedPrivateAddress) returns (Nothing) { option (method_id) = 5; }
     
-    rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 9; }
-    rpc BondList(BondList) returns (Nothing) { option(method_id) = 10; }
+    rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
+    rpc BondList(BondList) returns (Nothing) { option(method_id) = 7; }
 
     // DEPRECATED: Will be removed in the near future.
-    rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 11; }
+    rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 8; }
 }
