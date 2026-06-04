@@ -320,7 +320,7 @@ service GapPeripheralResponse
     rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 8; }
 }
 
-// DEPRECATED: Wait for CurrentState(standby) after startup
+// DEPRECATED: Will be removed in the near future. Instead wait for CurrentState(standby) after startup
 service GapPeripheralReadiness {
     option(service_id) = 36;
 
@@ -505,7 +505,8 @@ service GapCentral
     // 2. If there is a pre-existing bond, then the connection will be encrypted using the existing keys.
     // During pairing, GapCentralResponse.AuthenticationRequired may be called if user interaction is required.
     // Results in GapCentralResponse.PairingSuccess or GapCentralResponse.PairingFailed
-    // Can result in GapCentralResponse.NumberOfBondsChanged or GapCentralResponse.CurrentState with standby if device disconnected
+    // Can result in GapCentralResponse.NumberOfBondsChanged if a new bond was created
+    // Can result in GapCentralResponse.CurrentState with standby if device disconnected
     rpc PairAndBond(Nothing) returns (Nothing) { option (method_id) = 6; }
 
     // Allowed in link layer states: standby
@@ -564,11 +565,11 @@ service GapCentral
 
     // Allowed in link layer states: standby
     // Enables or disables use of a resolvable private address for the central.
-    // When enabled, the controller generates and rotates the private address automatically based on the local IRK. It will reset any set identity address.
+    // When enabled, the controller generates and rotates the private address automatically based on the local IRK.
     // When disabled, the central uses its configured identity address.
     rpc SetPrivacyMode(BoolValue) returns (Nothing) { option (method_id) = 16; }
 
-    // DEPRECATED: Do not use this for new code. It will be removed in the near future.
+    // DEPRECATED: Will be removed in the near future.
     // Responds with GapCentralResponse.DeviceBonded
     rpc IsDeviceBonded(AddressWithType) returns (Nothing) { option (method_id) = 17; }
 }
@@ -590,6 +591,6 @@ service GapCentralResponse {
     rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 9; }
     rpc BondList(BondList) returns (Nothing) { option(method_id) = 10; }
 
-    // DEPRECATED: Do not use this for new code. It will be removed in the near future.
+    // DEPRECATED: Will be removed in the near future.
     rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 11; }
 }
