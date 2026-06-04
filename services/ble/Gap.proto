@@ -209,8 +209,6 @@ message SecurityPreference
     IoCapabilitiesEnum ioCapabilities = 3;
 }
 
-// TODO: Check enum postfixes
-
 // ==================================================
 // GAP PERIPHERAL SERVICE DEFINITION
 // ==================================================
@@ -249,6 +247,7 @@ service GapPeripheral
     // Maximum advertisement data length for this method is 28 bytes. Server reserves an additional 3 bytes for flags data with the flag bits 'LE General Discoverable Mode' and 'BR/EDR Not Supported' enabled.
     // Server will not check validity of the advertisement data and only maximum length of each field will be passed to BLE stack
     // If not set by this method, server will have as advertisement data only flags field.
+    // TODO: Replace with `SetSecurityPreferences(SecurityPreference)`
     rpc SetAdvertisementData(AdvertisementData) returns (Nothing) { option (method_id) = 4; }
 
     // Allowed in link layer states: standby
@@ -256,6 +255,7 @@ service GapPeripheral
     // Maximum scan response length for this method is 13 bytes. Server reserves 18 bytes for streaming service uuids. Scan Response is only possible with scannable advertisements
     // Server will not check validity of the scan response data and only maximum length of each field will be passed to BLE stack
     // If not set by this method, server will have as scan response data only service uuids.
+    // TODO: Replace with `SetSecurityPreferences(SecurityPreference)`
     rpc SetScanResponseData(ScanResponseData) returns (Nothing) { option (method_id) = 5; }
     
     // Allowed in link layer states: advertising
