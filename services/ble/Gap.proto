@@ -103,7 +103,7 @@ message AddressWithType
     AddressType addressType = 2;
 }
 
-message PairingResult
+message PairingStatus
 {
     enum PairingFailedReason
     {
@@ -311,7 +311,7 @@ service GapPeripheralResponse
 
     rpc IdentityAddress(AddressWithType) returns(Nothing) { option(method_id) = 4; }
 
-    rpc PairingAttempt(PairingResult) returns (Nothing) { option (method_id) = 5; }
+    rpc PairingResult(PairingStatus) returns (Nothing) { option (method_id) = 5; }
 
     rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 6; }
 
@@ -508,7 +508,7 @@ service GapCentral
     // 1. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
     // 2. If there is a pre-existing bond, then the connection will be encrypted using the existing keys.
     // During pairing, GapCentralResponse.AuthenticationRequired may be called if user interaction is required.
-    // Results in GapCentralResponse.PairingAttempt
+    // Results in GapCentralResponse.PairingResult
     // Can result in GapCentralResponse.NumberOfBondsChanged if a new bond was created
     // Can result in GapCentralResponse.CurrentState with standby if device disconnected
     rpc PairAndBond(Nothing) returns (Nothing) { option (method_id) = 6; }
@@ -529,14 +529,14 @@ service GapCentral
     // Provides the passkey entered by the user in response to GapCentralResponse.AuthenticationRequired.
     // Only valid when AuthenticationRequest.isNumericComparison is false.
     // Must be called within the SMP protocol timeout (30 seconds, Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4) of receiving AuthenticationRequired, otherwise pairing will fail with PairingFailedReason.timeout.
-    // Influences GapCentralResponse.PairingAttempt response of PairAndBond
+    // Influences GapCentralResponse.PairingResult response of PairAndBond
     rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 9; }
 
     // Allowed in link layer states: connected
     // Confirms or rejects the numeric comparison in response to GapCentralResponse.AuthenticationRequired.
     // Only valid when AuthenticationRequest.isNumericComparison is true.
     // Must be called within the SMP protocol timeout (30 seconds, Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4) of receiving AuthenticationRequired, otherwise pairing will fail with PairingFailedReason.timeout.
-    // Influences GapCentralResponse.PairingAttempt response of PairAndBond
+    // Influences GapCentralResponse.PairingResult response of PairAndBond
     rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 10; }
 
     // Allowed in link layer states: standby
@@ -553,7 +553,7 @@ service GapCentral
     // Resolves a resolvable private address to the identity address of an already bonded device.
     // Useful to identify whether a device seen during scanning is already bonded, without needing to connect first.
     // Will only succeed if the address is a resolvable private address and the device is bonded.
-    // Results in GapCentralResponse.ResolvePrivateAddressAttempt
+    // Results in GapCentralResponse.PrivateAddressResolved
     rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; }
 
     // Allowed in link layer states: standby, scanning, initiating, connected
@@ -585,8 +585,8 @@ service GapCentralResponse {
     
     rpc DeviceDiscovered(DiscoveredDevice) returns (Nothing) { option (method_id) = 2; }
     rpc AuthenticationRequired(AuthenticationRequest) returns (Nothing) { option (method_id) = 3; }
-    rpc PairingAttempt(PairingResult) returns (Nothing) { option (method_id) =  4; }
-    rpc ResolvePrivateAddressAttempt(ResolvedPrivateAddress) returns (Nothing) { option (method_id) = 5; }
+    rpc PairingResult(PairingStatus) returns (Nothing) { option (method_id) =  4; }
+    rpc PrivateAddressResolved(ResolvedPrivateAddress) returns (Nothing) { option (method_id) = 5; }
     
     rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
     rpc BondList(BondList) returns (Nothing) { option(method_id) = 7; }
