@@ -51,11 +51,11 @@ message IoCapabilities
 {
     enum IoCapabilitiesEnum
     {
-        None = 0;
-        Display = 1;
-        DisplayYesNo = 2;
-        Keyboard = 3;
-        KeyboardDisplay = 4;
+        none = 0;
+        display = 1;
+        displayYesNo = 2;
+        keyboard = 3;
+        keyboardDisplay = 4;
     }
 
     IoCapabilitiesEnum ioCaps = 1;
@@ -65,10 +65,10 @@ message SecurityLevel
 {
     enum SecurityLevelEnum
     {
-        None = 0;
-        UnauthenticatedPairing = 1;
-        AuthenticatedPairing = 2;
-        AuthenticatedPairingWithLE = 3;
+        none = 0;
+        unauthenticatedPairing = 1;
+        authenticatedPairing = 2;
+        authenticatedPairingWithLE = 3;
     }
 
     SecurityLevelEnum level = 1;
@@ -157,8 +157,8 @@ message AdvertisementType
     // Types defined in Bluetooth Core Specification Vol 6.3, Part B, Section 2.3.1
     enum AdvertisementTypeEnum
     {
-        AdvInd = 0;             // Connectable and scannable undirected advertising
-        AdvNonconnInd = 1;      // Non-connectable and non-scannable undirected advertising
+        advInd = 0;             // Connectable and scannable undirected advertising
+        advNonconnInd = 1;      // Non-connectable and non-scannable undirected advertising
     }
 
     AdvertisementTypeEnum type = 1;
@@ -196,11 +196,11 @@ message SecurityPreference
 
     enum IoCapabilitiesEnum
     {   
-        None = 0;
-        Display = 1;
-        DisplayYesNo = 2;
-        Keyboard = 3;
-        KeyboardDisplay = 4;
+        none = 0;
+        display = 1;
+        displayYesNo = 2;
+        keyboard = 3;
+        keyboardDisplay = 4;
     }
 
     SupportEnum secureConnections = 1;
@@ -209,7 +209,6 @@ message SecurityPreference
 }
 
 // TODO: Check enum postfixes
-// TODO: Enum naming consistency
 
 // ==================================================
 // GAP PERIPHERAL SERVICE DEFINITION
