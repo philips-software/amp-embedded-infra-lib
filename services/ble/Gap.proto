@@ -103,9 +103,9 @@ message AddressWithType
     AddressType addressType = 2;
 }
 
-message PairingFailedReason
+message PairingResult
 {
-    enum Reason
+    enum PairingFailedReason
     {
         // SMP Pairing Failed reason codes as defined in
         // See Bluetooth Spec v6.3, Vol 3, Part H, Section 3.5.5
@@ -139,7 +139,8 @@ message PairingFailedReason
         unknown = 17;
     }
 
-    Reason reason = 1;
+    bool success = 1; // True if pairing completed successfully. If false then 'reason' will indicate the failure reason.
+    PairingFailedReason reason = 2;
 }
 
 message BondsStatus
@@ -310,14 +311,11 @@ service GapPeripheralResponse
 
     rpc IdentityAddress(AddressWithType) returns(Nothing) { option(method_id) = 4; }
 
+    rpc PairingAttempt(PairingResult) returns (Nothing) { option (method_id) = 5; }
 
-    rpc PairingSuccess(Nothing) returns(Nothing) { option(method_id) = 5; }
-    rpc PairingFailed(PairingFailedReason) returns(Nothing) { option(method_id) = 6; }
+    rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 6; }
 
-
-    rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 7; }
-
-    rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 8; }
+    rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 7; }
 }
 
 // DEPRECATED: Will be removed in the near future. Instead wait for CurrentState(standby) after startup
@@ -504,7 +502,7 @@ service GapCentral
     // 1. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
     // 2. If there is a pre-existing bond, then the connection will be encrypted using the existing keys.
     // During pairing, GapCentralResponse.AuthenticationRequired may be called if user interaction is required.
-    // Results in GapCentralResponse.PairingSuccess or GapCentralResponse.PairingFailed
+    // Results in GapCentralResponse.PairingAttempt
     // Can result in GapCentralResponse.NumberOfBondsChanged if a new bond was created
     // Can result in GapCentralResponse.CurrentState with standby if device disconnected
     rpc PairAndBond(Nothing) returns (Nothing) { option (method_id) = 6; }
@@ -525,14 +523,14 @@ service GapCentral
     // Provides the passkey entered by the user in response to GapCentralResponse.AuthenticationRequired.
     // Only valid when AuthenticationRequest.isNumericComparison is false.
     // Must be called within the SMP protocol timeout (30 seconds, Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4) of receiving AuthenticationRequired, otherwise pairing will fail with PairingFailedReason.timeout.
-    // Influences GapCentralResponse.PairingSuccess or GapCentralResponse.PairingFailed response of PairAndBond
+    // Influences GapCentralResponse.PairingAttempt response of PairAndBond
     rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 9; }
 
     // Allowed in link layer states: connected
     // Confirms or rejects the numeric comparison in response to GapCentralResponse.AuthenticationRequired.
     // Only valid when AuthenticationRequest.isNumericComparison is true.
     // Must be called within the SMP protocol timeout (30 seconds, Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4) of receiving AuthenticationRequired, otherwise pairing will fail with PairingFailedReason.timeout.
-    // Influences GapCentralResponse.PairingSuccess or GapCentralResponse.PairingFailed response of PairAndBond
+    // Influences GapCentralResponse.PairingAttempt response of PairAndBond
     rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 10; }
 
     // Allowed in link layer states: standby
@@ -580,9 +578,8 @@ service GapCentralResponse {
     rpc CurrentState(State) returns (Nothing) { option (method_id) = 1; }
     
     rpc DeviceDiscovered(DiscoveredDevice) returns (Nothing) { option (method_id) = 2; }
-    rpc AuthenticationRequired(AuthenticationRequest) returns (Nothing) { option (method_id) = 11; }
-    rpc PairingSuccess(Nothing) returns (Nothing) { option (method_id) =  3; }
-    rpc PairingFailed(PairingFailedReason) returns (Nothing) { option (method_id) = 4; }
+    rpc AuthenticationRequired(AuthenticationRequest) returns (Nothing) { option (method_id) = 3; }
+    rpc PairingAttempt(PairingResult) returns (Nothing) { option (method_id) =  4; }
 
     // TODO: Change into one response?
     rpc ResolvedPrivateAddress(Address) returns (Nothing) { option (method_id) = 7; }
