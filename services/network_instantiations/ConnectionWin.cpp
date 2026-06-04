@@ -1,5 +1,50 @@
 #include "services/network_instantiations/ConnectionWin.hpp"
 #include "services/network_instantiations/EventDispatcherWithNetworkWin.hpp"
+#include <cstring>
+#include <optional>
+#include <ws2tcpip.h>
+
+namespace
+{
+    void EnableKeepAlive(SOCKET socket)
+    {
+        int enabled = 1;
+        setsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char*>(&enabled), sizeof(enabled));
+    }
+
+    services::IPv6Address ToIpv6Address(const IN6_ADDR& address)
+    {
+        services::IPv6Address ipv6Address{};
+        for (std::size_t i = 0; i != ipv6Address.size(); ++i)
+        {
+            uint16_t value;
+            std::memcpy(&value, &address.u.Byte[i * 2], sizeof(value));
+            ipv6Address[i] = ntohs(value);
+        }
+
+        return ipv6Address;
+    }
+
+    IN6_ADDR ToIn6Addr(const services::IPv6Address& address)
+    {
+        IN6_ADDR in6Address{};
+        for (std::size_t i = 0; i != address.size(); ++i)
+        {
+            const auto value = htons(address[i]);
+            std::memcpy(&in6Address.u.Byte[i * 2], &value, sizeof(value));
+        }
+
+        return in6Address;
+    }
+
+    std::optional<services::IPv4Address> ToIpv4AddressWhenV4Mapped(const IN6_ADDR& address)
+    {
+        if (!IN6_IS_ADDR_V4MAPPED(&address))
+            return std::nullopt;
+
+        return services::IPv4Address{ address.u.Byte[12], address.u.Byte[13], address.u.Byte[14], address.u.Byte[15] };
+    }
+}
 
 namespace services
 {
@@ -11,6 +56,7 @@ namespace services
                   keepAliveForReader = nullptr;
               })
     {
+        EnableKeepAlive(socket);
         UpdateEventFlags();
     }
 
@@ -66,13 +112,25 @@ namespace services
         ResetOwnership();
     }
 
-    IPv4Address ConnectionWin::Ipv4Address() const
+    IPAddress ConnectionWin::Address() const
     {
-        sockaddr_in address{};
+        sockaddr_storage address{};
         int addressLength = sizeof(address);
-        getpeername(socket, reinterpret_cast<SOCKADDR*>(&address), &addressLength);
+        if (getpeername(socket, reinterpret_cast<SOCKADDR*>(&address), &addressLength) == SOCKET_ERROR)
+            std::abort();
 
-        return services::ConvertFromUint32(htonl(address.sin_addr.s_addr));
+        if (address.ss_family == AF_INET)
+        {
+            const auto& ipv4Address = reinterpret_cast<const sockaddr_in&>(address);
+            return services::ConvertFromUint32(htonl(ipv4Address.sin_addr.s_addr));
+        }
+
+        const auto& ipv6Address = reinterpret_cast<const sockaddr_in6&>(address);
+        auto ipv4Address = ToIpv4AddressWhenV4Mapped(ipv6Address.sin6_addr);
+        if (ipv4Address)
+            return *ipv4Address;
+
+        return ToIpv6Address(ipv6Address.sin6_addr);
     }
 
     void ConnectionWin::SetObserver(infra::SharedPtr<services::ConnectionObserver> connectionObserver)
@@ -214,21 +272,44 @@ namespace services
         Rewind(0);
     }
 
-    ListenerWin::ListenerWin(EventDispatcherWithNetwork& network, uint16_t port, services::ServerConnectionObserverFactory& factory)
+    ListenerWin::ListenerWin(EventDispatcherWithNetwork& network, uint16_t port, services::ServerConnectionObserverFactory& factory, IPVersions versions)
         : network(network)
         , factory(factory)
     {
-        listenSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        const auto family = versions == IPVersions::ipv4 ? AF_INET : AF_INET6;
+
+        listenSocket = socket(family, SOCK_STREAM, IPPROTO_TCP);
         assert(listenSocket != INVALID_SOCKET);
         int result = WSAEventSelect(listenSocket, event, FD_ACCEPT);
         assert(result == 0);
 
-        sockaddr_in address = {};
-        address.sin_family = AF_INET;
-        address.sin_addr.s_addr = htonl(INADDR_ANY);
-        address.sin_port = htons(port);
-        if (bind(listenSocket, reinterpret_cast<SOCKADDR*>(&address), sizeof(SOCKADDR)) == SOCKET_ERROR)
-            std::abort();
+        int reuseAddress = 1;
+        setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&reuseAddress), sizeof(reuseAddress));
+
+        if (family == AF_INET6)
+        {
+            int v6Only = versions == IPVersions::ipv6 ? 1 : 0;
+            setsockopt(listenSocket, IPPROTO_IPV6, IPV6_V6ONLY, reinterpret_cast<const char*>(&v6Only), sizeof(v6Only));
+        }
+
+        if (family == AF_INET)
+        {
+            sockaddr_in address = {};
+            address.sin_family = AF_INET;
+            address.sin_addr.s_addr = htonl(INADDR_ANY);
+            address.sin_port = htons(port);
+            if (bind(listenSocket, reinterpret_cast<SOCKADDR*>(&address), sizeof(address)) == SOCKET_ERROR)
+                std::abort();
+        }
+        else
+        {
+            sockaddr_in6 address = {};
+            address.sin6_family = AF_INET6;
+            address.sin6_addr = in6addr_any;
+            address.sin6_port = htons(port);
+            if (bind(listenSocket, reinterpret_cast<SOCKADDR*>(&address), sizeof(address)) == SOCKET_ERROR)
+                std::abort();
+        }
 
         if (listen(listenSocket, 1) == SOCKET_ERROR)
             std::abort();
@@ -258,16 +339,44 @@ namespace services
                 if (connectionObserver)
                     connection->SetObserver(connectionObserver);
             },
-            connection->Ipv4Address());
+            connection->Address());
     }
 
     ConnectorWin::ConnectorWin(EventDispatcherWithNetwork& network, services::ClientConnectionObserverFactory& factory)
         : network(network)
         , factory(factory)
     {
-        auto address = std::get<services::IPv4Address>(factory.Address());
+        const auto address = factory.Address();
 
-        connectSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        if (std::holds_alternative<services::IPv4Address>(address))
+        {
+            auto ipv4Address = std::get<services::IPv4Address>(address);
+
+            connectSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+            assert(connectSocket != INVALID_SOCKET);
+            int result = WSAEventSelect(connectSocket, event, FD_CONNECT);
+            assert(result == 0);
+
+            ULONG nonBlock = 1;
+            if (ioctlsocket(connectSocket, FIONBIO, &nonBlock) == SOCKET_ERROR)
+                std::abort();
+
+            sockaddr_in saddress = {};
+            saddress.sin_family = AF_INET;
+            saddress.sin_addr.s_addr = htonl(services::ConvertToUint32(ipv4Address));
+            saddress.sin_port = htons(factory.Port());
+            if (connect(connectSocket, reinterpret_cast<sockaddr*>(&saddress), sizeof(saddress)) == SOCKET_ERROR)
+            {
+                if (GetLastError() != WSAEWOULDBLOCK)
+                    std::abort();
+            }
+
+            return;
+        }
+
+        const auto& ipv6Address = std::get<services::IPv6Address>(address);
+
+        connectSocket = socket(AF_INET6, SOCK_STREAM, IPPROTO_TCP);
         assert(connectSocket != INVALID_SOCKET);
         int result = WSAEventSelect(connectSocket, event, FD_CONNECT);
         assert(result == 0);
@@ -276,10 +385,10 @@ namespace services
         if (ioctlsocket(connectSocket, FIONBIO, &nonBlock) == SOCKET_ERROR)
             std::abort();
 
-        sockaddr_in saddress = {};
-        saddress.sin_family = AF_INET;
-        saddress.sin_addr.s_addr = htonl(services::ConvertToUint32(address));
-        saddress.sin_port = htons(factory.Port());
+        sockaddr_in6 saddress = {};
+        saddress.sin6_family = AF_INET6;
+        saddress.sin6_addr = ToIn6Addr(ipv6Address);
+        saddress.sin6_port = htons(factory.Port());
         if (connect(connectSocket, reinterpret_cast<sockaddr*>(&saddress), sizeof(saddress)) == SOCKET_ERROR)
         {
             if (GetLastError() != WSAEWOULDBLOCK)
