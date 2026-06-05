@@ -86,6 +86,13 @@ message OperationResult
     OperationStatus value = 1;
 }
 
+enum CccdSetting
+{
+    none = 0;
+    notificationEnabled = 1;
+    indicationEnabled = 2;
+}
+
 service GattClient
 {
     option (service_id) = 134;
@@ -118,10 +125,8 @@ service GattClient
     rpc Read(Handle) returns (Nothing) { option (method_id) = 8; }
     rpc Write(AttributeData) returns (Nothing) { option (method_id) = 9; }
     rpc WriteWithoutResponse(AttributeData) returns (Nothing) { option (method_id) = 10; }
-    rpc EnableNotification(Handle) returns (Nothing) { option (method_id) = 11; };
-    rpc DisableNotification(Handle) returns (Nothing) { option (method_id) = 12; };
-    rpc EnableIndication(Handle) returns (Nothing) { option (method_id) = 13; };
-    rpc DisableIndication(Handle) returns (Nothing) { option (method_id) = 14; };
+    rpc ReadDescriptor(Handle) returns (Nothing) { option (method_id) = 16; }
+    rpc WriteDescriptor(AttributeData) returns (Nothing) { option (method_id) = 17; }
 
     // IndicationDone must be called for every IndicationReceived to acknowledge the indication.
     rpc IndicationDone(Nothing) returns (Nothing) { option (method_id) = 15; };
@@ -146,8 +151,8 @@ service GattClientResponse
 
     rpc ReadResponse(ReadResult) returns (Nothing) { option (method_id) = 8; }
 
-    // Called after completion of characteristic operations with response: Read, Write, Enable/Disable Notification/Indication
-    rpc CharacteristicOperationComplete(OperationResult) returns (Nothing) { option (method_id) = 9; }
+    // Called after completion of characteristic operations with response: Read, Write, ReadDescriptor, WriteDescriptor
+    rpc OperationComplete(OperationResult) returns (Nothing) { option (method_id) = 9; }
 
     rpc IndicationReceived(AttributeData) returns (Nothing) { option (method_id) = 10; }
     rpc NotificationReceived(AttributeData) returns (Nothing) { option (method_id) = 11; }
