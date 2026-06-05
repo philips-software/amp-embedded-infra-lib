@@ -36,7 +36,7 @@ message Handle
     uint32 value = 1;
 }
 
-message CharacteristicData
+message AttributeData
 {
     Handle handle = 1;
     bytes data = 2 [(bytes_size) = 512];
@@ -71,7 +71,7 @@ message Descriptr
 
 message ReadResult
 {
-    CharacteristicData data = 1;
+    AttributeData data = 1;
 }
 
 enum OperationStatus
@@ -90,6 +90,8 @@ service GattClient
 {
     option (service_id) = 134;
 
+    // Requests the MTU size to be increased from the default, for better throughput.
+    // The effective MTU size is implementation defined, and is returned in the MtuSizeExchangeComplete response.
     rpc MtuSizeExchangeRequest(Nothing) returns (Nothing) { option (method_id) = 1; }
 
     // Discovery must follow the sequence: Service -> Characteristic -> Descriptor.
@@ -114,8 +116,8 @@ service GattClient
     // Example 2: If DisableNotification is called, Write shall only be called after CharacteristicOperationComplete
     // Example 3: If EnableNotification is called, EnableIndication shall only be called after CharacteristicOperationComplete
     rpc Read(Handle) returns (Nothing) { option (method_id) = 8; }
-    rpc Write(CharacteristicData) returns (Nothing) { option (method_id) = 9; }
-    rpc WriteWithoutResponse(CharacteristicData) returns (Nothing) { option (method_id) = 10; }
+    rpc Write(AttributeData) returns (Nothing) { option (method_id) = 9; }
+    rpc WriteWithoutResponse(AttributeData) returns (Nothing) { option (method_id) = 10; }
     rpc EnableNotification(Handle) returns (Nothing) { option (method_id) = 11; };
     rpc DisableNotification(Handle) returns (Nothing) { option (method_id) = 12; };
     rpc EnableIndication(Handle) returns (Nothing) { option (method_id) = 13; };
@@ -128,6 +130,8 @@ service GattClient
 service GattClientResponse
 {
     option (service_id) = 135;
+
+    // Responses are not sent after connection loss
 
     rpc MtuSizeExchangeComplete(MtuSize) returns (Nothing) { option (method_id) = 1; }
 
@@ -145,7 +149,7 @@ service GattClientResponse
     // Called after completion of characteristic operations with response: Read, Write, Enable/Disable Notification/Indication
     rpc CharacteristicOperationComplete(OperationResult) returns (Nothing) { option (method_id) = 9; }
 
-    rpc IndicationReceived(CharacteristicData) returns (Nothing) { option (method_id) = 10; }
-    rpc NotificationReceived(CharacteristicData) returns (Nothing) { option (method_id) = 11; }
+    rpc IndicationReceived(AttributeData) returns (Nothing) { option (method_id) = 10; }
+    rpc NotificationReceived(AttributeData) returns (Nothing) { option (method_id) = 11; }
 }
 
