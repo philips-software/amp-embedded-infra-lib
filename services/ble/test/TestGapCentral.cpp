@@ -27,7 +27,7 @@ namespace services
 
     MATCHER_P(ObjectContentsEqual, x, negation ? "Contents not equal" : "Contents are equal")
     {
-        return x.eventType == arg.eventType && x.addressType == arg.addressType && x.address == arg.address && x.rssi == arg.rssi;
+        return x.reportType == arg.reportType && x.addressType == arg.addressType && x.address == arg.address && x.rssi == arg.rssi;
     }
 
     TEST_F(GapCentralDecoratorTest, forward_all_state_changed_events_to_observers)
@@ -48,7 +48,12 @@ namespace services
 
     TEST_F(GapCentralDecoratorTest, forward_device_discovered_event_to_observers)
     {
-        GapAdvertisingReport deviceDiscovered{ GapAdvertisingEventType::advInd, GapDeviceAddressType::publicAddress, hal::MacAddress{ 0, 1, 2, 3, 4, 5 }, infra::BoundedVector<uint8_t>::WithMaxSize<GapPeripheral::maxAdvertisementDataSize>{}, -75 };
+        GapAdvertisingReport deviceDiscovered{
+            AdvertisingReportType::advInd,
+            GapAddress{ hal::MacAddress{ 0, 1, 2, 3, 4, 5 }, GapDeviceAddressType::publicAddress },
+            infra::BoundedVector<uint8_t>::WithMaxSize<GapPeripheral::maxAdvertisementDataSize>{},
+            -75
+        };
 
         EXPECT_CALL(gapObserver, DeviceDiscovered(ObjectContentsEqual(deviceDiscovered)));
 
@@ -237,11 +242,11 @@ namespace services
     {
         infra::StringOutputStream::WithStorage<128> stream;
 
-        auto eventTypeAdvInd = services::GapAdvertisingEventType::advInd;
-        auto eventTypeAdvDirectInd = services::GapAdvertisingEventType::advDirectInd;
-        auto eventTypeAdvScanInd = services::GapAdvertisingEventType::advScanInd;
-        auto eventTypeAdvNonconnInd = services::GapAdvertisingEventType::advNonconnInd;
-        auto eventTypeScanResponse = services::GapAdvertisingEventType::scanResponse;
+        auto eventTypeAdvInd = services::AdvertisingReportType::advInd;
+        auto eventTypeAdvDirectInd = services::AdvertisingReportType::advDirectInd;
+        auto eventTypeAdvScanInd = services::AdvertisingReportType::advScanInd;
+        auto eventTypeAdvNonconnInd = services::AdvertisingReportType::advNonconnInd;
+        auto eventTypeScanResponse = services::AdvertisingReportType::scanResponse;
 
         stream << eventTypeAdvInd << " " << eventTypeAdvDirectInd << " " << eventTypeAdvScanInd << " " << eventTypeAdvNonconnInd << " " << eventTypeScanResponse;
 

@@ -33,7 +33,7 @@ namespace services
         initiating
     };
 
-    enum class GapAdvertisingEventType : uint8_t
+    enum class AdvertisingReportType : uint8_t
     {
         advInd,
         advDirectInd,
@@ -355,9 +355,8 @@ namespace services
 
     struct GapAdvertisingReport
     {
-        GapAdvertisingEventType eventType;
-        GapDeviceAddressType addressType;
-        hal::MacAddress address;
+        AdvertisingReportType reportType;
+        GapAddress gapAddress;
         infra::BoundedVector<uint8_t>::WithMaxSize<GapPeripheral::maxAdvertisementDataSize> data;
         int32_t rssi;
     };
@@ -413,7 +412,7 @@ namespace services
 
 namespace infra
 {
-    infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::GapAdvertisingEventType& eventType);
+    infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::AdvertisingReportType& reportType);
     infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::GapDeviceAddressType& addressType);
     infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::GapState& state);
 }

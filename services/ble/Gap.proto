@@ -403,7 +403,7 @@ message DiscoveredDevice
 
     // Raw advertisement data as received from the controller.
     // Layout of data defined in Bluetooth Core Specification v6.3, Vol 3, Part C, Section 11
-    bytes advertisementData = 2 [(bytes_size) = 32];
+    bytes data = 2 [(bytes_size) = 32];
 
     int32 rssi = 3;
     AdvertisingReportType advertisingReportType = 4;
@@ -583,6 +583,7 @@ service GapCentralResponse {
 
     rpc CurrentState(State) returns (Nothing) { option (method_id) = 1; }
     
+    // TODO: Rename to AdvertisingReportReceived(AdvertisingReport)?
     rpc DeviceDiscovered(DiscoveredDevice) returns (Nothing) { option (method_id) = 2; }
     rpc AuthenticationRequired(AuthenticationRequest) returns (Nothing) { option (method_id) = 3; }
     rpc PairingResult(PairingStatus) returns (Nothing) { option (method_id) =  4; }

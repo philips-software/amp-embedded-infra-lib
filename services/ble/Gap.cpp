@@ -412,20 +412,20 @@ namespace services
 
 namespace infra
 {
-    TextOutputStream& operator<<(TextOutputStream& stream, const services::GapAdvertisingEventType& eventType)
+    TextOutputStream& operator<<(TextOutputStream& stream, const services::AdvertisingReportType& reportType)
     {
-        if (eventType == services::GapAdvertisingEventType::advInd)
+        if (reportType == services::AdvertisingReportType::advInd)
             stream << "ADV_IND";
-        else if (eventType == services::GapAdvertisingEventType::advDirectInd)
+        else if (reportType == services::AdvertisingReportType::advDirectInd)
             stream << "ADV_DIRECT_IND";
-        else if (eventType == services::GapAdvertisingEventType::advScanInd)
+        else if (reportType == services::AdvertisingReportType::advScanInd)
             stream << "ADV_SCAN_IND";
-        else if (eventType == services::GapAdvertisingEventType::scanResponse)
+        else if (reportType == services::AdvertisingReportType::scanResponse)
             stream << "SCAN_RESPONSE";
-        else if (eventType == services::GapAdvertisingEventType::advNonconnInd)
+        else if (reportType == services::AdvertisingReportType::advNonconnInd)
             stream << "ADV_NONCONN_IND";
         else
-            LOG_AND_ABORT_ENUM(eventType);
+            LOG_AND_ABORT_ENUM(reportType);
 
         return stream;
     }
