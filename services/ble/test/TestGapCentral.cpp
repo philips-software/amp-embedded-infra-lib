@@ -73,8 +73,8 @@ namespace services
         EXPECT_CALL(gap, CancelConnect());
         decorator.CancelConnect();
 
-        EXPECT_CALL(gap, Disconnect());
-        decorator.Disconnect();
+        EXPECT_CALL(gap, Standby());
+        decorator.Standby();
 
         EXPECT_CALL(gap, SetIdentityAddress(MacAddressContentsEqual(macAddress), GapDeviceAddressType::publicAddress));
         decorator.SetIdentityAddress(macAddress, GapDeviceAddressType::publicAddress);

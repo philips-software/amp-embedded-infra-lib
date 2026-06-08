@@ -197,9 +197,9 @@ namespace services
         GapCentralObserver::Subject().CancelConnect();
     }
 
-    void GapCentralDecorator::Disconnect()
+    void GapCentralDecorator::Standby()
     {
-        GapCentralObserver::Subject().Disconnect();
+        GapCentralObserver::Subject().Standby();
     }
 
     void GapCentralDecorator::SetIdentityAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType)
