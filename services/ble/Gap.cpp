@@ -192,11 +192,6 @@ namespace services
         GapCentralObserver::Subject().Connect(macAddress, addressType, initiatingTimeout);
     }
 
-    void GapCentralDecorator::CancelConnect()
-    {
-        GapCentralObserver::Subject().CancelConnect();
-    }
-
     void GapCentralDecorator::Standby()
     {
         GapCentralObserver::Subject().Standby();
