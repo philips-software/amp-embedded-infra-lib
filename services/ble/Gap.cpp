@@ -29,19 +29,11 @@ namespace services
             });
     }
 
-    void GapPairingDecorator::PairingSuccessfullyCompleted()
+    void GapPairingDecorator::PairingResult(bool pairedSuccessfully, PairingFailedReason pairingFailedReason)
     {
-        GapPairing::NotifyObservers([](auto& obs)
+        GapPairing::NotifyObservers([&pairedSuccessfully, &pairingFailedReason](auto& obs)
             {
-                obs.PairingSuccessfullyCompleted();
-            });
-    }
-
-    void GapPairingDecorator::PairingFailed(PairingErrorType error)
-    {
-        GapPairing::NotifyObservers([&error](auto& obs)
-            {
-                obs.PairingFailed(error);
+                obs.PairingResult(pairedSuccessfully, pairingFailedReason);
             });
     }
 

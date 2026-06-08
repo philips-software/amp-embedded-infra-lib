@@ -13,8 +13,7 @@ namespace services
         using GapPairingObserver::GapPairingObserver;
 
         MOCK_METHOD(void, DisplayPasskey, (int32_t passkey, bool numericComparison), (override));
-        MOCK_METHOD(void, PairingSuccessfullyCompleted, (), (override));
-        MOCK_METHOD(void, PairingFailed, (PairingErrorType error), (override));
+        MOCK_METHOD(void, PairingResult, (bool pairedSuccessfully, PairingFailedReason pairingFailedReason), (override));
         MOCK_METHOD(void, OutOfBandDataGenerated, (const GapOutOfBandData& outOfBandData), (override));
     };
 }

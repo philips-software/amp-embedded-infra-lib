@@ -93,21 +93,31 @@ namespace services
     public:
         using infra::Observer<GapPairingObserver, GapPairing>::Observer;
 
-        enum class PairingErrorType : uint8_t
+        // See Gap.proto for more information on failure reasons.
+        enum class PairingFailedReason : uint8_t
         {
             passkeyEntryFailed,
+            oobNotAvailable,
             authenticationRequirementsNotMet,
+            confirmValueFailed,
             pairingNotSupported,
             insufficientEncryptionKeySize,
+            commandNotSupported,
+            unspecifiedReason,
+            repeatedAttempts,
+            invalidParameters,
+            dhkeyCheckFailed,
             numericComparisonFailed,
+            brEdrPairingInProgress,
+            crossTransportKeyDerivationNotAllowed,
+            keyRejected,
             timeout,
             encryptionFailed,
-            unknown,
+            unknown
         };
 
         virtual void DisplayPasskey(int32_t passkey, bool numericComparison) = 0;
-        virtual void PairingSuccessfullyCompleted() = 0;
-        virtual void PairingFailed(PairingErrorType error) = 0;
+        virtual void PairingResult(bool pairedSuccessfully, PairingFailedReason pairingFailedReason) = 0;
         virtual void OutOfBandDataGenerated(const GapOutOfBandData& outOfBandData) = 0;
     };
 
@@ -175,8 +185,7 @@ namespace services
 
         // Implementation of GapPairingObserver
         void DisplayPasskey(int32_t passkey, bool numericComparison) override;
-        void PairingSuccessfullyCompleted() override;
-        void PairingFailed(PairingErrorType error) override;
+        void PairingResult(bool pairedSuccessfully, PairingFailedReason pairingFailedReason) override;
         void OutOfBandDataGenerated(const GapOutOfBandData& outOfBandData) override;
 
         // Implementation of GapPairing

@@ -139,7 +139,7 @@ message PairingStatus
         unknown = 17;
     }
 
-    bool success = 1; // True if pairing completed successfully. If false then 'reason' will indicate the failure reason.
+    bool pairedSuccessfully = 1;    // If false then 'reason' will indicate the failure reason.
     PairingFailedReason reason = 2;
 }
 

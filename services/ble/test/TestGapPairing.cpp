@@ -33,15 +33,13 @@ namespace services
     TEST_F(GapPairingDecoratorTest, forward_all_events_to_observers)
     {
         EXPECT_CALL(gapPairingObserver, DisplayPasskey(::testing::Eq(11111), ::testing::IsTrue()));
-        EXPECT_CALL(gapPairingObserver, PairingSuccessfullyCompleted());
-        EXPECT_CALL(gapPairingObserver, PairingFailed(::testing::TypedEq<GapPairingObserver::PairingErrorType>(GapPairingObserver::PairingErrorType::numericComparisonFailed)));
+        EXPECT_CALL(gapPairingObserver, PairingResult(::testing::IsTrue(), ::testing::Eq(GapPairingObserver::PairingFailedReason::numericComparisonFailed)));
         EXPECT_CALL(gapPairingObserver, OutOfBandDataGenerated(OutOfBandDataContentsEqual(services::GapOutOfBandData{ macAddress, GapDeviceAddressType::publicAddress, infra::MakeByteRange(random), infra::MakeByteRange(confirm) })));
 
         gapPairing.NotifyObservers([this](GapPairingObserver& obs)
             {
                 obs.DisplayPasskey(11111, true);
-                obs.PairingSuccessfullyCompleted();
-                obs.PairingFailed(GapPairingObserver::PairingErrorType::numericComparisonFailed);
+                obs.PairingResult(true, GapPairingObserver::PairingFailedReason::numericComparisonFailed);
                 obs.OutOfBandDataGenerated(GapOutOfBandData{ macAddress, GapDeviceAddressType::publicAddress, infra::MakeByteRange(random), infra::MakeByteRange(confirm) });
             });
     }
