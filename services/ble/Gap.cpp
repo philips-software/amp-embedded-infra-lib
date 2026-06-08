@@ -212,11 +212,6 @@ namespace services
         GapCentralObserver::Subject().StartDeviceDiscovery();
     }
 
-    void GapCentralDecorator::StopDeviceDiscovery()
-    {
-        GapCentralObserver::Subject().StopDeviceDiscovery();
-    }
-
     std::optional<hal::MacAddress> GapCentralDecorator::ResolvePrivateAddress(hal::MacAddress address) const
     {
         return GapCentralObserver::Subject().ResolvePrivateAddress(address);

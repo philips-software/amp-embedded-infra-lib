@@ -82,9 +82,6 @@ namespace services
         EXPECT_CALL(gap, StartDeviceDiscovery());
         decorator.StartDeviceDiscovery();
 
-        EXPECT_CALL(gap, StopDeviceDiscovery());
-        decorator.StopDeviceDiscovery();
-
         hal::MacAddress mac = { 0x00, 0x1A, 0x7D, 0xDA, 0x71, 0x13 };
         EXPECT_CALL(gap, ResolvePrivateAddress(mac)).WillOnce(testing::Return(std::nullopt));
         EXPECT_EQ(decorator.ResolvePrivateAddress(mac), std::nullopt);
