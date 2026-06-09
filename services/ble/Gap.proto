@@ -547,19 +547,19 @@ service GapCentral
     // Allowed in link layer states: standby
     // Removes the bond associated with the given identity address.
     // Results in GapCentralResponse.NumberOfBondsChanged
-    rpc RemoveBondWithAddress(AddressWithType) returns (Nothing) { option (method_id) = 12; }
+    // rpc RemoveBondWithAddress(AddressWithType) returns (Nothing) { option (method_id) = 12; }
 
     // Allowed in link layer states: standby, scanning, initiating, connected
     // Resolves a resolvable private address to the identity address of an already bonded device.
     // Useful to identify whether a device seen during scanning is already bonded, without needing to connect first.
     // Will only succeed if the address is a resolvable private address and the device is bonded.
-    // Results in GapCentralResponse.PrivateAddressResolved
+    // Results in GapCentralResponse.ResolvePrivateAddressResult
     rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; }
 
     // Allowed in link layer states: standby, scanning, initiating, connected
     // Returns the list of bonded devices including their identity address and device name, sorted oldest to newest.
     // Results in GapCentralResponse.BondList
-    rpc GetBondList(Nothing) returns (Nothing) { option (method_id) = 14; }
+    // rpc GetBondList(Nothing) returns (Nothing) { option (method_id) = 14; }
 
     // Allowed in link layer states: standby
     // Sets the local identity address used by the central when privacy mode is disabled.
@@ -587,10 +587,10 @@ service GapCentralResponse {
     rpc DeviceDiscovered(DiscoveredDevice) returns (Nothing) { option (method_id) = 2; }
     rpc AuthenticationRequired(AuthenticationRequest) returns (Nothing) { option (method_id) = 3; }
     rpc PairingResult(PairingStatus) returns (Nothing) { option (method_id) =  4; }
-    rpc PrivateAddressResolved(ResolvedPrivateAddress) returns (Nothing) { option (method_id) = 5; }
+    rpc ResolvePrivateAddressResult(ResolvedPrivateAddress) returns (Nothing) { option (method_id) = 5; }
     
     rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
-    rpc BondList(BondList) returns (Nothing) { option(method_id) = 7; }
+    // rpc BondList(BondList) returns (Nothing) { option(method_id) = 7; }
 
     // DEPRECATED: Will be removed in the near future.
     rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 8; }
