@@ -116,7 +116,7 @@ namespace services
             unknown
         };
 
-        virtual void AuthenticationRequired(int32_t passkey, bool numericComparison) = 0;
+        virtual void AuthenticationRequired(int32_t passkey, bool isNumericComparison) = 0;
         virtual void PairingResult(bool pairedSuccessfully, PairingFailedReason pairingFailedReason) = 0;
         virtual void OutOfBandDataGenerated(const GapOutOfBandData& outOfBandData) = 0;
     };
@@ -184,7 +184,7 @@ namespace services
         using GapPairingObserver::GapPairingObserver;
 
         // Implementation of GapPairingObserver
-        void AuthenticationRequired(int32_t passkey, bool numericComparison) override;
+        void AuthenticationRequired(int32_t passkey, bool isNumericComparison) override;
         void PairingResult(bool pairedSuccessfully, PairingFailedReason pairingFailedReason) override;
         void OutOfBandDataGenerated(const GapOutOfBandData& outOfBandData) override;
 
