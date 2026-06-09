@@ -32,13 +32,13 @@ namespace services
 
     TEST_F(GapPairingDecoratorTest, forward_all_events_to_observers)
     {
-        EXPECT_CALL(gapPairingObserver, AuthenticationRequired(::testing::Eq(11111), ::testing::IsTrue()));
+        EXPECT_CALL(gapPairingObserver, AuthenticationRequired(::testing::IsTrue(), ::testing::Eq(11111)));
         EXPECT_CALL(gapPairingObserver, PairingResult(::testing::IsTrue(), ::testing::Eq(GapPairingObserver::PairingFailedReason::numericComparisonFailed)));
         EXPECT_CALL(gapPairingObserver, OutOfBandDataGenerated(OutOfBandDataContentsEqual(services::GapOutOfBandData{ macAddress, GapDeviceAddressType::publicAddress, infra::MakeByteRange(random), infra::MakeByteRange(confirm) })));
 
         gapPairing.NotifyObservers([this](GapPairingObserver& obs)
             {
-                obs.AuthenticationRequired(11111, true);
+                obs.AuthenticationRequired(true, 11111);
                 obs.PairingResult(true, GapPairingObserver::PairingFailedReason::numericComparisonFailed);
                 obs.OutOfBandDataGenerated(GapOutOfBandData{ macAddress, GapDeviceAddressType::publicAddress, infra::MakeByteRange(random), infra::MakeByteRange(confirm) });
             });

@@ -25,7 +25,7 @@ namespace services
     {
         GapPairing::NotifyObservers([&passkey, &isNumericComparison](auto& obs)
             {
-                obs.AuthenticationRequired(passkey, isNumericComparison);
+                obs.AuthenticationRequired(isNumericComparison, passkey);
             });
     }
 
