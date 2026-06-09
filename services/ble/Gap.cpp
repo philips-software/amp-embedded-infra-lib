@@ -21,7 +21,7 @@ namespace
 
 namespace services
 {
-    void GapPairingDecorator::AuthenticationRequired(int32_t passkey, bool isNumericComparison)
+    void GapPairingDecorator::AuthenticationRequired(bool isNumericComparison, uint32_t passkey)
     {
         GapPairing::NotifyObservers([&passkey, &isNumericComparison](auto& obs)
             {

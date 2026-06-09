@@ -441,7 +441,7 @@ message DeviceDiscoveryFilter
 message ResolvedPrivateAddress
 {
     bool success = 1; // True if the address was successfully resolved to a bond, false otherwise.
-    AddressWithType addressWithType = 2; // The resolved identity address
+    Address identityAddress = 2; // The resolved identity address
 }
 
 message BondListItem
@@ -599,4 +599,6 @@ service GapCentralResponse {
 
     // DEPRECATED: Will be removed in the near future.
     rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 8; }
+    rpc DeviceStarted(Nothing) returns (Nothing) { option (method_id) = 101; } // TODO REMOVE!
+    rpc Done(Nothing) returns (Nothing) { option (method_id) = 100; } // TODO REMOVE!
 }
