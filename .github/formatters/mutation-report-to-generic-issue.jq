@@ -10,6 +10,7 @@
         | del(.value) as $file
         | $mutants
         | select(.status == ("Survived", "NoCoverage"))
+        | select(.location.start.line >= 1)
         | (
             if .replacement then
                 "The mutation operator '" + .mutatorName + "' has mutated the input to " + .replacement + " without any tests failing."
