@@ -21,11 +21,11 @@ namespace
 
 namespace services
 {
-    void GapPairingDecorator::DisplayPasskey(int32_t passkey, bool numericComparison)
+    void GapPairingDecorator::AuthenticationRequired(int32_t passkey, bool numericComparison)
     {
         GapPairing::NotifyObservers([&passkey, &numericComparison](auto& obs)
             {
-                obs.DisplayPasskey(passkey, numericComparison);
+                obs.AuthenticationRequired(passkey, numericComparison);
             });
     }
 
