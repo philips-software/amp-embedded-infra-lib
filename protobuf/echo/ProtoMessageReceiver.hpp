@@ -49,7 +49,7 @@ namespace services
         template<class Message>
         void DeserializeField(ProtoMessage<Message>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Message& value);
         template<class ProtoType, class Type>
-        void DeserializeField(ProtoRepeatedBase<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value) const;
+        void DeserializeField(ProtoRepeatedBase<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value);
         template<class ProtoType, class Type>
         void DeserializeField(ProtoUnboundedRepeated<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value) const;
 
@@ -152,7 +152,7 @@ namespace services
     }
 
     template<class ProtoType, class Type>
-    void ProtoMessageReceiverBase::DeserializeField(ProtoRepeatedBase<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value) const
+    void ProtoMessageReceiverBase::DeserializeField(ProtoRepeatedBase<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value)
     {
         parser.ReportFormatResult(!value.full());
         if (!value.full())
