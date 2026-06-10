@@ -61,13 +61,11 @@ namespace services
 
     infra::SharedPtr<void> EventDispatcherWithNetwork::Listen(uint16_t port, services::ServerConnectionObserverFactory& factory, IPVersions versions)
     {
-        assert(versions != IPVersions::ipv6);
-        return infra::MakeSharedOnHeap<ListenerWin>(*this, port, factory);
+        return infra::MakeSharedOnHeap<ListenerWin>(*this, port, factory, versions);
     }
 
     void EventDispatcherWithNetwork::Connect(ClientConnectionObserverFactory& factory)
     {
-        assert(std::holds_alternative<IPv4Address>(factory.Address()));
         connectors.emplace_back(*this, factory);
     }
 
