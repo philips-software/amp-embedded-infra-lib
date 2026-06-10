@@ -182,7 +182,15 @@ namespace services
                         return false;
                     }
 
-                    SerializeField(ProtoType(), formatter, value[index], fieldNumber, retry);
+                    auto size = stack.size();
+                    auto result = SerializeField(ProtoType(), formatter, value[index], fieldNumber, retry);
+                    if (size != stack.size())
+                    {
+                        // A nested message was added to the stack, so we need to stop processing the current message until it has been fully sent
+                        ++index;
+                        retry = retry && result;
+                        return false;
+                    }
                 }
 
                 return true;
