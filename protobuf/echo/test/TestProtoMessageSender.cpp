@@ -218,6 +218,18 @@ TEST_F(ProtoMessageSenderTest, format_many_repeated_uint32)
     EXPECT_FALSE(stream.Failed());
 }
 
+TEST_F(ProtoMessageSenderTest, format_many_repeated_nested_messages)
+{
+    test_messages::TestNestedRepeatedMessage message;
+    message.message.insert(message.message.end(), 10, static_cast<uint8_t>(5));
+    services::ProtoMessageSender sender{ message };
+
+    infra::StdVectorOutputStream::WithStorage stream;
+    sender.Fill(stream);
+    EXPECT_EQ(infra::ConstructBin().Repeat(10, { (1 << 3) | 2, 2, 1 << 3, 5 }).Vector(), stream.Storage());
+    EXPECT_FALSE(stream.Failed());
+}
+
 TEST_F(ProtoMessageSenderTest, format_many_bytes)
 {
     test_messages::TestBytes message;

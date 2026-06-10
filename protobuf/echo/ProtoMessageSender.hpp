@@ -12,7 +12,7 @@ namespace services
     class ProtoMessageSenderBase
     {
     public:
-        explicit ProtoMessageSenderBase(infra::BoundedVector<std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy), 3 * sizeof(uint8_t*)>>>& stack);
+        explicit ProtoMessageSenderBase(infra::BoundedVector<std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy), 4 * sizeof(uint8_t*)>>>& stack);
 
         void Fill(infra::DataOutputStream output);
         bool BufferEmpty() const;
@@ -54,7 +54,7 @@ namespace services
 
     private:
         infra::BoundedDeque<uint8_t>::WithMaxSize<32> buffer;
-        infra::BoundedVector<std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy), 3 * sizeof(uint8_t*)>>>& stack;
+        infra::BoundedVector<std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy), 4 * sizeof(uint8_t*)>>>& stack;
     };
 
     template<class Message>
@@ -66,7 +66,7 @@ namespace services
 
     private:
         const Message& message;
-        infra::BoundedVector<std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy), 3 * sizeof(uint8_t*)>>>::WithMaxSize<MessageDepth<services::ProtoMessage<Message>>::value + 1> stack{ { std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy), 3 * sizeof(uint8_t*)>>{ 0, [this](infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy)
+        infra::BoundedVector<std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy), 4 * sizeof(uint8_t*)>>>::WithMaxSize<MessageDepth<services::ProtoMessage<Message>>::value + 1> stack{ { std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy), 3 * sizeof(uint8_t*)>>{ 0, [this](infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy)
             {
                 return FillForMessage(stream, message, index, retry, finalWriter, errorPolicy);
             } } } };
@@ -137,7 +137,7 @@ namespace services
     template<class ProtoType, class Type>
     bool ProtoMessageSenderBase::SerializeField(ProtoRepeatedBase<ProtoType>, const infra::ProtoFormatter&, const infra::BoundedVector<Type>& value, uint32_t fieldNumber, bool& retry) const
     {
-        stack.emplace_back(0, [this, &value, fieldNumber](infra::DataOutputStream& stream, uint32_t& index, const bool&, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy)
+        stack.emplace_back(0, [this, &value, fieldNumber, &retry](infra::DataOutputStream& stream, uint32_t& index, const bool&, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy)
             {
                 infra::ProtoFormatter formatter{ stream };
 
@@ -148,7 +148,16 @@ namespace services
                         errorPolicy.ReportResult(false);
                         return false;
                     }
-                    services::SerializeField(ProtoType(), formatter, value[index], fieldNumber);
+
+                    auto size = stack.size();
+                    auto result = SerializeField(ProtoType(), formatter, value[index], fieldNumber, retry);
+                    if (size != stack.size())
+                    {
+                        // A nested message was added to the stack, so we need to stop processing the current message until it has been fully sent
+                        ++index;
+                        retry = retry && result;
+                        return false;
+                    }
                 }
 
                 return true;
@@ -161,7 +170,7 @@ namespace services
     template<class ProtoType, class Type>
     bool ProtoMessageSenderBase::SerializeField(ProtoUnboundedRepeated<ProtoType>, const infra::ProtoFormatter&, const std::vector<Type>& value, uint32_t fieldNumber, bool& retry) const
     {
-        stack.emplace_back(0, [this, &value, fieldNumber](infra::DataOutputStream& stream, uint32_t& index, const bool&, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy)
+        stack.emplace_back(0, [this, &value, fieldNumber, &retry](infra::DataOutputStream& stream, uint32_t& index, const bool&, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy)
             {
                 infra::ProtoFormatter formatter{ stream };
 
@@ -172,7 +181,8 @@ namespace services
                         errorPolicy.ReportResult(false);
                         return false;
                     }
-                    services::SerializeField(ProtoType(), formatter, value[index], fieldNumber);
+
+                    SerializeField(ProtoType(), formatter, value[index], fieldNumber, retry);
                 }
 
                 return true;
