@@ -158,16 +158,15 @@ TEST(ProtoMessageReceiverTest, parse_unbounded_repeated_uint32)
     EXPECT_EQ((std::vector<uint32_t>{ { 5, 6 } }), receiver.message.value);
 }
 
-TEST(ProtoMessageReceiverTest, parse_unbounded_repeated_nested_message)
+TEST(ProtoMessageReceiverTest, parse_repeated_nested_message)
 {
     services::ProtoMessageReceiver<test_messages::TestNestedRepeatedMessage> receiver;
 
-    infra::StdVectorInputStreamReader::WithStorage data(std::in_place, std::initializer_list<uint8_t>{ 1 << 3, 5, 1 << 3, 6 });
+    infra::StdVectorInputStreamReader::WithStorage data(std::in_place, std::initializer_list<uint8_t>{ 10, 2, 8, 5, 10, 2, 8, 5, 10, 2, 8, 5, 10, 2, 8, 5, 10, 2, 8, 5, 10, 2, 8, 5, 10, 2, 8, 5, 10, 2, 8, 5, 10, 2, 8, 5, 10, 2, 8, 5 });
     receiver.Feed(data);
 
     test_messages::TestNestedRepeatedMessage expected;
-    expected.message.push_back({ 5 });
-    expected.message.push_back({ 6 });
+    expected.message.insert(expected.message.end(), 10, static_cast<uint8_t>(5));
     EXPECT_EQ(expected, receiver.message);
 }
 
