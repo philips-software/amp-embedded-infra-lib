@@ -9,10 +9,13 @@
 
 namespace services
 {
+    static constexpr std::size_t serializationStepExtraSize = 4 * sizeof(void*);
+    using FieldSerializationStep = infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy), serializationStepExtraSize>;
+
     class ProtoMessageSenderBase
     {
     public:
-        explicit ProtoMessageSenderBase(infra::BoundedVector<std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy), 4 * sizeof(uint8_t*)>>>& stack);
+        explicit ProtoMessageSenderBase(infra::BoundedVector<std::pair<uint32_t, FieldSerializationStep>>& stack);
 
         void Fill(infra::DataOutputStream output);
         bool BufferEmpty() const;
@@ -54,7 +57,7 @@ namespace services
 
     private:
         infra::BoundedDeque<uint8_t>::WithMaxSize<32> buffer;
-        infra::BoundedVector<std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy), 4 * sizeof(uint8_t*)>>>& stack;
+        infra::BoundedVector<std::pair<uint32_t, FieldSerializationStep>>& stack;
     };
 
     template<class Message>
@@ -66,7 +69,7 @@ namespace services
 
     private:
         const Message& message;
-        infra::BoundedVector<std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy), 4 * sizeof(uint8_t*)>>>::WithMaxSize<MessageDepth<services::ProtoMessage<Message>>::value + 1> stack{ { std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy), 3 * sizeof(uint8_t*)>>{ 0, [this](infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy)
+        infra::BoundedVector<std::pair<uint32_t, FieldSerializationStep>>::WithMaxSize<MessageDepth<services::ProtoMessage<Message>>::value + 1> stack{ { std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy), 3 * sizeof(uint8_t*)>>{ 0, [this](infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy)
             {
                 return FillForMessage(stream, message, index, retry, finalWriter, errorPolicy);
             } } } };
