@@ -325,13 +325,14 @@ namespace services
         listenSocket = socket(family, SOCK_STREAM, IPPROTO_TCP);
         assert(listenSocket != -1);
 
-        int reuseAddress = 1;
-        setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, &reuseAddress, sizeof(reuseAddress));
+        if (int reuseAddress = 1; setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, &reuseAddress, sizeof(reuseAddress)) == -1)
+            std::abort();
 
         if (family == AF_INET6)
         {
             int v6Only = versions == IPVersions::ipv6 ? 1 : 0;
-            setsockopt(listenSocket, IPPROTO_IPV6, IPV6_V6ONLY, &v6Only, sizeof(v6Only));
+            if (setsockopt(listenSocket, IPPROTO_IPV6, IPV6_V6ONLY, &v6Only, sizeof(v6Only)) == -1)
+                std::abort();
         }
 
         if (family == AF_INET)

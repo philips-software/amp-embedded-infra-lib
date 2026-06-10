@@ -284,13 +284,15 @@ namespace services
         int result = WSAEventSelect(listenSocket, event, FD_ACCEPT);
         assert(result == 0);
 
-        int reuseAddress = 1;
-        setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&reuseAddress), sizeof(reuseAddress));
+        int exclusiveAddressUse = 1;
+        if (setsockopt(listenSocket, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, reinterpret_cast<const char*>(&exclusiveAddressUse), sizeof(exclusiveAddressUse)) == SOCKET_ERROR)
+            std::abort();
 
         if (family == AF_INET6)
         {
             int v6Only = versions == IPVersions::ipv6 ? 1 : 0;
-            setsockopt(listenSocket, IPPROTO_IPV6, IPV6_V6ONLY, reinterpret_cast<const char*>(&v6Only), sizeof(v6Only));
+            if (setsockopt(listenSocket, IPPROTO_IPV6, IPV6_V6ONLY, reinterpret_cast<const char*>(&v6Only), sizeof(v6Only)) == SOCKET_ERROR)
+                std::abort();
         }
 
         if (family == AF_INET)
