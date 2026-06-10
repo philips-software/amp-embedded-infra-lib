@@ -16,11 +16,11 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' }}
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: philips-software/antora-site-action@fabb86ea3bdf79069c08a1c02fe175e7823a64c7 # v1.3.0
+      - uses: philips-software/antora-site-action@f8cbb3fc15fe9c78d25bb438871ef687773ded8f # v1.4.0
         with:
           antora_playbook: antora-playbook-site.yml
       - name: Store Antora Site
@@ -40,11 +40,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: philips-software/antora-site-action@fabb86ea3bdf79069c08a1c02fe175e7823a64c7 # v1.3.0
+      - uses: philips-software/antora-site-action@f8cbb3fc15fe9c78d25bb438871ef687773ded8f # v1.4.0
         with:
           antora_playbook: antora-playbook-branch.yml
       - name: Store Antora Site
@@ -61,7 +61,7 @@ jobs:
     name: Publish to GitHub Pages
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
       - name: Retrieve Antora Site

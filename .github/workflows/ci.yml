@@ -24,7 +24,7 @@ jobs:
     name: Host Build & Test (ubuntu-latest)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
       - uses: hendrikmuhs/ccache-action@d62db5f07c26379fc4b4e0916f098a92573c3b03 # v1.2.23
@@ -51,9 +51,9 @@ jobs:
   host_build_test_container:
     name: Host Build & Test (amp-devcontainer-cpp)
     runs-on: ubuntu-latest
-    container: ghcr.io/philips-software/amp-devcontainer-cpp:6.10.3@sha256:e1f388179dbeabaddcdd37b8b563ed89ca3cd36dcf158aa2e5c4f70eb513efec # 6.10.3
+    container: ghcr.io/philips-software/amp-devcontainer-cpp:7.0.0@sha256:dc6bb049da53127b887c4ad5312ddbafd7daf57fb76bcca26abe643e65af9f59 # 7.0.0
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
       - uses: hendrikmuhs/ccache-action@d62db5f07c26379fc4b4e0916f098a92573c3b03 # v1.2.23
@@ -74,9 +74,9 @@ jobs:
   host_build_test_clang_msvc:
     name: Host Build & Test (clang-msvc)
     runs-on: ubuntu-latest
-    container: ghcr.io/philips-software/amp-devcontainer-cpp:6.10.3@sha256:e1f388179dbeabaddcdd37b8b563ed89ca3cd36dcf158aa2e5c4f70eb513efec # 6.10.3
+    container: ghcr.io/philips-software/amp-devcontainer-cpp:7.0.0@sha256:dc6bb049da53127b887c4ad5312ddbafd7daf57fb76bcca26abe643e65af9f59 # 7.0.0
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
       - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
@@ -104,7 +104,7 @@ jobs:
         os: [macos-latest, windows-latest]
       fail-fast: false
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
       - uses: hendrikmuhs/ccache-action@d62db5f07c26379fc4b4e0916f098a92573c3b03 # v1.2.23
@@ -126,7 +126,7 @@ jobs:
     name: Host Build without MbedTLS
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
       - uses: hendrikmuhs/ccache-action@d62db5f07c26379fc4b4e0916f098a92573c3b03 # v1.2.23
@@ -147,7 +147,7 @@ jobs:
         gcc: ["7-2018-q2", "8-2019-q3", "9-2020-q2", "10.3-2021.10"]
         configuration: ["RelWithDebInfo", "Debug"]
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
       - name: Install GNU Arm Embedded Toolchain ${{ matrix.gcc }}
@@ -172,7 +172,7 @@ jobs:
     name: Embedded Build Without Host Install
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
       - name: Install GNU Arm Embedded Toolchain 10.3-2021.10
@@ -196,7 +196,7 @@ jobs:
       matrix:
         rtos: ["FreeRTOS", "ThreadX"]
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
       - name: Install GNU Arm Embedded Toolchain 10.3-2021.10

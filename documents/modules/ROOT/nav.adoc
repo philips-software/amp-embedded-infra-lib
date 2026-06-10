@@ -1,4 +1,6 @@
 * xref:ExecutionModel.adoc[Execution Model]
+* xref:EventDispatcher.adoc[Event Dispatcher]
+* xref:ClaimableResource.adoc[ClaimableResource]
 * xref:MemoryRange.adoc[MemoryRange]
 * xref:Containers.adoc[Containers]
 * xref:Echo.adoc[Echo]
