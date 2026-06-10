@@ -141,7 +141,9 @@ namespace services
         }
 
         std::array<uint8_t, blockSize> computedMac;
-        receiveEncryption.Finish(infra::ByteRange(), computedMac);
+        receiveBuffer.resize(receiveBuffer.size() + blockSize);
+        auto moreProcessedSize = receiveEncryption.Finish(infra::Tail(infra::MakeRange(receiveBuffer), blockSize), computedMac);
+        receiveBuffer.resize(receiveBuffer.size() - blockSize + moreProcessedSize);
 
         std::array<uint8_t, blockSize> receivedMac;
         stream >> infra::MakeRange(receivedMac);
