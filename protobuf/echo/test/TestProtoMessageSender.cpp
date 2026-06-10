@@ -224,9 +224,14 @@ TEST_F(ProtoMessageSenderTest, format_many_repeated_nested_messages)
     message.message.insert(message.message.end(), 10, static_cast<uint8_t>(5));
     services::ProtoMessageSender sender{ message };
 
+    infra::ByteOutputStream::WithStorage<8> partialStream(infra::noFail);
+    sender.Fill(partialStream);
+    EXPECT_EQ((std::array<uint8_t, 8>{ (1 << 3) | 2, 2, 1 << 3, 5, (1 << 3) | 2, 2, 1 << 3, 5 }), partialStream.Storage());
+    EXPECT_TRUE(partialStream.Failed());
+
     infra::StdVectorOutputStream::WithStorage stream;
     sender.Fill(stream);
-    EXPECT_EQ(infra::ConstructBin().Repeat(10, { (1 << 3) | 2, 2, 1 << 3, 5 }).Vector(), stream.Storage());
+    EXPECT_EQ(infra::ConstructBin().Repeat(8, { (1 << 3) | 2, 2, 1 << 3, 5 }).Vector(), stream.Storage());
     EXPECT_FALSE(stream.Failed());
 }
 
