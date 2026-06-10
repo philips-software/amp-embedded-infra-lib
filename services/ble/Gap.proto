@@ -252,7 +252,6 @@ service GapPeripheral
     // Maximum advertisement data length for this method is 28 bytes. Server reserves an additional 3 bytes for flags data with the flag bits 'LE General Discoverable Mode' and 'BR/EDR Not Supported' enabled.
     // Server will not check validity of the advertisement data and only maximum length of each field will be passed to BLE stack
     // If not set by this method, server will have as advertisement data only flags field.
-    // TODO: Replace with `SetSecurityPreferences(SecurityPreference)`
     rpc SetAdvertisementData(AdvertisementData) returns (Nothing) { option (method_id) = 4; }
 
     // Allowed in link layer states: standby
@@ -260,7 +259,6 @@ service GapPeripheral
     // Maximum scan response length for this method is 13 bytes. Server reserves 18 bytes for streaming service uuids. Scan Response is only possible with scannable advertisements
     // Server will not check validity of the scan response data and only maximum length of each field will be passed to BLE stack
     // If not set by this method, server will have as scan response data only service uuids.
-    // TODO: Replace with `SetSecurityPreferences(SecurityPreference)`
     rpc SetScanResponseData(ScanResponseData) returns (Nothing) { option (method_id) = 5; }
     
     // Allowed in link layer states: advertising
@@ -444,17 +442,16 @@ message ResolvedPrivateAddress
     Address identityAddress = 2; // The resolved identity address
 }
 
-message BondListItem
+message Bond
 {
     AddressWithType addressWithType = 1;        // Identity address
     bytes deviceName = 2 [(bytes_size) = 32];   // Device Name from GAP (Generic Access) service. Not unique; truncated to 32 bytes.
-    bool isDeviceConnected = 3;                 // Is this device currently connected.
+    bool isCurrentlyConnected = 3;              // Is this device currently connected.
 }
 
 message BondList
-{
-    // Will be sorted by age, oldest -> newest.
-    repeated BondListItem items = 1 [(array_size) = 32];
+{    
+    repeated Bond bonds = 1 [(array_size) = 32]; // Will be sorted by age, oldest -> newest.
     uint32 maximumAllowedBonds = 2; // Maximum number of bonds supported by the device.
 }
 
@@ -552,7 +549,7 @@ service GapCentral
     // Allowed in link layer states: standby
     // Removes the bond associated with the given identity address.
     // Results in GapCentralResponse.NumberOfBondsChanged
-    // rpc RemoveBondWithAddress(AddressWithType) returns (Nothing) { option (method_id) = 12; }
+    rpc RemoveBondWithAddress(AddressWithType) returns (Nothing) { option (method_id) = 12; }
 
     // Allowed in link layer states: standby, scanning, initiating, connected
     // Resolves a resolvable private address to the identity address of an already bonded device.
@@ -588,14 +585,13 @@ service GapCentralResponse {
 
     rpc CurrentState(State) returns (Nothing) { option (method_id) = 1; }
     
-    // TODO: Rename to AdvertisingReportReceived(AdvertisingReport)?
     rpc DeviceDiscovered(DiscoveredDevice) returns (Nothing) { option (method_id) = 2; }
     rpc AuthenticationRequired(AuthenticationRequest) returns (Nothing) { option (method_id) = 3; }
     rpc PairingResult(PairingStatus) returns (Nothing) { option (method_id) =  4; }
     rpc ResolvePrivateAddressResult(ResolvedPrivateAddress) returns (Nothing) { option (method_id) = 5; }
     
     rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
-    // rpc BondList(BondList) returns (Nothing) { option(method_id) = 7; }
+    // rpc BondListReceived(BondList) returns (Nothing) { option(method_id) = 7; }
 
     // DEPRECATED: Will be removed in the near future.
     rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 8; }

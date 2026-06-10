@@ -45,6 +45,9 @@ namespace services
         hal::MacAddress mac = { 0x00, 0x1A, 0x7D, 0xDA, 0x71, 0x13 };
         services::GapDeviceAddressType addressType = services::GapDeviceAddressType::randomAddress;
 
+        EXPECT_CALL(gapBonding, RemoveBondWithAddress(GapAddress{ mac, addressType }));
+        decorator.RemoveBondWithAddress(GapAddress{ mac, addressType });
+
         EXPECT_CALL(gapBonding, IsDeviceBonded(mac, addressType)).WillOnce(testing::Return(true));
         EXPECT_THAT(decorator.IsDeviceBonded(mac, addressType), testing::IsTrue());
 

@@ -103,6 +103,11 @@ namespace services
         GapBondingObserver::Subject().RemoveOldestBond();
     }
 
+    void GapBondingDecorator::RemoveBondWithAddress(GapAddress gapAddress)
+    {
+        GapBondingObserver::Subject().RemoveBondWithAddress(gapAddress);
+    }
+
     std::size_t GapBondingDecorator::GetMaxNumberOfBonds() const
     {
         return GapBondingObserver::Subject().GetMaxNumberOfBonds();

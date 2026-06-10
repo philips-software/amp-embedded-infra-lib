@@ -3,9 +3,11 @@
 
 #include "hal/interfaces/MacAddress.hpp"
 #include "infra/timer/Timer.hpp"
+#include "infra/util/BoundedString.hpp"
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/EnumCast.hpp"
+#include "infra/util/MemoryRange.hpp"
 #include "infra/util/Observer.hpp"
 #include "services/ble/Att.hpp"
 #include <optional>
@@ -83,6 +85,19 @@ namespace services
         GapDeviceAddressType addressType;
         infra::ConstByteRange randomData;
         infra::ConstByteRange confirmData;
+    };
+
+    struct Bond
+    {
+        GapAddress address;
+        infra::BoundedConstString deviceName;
+        bool isCurrentlyConnected;
+    };
+
+    struct BondList
+    {
+        infra::MemoryRange<Bond> bonds;
+        uint32_t maximumAllowedBonds;
     };
 
     class GapPairing;
@@ -216,6 +231,7 @@ namespace services
     public:
         virtual void RemoveAllBonds() = 0;
         virtual void RemoveOldestBond() = 0;
+        virtual void RemoveBondWithAddress(GapAddress gapAddress) = 0;
 
         virtual std::size_t GetMaxNumberOfBonds() const = 0;
         virtual std::size_t GetNumberOfBonds() const = 0;
@@ -235,6 +251,8 @@ namespace services
         // Implementation of GapBonding
         void RemoveAllBonds() override;
         void RemoveOldestBond() override;
+        void RemoveBondWithAddress(GapAddress gapAddress) override;
+
         std::size_t GetMaxNumberOfBonds() const override;
         std::size_t GetNumberOfBonds() const override;
         bool IsDeviceBonded(hal::MacAddress address, GapDeviceAddressType addressType) const override;
