@@ -69,7 +69,7 @@ namespace services
 
     private:
         const Message& message;
-        infra::BoundedVector<std::pair<uint32_t, FieldSerializationStep>>::WithMaxSize<MessageDepth<services::ProtoMessage<Message>>::value + 1> stack{ { std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy), 3 * sizeof(uint8_t*)>>{ 0, [this](infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy)
+        infra::BoundedVector<std::pair<uint32_t, FieldSerializationStep>>::WithMaxSize<MessageDepth<services::ProtoMessage<Message>>::value + 1> stack{ { std::pair<uint32_t, FieldSerializationStep>{ 0, [this](infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy)
             {
                 return FillForMessage(stream, message, index, retry, finalWriter, errorPolicy);
             } } } };
