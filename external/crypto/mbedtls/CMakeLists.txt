@@ -58,9 +58,8 @@ function(add_mbedtls_target_properties)
         if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
             # -Wuninitialized-const-pointer / -Wunterminated-string-initialization
             # are treated as errors since clang-22
-            list(APPEND _mbedtls_warning_suppressions -Wno-uninitialized-const-pointer)
             if(CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL 22.0.0)
-                list(APPEND _mbedtls_warning_suppressions -Wno-unterminated-string-initialization)
+                list(APPEND _mbedtls_warning_suppressions -Wno-uninitialized-const-pointer -Wno-unterminated-string-initialization)
             endif()
         elseif(CMAKE_C_COMPILER_ID STREQUAL "GNU")
             # Warning treated as error when implicit conversion within mbedtls
