@@ -73,7 +73,9 @@ function(add_mbedtls_target_properties)
             list(APPEND _mbedtls_warning_suppressions /wd4244 /wd4267)
         endif()
 
-        target_compile_options(${target} PUBLIC ${_mbedtls_warning_suppressions})
+        if(_mbedtls_warning_suppressions)
+            target_compile_options(${target} PUBLIC ${_mbedtls_warning_suppressions})
+        endif()
 
         target_include_directories(${target} PUBLIC
             "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/..>"
