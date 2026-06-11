@@ -25,7 +25,7 @@ namespace services
         };
 
         template<std::size_t MaxMessageSize>
-        static constexpr std::size_t sendBufferSize = MaxMessageSize;
+        static constexpr std::size_t sendBufferSize = MaxMessageSize + 2;
         template<std::size_t MaxMessageSize>
         static constexpr std::size_t receiveBufferSize = EncodedMessageSize<MaxMessageSize>::size;
 
@@ -64,11 +64,10 @@ namespace services
         void SendSerialData(const infra::ConstByteRange data, const infra::Function<void()>& onSendDataDone);
         void SendStreamFilled();
         void SendOrDone();
-        void SendFrame();
-        void SendFrameDone();
+        void SendChunk();
+        bool FillChunk();
+        void FinishChunk();
         void SendFirstDelimiter();
-        void SendLastDelimiter();
-        void SendData(infra::ConstByteRange data);
         void FinishReset();
         uint8_t FindDelimiter() const;
 
@@ -89,7 +88,8 @@ namespace services
             {
                 SendStreamFilled();
             } };
-        infra::ConstByteRange dataToSend;
+        infra::ByteRange dataToSend;
+        infra::ByteRange chunkToSend;
         uint8_t frameSize;
 
         infra::AutoResetFunction<void()> onStopDone;

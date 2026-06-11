@@ -23,7 +23,7 @@ namespace services
 
     std::size_t SesameCobs::MaxSendMessageSize() const
     {
-        return sendStorage.max_size() - 2 - (sendStorage.max_size() - 2) / 255;
+        return sendStorage.max_size() - 4 - (sendStorage.max_size() - 4) / 255;
     }
 
     std::size_t SesameCobs::WorstCaseEncodedMessageSize(std::size_t size) const
@@ -195,7 +195,10 @@ namespace services
     void SesameCobs::CheckReadyToSendUserData()
     {
         if (!sendingUserData && sendReqestedSize != std::nullopt)
+        {
+            sendStorage.push_back(0);
             SesameEncoded::GetObserver().SendMessageStreamAvailable(sendStream.Emplace(std::in_place, sendStorage, *std::exchange(sendReqestedSize, std::nullopt)));
+        }
     }
 
     void SesameCobs::SendSerialData(const infra::ConstByteRange data, const infra::Function<void()>& onSendDataDone)
@@ -213,7 +216,8 @@ namespace services
     void SesameCobs::SendStreamFilled()
     {
         sendingUserData = true;
-        dataToSend = infra::MakeRange(sendStorage);
+        dataToSend = infra::DiscardHead(infra::MakeRange(sendStorage), 1);
+        chunkToSend = infra::Head(infra::MakeRange(sendStorage), 1);
 
         if (sendingFirstPacket)
             SendFirstDelimiter();
@@ -225,42 +229,57 @@ namespace services
     {
         if (resetting)
             FinishReset();
-        else if (dataToSend.empty())
-            SendLastDelimiter();
+        else if (dataToSend.empty() && frameSize < 254)
+            FinishChunk();
         else
-            SendFrame();
+            SendChunk();
     }
 
-    void SesameCobs::SendFrame()
+    void SesameCobs::SendChunk()
     {
-        frameSize = FindDelimiter() + 1;
-        sendSizeEncoded += 1;
-        SendSerialData(infra::MakeByteRange(frameSize), [this]()
+        while (FillChunk())
+        {}
+
+        sendSizeEncoded += chunkToSend.size();
+        SendSerialData(chunkToSend, [this]()
             {
-                --frameSize;
-                if (resetting)
-                    FinishReset();
-                else if (frameSize != 0)
-                    SendData(infra::Head(dataToSend, frameSize));
-                else
-                    SendFrameDone();
+                chunkToSend = infra::Tail(chunkToSend, 1);
+                SendOrDone();
             });
     }
 
-    void SesameCobs::SendFrameDone()
+    bool SesameCobs::FillChunk()
     {
-        if (frameSize == 254)
-            dataToSend = infra::DiscardHead(dataToSend, 254);
+        frameSize = FindDelimiter();
+
+        chunkToSend.back() = frameSize + 1;
+        if (dataToSend.empty())
+            chunkToSend = infra::ByteRange(chunkToSend.begin(), chunkToSend.end() + 1);
         else
-            dataToSend = infra::DiscardHead(dataToSend, frameSize);
+            chunkToSend = infra::ByteRange(chunkToSend.begin(), dataToSend.begin() + frameSize + (frameSize < 254 ? 1 : 0));
+
+        if (frameSize < 254)
+            chunkToSend.back() = 0;
+        dataToSend = infra::DiscardHead(dataToSend, frameSize);
 
         if (dataToSend.empty() || frameSize == 254)
-            SendOrDone();
-        else
-        {
+            return false;
+
+        if (dataToSend.front() == 0)
             dataToSend.pop_front();
-            SendFrame();
-        }
+
+        return true;
+    }
+
+    void SesameCobs::FinishChunk()
+    {
+        sendStorage.clear();
+        dataToSend.clear();
+        SesameEncoded::GetObserver().MessageSent(sendSizeEncoded);
+        sendSizeEncoded = 0;
+
+        sendingUserData = false;
+        CheckReadyToSendUserData();
     }
 
     void SesameCobs::SendFirstDelimiter()
@@ -270,35 +289,6 @@ namespace services
         SendSerialData(infra::MakeByteRange(messageDelimiter), [this]()
             {
                 SendOrDone();
-            });
-    }
-
-    void SesameCobs::SendLastDelimiter()
-    {
-        sendSizeEncoded += 1;
-        SendSerialData(infra::MakeByteRange(messageDelimiter), [this]()
-            {
-                if (resetting)
-                    FinishReset();
-                else
-                {
-                    sendStorage.clear();
-                    dataToSend.clear();
-                    SesameEncoded::GetObserver().MessageSent(sendSizeEncoded);
-                    sendSizeEncoded = 0;
-
-                    sendingUserData = false;
-                    CheckReadyToSendUserData();
-                }
-            });
-    }
-
-    void SesameCobs::SendData(infra::ConstByteRange data)
-    {
-        sendSizeEncoded += data.size();
-        SendSerialData(data, [this]()
-            {
-                SendFrameDone();
             });
     }
 
