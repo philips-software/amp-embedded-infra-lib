@@ -123,6 +123,11 @@ namespace services
         return GapBondingObserver::Subject().IsDeviceBonded(address, addressType);
     }
 
+    std::pair<infra::MemoryRange<const services::Bond>, uint32_t> GapBondingDecorator::GetBondList() const
+    {
+        return GapBondingObserver::Subject().GetBondList();
+    }
+
     void GapPeripheralDecorator::StateChanged(GapState state)
     {
         GapPeripheral::NotifyObservers([&state](auto& obs)

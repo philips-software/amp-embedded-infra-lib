@@ -561,7 +561,7 @@ service GapCentral
     // Allowed in link layer states: standby, scanning, initiating, connected
     // Returns the list of bonded devices including their identity address and device name, sorted oldest to newest.
     // Results in GapCentralResponse.BondList
-    // rpc GetBondList(Nothing) returns (Nothing) { option (method_id) = 14; }
+    rpc GetBondList(Nothing) returns (Nothing) { option (method_id) = 14; }
 
     // Allowed in link layer states: standby
     // Sets the local identity address used by the central when privacy mode is disabled.
@@ -591,7 +591,7 @@ service GapCentralResponse {
     rpc ResolvePrivateAddressResult(ResolvedPrivateAddress) returns (Nothing) { option (method_id) = 5; }
     
     rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
-    // rpc BondListReceived(BondList) returns (Nothing) { option(method_id) = 7; }
+    rpc BondListReceived(BondList) returns (Nothing) { option(method_id) = 7; }
 
     // DEPRECATED: Will be removed in the near future.
     rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 8; }

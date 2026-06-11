@@ -77,6 +77,11 @@ namespace services
         {
             return type == rhs.type && address == rhs.address;
         }
+
+        bool operator!=(GapAddress const& rhs) const
+        {
+            return !(*this == rhs);
+        }
     };
 
     struct GapOutOfBandData
@@ -93,13 +98,6 @@ namespace services
         infra::BoundedConstString deviceName;
         bool isCurrentlyConnected;
     };
-
-    struct BondList
-    {
-        infra::MemoryRange<Bond> bonds;
-        uint32_t maximumAllowedBonds;
-    };
-
     class GapPairing;
 
     class GapPairingObserver
@@ -236,6 +234,7 @@ namespace services
         virtual std::size_t GetMaxNumberOfBonds() const = 0;
         virtual std::size_t GetNumberOfBonds() const = 0;
         virtual bool IsDeviceBonded(hal::MacAddress address, GapDeviceAddressType addressType) const = 0;
+        virtual std::pair<infra::MemoryRange<const services::Bond>, uint32_t> GetBondList() const = 0;
     };
 
     class GapBondingDecorator
@@ -256,6 +255,7 @@ namespace services
         std::size_t GetMaxNumberOfBonds() const override;
         std::size_t GetNumberOfBonds() const override;
         bool IsDeviceBonded(hal::MacAddress address, GapDeviceAddressType addressType) const override;
+        std::pair<infra::MemoryRange<const services::Bond>, uint32_t> GetBondList() const override;
     };
 
     class GapPeripheral;
