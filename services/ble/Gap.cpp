@@ -21,27 +21,19 @@ namespace
 
 namespace services
 {
-    void GapPairingDecorator::DisplayPasskey(int32_t passkey, bool numericComparison)
+    void GapPairingDecorator::AuthenticationRequired(bool isNumericComparison, uint32_t passkey)
     {
-        GapPairing::NotifyObservers([&passkey, &numericComparison](auto& obs)
+        GapPairing::NotifyObservers([&passkey, &isNumericComparison](auto& obs)
             {
-                obs.DisplayPasskey(passkey, numericComparison);
+                obs.AuthenticationRequired(isNumericComparison, passkey);
             });
     }
 
-    void GapPairingDecorator::PairingSuccessfullyCompleted()
+    void GapPairingDecorator::PairingResult(bool pairedSuccessfully, PairingFailedReason pairingFailedReason)
     {
-        GapPairing::NotifyObservers([](auto& obs)
+        GapPairing::NotifyObservers([&pairedSuccessfully, &pairingFailedReason](auto& obs)
             {
-                obs.PairingSuccessfullyCompleted();
-            });
-    }
-
-    void GapPairingDecorator::PairingFailed(PairingErrorType error)
-    {
-        GapPairing::NotifyObservers([&error](auto& obs)
-            {
-                obs.PairingFailed(error);
+                obs.PairingResult(pairedSuccessfully, pairingFailedReason);
             });
     }
 
@@ -111,6 +103,11 @@ namespace services
         GapBondingObserver::Subject().RemoveOldestBond();
     }
 
+    void GapBondingDecorator::RemoveBondWithAddress(GapAddress gapAddress)
+    {
+        GapBondingObserver::Subject().RemoveBondWithAddress(gapAddress);
+    }
+
     std::size_t GapBondingDecorator::GetMaxNumberOfBonds() const
     {
         return GapBondingObserver::Subject().GetMaxNumberOfBonds();
@@ -124,6 +121,11 @@ namespace services
     bool GapBondingDecorator::IsDeviceBonded(hal::MacAddress address, GapDeviceAddressType addressType) const
     {
         return GapBondingObserver::Subject().IsDeviceBonded(address, addressType);
+    }
+
+    std::pair<infra::MemoryRange<const services::Bond>, uint32_t> GapBondingDecorator::GetBondList() const
+    {
+        return GapBondingObserver::Subject().GetBondList();
     }
 
     void GapPeripheralDecorator::StateChanged(GapState state)
@@ -200,14 +202,9 @@ namespace services
         GapCentralObserver::Subject().Connect(macAddress, addressType, initiatingTimeout);
     }
 
-    void GapCentralDecorator::CancelConnect()
+    void GapCentralDecorator::Standby()
     {
-        GapCentralObserver::Subject().CancelConnect();
-    }
-
-    void GapCentralDecorator::Disconnect()
-    {
-        GapCentralObserver::Subject().Disconnect();
+        GapCentralObserver::Subject().Standby();
     }
 
     void GapCentralDecorator::SetIdentityAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType)
@@ -218,11 +215,6 @@ namespace services
     void GapCentralDecorator::StartDeviceDiscovery()
     {
         GapCentralObserver::Subject().StartDeviceDiscovery();
-    }
-
-    void GapCentralDecorator::StopDeviceDiscovery()
-    {
-        GapCentralObserver::Subject().StopDeviceDiscovery();
     }
 
     std::optional<hal::MacAddress> GapCentralDecorator::ResolvePrivateAddress(hal::MacAddress address) const
@@ -420,20 +412,20 @@ namespace services
 
 namespace infra
 {
-    TextOutputStream& operator<<(TextOutputStream& stream, const services::GapAdvertisingEventType& eventType)
+    TextOutputStream& operator<<(TextOutputStream& stream, const services::AdvertisingReportType& reportType)
     {
-        if (eventType == services::GapAdvertisingEventType::advInd)
+        if (reportType == services::AdvertisingReportType::advInd)
             stream << "ADV_IND";
-        else if (eventType == services::GapAdvertisingEventType::advDirectInd)
+        else if (reportType == services::AdvertisingReportType::advDirectInd)
             stream << "ADV_DIRECT_IND";
-        else if (eventType == services::GapAdvertisingEventType::advScanInd)
+        else if (reportType == services::AdvertisingReportType::advScanInd)
             stream << "ADV_SCAN_IND";
-        else if (eventType == services::GapAdvertisingEventType::scanResponse)
+        else if (reportType == services::AdvertisingReportType::scanResponse)
             stream << "SCAN_RESPONSE";
-        else if (eventType == services::GapAdvertisingEventType::advNonconnInd)
+        else if (reportType == services::AdvertisingReportType::advNonconnInd)
             stream << "ADV_NONCONN_IND";
         else
-            LOG_AND_ABORT_ENUM(eventType);
+            LOG_AND_ABORT_ENUM(reportType);
 
         return stream;
     }

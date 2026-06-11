@@ -1,3 +1,5 @@
+#include "infra/util/BoundedString.hpp"
+#include "infra/util/BoundedVector.hpp"
 #include "infra/util/test_helper/MemoryRangeMatcher.hpp"
 #include "services/ble/Gap.hpp"
 #include "services/ble/test_doubles/GapBondingMock.hpp"
@@ -8,6 +10,11 @@ namespace services
 {
     namespace
     {
+        MATCHER_P(BondListEq, expected, "")
+        {
+            return arg.first == expected.first && arg.second == expected.second;
+        }
+
         class GapBondingDecoratorTest
             : public testing::Test
         {
@@ -45,10 +52,21 @@ namespace services
         hal::MacAddress mac = { 0x00, 0x1A, 0x7D, 0xDA, 0x71, 0x13 };
         services::GapDeviceAddressType addressType = services::GapDeviceAddressType::randomAddress;
 
+        EXPECT_CALL(gapBonding, RemoveBondWithAddress(GapAddress{ mac, addressType }));
+        decorator.RemoveBondWithAddress(GapAddress{ mac, addressType });
+
         EXPECT_CALL(gapBonding, IsDeviceBonded(mac, addressType)).WillOnce(testing::Return(true));
         EXPECT_THAT(decorator.IsDeviceBonded(mac, addressType), testing::IsTrue());
 
         EXPECT_CALL(gapBonding, IsDeviceBonded(mac, addressType)).WillOnce(testing::Return(false));
         EXPECT_THAT(decorator.IsDeviceBonded(mac, addressType), testing::IsFalse());
+
+        infra::BoundedVector<services::Bond>::WithMaxSize<2> bonds{
+            { services::Bond{ { mac, services::GapDeviceAddressType::randomAddress }, "12345", false },
+                services::Bond{ { mac, services::GapDeviceAddressType::randomAddress }, "65431", false } }
+        };
+        uint32_t maxNumberOfBonds = 5;
+        EXPECT_CALL(gapBonding, GetBondList()).WillOnce(testing::Return(std::make_pair(infra::MakeRange(bonds), maxNumberOfBonds)));
+        EXPECT_THAT(decorator.GetBondList(), BondListEq(std::make_pair(bonds.range(), maxNumberOfBonds)));
     }
 }
