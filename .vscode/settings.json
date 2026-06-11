@@ -1,0 +1,12 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^build/host/services/util/test/Debug/services\\.util_test --gtest_filter=SesameSecuredStandaloneTest\\.received_message_includes_non_zero_finish_output --gtest_color=no$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^gdb -q -batch -ex run -ex bt --args build/host/services/util/test/Debug/services\\.util_test --gtest_filter=SesameSecuredStandaloneTest\\.received_message_includes_non_zero_finish_output$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

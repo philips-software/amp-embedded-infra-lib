@@ -253,7 +253,7 @@ TEST_F(SesameSecuredStandaloneTest, received_message_includes_non_zero_finish_ou
 {
     services::SesameSecured::KeyType key{};
     services::SesameSecured::IvType iv{};
-    std::array<uint8_t, 2> updateInput{ 'a', 'b' };
+    std::array<uint8_t, 5> encryptedPayload{ 'a', 'b', 'q', 'r', 's' };
     std::array<uint8_t, 3> finishOutput{ 'x', 'y', 'z' };
     std::array<uint8_t, services::SesameSecured::blockSize> computedMac{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 
@@ -271,14 +271,15 @@ TEST_F(SesameSecuredStandaloneTest, received_message_includes_non_zero_finish_ou
     EXPECT_CALL(receiveEncryption, Start(testing::_));
     EXPECT_CALL(receiveEncryption, Update(testing::_, testing::_)).WillOnce(testing::Invoke([](infra::ConstByteRange from, infra::ByteRange to)
         {
-            infra::Copy(from, infra::Head(to, from.size()));
-            return from.size();
+            const auto producedByUpdate = 2U;
+            infra::Copy(infra::Head(from, producedByUpdate), infra::Head(to, producedByUpdate));
+            return producedByUpdate;
         }));
     EXPECT_CALL(receiveEncryption, Finish(testing::_, testing::_)).WillOnce(testing::Invoke([&](infra::ByteRange to, infra::ByteRange mac)
         {
-            EXPECT_GE(to.size(), finishOutput.size());
+            EXPECT_EQ(to.size(), finishOutput.size());
             EXPECT_EQ(computedMac.size(), mac.size());
-            infra::Copy(infra::MakeRange(finishOutput), infra::Head(to, std::min(to.size(), finishOutput.size())));
+            infra::Copy(infra::MakeRange(finishOutput), to);
             infra::Copy(infra::MakeRange(computedMac), mac);
             return finishOutput.size();
         }));
@@ -293,7 +294,7 @@ TEST_F(SesameSecuredStandaloneTest, received_message_includes_non_zero_finish_ou
             EXPECT_EQ("abxyz", s);
         }));
 
-    std::vector<uint8_t> encodedMessage(updateInput.begin(), updateInput.end());
+    std::vector<uint8_t> encodedMessage(encryptedPayload.begin(), encryptedPayload.end());
     encodedMessage.insert(encodedMessage.end(), computedMac.begin(), computedMac.end());
     infra::SharedOptional<infra::StdVectorInputStreamReader> reader;
     lower.GetObserver().ReceivedMessage(reader.Emplace(encodedMessage));
