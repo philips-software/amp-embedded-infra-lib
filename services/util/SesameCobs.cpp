@@ -23,17 +23,17 @@ namespace services
 
     std::size_t SesameCobs::MaxSendMessageSize() const
     {
-        return sendStorage.max_size() - 4 - (sendStorage.max_size() - 4) / 255;
+        return sendStorage.max_size() - (cobsConstantOverhead + scratchSize) - (sendStorage.max_size() - (cobsConstantOverhead + scratchSize)) / (maxFrameSize + 1);
     }
 
     std::size_t SesameCobs::WorstCaseEncodedMessageSize(std::size_t size) const
     {
-        return size + size / 254 + 2;
+        return size + size / maxFrameSize + cobsConstantOverhead;
     }
 
     std::size_t SesameCobs::WorstCaseDecodedMessageSize(std::size_t encodedMessageSize) const
     {
-        return (encodedMessageSize - 2) - (encodedMessageSize - 2) / 254;
+        return (encodedMessageSize - cobsConstantOverhead) - (encodedMessageSize - cobsConstantOverhead) / maxFrameSize;
     }
 
     std::size_t SesameCobs::MessageSize(infra::StreamReader&& message) const
@@ -51,7 +51,7 @@ namespace services
                 else
                 {
                     ++consecutiveNonZero;
-                    if (consecutiveNonZero == 254)
+                    if (consecutiveNonZero == maxFrameSize)
                     {
                         consecutiveNonZero = 0;
                         ++result;
@@ -137,7 +137,7 @@ namespace services
             data.pop_front();
             if (!overheadPositionIsPseudo)
                 ReceivedPayload(infra::MakeByteRange(messageDelimiter));
-            overheadPositionIsPseudo = nextOverhead == 255;
+            overheadPositionIsPseudo = nextOverhead == (maxFrameSize + 1);
         }
     }
 
@@ -216,6 +216,7 @@ namespace services
     void SesameCobs::SendStreamFilled()
     {
         sendingUserData = true;
+        frameSize = 0;
         dataToSend = infra::DiscardHead(infra::MakeRange(sendStorage), 1);
         chunkToSend = infra::Head(infra::MakeRange(sendStorage), 1);
 
@@ -229,7 +230,7 @@ namespace services
     {
         if (resetting)
             FinishReset();
-        else if (dataToSend.empty() && frameSize < 254)
+        else if (dataToSend.empty() && frameSize < maxFrameSize)
             FinishChunk();
         else
             SendChunk();
@@ -253,16 +254,14 @@ namespace services
         frameSize = FindDelimiter();
 
         chunkToSend.back() = frameSize + 1;
-        if (dataToSend.empty())
-            chunkToSend = infra::ByteRange(chunkToSend.begin(), chunkToSend.end() + 1);
-        else
-            chunkToSend = infra::ByteRange(chunkToSend.begin(), dataToSend.begin() + frameSize + (frameSize < 254 ? 1 : 0));
 
-        if (frameSize < 254)
+        chunkToSend = CreateChunkWithTermination();
+
+        if (frameSize < maxFrameSize)
             chunkToSend.back() = 0;
         dataToSend = infra::DiscardHead(dataToSend, frameSize);
 
-        if (dataToSend.empty() || frameSize == 254)
+        if (dataToSend.empty() || frameSize == maxFrameSize)
             return false;
 
         if (dataToSend.front() == 0)
@@ -301,9 +300,17 @@ namespace services
         CheckReadyToSendUserData();
     }
 
+    infra::ByteRange SesameCobs::CreateChunkWithTermination() const
+    {
+        if (dataToSend.empty())
+            return infra::ByteRange(chunkToSend.begin(), chunkToSend.end() + 1);
+        else
+            return infra::ByteRange(chunkToSend.begin(), dataToSend.begin() + frameSize + (frameSize < maxFrameSize ? 1 : 0));
+    }
+
     uint8_t SesameCobs::FindDelimiter() const
     {
-        auto data = infra::Head(dataToSend, 254);
+        auto data = infra::Head(dataToSend, maxFrameSize);
         return static_cast<uint8_t>(std::find(data.begin(), data.end(), messageDelimiter) - data.begin());
     }
 }
