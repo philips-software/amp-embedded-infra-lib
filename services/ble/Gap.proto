@@ -595,5 +595,4 @@ service GapCentralResponse {
 
     // DEPRECATED: Will be removed in the near future.
     rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 8; }
-    rpc DeviceStarted(Nothing) returns (Nothing) { option (method_id) = 101; } // TODO REMOVE!
 }
