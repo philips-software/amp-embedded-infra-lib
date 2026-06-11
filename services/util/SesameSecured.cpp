@@ -1,4 +1,5 @@
 #include "services/util/SesameSecured.hpp"
+#include "infra/util/ReallyAssert.hpp"
 #include <algorithm>
 
 namespace services
@@ -146,6 +147,7 @@ namespace services
         really_assert(receiveBuffer.size() + expectedFinishSize <= receiveBuffer.max_size());
         receiveBuffer.resize(receiveBuffer.size() + expectedFinishSize);
         auto moreProcessedSize = receiveEncryption.Finish(infra::Tail(infra::MakeRange(receiveBuffer), expectedFinishSize), computedMac);
+        really_assert(moreProcessedSize == expectedFinishSize);
 
         std::array<uint8_t, blockSize> receivedMac;
         stream >> infra::MakeRange(receivedMac);
