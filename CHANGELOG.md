@@ -7,6 +7,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [9.2.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v9.1.0...v9.2.0) (2026-06-11)
+
+
+### Features
+
+* IPv6 support for BSD and Win connections ([#1230](https://github.com/philips-software/amp-embedded-infra-lib/issues/1230)) ([462eddc](https://github.com/philips-software/amp-embedded-infra-lib/commit/462eddc50b3936cccd78b71bd18448e79b76c6f8))
+
+
+### Bug Fixes
+
+* Echo (de)serialization for bounded repeated nested messages ([#1236](https://github.com/philips-software/amp-embedded-infra-lib/issues/1236)) ([7c8e1d2](https://github.com/philips-software/amp-embedded-infra-lib/commit/7c8e1d28830148ca57070b0f71fef6628a197b45))
+* Fix sesame received decryption Finish outputs leftover after Update ([#1237](https://github.com/philips-software/amp-embedded-infra-lib/issues/1237)) ([f0744c2](https://github.com/philips-software/amp-embedded-infra-lib/commit/f0744c221e31e662d4f74017e4911f6432c29051))
+
 ## [9.1.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v9.0.0...v9.1.0) (2026-05-26)
 
 
