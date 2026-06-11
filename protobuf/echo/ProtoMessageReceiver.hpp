@@ -51,7 +51,9 @@ namespace services
         template<class ProtoType, class Type>
         void DeserializeField(ProtoRepeatedBase<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value);
         template<class ProtoType, class Type>
-        void DeserializeField(ProtoUnboundedRepeated<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value) const;
+        void DeserializeField(ProtoUnboundedRepeated<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value);
+        template<class Type>
+        void DeserializeField(ProtoUnboundedRepeated<ProtoBool>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value);
 
         void ConsumeUnknownField(infra::ProtoParser::PartialField& field);
 
@@ -163,10 +165,19 @@ namespace services
     }
 
     template<class ProtoType, class Type>
-    void ProtoMessageReceiverBase::DeserializeField(ProtoUnboundedRepeated<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value) const
+    void ProtoMessageReceiverBase::DeserializeField(ProtoUnboundedRepeated<ProtoType>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value)
     {
         value.emplace_back();
         DeserializeField(ProtoType(), parser, field, value.back());
+    }
+
+    template<class Type>
+    void ProtoMessageReceiverBase::DeserializeField(ProtoUnboundedRepeated<ProtoBool>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value)
+    {
+        value.emplace_back();
+        bool result;
+        DeserializeField(ProtoBool(), parser, field, result); // std::vector<bool>().back() is not a reference to a bool, hence this workaround
+        value.back() = result;
     }
 
     template<class Message>

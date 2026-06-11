@@ -244,3 +244,19 @@ TEST(ProtoMessageReceiverTest, parse_more_nested_message)
 
     EXPECT_EQ((test_messages::TestMoreNestedMessage({ 5 }, { 10 })), receiver.message);
 }
+
+TEST(ProtoMessageReceiverTest, parse_repeated_everything)
+{
+    services::ProtoMessageReceiver<test_messages::TestRepeatedEverything> receiver;
+
+    infra::StdVectorInputStreamReader::WithStorage data;
+    receiver.Feed(data);
+}
+
+TEST(ProtoMessageReceiverTest, parse_unbounded_repeated_everything)
+{
+    services::ProtoMessageReceiver<test_messages::TestUnboundedRepeatedEverything> receiver;
+
+    infra::StdVectorInputStreamReader::WithStorage data;
+    receiver.Feed(data);
+}
