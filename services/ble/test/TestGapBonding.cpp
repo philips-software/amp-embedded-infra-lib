@@ -10,11 +10,6 @@ namespace services
 {
     namespace
     {
-        MATCHER_P(BondListEq, expected, "")
-        {
-            return arg == expected;
-        }
-
         class GapBondingDecoratorTest
             : public testing::Test
         {
@@ -66,6 +61,6 @@ namespace services
                 services::Bond{ { { 0xDE, 0xAD, 0xBE, 0xEF, 0xA5, 0x5A }, services::GapDeviceAddressType::publicAddress }, "pippin" } }
         };
         EXPECT_CALL(gapBonding, GetBondList()).WillOnce(testing::Return(infra::MakeRange(bonds)));
-        EXPECT_THAT(decorator.GetBondList(), BondListEq(bonds.range()));
+        EXPECT_THAT(decorator.GetBondList(), testing::ElementsAreArray(bonds.begin(), bonds.end()));
     }
 }

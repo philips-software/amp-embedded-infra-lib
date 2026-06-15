@@ -96,6 +96,11 @@ namespace services
     {
         GapAddress address;
         infra::BoundedConstString deviceName;
+
+        bool operator==(Bond const& rhs) const
+        {
+            return address == rhs.address && deviceName == rhs.deviceName;
+        }
     };
     class GapPairing;
 
