@@ -445,7 +445,6 @@ message Bond
 {
     AddressWithType addressWithType = 1;        // Identity address
     bytes deviceName = 2 [(bytes_size) = 32];   // Device Name from GAP (Generic Access) service. Not unique; truncated to 32 bytes.
-    bool isCurrentlyConnected = 3;              // Is this device currently connected.
 }
 
 message BondList

@@ -96,7 +96,6 @@ namespace services
     {
         GapAddress address;
         infra::BoundedConstString deviceName;
-        bool isCurrentlyConnected;
     };
     class GapPairing;
 
