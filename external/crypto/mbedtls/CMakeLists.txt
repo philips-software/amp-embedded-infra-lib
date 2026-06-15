@@ -39,21 +39,42 @@ function(add_mbedtls_target_properties)
             MBEDTLS_CONFIG_FILE="mbedtls/mbedtls_emil_config.h"
         )
 
-        target_compile_options(${target} PUBLIC
+        # mbedtls is a C library whose targets are also consumed by C++ code.
+        # The $<C_COMPILER_ID> / $<CXX_COMPILER_ID> generator expressions are
+        # unreliable in this scope: just above, the compiler id is temporarily
+        # spoofed to MSVC (CMAKE_C_SIMULATE_ID) so that mbedtls configures itself
+        # for a clang-cl / MSVC-style command line. As a result the genex-based
+        # branches never reach mbedtls' own C sources (e.g. x509_crt.c). To make
+        # the warning suppressions actually land on the compile lines we select
+        # the flags at configure time based on the (restored) detected compiler.
+        set(_mbedtls_warning_suppressions)
+
+        if(CMAKE_C_COMPILER_ID STREQUAL "Clang" OR CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
             # see https://github.com/Mbed-TLS/mbedtls/pull/6966
-            # mbedtls sets the -Wdocumentation flag, which is throwing warnings
-            # since clang-15
-            $<$<CXX_COMPILER_ID:Clang>:-Wno-documentation -Wno-conversion>
-            $<$<CXX_COMPILER_ID:AppleClang>:-Wno-documentation -Wno-conversion>
+            # mbedtls sets the -Wdocumentation flag, which throws warnings since clang-15
+            list(APPEND _mbedtls_warning_suppressions -Wno-documentation -Wno-conversion)
+        endif()
+
+        if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
+            # -Wuninitialized-const-pointer / -Wunterminated-string-initialization
+            # are treated as errors since clang-22
+            if(CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL 22.0.0)
+                list(APPEND _mbedtls_warning_suppressions -Wno-uninitialized-const-pointer -Wno-unterminated-string-initialization)
+            endif()
+        elseif(CMAKE_C_COMPILER_ID STREQUAL "GNU")
             # Warning treated as error when implicit conversion within mbedtls
-            $<$<CXX_COMPILER_ID:GNU>:-Wno-conversion>
-            # Warnings treated as error since clang-22
-            $<$<CXX_COMPILER_ID:Clang>:$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,22.0.0>:-Wno-uninitialized-const-pointer>>
-            $<$<CXX_COMPILER_ID:Clang>:$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,22.0.0>:-Wno-unterminated-string-initialization>>
-            # Warnings treated as error since gcc-14
-            $<$<CXX_COMPILER_ID:GNU>:$<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,14.0.0>:-Wno-unterminated-string-initialization>>
-            $<$<CXX_COMPILER_ID:MSVC>:/wd4244 /wd4267>
-        )
+            list(APPEND _mbedtls_warning_suppressions -Wno-conversion)
+            # Warning treated as error since gcc-14
+            if(CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL 14.0.0)
+                list(APPEND _mbedtls_warning_suppressions -Wno-unterminated-string-initialization)
+            endif()
+        elseif(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
+            list(APPEND _mbedtls_warning_suppressions /wd4244 /wd4267)
+        endif()
+
+        if(_mbedtls_warning_suppressions)
+            target_compile_options(${target} PUBLIC ${_mbedtls_warning_suppressions})
+        endif()
 
         target_include_directories(${target} PUBLIC
             "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/..>"
