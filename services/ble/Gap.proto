@@ -107,8 +107,7 @@ message PairingFailedReason
 {
     enum PairingFailedReasonEnum
     {
-        // SMP Pairing Failed reason codes as defined in
-        // See Bluetooth Spec v6.3, Vol 3, Part H, Section 3.5.5
+        // SMP Pairing Failed reason codes as defined in Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.5.5.
         // Note: enum numeric values are an internal representation and are not guaranteed to match the spec's assigned error code values.
         passkeyEntryFailed = 0;                         // The user input of passkey failed, for example, the user cancelled the operation.
         oobNotAvailable = 1;
@@ -459,7 +458,7 @@ message BondList
 // GAP CENTRAL SERVICE DEFINITION
 // ==================================================
 // State constraints:
-//  After startup this service is only available after GapPeripheralResponse.CurrentState with state standby is received.
+//  After startup this service is only available after GapCentralResponse.CurrentState with state standby is received.
 //  Unless otherwise specified, all methods are allowed in all link layer states.
 //  Non-conformance may cause undefined behavior
 // Callback constraints:
@@ -560,7 +559,7 @@ service GapCentral
 
     // Allowed in link layer states: standby, scanning, initiating, connected
     // Returns the list of bonded devices including their identity address and device name, sorted oldest to newest.
-    // Results in GapCentralResponse.BondList
+    // Results in GapCentralResponse.BondListReceived
     rpc GetBondList(Nothing) returns (Nothing) { option (method_id) = 14; }
 
     // Allowed in link layer states: standby
