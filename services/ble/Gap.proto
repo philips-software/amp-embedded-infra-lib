@@ -298,7 +298,7 @@ service GapPeripheralResponse
 
     rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 8; }
 
-    rpc DisplayPasskey(Passkey) returns (Nothing) { option (method_id) = 9; }
+    rpc DisplayPasskey(Passkey) returns(Nothing) { option(method_id) = 9; }
 }
 
 service GapPeripheralReadiness {
