@@ -61,9 +61,9 @@ namespace services
         EXPECT_CALL(gapBonding, IsDeviceBonded(mac, addressType)).WillOnce(testing::Return(false));
         EXPECT_THAT(decorator.IsDeviceBonded(mac, addressType), testing::IsFalse());
 
-        infra::BoundedVector<services::Bond>::WithMaxSize<2> bonds{
-            { services::Bond{ { mac, services::GapDeviceAddressType::randomAddress }, "12345", false },
-                services::Bond{ { mac, services::GapDeviceAddressType::randomAddress }, "65431", false } }
+        infra::BoundedVector<services::Bond>::WithMaxSize<2> bonds = {
+            { services::Bond{ { { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66 }, services::GapDeviceAddressType::randomAddress }, "mary" },
+                services::Bond{ { { 0xDE, 0xAD, 0xBE, 0xEF, 0xA5, 0x5A }, services::GapDeviceAddressType::publicAddress }, "pippin" } }
         };
         uint32_t maxNumberOfBonds = 5;
         EXPECT_CALL(gapBonding, GetBondList()).WillOnce(testing::Return(std::make_pair(infra::MakeRange(bonds), maxNumberOfBonds)));
