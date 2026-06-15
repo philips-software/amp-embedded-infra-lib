@@ -268,6 +268,9 @@ service GapPeripheral
 
     // Results in GapPeripheralResponse.BondInformation
     rpc GetBondInformation(Nothing) returns (Nothing) { option (method_id) = 13; }
+
+    // Allowed in link layer states: connected
+    rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 14; }
 }
 
 service GapPeripheralResponse 
@@ -294,6 +297,8 @@ service GapPeripheralResponse
     rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 7; }
 
     rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 8; }
+
+    rpc DisplayPasskey(Passkey) returns (Nothing) { option (method_id) = 9; }
 }
 
 service GapPeripheralReadiness {
