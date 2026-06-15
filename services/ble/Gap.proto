@@ -105,7 +105,7 @@ message AddressWithType
 
 message PairingFailedReason
 {
-    enum PairingFailedReasonEmum
+    enum PairingFailedReasonEnum
     {
         // SMP Pairing Failed reason codes as defined in
         // See Bluetooth Spec v6.3, Vol 3, Part H, Section 3.5.5
@@ -139,7 +139,7 @@ message PairingFailedReason
         unknown = 17;
     }
 
-    PairingFailedReasonEmum reason = 1;
+    PairingFailedReasonEnum reason = 1;
 }
 
 message PairingStatus
