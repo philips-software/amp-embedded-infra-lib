@@ -175,7 +175,7 @@ namespace services
     void ProtoMessageReceiverBase::DeserializeField(ProtoUnboundedRepeated<ProtoBool>, infra::ProtoParser& parser, infra::ProtoParser::PartialFieldVariant& field, Type& value)
     {
         value.emplace_back();
-        bool result;
+        bool result = false;
         DeserializeField(ProtoBool(), parser, field, result); // std::vector<bool>().back() is not a reference to a bool, hence this workaround
         value.back() = result;
     }

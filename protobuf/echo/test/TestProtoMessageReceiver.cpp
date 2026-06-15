@@ -251,6 +251,7 @@ TEST(ProtoMessageReceiverTest, parse_repeated_everything)
 
     infra::StdVectorInputStreamReader::WithStorage data;
     receiver.Feed(data);
+    EXPECT_EQ(test_messages::TestRepeatedEverything{}, receiver.message);
 }
 
 TEST(ProtoMessageReceiverTest, parse_unbounded_repeated_everything)
@@ -259,4 +260,5 @@ TEST(ProtoMessageReceiverTest, parse_unbounded_repeated_everything)
 
     infra::StdVectorInputStreamReader::WithStorage data;
     receiver.Feed(data);
+    EXPECT_EQ(test_messages::TestUnboundedRepeatedEverything{}, receiver.message);
 }
