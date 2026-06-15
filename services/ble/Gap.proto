@@ -450,7 +450,6 @@ message Bond
 message BondList
 {    
     repeated Bond bonds = 1 [(array_size) = 32]; // Will be sorted by age, oldest -> newest.
-    uint32 maximumAllowedBonds = 2; // Maximum number of bonds supported by the device.
 }
 
 // ==================================================

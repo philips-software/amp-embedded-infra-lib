@@ -12,7 +12,7 @@ namespace services
     {
         MATCHER_P(BondListEq, expected, "")
         {
-            return arg.first == expected.first && arg.second == expected.second;
+            return arg == expected;
         }
 
         class GapBondingDecoratorTest
@@ -65,8 +65,7 @@ namespace services
             { services::Bond{ { { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66 }, services::GapDeviceAddressType::randomAddress }, "mary" },
                 services::Bond{ { { 0xDE, 0xAD, 0xBE, 0xEF, 0xA5, 0x5A }, services::GapDeviceAddressType::publicAddress }, "pippin" } }
         };
-        uint32_t maxNumberOfBonds = 5;
-        EXPECT_CALL(gapBonding, GetBondList()).WillOnce(testing::Return(std::make_pair(infra::MakeRange(bonds), maxNumberOfBonds)));
-        EXPECT_THAT(decorator.GetBondList(), BondListEq(std::make_pair(bonds.range(), maxNumberOfBonds)));
+        EXPECT_CALL(gapBonding, GetBondList()).WillOnce(testing::Return(infra::MakeRange(bonds)));
+        EXPECT_THAT(decorator.GetBondList(), BondListEq(bonds.range()));
     }
 }

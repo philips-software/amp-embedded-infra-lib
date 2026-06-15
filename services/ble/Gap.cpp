@@ -123,7 +123,7 @@ namespace services
         return GapBondingObserver::Subject().IsDeviceBonded(address, addressType);
     }
 
-    std::pair<infra::MemoryRange<const services::Bond>, uint32_t> GapBondingDecorator::GetBondList() const
+    infra::MemoryRange<const services::Bond> GapBondingDecorator::GetBondList() const
     {
         return GapBondingObserver::Subject().GetBondList();
     }
