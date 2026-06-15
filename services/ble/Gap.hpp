@@ -84,6 +84,12 @@ namespace services
         }
     };
 
+    // See Bluetooth Core Specification v6.3, Vol 6, Part B, Section 1.3.2.
+    inline GapDeviceAddressType GapDeviceAddressTypeFromAddress(hal::MacAddress address)
+    {
+        return (address[5] >> 6) == 0x3 ? GapDeviceAddressType::randomAddress : GapDeviceAddressType::publicAddress;
+    }
+
     struct GapOutOfBandData
     {
         hal::MacAddress macAddress;
