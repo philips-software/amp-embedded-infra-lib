@@ -100,32 +100,19 @@ TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_write_without_r
     ExecuteAllActions();
 }
 
-TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_enable_notification_characteristic)
+TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_read_descriptor)
 {
-    EXPECT_CALL(adapter, EnableNotification(handle, testing::Ref(onDone)));
+    infra::Function<void(const infra::ConstByteRange&)> onRead;
+    EXPECT_CALL(adapter, ReadDescriptor(handle, testing::Ref(onRead), testing::Ref(onDone)));
 
-    retryAdapter.EnableNotification(handle, onDone);
+    retryAdapter.ReadDescriptor(handle, onRead, onDone);
 }
 
-TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_disable_notification_characteristic)
+TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_write_descriptor)
 {
-    EXPECT_CALL(adapter, DisableNotification(handle, testing::Ref(onDone)));
+    EXPECT_CALL(adapter, WriteDescriptor(handle, testing::ElementsAreArray(data), testing::Ref(onDone)));
 
-    retryAdapter.DisableNotification(handle, onDone);
-}
-
-TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_enable_indication_characteristic)
-{
-    EXPECT_CALL(adapter, EnableIndication(handle, testing::Ref(onDone)));
-
-    retryAdapter.EnableIndication(handle, onDone);
-}
-
-TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_disable_indication_characteristic)
-{
-    EXPECT_CALL(adapter, DisableIndication(handle, testing::Ref(onDone)));
-
-    retryAdapter.DisableIndication(handle, onDone);
+    retryAdapter.WriteDescriptor(handle, data, onDone);
 }
 
 TEST_F(RetryGattClientCharacteristicsOperationsTest, should_forward_notification_received)

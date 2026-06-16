@@ -24,24 +24,14 @@ namespace services
         TryWriteWithoutResponse();
     }
 
-    void RetryGattClientCharacteristicsOperations::EnableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone)
+    void RetryGattClientCharacteristicsOperations::ReadDescriptor(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone)
     {
-        gattClient.EnableNotification(handle, onDone);
+        gattClient.ReadDescriptor(handle, onRead, onDone);
     }
 
-    void RetryGattClientCharacteristicsOperations::DisableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone)
+    void RetryGattClientCharacteristicsOperations::WriteDescriptor(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
     {
-        gattClient.DisableNotification(handle, onDone);
-    }
-
-    void RetryGattClientCharacteristicsOperations::EnableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone)
-    {
-        gattClient.EnableIndication(handle, onDone);
-    }
-
-    void RetryGattClientCharacteristicsOperations::DisableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone)
-    {
-        gattClient.DisableIndication(handle, onDone);
+        gattClient.WriteDescriptor(handle, data, onDone);
     }
 
     void RetryGattClientCharacteristicsOperations::NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data)

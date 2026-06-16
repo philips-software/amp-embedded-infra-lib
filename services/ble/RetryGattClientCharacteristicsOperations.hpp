@@ -18,11 +18,8 @@ namespace services
         void Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
         void WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
 
-        void EnableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
-        void DisableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
-
-        void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
-        void DisableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
+        void ReadDescriptor(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone) override;
+        void WriteDescriptor(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
 
         // Implementation of GattClientStackUpdateObserver
         void NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data) override;

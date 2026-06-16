@@ -35,32 +35,18 @@ namespace services
         operations->WriteWithoutResponse(valueHandle, data, onDone);
     }
 
-    void GattClientCharacteristic::EnableNotification(const infra::Function<void(OperationStatus)>& onDone)
+    void GattClientCharacteristic::ReadDescriptor(AttAttribute::Handle descriptorHandle, const infra::Function<void(const infra::ConstByteRange&)>& onResponse, const infra::Function<void(OperationStatus)>& onDone)
     {
         really_assert(operations != nullptr);
 
-        operations->EnableNotification(valueHandle, onDone);
+        operations->ReadDescriptor(descriptorHandle, onResponse, onDone);
     }
 
-    void GattClientCharacteristic::DisableNotification(const infra::Function<void(OperationStatus)>& onDone)
+    void GattClientCharacteristic::WriteDescriptor(AttAttribute::Handle descriptorHandle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
     {
         really_assert(operations != nullptr);
 
-        operations->DisableNotification(valueHandle, onDone);
-    }
-
-    void GattClientCharacteristic::EnableIndication(const infra::Function<void(OperationStatus)>& onDone)
-    {
-        really_assert(operations != nullptr);
-
-        operations->EnableIndication(valueHandle, onDone);
-    }
-
-    void GattClientCharacteristic::DisableIndication(const infra::Function<void(OperationStatus)>& onDone)
-    {
-        really_assert(operations != nullptr);
-
-        operations->DisableIndication(valueHandle, onDone);
+        operations->WriteDescriptor(descriptorHandle, data, onDone);
     }
 
     void GattClientCharacteristic::NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data)

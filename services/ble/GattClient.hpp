@@ -52,10 +52,8 @@ namespace services
         virtual void Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) = 0;
         virtual void WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) = 0;
 
-        virtual void EnableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
-        virtual void DisableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
-        virtual void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
-        virtual void DisableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
+        virtual void ReadDescriptor(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone) = 0;
+        virtual void WriteDescriptor(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) = 0;
     };
 
     class GattClientCharacteristic
@@ -72,10 +70,8 @@ namespace services
         virtual void Write(infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone);
         virtual void WriteWithoutResponse(infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone);
 
-        virtual void EnableNotification(const infra::Function<void(OperationStatus)>& onDone);
-        virtual void DisableNotification(const infra::Function<void(OperationStatus)>& onDone);
-        virtual void EnableIndication(const infra::Function<void(OperationStatus)>& onDone);
-        virtual void DisableIndication(const infra::Function<void(OperationStatus)>& onDone);
+        virtual void ReadDescriptor(AttAttribute::Handle descriptorHandle, const infra::Function<void(const infra::ConstByteRange&)>& onResponse, const infra::Function<void(OperationStatus)>& onDone);
+        virtual void WriteDescriptor(AttAttribute::Handle descriptorHandle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone);
 
         GattCharacteristic::PropertyFlags CharacteristicProperties() const;
         AttAttribute::Handle CharacteristicValueHandle() const;
@@ -165,10 +161,8 @@ namespace services
         virtual void Read(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone) = 0;
         virtual void Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) = 0;
         virtual void WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) = 0;
-        virtual void EnableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
-        virtual void DisableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
-        virtual void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
-        virtual void DisableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) = 0;
+        virtual void ReadDescriptor(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone) = 0;
+        virtual void WriteDescriptor(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) = 0;
 
         virtual void MtuExchange(const infra::Function<void(OperationStatus)>& onDone) = 0;
     };

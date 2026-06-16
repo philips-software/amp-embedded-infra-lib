@@ -262,63 +262,38 @@ TEST_P(ClaimingGattClientAdapterStatusTest, should_call_write_without_response_c
     ExecuteAllActions();
 }
 
-TEST_P(ClaimingGattClientAdapterStatusTest, should_call_enable_notification_characteristic)
+TEST_P(ClaimingGattClientAdapterStatusTest, should_call_read_descriptor)
 {
-    EXPECT_CALL(gattClient, EnableNotification(handle, testing::_))
-        .WillOnce([](services::AttAttribute::Handle passedHandle,
+    const infra::ConstByteRange readResult = infra::MakeRange(std::array<uint8_t, 2>{ 0x01, 0x00 });
+    infra::VerifyingFunction<void(const infra::ConstByteRange&)> onRead{ readResult };
+    infra::VerifyingFunction<void(services::OperationStatus)> verifyOnDone{ GetParam() };
+
+    EXPECT_CALL(gattClient, ReadDescriptor(handle, testing::_, testing::_))
+        .WillOnce([&readResult](services::AttAttribute::Handle passedHandle,
+                      infra::Function<void(const infra::ConstByteRange&)> onRead,
                       infra::Function<void(services::OperationStatus)> onDone)
             {
                 EXPECT_EQ(passedHandle, handle);
+                onRead(readResult);
                 onDone(GetParam());
             });
 
-    infra::VerifyingFunction<void(services::OperationStatus)> verifyOnDone{ GetParam() };
-    adapter.EnableNotification(handle, verifyOnDone);
+    adapter.ReadDescriptor(handle, onRead, verifyOnDone);
     ExecuteAllActions();
 }
 
-TEST_P(ClaimingGattClientAdapterStatusTest, should_call_disable_notification_characteristic)
+TEST_P(ClaimingGattClientAdapterStatusTest, should_call_write_descriptor)
 {
-    EXPECT_CALL(gattClient, DisableNotification(handle, testing::_))
-        .WillOnce([](services::AttAttribute::Handle passedHandle,
-                      infra::Function<void(services::OperationStatus)> onDone)
-            {
-                EXPECT_EQ(passedHandle, handle);
-                onDone(GetParam());
-            });
+    infra::ConstByteRange data = infra::MakeRange(std::array<uint8_t, 2>{ 0x01, 0x00 });
+
+    EXPECT_CALL(gattClient, WriteDescriptor(handle, infra::ByteRangeContentsEqual(data), testing::_)).WillOnce([data](services::AttAttribute::Handle passedHandle, infra::ConstByteRange writeData, const infra::Function<void(services::OperationStatus)>& onWriteDone)
+        {
+            EXPECT_EQ(passedHandle, handle);
+            onWriteDone(GetParam());
+        });
 
     infra::VerifyingFunction<void(services::OperationStatus)> verifyOnDone{ GetParam() };
-    adapter.DisableNotification(handle, verifyOnDone);
-    ExecuteAllActions();
-}
-
-TEST_P(ClaimingGattClientAdapterStatusTest, should_call_enable_indication_characteristic)
-{
-    EXPECT_CALL(gattClient, EnableIndication(handle, testing::_))
-        .WillOnce([](services::AttAttribute::Handle passedHandle,
-                      infra::Function<void(services::OperationStatus)> onDone)
-            {
-                EXPECT_EQ(passedHandle, handle);
-                onDone(GetParam());
-            });
-
-    infra::VerifyingFunction<void(services::OperationStatus)> verifyOnDone{ GetParam() };
-    adapter.EnableIndication(handle, verifyOnDone);
-    ExecuteAllActions();
-}
-
-TEST_P(ClaimingGattClientAdapterStatusTest, should_call_disable_indication_characteristic)
-{
-    EXPECT_CALL(gattClient, DisableIndication(handle, testing::_))
-        .WillOnce([](services::AttAttribute::Handle passedHandle,
-                      infra::Function<void(services::OperationStatus)> onDone)
-            {
-                EXPECT_EQ(passedHandle, handle);
-                onDone(GetParam());
-            });
-
-    infra::VerifyingFunction<void(services::OperationStatus)> verifyOnDone{ GetParam() };
-    adapter.DisableIndication(handle, verifyOnDone);
+    adapter.WriteDescriptor(handle, data, verifyOnDone);
     ExecuteAllActions();
 }
 
@@ -328,8 +303,9 @@ TEST_P(ClaimingGattClientAdapterStatusTest, should_block_discovery_while_charact
     adapter.StartCharacteristicDiscovery(handle, endHandle);
     ExecuteAllActions();
 
+    infra::ConstByteRange data = infra::MakeRange(std::array<uint8_t, 2>{ 0x00, 0x00 });
     infra::VerifyingFunction<void(services::OperationStatus)> verifyOnDone{ GetParam() };
-    adapter.DisableIndication(handle, verifyOnDone);
+    adapter.WriteDescriptor(handle, data, verifyOnDone);
     ExecuteAllActions();
 
     EXPECT_CALL(discoveryObserver, CharacteristicDiscoveryComplete(GetParam()));
@@ -338,9 +314,10 @@ TEST_P(ClaimingGattClientAdapterStatusTest, should_block_discovery_while_charact
             observer.CharacteristicDiscoveryComplete(GetParam());
         });
 
-    EXPECT_CALL(gattClient, DisableIndication(handle, testing::_))
-        .WillOnce([](services::AttAttribute::Handle passedHandle,
-                      infra::Function<void(services::OperationStatus)> onDone)
+    EXPECT_CALL(gattClient, WriteDescriptor(handle, infra::ByteRangeContentsEqual(data), testing::_))
+        .WillOnce([data](services::AttAttribute::Handle passedHandle,
+                      infra::ConstByteRange writeData,
+                      const infra::Function<void(services::OperationStatus)>& onDone)
             {
                 EXPECT_EQ(passedHandle, handle);
                 onDone(GetParam());

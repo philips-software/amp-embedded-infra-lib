@@ -35,10 +35,8 @@ namespace services
         MOCK_METHOD(void, Write, (AttAttribute::Handle, infra::ConstByteRange, const infra::Function<void(OperationStatus)>&), (override));
         MOCK_METHOD(void, WriteWithoutResponse, (AttAttribute::Handle, infra::ConstByteRange, const infra::Function<void(OperationStatus)>&), (override));
 
-        MOCK_METHOD(void, EnableNotification, (AttAttribute::Handle, const infra::Function<void(OperationStatus)>&), (override));
-        MOCK_METHOD(void, DisableNotification, (AttAttribute::Handle, const infra::Function<void(OperationStatus)>&), (override));
-        MOCK_METHOD(void, EnableIndication, (AttAttribute::Handle, const infra::Function<void(OperationStatus)>&), (override));
-        MOCK_METHOD(void, DisableIndication, (AttAttribute::Handle, const infra::Function<void(OperationStatus)>&), (override));
+        MOCK_METHOD(void, ReadDescriptor, (AttAttribute::Handle, const infra::Function<void(const infra::ConstByteRange&)>&, const infra::Function<void(OperationStatus)>&), (override));
+        MOCK_METHOD(void, WriteDescriptor, (AttAttribute::Handle, infra::ConstByteRange, const infra::Function<void(OperationStatus)>&), (override));
     };
 
     class GattClientDiscoveryObserverMock
@@ -92,10 +90,8 @@ namespace services
         MOCK_METHOD(void, Read, (AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone), (override));
         MOCK_METHOD(void, Write, (AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone), (override));
         MOCK_METHOD(void, WriteWithoutResponse, (AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone), (override));
-        MOCK_METHOD(void, EnableNotification, (AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone), (override));
-        MOCK_METHOD(void, DisableNotification, (AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone), (override));
-        MOCK_METHOD(void, EnableIndication, (AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone), (override));
-        MOCK_METHOD(void, DisableIndication, (AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone), (override));
+        MOCK_METHOD(void, ReadDescriptor, (AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone), (override));
+        MOCK_METHOD(void, WriteDescriptor, (AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone), (override));
         MOCK_METHOD(void, MtuExchange, (const infra::Function<void(OperationStatus)>& onDone), (override));
     };
 }

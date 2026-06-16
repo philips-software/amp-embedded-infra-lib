@@ -35,10 +35,8 @@ namespace services
         void Read(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone) override;
         void Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
         void WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
-        void EnableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
-        void DisableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
-        void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
-        void DisableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
+        void ReadDescriptor(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone) override;
+        void WriteDescriptor(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
 
         // Implementation of GattClientMtuExchange
         virtual void MtuExchange(const infra::Function<void(OperationStatus)>& onDone) override;
@@ -63,9 +61,6 @@ namespace services
         // Implementation of GapCentralObserver
         void DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered) override;
         void StateChanged(GapState state) override;
-
-    private:
-        void PerformDescriptorOperation();
 
     private:
         struct DiscoveredService
@@ -107,15 +102,9 @@ namespace services
             const infra::Function<void(OperationStatus)> onDone;
         };
 
-        struct DescriptorOperation
-        {
-            const infra::Function<void(OperationStatus)> onDone;
-            infra::Function<void(const infra::Function<void(OperationStatus)>&)> operation;
-        };
-
         struct CharacteristicOperation
         {
-            using Operation = std::variant<ReadOperation, WriteOperation, DescriptorOperation>;
+            using Operation = std::variant<ReadOperation, WriteOperation>;
 
             CharacteristicOperation(Operation operation, AttAttribute::Handle handle)
                 : operation(operation)
