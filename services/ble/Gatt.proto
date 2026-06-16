@@ -86,6 +86,7 @@ message OperationResult
     OperationStatus value = 1;
 }
 
+// CCCD (Client Characteristic Configuration Descriptor) bit field values for use with WriteDescriptor
 enum CccdSetting
 {
     none = 0;
@@ -122,9 +123,9 @@ service GattClient
     // Example 1: If Read is called, EnableIndication shall only be called after CharacteristicOperationComplete
     // Example 2: If DisableNotification is called, Write shall only be called after CharacteristicOperationComplete
     // Example 3: If EnableNotification is called, EnableIndication shall only be called after CharacteristicOperationComplete
-    rpc Read(Handle) returns (Nothing) { option (method_id) = 8; }
-    rpc Write(AttributeData) returns (Nothing) { option (method_id) = 9; }
-    rpc WriteWithoutResponse(AttributeData) returns (Nothing) { option (method_id) = 10; }
+    rpc ReadCharacteristic(Handle) returns (Nothing) { option (method_id) = 8; }
+    rpc WriteCharacteristic(AttributeData) returns (Nothing) { option (method_id) = 9; }
+    rpc WriteCharacteristicWithoutResponse(AttributeData) returns (Nothing) { option (method_id) = 10; }
     rpc ReadDescriptor(Handle) returns (Nothing) { option (method_id) = 16; }
     rpc WriteDescriptor(AttributeData) returns (Nothing) { option (method_id) = 17; }
 
@@ -136,7 +137,7 @@ service GattClientResponse
 {
     option (service_id) = 135;
 
-    // Responses are not sent after connection loss
+    // Responses are not sent after connection loss, which is informed via the GAP service
 
     rpc MtuSizeExchangeComplete(MtuSize) returns (Nothing) { option (method_id) = 1; }
 
@@ -149,9 +150,10 @@ service GattClientResponse
     rpc DescriptorDiscovered(Descriptr) returns (Nothing) { option (method_id) = 6; }
     rpc DescriptorDiscoveryComplete(Nothing) returns (Nothing) { option (method_id) = 7; }
 
-    rpc ReadResponse(ReadResult) returns (Nothing) { option (method_id) = 8; }
+    rpc ReadCharacteristicResponse(ReadResult) returns (Nothing) { option (method_id) = 8; }
+    rpc ReadDescriptorResponse(ReadResult) returns (Nothing) { option (method_id) = 12; }
 
-    // Called after completion of characteristic operations with response: Read, Write, ReadDescriptor, WriteDescriptor
+    // Called after completion of operations with response: ReadCharacteristic, WriteCharacteristic, ReadDescriptor, WriteDescriptor
     rpc OperationComplete(OperationResult) returns (Nothing) { option (method_id) = 9; }
 
     rpc IndicationReceived(AttributeData) returns (Nothing) { option (method_id) = 10; }
