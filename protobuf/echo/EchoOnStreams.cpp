@@ -142,8 +142,9 @@ namespace services
         if (!skipNextStream && sendingProxy == nullptr && !sendRequesters.empty())
         {
             sendingProxy = &sendRequesters.front();
+            sendingProxySize = sendingProxy->CurrentRequestedSize() + 2 * infra::MaxVarIntSize(std::numeric_limits<uint64_t>::max());
             sendRequesters.pop_front();
-            RequestSendStream(sendingProxy->CurrentRequestedSize() + 2 * infra::MaxVarIntSize(std::numeric_limits<uint64_t>::max()));
+            RequestSendStream(sendingProxySize);
         }
     }
 
@@ -172,10 +173,11 @@ namespace services
                 policy->GrantingSend(*sendingProxy);
             }
 
-            partlySent = methodSerializer->Serialize(std::move(writer));
+            auto countingSentWriterPtr = countingSentWriter.Emplace(std::move(writer), sendingProxySize);
+            partlySent = methodSerializer->Serialize(infra::MakeContainedSharedObject(*countingSentWriterPtr->writer, std::move(countingSentWriterPtr)));
 
             if (partlySent)
-                RequestSendStream(sendingProxy->CurrentRequestedSize());
+                RequestSendStream(sendingProxySize);
             else
             {
                 sendingProxy = nullptr;
