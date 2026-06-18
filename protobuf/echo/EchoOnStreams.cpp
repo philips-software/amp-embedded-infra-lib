@@ -139,7 +139,7 @@ namespace services
 
     void EchoOnStreams::TryGrantSend()
     {
-        if (!skipNextStream && sendingProxy == nullptr && !sendRequesters.empty())
+        if (!skipNextStream && countingSentWriter.Allocatable() && sendingProxy == nullptr && !sendRequesters.empty())
         {
             sendingProxy = &sendRequesters.front();
             sendingProxySize = sendingProxy->CurrentRequestedSize() + 2 * infra::MaxVarIntSize(std::numeric_limits<uint64_t>::max());
@@ -174,16 +174,19 @@ namespace services
             }
 
             auto countingSentWriterPtr = countingSentWriter.Emplace(std::move(writer), sendingProxySize);
-            partlySent = methodSerializer->Serialize(infra::MakeContainedSharedObject(*countingSentWriterPtr->writer, std::move(countingSentWriterPtr)));
+            partlySent = methodSerializer->Serialize(infra::MakeContainedSharedObject(*countingSentWriterPtr->writer, countingSentWriterPtr));
+        }
+    }
 
-            if (partlySent)
-                RequestSendStream(sendingProxySize);
-            else
-            {
-                sendingProxy = nullptr;
-                methodSerializer = nullptr;
-                TryGrantSend();
-            }
+    void EchoOnStreams::StreamWriterDone()
+    {
+        if (partlySent)
+            RequestSendStream(sendingProxySize);
+        else
+        {
+            sendingProxy = nullptr;
+            methodSerializer = nullptr;
+            TryGrantSend();
         }
     }
 

@@ -49,6 +49,7 @@ namespace services
     private:
         void TryGrantSend();
 
+        void StreamWriterDone();
         void DataReceivedInReader();
         void StartReceiveMessage();
         void ContinueReceiveMessage();
@@ -87,7 +88,10 @@ namespace services
         infra::IntrusiveList<ServiceProxy> sendRequesters;
         ServiceProxy* sendingProxy = nullptr;
         std::size_t sendingProxySize = 0;
-        infra::NotifyingSharedOptional<CountingSentWriter> countingSentWriter;
+        infra::NotifyingSharedOptional<CountingSentWriter> countingSentWriter{ [this]()
+            {
+                StreamWriterDone();
+            } };
         infra::SharedPtr<MethodSerializer> methodSerializer;
         bool partlySent = false;
         bool skipNextStream = false;
