@@ -297,6 +297,10 @@ service GapPeripheral
     rpc GetBondInformation(Nothing) returns (Nothing) { option (method_id) = 13; }
 
     // Allowed in link layer states: connected
+    // Confirms or rejects the numeric comparison in response to GapPeripheralResponse.AuthenticationRequired.
+    // Only valid when AuthenticationRequest.isNumericComparison is true.
+    // Must be called within the SMP protocol timeout (30 seconds, Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4)
+    // of receiving AuthenticationRequired, otherwise pairing will fail.
     rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 14; }
 }
 
