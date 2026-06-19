@@ -153,9 +153,9 @@ message BondsStatus
     uint32 maxBonds = 2;
 }
 
-// Sent during an active PairAndBond procedure when user interaction is required to complete pairing.
+// Sent during an active pairing/bonding procedure when user interaction is required to complete pairing.
 // This will only be triggered when the negotiated pairing method requires it, which is determined by the
-// IO capabilities configured via SetIoCapabilities.
+// I/O capabilities configured via GapCentral.SetIoCapabilities or GapPeripheral.SetSecurityPreferences.ioCapabilities.
 // Not all pairing methods require user interaction (e.g. Just Works will never trigger this).
 message AuthenticationRequest
 {
