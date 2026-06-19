@@ -3,9 +3,11 @@
 
 #include "hal/interfaces/MacAddress.hpp"
 #include "infra/timer/Timer.hpp"
+#include "infra/util/BoundedString.hpp"
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/EnumCast.hpp"
+#include "infra/util/MemoryRange.hpp"
 #include "infra/util/Observer.hpp"
 #include "services/ble/Att.hpp"
 #include <optional>
@@ -33,7 +35,7 @@ namespace services
         initiating
     };
 
-    enum class GapAdvertisingEventType : uint8_t
+    enum class AdvertisingReportType : uint8_t
     {
         advInd,
         advDirectInd,
@@ -75,6 +77,11 @@ namespace services
         {
             return type == rhs.type && address == rhs.address;
         }
+
+        bool operator!=(GapAddress const& rhs) const
+        {
+            return !(*this == rhs);
+        }
     };
 
     struct GapOutOfBandData
@@ -85,6 +92,16 @@ namespace services
         infra::ConstByteRange confirmData;
     };
 
+    struct Bond
+    {
+        GapAddress address;
+        infra::BoundedConstString deviceName;
+
+        bool operator==(Bond const& rhs) const
+        {
+            return address == rhs.address && deviceName == rhs.deviceName;
+        }
+    };
     class GapPairing;
 
     class GapPairingObserver
@@ -93,21 +110,31 @@ namespace services
     public:
         using infra::Observer<GapPairingObserver, GapPairing>::Observer;
 
-        enum class PairingErrorType : uint8_t
+        // See Gap.proto for more information on failure reasons.
+        enum class PairingFailedReason : uint8_t
         {
             passkeyEntryFailed,
+            oobNotAvailable,
             authenticationRequirementsNotMet,
+            confirmValueFailed,
             pairingNotSupported,
             insufficientEncryptionKeySize,
+            commandNotSupported,
+            unspecifiedReason,
+            repeatedAttempts,
+            invalidParameters,
+            dhkeyCheckFailed,
             numericComparisonFailed,
+            brEdrPairingInProgress,
+            crossTransportKeyDerivationNotAllowed,
+            keyRejected,
             timeout,
             encryptionFailed,
-            unknown,
+            unknown
         };
 
-        virtual void DisplayPasskey(int32_t passkey, bool numericComparison) = 0;
-        virtual void PairingSuccessfullyCompleted() = 0;
-        virtual void PairingFailed(PairingErrorType error) = 0;
+        virtual void AuthenticationRequired(bool isNumericComparison, uint32_t passkey) = 0;
+        virtual void PairingResult(bool pairedSuccessfully, PairingFailedReason pairingFailedReason) = 0;
         virtual void OutOfBandDataGenerated(const GapOutOfBandData& outOfBandData) = 0;
     };
 
@@ -174,9 +201,8 @@ namespace services
         using GapPairingObserver::GapPairingObserver;
 
         // Implementation of GapPairingObserver
-        void DisplayPasskey(int32_t passkey, bool numericComparison) override;
-        void PairingSuccessfullyCompleted() override;
-        void PairingFailed(PairingErrorType error) override;
+        void AuthenticationRequired(bool isNumericComparison, uint32_t passkey) override;
+        void PairingResult(bool pairedSuccessfully, PairingFailedReason pairingFailedReason) override;
         void OutOfBandDataGenerated(const GapOutOfBandData& outOfBandData) override;
 
         // Implementation of GapPairing
@@ -207,10 +233,12 @@ namespace services
     public:
         virtual void RemoveAllBonds() = 0;
         virtual void RemoveOldestBond() = 0;
+        virtual void RemoveBondWithAddress(GapAddress gapAddress) = 0;
 
         virtual std::size_t GetMaxNumberOfBonds() const = 0;
         virtual std::size_t GetNumberOfBonds() const = 0;
         virtual bool IsDeviceBonded(hal::MacAddress address, GapDeviceAddressType addressType) const = 0;
+        virtual infra::MemoryRange<const services::Bond> GetBondList() const = 0;
     };
 
     class GapBondingDecorator
@@ -226,9 +254,12 @@ namespace services
         // Implementation of GapBonding
         void RemoveAllBonds() override;
         void RemoveOldestBond() override;
+        void RemoveBondWithAddress(GapAddress gapAddress) override;
+
         std::size_t GetMaxNumberOfBonds() const override;
         std::size_t GetNumberOfBonds() const override;
         bool IsDeviceBonded(hal::MacAddress address, GapDeviceAddressType addressType) const override;
+        infra::MemoryRange<const services::Bond> GetBondList() const override;
     };
 
     class GapPeripheral;
@@ -346,9 +377,8 @@ namespace services
 
     struct GapAdvertisingReport
     {
-        GapAdvertisingEventType eventType;
-        GapDeviceAddressType addressType;
-        hal::MacAddress address;
+        AdvertisingReportType reportType;
+        GapAddress gapAddress;
         infra::BoundedVector<uint8_t>::WithMaxSize<GapPeripheral::maxAdvertisementDataSize> data;
         int32_t rssi;
     };
@@ -370,12 +400,11 @@ namespace services
     {
     public:
         virtual void Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType, infra::Duration initiatingTimeout) = 0;
-        virtual void CancelConnect() = 0;
-        virtual void Disconnect() = 0;
-        virtual void SetAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) = 0;
+        virtual void Standby() = 0;
+        virtual void SetIdentityAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) = 0;
         virtual void StartDeviceDiscovery() = 0;
-        virtual void StopDeviceDiscovery() = 0;
         virtual std::optional<hal::MacAddress> ResolvePrivateAddress(hal::MacAddress address) const = 0;
+        virtual void SetPrivacyMode(bool enabled) = 0;
     };
 
     class GapCentralDecorator
@@ -391,18 +420,17 @@ namespace services
 
         // Implementation of GapCentral
         void Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType, infra::Duration initiatingTimeout) override;
-        void CancelConnect() override;
-        void Disconnect() override;
-        void SetAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) override;
+        void Standby() override;
+        void SetIdentityAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) override;
         void StartDeviceDiscovery() override;
-        void StopDeviceDiscovery() override;
         std::optional<hal::MacAddress> ResolvePrivateAddress(hal::MacAddress address) const override;
+        void SetPrivacyMode(bool enabled) override;
     };
 }
 
 namespace infra
 {
-    infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::GapAdvertisingEventType& eventType);
+    infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::AdvertisingReportType& reportType);
     infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::GapDeviceAddressType& addressType);
     infra::TextOutputStream& operator<<(infra::TextOutputStream& stream, const services::GapState& state);
 }
