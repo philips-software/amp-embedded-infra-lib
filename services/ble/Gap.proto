@@ -321,6 +321,8 @@ service GapPeripheralResponse
     rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 6; }
 
     rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 7; }
+
+    rpc AuthenticationRequired(AuthenticationRequest) returns (Nothing) { option (method_id) = 8; }
 }
 
 // DEPRECATED: Will be removed in the near future. Instead wait for CurrentState(standby) after startup
