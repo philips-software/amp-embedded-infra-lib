@@ -153,6 +153,23 @@ message BondsStatus
     uint32 maxBonds = 2;
 }
 
+// Sent during an active PairAndBond procedure when user interaction is required to complete pairing.
+// This will only be triggered when the negotiated pairing method requires it, which is determined by the
+// IO capabilities configured via SetIoCapabilities.
+// Not all pairing methods require user interaction (e.g. Just Works will never trigger this).
+message AuthenticationRequest
+{
+    // Indicates whether this is a Numeric Comparison (LE Secure Connections) or Passkey Entry pairing.
+    // If true: display the passkey to the user for confirmation and respond with NumericComparisonConfirm.
+    // If false: display or enter the passkey and respond with AuthenticateWithPasskey.
+    bool isNumericComparison = 1;
+
+    // The passkey to be displayed to the user.
+    // If isNumericComparison is true: the user confirms this value matches the one displayed on the peer device.
+    // If isNumericComparison is false: the user either reads this value to enter on the peer device, or is prompted to enter the passkey shown on the peer device (in which case this field is not used).
+    uint32 passkey = 2;
+}
+
 // ==================================================
 // GAP PERIPHERAL
 // ==================================================
@@ -339,23 +356,6 @@ service GapPeripheralReadiness {
 // ==================================================
 // GAP CENTRAL
 // ==================================================
-
-// Sent by the central during an active PairAndBond procedure when user interaction is required to complete pairing.
-// This will only be triggered when the negotiated pairing method requires it, which is determined by the
-// IO capabilities configured via GapCentral.SetIoCapabilities.
-// Not all pairing methods require user interaction (e.g. Just Works will never trigger this).
-message AuthenticationRequest
-{
-    // Indicates whether this is a Numeric Comparison (LE Secure Connections) or Passkey Entry pairing.
-    // If true: display the passkey to the user for confirmation and respond with GapCentral.NumericComparisonConfirm.
-    // If false: display or enter the passkey and respond with GapCentral.AuthenticateWithPasskey.
-    bool isNumericComparison = 1;
-
-    // The passkey to be displayed to the user.
-    // If isNumericComparison is true: the user confirms this value matches the one displayed on the peer device.
-    // If isNumericComparison is false: the user either reads this value to enter on the peer device, or is prompted to enter the passkey shown on the peer device (in which case this field is not used).
-    uint32 passkey = 2;
-}
 
 message SecurityModeAndLevel
 {
