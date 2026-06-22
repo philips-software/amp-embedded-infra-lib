@@ -98,6 +98,7 @@ public:
 
     static constexpr services::AttAttribute::Handle characteristicHandle = 0x2;
     static constexpr services::AttAttribute::Handle characteristicValueHandle = 0x3;
+    static constexpr services::AttAttribute::Handle descriptorHandle = 0x4;
     static constexpr auto result = services::OperationStatus::success;
 
     testing::StrictMock<services::GattClientCharacteristicOperationsMock> operations;
@@ -192,46 +193,31 @@ TEST_F(GattClientCharacteristicTest, should_write_without_response_characteristi
     characteristic.WriteWithoutResponse(data, onDone);
 }
 
-TEST_F(GattClientCharacteristicTest, should_enable_notification_characteristic_and_callback)
+TEST_F(GattClientCharacteristicTest, should_write_descriptor_and_callback)
 {
-    EXPECT_CALL(operations, EnableNotification(characteristicValueHandle, ::testing::_)).WillOnce([](services::AttAttribute::Handle, infra::Function<void(services::OperationStatus)> onDone)
+    const auto data = infra::MakeStringByteRange("If you saw a heat wave, would you wave back?");
+
+    EXPECT_CALL(operations, WriteDescriptor(descriptorHandle, infra::ByteRangeContentsEqual(data), testing::_)).WillOnce([&data](services::AttAttribute::Handle, infra::ConstByteRange, infra::Function<void(services::OperationStatus)> onDone)
         {
             onDone(result);
         });
 
     infra::VerifyingFunction<void(services::OperationStatus)> onDone{ result };
-    characteristic.EnableNotification(onDone);
+    characteristic.WriteDescriptor(descriptorHandle, data, onDone);
 }
 
-TEST_F(GattClientCharacteristicTest, should_disable_notification_characteristic_and_callback)
+TEST_F(GattClientCharacteristicTest, should_read_descriptor_and_callback_with_data_received)
 {
-    EXPECT_CALL(operations, DisableNotification(characteristicValueHandle, ::testing::_)).WillOnce([](services::AttAttribute::Handle, infra::Function<void(services::OperationStatus)> onDone)
-        {
-            onDone(result);
-        });
+    const auto data = infra::MakeStringByteRange("7 percent of all statistics are made up on the spot");
+    infra::VerifyingFunction<void(const infra::ConstByteRange&)> onResponse{ data };
+
+    EXPECT_CALL(operations, ReadDescriptor(descriptorHandle, ::testing::_, testing::_))
+        .WillOnce([&data](services::AttAttribute::Handle, infra::Function<void(const infra::ConstByteRange&)> onResponse, infra::Function<void(services::OperationStatus)> onDone)
+            {
+                onResponse(data);
+                onDone(result);
+            });
 
     infra::VerifyingFunction<void(services::OperationStatus)> onDone{ result };
-    characteristic.DisableNotification(onDone);
-}
-
-TEST_F(GattClientCharacteristicTest, should_enable_indication_characteristic_and_callback)
-{
-    EXPECT_CALL(operations, EnableIndication(characteristicValueHandle, ::testing::_)).WillOnce([](services::AttAttribute::Handle, infra::Function<void(services::OperationStatus)> onDone)
-        {
-            onDone(result);
-        });
-
-    infra::VerifyingFunction<void(services::OperationStatus)> onDone{ result };
-    characteristic.EnableIndication(onDone);
-}
-
-TEST_F(GattClientCharacteristicTest, should_disable_indication_characteristic_and_callback)
-{
-    EXPECT_CALL(operations, DisableIndication(characteristicValueHandle, ::testing::_)).WillOnce([](services::AttAttribute::Handle, infra::Function<void(services::OperationStatus)> onDone)
-        {
-            onDone(result);
-        });
-
-    infra::VerifyingFunction<void(services::OperationStatus)> onDone{ result };
-    characteristic.DisableIndication(onDone);
+    characteristic.ReadDescriptor(descriptorHandle, onResponse, onDone);
 }
