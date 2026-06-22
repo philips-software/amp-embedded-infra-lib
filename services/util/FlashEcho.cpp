@@ -14,18 +14,18 @@ namespace services
     {
         onStopped = onDone;
 
-        if (!busy)
+        if (!busyWithFlash)
             onStopped();
     }
 
     void FlashEcho::Read(uint32_t address, uint32_t size)
     {
-        really_assert(!busy);
-        busy = true;
+        really_assert(!busyWithFlash);
+        busyWithFlash = true;
 
         flash.ReadBuffer(infra::Head(infra::MakeRange(buffer), size), address, [this, size]()
             {
-                busy = false;
+                busyWithFlash = false;
 
                 if (onStopped)
                     onStopped();
@@ -43,12 +43,12 @@ namespace services
 
     void FlashEcho::Write(uint32_t address, infra::ConstByteRange contents)
     {
-        really_assert(!busy);
-        busy = true;
+        really_assert(!busyWithFlash);
+        busyWithFlash = true;
 
         flash.WriteBuffer(contents, address, [this]()
             {
-                busy = false;
+                busyWithFlash = false;
 
                 if (onStopped)
                     onStopped();
@@ -66,12 +66,12 @@ namespace services
 
     void FlashEcho::EraseSectors(uint32_t sector, uint32_t numberOfSectors)
     {
-        really_assert(!busy);
-        busy = true;
+        really_assert(!busyWithFlash);
+        busyWithFlash = true;
 
         flash.EraseSectors(sector, sector + numberOfSectors, [this]()
             {
-                busy = false;
+                busyWithFlash = false;
                 if (onStopped)
                     onStopped();
                 else

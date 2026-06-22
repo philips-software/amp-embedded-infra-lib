@@ -26,7 +26,7 @@ namespace services
 
         std::array<uint8_t, flash::WriteRequest::contentsSize> buffer;
 
-        bool busy = false;
+        bool busyWithFlash = false;
         infra::AutoResetFunction<void()> onStopped;
     };
 
