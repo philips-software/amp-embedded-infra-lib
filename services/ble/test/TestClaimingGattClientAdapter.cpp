@@ -143,16 +143,16 @@ TEST_F(ClaimingGattClientAdapterTest, can_write_without_response_while_awaiting_
     infra::Function<void(services::OperationStatus)> onDone;
     infra::VerifyingFunction<void(const infra::ConstByteRange&)> verifyOnRead{ readResult };
 
-    EXPECT_CALL(gattClient, Read(handle, testing::_, testing::_))
+    EXPECT_CALL(gattClient, ReadCharacteristic(handle, testing::_, testing::_))
         .WillOnce(::testing::DoAll(::testing::SaveArg<1>(&onRead), ::testing::SaveArg<2>(&onDone)));
-    EXPECT_CALL(gattClient, WriteWithoutResponse(handleWrite, testing::_, testing::_)).WillOnce(::testing::InvokeArgument<2>(services::OperationStatus::success));
+    EXPECT_CALL(gattClient, WriteCharacteristicWithoutResponse(handleWrite, testing::_, testing::_)).WillOnce(::testing::InvokeArgument<2>(services::OperationStatus::success));
 
     infra::VerifyingFunction<void(services::OperationStatus)> verifyOnDone{ operationStatusOk };
-    adapter.Read(handle, verifyOnRead, verifyOnDone);
+    adapter.ReadCharacteristic(handle, verifyOnRead, verifyOnDone);
 
     ExecuteAllActions();
 
-    adapter.WriteWithoutResponse(handleWrite, infra::MakeRange(std::array<uint8_t, 1>({ 42 })), infra::MockFunction<void(services::OperationStatus)>(services::OperationStatus::success));
+    adapter.WriteCharacteristicWithoutResponse(handleWrite, infra::MakeRange(std::array<uint8_t, 1>({ 42 })), infra::MockFunction<void(services::OperationStatus)>(services::OperationStatus::success));
 
     onRead(readResult);
     onDone(operationStatusOk);
@@ -214,7 +214,7 @@ TEST_P(ClaimingGattClientAdapterStatusTest, should_call_read_characteristic)
     infra::VerifyingFunction<void(const infra::ConstByteRange&)> onRead{ readResult };
     infra::VerifyingFunction<void(services::OperationStatus)> verifyOnDone{ GetParam() };
 
-    EXPECT_CALL(gattClient, Read(handle, testing::_, testing::_))
+    EXPECT_CALL(gattClient, ReadCharacteristic(handle, testing::_, testing::_))
         .WillOnce([&readResult](services::AttAttribute::Handle passedHandle,
                       infra::Function<void(const infra::ConstByteRange&)> onRead,
                       infra::Function<void(services::OperationStatus)> onDone)
@@ -225,7 +225,7 @@ TEST_P(ClaimingGattClientAdapterStatusTest, should_call_read_characteristic)
                 onDone(GetParam());
             });
 
-    adapter.Read(handle, onRead, verifyOnDone);
+    adapter.ReadCharacteristic(handle, onRead, verifyOnDone);
     ExecuteAllActions();
 }
 
@@ -233,14 +233,14 @@ TEST_P(ClaimingGattClientAdapterStatusTest, should_call_write_characteristic)
 {
     infra::ConstByteRange data = infra::MakeRange(std::array<uint8_t, 4>{ 0x01, 0x02, 0x03, 0x04 });
 
-    EXPECT_CALL(gattClient, Write(handle, infra::ByteRangeContentsEqual(data), testing::_)).WillOnce([data](services::AttAttribute::Handle passedHandle, infra::ConstByteRange writeData, const infra::Function<void(services::OperationStatus)>& onWriteDone)
+    EXPECT_CALL(gattClient, WriteCharacteristic(handle, infra::ByteRangeContentsEqual(data), testing::_)).WillOnce([data](services::AttAttribute::Handle passedHandle, infra::ConstByteRange writeData, const infra::Function<void(services::OperationStatus)>& onWriteDone)
         {
             EXPECT_EQ(passedHandle, handle);
             onWriteDone(GetParam());
         });
 
     infra::VerifyingFunction<void(services::OperationStatus)> onDone{ GetParam() };
-    adapter.Write(handle, data, onDone);
+    adapter.WriteCharacteristic(handle, data, onDone);
     ExecuteAllActions();
 }
 
@@ -248,7 +248,7 @@ TEST_P(ClaimingGattClientAdapterStatusTest, should_call_write_without_response_c
 {
     infra::ConstByteRange data = infra::MakeRange(std::array<uint8_t, 4>{ 0x01, 0x02, 0x03, 0x04 });
 
-    EXPECT_CALL(gattClient, WriteWithoutResponse(testing::_, infra::ByteRangeContentsEqual(data), testing::_))
+    EXPECT_CALL(gattClient, WriteCharacteristicWithoutResponse(testing::_, infra::ByteRangeContentsEqual(data), testing::_))
         .WillOnce([](services::AttAttribute::Handle passedHandle,
                       infra::ConstByteRange data,
                       const infra::Function<void(services::OperationStatus)>& onDone)
@@ -258,7 +258,7 @@ TEST_P(ClaimingGattClientAdapterStatusTest, should_call_write_without_response_c
             });
 
     infra::VerifyingFunction<void(services::OperationStatus)> onWriteWithoutResponse{ GetParam() };
-    adapter.WriteWithoutResponse(handle, data, onWriteWithoutResponse);
+    adapter.WriteCharacteristicWithoutResponse(handle, data, onWriteWithoutResponse);
     ExecuteAllActions();
 }
 

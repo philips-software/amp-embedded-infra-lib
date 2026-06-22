@@ -31,9 +31,9 @@ namespace services
         : public GattClientCharacteristicOperations
     {
     public:
-        MOCK_METHOD(void, Read, (AttAttribute::Handle, const infra::Function<void(const infra::ConstByteRange&)>&, const infra::Function<void(OperationStatus)>&), (override));
-        MOCK_METHOD(void, Write, (AttAttribute::Handle, infra::ConstByteRange, const infra::Function<void(OperationStatus)>&), (override));
-        MOCK_METHOD(void, WriteWithoutResponse, (AttAttribute::Handle, infra::ConstByteRange, const infra::Function<void(OperationStatus)>&), (override));
+        MOCK_METHOD(void, ReadCharacteristic, (AttAttribute::Handle, const infra::Function<void(const infra::ConstByteRange&)>&, const infra::Function<void(OperationStatus)>&), (override));
+        MOCK_METHOD(void, WriteCharacteristic, (AttAttribute::Handle, infra::ConstByteRange, const infra::Function<void(OperationStatus)>&), (override));
+        MOCK_METHOD(void, WriteCharacteristicWithoutResponse, (AttAttribute::Handle, infra::ConstByteRange, const infra::Function<void(OperationStatus)>&), (override));
 
         MOCK_METHOD(void, ReadDescriptor, (AttAttribute::Handle, const infra::Function<void(const infra::ConstByteRange&)>&, const infra::Function<void(OperationStatus)>&), (override));
         MOCK_METHOD(void, WriteDescriptor, (AttAttribute::Handle, infra::ConstByteRange, const infra::Function<void(OperationStatus)>&), (override));
@@ -87,9 +87,9 @@ namespace services
         MOCK_METHOD(void, StartCharacteristicDiscovery, (AttAttribute::Handle handle, AttAttribute::Handle endHandle), (override));
         MOCK_METHOD(void, StartDescriptorDiscovery, (AttAttribute::Handle handle, AttAttribute::Handle endHandle), (override));
 
-        MOCK_METHOD(void, Read, (AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone), (override));
-        MOCK_METHOD(void, Write, (AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone), (override));
-        MOCK_METHOD(void, WriteWithoutResponse, (AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone), (override));
+        MOCK_METHOD(void, ReadCharacteristic, (AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone), (override));
+        MOCK_METHOD(void, WriteCharacteristic, (AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone), (override));
+        MOCK_METHOD(void, WriteCharacteristicWithoutResponse, (AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone), (override));
         MOCK_METHOD(void, ReadDescriptor, (AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone), (override));
         MOCK_METHOD(void, WriteDescriptor, (AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone), (override));
         MOCK_METHOD(void, MtuExchange, (const infra::Function<void(OperationStatus)>& onDone), (override));

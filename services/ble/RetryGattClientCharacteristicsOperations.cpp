@@ -8,20 +8,20 @@ namespace services
         , gattClient(gattClient)
     {}
 
-    void RetryGattClientCharacteristicsOperations::Read(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone)
+    void RetryGattClientCharacteristicsOperations::ReadCharacteristic(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone)
     {
-        gattClient.Read(handle, onRead, onDone);
+        gattClient.ReadCharacteristic(handle, onRead, onDone);
     }
 
-    void RetryGattClientCharacteristicsOperations::Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
+    void RetryGattClientCharacteristicsOperations::WriteCharacteristic(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
     {
-        gattClient.Write(handle, data, onDone);
+        gattClient.WriteCharacteristic(handle, data, onDone);
     }
 
-    void RetryGattClientCharacteristicsOperations::WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
+    void RetryGattClientCharacteristicsOperations::WriteCharacteristicWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
     {
         operationWriteWithoutResponse.emplace(Operation{ handle, data, onDone });
-        TryWriteWithoutResponse();
+        TryWriteCharacteristicWithoutResponse();
     }
 
     void RetryGattClientCharacteristicsOperations::ReadDescriptor(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone)
@@ -51,15 +51,15 @@ namespace services
             });
     }
 
-    void RetryGattClientCharacteristicsOperations::TryWriteWithoutResponse()
+    void RetryGattClientCharacteristicsOperations::TryWriteCharacteristicWithoutResponse()
     {
-        gattClient.WriteWithoutResponse(operationWriteWithoutResponse->handle, operationWriteWithoutResponse->data, [this](OperationStatus result)
+        gattClient.WriteCharacteristicWithoutResponse(operationWriteWithoutResponse->handle, operationWriteWithoutResponse->data, [this](OperationStatus result)
             {
                 if (result == OperationStatus::retry)
                 {
                     infra::EventDispatcher::Instance().Schedule([this]()
                         {
-                            TryWriteWithoutResponse();
+                            TryWriteCharacteristicWithoutResponse();
                         });
                 }
                 else

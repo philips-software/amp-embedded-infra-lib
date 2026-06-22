@@ -14,25 +14,25 @@ namespace services
         : GattCharacteristic(type, handle, valueHandle, properties)
     {}
 
-    void GattClientCharacteristic::Read(const infra::Function<void(const infra::ConstByteRange&)>& onResponse, const infra::Function<void(OperationStatus)>& onDone)
+    void GattClientCharacteristic::ReadCharacteristic(const infra::Function<void(const infra::ConstByteRange&)>& onResponse, const infra::Function<void(OperationStatus)>& onDone)
     {
         really_assert(operations != nullptr);
 
-        operations->Read(valueHandle, onResponse, onDone);
+        operations->ReadCharacteristic(valueHandle, onResponse, onDone);
     }
 
-    void GattClientCharacteristic::Write(infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
+    void GattClientCharacteristic::WriteCharacteristic(infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
     {
         really_assert(operations != nullptr);
 
-        operations->Write(valueHandle, data, onDone);
+        operations->WriteCharacteristic(valueHandle, data, onDone);
     }
 
-    void GattClientCharacteristic::WriteWithoutResponse(infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
+    void GattClientCharacteristic::WriteCharacteristicWithoutResponse(infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
     {
         really_assert(operations != nullptr);
 
-        operations->WriteWithoutResponse(valueHandle, data, onDone);
+        operations->WriteCharacteristicWithoutResponse(valueHandle, data, onDone);
     }
 
     void GattClientCharacteristic::ReadDescriptor(AttAttribute::Handle descriptorHandle, const infra::Function<void(const infra::ConstByteRange&)>& onResponse, const infra::Function<void(OperationStatus)>& onDone)

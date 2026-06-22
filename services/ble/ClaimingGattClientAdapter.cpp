@@ -96,13 +96,13 @@ namespace services
             });
     }
 
-    void ClaimingGattClientAdapter::Read(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone)
+    void ClaimingGattClientAdapter::ReadCharacteristic(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone)
     {
         characteristicOperationContext.emplace(ReadOperation{ onRead, onDone }, handle);
         characteristicOperationsClaimer.Claim([this]()
             {
                 const auto& readContext = std::get<ReadOperation>(characteristicOperationContext->operation);
-                GattClientObserver::Subject().Read(characteristicOperationContext->handle, readContext.onRead, [this](OperationStatus result)
+                GattClientObserver::Subject().ReadCharacteristic(characteristicOperationContext->handle, readContext.onRead, [this](OperationStatus result)
                     {
                         characteristicOperationsClaimer.Release();
                         const auto& readContext = std::get<ReadOperation>(characteristicOperationContext->operation);
@@ -111,13 +111,13 @@ namespace services
             });
     }
 
-    void ClaimingGattClientAdapter::Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
+    void ClaimingGattClientAdapter::WriteCharacteristic(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
     {
         characteristicOperationContext.emplace(WriteOperation{ data, onDone }, handle);
         characteristicOperationsClaimer.Claim([this]()
             {
                 const auto& writeContext = std::get<WriteOperation>(characteristicOperationContext->operation);
-                GattClientObserver::Subject().Write(characteristicOperationContext->handle, writeContext.data, [this](OperationStatus result)
+                GattClientObserver::Subject().WriteCharacteristic(characteristicOperationContext->handle, writeContext.data, [this](OperationStatus result)
                     {
                         characteristicOperationsClaimer.Release();
                         const auto& writeContext = std::get<WriteOperation>(characteristicOperationContext->operation);
@@ -126,9 +126,9 @@ namespace services
             });
     }
 
-    void ClaimingGattClientAdapter::WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
+    void ClaimingGattClientAdapter::WriteCharacteristicWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
     {
-        GattClientObserver::Subject().WriteWithoutResponse(handle, data, onDone);
+        GattClientObserver::Subject().WriteCharacteristicWithoutResponse(handle, data, onDone);
     }
 
     void ClaimingGattClientAdapter::ReadDescriptor(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone)

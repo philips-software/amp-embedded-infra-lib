@@ -156,7 +156,7 @@ TEST_F(GattClientCharacteristicTest, should_read_characteristic_and_callback_wit
     const auto data = infra::MakeStringByteRange("string");
     infra::VerifyingFunction<void(const infra::ConstByteRange&)> onResponse{ data };
 
-    EXPECT_CALL(operations, Read(characteristicValueHandle, ::testing::_, testing::_))
+    EXPECT_CALL(operations, ReadCharacteristic(characteristicValueHandle, ::testing::_, testing::_))
         .WillOnce([&data](services::AttAttribute::Handle, infra::Function<void(const infra::ConstByteRange&)> onResponse, infra::Function<void(services::OperationStatus)> onDone)
             {
                 onResponse(data);
@@ -164,33 +164,33 @@ TEST_F(GattClientCharacteristicTest, should_read_characteristic_and_callback_wit
             });
 
     infra::VerifyingFunction<void(services::OperationStatus)> onDone{ result };
-    characteristic.Read(onResponse, onDone);
+    characteristic.ReadCharacteristic(onResponse, onDone);
 }
 
 TEST_F(GattClientCharacteristicTest, should_write_characteristic_and_callback)
 {
     const auto data = infra::MakeStringByteRange("string");
 
-    EXPECT_CALL(operations, Write(characteristicValueHandle, infra::ByteRangeContentsEqual(data), testing::_)).WillOnce([&data](services::AttAttribute::Handle, infra::ConstByteRange, infra::Function<void(services::OperationStatus)> onDone)
+    EXPECT_CALL(operations, WriteCharacteristic(characteristicValueHandle, infra::ByteRangeContentsEqual(data), testing::_)).WillOnce([&data](services::AttAttribute::Handle, infra::ConstByteRange, infra::Function<void(services::OperationStatus)> onDone)
         {
             onDone(result);
         });
 
     infra::VerifyingFunction<void(services::OperationStatus)> onDone{ result };
-    characteristic.Write(data, onDone);
+    characteristic.WriteCharacteristic(data, onDone);
 }
 
 TEST_F(GattClientCharacteristicTest, should_write_without_response_characteristic)
 {
     const auto data = infra::MakeStringByteRange("string");
 
-    EXPECT_CALL(operations, WriteWithoutResponse(characteristicValueHandle, infra::ByteRangeContentsEqual(data), testing::_)).WillOnce([](services::AttAttribute::Handle handle, infra::ConstByteRange, infra::Function<void(services::OperationStatus)> onDone)
+    EXPECT_CALL(operations, WriteCharacteristicWithoutResponse(characteristicValueHandle, infra::ByteRangeContentsEqual(data), testing::_)).WillOnce([](services::AttAttribute::Handle handle, infra::ConstByteRange, infra::Function<void(services::OperationStatus)> onDone)
         {
             onDone(result);
         });
 
     infra::VerifyingFunction<void(services::OperationStatus)> onDone{ result };
-    characteristic.WriteWithoutResponse(data, onDone);
+    characteristic.WriteCharacteristicWithoutResponse(data, onDone);
 }
 
 TEST_F(GattClientCharacteristicTest, should_write_descriptor_and_callback)

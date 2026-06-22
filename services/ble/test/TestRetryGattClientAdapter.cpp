@@ -33,26 +33,26 @@ TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_read_characteri
 {
     infra::Function<void(const infra::ConstByteRange&)> onReadMock;
 
-    EXPECT_CALL(adapter, Read(handle, testing::Ref(onReadMock), testing::Ref(onDone)));
+    EXPECT_CALL(adapter, ReadCharacteristic(handle, testing::Ref(onReadMock), testing::Ref(onDone)));
 
-    retryAdapter.Read(handle, onReadMock, onDone);
+    retryAdapter.ReadCharacteristic(handle, onReadMock, onDone);
 }
 
 TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_write_characteristic)
 {
-    EXPECT_CALL(adapter, Write(handle, testing::ElementsAreArray(data), testing::Ref(onDone)));
+    EXPECT_CALL(adapter, WriteCharacteristic(handle, testing::ElementsAreArray(data), testing::Ref(onDone)));
 
-    retryAdapter.Write(handle, data, onDone);
+    retryAdapter.WriteCharacteristic(handle, data, onDone);
 }
 
 TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_write_without_response_characteristic_and_error)
 {
     infra::VerifyingFunction<void(services::OperationStatus)> errorCallback(services::OperationStatus::error);
 
-    EXPECT_CALL(adapter, WriteWithoutResponse(handle, testing::ElementsAreArray(data), testing::_))
+    EXPECT_CALL(adapter, WriteCharacteristicWithoutResponse(handle, testing::ElementsAreArray(data), testing::_))
         .WillOnce(testing::InvokeArgument<2>(services::OperationStatus::error));
 
-    retryAdapter.WriteWithoutResponse(handle, data, errorCallback);
+    retryAdapter.WriteCharacteristicWithoutResponse(handle, data, errorCallback);
 }
 
 TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_write_without_response_characteristic_with_retry)
@@ -60,12 +60,12 @@ TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_write_without_r
     testing::StrictMock<infra::MockCallback<void(services::OperationStatus)>> callback;
     infra::Function<void(services::OperationStatus)> onDone;
 
-    EXPECT_CALL(adapter, WriteWithoutResponse(handle, testing::ElementsAreArray(data), testing::_))
+    EXPECT_CALL(adapter, WriteCharacteristicWithoutResponse(handle, testing::ElementsAreArray(data), testing::_))
         .WillRepeatedly(testing::SaveArg<2>(&onDone));
 
     EXPECT_CALL(callback, callback(services::OperationStatus::success));
 
-    retryAdapter.WriteWithoutResponse(handle, data, [&callback](services::OperationStatus status)
+    retryAdapter.WriteCharacteristicWithoutResponse(handle, data, [&callback](services::OperationStatus status)
         {
             callback.callback(status);
         });
@@ -85,10 +85,10 @@ TEST_F(RetryGattClientCharacteristicsOperationsTest, should_call_write_without_r
     infra::Function<void(services::OperationStatus)> onDone;
 
     EXPECT_CALL(callback, callback(services::OperationStatus::error));
-    EXPECT_CALL(adapter, WriteWithoutResponse(handle, testing::ElementsAreArray(data), testing::_))
+    EXPECT_CALL(adapter, WriteCharacteristicWithoutResponse(handle, testing::ElementsAreArray(data), testing::_))
         .WillRepeatedly(testing::SaveArg<2>(&onDone));
 
-    retryAdapter.WriteWithoutResponse(handle, data, [&callback](services::OperationStatus status)
+    retryAdapter.WriteCharacteristicWithoutResponse(handle, data, [&callback](services::OperationStatus status)
         {
             callback.callback(status);
         });
