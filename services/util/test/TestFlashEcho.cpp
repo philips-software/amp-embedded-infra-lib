@@ -531,4 +531,26 @@ TEST_F(FlashProxyDeathTest, erase_sectors_done_while_idle_aborts)
         "");
 }
 
+class FlashEchoResponseBusyDeathTest
+    : public testing::Test
+{
+public:
+    testing::NiceMock<services::EchoMock> echo;
+    testing::NiceMock<hal::CleanFlashMock> delegate;
+    services::FlashEcho flash{ echo, delegate };
+
+    const std::array<uint8_t, 4> data{ 5, 8, 2, 3 };
+    infra::Function<void()> onDone;
+};
+
+TEST_F(FlashEchoResponseBusyDeathTest, write_while_busy_with_response_aborts)
+{
+    EXPECT_CALL(delegate, WriteBuffer(testing::_, 1234, testing::_)).WillOnce(testing::SaveArg<2>(&onDone));
+    flash.Write(1234, data);
+
+    onDone(); // flash done → busyWithResponse = true, response send queued but not dispatched
+
+    EXPECT_DEATH(flash.Write(1234, data), "");
+}
+
 #endif
