@@ -36,7 +36,7 @@ namespace services
 
     void ServiceProxy::RequestSend(infra::Function<void()> onGranted, uint32_t requestedSize)
     {
-        really_assert(!this->onGranted);
+        really_assert_with_msg(!this->onGranted, "ServiceProxy::RequestSend onGranted already pending (overlapping send); proxy=%p pending=%p incoming=%p", static_cast<const void*>(this), this->onGranted.TargetTypeId(), onGranted.TargetTypeId());
         this->onGranted = onGranted;
         currentRequestedSize = requestedSize;
         echo.RequestSend(*this);

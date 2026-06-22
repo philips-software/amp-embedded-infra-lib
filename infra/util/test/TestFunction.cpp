@@ -21,6 +21,48 @@ TEST(FunctionTest, TestConstructedNotEmpty)
     EXPECT_TRUE(static_cast<bool>(f));
 }
 
+TEST(FunctionTest, TestTargetTypeIdIsNullWhenEmpty)
+{
+    infra::Function<void()> f;
+    EXPECT_EQ(nullptr, f.TargetTypeId());
+}
+
+TEST(FunctionTest, TestTargetTypeIdIsNotNullWhenAssigned)
+{
+    infra::Function<void()> f([]() {});
+    EXPECT_NE(nullptr, f.TargetTypeId());
+}
+
+TEST(FunctionTest, TestTargetTypeIdIsStableForSameStoredType)
+{
+    auto callable = []() {};
+    infra::Function<void()> f(callable);
+    infra::Function<void()> g(callable);
+
+    EXPECT_EQ(f.TargetTypeId(), g.TargetTypeId());
+}
+
+TEST(FunctionTest, TestTargetTypeIdDiffersForDifferentStoredTypes)
+{
+    int x = 0;
+    infra::Function<void()> f([]() {});
+    infra::Function<void()> g([&x]()
+        {
+            ++x;
+        });
+
+    EXPECT_NE(f.TargetTypeId(), g.TargetTypeId());
+}
+
+TEST(FunctionTest, TestTargetTypeIdIsClearedAfterReset)
+{
+    infra::Function<void()> f([]() {});
+    EXPECT_NE(nullptr, f.TargetTypeId());
+
+    f = nullptr;
+    EXPECT_EQ(nullptr, f.TargetTypeId());
+}
+
 void function()
 {}
 
