@@ -99,7 +99,7 @@ namespace infra
     template<std::size_t ExtraSize>
     void ClaimableResource::ClaimerWithSize<ExtraSize>::Claim(const infra::Function<void(), ExtraSize>& onGranted)
     {
-        really_assert(!this->onGranted);
+        really_assert_with_msg(!this->onGranted, "ClaimableResource Claim already pending");
 
         this->onGranted = onGranted;
         this->isQueued = true;
@@ -109,7 +109,7 @@ namespace infra
     template<std::size_t ExtraSize>
     void ClaimableResource::ClaimerWithSize<ExtraSize>::ClaimUrgent(const infra::Function<void(), ExtraSize>& onGranted)
     {
-        really_assert(!this->onGranted);
+        really_assert_with_msg(!this->onGranted, "ClaimableResource ClaimUrgent already pending");
 
         this->onGranted = onGranted;
         this->isQueued = true;

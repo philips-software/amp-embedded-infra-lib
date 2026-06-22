@@ -36,7 +36,7 @@ namespace services
 
     void ServiceProxy::RequestSend(infra::Function<void()> onGranted, uint32_t requestedSize)
     {
-        really_assert(!this->onGranted);
+        really_assert_with_msg(!this->onGranted, "ServiceProxy RequestSend already pending");
         this->onGranted = onGranted;
         currentRequestedSize = requestedSize;
         echo.RequestSend(*this);

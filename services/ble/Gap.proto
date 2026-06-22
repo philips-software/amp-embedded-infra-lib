@@ -12,6 +12,7 @@ option java_outer_classname = "GapProto";
 
 message Address
 {
+    // A 48-bit Bluetooth device address, as defined in Bluetooth Core Specification v6.3, Vol 6, Part B, Section 1.3
     bytes address = 1 [(bytes_size) = 6];
 }
 
@@ -50,11 +51,11 @@ message IoCapabilities
 {
     enum IoCapabilitiesEnum
     {
-        None = 0;
-        Display = 1;
-        DisplayYesNo = 2;
-        Keyboard = 3;
-        KeyboardDisplay = 4;
+        none = 0;
+        display = 1;
+        displayYesNo = 2;
+        keyboard = 3;
+        keyboardDisplay = 4;
     }
 
     IoCapabilitiesEnum ioCaps = 1;
@@ -64,72 +65,86 @@ message SecurityLevel
 {
     enum SecurityLevelEnum
     {
-        None = 0;
-        UnauthenticatedPairing = 1;
-        AuthenticatedPairing = 2;
-        AuthenticatedPairingWithLE = 3;
+        none = 0;
+        unauthenticatedPairing = 1;
+        authenticatedPairing = 2;
+        authenticatedPairingWithLE = 3;
     }
 
     SecurityLevelEnum level = 1;
 }
 
-message AdvertisementType
-{
-    enum AdvertisementTypeEnum
-    {
-        AdvInd = 0;
-        AdvNonconnInd = 1;
-    }
-
-    AdvertisementTypeEnum type = 1;
-}
-
+// Based on Bluetooth Core Specification v6.3, Vol 6, Part B, Section 1.3
 message AddressType
 {
     enum AddressTypeEnum
     {
         publicAddress = 0;
+
+        // Random addresses can be either static random or private (resolvable or non-resolvable).
+        // The subtype is encoded in the two most significant bits of the address (bits 47-46):
+        //   00 - Non-resolvable private: rotated periodically, cannot be resolved.
+        //   01 - Resolvable private (RPA): rotated periodically, can be resolved using the peer's IRK (Identity Resolving Key).
+        //   11 - Static random: fixed for the lifetime of the device or until a power cycle.
+        // See Bluetooth Core Specification v6.3, Vol 6, Part B, Section 1.3.2.
         randomAddress = 1;
     }
 
     AddressTypeEnum type = 1;
 }
 
+// A Bluetooth device address and its type.
+// The interpretation of 'address' depends on 'addressType':
+//   - publicAddress: a fixed IEEE 802-assigned address.
+//   - randomAddress: a random or private address (see AddressTypeEnum.randomAddress).
 message AddressWithType
 {
     Address address = 1;
     AddressType addressType = 2;
 }
 
-message AdvertisingEventType
+message PairingFailedReason
 {
-    enum AdvertisingEventTypeEnum
+    enum PairingFailedReasonEnum
     {
-        advInd = 0;
-        advDirectInd = 1;
-        advScanInd = 2;
-        advNonconnInd = 3;
-        scanResponse = 4;
+        // SMP Pairing Failed reason codes as defined in Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.5.5.
+        // Note: enum numeric values are an internal representation and are not guaranteed to match the spec's assigned error code values.
+        passkeyEntryFailed = 0;                         // The user input of passkey failed, for example, the user cancelled the operation.
+        oobNotAvailable = 1;
+        authenticationRequirementsNotMet = 2;           // The pairing procedure cannot be performed as authentication requirements cannot be met due to IO capabilities of one or both devices.
+        confirmValueFailed = 3;                         // The confirm value does not match the calculated compare value.
+        pairingNotSupported = 4;
+        insufficientEncryptionKeySize = 5;              // The resultant encryption key size is not long enough for the security requirements of this device.
+        commandNotSupported = 6;                        // The SMP command received is not supported on this device.
+        unspecifiedReason = 7;                          // Pairing failed due to an unspecified reason.
+        repeatedAttempts = 8;                           // Pairing or authentication procedure is disallowed because too little time has elapsed since last pairing request or security request.
+        invalidParameters = 9;                          // The Invalid Parameters error code indicates that the command length is invalid or that a parameter is outside of the specified range.
+        dhkeyCheckFailed = 10;                          // Indicates to the remote device that the DHKey Check value received doesn’t match the one calculated by the local device.
+        numericComparisonFailed = 11;                   // The numeric comparison of the passkey failed.
+        brEdrPairingInProgress = 12;                    // Indicates that the pairing over the LE transport failed due to a Pairing Request sent over the BR/EDR transport in progress.
+        crossTransportKeyDerivationNotAllowed = 13;     // Indicates that the BR/EDR Link Key generated on the BR/EDR transport cannot be used to derive and distribute keys for the LE transport or the LE LTK generated on the LE transport cannot be used to derive a key for the BR/EDR transport.
+        keyRejected = 14;                               // Indicates that the device chose not to accept a distributed key.
+
+        // The following values are not SMP Pairing Failed reason codes.
+        // They represent other failure outcomes of the overall PairAndBond procedure.
+
+        // The SMP pairing procedure did not complete within the protocol timeout.
+        timeout = 15;           // Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4
+
+        // SMP pairing completed successfully, but enabling link-layer encryption failed afterwards.
+        encryptionFailed = 16;
+
+        // If the failure reason does not fit any of the above categories, this value will be used
+        unknown = 17;
     }
 
-    AdvertisingEventTypeEnum type = 1;
+    PairingFailedReasonEnum reason = 1;
 }
 
 message PairingStatus
 {
-    enum Error
-    {
-        passkeyEntryFailed = 0;
-        authenticationRequirementsNotMet = 1;
-        pairingNotSupported = 2;
-        insufficientEncryptionKeySize = 3;
-        numericComparisonFailed = 4;
-        timeout = 5;
-        encryptionFailed = 6;
-        unknown = 7;
-    }
-
-    Error error = 1;
+    bool pairedSuccessfully = 1;    // If false then 'reason' will indicate the failure reason.
+    PairingFailedReason reason = 2;
 }
 
 message BondsStatus
@@ -142,16 +157,27 @@ message BondsStatus
 // GAP PERIPHERAL
 // ==================================================
 
-message Passkey
+message AdvertisementType
 {
-    int32 passkey = 1;
-    bool numericComparison = 2;
+    // Types defined in Bluetooth Core Specification Vol 6.3, Part B, Section 2.3.1
+    enum AdvertisementTypeEnum
+    {
+        advInd = 0;             // Connectable and scannable undirected advertising
+        advNonconnInd = 1;      // Non-connectable and non-scannable undirected advertising
+    }
+
+    AdvertisementTypeEnum type = 1;
 }
 
 message AdvertisementMode
 {
     AdvertisementType type = 1;
-    uint32 advInterval = 2;
+
+    // Advertising interval in units of 0.625 ms, as defined by the Bluetooth Core Specification.
+    // This value is used for both the minimum and maximum advertising interval, resulting in a fixed interval.
+    // Valid range: 0x0020 to 0x4000 (20 ms to 10.24 s).
+    // See Bluetooth Core Specification v6.3, Vol 4, Part E, Section 7.8.5.
+    uint32 advertisingInterval = 2;
 }
 
 message AdvertisementData
@@ -175,11 +201,11 @@ message SecurityPreference
 
     enum IoCapabilitiesEnum
     {   
-        None = 0;
-        Display = 1;
-        DisplayYesNo = 2;
-        Keyboard = 3;
-        KeyboardDisplay = 4;
+        none = 0;
+        display = 1;
+        displayYesNo = 2;
+        keyboard = 3;
+        keyboardDisplay = 4;
     }
 
     SupportEnum secureConnections = 1;
@@ -191,6 +217,7 @@ message SecurityPreference
 // GAP PERIPHERAL SERVICE DEFINITION
 // ==================================================
 // State constraints:
+//  After startup this service is only available after GapPeripheralResponse.CurrentState with state standby is received.
 //  Unless otherwise specified, all methods are allowed in all link layer states.
 //  Non-conformance may cause undefined behavior
 // Callback constraints:
@@ -286,16 +313,14 @@ service GapPeripheralResponse
 
     rpc IdentityAddress(AddressWithType) returns(Nothing) { option(method_id) = 4; }
 
+    rpc PairingResult(PairingStatus) returns (Nothing) { option (method_id) = 5; }
 
-    rpc PairingSuccessfullyCompleted(Nothing) returns(Nothing) { option(method_id) = 5; }
-    rpc PairingFailed(PairingStatus) returns(Nothing) { option(method_id) = 6; }
+    rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 6; }
 
-
-    rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 7; }
-
-    rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 8; }
+    rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 7; }
 }
 
+// DEPRECATED: Will be removed in the near future. Instead wait for CurrentState(standby) after startup
 service GapPeripheralReadiness {
     option(service_id) = 36;
 
@@ -305,6 +330,23 @@ service GapPeripheralReadiness {
 // ==================================================
 // GAP CENTRAL
 // ==================================================
+
+// Sent by the central during an active PairAndBond procedure when user interaction is required to complete pairing.
+// This will only be triggered when the negotiated pairing method requires it, which is determined by the
+// IO capabilities configured via GapCentral.SetIoCapabilities.
+// Not all pairing methods require user interaction (e.g. Just Works will never trigger this).
+message AuthenticationRequest
+{
+    // Indicates whether this is a Numeric Comparison (LE Secure Connections) or Passkey Entry pairing.
+    // If true: display the passkey to the user for confirmation and respond with GapCentral.NumericComparisonConfirm.
+    // If false: display or enter the passkey and respond with GapCentral.AuthenticateWithPasskey.
+    bool isNumericComparison = 1;
+
+    // The passkey to be displayed to the user.
+    // If isNumericComparison is true: the user confirms this value matches the one displayed on the peer device.
+    // If isNumericComparison is false: the user either reads this value to enter on the peer device, or is prompted to enter the passkey shown on the peer device (in which case this field is not used).
+    uint32 passkey = 2;
+}
 
 message SecurityModeAndLevel
 {
@@ -326,112 +368,228 @@ message SecurityModeAndLevel
     SecurityLevelEnum level = 2;
 }
 
-message PeerNodeParameters
-{
-    Address address = 1;
-    AddressType addressType = 2;
-}
-
 message ConnectionParameters
 {
-    PeerNodeParameters peerParameters = 1;
+    // The address of the peripheral to connect to, as discovered during scanning (e.g. from DiscoveredDevice).
+    AddressWithType addressWithType = 1;
+
+    // How long the central will wait for the peripheral to respond to the connection request, in milliseconds.
+    // After the central sends the connection request, the peripheral may take time to process and confirm it.
+    // If the peripheral does not respond within this timeout, the connection attempt is aborted.
+    // A value of zero waits indefinitely.
+    // Recommended: set to at least several multiples of the peripheral's advertising interval.
     uint32 initiatingTimeoutInMs = 2;
+}
+
+message AdvertisingReportType
+{
+    // Types defined in Bluetooth Core Specification v6.3, Vol 4, Part E, Section 7.7.65.2
+    enum AdvertisingReportTypeEnum
+    {
+        advInd = 0;         // Connectable and scannable undirected advertising
+        advDirectInd = 1;   // Connectable directed advertising
+        advScanInd = 2;     // Scannable undirected advertising
+        advNonconnInd = 3;  // Non-connectable undirected advertising
+        scanResponse = 4;   // Scan response 
+    }
+
+    AdvertisingReportTypeEnum type = 1;
 }
 
 message DiscoveredDevice
 {
-    Address address = 1;
-    AddressType addressType = 2;
-    bytes data = 3 [(bytes_size) = 32];
-    int32 rssi = 4;
-    
-    // deprecated isScanResponse in favour of advertisingEventType
-    reserved 5;
+    // The address as received in the advertising packet. Use this address directly when connecting via ConnectionParameters.
+    // If the peripheral uses a resolvable private address (RPA), the controller will resolve it automatically
+    // after a bond has been established and the peer's IRK is stored.
+    AddressWithType addressWithType = 1;
 
-    AdvertisingEventType advertisingEventType = 6;
+    // Raw advertisement data as received from the controller.
+    // Layout of data defined in Bluetooth Core Specification v6.3, Vol 3, Part C, Section 11
+    bytes data = 2 [(bytes_size) = 32];
+
+    int32 rssi = 3;
+    AdvertisingReportType advertisingReportType = 4;
 }
 
 message DeviceDiscoveryFilter
 {
     enum Filter
     {
-        address = 0;
+        // Resets any set filters
+        none = 0;
 
-        // Filtering on contents of Manufacturer specific data
-        advertisingData = 1; 
+        // Filters on the device address (public or random). Passes if the address matches exactly.
+        // data: the device address to match (see Address).
+        address = 1;
+
+        // Filters on the full contents of the Manufacturer Specific Data field in the advertising or scan response data.
+        // Passes if the manufacturer specific data matches exactly.
+        // data: the manufacturer specific data to match, including the 2-byte manufacturer ID.
+        manufacturerSpecificData = 2;
+
+        // TODO: Add filter for Service UUID to allow filtering on device type/profile.
     }
 
     Filter filter = 1;
+    // The filter value to match against, interpreted according to the selected filter.
     bytes data = 2 [(bytes_size) = 32];
-};
-
-message OutOfBandData
-{
-    Address address = 1;
-    AddressType addressType = 2;
-    bytes randomData = 3 [(bytes_size) = 16];
-    bytes confirmData = 4 [(bytes_size) = 16];
 }
 
+message ResolvedPrivateAddress
+{
+    bool success = 1; // True if the address was successfully resolved to a bond, false otherwise.
+    Address identityAddress = 2; // The resolved identity address
+}
+
+message Bond
+{
+    AddressWithType addressWithType = 1;        // Identity address
+    bytes deviceName = 2 [(bytes_size) = 32];   // Device Name from GAP (Generic Access) service. Not unique; truncated to 32 bytes.
+}
+
+message BondList
+{    
+    repeated Bond bonds = 1 [(array_size) = 32]; // Will be sorted by age, oldest -> newest.
+}
+
+// ==================================================
+// GAP CENTRAL SERVICE DEFINITION
+// ==================================================
+// State constraints:
+//  After startup this service is only available after GapCentralResponse.CurrentState with state standby is received.
+//  Unless otherwise specified, all methods are allowed in all link layer states.
+//  Non-conformance may cause undefined behavior
+// Callback constraints:
+//  Unless otherwise specified, methods do not by default result in any callbacks on the response service
+//  When a callback is specified for a method and only for that method, another call of the same method is not allowed until the callback has been received.
+//  When a callback is specified for more than one method, any of the associated method calls is not allowed until the callback for the previous call has been received
+//  Non-conformance may cause undefined behavior
+// ==================================================
 service GapCentral
 {
     option (service_id) = 33;
 
-    // Allowed states: standby
-    rpc StartDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 1; }
+    // ==================================================
+    // CORE FEATURE SET
+    // All servers must implement these methods  
+    // ==================================================
+
+    // Results in GapCentralResponse.CurrentState with current state
+    rpc GetState(Nothing) returns (Nothing) { option (method_id) = 1; }
 
     // Allowed states: standby
-    rpc StopDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 2; }
+    // Only devices matching the filter will be reported via GapCentralResponse.DeviceDiscovered.
+    // Filters are reset when scanning is stopped
+    rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 2; }
 
     // Allowed states: standby
+    // Starts scanning for advertising peripheral devices until Standby is called.
+    // Discovered devices will be reported via GapCentralResponse.DeviceDiscovered.
+    // It's recommended to add a DeviceDiscoveryFilter, otherwise devices might be missed due to too many being discovered.
+    // Results in GapCentralResponse.CurrentState with state scanning
+    rpc StartDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 3; }
+
+    // Allowed states: standby
+    // Initiates a connection to a peripheral device with the given address.
     // For successful connection establishment, state will follow: standby -> initiating -> connected
-    // For falied connection establishment, state will follow: standby -> initiating -> standby
-    rpc Connect(ConnectionParameters) returns (Nothing) { option (method_id) = 3; }
+    // For failed connection establishment, state will follow: standby -> initiating -> standby
+    // Results in GapCentralResponse.CurrentState
+    rpc Connect(ConnectionParameters) returns (Nothing) { option (method_id) = 4; }
 
-    // Allowed states: initiating
-    rpc CancelConnect(Nothing) returns (Nothing) { option (method_id) = 4; }
+    // Allowed states: scanning, initiating, connected
+    // Terminates the current (or initiating) connection.
+    // Results in GapCentralResponse.CurrentState with state standby
+    rpc Standby(Nothing) returns (Nothing) { option (method_id) = 5; }
 
     // Allowed states: connected
-    rpc Disconnect(Nothing) returns (Nothing) { option (method_id) = 5; }
-
-    // Allowed states: connected
-    // 1. If there is a pre-existing bond, then the connection will be encrypted.
-    // 2. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
+    // Can be called to secure a existing connection.
+    // If the peripheral sends a security request, this procedure is triggered automatically.
+    // 1. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
+    // 2. If there is a pre-existing bond, then the connection will be encrypted using the existing keys.
+    // During pairing, GapCentralResponse.AuthenticationRequired may be called if user interaction is required.
+    // Results in GapCentralResponse.PairingResult
+    // Can result in GapCentralResponse.NumberOfBondsChanged if a new bond was created
+    // Can result in GapCentralResponse.CurrentState with standby if device disconnected
     rpc PairAndBond(Nothing) returns (Nothing) { option (method_id) = 6; }
 
+    // Allowed in link layer states: standby
+    // Configures the minimum security mode and level required for connections.
+    // Should be called once during initialization before any connections are made.
+    // If a connected peer does not meet the required security level, the connection will be rejected.
     rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 7; }
-    rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 8; }
-    rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 9; }
-    rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 10; }
-    rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 11; }
-    rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 12; }
 
-    // This will only succeed if Address is a private resolvable address, and if the device is bonded
+    // Allowed in link layer states: standby
+    // Configures the I/O capabilities of this device, used to determine the pairing method during PairAndBond.
+    // Should be called once during initialization before any pairing takes place.
+    // The selected capabilities influence which pairing method is chosen (e.g. Just Works, Passkey Entry, or Numeric Comparison).
+    rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 8; }
+
+    // Allowed in link layer states: connected
+    // Provides the passkey entered by the user in response to GapCentralResponse.AuthenticationRequired.
+    // Only valid when AuthenticationRequest.isNumericComparison is false.
+    // Must be called within the SMP protocol timeout (30 seconds, Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4) of receiving AuthenticationRequired, otherwise pairing will fail with PairingFailedReason.timeout.
+    // Influences GapCentralResponse.PairingResult response of PairAndBond
+    rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 9; }
+
+    // Allowed in link layer states: connected
+    // Confirms or rejects the numeric comparison in response to GapCentralResponse.AuthenticationRequired.
+    // Only valid when AuthenticationRequest.isNumericComparison is true.
+    // Must be called within the SMP protocol timeout (30 seconds, Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4) of receiving AuthenticationRequired, otherwise pairing will fail with PairingFailedReason.timeout.
+    // Influences GapCentralResponse.PairingResult response of PairAndBond
+    rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 10; }
+
+    // Allowed in link layer states: standby
+    // Removes all stored bonds.
+    // Results in GapCentralResponse.NumberOfBondsChanged
+    rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 11; }
+  
+    // Allowed in link layer states: standby
+    // Removes the bond associated with the given identity address.
+    // Results in GapCentralResponse.NumberOfBondsChanged
+    rpc RemoveBondWithAddress(AddressWithType) returns (Nothing) { option (method_id) = 12; }
+
+    // Allowed in link layer states: standby, scanning, initiating, connected
+    // Resolves a resolvable private address to the identity address of an already bonded device.
+    // Useful to identify whether a device seen during scanning is already bonded, without needing to connect first.
+    // Will only succeed if the address is a resolvable private address and the device is bonded.
+    // Results in GapCentralResponse.ResolvePrivateAddressResult
     rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; }
 
-    // This will work with both public and random addresses
-    rpc IsDeviceBonded(PeerNodeParameters) returns (Nothing) { option (method_id) = 14; }
-    rpc GenerateOutOfBandData(Nothing) returns (Nothing) { option (method_id) = 15; }
-    rpc SetOutOfBandData(OutOfBandData) returns (Nothing) { option (method_id) = 16; }
-    rpc SetIdentityAddress(AddressWithType) returns (Nothing) { option (method_id) = 17; }
-    rpc SetPrivacyMode(BoolValue) returns (Nothing) { option (method_id) = 18; }
+    // Allowed in link layer states: standby, scanning, initiating, connected
+    // Returns the list of bonded devices including their identity address and device name, sorted oldest to newest.
+    // Results in GapCentralResponse.BondListReceived
+    rpc GetBondList(Nothing) returns (Nothing) { option (method_id) = 14; }
+
+    // Allowed in link layer states: standby
+    // Sets the local identity address used by the central when privacy mode is disabled.
+    // The address type may be public or random.
+    // This does not set a resolvable private address; when privacy mode is enabled, the controller generates and rotates resolvable private addresses automatically.
+    rpc SetIdentityAddress(AddressWithType) returns (Nothing) { option (method_id) = 15; }
+
+    // Allowed in link layer states: standby
+    // Enables or disables use of a resolvable private address for the central.
+    // When enabled, the controller generates and rotates the private address automatically based on the local IRK.
+    // When disabled, the central uses its configured identity address.
+    rpc SetPrivacyMode(BoolValue) returns (Nothing) { option (method_id) = 16; }
+
+    // DEPRECATED: Will be removed in the near future.
+    // Responds with GapCentralResponse.DeviceBonded
+    rpc IsDeviceBonded(AddressWithType) returns (Nothing) { option (method_id) = 17; }
 }
 
 service GapCentralResponse {
     option(service_id) = 35;
 
-    rpc Done(Nothing) returns (Nothing) { option (method_id) = 1; }
+    rpc CurrentState(State) returns (Nothing) { option (method_id) = 1; }
+    
     rpc DeviceDiscovered(DiscoveredDevice) returns (Nothing) { option (method_id) = 2; }
-    rpc StateChanged(State) returns (Nothing) { option (method_id) = 3; }
-    rpc PairingSuccessfullyCompleted(Nothing) returns (Nothing) { option (method_id) =  4; }
-    rpc PairingFailed(PairingStatus) returns (Nothing) { option (method_id) = 5; }
+    rpc AuthenticationRequired(AuthenticationRequest) returns (Nothing) { option (method_id) = 3; }
+    rpc PairingResult(PairingStatus) returns (Nothing) { option (method_id) =  4; }
+    rpc ResolvePrivateAddressResult(ResolvedPrivateAddress) returns (Nothing) { option (method_id) = 5; }
+    
     rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
-    rpc DeviceStarted(Nothing) returns (Nothing) { option (method_id) = 7; }
-    rpc ResolvedPrivateAddress(Address) returns (Nothing) { option (method_id) = 8; }
-    rpc ResolvePrivateAddressFailed(Nothing) returns (Nothing) { option (method_id) = 9; }
-    rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 10; }
-    rpc OutOfBandDataGenerated(OutOfBandData) returns (Nothing) { option (method_id) = 11; }
-    rpc DisplayPasskey(Passkey) returns (Nothing) { option (method_id) = 12; }
+    rpc BondListReceived(BondList) returns (Nothing) { option(method_id) = 7; }
+
+    // DEPRECATED: Will be removed in the near future.
+    rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 8; }
 }
-
-
