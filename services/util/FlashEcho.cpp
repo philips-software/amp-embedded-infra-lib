@@ -14,75 +14,88 @@ namespace services
     {
         onStopped = onDone;
 
-        if (!busy)
+        if (!busyWithFlash)
             onStopped();
     }
 
     void FlashEcho::Read(uint32_t address, uint32_t size)
     {
-        really_assert(!busy);
-        busy = true;
+        really_assert(!busyWithFlash && !busyWithResponse);
+        busyWithFlash = true;
 
         flash.ReadBuffer(infra::Head(infra::MakeRange(buffer), size), address, [this, size]()
             {
-                busy = false;
+                busyWithFlash = false;
 
                 if (onStopped)
                     onStopped();
                 else
+                {
+                    busyWithResponse = true;
                     flashResult.RequestSend([this, size]()
                         {
+                            busyWithResponse = false;
+
                             flashResult.ReadDone(infra::Head(infra::MakeRange(buffer), size));
                             MethodDone();
 
                             if (onStopped)
                                 onStopped();
                         });
+                }
             });
     }
 
     void FlashEcho::Write(uint32_t address, infra::ConstByteRange contents)
     {
-        really_assert(!busy);
-        busy = true;
+        really_assert(!busyWithFlash && !busyWithResponse);
+        busyWithFlash = true;
 
         flash.WriteBuffer(contents, address, [this]()
             {
-                busy = false;
+                busyWithFlash = false;
 
                 if (onStopped)
                     onStopped();
                 else
+                {
+                    busyWithResponse = true;
                     flashResult.RequestSend([this]()
                         {
+                            busyWithResponse = false;
                             flashResult.WriteDone();
                             MethodDone();
 
                             if (onStopped)
                                 onStopped();
                         });
+                }
             });
     }
 
     void FlashEcho::EraseSectors(uint32_t sector, uint32_t numberOfSectors)
     {
-        really_assert(!busy);
-        busy = true;
+        really_assert(!busyWithFlash && !busyWithResponse);
+        busyWithFlash = true;
 
         flash.EraseSectors(sector, sector + numberOfSectors, [this]()
             {
-                busy = false;
+                busyWithFlash = false;
                 if (onStopped)
                     onStopped();
                 else
+                {
+                    busyWithResponse = true;
                     flashResult.RequestSend([this]()
                         {
+                            busyWithResponse = false;
                             flashResult.EraseSectorsDone();
                             MethodDone();
 
                             if (onStopped)
                                 onStopped();
                         });
+                }
             });
     }
 
