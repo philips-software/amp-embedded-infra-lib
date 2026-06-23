@@ -121,11 +121,11 @@ namespace infra
 
         void Swap(Function& other) noexcept;
 
-        // Returns an opaque pointer that uniquely identifies the type of the currently stored
-        // callable (or nullptr when empty). Intended for diagnostics only: the value can be looked
-        // up in the linker map to identify the stored lambda/function, even in optimized builds
-        // where the call stack is not recoverable.
-        const void* TargetTypeId() const;
+        // Mirrors the role of std::function::target_type, but returns an opaque pointer
+        // (or nullptr when empty) rather than a std::type_info. Intended for diagnostics only:
+        // the value can be looked up in the linker map to identify the stored lambda/function,
+        // even in optimized builds where the call stack is not recoverable.
+        const void* TargetType() const;
 
     private:
         template<class F>
@@ -449,7 +449,7 @@ namespace infra
     }
 
     template<std::size_t ExtraSize, class Result, class... Args>
-    const void* Function<Result(Args...), ExtraSize>::TargetTypeId() const
+    const void* Function<Result(Args...), ExtraSize>::TargetType() const
     {
         if (!Initialized())
             return nullptr;

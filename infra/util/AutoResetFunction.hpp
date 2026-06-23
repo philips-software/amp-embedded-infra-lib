@@ -39,8 +39,8 @@ namespace infra
         void Swap(AutoResetFunction& other) noexcept;
 
         // Returns an opaque pointer that uniquely identifies the type of the currently stored
-        // callable (or nullptr when empty). Intended for diagnostics only; see Function::TargetTypeId.
-        const void* TargetTypeId() const;
+        // callable (or nullptr when empty). Intended for diagnostics only; see Function::TargetType.
+        const void* TargetType() const;
 
     private:
         Function<Result(Args...), ExtraSize> function;
@@ -125,9 +125,9 @@ namespace infra
     }
 
     template<std::size_t ExtraSize, class Result, class... Args>
-    const void* AutoResetFunction<Result(Args...), ExtraSize>::TargetTypeId() const
+    const void* AutoResetFunction<Result(Args...), ExtraSize>::TargetType() const
     {
-        return function.TargetTypeId();
+        return function.TargetType();
     }
 
     template<std::size_t ExtraSize, class Result, class... Args>

@@ -28,13 +28,13 @@ TEST(AutoResetFunctionTest, IsResetAfterInvoke)
     EXPECT_FALSE(f);
 }
 
-TEST(AutoResetFunctionTest, TargetTypeIdIsNullWhenEmpty)
+TEST(AutoResetFunctionTest, TargetTypeIsNullWhenEmpty)
 {
     infra::AutoResetFunction<void()> f;
-    EXPECT_EQ(nullptr, f.TargetTypeId());
+    EXPECT_EQ(nullptr, f.TargetType());
 }
 
-TEST(AutoResetFunctionTest, TargetTypeIdIsClearedAfterInvoke)
+TEST(AutoResetFunctionTest, TargetTypeIsClearedAfterInvoke)
 {
     infra::MockCallback<void()> m;
     infra::AutoResetFunction<void()> f([&m]()
@@ -42,12 +42,12 @@ TEST(AutoResetFunctionTest, TargetTypeIdIsClearedAfterInvoke)
             m.callback();
         });
 
-    EXPECT_NE(nullptr, f.TargetTypeId());
+    EXPECT_NE(nullptr, f.TargetType());
 
     EXPECT_CALL(m, callback());
     f();
 
-    EXPECT_EQ(nullptr, f.TargetTypeId());
+    EXPECT_EQ(nullptr, f.TargetType());
 }
 
 TEST(AutoResetFunctionTest, ReAssignDuringInvoke)
