@@ -65,7 +65,6 @@ namespace services
         GattClientCharacteristic(AttAttribute::Uuid type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties);
         GattClientCharacteristic(GattClientCharacteristicOperations& operations, AttAttribute::Uuid type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties);
 
-        // Implementation of GattClientCharacteristicOperations
         virtual void ReadCharacteristic(const infra::Function<void(const infra::ConstByteRange&)>& onResponse, const infra::Function<void(OperationStatus)>& onDone);
         virtual void WriteCharacteristic(infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone);
         virtual void WriteCharacteristicWithoutResponse(infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone);

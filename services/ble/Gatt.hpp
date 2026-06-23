@@ -42,6 +42,8 @@ namespace services
 
     namespace uuid
     {
+        // Bluetooth SIG adopted GATT UUIDs for the Device Information Service and its characteristics.
+        // Source: Bluetooth SIG Assigned Numbers: https://www.bluetooth.com/specifications/assigned-numbers/
         constexpr inline AttAttribute::Uuid16 deviceInformationService{ 0x180A };
         constexpr inline AttAttribute::Uuid16 systemId{ 0x2A23 };
         constexpr inline AttAttribute::Uuid16 modelNumber{ 0x2A24 };
