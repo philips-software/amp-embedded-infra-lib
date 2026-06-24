@@ -33,7 +33,13 @@ namespace services
 
     void EchoOnStreams::Reset()
     {
+        countingSentWriter.OnAllocatable(infra::emptyFunction);
         ResetReading();
+        really_assert(countingSentWriter.Allocatable());
+        countingSentWriter.OnAllocatable([this]()
+            {
+                StreamWriterDone();
+            });
 
         while (!sendRequesters.empty())
             sendRequesters.front().CancelRequestSend();
@@ -142,8 +148,11 @@ namespace services
         if (!skipNextStream && sendingProxy == nullptr && !sendRequesters.empty())
         {
             sendingProxy = &sendRequesters.front();
+            sendingProxySize = sendingProxy->CurrentRequestedSize()                              // payload
+                               + 2 * infra::MaxVarIntSize(std::numeric_limits<uint64_t>::max()); // echo framing overhead (service and method id)
+
             sendRequesters.pop_front();
-            RequestSendStream(sendingProxy->CurrentRequestedSize() + 2 * infra::MaxVarIntSize(std::numeric_limits<uint64_t>::max()));
+            RequestSendStream(sendingProxySize);
         }
     }
 
@@ -172,16 +181,21 @@ namespace services
                 policy->GrantingSend(*sendingProxy);
             }
 
-            partlySent = methodSerializer->Serialize(std::move(writer));
+            really_assert(countingSentWriter.Allocatable());
+            auto countingSentWriterPtr = countingSentWriter.Emplace(std::move(writer), sendingProxySize);
+            partlySent = methodSerializer->Serialize(infra::MakeContainedSharedObject(*countingSentWriterPtr->writer, countingSentWriterPtr));
+        }
+    }
 
-            if (partlySent)
-                RequestSendStream(sendingProxy->CurrentRequestedSize());
-            else
-            {
-                sendingProxy = nullptr;
-                methodSerializer = nullptr;
-                TryGrantSend();
-            }
+    void EchoOnStreams::StreamWriterDone()
+    {
+        if (partlySent)
+            RequestSendStream(sendingProxySize);
+        else
+        {
+            sendingProxy = nullptr;
+            methodSerializer = nullptr;
+            TryGrantSend();
         }
     }
 
