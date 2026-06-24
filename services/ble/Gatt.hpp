@@ -15,7 +15,7 @@ namespace services
         {
             static constexpr uint8_t valueHandleOffset = 1;
 
-            enum class CharacteristicValue : uint16_t
+            enum class AttributeValue : uint16_t
             {
                 disable = 0x0000,
                 enableNotification = 0x0001,
