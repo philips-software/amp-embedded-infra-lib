@@ -99,30 +99,27 @@ service GattClient
     option (service_id) = 134;
 
     // Requests the MTU size to be increased from the default, for better throughput.
-    // The effective MTU size is implementation defined, and is returned in the MtuSizeExchangeComplete response.
+    // The effective MTU size is implementation defined, and is returned in the GattClientResponse.MtuSizeExchangeComplete response.
     rpc MtuSizeExchangeRequest(Nothing) returns (Nothing) { option (method_id) = 1; }
 
     // Discovery must follow the sequence: Service -> Characteristic -> Descriptor.
     // Each step must complete (indicated by the corresponding *Complete response) before initiating the next.
     //
     // Discovers all services on the remote device.
-    // Responses: zero or more ServiceDiscovered, followed by ServiceDiscoveryComplete.
+    // Responses: zero or more GattClientResponse.ServiceDiscovered, followed by GattClientResponse.ServiceDiscoveryComplete.
     rpc StartServiceDiscovery(Nothing) returns (Nothing) { option (method_id) = 2; }
     // Discovers all characteristics within a single service's handle range.
-    // Must be called once per discovered service, sequentially, after ServiceDiscoveryComplete.
-    // Responses: zero or more CharacteristicDiscovered, followed by CharacteristicDiscoveryComplete.
+    // Must be called once per discovered service, sequentially, after GattClientResponse.ServiceDiscoveryComplete.
+    // Responses: zero or more GattClientResponse.CharacteristicDiscovered, followed by GattClientResponse.CharacteristicDiscoveryComplete.
     rpc StartCharacteristicDiscovery(HandleRange) returns (Nothing) { option (method_id) = 4; }
     // Discovers all descriptors within the given handle range of a characteristic.
     // The handle range spans from the characteristic's handle + 1 to the next characteristic's handle - 1
     // (or the service's end handle for the last characteristic in a service).
-    // Responses: zero or more DescriptorDiscovered, followed by DescriptorDiscoveryComplete.
+    // Responses: zero or more GattClientResponse.DescriptorDiscovered, followed by GattClientResponse.DescriptorDiscoveryComplete.
     rpc StartDescriptorDiscovery(HandleRange) returns (Nothing) { option (method_id) = 6; }
 
-    // Characteristic operations are sequential; wait for OperationComplete before issuing the next.
-    // WriteWithoutResponse is fire-and-forget and does not trigger OperationComplete.
-    // Example 1: If Read is called, EnableIndication shall only be called after OperationComplete
-    // Example 2: If DisableNotification is called, Write shall only be called after OperationComplete
-    // Example 3: If EnableNotification is called, EnableIndication shall only be called after OperationComplete
+    // Characteristic operations are sequential; wait for GattClientResponse.OperationComplete before issuing the next.
+    // WriteWithoutResponse is fire-and-forget and does not trigger GattClientResponse.OperationComplete.
     rpc ReadCharacteristic(Handle) returns (Nothing) { option (method_id) = 8; }
     rpc WriteCharacteristic(AttributeData) returns (Nothing) { option (method_id) = 9; }
     rpc WriteCharacteristicWithoutResponse(AttributeData) returns (Nothing) { option (method_id) = 10; }
