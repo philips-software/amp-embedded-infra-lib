@@ -113,7 +113,7 @@ service GattClient
     // Responses: zero or more GattClientResponse.CharacteristicDiscovered, followed by GattClientResponse.CharacteristicDiscoveryComplete.
     rpc StartCharacteristicDiscovery(HandleRange) returns (Nothing) { option (method_id) = 3; }
     // Discovers all descriptors within the given handle range of a characteristic.
-    // The handle range spans from the characteristic's handle + 1 to the next characteristic's handle - 1
+    // The handle range spans from the characteristic's value handle + 1 to the next characteristic's handle - 1
     // (or the service's end handle for the last characteristic in a service).
     // Responses: zero or more GattClientResponse.DescriptorDiscovered, followed by GattClientResponse.DescriptorDiscoveryComplete.
     rpc StartDescriptorDiscovery(HandleRange) returns (Nothing) { option (method_id) = 4; }
