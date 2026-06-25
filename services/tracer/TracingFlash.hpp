@@ -3,6 +3,7 @@
 
 #include "hal/interfaces/Flash.hpp"
 #include "infra/util/AutoResetFunction.hpp"
+#include "infra/util/BoundedString.hpp"
 #include "services/tracer/Tracer.hpp"
 
 namespace services
@@ -11,7 +12,7 @@ namespace services
         : public hal::Flash
     {
     public:
-        TracingFlash(hal::Flash& flash, services::Tracer& tracer);
+        TracingFlash(infra::BoundedConstString name, hal::Flash& flash, services::Tracer& tracer);
 
         uint32_t NumberOfSectors() const override;
         uint32_t SizeOfSector(uint32_t sectorIndex) const override;
@@ -23,6 +24,7 @@ namespace services
         void EraseSectors(uint32_t beginIndex, uint32_t endIndex, infra::Function<void()> onDone) override;
 
     private:
+        infra::BoundedConstString name;
         hal::Flash& flash;
         services::Tracer& tracer;
 
