@@ -39,6 +39,13 @@ namespace services
         MOCK_METHOD(void, WriteDescriptor, (AttAttribute::Handle, infra::ConstByteRange, const infra::Function<void(OperationStatus)>&), (override));
     };
 
+    class GattClientMtuExchangeMock
+        : public GattClientMtuExchange
+    {
+    public:
+        MOCK_METHOD(void, MtuExchange, (const infra::Function<void(OperationStatus)>& onDone), (override));
+    };
+
     class GattClientDiscoveryObserverMock
         : public GattClientDiscoveryObserver
     {
