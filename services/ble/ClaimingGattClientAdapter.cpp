@@ -21,31 +21,37 @@ namespace services
 
     void ClaimingGattClientAdapter::StartCharacteristicDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle)
     {
+        really_assert_with_msg(!discoveryContext.has_value(), "ClaimGatt: %d", discoveryContext->index());
         discoveryContext.emplace(HandleRange{ handle, endHandle });
         discoveryClaimer.Claim([this]()
             {
                 auto discoveredCharacteristic = std::get<HandleRange>(*discoveryContext);
                 GattClientObserver::Subject().StartCharacteristicDiscovery(discoveredCharacteristic.startHandle, discoveredCharacteristic.endHandle);
+                discoveryContext.reset();
             });
     }
 
     void ClaimingGattClientAdapter::StartDescriptorDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle)
     {
+        really_assert_with_msg(!discoveryContext.has_value(), "ClaimGatt: %d", discoveryContext->index());
         discoveryContext.emplace(HandleRange{ handle, endHandle });
         discoveryClaimer.Claim([this]()
             {
                 auto discoveredCharacteristic = std::get<HandleRange>(*discoveryContext);
                 GattClientObserver::Subject().StartDescriptorDiscovery(discoveredCharacteristic.startHandle, discoveredCharacteristic.endHandle);
+                discoveryContext.reset();
             });
     }
 
     void ClaimingGattClientAdapter::ServiceDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle endHandle)
     {
+        really_assert_with_msg(!discoveryContext.has_value(), "ClaimGatt: %d", discoveryContext->index());
         discoveryContext.emplace(DiscoveredService({ type, handle, endHandle }));
         GattClientDiscovery::NotifyObservers([this](auto& observer)
             {
                 auto discoveredService = std::get<DiscoveredService>(*discoveryContext);
                 observer.ServiceDiscovered(discoveredService.type.get(), discoveredService.handle, discoveredService.endHandle);
+                discoveryContext.reset();
             });
     }
 
@@ -60,11 +66,13 @@ namespace services
 
     void ClaimingGattClientAdapter::CharacteristicDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle valueHandle, GattCharacteristic::PropertyFlags properties)
     {
+        really_assert_with_msg(!discoveryContext.has_value(), "ClaimGatt: %d", discoveryContext->index());
         discoveryContext.emplace(DiscoveredCharacteristic({ type, handle, valueHandle, properties }));
         GattClientDiscovery::NotifyObservers([this](auto& observer)
             {
                 auto discoveredCharacteristic = std::get<DiscoveredCharacteristic>(*discoveryContext);
                 observer.CharacteristicDiscovered(discoveredCharacteristic.type.get(), discoveredCharacteristic.handle, discoveredCharacteristic.valueHandle, discoveredCharacteristic.properties);
+                discoveryContext.reset();
             });
     }
 
@@ -79,11 +87,13 @@ namespace services
 
     void ClaimingGattClientAdapter::DescriptorDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle)
     {
+        really_assert_with_msg(!discoveryContext.has_value(), "ClaimGatt: %d", discoveryContext->index());
         discoveryContext.emplace(DiscoveredDescriptor({ type, handle }));
         GattClientDiscovery::NotifyObservers([this](auto& observer)
             {
                 auto discoveredDescriptor = std::get<DiscoveredDescriptor>(*discoveryContext);
                 observer.DescriptorDiscovered(discoveredDescriptor.type.get(), discoveredDescriptor.handle);
+                discoveryContext.reset();
             });
     }
 
