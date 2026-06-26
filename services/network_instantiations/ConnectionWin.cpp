@@ -60,6 +60,9 @@ namespace services
 
     void ConnectionWin::AbortAndDestroy()
     {
+        if (socket == 0)
+            return;
+
         int result = closesocket(socket);
         assert(result != SOCKET_ERROR);
         socket = 0;
@@ -89,6 +92,9 @@ namespace services
 
     void ConnectionWin::Receive()
     {
+        if (socket == 0)
+            return;
+
         while (!receiveBuffer.full())
         {
             std::array<uint8_t, 2048> buffer;
@@ -116,6 +122,9 @@ namespace services
 
     void ConnectionWin::Send()
     {
+        if (socket == 0)
+            return;
+
         int sent = 0;
 
         do
@@ -219,7 +228,7 @@ namespace services
 
     void ConnectionWin::FinalizeCloseIfReady()
     {
-        if (closePending && !dataReceivedScheduled && socket != 0)
+        if (closePending && !dataReceivedScheduled)
         {
             CloseAndDestroy();
         }
