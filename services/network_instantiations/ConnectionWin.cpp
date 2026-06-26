@@ -103,16 +103,12 @@ namespace services
             {
                 receiveBuffer.insert(receiveBuffer.end(), buffer.data(), buffer.data() + received);
 
-                infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionWin>& object)
-                    {
-                        if (object->IsAttached())
-                            object->Observer().DataReceived();
-                    },
-                    SharedFromThis());
+                ScheduleDataReceivedIfNeeded();
             }
             else
             {
-                CloseAndDestroy();
+                closePending = true;
+                FinalizeCloseIfReady();
                 return;
             }
         }
@@ -168,6 +164,8 @@ namespace services
     {
         if (IsAttached())
             Detach();
+        dataReceivedScheduled = false;
+        closePending = false;
         self = nullptr;
     }
 
@@ -188,6 +186,42 @@ namespace services
                 SharedFromThis());
 
             requestedSendSize = 0;
+        }
+    }
+
+    void ConnectionWin::ScheduleDataReceivedIfNeeded()
+    {
+        if (dataReceivedScheduled)
+            return;
+
+        dataReceivedScheduled = true;
+        infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionWin>& object)
+            {
+                auto bufferedBeforeCallback = object->receiveBuffer.size();
+
+                object->dataReceivedScheduled = false;
+                if (object->IsAttached())
+                {
+                    object->Observer().DataReceived();
+
+                    auto bufferedAfterCallback = object->receiveBuffer.size();
+                    if (object->closePending && bufferedAfterCallback != 0 && bufferedAfterCallback < bufferedBeforeCallback)
+                    {
+                        object->ScheduleDataReceivedIfNeeded();
+                        return;
+                    }
+                }
+
+                object->FinalizeCloseIfReady();
+            },
+            SharedFromThis());
+    }
+
+    void ConnectionWin::FinalizeCloseIfReady()
+    {
+        if (closePending && !dataReceivedScheduled && socket != 0)
+        {
+            CloseAndDestroy();
         }
     }
 
