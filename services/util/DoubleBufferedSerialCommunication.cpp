@@ -29,6 +29,11 @@ namespace services
         delegate.AckReceived();
     }
 
+    void DoubleBufferedSerialCommunication::DataReceived()
+    {
+        GetObserver().DataReceived();
+    }
+
     void DoubleBufferedSerialCommunication::TrySend()
     {
         if (nextActionOnCompletion != nullptr && nowActionOnCompletion == nullptr)
