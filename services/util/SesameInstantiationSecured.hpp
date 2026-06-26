@@ -10,11 +10,10 @@ namespace main_
         : Sesame
     {
     public:
-        template<std::size_t MessageSize>
+        template<std::size_t MessageSize, uint8_t SplitBuffers = 2>
         struct WithMessageSize;
 
-        SesameSecured(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage,
-            infra::BoundedDeque<uint8_t>& windowedReceivedMessage,
+        SesameSecured(CobsStorageBase& storage,
             infra::BoundedVector<uint8_t>& securedSendBuffer, infra::BoundedVector<uint8_t>& securedReceiveBuffer,
             hal::BufferedSerialCommunication& serialCommunication, const services::SesameSecured::KeyMaterial& keyMaterial);
 
@@ -28,14 +27,14 @@ namespace main_
         };
     };
 
-    template<std::size_t MessageSize>
+    template<std::size_t MessageSize, uint8_t SplitBuffers>
     struct SesameSecured::WithMessageSize
         : private SesameSecured::SecuredStorage<MessageSize>
-        , private Sesame::CobsStorage<MessageSize>
+        , private Sesame::CobsStorage<MessageSize, SplitBuffers>
         , SesameSecured
     {
         WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, const services::SesameSecured::KeyMaterial& keyMaterial)
-            : SesameSecured(this->cobsSendStorage, this->cobsReceivedMessage, this->windowedReceivedMessage, this->securedSendBuffer, this->securedReceiveBuffer, serialCommunication, keyMaterial)
+            : SesameSecured(static_cast<CobsStorageBase&>(*this), this->securedSendBuffer, this->securedReceiveBuffer, serialCommunication, keyMaterial)
         {}
     };
 }

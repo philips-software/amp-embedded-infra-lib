@@ -55,9 +55,10 @@ namespace services
         const char ExtraCharacterReader::character = '\x4';
     }
 
-    SesameWindowed::SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, SesameEncoded& delegate, SesameInitializer& sesameInitializer)
+    SesameWindowed::SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, uint8_t splitBuffers, SesameEncoded& delegate, SesameInitializer& sesameInitializer)
         : SesameEncodedObserver(delegate)
         , receivedMessage(receivedMessage)
+        , splitBuffers(splitBuffers)
         , sesameInitializer(sesameInitializer)
         , ownBufferSize(static_cast<uint16_t>(SesameEncodedObserver::Subject().MaxSendMessageSize()))
         , releaseWindowSize(static_cast<uint16_t>(SesameEncodedObserver::Subject().WorstCaseEncodedMessageSize(sizeof(PacketReleaseWindow))))
@@ -75,7 +76,7 @@ namespace services
     std::size_t SesameWindowed::MaxSendMessageSize() const
     {
         assert(initialized);
-        return SesameEncodedObserver::Subject().WorstCaseDecodedMessageSize((maxUsableBufferSize - releaseWindowSize) / 2) - sizeof(Operation);
+        return SesameEncodedObserver::Subject().WorstCaseDecodedMessageSize((maxUsableBufferSize - releaseWindowSize) / splitBuffers) - sizeof(Operation);
     }
 
     void SesameWindowed::Reset()
@@ -221,7 +222,7 @@ namespace services
             }
             else if (requestedSendMessageSize != std::nullopt && SesameEncodedObserver::Subject().WorstCaseEncodedMessageSize(*requestedSendMessageSize + 1) + releaseWindowSize <= otherAvailableWindow)
                 state.Emplace<StateSendingMessage>(*this).Request();
-            else if (releasedWindow >= (ownBufferSize - releaseWindowSize) / 2 && releaseWindowSize <= otherAvailableWindow)
+            else if (releasedWindow >= (ownBufferSize - releaseWindowSize) / splitBuffers && releaseWindowSize <= otherAvailableWindow)
                 state.Emplace<StateSendingReleaseWindow>(*this).Request();
             else
                 state.Emplace<StateOperational>(*this);
