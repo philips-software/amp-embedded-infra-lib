@@ -1,4 +1,5 @@
 #include "services/util/DoubleBufferedSerialCommunication.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -42,6 +43,8 @@ namespace services
             auto insertingChunk = infra::Head(nowSending, buffer.max_size());
             buffer.assign(insertingChunk.begin(), insertingChunk.end());
             nowSending = infra::DiscardHead(nowSending, insertingChunk.size());
+
+            services::GlobalTracer().Trace() << "DoubleBufferedSerialCommunication::TrySend(): " << infra::AsHex(infra::MakeRange(buffer)) << " nowSending.size(): " << nowSending.size();
 
             if (nowSending.empty())
                 nowActionOnCompletion();

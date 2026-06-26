@@ -1,4 +1,5 @@
 #include "services/util/SesameCobs.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -106,6 +107,7 @@ namespace services
         {
             auto& reader = hal::BufferedSerialCommunicationObserver::Subject().Reader();
             auto data = reader.ExtractContiguousRange(std::numeric_limits<uint32_t>::max());
+            services::GlobalTracer().Trace() << "SesameCobs::DataReceived: " << infra::AsHex(data);
             if (data.empty())
                 break;
             ReceivedData(data);
@@ -204,8 +206,11 @@ namespace services
     void SesameCobs::SendSerialData(const infra::ConstByteRange data, const infra::Function<void()>& onSendDataDone)
     {
         this->onSendDataDone = onSendDataDone;
+        services::GlobalTracer().Trace() << "SesameCobs::SendSerialData: " << infra::AsHex(data);
         hal::BufferedSerialCommunicationObserver::Subject().SendData(data, [this]()
             {
+                services::GlobalTracer().Trace() << "SesameCobs::SendSerialData done";
+
                 if (this->onStopDone)
                     this->onStopDone();
                 else
