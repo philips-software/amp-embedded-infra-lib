@@ -8,6 +8,7 @@ namespace services
 {
     class DoubleBufferedSerialCommunication
         : public hal::BufferedSerialCommunication
+        , private hal::BufferedSerialCommunicationObserver
     {
     public:
         template<std::size_t Size>
@@ -19,6 +20,9 @@ namespace services
         void SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion) override;
         infra::StreamReaderWithRewinding& Reader() override;
         void AckReceived() override;
+
+    private:
+        void DataReceived() override;
 
     private:
         void TrySend();

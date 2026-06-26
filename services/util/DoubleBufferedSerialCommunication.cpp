@@ -3,7 +3,8 @@
 namespace services
 {
     DoubleBufferedSerialCommunication::DoubleBufferedSerialCommunication(infra::BoundedVector<uint8_t>& buffer, BufferedSerialCommunication& delegate)
-        : buffer(buffer)
+        : hal::BufferedSerialCommunicationObserver(delegate)
+        , buffer(buffer)
         , delegate(delegate)
     {}
 
@@ -39,9 +40,9 @@ namespace services
         if (nowActionOnCompletion != nullptr && !sending)
         {
             sending = true;
-            auto insertingChunk = infra::Head(nowSending, buffer.max_size());
-            buffer.assign(insertingChunk.begin(), insertingChunk.end());
-            nowSending = infra::DiscardHead(nowSending, insertingChunk.size());
+            auto chunk = infra::Head(nowSending, buffer.max_size());
+            buffer.assign(chunk.begin(), chunk.end());
+            nowSending = infra::DiscardHead(nowSending, chunk.size());
 
             if (nowSending.empty())
                 nowActionOnCompletion();
