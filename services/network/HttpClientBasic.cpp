@@ -113,10 +113,20 @@ namespace services
         {
             state = State::closing;
             timeoutTimer.Cancel();
-            sharedAccess.SetAction([this]()
-                {
-                    ReportError(true);
-                });
+            if (receivedStatus && !contentError)
+            {
+                sharedAccess.SetAction([this]()
+                    {
+                        Expire();
+                    });
+            }
+            else
+            {
+                sharedAccess.SetAction([this]()
+                    {
+                        ReportError(true);
+                    });
+            }
         }
     }
 
