@@ -2,7 +2,7 @@
 
 namespace services
 {
-    DoubleBufferedSerialCommunication::DoubleBufferedSerialCommunication(infra::BoundedVector<uint8_t>& buffer, BufferedSerialCommunication& delegate)
+    DoubleBufferedSerialCommunication::DoubleBufferedSerialCommunication(infra::BoundedVector<uint8_t>& buffer, hal::BufferedSerialCommunication& delegate)
         : hal::BufferedSerialCommunicationObserver(delegate)
         , buffer(buffer)
         , delegate(delegate)
@@ -31,7 +31,8 @@ namespace services
 
     void DoubleBufferedSerialCommunication::DataReceived()
     {
-        GetObserver().DataReceived();
+        if (HasObserver())
+            GetObserver().DataReceived();
     }
 
     void DoubleBufferedSerialCommunication::TrySend()

@@ -14,7 +14,7 @@ namespace services
         template<std::size_t Size>
         using WithStorage = infra::WithStorage<DoubleBufferedSerialCommunication, infra::BoundedVector<uint8_t>::WithMaxSize<Size>>;
 
-        DoubleBufferedSerialCommunication(infra::BoundedVector<uint8_t>& buffer, BufferedSerialCommunication& delegate);
+        DoubleBufferedSerialCommunication(infra::BoundedVector<uint8_t>& buffer, hal::BufferedSerialCommunication& delegate);
 
         // Implementation of BufferedSerialCommunication
         void SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion) override;
@@ -29,8 +29,7 @@ namespace services
 
     private:
         infra::BoundedVector<uint8_t>& buffer;
-        BufferedSerialCommunication& delegate;
-
+        hal::BufferedSerialCommunication& delegate;
         infra::ConstByteRange nextSend;
         infra::AutoResetFunction<void()> nextActionOnCompletion;
 

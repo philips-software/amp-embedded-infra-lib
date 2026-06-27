@@ -128,8 +128,7 @@ TEST_F(DoubleBufferedSerialCommunicationTest, send_second_data_while_sending_fir
     infra::Function<void()> onSent1;
     infra::Function<void()> onSent2;
     EXPECT_CALL(delegate, SendData(infra::ContentsEqual(data1), testing::_)).WillOnce(testing::SaveArg<1>(&onSent1));
-    communication.SendData(data1, [&]()
-        {});
+    communication.SendData(data1, [&]() {});
 
     EXPECT_CALL(onDone2, callback());
     EXPECT_CALL(delegate, SendData(infra::ContentsEqual(data2), testing::_)).WillOnce(testing::SaveArg<1>(&onSent2));
