@@ -2,6 +2,7 @@
 #define SERVICES_DOUBLE_BUFFERED_SERIAL_COMMUNICATION_HPP
 
 #include "hal/interfaces/SerialCommunication.hpp"
+#include "infra/util/AutoResetFunction.hpp"
 #include "infra/util/BoundedVector.hpp"
 
 namespace services
