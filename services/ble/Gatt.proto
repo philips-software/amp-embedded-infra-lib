@@ -118,8 +118,9 @@ service GattClient
     // Responses: zero or more GattClientResponse.DescriptorDiscovered, followed by GattClientResponse.DescriptorDiscoveryComplete.
     rpc StartDescriptorDiscovery(HandleRange) returns (Nothing) { option (method_id) = 4; }
 
-    // Characteristic operations are sequential; wait for GattClientResponse.OperationComplete before issuing the next.
+    // Read/write operations are sequential; wait for GattClientResponse.OperationComplete before issuing the next.
     // WriteCharacteristicWithoutResponse is fire-and-forget and does not trigger GattClientResponse.OperationComplete.
+    rpc ReadCharacteristic(Handle) returns (Nothing) { option (method_id) = 5; }
     rpc WriteCharacteristic(AttributeData) returns (Nothing) { option (method_id) = 6; }
     rpc WriteCharacteristicWithoutResponse(AttributeData) returns (Nothing) { option (method_id) = 7; }
     rpc ReadDescriptor(Handle) returns (Nothing) { option (method_id) = 8; }
