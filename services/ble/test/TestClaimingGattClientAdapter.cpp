@@ -264,7 +264,7 @@ TEST_P(ClaimingGattClientAdapterStatusTest, should_call_write_without_response_c
 
 TEST_P(ClaimingGattClientAdapterStatusTest, should_call_read_descriptor)
 {
-    const infra::ConstByteRange readResult = infra::MakeRange(std::array<uint8_t, 2>{ 0x01, 0x00 });
+    const auto readResult = infra::MakeStringByteRange("Ambition is a poor excuse for not having enough sense to be lazy");
     infra::VerifyingFunction<void(const infra::ConstByteRange&)> onRead{ readResult };
     infra::VerifyingFunction<void(services::OperationStatus)> verifyOnDone{ GetParam() };
 
@@ -284,7 +284,7 @@ TEST_P(ClaimingGattClientAdapterStatusTest, should_call_read_descriptor)
 
 TEST_P(ClaimingGattClientAdapterStatusTest, should_call_write_descriptor)
 {
-    infra::ConstByteRange data = infra::MakeRange(std::array<uint8_t, 2>{ 0x01, 0x00 });
+    const auto data = infra::MakeStringByteRange("The early bird gets the worm, but the second mouse gets the cheese");
 
     EXPECT_CALL(gattClient, WriteDescriptor(handle, infra::ByteRangeContentsEqual(data), testing::_)).WillOnce([data](services::AttAttribute::Handle passedHandle, infra::ConstByteRange writeData, const infra::Function<void(services::OperationStatus)>& onWriteDone)
         {
@@ -303,7 +303,7 @@ TEST_P(ClaimingGattClientAdapterStatusTest, should_block_discovery_while_charact
     adapter.StartCharacteristicDiscovery(handle, endHandle);
     ExecuteAllActions();
 
-    infra::ConstByteRange data = infra::MakeRange(std::array<uint8_t, 2>{ 0x00, 0x00 });
+    const auto data = infra::MakeStringByteRange("Everywhere is within walking distance if you have the time");
     infra::VerifyingFunction<void(services::OperationStatus)> verifyOnDone{ GetParam() };
     adapter.WriteDescriptor(handle, data, verifyOnDone);
     ExecuteAllActions();
