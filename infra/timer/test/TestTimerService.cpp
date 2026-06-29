@@ -27,10 +27,8 @@ namespace
 
 TEST(TimerServiceDeathTest, constructing_already_registered_service_aborts)
 {
-    alignas(MinimalTimerService) unsigned char buffer[sizeof(MinimalTimerService)];
-    auto* service = ::new (buffer) MinimalTimerService(1);
-    EXPECT_DEATH(::new (buffer) MinimalTimerService(1), "");
-    service->~MinimalTimerService();
+    MinimalTimerService service(1);
+    EXPECT_DEATH(::new (&service) MinimalTimerService(1), "");
 }
 
 TEST(TimerServiceDeathTest, get_timer_service_with_unknown_id_aborts)
