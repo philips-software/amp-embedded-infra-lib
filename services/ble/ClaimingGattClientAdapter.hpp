@@ -115,7 +115,7 @@ namespace services
             AttAttribute::Handle handle;
         };
 
-        std::optional<std::variant<DiscoveredService, DiscoveredCharacteristic, DiscoveredDescriptor, HandleRange>> discoveryContext;
+        std::variant<std::monostate, DiscoveredService, DiscoveredCharacteristic, DiscoveredDescriptor, HandleRange> discoveryContext;
         std::optional<CharacteristicOperation> characteristicOperationContext;
         infra::AutoResetFunction<void(OperationStatus)> mtuExchangeOnDone;
 
