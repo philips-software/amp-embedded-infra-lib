@@ -52,13 +52,17 @@ function(add_mbedtls_target_properties)
         if(CMAKE_C_COMPILER_ID STREQUAL "Clang" OR CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
             # see https://github.com/Mbed-TLS/mbedtls/pull/6966
             # mbedtls sets the -Wdocumentation flag, which throws warnings since clang-15
-            list(APPEND _mbedtls_warning_suppressions -Wno-documentation -Wno-conversion -Wno-uninitialized-const-pointer -Wno-unterminated-string-initialization)
+            list(APPEND _mbedtls_warning_suppressions -Wno-documentation -Wno-conversion)
         endif()
 
         if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
             # -Wuninitialized-const-pointer / -Wunterminated-string-initialization
             # are treated as errors since clang-22
             if(CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL 22.0.0)
+                list(APPEND _mbedtls_warning_suppressions -Wno-uninitialized-const-pointer -Wno-unterminated-string-initialization)
+            endif()
+        elseif(CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
+            if(CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL 21.0.0)
                 list(APPEND _mbedtls_warning_suppressions -Wno-uninitialized-const-pointer -Wno-unterminated-string-initialization)
             endif()
         elseif(CMAKE_C_COMPILER_ID STREQUAL "GNU")
