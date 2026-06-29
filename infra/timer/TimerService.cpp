@@ -1,6 +1,7 @@
 #include "infra/timer/TimerService.hpp"
 #include "infra/util/ReallyAssert.hpp"
 #include "infra/util/LogAndAbort.hpp"
+#include "infra/util/ReallyAssert.hpp"
 #include <cinttypes>
 
 namespace infra
@@ -12,8 +13,8 @@ namespace infra
     {
         for (const TimerService& timerService : timerServices)
             really_assert_with_msg(timerService.Id() != id, "Duplicate timer service id: %" PRIu32, id);
-        
-        timerServices.push_front(*this); 
+
+        timerServices.push_front(*this);
     }
 
     TimerService::~TimerService()
