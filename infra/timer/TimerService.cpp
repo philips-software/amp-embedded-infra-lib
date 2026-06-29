@@ -121,7 +121,7 @@ namespace infra
             if (timerService.Id() == id)
                 return timerService;
 
-        LOG_AND_ABORT("No timer service with id: %d", id);
+        LOG_AND_ABORT("No timer service with id: %u", id);
     }
 
     void TimerService::ComputeNextTrigger()
