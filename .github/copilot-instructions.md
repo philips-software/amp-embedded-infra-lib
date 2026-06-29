@@ -10,7 +10,7 @@ This repository is a set of C++ libraries and headers that provide heap-less, ST
 
 **EmIL Patterns**: All CMake uses EmIL conventions:
 ```cmake
-emil_build_for(target PREREQUISITE_BOOL EMIL_BUILD_TESTS)
+emil_build_for(target BOOL EMIL_BUILD_TESTS)
 emil_generate_artifacts(TARGET target HEX MAP)
 emil_exclude_from_clang_format(directory)
 ```
