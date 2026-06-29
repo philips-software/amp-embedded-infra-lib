@@ -93,6 +93,10 @@ namespace infra
     template<class T>
     constexpr MemoryRange<T> MakeRangeFromSingleObject(T& object);
 
+    // The following constructor prevents dangling references to temporary objects, e.g. infra::MakeRange({ 5 })
+    template<class T>
+    MemoryRange<T> MakeRange(std::initializer_list<T>) = delete;
+
     template<class T, class U>
     MemoryRange<T> ReinterpretCastMemoryRange(MemoryRange<U> memoryRange);
     template<class T>
