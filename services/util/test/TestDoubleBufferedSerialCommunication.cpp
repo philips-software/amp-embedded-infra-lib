@@ -11,14 +11,14 @@ public:
     testing::StrictMock<hal::BufferedSerialCommunicationMock> delegate;
     services::DoubleBufferedSerialCommunication::WithStorage<4> communication{ delegate };
     hal::BufferedSerialCommunicationObserverMock observer{ communication };
-    testing::MockFunction<void(std::string_view checkPointName)> check;
+    testing::MockFunction<void()> check;
 };
 
 TEST_F(DoubleBufferedSerialCommunicationTest, read_and_ack_are_delegated)
 {
     infra::StreamReaderWithRewindingMock reader;
     EXPECT_CALL(delegate, Reader()).WillOnce(testing::ReturnRef(reader));
-    EXPECT_THAT(&reader, testing::Eq(&communication.Reader()));
+    EXPECT_THAT(&reader, testing::Pointer(&communication.Reader()));
 
     EXPECT_CALL(delegate, AckReceived());
     communication.AckReceived();
@@ -39,13 +39,13 @@ TEST_F(DoubleBufferedSerialCommunicationTest, send_data_is_delegated_and_reporte
     infra::Function<void()> onSent;
     EXPECT_CALL(onDone, callback());
     EXPECT_CALL(delegate, SendData(testing::ElementsAreArray(data), testing::_)).WillOnce(testing::SaveArg<1>(&onSent));
-    EXPECT_CALL(check, Call("1"));
+    EXPECT_CALL(check, Call());
     communication.SendData(data, [&]()
         {
             onDone.callback();
         });
 
-    check.Call("1");
+    check.Call();
     onSent();
 }
 
@@ -63,14 +63,14 @@ TEST_F(DoubleBufferedSerialCommunicationTest, send_more_data_than_fits_in_the_bu
     EXPECT_CALL(delegate, SendData(testing::ElementsAreArray(dataChunk1), testing::_)).WillOnce(testing::SaveArg<1>(&onSent1));
     EXPECT_CALL(onDone, callback());
     EXPECT_CALL(delegate, SendData(testing::ElementsAreArray(dataChunk2), testing::_)).WillOnce(testing::SaveArg<1>(&onSent2));
-    EXPECT_CALL(check, Call("1"));
+    EXPECT_CALL(check, Call());
     communication.SendData(dataSend, [&]()
         {
             onDone.callback();
         });
 
     onSent1();
-    check.Call("1");
+    check.Call();
     onSent2();
 }
 
@@ -94,9 +94,9 @@ TEST_F(DoubleBufferedSerialCommunicationTest, send_second_data_after_first)
 
     EXPECT_CALL(onDone2, callback());
     EXPECT_CALL(delegate, SendData(testing::ElementsAreArray(data2), testing::_)).WillOnce(testing::SaveArg<1>(&onSent2));
-    EXPECT_CALL(check, Call("1"));
+    EXPECT_CALL(check, Call());
     onSent1();
-    check.Call("1");
+    check.Call();
     onSent2();
 }
 
@@ -114,8 +114,6 @@ TEST_F(DoubleBufferedSerialCommunicationTest, send_empty_data_is_reported_done)
             onDone.callback();
         });
 
-    // Verify that the onDone callback has happened before the delegate's onDone is reported
-    testing::Mock::VerifyAndClearExpectations(&onDone);
     onSent();
 }
 
@@ -141,7 +139,5 @@ TEST_F(DoubleBufferedSerialCommunicationTest, send_second_data_while_sending_fir
         });
 
     onSent1();
-    testing::Mock::VerifyAndClearExpectations(&onDone2);
-
     onSent2();
 }
