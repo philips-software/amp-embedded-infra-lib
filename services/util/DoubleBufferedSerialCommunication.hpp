@@ -23,6 +23,7 @@ namespace services
         void AckReceived() override;
 
     private:
+        // Implementation of BufferedSerialCommunicationObserver
         void DataReceived() override;
 
     private:
