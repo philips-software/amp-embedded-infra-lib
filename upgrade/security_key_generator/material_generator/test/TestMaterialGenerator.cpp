@@ -7,7 +7,7 @@
 #include "upgrade/pack_builder/ImageSignerEcDsa.hpp"
 #include "upgrade/security_key_generator/material_generator/MaterialGenerator.hpp"
 #include "gtest/gtest.h"
-#include <type_traits>
+#include <array>
 #include <vector>
 
 class MaterialGeneratorTest
