@@ -28,7 +28,7 @@ namespace
 TEST(TimerServiceDeathTest, constructing_already_registered_service_aborts)
 {
     MinimalTimerService service(1);
-    EXPECT_DEATH(::new (&service) MinimalTimerService(1), "");
+    EXPECT_DEATH({ MinimalTimerService otherService(1); (void)otherService; }, "");
 }
 
 TEST(TimerServiceDeathTest, get_timer_service_with_unknown_id_aborts)
