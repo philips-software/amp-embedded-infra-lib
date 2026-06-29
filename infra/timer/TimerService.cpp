@@ -1,4 +1,6 @@
 #include "infra/timer/TimerService.hpp"
+#include "infra/util/ReallyAssert.hpp"
+#include "infra/util/LogAndAbort.hpp"
 
 namespace infra
 {
@@ -7,6 +9,7 @@ namespace infra
     TimerService::TimerService(uint32_t id)
         : id(id)
     {
+        really_assert(!timerServices.has_element(*this));
         timerServices.push_front(*this);
     }
 
@@ -116,7 +119,7 @@ namespace infra
             if (timerService.Id() == id)
                 return timerService;
 
-        abort(); // No timer service with the given id found
+        LOG_AND_ABORT("No timer service with id: %d", id);
     }
 
     void TimerService::ComputeNextTrigger()
