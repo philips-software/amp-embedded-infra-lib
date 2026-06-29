@@ -119,22 +119,21 @@ service GattClient
     rpc StartDescriptorDiscovery(HandleRange) returns (Nothing) { option (method_id) = 4; }
 
     // Characteristic operations are sequential; wait for GattClientResponse.OperationComplete before issuing the next.
-    // WriteWithoutResponse is fire-and-forget and does not trigger GattClientResponse.OperationComplete.
-    rpc ReadCharacteristic(Handle) returns (Nothing) { option (method_id) = 5; }
+    // WriteCharacteristicWithoutResponse is fire-and-forget and does not trigger GattClientResponse.OperationComplete.
     rpc WriteCharacteristic(AttributeData) returns (Nothing) { option (method_id) = 6; }
     rpc WriteCharacteristicWithoutResponse(AttributeData) returns (Nothing) { option (method_id) = 7; }
     rpc ReadDescriptor(Handle) returns (Nothing) { option (method_id) = 8; }
     rpc WriteDescriptor(AttributeData) returns (Nothing) { option (method_id) = 9; }
 
     // IndicationDone must be called for every IndicationReceived to acknowledge the indication.
-    rpc IndicationDone(Nothing) returns (Nothing) { option (method_id) = 10; };
+    rpc IndicationDone(Nothing) returns (Nothing) { option (method_id) = 10; }
 }
 
 service GattClientResponse
 {
     option (service_id) = 135;
 
-    // Responses are not sent after connection loss, which is informed via the GAP service
+    // No responses are sent after a connection loss is reported by the GAP service
 
     rpc MtuSizeExchangeComplete(MtuSize) returns (Nothing) { option (method_id) = 1; }
 
