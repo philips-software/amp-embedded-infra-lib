@@ -6,11 +6,13 @@ namespace infra
 {
     infra::IntrusiveForwardList<TimerService> TimerService::timerServices;
 
-    TimerService::TimerService(uint32_t id)
-        : id(id)
-    {
-        really_assert(!timerServices.has_element(*this));
-        timerServices.push_front(*this);
+TimerService::TimerService(uint32_t id)
+    : id(id)
+{
+    for (const TimerService& timerService : timerServices)
+        really_assert_with_msg(timerService.Id() != id, "Duplicate timer service id: %u", id);
+
+    timerServices.push_front(*this);
     }
 
     TimerService::~TimerService()
