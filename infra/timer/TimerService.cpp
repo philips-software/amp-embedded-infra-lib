@@ -1,4 +1,7 @@
 #include "infra/timer/TimerService.hpp"
+#include "infra/util/LogAndAbort.hpp"
+#include "infra/util/ReallyAssert.hpp"
+#include <cinttypes>
 
 namespace infra
 {
@@ -7,6 +10,9 @@ namespace infra
     TimerService::TimerService(uint32_t id)
         : id(id)
     {
+        for (const TimerService& timerService : timerServices)
+            really_assert_with_msg(timerService.Id() != id, "Duplicate timer service id: %" PRIu32, id);
+
         timerServices.push_front(*this);
     }
 
@@ -116,7 +122,7 @@ namespace infra
             if (timerService.Id() == id)
                 return timerService;
 
-        abort(); // No timer service with the given id found
+        LOG_AND_ABORT("No timer service with id: %" PRIu32, id);
     }
 
     void TimerService::ComputeNextTrigger()
