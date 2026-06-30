@@ -92,10 +92,10 @@ namespace infra
     MemoryRange<const T> MakeConst(infra::MemoryRange<T> range);
     template<class T>
     constexpr MemoryRange<T> MakeRangeFromSingleObject(T& object);
-
-    // The following overload prevents dangling references to temporary objects, e.g. infra::MakeRange({ 5 })
     template<class T>
-    MemoryRange<T> MakeRange(std::initializer_list<T>) = delete;
+    constexpr MemoryRange<const T> MakeRange(const std::initializer_list<T>& list);
+    template<class T>
+    MemoryRange<T> MakeRange(std::initializer_list<T>&&) = delete; // To avoid pointing to dangling reference
 
     template<class T, class U>
     MemoryRange<T> ReinterpretCastMemoryRange(MemoryRange<U> memoryRange);
@@ -391,6 +391,12 @@ namespace infra
     constexpr MemoryRange<T> MakeRangeFromSingleObject(T& object)
     {
         return MemoryRange<T>(&object, &object + 1);
+    }
+
+    template<class T>
+    constexpr MemoryRange<const T> MakeRange(const std::initializer_list<T>& list)
+    {
+        return { list.begin(), list.end() };
     }
 
     template<class T, class U>
