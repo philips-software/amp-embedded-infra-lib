@@ -183,7 +183,7 @@ TEST_F(HttpClientJsonTest, close_while_BodyAvailable)
     EXPECT_CALL(reader, ExtractContiguousRange(testing::_)).WillOnce(testing::Return(infra::MakeStringByteRange(R"({ })")));
     EXPECT_CALL(jsonObjectVisitor, Close()).WillOnce(testing::Invoke([this]()
         {
-            EXPECT_CALL(controller, Error(testing::_));
+            EXPECT_CALL(controller, Done());
             httpClient.Detach();
             infra::ReConstruct(controller, url, services::HttpClientJson::ConnectionInfo{ jsonParserCreator, 443, httpClientConnector }, services::noAutoConnect);
         }));
@@ -207,7 +207,7 @@ TEST_F(HttpClientJsonTest, close_upon_destructing_reader_in_BodyAvailable)
     EXPECT_CALL(jsonObjectVisitor, Close());
     infra::AccessedBySharedPtr access([this]()
         {
-            EXPECT_CALL(controller, Error(testing::_));
+            EXPECT_CALL(controller, Done());
             httpClient.Detach();
             infra::ReConstruct(controller, url, services::HttpClientJson::ConnectionInfo{ jsonParserCreator, 443, httpClientConnector }, services::noAutoConnect);
         });
