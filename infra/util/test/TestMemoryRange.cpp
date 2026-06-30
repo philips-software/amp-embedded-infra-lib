@@ -316,10 +316,7 @@ TEST(MemoryRangeTest, TestMakeRangeFromContainer)
 TEST(MemoryRangeTest, TestMakeRangeFromInitializerList)
 {
     std::initializer_list<uint8_t> list{ 2, 3, 4 };
-    EXPECT_THAT(infra::MakeRange(list), testing::ElementsAreArray({ 2, 3, 4 }));
-
-    // does not compile
-    // auto dangling = infra::MakeRange({ 2, 3, 4 })
+    EXPECT_THAT(infra::MakeRange(list), testing::ElementsAre(2, 3, 4));
 }
 
 TEST(MemoryRangeTest, TestMakeVectorFromRange)
