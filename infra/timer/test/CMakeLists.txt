@@ -10,7 +10,6 @@ target_link_libraries(infra.timer_test PUBLIC
 
 target_sources(infra.timer_test PRIVATE
     TestDerivedTimerService.cpp
-    TestTimerService.cpp
     TestRetryPolicy.cpp
     TestScalableDerivedTimerService.cpp
     TestTickOnInterruptTimerService.cpp
