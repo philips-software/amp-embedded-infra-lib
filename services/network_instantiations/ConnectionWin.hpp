@@ -42,6 +42,7 @@ namespace services
         void ResetOwnership();
         void TryAllocateSendStream();
         void ScheduleDataReceivedIfNeeded();
+        void ProcessDataReceived();
         void FinalizeCloseIfReady();
 
     private:

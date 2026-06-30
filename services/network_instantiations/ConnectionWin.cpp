@@ -206,24 +206,29 @@ namespace services
         dataReceivedScheduled = true;
         infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionWin>& object)
             {
-                auto bufferedBeforeCallback = object->receiveBuffer.size();
-
-                object->dataReceivedScheduled = false;
-                if (object->IsAttached())
-                {
-                    object->Observer().DataReceived();
-
-                    auto bufferedAfterCallback = object->receiveBuffer.size();
-                    if (object->closePending && bufferedAfterCallback != 0 && bufferedAfterCallback < bufferedBeforeCallback)
-                    {
-                        object->ScheduleDataReceivedIfNeeded();
-                        return;
-                    }
-                }
-
-                object->FinalizeCloseIfReady();
+                object->ProcessDataReceived();
             },
             SharedFromThis());
+    }
+
+    void ConnectionWin::ProcessDataReceived()
+    {
+        auto bufferedBeforeCallback = receiveBuffer.size();
+
+        dataReceivedScheduled = false;
+        if (IsAttached())
+        {
+            Observer().DataReceived();
+
+            auto bufferedAfterCallback = receiveBuffer.size();
+            if (closePending && bufferedAfterCallback != 0 && bufferedAfterCallback < bufferedBeforeCallback)
+            {
+                ScheduleDataReceivedIfNeeded();
+                return;
+            }
+        }
+
+        FinalizeCloseIfReady();
     }
 
     void ConnectionWin::FinalizeCloseIfReady()
