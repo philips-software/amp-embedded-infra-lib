@@ -31,10 +31,10 @@ namespace main_
     struct EchoOnSesame
         : public services::Stoppable
     {
-        template<std::size_t MessageSize>
+        template<std::size_t MessageSize, uint8_t SplitBuffers>
         struct WithMessageSize;
 
-        EchoOnSesame(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage, infra::BoundedDeque<uint8_t>& windowedReceivedMessage, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory);
+        EchoOnSesame(Sesame::CobsStorageBase& storage, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory);
 
         void Reset();
 
@@ -45,18 +45,18 @@ namespace main_
         services::EchoOnSesame echo;
     };
 
-    template<std::size_t MessageSize>
+    template<std::size_t MessageSize, uint8_t SplitBuffers>
     struct EchoOnSesame::WithMessageSize
-        : private Sesame::CobsStorage<MessageSize>
+        : private Sesame::CobsStorage<MessageSize, SplitBuffers>
         , EchoOnSesame
     {
         WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory)
-            : EchoOnSesame(this->cobsSendStorage, this->cobsReceivedMessage, this->windowedReceivedMessage, serialCommunication, serializerFactory)
+            : EchoOnSesame(static_cast<Sesame::CobsStorage<MessageSize, SplitBuffers>&>(*this), serialCommunication, serializerFactory)
         {}
     };
 
 #ifdef EMIL_HAL_GENERIC
-    template<std::size_t MessageSize>
+    template<std::size_t MessageSize, uint8_t SplitBuffers = 2>
     struct EchoOnUart
         : services::Stoppable
     {
@@ -72,7 +72,7 @@ namespace main_
         hal::UartGeneric uart;
         services::MethodSerializerFactory::OnHeap serializerFactory;
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<MessageSize> bufferedSerial{ uart };
-        main_::EchoOnSesame::WithMessageSize<MessageSize> echoOnSesame{ this->bufferedSerial, this->serializerFactory };
+        main_::EchoOnSesame::WithMessageSize<MessageSize, SplitBuffers> echoOnSesame{ this->bufferedSerial, this->serializerFactory };
 
         services::Echo& echo{ echoOnSesame.echo };
     };
@@ -128,7 +128,7 @@ namespace main_
         EchoForwarder<MessageSize, MaxServices> echoForwarder;
     };
 
-    template<std::size_t MessageSize, std::size_t MaxServices>
+    template<std::size_t MessageSize, std::size_t MaxServices, uint8_t SplitBuffers = 2>
     struct EchoForwarderToSesame
     {
         EchoForwarderToSesame(services::Echo& from, hal::SerialCommunication& toSerial, services::MethodSerializerFactory& serializerFactory)
@@ -138,7 +138,7 @@ namespace main_
         {}
 
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<MessageSize> bufferedSerial;
-        EchoOnSesame::WithMessageSize<MessageSize> to;
+        EchoOnSesame::WithMessageSize<MessageSize, SplitBuffers> to;
         EchoForwarder<MessageSize, MaxServices> echoForwarder;
     };
 }

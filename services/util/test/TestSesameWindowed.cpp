@@ -184,7 +184,7 @@ TEST_F(SesameWindowedTest, MaxSendMessageSize)
     // 6 bytes in a message expands to 1 (cobs) + 1 (operation) + 6 (message) + 1 (delimiter) = 9
     // Two of these messages plus one release window amount to 9 + 9 + 5 = 23, which is under the limit of the 24 bytes buffer of cobs
     EXPECT_EQ(6, communication.MaxSendMessageSize());
-    EXPECT_EQ(23, (services::SesameWindowed::bufferSizeForMessage<6, services::SesameCobs::EncodedMessageSize>));
+    EXPECT_EQ(23, (services::SesameWindowed::bufferSizeForMessage<6, 2, services::SesameCobs::EncodedMessageSize>));
 }
 
 TEST_F(SesameWindowedTest, send_message_after_initialized)

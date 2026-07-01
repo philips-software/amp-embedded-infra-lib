@@ -13,7 +13,7 @@ namespace services
         template<std::size_t MaxMessageSize>
         using WithStorage = infra::WithStorage<TracingSesameWindowed, infra::BoundedDeque<uint8_t>::WithMaxSize<MaxMessageSize>>;
 
-        TracingSesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, SesameEncoded& delegate, Tracer& tracer);
+        TracingSesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, SesameEncoded& delegate, uint8_t splitBuffers, Tracer& tracer);
 
     protected:
         void ReceivedInit(uint16_t newWindow) override;

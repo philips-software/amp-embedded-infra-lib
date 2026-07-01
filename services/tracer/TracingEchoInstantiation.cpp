@@ -2,9 +2,9 @@
 
 namespace main_
 {
-    TracingEchoOnSesame::TracingEchoOnSesame(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage, infra::BoundedDeque<uint8_t>& windowedReceivedMessage, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, services::Tracer& tracer)
-        : cobs(cobsSendStorage, cobsReceivedMessage, serialCommunication)
-        , windowed(windowedReceivedMessage, cobs)
+    TracingEchoOnSesame::TracingEchoOnSesame(Sesame::CobsStorageBase& storage, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, services::Tracer& tracer)
+        : cobs(storage.cobsSendStorage, storage.cobsReceivedMessage, serialCommunication)
+        , windowed(storage.windowedReceivedMessage, storage.windowedReceiveBuffers, cobs)
         , echo(serializerFactory, services::echoErrorPolicyAbort, tracer, windowed)
     {}
 

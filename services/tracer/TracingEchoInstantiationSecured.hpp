@@ -17,8 +17,7 @@ namespace main_
     struct TracingEchoOnSesameSecured
         : public services::Stoppable
     {
-        TracingEchoOnSesameSecured(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage, infra::BoundedDeque<uint8_t>& windowedReceivedMessage,
-            infra::BoundedVector<uint8_t>& securedSendBuffer, infra::BoundedVector<uint8_t>& securedReceiveBuffer,
+        TracingEchoOnSesameSecured(Sesame::CobsStorageBase& storage, infra::BoundedVector<uint8_t>& securedSendBuffer, infra::BoundedVector<uint8_t>& securedReceiveBuffer,
             hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::SesameSecured::KeyMaterial& keyMaterial,
             const services::EchoErrorPolicy& echoErrorPolicy, services::Tracer& tracer, services::SesameInitializer& initializer = services::immediatelyGranted);
 
@@ -38,20 +37,19 @@ namespace main_
     struct TracingEchoOnSesameSecuredSymmetricKey
         : TracingEchoOnSesameSecured
     {
-        template<std::size_t MessageSize>
+        template<std::size_t MessageSize, uint8_t SplitBuffers = 2>
         struct WithMessageSize;
 
-        TracingEchoOnSesameSecuredSymmetricKey(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage, infra::BoundedDeque<uint8_t>& windowedReceivedMessage,
-            infra::BoundedVector<uint8_t>& securedSendBuffer, infra::BoundedVector<uint8_t>& securedReceiveBuffer,
+        TracingEchoOnSesameSecuredSymmetricKey(Sesame::CobsStorageBase& storage, infra::BoundedVector<uint8_t>& securedSendBuffer, infra::BoundedVector<uint8_t>& securedReceiveBuffer,
             hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::SesameSecured::KeyMaterial& keyMaterial,
             hal::SynchronousRandomDataGenerator& randomDataGenerator, const services::EchoErrorPolicy& echoErrorPolicy, services::Tracer& tracer, services::SesameInitializer& initializer = services::immediatelyGranted);
 
         services::EchoPolicySymmetricKey policy;
     };
 
-    template<std::size_t MessageSize>
+    template<std::size_t MessageSize, uint8_t SplitBuffers>
     struct TracingEchoOnSesameSecuredSymmetricKey::WithMessageSize
-        : private Sesame::CobsStorage<MessageSize>
+        : private Sesame::CobsStorage<MessageSize, SplitBuffers>
         , private EchoOnSesameSecured::SecuredStorage<MessageSize>
         , TracingEchoOnSesameSecuredSymmetricKey
     {
@@ -64,11 +62,10 @@ namespace main_
     struct TracingEchoOnSesameSecuredDiffieHellman
         : TracingEchoOnSesameSecured
     {
-        template<std::size_t MessageSize>
+        template<std::size_t MessageSize, uint8_t SplitBuffers = 2>
         struct WithMessageSize;
 
-        TracingEchoOnSesameSecuredDiffieHellman(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage, infra::BoundedDeque<uint8_t>& windowedReceivedMessage,
-            infra::BoundedVector<uint8_t>& securedSendBuffer, infra::BoundedVector<uint8_t>& securedReceiveBuffer,
+        TracingEchoOnSesameSecuredDiffieHellman(Sesame::CobsStorageBase& storage, infra::BoundedVector<uint8_t>& securedSendBuffer, infra::BoundedVector<uint8_t>& securedReceiveBuffer,
             hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory,
             const services::EchoPolicyDiffieHellman::Crypto& crypto, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate,
             hal::SynchronousRandomDataGenerator& randomDataGenerator, const services::EchoErrorPolicy& echoErrorPolicy, services::Tracer& tracer, services::SesameInitializer& initializer = services::immediatelyGranted);
@@ -76,9 +73,9 @@ namespace main_
         services::EchoPolicyDiffieHellman policy;
     };
 
-    template<std::size_t MessageSize>
+    template<std::size_t MessageSize, uint8_t SplitBuffers>
     struct TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize
-        : private Sesame::CobsStorage<MessageSize>
+        : private Sesame::CobsStorage<MessageSize, SplitBuffers>
         , private EchoOnSesameSecured::SecuredStorage<MessageSize>
         , TracingEchoOnSesameSecuredDiffieHellman
     {
@@ -94,13 +91,13 @@ namespace main_
     };
 
 #ifdef EMIL_USE_MBEDTLS
-    template<std::size_t MessageSize>
-    struct TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<MessageSize>::WithCryptoMbedTls
-        : public TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<MessageSize>
+    template<std::size_t MessageSize, uint8_t SplitBuffers>
+    struct TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<MessageSize, SplitBuffers>::WithCryptoMbedTls
+        : public TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<MessageSize, SplitBuffers>
     {
         WithCryptoMbedTls(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial,
             hal::SynchronousRandomDataGenerator& randomDataGenerator, const services::EchoErrorPolicy& echoErrorPolicy, services::Tracer& tracer, services::SesameInitializer& initializer = services::immediatelyGranted)
-            : TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<MessageSize>(serialCommunication, serializerFactory, services::EchoPolicyDiffieHellman::Crypto{ keyExchange, signer, verifier, keyExpander }, keyMaterial.dsaCertificate, keyMaterial.rootCaCertificate, randomDataGenerator, echoErrorPolicy, tracer, initializer)
+            : TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<MessageSize, SplitBuffers>(serialCommunication, serializerFactory, services::EchoPolicyDiffieHellman::Crypto{ keyExchange, signer, verifier, keyExpander }, keyMaterial.dsaCertificate, keyMaterial.rootCaCertificate, randomDataGenerator, echoErrorPolicy, tracer, initializer)
             , signer(keyMaterial.dsaCertificatePrivateKey, randomDataGenerator)
         {}
 

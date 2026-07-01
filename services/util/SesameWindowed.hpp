@@ -18,10 +18,10 @@ namespace services
         , private SesameEncodedObserver
     {
     public:
-        template<std::size_t MaxMessageSize>
-        using WithMaxMessageSize = infra::WithStorage<SesameWindowed, infra::BoundedDeque<uint8_t>::WithMaxSize<MaxMessageSize>>;
+        template<std::size_t MaxMessageSize, uint8_t SplitBuffers = 2>
+        struct WithMaxMessageSize;
 
-        explicit SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, SesameEncoded& delegate, SesameInitializer& sesameInitializer = immediatelyGranted);
+        explicit SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, uint8_t splitBuffers, SesameEncoded& delegate, SesameInitializer& sesameInitializer = immediatelyGranted);
 
         // Implementation of Sesame
         void RequestSendMessage(std::size_t size) override;
@@ -91,8 +91,8 @@ namespace services
         };
 
     public:
-        template<std::size_t MaxMessageSize, template<std::size_t> class MessageSize>
-        static constexpr std::size_t bufferSizeForMessage = MessageSize<sizeof(Operation) + MaxMessageSize>::size * 2 + MessageSize<sizeof(PacketReleaseWindow)>::size;
+        template<std::size_t MaxMessageSize, uint8_t SplitBuffers, template<std::size_t> class MessageSize>
+        static constexpr std::size_t bufferSizeForMessage = MessageSize<sizeof(Operation) + MaxMessageSize>::size * SplitBuffers + MessageSize<sizeof(PacketReleaseWindow)>::size;
 
     private:
         class State
@@ -166,6 +166,7 @@ namespace services
 
     private:
         infra::BoundedDeque<uint8_t>& receivedMessage;
+        uint8_t splitBuffers;
         SesameInitializer& sesameInitializer;
         const uint16_t ownBufferSize;
         const uint16_t releaseWindowSize;
@@ -180,6 +181,17 @@ namespace services
         bool sending = false;
         std::optional<std::size_t> requestedSendMessageSize;
         infra::PolymorphicVariant<State, StateSendingInit, StateSendingInitResponse, StateOperational, StateSendingMessage, StateSendingReleaseWindow> state;
+    };
+
+    template<std::size_t MaxMessageSize, uint8_t SplitBuffers>
+    struct SesameWindowed::WithMaxMessageSize
+        : infra::WithStorage<SesameWindowed, infra::BoundedDeque<uint8_t>::WithMaxSize<MaxMessageSize * (SplitBuffers - 1)>>
+    {
+        static_assert(SplitBuffers >= 2, "SesameWindowed requires at least 2 receive buffers");
+
+        WithMaxMessageSize(SesameEncoded& delegate, SesameInitializer& sesameInitializer = immediatelyGranted)
+            : infra::WithStorage<SesameWindowed, infra::BoundedDeque<uint8_t>::WithMaxSize<MaxMessageSize>>::WithStorage(SplitBuffers, delegate, sesameInitializer)
+        {}
     };
 }
 
