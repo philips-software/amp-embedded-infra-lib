@@ -68,7 +68,7 @@ function(add_mbedtls_target_properties)
         elseif(CMAKE_C_COMPILER_ID STREQUAL "GNU")
             # Warning treated as error when implicit conversion within mbedtls
             list(APPEND _mbedtls_warning_suppressions -Wno-conversion)
-            # Warning treated as error since gcc-14
+            # Warning treated as error since gcc-15
             if(CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL 15.0.0)
                 list(APPEND _mbedtls_warning_suppressions -Wno-unterminated-string-initialization)
             endif()
