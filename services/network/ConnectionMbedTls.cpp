@@ -305,7 +305,7 @@ namespace services
 
             infra::EventDispatcherWithWeakPtr::Instance().Schedule([requestedSize](const infra::SharedPtr<ConnectionMbedTls>& object)
                 {
-                    infra::SharedPtr<StreamWriterMbedTls> stream = object->streamWriter.Emplace(*object, requestedSize);
+                    infra::SharedPtr<StreamWriterMbedTls> stream = object->streamWriter.Emplace(*object, static_cast<uint32_t>(requestedSize));
                     if (object->Connection::IsAttached())
                         object->Observer().SendStreamAvailable(std::move(stream));
                 },

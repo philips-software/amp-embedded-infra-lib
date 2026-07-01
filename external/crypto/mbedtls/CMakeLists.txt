@@ -68,8 +68,8 @@ function(add_mbedtls_target_properties)
         elseif(CMAKE_C_COMPILER_ID STREQUAL "GNU")
             # Warning treated as error when implicit conversion within mbedtls
             list(APPEND _mbedtls_warning_suppressions -Wno-conversion)
-            # Warning treated as error since gcc-14
-            if(CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL 14.0.0)
+            # Warning treated as error since gcc-15
+            if(CMAKE_C_COMPILER_VERSION VERSION_GREATER_EQUAL 15.0.0)
                 list(APPEND _mbedtls_warning_suppressions -Wno-unterminated-string-initialization)
             endif()
         elseif(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
@@ -77,7 +77,7 @@ function(add_mbedtls_target_properties)
         endif()
 
         if(_mbedtls_warning_suppressions)
-            target_compile_options(${target} PUBLIC ${_mbedtls_warning_suppressions})
+            target_compile_options(${target} PRIVATE ${_mbedtls_warning_suppressions})
         endif()
 
         target_include_directories(${target} PUBLIC
