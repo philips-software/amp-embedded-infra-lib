@@ -17,7 +17,46 @@ namespace services
         : public Sesame
         , private SesameEncodedObserver
     {
+    private:
+        enum class Operation : uint8_t
+        {
+            init = 1,
+            initResponse,
+            releaseWindow,
+            message
+        };
+
+        struct PacketInit
+        {
+            explicit PacketInit(uint16_t window);
+
+            Operation operation = Operation::init;
+            infra::Aligned<uint8_t, infra::LittleEndian<uint16_t>> window;
+        };
+
+        struct PacketInitResponse
+        {
+            explicit PacketInitResponse(uint16_t window);
+
+            Operation operation = Operation::initResponse;
+            infra::Aligned<uint8_t, infra::LittleEndian<uint16_t>> window;
+        };
+
+        struct PacketReleaseWindow
+        {
+            explicit PacketReleaseWindow(uint16_t window);
+
+            Operation operation = Operation::releaseWindow;
+            infra::Aligned<uint8_t, infra::LittleEndian<uint16_t>> window;
+        };
+
     public:
+        template<std::size_t MaxMessageSize, template<std::size_t> class MessageSize>
+        static constexpr std::size_t bufferSizeForMessage = MessageSize<sizeof(Operation) + MaxMessageSize>::size;
+
+        template<std::size_t MaxMessageSize, uint8_t SplitBuffers>
+        static constexpr std::size_t receiveBufferSize = (MaxMessageSize + 2) * (SplitBuffers - 1);
+
         template<std::size_t MaxMessageSize, uint8_t SplitBuffers = 2>
         struct WithMaxMessageSize;
 
@@ -56,43 +95,6 @@ namespace services
         void TryForwardReceivedMessage();
         void ForwardReceivedMessage(uint16_t encodedSize);
         void SetNextState();
-
-    private:
-        enum class Operation : uint8_t
-        {
-            init = 1,
-            initResponse,
-            releaseWindow,
-            message
-        };
-
-        struct PacketInit
-        {
-            explicit PacketInit(uint16_t window);
-
-            Operation operation = Operation::init;
-            infra::Aligned<uint8_t, infra::LittleEndian<uint16_t>> window;
-        };
-
-        struct PacketInitResponse
-        {
-            explicit PacketInitResponse(uint16_t window);
-
-            Operation operation = Operation::initResponse;
-            infra::Aligned<uint8_t, infra::LittleEndian<uint16_t>> window;
-        };
-
-        struct PacketReleaseWindow
-        {
-            explicit PacketReleaseWindow(uint16_t window);
-
-            Operation operation = Operation::releaseWindow;
-            infra::Aligned<uint8_t, infra::LittleEndian<uint16_t>> window;
-        };
-
-    public:
-        template<std::size_t MaxMessageSize, uint8_t SplitBuffers, template<std::size_t> class MessageSize>
-        static constexpr std::size_t bufferSizeForMessage = MessageSize<sizeof(Operation) + MaxMessageSize>::size * SplitBuffers + MessageSize<sizeof(PacketReleaseWindow)>::size;
 
     private:
         class State
@@ -185,12 +187,12 @@ namespace services
 
     template<std::size_t MaxMessageSize, uint8_t SplitBuffers>
     struct SesameWindowed::WithMaxMessageSize
-        : infra::WithStorage<SesameWindowed, infra::BoundedDeque<uint8_t>::WithMaxSize<MaxMessageSize * (SplitBuffers - 1)>>
+        : infra::WithStorage<SesameWindowed, infra::BoundedDeque<uint8_t>::WithMaxSize<receiveBufferSize<MaxMessageSize, SplitBuffers>>>
     {
         static_assert(SplitBuffers >= 2, "SesameWindowed requires at least 2 receive buffers");
 
         WithMaxMessageSize(SesameEncoded& delegate, SesameInitializer& sesameInitializer = immediatelyGranted)
-            : infra::WithStorage<SesameWindowed, infra::BoundedDeque<uint8_t>::WithMaxSize<MaxMessageSize>>::WithStorage(SplitBuffers, delegate, sesameInitializer)
+            : infra::WithStorage<SesameWindowed, infra::BoundedDeque<uint8_t>::WithMaxSize<receiveBufferSize<MaxMessageSize, SplitBuffers>>>::WithStorage(SplitBuffers, delegate, sesameInitializer)
         {}
     };
 }

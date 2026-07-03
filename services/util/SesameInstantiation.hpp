@@ -29,7 +29,7 @@ namespace main_
         {
             static_assert(SplitBuffers >= 2, "Sesame requires at least 2 receive buffers");
 
-            static constexpr std::size_t encodedMessageSize = services::SesameWindowed::bufferSizeForMessage<MessageSize, SplitBuffers, services::SesameCobs::EncodedMessageSize>;
+            static constexpr std::size_t encodedMessageSize = services::SesameWindowed::bufferSizeForMessage<MessageSize, services::SesameCobs::EncodedMessageSize>;
 
             CobsStorage()
                 : CobsStorageBase(cobsSendStorage, cobsReceivedMessage, windowedReceivedMessage, SplitBuffers)
@@ -37,7 +37,7 @@ namespace main_
 
             infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameCobs::sendBufferSize<MessageSize>> cobsSendStorage;
             infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameCobs::receiveBufferSize<encodedMessageSize>> cobsReceivedMessage;
-            infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameCobs::receiveBufferSize<encodedMessageSize>> windowedReceivedMessage;
+            infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameWindowed::receiveBufferSize<MessageSize, SplitBuffers>> windowedReceivedMessage;
         };
 
         Sesame(CobsStorageBase& storage, hal::BufferedSerialCommunication& serialCommunication);
