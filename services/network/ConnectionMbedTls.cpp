@@ -255,7 +255,7 @@ namespace services
     {
         receiveReader->ConsumeRead();
 
-        infra::EventDispatcherWithWeakPtr::Instance().Schedule([this](const infra::SharedPtr<ConnectionMbedTls>& object)
+        infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionMbedTls>& object)
             {
                 object->DataReceived();
             },
