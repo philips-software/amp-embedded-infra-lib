@@ -1,4 +1,5 @@
 #include "services/util/SesameSecured.hpp"
+#include "infra/util/ReallyAssert.hpp"
 #include <algorithm>
 
 namespace services
@@ -125,6 +126,7 @@ namespace services
         if (stream.Available() < blockSize)
             return;
 
+        const auto encryptedPayloadSize = stream.Available() - blockSize;
         receiveBuffer.clear();
 
         receiveEncryption.Start(receiveIv);
@@ -141,7 +143,11 @@ namespace services
         }
 
         std::array<uint8_t, blockSize> computedMac;
-        receiveEncryption.Finish(infra::ByteRange(), computedMac);
+        const auto expectedFinishSize = encryptedPayloadSize - receiveBuffer.size();
+        really_assert(receiveBuffer.size() + expectedFinishSize <= receiveBuffer.max_size());
+        receiveBuffer.resize(receiveBuffer.size() + expectedFinishSize);
+        auto moreProcessedSize = receiveEncryption.Finish(infra::Tail(infra::MakeRange(receiveBuffer), expectedFinishSize), computedMac);
+        really_assert(moreProcessedSize == expectedFinishSize);
 
         std::array<uint8_t, blockSize> receivedMac;
         stream >> infra::MakeRange(receivedMac);

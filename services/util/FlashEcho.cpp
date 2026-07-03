@@ -1,5 +1,6 @@
 #include "services/util/FlashEcho.hpp"
-#include <utility>
+#include "infra/util/ReallyAssert.hpp"
+#include <algorithm>
 
 namespace services
 {
@@ -13,72 +14,88 @@ namespace services
     {
         onStopped = onDone;
 
-        if (!busy)
+        if (!busyWithFlash)
             onStopped();
     }
 
     void FlashEcho::Read(uint32_t address, uint32_t size)
     {
-        busy = true;
+        really_assert(!busyWithFlash && !busyWithResponse);
+        busyWithFlash = true;
 
         flash.ReadBuffer(infra::Head(infra::MakeRange(buffer), size), address, [this, size]()
             {
-                busy = false;
+                busyWithFlash = false;
 
                 if (onStopped)
                     onStopped();
                 else
+                {
+                    busyWithResponse = true;
                     flashResult.RequestSend([this, size]()
                         {
+                            busyWithResponse = false;
+
                             flashResult.ReadDone(infra::Head(infra::MakeRange(buffer), size));
                             MethodDone();
 
                             if (onStopped)
                                 onStopped();
                         });
+                }
             });
     }
 
     void FlashEcho::Write(uint32_t address, infra::ConstByteRange contents)
     {
-        busy = true;
+        really_assert(!busyWithFlash && !busyWithResponse);
+        busyWithFlash = true;
 
         flash.WriteBuffer(contents, address, [this]()
             {
-                busy = false;
+                busyWithFlash = false;
 
                 if (onStopped)
                     onStopped();
                 else
+                {
+                    busyWithResponse = true;
                     flashResult.RequestSend([this]()
                         {
+                            busyWithResponse = false;
                             flashResult.WriteDone();
                             MethodDone();
 
                             if (onStopped)
                                 onStopped();
                         });
+                }
             });
     }
 
     void FlashEcho::EraseSectors(uint32_t sector, uint32_t numberOfSectors)
     {
-        busy = true;
+        really_assert(!busyWithFlash && !busyWithResponse);
+        busyWithFlash = true;
 
         flash.EraseSectors(sector, sector + numberOfSectors, [this]()
             {
-                busy = false;
+                busyWithFlash = false;
                 if (onStopped)
                     onStopped();
                 else
+                {
+                    busyWithResponse = true;
                     flashResult.RequestSend([this]()
                         {
+                            busyWithResponse = false;
                             flashResult.EraseSectorsDone();
                             MethodDone();
 
                             if (onStopped)
                                 onStopped();
                         });
+                }
             });
     }
 
@@ -130,7 +147,10 @@ namespace services
 
     void FlashEchoProxyBase::WriteBuffer(infra::ConstByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
+        really_assert(!this->onDone);
+
         bufferPosition = 0;
+        readingBuffer = {};
         writingBuffer = buffer;
         this->onDone = onDone;
         this->address = address;
@@ -140,8 +160,11 @@ namespace services
 
     void FlashEchoProxyBase::ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
+        really_assert(!this->onDone);
+
         bufferPosition = 0;
         this->address = address;
+        writingBuffer = {};
         readingBuffer = buffer;
         this->onDone = onDone;
 
@@ -150,6 +173,10 @@ namespace services
 
     void FlashEchoProxyBase::EraseSectors(uint32_t beginIndex, uint32_t endIndex, infra::Function<void()> onDone)
     {
+        really_assert(!this->onDone);
+
+        readingBuffer = {};
+        writingBuffer = {};
         this->onDone = onDone;
         this->endIndex = endIndex;
 
@@ -161,6 +188,11 @@ namespace services
 
     void FlashEchoProxyBase::ReadDone(infra::ConstByteRange contents)
     {
+        really_assert(onDone != nullptr);
+        really_assert(readingBuffer.size() > bufferPosition);
+        really_assert(contents.size() <= readingBuffer.size() - bufferPosition);
+        really_assert(writingBuffer.empty());
+
         infra::Copy(contents, infra::Head(infra::DiscardHead(readingBuffer, bufferPosition), contents.size()));
         bufferPosition += contents.size();
 
@@ -174,6 +206,10 @@ namespace services
 
     void FlashEchoProxyBase::WriteDone()
     {
+        really_assert(onDone != nullptr);
+        really_assert(bufferPosition < writingBuffer.size());
+        really_assert(readingBuffer.empty());
+
         bufferPosition += std::min<std::size_t>(writingBuffer.size() - bufferPosition, flash::WriteRequest::contentsSize);
 
         if (bufferPosition == writingBuffer.size())
@@ -186,6 +222,10 @@ namespace services
 
     void FlashEchoProxyBase::EraseSectorsDone()
     {
+        really_assert(onDone != nullptr);
+        really_assert(readingBuffer.empty());
+        really_assert(writingBuffer.empty());
+
         onDone();
         MethodDone();
     }

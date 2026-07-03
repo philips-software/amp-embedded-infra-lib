@@ -27,7 +27,7 @@ namespace services
 
     MATCHER_P(ObjectContentsEqual, x, negation ? "Contents not equal" : "Contents are equal")
     {
-        return x.eventType == arg.eventType && x.addressType == arg.addressType && x.address == arg.address && x.rssi == arg.rssi;
+        return x.reportType == arg.reportType && x.gapAddress == arg.gapAddress && x.rssi == arg.rssi;
     }
 
     TEST_F(GapCentralDecoratorTest, forward_all_state_changed_events_to_observers)
@@ -48,7 +48,12 @@ namespace services
 
     TEST_F(GapCentralDecoratorTest, forward_device_discovered_event_to_observers)
     {
-        GapAdvertisingReport deviceDiscovered{ GapAdvertisingEventType::advInd, GapDeviceAddressType::publicAddress, hal::MacAddress{ 0, 1, 2, 3, 4, 5 }, infra::BoundedVector<uint8_t>::WithMaxSize<GapPeripheral::maxAdvertisementDataSize>{}, -75 };
+        GapAdvertisingReport deviceDiscovered{
+            AdvertisingReportType::advInd,
+            GapAddress{ hal::MacAddress{ 0, 1, 2, 3, 4, 5 }, GapDeviceAddressType::publicAddress },
+            infra::BoundedVector<uint8_t>::WithMaxSize<GapPeripheral::maxAdvertisementDataSize>{},
+            -75
+        };
 
         EXPECT_CALL(gapObserver, DeviceDiscovered(ObjectContentsEqual(deviceDiscovered)));
 
@@ -65,20 +70,14 @@ namespace services
         EXPECT_CALL(gap, Connect(MacAddressContentsEqual(macAddress), services::GapDeviceAddressType::publicAddress, infra::Duration{ 0 }));
         decorator.Connect(macAddress, services::GapDeviceAddressType::publicAddress, std::chrono::seconds(0));
 
-        EXPECT_CALL(gap, CancelConnect());
-        decorator.CancelConnect();
-
-        EXPECT_CALL(gap, Disconnect());
-        decorator.Disconnect();
+        EXPECT_CALL(gap, Standby());
+        decorator.Standby();
 
         EXPECT_CALL(gap, SetIdentityAddress(MacAddressContentsEqual(macAddress), GapDeviceAddressType::publicAddress));
         decorator.SetIdentityAddress(macAddress, GapDeviceAddressType::publicAddress);
 
         EXPECT_CALL(gap, StartDeviceDiscovery());
         decorator.StartDeviceDiscovery();
-
-        EXPECT_CALL(gap, StopDeviceDiscovery());
-        decorator.StopDeviceDiscovery();
 
         hal::MacAddress mac = { 0x00, 0x1A, 0x7D, 0xDA, 0x71, 0x13 };
         EXPECT_CALL(gap, ResolvePrivateAddress(mac)).WillOnce(testing::Return(std::nullopt));
@@ -237,11 +236,11 @@ namespace services
     {
         infra::StringOutputStream::WithStorage<128> stream;
 
-        auto eventTypeAdvInd = services::GapAdvertisingEventType::advInd;
-        auto eventTypeAdvDirectInd = services::GapAdvertisingEventType::advDirectInd;
-        auto eventTypeAdvScanInd = services::GapAdvertisingEventType::advScanInd;
-        auto eventTypeAdvNonconnInd = services::GapAdvertisingEventType::advNonconnInd;
-        auto eventTypeScanResponse = services::GapAdvertisingEventType::scanResponse;
+        auto eventTypeAdvInd = services::AdvertisingReportType::advInd;
+        auto eventTypeAdvDirectInd = services::AdvertisingReportType::advDirectInd;
+        auto eventTypeAdvScanInd = services::AdvertisingReportType::advScanInd;
+        auto eventTypeAdvNonconnInd = services::AdvertisingReportType::advNonconnInd;
+        auto eventTypeScanResponse = services::AdvertisingReportType::scanResponse;
 
         stream << eventTypeAdvInd << " " << eventTypeAdvDirectInd << " " << eventTypeAdvScanInd << " " << eventTypeAdvNonconnInd << " " << eventTypeScanResponse;
 

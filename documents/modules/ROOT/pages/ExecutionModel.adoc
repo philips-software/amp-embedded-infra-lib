@@ -7,12 +7,9 @@ Embedded Infrastructure Library supports various execution models, but the most 
 scheduling blocks of work on an event dispatcher. This is a lightweight way of being able to perform multiple tasks
 in parallel, without needing multiple stacks or synchronization.
 
-The event dispatcher is used by scheduling an action by using its `Schedule()` method. `Schedule()` takes a single argument of
-type `infra::Function<void()>`, and is therefore often used in combination with lambda functions. `Schedule()` does not
-execute its action immediately, but pushes it on a queue for later execution. The event dispatcher is typically constantly
-running on the application's main thread, and executes queued actions one after another. This way, a scheduled action is
-completely finished before the next action is started, so in contrast with running actions in different threads no synchronization
-is needed.
+The event dispatcher queues actions for later execution, typically on the application's main thread, and executes them one
+after another. This way, a scheduled action is completely finished before the next action is started, so in contrast with
+running actions in different threads no synchronization is needed.
 
 An action executed by an event dispatcher should never waste any time; no action should ever sleep, waiting for an external task, such as
 a write towards flash, to finish. Instead, after having started a write towards flash, a new action is scheduled when the write has
@@ -23,20 +20,12 @@ event dispatchers, by either interrupt handlers or by using threads), but multip
 time, with each component making steady progress.
 
 While it is possible to have multiple event dispatchers (when using multiple threads, a specific thread may have its own event
-dispatcher for dedicated tasks), there is one event dispatcher globally available via `infra::EventDispatcher::Instance()`.
-This event dispatcher is used for generic tasks; for example, the `ConfigurationStore` uses the `Flash` interface to read and write
-towards flash; the completion of a read or write action is dispatched on this globally available event dispatcher. A typical
-`main` function will therefore start with declaring an event dispatcher, and end with invoking that event dispatcher's `Run()` method.
+dispatcher for dedicated tasks), applications often also have a general-purpose event dispatcher for generic tasks. For example,
+the `ConfigurationStore` uses the `Flash` interface to read and write towards flash; the completion of a read or write action is
+dispatched on such a general-purpose event dispatcher.
 
-=== Support for `infra::WeakPtr`
-
-Objects that are managed by shared pointers may schedule actions to be executed, but it may happen that that object is destroyed before
-that action is executed. In that case, that action should be discarded instead of being executed. `infra::EventDispatcherWithWeakPtr`
-exists to facilitate this usecase. Next to the typical `Schedule()` function that takes an action as parameter, it supports an
-overload that takes a second parameter: an `infra::WeakPtr<T>` towards the object that schedules the action. That parameter is
-converted to a shared pointer just before executing the action: if this conversion succeeds, the object is still alive, and the action
-is executed with that shared pointer as parameter. If the conversion fails, then the object was already expired, and execution of
-that action is skipped.
+For practical usage guidance, lifetime patterns, and pitfalls around asynchronous scheduling,
+see xref:EventDispatcher.adoc[Event Dispatcher].
 
 == Multi-threaded execution
 

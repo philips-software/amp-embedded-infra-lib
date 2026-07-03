@@ -28,7 +28,7 @@ namespace services
         void CloseAndDestroy() override;
         void AbortAndDestroy() override;
 
-        IPv4Address Ipv4Address() const;
+        IPAddress Address() const;
         void SetObserver(infra::SharedPtr<services::ConnectionObserver> connectionObserver);
         bool Connected() const;
 
@@ -97,7 +97,7 @@ namespace services
         : public infra::IntrusiveList<ListenerWin>::NodeType
     {
     public:
-        ListenerWin(EventDispatcherWithNetwork& network, uint16_t port, services::ServerConnectionObserverFactory& factory);
+        ListenerWin(EventDispatcherWithNetwork& network, uint16_t port, services::ServerConnectionObserverFactory& factory, IPVersions versions);
         ~ListenerWin();
 
         void Accept();
