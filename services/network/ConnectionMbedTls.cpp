@@ -192,16 +192,10 @@ namespace services
                 receiveBuffer.resize(newBufferStart + static_cast<std::size_t>(result));
         }
 
-        if (receiveBuffer.size() != startSize && !dataReceivedScheduled)
+        if (receiveBuffer.size() != startSize && Connection::IsAttached())
         {
-            dataReceivedScheduled = true;
-            infra::EventDispatcherWithWeakPtr::Instance().Schedule([this](const infra::SharedPtr<ConnectionMbedTls>& object)
-                {
-                    object->dataReceivedScheduled = false;
-                    if (!receiveBuffer.empty() && object->Connection::IsAttached())
-                        object->Observer().DataReceived();
-                },
-                SharedFromThis());
+
+            Observer().DataReceived();
         }
     }
 
@@ -260,7 +254,12 @@ namespace services
     void ConnectionMbedTls::AckReceived()
     {
         receiveReader->ConsumeRead();
-        DataReceived();
+
+        infra::EventDispatcherWithWeakPtr::Instance().Schedule([this](const infra::SharedPtr<ConnectionMbedTls>& object)
+            {
+                object->DataReceived();
+            },
+            SharedFromThis());
     }
 
     void ConnectionMbedTls::CloseAndDestroy()

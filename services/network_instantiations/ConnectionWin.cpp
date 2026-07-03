@@ -53,7 +53,10 @@ namespace services
         , socket(socket)
         , streamReader([this]()
               {
-                  keepAliveForReader = nullptr;
+                  auto keepAliveForReaderCopy = std::move(keepAliveForReader);
+
+                  if (closePending)
+                      ProcessDataReceived();
               })
     {
         EnableKeepAlive(socket);
@@ -168,12 +171,17 @@ namespace services
             {
                 receiveBuffer.insert(receiveBuffer.end(), buffer.data(), buffer.data() + received);
 
-                ScheduleDataReceivedIfNeeded();
+                ProcessDataReceived();
             }
             else
             {
+                // Signal to the observer that it is time to finish up, read from the buffer what is needed, and close the reader
+                Observer().Close();
+
                 closePending = true;
-                FinalizeCloseIfReady();
+
+                // Give the observer a chance to read data, and if it does not, close the connection
+                ProcessDataReceived();
                 return;
             }
         }
@@ -232,7 +240,6 @@ namespace services
     {
         if (IsAttached())
             Detach();
-        dataReceivedScheduled = false;
         closePending = false;
         self = nullptr;
     }
@@ -257,44 +264,21 @@ namespace services
         }
     }
 
-    void ConnectionWin::ScheduleDataReceivedIfNeeded()
-    {
-        if (dataReceivedScheduled)
-            return;
-
-        dataReceivedScheduled = true;
-        infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionWin>& object)
-            {
-                object->ProcessDataReceived();
-            },
-            SharedFromThis());
-    }
-
     void ConnectionWin::ProcessDataReceived()
     {
-        auto bufferedBeforeCallback = receiveBuffer.size();
-
-        dataReceivedScheduled = false;
-        if (IsAttached())
+        if (!recursiveStreamReaderRelease)
         {
-            Observer().DataReceived();
-
-            auto bufferedAfterCallback = receiveBuffer.size();
-            if (closePending && bufferedAfterCallback != 0 && bufferedAfterCallback < bufferedBeforeCallback)
+            recursiveStreamReaderRelease = true;
+            readProgress = false;
+            if (IsAttached() && !receiveBuffer.empty())
             {
-                ScheduleDataReceivedIfNeeded();
-                return;
+                Observer().DataReceived();
             }
-        }
 
-        FinalizeCloseIfReady();
-    }
+            recursiveStreamReaderRelease = false;
 
-    void ConnectionWin::FinalizeCloseIfReady()
-    {
-        if (closePending && !dataReceivedScheduled)
-        {
-            CloseAndDestroy();
+            if (closePending && streamReader.Allocatable() && !readProgress)
+                CloseAndDestroy();
         }
     }
 
@@ -313,10 +297,13 @@ namespace services
     ConnectionWin::StreamReaderWin::StreamReaderWin(ConnectionWin& connection)
         : infra::BoundedDequeInputStreamReader(connection.receiveBuffer)
         , connection(connection)
-    {}
+    {
+        connection.readProgress = false;
+    }
 
     void ConnectionWin::StreamReaderWin::ConsumeRead()
     {
+        connection.readProgress = connection.readProgress || ConstructSaveMarker() != 0;
         connection.receiveBuffer.erase(connection.receiveBuffer.begin(), connection.receiveBuffer.begin() + ConstructSaveMarker());
         Rewind(0);
     }

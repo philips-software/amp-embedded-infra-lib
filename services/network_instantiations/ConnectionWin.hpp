@@ -41,9 +41,7 @@ namespace services
         void SetSelfOwnership(const infra::SharedPtr<ConnectionObserver>& observer);
         void ResetOwnership();
         void TryAllocateSendStream();
-        void ScheduleDataReceivedIfNeeded();
         void ProcessDataReceived();
-        void FinalizeCloseIfReady();
 
     private:
         class StreamWriterWin
@@ -85,8 +83,9 @@ namespace services
         infra::NotifyingSharedOptional<StreamReaderWin> streamReader;
         infra::SharedPtr<void> keepAliveForReader;
         bool trySend = false;
-        bool dataReceivedScheduled = false;
         bool closePending = false;
+        bool readProgress = false;
+        bool recursiveStreamReaderRelease = false;
 
         infra::SharedPtr<void> self;
     };
