@@ -53,7 +53,10 @@ namespace services
         , socket(socket)
         , streamReader([this]()
               {
-                  keepAliveForReader = nullptr;
+                  auto keepAliveForReaderCopy = std::move(keepAliveForReader);
+
+                  if (closePending)
+                      ProcessDataReceived();
               })
     {
         EnableKeepAlive(socket);
@@ -62,11 +65,12 @@ namespace services
 
     ConnectionWin::~ConnectionWin()
     {
+        BOOL result = WSACloseEvent(event);
+        assert(result == TRUE);
+
         if (socket != 0)
         {
-            BOOL result = WSACloseEvent(event);
-            assert(result == TRUE);
-            result = closesocket(socket);
+            auto result = closesocket(socket);
             if (result == SOCKET_ERROR)
             {
                 DWORD error = WSAGetLastError();
@@ -106,6 +110,9 @@ namespace services
 
     void ConnectionWin::AbortAndDestroy()
     {
+        if (socket == 0)
+            return;
+
         int result = closesocket(socket);
         assert(result != SOCKET_ERROR);
         socket = 0;
@@ -148,6 +155,9 @@ namespace services
 
     void ConnectionWin::Receive()
     {
+        if (socket == 0)
+            return;
+
         while (!receiveBuffer.full())
         {
             std::array<uint8_t, 2048> buffer;
@@ -162,16 +172,18 @@ namespace services
             {
                 receiveBuffer.insert(receiveBuffer.end(), buffer.data(), buffer.data() + received);
 
-                infra::EventDispatcherWithWeakPtr::Instance().Schedule([](const infra::SharedPtr<ConnectionWin>& object)
-                    {
-                        if (object->IsAttached())
-                            object->Observer().DataReceived();
-                    },
-                    SharedFromThis());
+                ProcessDataReceived();
             }
             else
             {
-                CloseAndDestroy();
+                // Signal to the observer that it is time to finish up, read from the buffer what is needed, and close the reader
+                if (IsAttached())
+                    Observer().Close();
+
+                closePending = true;
+
+                // Give the observer a chance to read data, and if it does not, close the connection
+                ProcessDataReceived();
                 return;
             }
         }
@@ -179,6 +191,9 @@ namespace services
 
     void ConnectionWin::Send()
     {
+        if (socket == 0)
+            return;
+
         int sent = 0;
 
         do
@@ -227,6 +242,7 @@ namespace services
     {
         if (IsAttached())
             Detach();
+        closePending = false;
         self = nullptr;
     }
 
@@ -250,6 +266,24 @@ namespace services
         }
     }
 
+    void ConnectionWin::ProcessDataReceived()
+    {
+        if (!recursiveStreamReaderRelease)
+        {
+            recursiveStreamReaderRelease = true;
+            readProgress = false;
+            if (IsAttached() && !receiveBuffer.empty())
+            {
+                Observer().DataReceived();
+            }
+
+            recursiveStreamReaderRelease = false;
+
+            if (closePending && streamReader.Allocatable() && !readProgress)
+                CloseAndDestroy();
+        }
+    }
+
     ConnectionWin::StreamWriterWin::StreamWriterWin(ConnectionWin& connection, std::size_t size)
         : std::vector<uint8_t>(size, 0)
         , infra::ByteOutputStreamWriter(infra::MakeRange(*this))
@@ -265,10 +299,13 @@ namespace services
     ConnectionWin::StreamReaderWin::StreamReaderWin(ConnectionWin& connection)
         : infra::BoundedDequeInputStreamReader(connection.receiveBuffer)
         , connection(connection)
-    {}
+    {
+        connection.readProgress = false;
+    }
 
     void ConnectionWin::StreamReaderWin::ConsumeRead()
     {
+        connection.readProgress = connection.readProgress || ConstructSaveMarker() != 0;
         connection.receiveBuffer.erase(connection.receiveBuffer.begin(), connection.receiveBuffer.begin() + ConstructSaveMarker());
         Rewind(0);
     }
