@@ -176,7 +176,6 @@ namespace services
             else
             {
                 // Signal to the observer that it is time to finish up, read from the buffer what is needed, and close the reader
-                services::GlobalTracer().Trace() << "==== ConnectionWin::Receive: notifying observer of connection close";
                 if (IsAttached())
                     Observer().Close();
 
