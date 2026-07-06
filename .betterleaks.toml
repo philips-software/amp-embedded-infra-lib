@@ -1,0 +1,13 @@
+title = "amp-embedded-infra-lib betterleaks configuration"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allowlist example keys, test vectors and test certificates that are not real secrets"
+paths = [
+    '''external/crypto/tiny-aes128/TinyAes\.c''',
+    '''services/network/WebSocket\.cpp''',
+    '''services/network/CertificatesMbedTls\.cpp''',
+    '''services/network/test_doubles/Certificates\.cpp''',
+]
