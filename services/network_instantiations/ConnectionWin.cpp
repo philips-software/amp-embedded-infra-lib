@@ -65,11 +65,12 @@ namespace services
 
     ConnectionWin::~ConnectionWin()
     {
+        BOOL result = WSACloseEvent(event);
+        assert(result == TRUE);
+
         if (socket != 0)
         {
-            BOOL result = WSACloseEvent(event);
-            assert(result == TRUE);
-            result = closesocket(socket);
+            auto result = closesocket(socket);
             if (result == SOCKET_ERROR)
             {
                 DWORD error = WSAGetLastError();
