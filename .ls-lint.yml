@@ -8,6 +8,7 @@ ignore:
   - .devcontainer
   - .git
   - .github
+  - .megalinter_github_conf
   - .vscode
   - documents
   - external
