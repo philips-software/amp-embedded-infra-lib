@@ -73,7 +73,7 @@ namespace services
         MOCK_METHOD(void, MethodBytes, (const infra::BoundedVector<uint8_t>&));
 
     protected:
-        infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const services::EchoErrorPolicy& errorPolicy) override;
+        infra::SharedPtr<MethodDeserializer> StartMethodImpl(uint32_t serviceId, uint32_t methodId, uint32_t size, const services::EchoErrorPolicy& errorPolicy) override;
 
     public:
         static const uint32_t serviceId = 1;
