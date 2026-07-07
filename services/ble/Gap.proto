@@ -297,4 +297,6 @@ service GapCentralResponse
     rpc ResolvePrivateAddressFailed(Nothing) returns (Nothing) { option (method_id) = 9; }
     rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 10; }
     rpc OutOfBandDataGenerated(OutOfBandData) returns (Nothing) { option (method_id) = 11; }
+    rpc DisplayPasskey(Passkey) returns (Nothing) { option (method_id) = 12; }
+
 }
