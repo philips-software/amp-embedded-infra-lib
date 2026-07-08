@@ -39,7 +39,7 @@ TEST_F(ServiceForwarderAllTest, forward_message)
                     auto serializer = serviceProxy.GrantSend();
                     EXPECT_FALSE(serializer->Serialize(infra::UnOwnedSharedPtr(writer)));
                 }));
-            auto deserializer = service.StartMethod(1, 5, 5, errorPolicy);
+            auto deserializer = service.HandleMethod(1, 5, 5, errorPolicy);
             deserializer->MethodContents(infra::UnOwnedSharedPtr(inputStream.Reader()));
             deserializer->ExecuteMethod();
         });
@@ -62,7 +62,7 @@ TEST_F(ServiceForwarderAllTest, forward_message_with_limited_readbuffer)
                     auto serializer = serviceProxy.GrantSend();
                     EXPECT_FALSE(serializer->Serialize(infra::UnOwnedSharedPtr(writer)));
                 }));
-            auto deserializer = service.StartMethod(1, 5, 5, errorPolicy);
+            auto deserializer = service.HandleMethod(1, 5, 5, errorPolicy);
             deserializer->MethodContents(infra::UnOwnedSharedPtr(limitedReader));
             deserializer->ExecuteMethod();
         });
@@ -104,7 +104,7 @@ TEST_F(ServiceForwarderAllTest, forward_message_with_limited_writebuffer_account
                 EXPECT_TRUE(serializer->Serialize(infra::UnOwnedSharedPtr(writer)));
             }));
 
-    auto deserializer = forwarder.StartMethod(1, 5, 5, errorPolicy);
+    auto deserializer = forwarder.HandleMethod(1, 5, 5, errorPolicy);
     deserializer->MethodContents(infra::UnOwnedSharedPtr(inputStream.Reader()));
 
     EXPECT_THAT(writer.Storage(), testing::ElementsAre(1, 42, 5, 1, 2, 3));

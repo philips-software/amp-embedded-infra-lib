@@ -1200,7 +1200,7 @@ namespace application
         acceptsService->Parameter("uint32_t id");
         functions->Add(acceptsService);
 
-        auto startMethod = std::make_shared<Function>("StartMethodImpl", StartMethodBody(), "infra::SharedPtr<services::MethodDeserializer>", Function::fOverride);
+        auto startMethod = std::make_shared<Function>("StartMethod", StartMethodBody(), "infra::SharedPtr<services::MethodDeserializer>", Function::fOverride);
         startMethod->Parameter("uint32_t serviceId");
         startMethod->Parameter("uint32_t methodId");
         startMethod->Parameter("uint32_t size");

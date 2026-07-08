@@ -3,17 +3,17 @@
 
 namespace services
 {
+    infra::SharedPtr<MethodDeserializer> Service::HandleMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy)
+    {
+        executingMethod = true;
+        return StartMethod(serviceId, methodId, size, errorPolicy);
+    }
+
     void Service::MethodDone()
     {
         really_assert(executingMethod);
         executingMethod = false;
         Rpc().ServiceDone();
-    }
-
-    infra::SharedPtr<MethodDeserializer> Service::StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy)
-    {
-        executingMethod = true;
-        return StartMethodImpl(serviceId, methodId, size, errorPolicy);
     }
 
     Echo& Service::Rpc()

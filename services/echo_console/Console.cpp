@@ -433,7 +433,7 @@ namespace application
                 {
                     if (service.AcceptsService(serviceId))
                     {
-                        auto methodDeserializer = service.StartMethod(serviceId, methodId, size, services::echoErrorPolicyAbort);
+                        auto methodDeserializer = service.HandleMethod(serviceId, methodId, size, services::echoErrorPolicyAbort);
                         data.Reader().Rewind(partialEnd);
                         infra::SharedOptional<infra::LimitedStreamReaderWithRewinding> reader;
                         methodDeserializer->MethodContents(reader.Emplace(data.Reader(), size));

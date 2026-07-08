@@ -8,7 +8,7 @@ namespace services
         , ServiceProxy(forwardTo, 0)
     {}
 
-    infra::SharedPtr<MethodDeserializer> ServiceForwarderBase::StartMethodImpl(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy)
+    infra::SharedPtr<MethodDeserializer> ServiceForwarderBase::StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy)
     {
         forwardingServiceId = serviceId;
         forwardingMethodId = methodId;

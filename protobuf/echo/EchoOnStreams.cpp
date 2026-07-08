@@ -278,7 +278,7 @@ namespace services
                 {
                     if (service.AcceptsService(serviceId))
                     {
-                        methodDeserializer = StartingMethod(serviceId, methodId, service.StartMethod(serviceId, methodId, size, errorPolicy));
+                        methodDeserializer = StartingMethod(serviceId, methodId, service.HandleMethod(serviceId, methodId, size, errorPolicy));
                         return true;
                     }
 

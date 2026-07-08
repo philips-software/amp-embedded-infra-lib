@@ -21,13 +21,12 @@ namespace services
 
         virtual bool AcceptsService(uint32_t id) const = 0;
 
+        infra::SharedPtr<MethodDeserializer> HandleMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy);
         void MethodDone();
-        infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy);
+        virtual infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy) = 0;
 
     protected:
         Echo& Rpc();
-
-        virtual infra::SharedPtr<MethodDeserializer> StartMethodImpl(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy) = 0;
 
     private:
         bool executingMethod = false;
