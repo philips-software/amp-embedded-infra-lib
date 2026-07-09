@@ -9,7 +9,7 @@ namespace services
         , numberOfSectors(numberOfSectors)
         , masterAddressOfStartSector(master.AddressOfSector(startSector))
     {
-        really_assert(startSector + numberOfSectors <= master.NumberOfSectors());
+        really_assert(startSector <= master.NumberOfSectors() && numberOfSectors <= master.NumberOfSectors() - startSector);
     }
 
     uint32_t SynchronousFlashRegion::NumberOfSectors() const
