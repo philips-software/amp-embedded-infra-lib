@@ -49,7 +49,7 @@ namespace main_
         , EchoOnSesameSecuredSymmetricKey
     {
         WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::SesameSecured::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-            : EchoOnSesameSecuredSymmetricKey(this->cobsSendStorage, this->cobsReceivedMessage, this->windowedReceivedMessage, this->securedSendBuffer, this->securedReceiveBuffer, serialCommunication, serializerFactory, keyMaterial, randomDataGenerator)
+            : EchoOnSesameSecuredSymmetricKey(static_cast<Sesame::CobsStorage<MessageSize, SplitBuffers>&>(*this), this->securedSendBuffer, this->securedReceiveBuffer, serialCommunication, serializerFactory, keyMaterial, randomDataGenerator)
         {}
     };
 
@@ -76,7 +76,7 @@ namespace main_
         , EchoOnSesameSecuredDiffieHellman
     {
         WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-            : EchoOnSesameSecuredDiffieHellman(this->cobsSendStorage, this->cobsReceivedMessage, this->windowedReceivedMessage, this->securedSendBuffer, this->securedReceiveBuffer, serialCommunication, serializerFactory, keyMaterial, randomDataGenerator)
+            : EchoOnSesameSecuredDiffieHellman(static_cast<Sesame::CobsStorage<MessageSize, SplitBuffers>&>(*this), this->securedSendBuffer, this->securedReceiveBuffer, serialCommunication, serializerFactory, keyMaterial, randomDataGenerator)
         {}
     };
 }

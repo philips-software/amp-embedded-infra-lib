@@ -173,6 +173,7 @@ namespace services
         const uint16_t ownBufferSize;
         const uint16_t releaseWindowSize;
         bool initialized = false;
+        bool sentInitResponse = false;
         uint16_t currentReceiveMessageSize;
         std::optional<infra::LimitedStreamReaderWithRewinding::WithInput<infra::BoundedDequeInputStreamReader>> currentReceiveMessageReader;
         infra::AccessedBySharedPtr readerAccess;

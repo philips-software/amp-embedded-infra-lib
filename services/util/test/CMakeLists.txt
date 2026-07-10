@@ -23,6 +23,8 @@ target_sources(services.util_test PRIVATE
     TestCyclicStore.cpp
     TestDebouncedButton.cpp
     TestDebugLed.cpp
+    TestEchoInstantiation.cpp
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestEchoInstantiationSecured.cpp>
     TestEchoOnSesame.cpp
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestEchoPolicyDiffieHellman.cpp>
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestEchoPolicySymmetricKey.cpp>

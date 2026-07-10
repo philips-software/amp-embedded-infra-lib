@@ -85,6 +85,7 @@ namespace services
         assert(currentReceiveMessageReader == std::nullopt);
         assert(!readerAccess.Referenced());
         initialized = false;
+        sentInitResponse = false;
         otherAvailableWindow = 0;
         maxUsableBufferSize = 0;
         releasedWindow = 0;
@@ -144,7 +145,10 @@ namespace services
                 ReceivedInitResponse(otherAvailableWindow);
                 releasedWindow = static_cast<uint16_t>(encodedSize);
                 sesameInitializer.InitInformationReceived(reader);
-                ReceivedInitialize();
+                // When peers sending an init message at the same time, both will respond with an init response.
+                // In that case, the first init response received will already trigger RecevedInitialize()
+                if (!sentInitResponse)
+                    ReceivedInitialize();
                 break;
             case Operation::releaseWindow:
                 if (initialized)
@@ -296,6 +300,7 @@ namespace services
         : State(communication)
     {
         communication.sending = true;
+        communication.sentInitResponse = true;
     }
 
     void SesameWindowed::StateSendingInitResponse::Request()
