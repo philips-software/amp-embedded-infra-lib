@@ -1,0 +1,13 @@
+misconfigurations:
+  - id: DS002
+    statement: The dev container intentionally allows root access.
+
+secrets:
+  - id: private-key
+    paths:
+      - "services/network/CertificatesMbedTls.cpp"
+      - "services/network/test_doubles/Certificates.cpp"
+  - id: generic-api-key
+    paths:
+      - "external/crypto/tiny-aes128/TinyAes.c"
+      - "services/network/WebSocket.cpp"

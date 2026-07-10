@@ -30,3 +30,6 @@ SARIF_REPORTER: true
 PRINT_ALPACA: false
 SHOW_SKIPPED_LINTERS: false
 JSON_JSONLINT_ARGUMENTS: --mode cjson
+REPOSITORY_TRIVY_ARGUMENTS:
+  - "--ignorefile"
+  - ".trivyignore.yaml"
