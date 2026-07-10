@@ -135,7 +135,6 @@ namespace services
 
         infra::SharedOptional<StreamWriterMbedTls> streamWriter;
         std::size_t requestedSendSize = 0;
-        bool dataReceivedScheduled = false;
         bool flushScheduled = false;
         infra::NotifyingSharedOptional<StreamReaderMbedTls> receiveReader;
         infra::SharedPtr<void> keepAliveForReader;

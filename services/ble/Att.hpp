@@ -14,6 +14,8 @@ namespace services
         using Uuid = std::variant<Uuid16, Uuid128>;
 
         using Handle = uint16_t;
+
+        static constexpr auto invalidHandle = Handle{ 0 };
     };
 }
 

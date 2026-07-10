@@ -1,6 +1,7 @@
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/MemoryRange.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 TEST(MemoryRangeTest, TestConstructedEmpty)
@@ -312,6 +313,12 @@ TEST(MemoryRangeTest, TestMakeRangeFromContainer)
     EXPECT_EQ(infra::ByteRange(&container.front(), &container.front() + 3), infra::MakeConstRange(static_cast<const infra::BoundedVector<uint8_t>&>(container)));
 }
 
+TEST(MemoryRangeTest, TestMakeRangeFromInitializerList)
+{
+    std::initializer_list<uint8_t> list{ 2, 3, 4 };
+    EXPECT_THAT(infra::MakeRange(list), testing::ElementsAre(2, 3, 4));
+}
+
 TEST(MemoryRangeTest, TestMakeVectorFromRange)
 {
     std::array<uint8_t, 3> array{ 2, 3, 4 };
@@ -575,6 +582,16 @@ TEST(MemoryRangeTest, ConstexprMakeRange)
         // MakeRangeFromSingleObject(T& object)
         static constexpr int object = 42;
         constexpr auto range = infra::MakeRangeFromSingleObject(object);
+
+        static_assert(!range.empty(), "Range should not be empty");
+        static_assert(range.size() == 1, "Range size should be 1");
+        static_assert(range.front() == 42, "Range front should be 42");
+    }
+
+    {
+        // MakeRange(const std::initializer_list<T>& list)
+        static constexpr std::initializer_list<int> list = { 42 };
+        constexpr auto range = infra::MakeRange(list);
 
         static_assert(!range.empty(), "Range should not be empty");
         static_assert(range.size() == 1, "Range size should be 1");

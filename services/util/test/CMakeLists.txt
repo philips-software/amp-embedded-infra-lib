@@ -23,6 +23,7 @@ target_sources(services.util_test PRIVATE
     TestCyclicStore.cpp
     TestDebouncedButton.cpp
     TestDebugLed.cpp
+    TestDoubleBufferedSerialCommunication.cpp
     TestEchoInstantiation.cpp
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestEchoInstantiationSecured.cpp>
     TestEchoOnSesame.cpp
