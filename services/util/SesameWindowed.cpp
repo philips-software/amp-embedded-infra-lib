@@ -145,7 +145,7 @@ namespace services
                 ReceivedInitResponse(otherAvailableWindow);
                 releasedWindow = static_cast<uint16_t>(encodedSize);
                 sesameInitializer.InitInformationReceived(reader);
-                // When peers sending an init message at the same time, both will respond with an init response.
+                // When peers send an init message at the same time, both will respond with an init response.
                 // In that case, the first init response received will already trigger RecevedInitialize()
                 if (!sentInitResponse)
                     ReceivedInitialize();

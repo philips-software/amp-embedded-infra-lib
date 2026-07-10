@@ -13,7 +13,7 @@
 namespace
 {
     template<std::size_t LeftSize, std::size_t RightSize>
-    class EchoInstantiationSecuredSymmetrickey
+    class EchoInstantiationSecuredSymmetricKey
     {
     public:
         hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
@@ -44,7 +44,7 @@ namespace
 class EchoInstantiationSecuredSymmetricKeyTest
     : public testing::Test
     , public infra::ClockFixture
-    , public EchoInstantiationSecuredSymmetrickey<256, 1024>
+    , public EchoInstantiationSecuredSymmetricKey<256, 1024>
 {};
 
 
