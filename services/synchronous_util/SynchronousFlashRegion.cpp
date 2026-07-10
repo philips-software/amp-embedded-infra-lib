@@ -1,4 +1,5 @@
 #include "services/synchronous_util/SynchronousFlashRegion.hpp"
+#include "infra/util/ReallyAssert.hpp"
 
 namespace services
 {
@@ -8,7 +9,7 @@ namespace services
         , numberOfSectors(numberOfSectors)
         , masterAddressOfStartSector(master.AddressOfSector(startSector))
     {
-        assert(startSector + numberOfSectors <= master.NumberOfSectors());
+        really_assert(startSector <= master.NumberOfSectors() && numberOfSectors <= master.NumberOfSectors() - startSector);
     }
 
     uint32_t SynchronousFlashRegion::NumberOfSectors() const
