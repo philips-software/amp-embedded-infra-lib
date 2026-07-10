@@ -9,3 +9,10 @@ target_include_directories(lwip.lwip_conf INTERFACE
 target_sources(lwip.lwip_conf PRIVATE
     sys_now.cpp
 )
+
+if (EMIL_LWIP_CHECKSUM_IN_SOFTWARE)
+    message(STATUS "Enabling lwIP checksum calculation in software")
+    target_compile_definitions(lwip.lwip_conf INTERFACE
+        LWIP_CHECKSUM_IN_SOFTWARE=1
+    )
+endif()
