@@ -155,10 +155,13 @@ namespace services
             receiveBuffer.resize(receiveBuffer.max_size());
             infra::ByteRange buffer = receiveBuffer.contiguous_range(receiveBuffer.begin() + newBufferStart);
 
+            sslReceiveProvidedData = false;
             int result = mbedtls_ssl_read(&sslContext, buffer.begin(), buffer.size());
             if (result == MBEDTLS_ERR_SSL_WANT_WRITE || result == MBEDTLS_ERR_SSL_WANT_READ)
             {
                 receiveBuffer.resize(newBufferStart);
+                if (result == MBEDTLS_ERR_SSL_WANT_READ && sslReceiveProvidedData)
+                    continue;
                 break;
             }
             else if (result == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY)
@@ -193,10 +196,7 @@ namespace services
         }
 
         if (receiveBuffer.size() != startSize && Connection::IsAttached())
-        {
-
             Observer().DataReceived();
-        }
     }
 
     void ConnectionMbedTls::Attached()
@@ -364,6 +364,7 @@ namespace services
         infra::ConstByteRange streamBuffer = stream.ContiguousRange(buffer.size());
         std::copy(streamBuffer.begin(), streamBuffer.end(), buffer.begin());
         ConnectionObserver::Subject().AckReceived();
+        sslReceiveProvidedData = sslReceiveProvidedData || !streamBuffer.empty();
 
         if (!streamBuffer.empty())
         {
