@@ -1,3 +1,5 @@
+#include "infra/util/BoundedString.hpp"
+#include "infra/util/BoundedVector.hpp"
 #include "infra/util/test_helper/MemoryRangeMatcher.hpp"
 #include "services/ble/Gap.hpp"
 #include "services/ble/test_doubles/GapBondingMock.hpp"
@@ -45,10 +47,20 @@ namespace services
         hal::MacAddress mac = { 0x00, 0x1A, 0x7D, 0xDA, 0x71, 0x13 };
         services::GapDeviceAddressType addressType = services::GapDeviceAddressType::randomAddress;
 
+        EXPECT_CALL(gapBonding, RemoveBondWithAddress(GapAddress{ mac, addressType }));
+        decorator.RemoveBondWithAddress(GapAddress{ mac, addressType });
+
         EXPECT_CALL(gapBonding, IsDeviceBonded(mac, addressType)).WillOnce(testing::Return(true));
         EXPECT_THAT(decorator.IsDeviceBonded(mac, addressType), testing::IsTrue());
 
         EXPECT_CALL(gapBonding, IsDeviceBonded(mac, addressType)).WillOnce(testing::Return(false));
         EXPECT_THAT(decorator.IsDeviceBonded(mac, addressType), testing::IsFalse());
+
+        infra::BoundedVector<services::Bond>::WithMaxSize<2> bonds = {
+            { services::Bond{ { { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66 }, services::GapDeviceAddressType::randomAddress }, "mary" },
+                services::Bond{ { { 0xDE, 0xAD, 0xBE, 0xEF, 0xA5, 0x5A }, services::GapDeviceAddressType::publicAddress }, "pippin" } }
+        };
+        EXPECT_CALL(gapBonding, GetBondList()).WillOnce(testing::Return(infra::MakeRange(bonds)));
+        EXPECT_THAT(decorator.GetBondList(), testing::ElementsAreArray(bonds.begin(), bonds.end()));
     }
 }

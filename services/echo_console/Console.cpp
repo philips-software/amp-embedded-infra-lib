@@ -1,6 +1,7 @@
 #include "services/echo_console/Console.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/stream/StringInputStream.hpp"
+#include "infra/util/LogAndAbort.hpp"
 #include "infra/util/Overloaded.hpp"
 #include "services/tracer/GlobalTracer.hpp"
 #include <cctype>
@@ -492,7 +493,7 @@ namespace application
 
     void Console::CancelRequestSend(services::ServiceProxy& serviceProxy)
     {
-        std::abort();
+        LOG_AND_ABORT_NOT_IMPLEMENTED();
     }
 
     services::MethodSerializerFactory& Console::SerializerFactory()

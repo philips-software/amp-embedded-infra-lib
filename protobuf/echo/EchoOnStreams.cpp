@@ -28,7 +28,31 @@ namespace services
 
     EchoOnStreams::~EchoOnStreams()
     {
-        limitedReaderAccess.SetAction(infra::emptyFunction);
+        Reset();
+    }
+
+    void EchoOnStreams::Reset()
+    {
+        countingSentWriter.OnAllocatable(infra::emptyFunction);
+        ResetReading();
+        really_assert(countingSentWriter.Allocatable());
+        countingSentWriter.OnAllocatable([this]()
+            {
+                StreamWriterDone();
+            });
+
+        while (!sendRequesters.empty())
+            sendRequesters.front().CancelRequestSend();
+
+        if (sendingProxy != nullptr)
+            sendingProxy->CancelRequestSend();
+
+        sendingProxy = nullptr;
+        methodSerializer = nullptr;
+        partlySent = false;
+        skipNextStream = false;
+        delayDataReceived = false;
+        delayedDataReceived = false;
     }
 
     void EchoOnStreams::SetPolicy(EchoPolicy& policy)
@@ -61,7 +85,7 @@ namespace services
             sendRequesters.erase(serviceProxy);
         else
         {
-            assert(&serviceProxy == sendingProxy);
+            really_assert(&serviceProxy == sendingProxy);
             sendingProxy = nullptr;
             skipNextStream = true;
         }
@@ -86,6 +110,10 @@ namespace services
 
     void EchoOnStreams::ReleaseReader()
     {
+        // Ensure that the destruction of bufferedReader does not result in overflowing receiveBuffer
+        while (readerPtr != nullptr && !readerPtr->Empty())
+            readerPtr->ExtractContiguousRange(std::numeric_limits<std::size_t>::max());
+
         limitedReaderAccess.SetAction(infra::emptyFunction);
         bufferedReader.reset();
         readerPtr = nullptr;
@@ -100,7 +128,7 @@ namespace services
             skipNextStream = true;
         }
 
-        ReleaseReader();
+        ResetReading();
         limitedReader.reset();
         ReleaseDeserializer();
     }
@@ -110,13 +138,21 @@ namespace services
         methodDeserializer = nullptr;
     }
 
+    void EchoOnStreams::ResetReading()
+    {
+        ReleaseReader();
+    }
+
     void EchoOnStreams::TryGrantSend()
     {
         if (!skipNextStream && sendingProxy == nullptr && !sendRequesters.empty())
         {
             sendingProxy = &sendRequesters.front();
+            sendingProxySize = sendingProxy->CurrentRequestedSize()                              // payload
+                               + 2 * infra::MaxVarIntSize(std::numeric_limits<uint64_t>::max()); // echo framing overhead (service and method id)
+
             sendRequesters.pop_front();
-            RequestSendStream(sendingProxy->CurrentRequestedSize() + 2 * infra::MaxVarIntSize(std::numeric_limits<uint64_t>::max()));
+            RequestSendStream(sendingProxySize);
         }
     }
 
@@ -145,16 +181,21 @@ namespace services
                 policy->GrantingSend(*sendingProxy);
             }
 
-            partlySent = methodSerializer->Serialize(std::move(writer));
+            really_assert(countingSentWriter.Allocatable());
+            auto countingSentWriterPtr = countingSentWriter.Emplace(std::move(writer), sendingProxySize);
+            partlySent = methodSerializer->Serialize(infra::MakeContainedSharedObject(*countingSentWriterPtr->writer, countingSentWriterPtr));
+        }
+    }
 
-            if (partlySent)
-                RequestSendStream(sendingProxy->CurrentRequestedSize());
-            else
-            {
-                sendingProxy = nullptr;
-                methodSerializer = nullptr;
-                TryGrantSend();
-            }
+    void EchoOnStreams::StreamWriterDone()
+    {
+        if (partlySent)
+            RequestSendStream(sendingProxySize);
+        else
+        {
+            sendingProxy = nullptr;
+            methodSerializer = nullptr;
+            TryGrantSend();
         }
     }
 

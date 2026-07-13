@@ -13,6 +13,22 @@ namespace services
         return serviceId;
     }
 
+    void ServiceTracer::StartIncomingTrace(services::Tracer& tracer) const
+    {
+        tracer.Trace() << "> ";
+    }
+
+    void ServiceTracer::StartOutgoingTrace(services::Tracer& tracer) const
+    {
+        tracer.Trace() << "< ";
+    }
+
+    void ServiceNullTracer::StartIncomingTrace(services::Tracer& tracer) const
+    {}
+
+    void ServiceNullTracer::StartOutgoingTrace(services::Tracer& tracer) const
+    {}
+
     void PrintField(bool value, services::Tracer& tracer)
     {
         tracer.Continue() << (value ? "true" : "false");
@@ -121,7 +137,7 @@ namespace services
             infra::BoundedVectorInputStream stream(readerBuffer, infra::noFail);
             infra::ProtoLengthDelimited contentsCopy(stream, stream.ErrorPolicy(), static_cast<uint32_t>(stream.Available()));
 
-            tracer.Trace() << "> ";
+            receivingService->StartIncomingTrace(tracer);
             receivingService->TraceMethod(receivingMethodId, contentsCopy, tracer);
 
             deserializer->ExecuteMethod();
@@ -138,7 +154,7 @@ namespace services
 
             if (service != nullptr)
             {
-                tracer.Trace() << "< ";
+                service->StartOutgoingTrace(tracer);
                 service->TraceMethod(methodId, contents, tracer);
             }
             else

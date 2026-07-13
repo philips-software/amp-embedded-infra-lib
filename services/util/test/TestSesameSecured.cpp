@@ -1,11 +1,27 @@
 #include "infra/stream/StdVectorInputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
+#include "infra/timer/test_helper/ClockFixture.hpp"
 #include "services/util/SesameSecured.hpp"
 #include "services/util/test_doubles/SesameMock.hpp"
 #include "gmock/gmock.h"
 
+namespace
+{
+    class AesGcmEncryptionMock
+        : public services::AesGcmEncryption
+    {
+    public:
+        MOCK_METHOD(void, EncryptWithKey, (infra::ConstByteRange key), (override));
+        MOCK_METHOD(void, DecryptWithKey, (infra::ConstByteRange key), (override));
+        MOCK_METHOD(void, Start, (infra::ConstByteRange iv), (override));
+        MOCK_METHOD(std::size_t, Update, (infra::ConstByteRange from, infra::ByteRange to), (override));
+        MOCK_METHOD(std::size_t, Finish, (infra::ByteRange to, infra::ByteRange mac), (override));
+    };
+}
+
 class SesameSecuredTest
     : public testing::Test
+    , public infra::ClockFixture
 {
 public:
     SesameSecuredTest()
@@ -171,6 +187,18 @@ TEST_F(SesameSecuredTest, damaged_message_does_not_propagate)
     ReceivedMessage(sentData);
 }
 
+TEST_F(SesameSecuredTest, damaged_message_is_reported_after_1_second)
+{
+    Send("abcd");
+
+    sentData[7] = 7;
+
+    ReceivedMessage(sentData);
+
+    EXPECT_CALL(integrityObserver, IntegrityCheckFailed());
+    ForwardTime(std::chrono::seconds(1));
+}
+
 TEST_F(SesameSecuredTest, truncated_message_followed_by_init_is_not_reported)
 {
     Send("abcd");
@@ -214,4 +242,60 @@ TEST_F(SesameSecuredTest, Reset_is_forwarded)
 {
     EXPECT_CALL(lower, Reset());
     upper.Subject().Reset();
+}
+
+class SesameSecuredStandaloneTest
+    : public testing::Test
+    , public infra::ClockFixture
+{};
+
+TEST_F(SesameSecuredStandaloneTest, received_message_includes_non_zero_finish_output)
+{
+    services::SesameSecured::KeyType key{};
+    services::SesameSecured::IvType iv{};
+    std::array<uint8_t, 5> encryptedPayload{ 'a', 'b', 'q', 'r', 's' };
+    std::array<uint8_t, 3> finishOutput{ 'x', 'y', 'z' };
+    std::array<uint8_t, services::SesameSecured::blockSize> computedMac{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+
+    testing::StrictMock<services::SesameMock> lower;
+    testing::StrictMock<AesGcmEncryptionMock> sendEncryption;
+    testing::StrictMock<AesGcmEncryptionMock> receiveEncryption;
+    infra::BoundedVector<uint8_t>::WithMaxSize<64> sendBuffer;
+    infra::BoundedVector<uint8_t>::WithMaxSize<64> receiveBuffer;
+
+    EXPECT_CALL(sendEncryption, EncryptWithKey(testing::_));
+    EXPECT_CALL(receiveEncryption, DecryptWithKey(testing::_));
+    services::SesameSecured secured(sendEncryption, receiveEncryption, sendBuffer, receiveBuffer, lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv });
+    testing::StrictMock<services::SesameObserverMock> upper{ secured };
+
+    EXPECT_CALL(receiveEncryption, Start(testing::_));
+    EXPECT_CALL(receiveEncryption, Update(testing::_, testing::_)).WillOnce(testing::Invoke([](infra::ConstByteRange from, infra::ByteRange to)
+        {
+            const auto producedByUpdate = 2U;
+            infra::Copy(infra::Head(from, producedByUpdate), infra::Head(to, producedByUpdate));
+            return producedByUpdate;
+        }));
+    EXPECT_CALL(receiveEncryption, Finish(testing::_, testing::_)).WillOnce(testing::Invoke([&](infra::ByteRange to, infra::ByteRange mac)
+        {
+            EXPECT_EQ(to.size(), finishOutput.size());
+            EXPECT_EQ(computedMac.size(), mac.size());
+            infra::Copy(infra::MakeRange(finishOutput), to);
+            infra::Copy(infra::MakeRange(computedMac), mac);
+            return finishOutput.size();
+        }));
+
+    EXPECT_CALL(upper, ReceivedMessage(testing::_)).WillOnce(testing::Invoke([](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+        {
+            infra::TextInputStream::WithErrorPolicy stream(*reader);
+            EXPECT_EQ(5, stream.Available());
+            infra::BoundedString::WithStorage<8> s;
+            s.resize(stream.Available());
+            stream >> s;
+            EXPECT_EQ("abxyz", s);
+        }));
+
+    std::vector<uint8_t> encodedMessage(encryptedPayload.begin(), encryptedPayload.end());
+    encodedMessage.insert(encodedMessage.end(), computedMac.begin(), computedMac.end());
+    infra::SharedOptional<infra::StdVectorInputStreamReader> reader;
+    lower.GetObserver().ReceivedMessage(reader.Emplace(encodedMessage));
 }

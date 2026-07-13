@@ -10,7 +10,10 @@ namespace services
         : public SesameWindowed
     {
     public:
-        TracingSesameWindowed(SesameEncoded& delegate, Tracer& tracer);
+        template<std::size_t MaxMessageSize>
+        using WithStorage = infra::WithStorage<TracingSesameWindowed, infra::BoundedDeque<uint8_t>::WithMaxSize<MaxMessageSize>>;
+
+        TracingSesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, SesameEncoded& delegate, Tracer& tracer);
 
     protected:
         void ReceivedInit(uint16_t newWindow) override;

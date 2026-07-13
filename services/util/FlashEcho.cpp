@@ -1,5 +1,6 @@
 #include "services/util/FlashEcho.hpp"
-#include <utility>
+#include "infra/util/ReallyAssert.hpp"
+#include <algorithm>
 
 namespace services
 {
@@ -13,99 +14,116 @@ namespace services
     {
         onStopped = onDone;
 
-        if (!busy)
+        if (!busyWithFlash)
             onStopped();
     }
 
     void FlashEcho::Read(uint32_t address, uint32_t size)
     {
-        busy = true;
+        really_assert(!busyWithFlash && !busyWithResponse);
+        busyWithFlash = true;
 
         flash.ReadBuffer(infra::Head(infra::MakeRange(buffer), size), address, [this, size]()
             {
+                busyWithFlash = false;
+
                 if (onStopped)
-                {
-                    busy = false;
                     onStopped();
-                }
                 else
+                {
+                    busyWithResponse = true;
                     flashResult.RequestSend([this, size]()
                         {
-                            busy = false;
+                            busyWithResponse = false;
+
                             flashResult.ReadDone(infra::Head(infra::MakeRange(buffer), size));
                             MethodDone();
 
                             if (onStopped)
                                 onStopped();
                         });
+                }
             });
     }
 
     void FlashEcho::Write(uint32_t address, infra::ConstByteRange contents)
     {
-        busy = true;
+        really_assert(!busyWithFlash && !busyWithResponse);
+        busyWithFlash = true;
 
         flash.WriteBuffer(contents, address, [this]()
             {
+                busyWithFlash = false;
+
                 if (onStopped)
-                {
-                    busy = false;
                     onStopped();
-                }
                 else
+                {
+                    busyWithResponse = true;
                     flashResult.RequestSend([this]()
                         {
-                            busy = false;
+                            busyWithResponse = false;
                             flashResult.WriteDone();
                             MethodDone();
 
                             if (onStopped)
                                 onStopped();
                         });
+                }
             });
     }
 
     void FlashEcho::EraseSectors(uint32_t sector, uint32_t numberOfSectors)
     {
-        busy = true;
+        really_assert(!busyWithFlash && !busyWithResponse);
+        busyWithFlash = true;
 
         flash.EraseSectors(sector, sector + numberOfSectors, [this]()
             {
+                busyWithFlash = false;
                 if (onStopped)
-                {
-                    busy = false;
                     onStopped();
-                }
                 else
+                {
+                    busyWithResponse = true;
                     flashResult.RequestSend([this]()
                         {
-                            busy = false;
+                            busyWithResponse = false;
                             flashResult.EraseSectorsDone();
                             MethodDone();
 
                             if (onStopped)
                                 onStopped();
                         });
+                }
             });
     }
 
-    FlashEchoProxy::FlashEchoProxy(services::Echo& echo, infra::MemoryRange<const uint32_t> sectorSizes)
+    FlashEchoProxyBase::FlashEchoProxyBase(services::Echo& echo, infra::MemoryRange<const uint32_t> sectorSizes)
         : flash::FlashResult(echo)
         , sectorSizes(sectorSizes)
         , proxy(echo)
     {}
 
-    uint32_t FlashEchoProxy::NumberOfSectors() const
+    FlashEchoProxy::FlashEchoProxy(services::Echo& echo, infra::MemoryRange<const uint32_t> sectorSizes)
+        : FlashEchoProxyBase(echo, sectorSizes)
+    {}
+
+    FlashEchoSequentialProxy::FlashEchoSequentialProxy(services::Echo& echo, infra::MemoryRange<const uint32_t> sectorSizes)
+        : FlashEchoProxyBase(echo, sectorSizes)
+    {}
+
+    uint32_t FlashEchoProxyBase::NumberOfSectors() const
     {
         return sectorSizes.size();
     }
 
-    uint32_t FlashEchoProxy::SizeOfSector(uint32_t sectorIndex) const
+    uint32_t FlashEchoProxyBase::SizeOfSector(uint32_t sectorIndex) const
     {
         return sectorSizes[sectorIndex];
     }
 
-    uint32_t FlashEchoProxy::SectorOfAddress(uint32_t address) const
+    uint32_t FlashEchoProxyBase::SectorOfAddress(uint32_t address) const
     {
         uint32_t totalSize = 0;
         for (uint32_t sector = 0; sector != sectorSizes.size(); ++sector)
@@ -119,7 +137,7 @@ namespace services
         return sectorSizes.size();
     }
 
-    uint32_t FlashEchoProxy::AddressOfSector(uint32_t sectorIndex) const
+    uint32_t FlashEchoProxyBase::AddressOfSector(uint32_t sectorIndex) const
     {
         uint32_t address = 0;
         for (uint32_t sector = 0; sector != sectorIndex; ++sector)
@@ -127,33 +145,38 @@ namespace services
         return address;
     }
 
-    void FlashEchoProxy::WriteBuffer(infra::ConstByteRange buffer, uint32_t address, infra::Function<void()> onDone)
+    void FlashEchoProxyBase::WriteBuffer(infra::ConstByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
+        really_assert(!this->onDone);
+
+        bufferPosition = 0;
+        readingBuffer = {};
         writingBuffer = buffer;
         this->onDone = onDone;
+        this->address = address;
 
-        if (!writingBuffer.empty())
-        {
-            proxy.RequestSend([this, address]()
-                {
-                    ++transferBuffers;
-                    auto size = std::min<std::size_t>(writingBuffer.size(), flash::WriteRequest::contentsSize);
-                    proxy.Write(address, infra::Head(writingBuffer, size));
-                    WriteBuffer(infra::DiscardHead(writingBuffer, size), address + size, this->onDone.Clone());
-                });
-        }
+        WritePartialBuffer(address, 0);
     }
 
-    void FlashEchoProxy::ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
+    void FlashEchoProxyBase::ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
+        really_assert(!this->onDone);
+
+        bufferPosition = 0;
+        this->address = address;
+        writingBuffer = {};
         readingBuffer = buffer;
         this->onDone = onDone;
 
         ReadPartialBuffer(address, 0);
     }
 
-    void FlashEchoProxy::EraseSectors(uint32_t beginIndex, uint32_t endIndex, infra::Function<void()> onDone)
+    void FlashEchoProxyBase::EraseSectors(uint32_t beginIndex, uint32_t endIndex, infra::Function<void()> onDone)
     {
+        really_assert(!this->onDone);
+
+        readingBuffer = {};
+        writingBuffer = {};
         this->onDone = onDone;
         this->endIndex = endIndex;
 
@@ -163,72 +186,141 @@ namespace services
             });
     }
 
-    void FlashEchoProxy::ReadDone(infra::ConstByteRange contents)
+    void FlashEchoProxyBase::ReadDone(infra::ConstByteRange contents)
     {
-        infra::Copy(contents, infra::Head(readingBuffer, contents.size()));
-        readingBuffer = infra::DiscardHead(readingBuffer, contents.size());
+        really_assert(onDone != nullptr);
+        really_assert(readingBuffer.size() > bufferPosition);
+        really_assert(contents.size() <= readingBuffer.size() - bufferPosition);
+        really_assert(writingBuffer.empty());
 
-        --transferBuffers;
-        if (transferBuffers == 0 && readingBuffer.empty())
+        infra::Copy(contents, infra::Head(infra::DiscardHead(readingBuffer, bufferPosition), contents.size()));
+        bufferPosition += contents.size();
+
+        if (bufferPosition == readingBuffer.size())
             onDone();
+        else
+            OnReadIncomplete(address, bufferPosition);
 
         MethodDone();
     }
 
-    void FlashEchoProxy::WriteDone()
+    void FlashEchoProxyBase::WriteDone()
     {
-        --transferBuffers;
+        really_assert(onDone != nullptr);
+        really_assert(bufferPosition < writingBuffer.size());
+        really_assert(readingBuffer.empty());
 
-        if (transferBuffers == 0 && writingBuffer.empty())
+        bufferPosition += std::min<std::size_t>(writingBuffer.size() - bufferPosition, flash::WriteRequest::contentsSize);
+
+        if (bufferPosition == writingBuffer.size())
             onDone();
+        else
+            OnWriteIncomplete(address, bufferPosition);
 
         MethodDone();
     }
 
-    void FlashEchoProxy::EraseSectorsDone()
+    void FlashEchoProxyBase::EraseSectorsDone()
     {
+        really_assert(onDone != nullptr);
+        really_assert(readingBuffer.empty());
+        really_assert(writingBuffer.empty());
+
         onDone();
         MethodDone();
     }
 
-    void FlashEchoProxy::ReadPartialBuffer(uint32_t address, uint32_t start)
+    void FlashEchoProxyBase::OnReadIncomplete([[maybe_unused]] uint32_t address, [[maybe_unused]] uint32_t bufferPosition)
+    {}
+
+    void FlashEchoProxyBase::OnWriteIncomplete([[maybe_unused]] uint32_t address, [[maybe_unused]] uint32_t bufferPosition)
+    {}
+
+    void FlashEchoProxyBase::OnReadChunkSent([[maybe_unused]] uint32_t address, [[maybe_unused]] uint32_t nextStart)
+    {}
+
+    void FlashEchoProxyBase::OnWriteChunkSent([[maybe_unused]] uint32_t address, [[maybe_unused]] uint32_t nextStart)
+    {}
+
+    void FlashEchoProxyBase::ReadPartialBuffer(uint32_t address, uint32_t start)
     {
         if (readingBuffer.size() > start)
         {
             this->start = start;
             proxy.RequestSend([this, address]()
                 {
-                    ++transferBuffers;
                     auto size = std::min<uint32_t>(readingBuffer.size() - this->start, flash::WriteRequest::contentsSize);
                     proxy.Read(address + this->start, size);
-                    ReadPartialBuffer(address, this->start + size);
+                    OnReadChunkSent(address, this->start + size);
                 });
         }
     }
 
-    FlashEchoHomogeneousProxy::FlashEchoHomogeneousProxy(services::Echo& echo, uint32_t numberOfSectors, uint32_t sizeOfEachSector)
-        : FlashEchoProxy(echo, {})
+    void FlashEchoProxyBase::WritePartialBuffer(uint32_t address, uint32_t start)
+    {
+        if (writingBuffer.size() > start)
+        {
+            this->start = start;
+            proxy.RequestSend([this, address]()
+                {
+                    auto size = std::min<uint32_t>(writingBuffer.size() - this->start, flash::WriteRequest::contentsSize);
+                    proxy.Write(address + this->start, infra::Head(infra::DiscardHead(writingBuffer, this->start), size));
+                    OnWriteChunkSent(address, this->start + size);
+                });
+        }
+    }
+
+    void FlashEchoProxy::OnReadChunkSent(uint32_t address, uint32_t nextStart)
+    {
+        ReadPartialBuffer(address, nextStart);
+    }
+
+    void FlashEchoProxy::OnWriteChunkSent(uint32_t address, uint32_t nextStart)
+    {
+        WritePartialBuffer(address, nextStart);
+    }
+
+    void FlashEchoSequentialProxy::OnReadIncomplete(uint32_t address, uint32_t nextStart)
+    {
+        ReadPartialBuffer(address, nextStart);
+    }
+
+    void FlashEchoSequentialProxy::OnWriteIncomplete(uint32_t address, uint32_t nextStart)
+    {
+        WritePartialBuffer(address, nextStart);
+    }
+
+    template<class T>
+    FlashEchoHomogeneousProxyBase<T>::FlashEchoHomogeneousProxyBase(services::Echo& echo, uint32_t numberOfSectors, uint32_t sizeOfEachSector)
+        : T(echo, infra::MemoryRange<const uint32_t>{})
         , numberOfSectors(numberOfSectors)
         , sizeOfEachSector(sizeOfEachSector)
     {}
 
-    uint32_t FlashEchoHomogeneousProxy::NumberOfSectors() const
+    template<class T>
+    uint32_t FlashEchoHomogeneousProxyBase<T>::NumberOfSectors() const
     {
         return numberOfSectors;
     }
 
-    uint32_t FlashEchoHomogeneousProxy::SizeOfSector(uint32_t sectorIndex) const
+    template<class T>
+    uint32_t FlashEchoHomogeneousProxyBase<T>::SizeOfSector(uint32_t sectorIndex) const
     {
         return sizeOfEachSector;
     }
 
-    uint32_t FlashEchoHomogeneousProxy::SectorOfAddress(uint32_t address) const
+    template<class T>
+    uint32_t FlashEchoHomogeneousProxyBase<T>::SectorOfAddress(uint32_t address) const
     {
         return address / sizeOfEachSector;
     }
 
-    uint32_t FlashEchoHomogeneousProxy::AddressOfSector(uint32_t sectorIndex) const
+    template<class T>
+    uint32_t FlashEchoHomogeneousProxyBase<T>::AddressOfSector(uint32_t sectorIndex) const
     {
         return sectorIndex * sizeOfEachSector;
     }
+
+    template class FlashEchoHomogeneousProxyBase<FlashEchoProxy>;
+    template class FlashEchoHomogeneousProxyBase<FlashEchoSequentialProxy>;
 }

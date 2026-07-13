@@ -1,0 +1,23 @@
+= ClaimableResource
+:source-highlighter: highlight.js
+
+== Introduction
+
+`infra::ClaimableResource` queues claimers until the resource can be granted.
+This is useful for serialized access, but it introduces ordering and lifetime subtleties.
+
+For broader dispatcher usage and lifetime patterns, see xref:EventDispatcher.adoc[Event Dispatcher].
+
+== Common pitfalls
+
+1. Do not assume a fixed timing model for `Claim()`. A claim can be granted very soon (next dispatcher turn) or later,
+depending on current ownership and queue state.
+2. Do not assume there are no scheduled claim-related callbacks after releasing interest.
+3. Do not destroy objects while it is still possible that claim handling is queued.
+
+== Recommended solutions
+
+1. Design claim callbacks so they are safe regardless of whether execution is effectively immediate or delayed.
+2. Explicitly release claimers during shutdown.
+3. If it is not certain that no claim-related work is scheduled anymore, implement an asynchronous stop phase with
+`services::Stoppable` and wait for stop completion before destruction.

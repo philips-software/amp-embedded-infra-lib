@@ -12,7 +12,7 @@
 
 #define INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED 1
 #if defined(EMIL_HOST_BUILD)
-// For host builds, always log filenames upon abort
+// For host builds, provide the compiler-provided file path upon abort
 #define EMIL_ENABLE_LOGGING_FILE_UPON_ABORT
 #endif
 
@@ -20,18 +20,21 @@
 #define INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED 0
 #endif
 
-#if EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT
+#if defined(EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT)
 #ifndef __FILE_NAME__
 // Only available in some compilers, for example GCC 12 or later
 #error "__FILE_NAME__ must be available when EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT is set"
 #endif
 #define INFRA_UTIL_REALLY_ASSERT_TRIGGER_FILE_NAME __FILE_NAME__
 
-#else
+#elif defined(EMIL_ENABLE_LOGGING_FILE_UPON_ABORT)
 #define INFRA_UTIL_REALLY_ASSERT_TRIGGER_FILE_NAME __FILE__
+
+#else
+#define INFRA_UTIL_REALLY_ASSERT_TRIGGER_FILE_NAME nullptr
 #endif // EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT
 
-#if INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED
+#if defined(INFRA_UTIL_REALLY_ASSERT_LOGGING_ENABLED)
 namespace infra
 {
     using AssertionFailureHandler = infra::Function<void(const char* condition, const char* file, int line)>;

@@ -7,3 +7,4 @@ megalinter-reports/
 out/
 reports/
 CMakeSettings.json
+Testing/

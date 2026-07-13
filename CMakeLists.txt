@@ -7,7 +7,7 @@ if (APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum OS X deployment version")
 endif()
 
-project(emil LANGUAGES C CXX VERSION 8.0.0) # x-release-please-version
+project(emil LANGUAGES C CXX VERSION 9.1.0) # x-release-please-version
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
@@ -112,6 +112,7 @@ option(EMIL_INCLUDE_FREERTOS "Include FreeRTOS as part of EmIL" Off)
 option(EMIL_INCLUDE_THREADX "Include ThreadX as part of EmIL (Incomplete, experimental)" Off)
 option(EMIL_INCLUDE_SEGGER_RTT "Include support for Segger RTT" Off)
 set(EMIL_EXTERNAL_LWIP_TARGET "" CACHE STRING "Specify an external LWIP target")
+option(EMIL_LWIP_CHECKSUM_IN_SOFTWARE "Enable lwIP checksum calculation in software" Off)
 
 if (EMIL_ENABLE_DOCKER_TOOLS)
     emil_enable_docker_tools()

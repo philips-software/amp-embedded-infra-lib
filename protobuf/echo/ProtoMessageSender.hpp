@@ -9,24 +9,27 @@
 
 namespace services
 {
+    static constexpr std::size_t serializationStepExtraSize = 4 * sizeof(void*);
+    using FieldSerializationStep = infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy), serializationStepExtraSize>;
+
     class ProtoMessageSenderBase
     {
     public:
-        explicit ProtoMessageSenderBase(infra::BoundedVector<std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter), 3 * sizeof(uint8_t*)>>>& stack);
+        explicit ProtoMessageSenderBase(infra::BoundedVector<std::pair<uint32_t, FieldSerializationStep>>& stack);
 
         void Fill(infra::DataOutputStream output);
         bool BufferEmpty() const;
 
     protected:
         template<class Message>
-        bool FillForMessage(infra::DataOutputStream& stream, const Message& message, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter) const;
+        bool FillForMessage(infra::DataOutputStream& stream, const Message& message, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy) const;
 
     private:
         template<class Message, std::size_t... I>
-        bool SerializeFields(infra::ProtoFormatter& formatter, const Message& message, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, std::index_sequence<I...>) const;
+        bool SerializeFields(infra::ProtoFormatter& formatter, const Message& message, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy, std::index_sequence<I...>) const;
 
         template<std::size_t I, class Message>
-        bool SerializeSingleField(infra::ProtoFormatter& formatter, const Message& message, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter) const;
+        bool SerializeSingleField(infra::ProtoFormatter& formatter, const Message& message, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy) const;
 
         bool SerializeField(ProtoBool, infra::ProtoFormatter& formatter, bool value, uint32_t fieldNumber, const bool& retry) const;
         bool SerializeField(ProtoUInt32, infra::ProtoFormatter& formatter, uint32_t value, uint32_t fieldNumber, const bool& retry) const;
@@ -54,7 +57,7 @@ namespace services
 
     private:
         infra::BoundedDeque<uint8_t>::WithMaxSize<32> buffer;
-        infra::BoundedVector<std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter), 3 * sizeof(uint8_t*)>>>& stack;
+        infra::BoundedVector<std::pair<uint32_t, FieldSerializationStep>>& stack;
     };
 
     template<class Message>
@@ -66,33 +69,36 @@ namespace services
 
     private:
         const Message& message;
-        infra::BoundedVector<std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter), 3 * sizeof(uint8_t*)>>>::WithMaxSize<MessageDepth<services::ProtoMessage<Message>>::value + 1> stack{ { std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter), 3 * sizeof(uint8_t*)>>{ 0, [this](infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter)
+        infra::BoundedVector<std::pair<uint32_t, FieldSerializationStep>>::WithMaxSize<MessageDepth<services::ProtoMessage<Message>>::value + 1> stack{ { std::pair<uint32_t, FieldSerializationStep>{ 0, [this](infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy)
             {
-                return FillForMessage(stream, message, index, retry, finalWriter);
+                return FillForMessage(stream, message, index, retry, finalWriter, errorPolicy);
             } } } };
     };
 
     //// Implementation ////
 
     template<class Message>
-    bool ProtoMessageSenderBase::FillForMessage(infra::DataOutputStream& stream, const Message& message, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter) const
+    bool ProtoMessageSenderBase::FillForMessage(infra::DataOutputStream& stream, const Message& message, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy) const
     {
         infra::ProtoFormatter formatter{ stream };
 
-        return SerializeFields(formatter, message, index, retry, finalWriter, std::make_index_sequence<Message::numberOfFields>{});
+        return SerializeFields(formatter, message, index, retry, finalWriter, errorPolicy, std::make_index_sequence<Message::numberOfFields>{});
     }
 
     template<class Message, std::size_t... I>
-    bool ProtoMessageSenderBase::SerializeFields(infra::ProtoFormatter& formatter, const Message& message, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, std::index_sequence<I...>) const
+    bool ProtoMessageSenderBase::SerializeFields(infra::ProtoFormatter& formatter, const Message& message, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy, std::index_sequence<I...>) const
     {
-        return (SerializeSingleField<I>(formatter, message, index, retry, finalWriter) && ...);
+        return (SerializeSingleField<I>(formatter, message, index, retry, finalWriter, errorPolicy) && ...);
     }
 
     template<std::size_t I, class Message>
-    bool ProtoMessageSenderBase::SerializeSingleField(infra::ProtoFormatter& formatter, const Message& message, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter) const
+    bool ProtoMessageSenderBase::SerializeSingleField(infra::ProtoFormatter& formatter, const Message& message, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy) const
     {
         if (finalWriter.Available() == 0)
+        {
+            errorPolicy.ReportResult(false);
             return false;
+        }
 
         if (index == I)
         {
@@ -122,9 +128,9 @@ namespace services
         value.Serialize(countingFormatter);
         formatter.PutLengthDelimitedSize(countingStream.Writer().Processed(), fieldNumber);
 
-        stack.emplace_back(0, [this, &value](infra::DataOutputStream& stream, uint32_t& index, bool& retry2, const infra::StreamWriter& finalWriter)
+        stack.emplace_back(0, [this, &value](infra::DataOutputStream& stream, uint32_t& index, bool& retry2, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy)
             {
-                return FillForMessage(stream, value, index, retry2, finalWriter);
+                return FillForMessage(stream, value, index, retry2, finalWriter, errorPolicy);
             });
 
         retry = true;
@@ -134,15 +140,27 @@ namespace services
     template<class ProtoType, class Type>
     bool ProtoMessageSenderBase::SerializeField(ProtoRepeatedBase<ProtoType>, const infra::ProtoFormatter&, const infra::BoundedVector<Type>& value, uint32_t fieldNumber, bool& retry) const
     {
-        stack.emplace_back(0, [this, &value, fieldNumber](infra::DataOutputStream& stream, uint32_t& index, const bool&, const infra::StreamWriter& finalWriter)
+        stack.emplace_back(0, [this, &value, fieldNumber, &retry](infra::DataOutputStream& stream, uint32_t& index, const bool&, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy)
             {
                 infra::ProtoFormatter formatter{ stream };
 
                 for (; index != value.size(); ++index)
                 {
                     if (finalWriter.Available() == 0)
+                    {
+                        errorPolicy.ReportResult(false);
                         return false;
-                    services::SerializeField(ProtoType(), formatter, value[index], fieldNumber);
+                    }
+
+                    auto size = stack.size();
+                    auto result = SerializeField(ProtoType(), formatter, value[index], fieldNumber, retry);
+                    if (size != stack.size())
+                    {
+                        // A nested message was added to the stack, so we need to stop processing the current message until it has been fully sent
+                        ++index;
+                        retry = retry && result;
+                        return false;
+                    }
                 }
 
                 return true;
@@ -155,15 +173,27 @@ namespace services
     template<class ProtoType, class Type>
     bool ProtoMessageSenderBase::SerializeField(ProtoUnboundedRepeated<ProtoType>, const infra::ProtoFormatter&, const std::vector<Type>& value, uint32_t fieldNumber, bool& retry) const
     {
-        stack.emplace_back(0, [this, &value, fieldNumber](infra::DataOutputStream& stream, uint32_t& index, const bool&, const infra::StreamWriter& finalWriter)
+        stack.emplace_back(0, [this, &value, fieldNumber, &retry](infra::DataOutputStream& stream, uint32_t& index, const bool&, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy)
             {
                 infra::ProtoFormatter formatter{ stream };
 
                 for (; index != value.size(); ++index)
                 {
                     if (finalWriter.Available() == 0)
+                    {
+                        errorPolicy.ReportResult(false);
                         return false;
-                    services::SerializeField(ProtoType(), formatter, value[index], fieldNumber);
+                    }
+
+                    auto size = stack.size();
+                    auto result = SerializeField(ProtoType(), formatter, value[index], fieldNumber, retry);
+                    if (size != stack.size())
+                    {
+                        // A nested message was added to the stack, so we need to stop processing the current message until it has been fully sent
+                        ++index;
+                        retry = retry && result;
+                        return false;
+                    }
                 }
 
                 return true;

@@ -49,30 +49,32 @@ public:
         onSent();
     }
 
-    void ExpectReceivedMessage(const std::vector<uint8_t>& expected, std::size_t encodedSize)
+    void ExpectReceivedMessage(const std::vector<uint8_t>& expected, std::size_t encodedSize, bool returnEmptyReader = true)
     {
-        EXPECT_CALL(observer, ReceivedMessage(testing::_, encodedSize)).WillOnce(testing::Invoke([this, expected](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, uint16_t encodedSize)
+        EXPECT_CALL(observer, ReceivedMessage(testing::_, encodedSize)).WillOnce(testing::Invoke([this, expected, returnEmptyReader](infra::StreamReaderWithRewinding& reader, uint16_t encodedSize)
             {
-                infra::DataInputStream::WithErrorPolicy stream(*reader);
+                infra::DataInputStream::WithErrorPolicy stream(reader);
                 std::vector<uint8_t> data(stream.Available(), 0);
                 stream >> infra::MakeRange(data);
 
                 EXPECT_EQ(expected, data);
-                EXPECT_CALL(serial, Reader()).WillOnce(testing::ReturnRef(emptyReader)).RetiresOnSaturation();
+                if (returnEmptyReader)
+                    EXPECT_CALL(serial, Reader()).WillOnce(testing::ReturnRef(emptyReader)).RetiresOnSaturation();
             }));
     }
 
-    void ExpectReceivedMessageKeepReader(const std::vector<uint8_t>& expected, std::size_t encodedSize)
+    void ExpectReceivedMessageAndSendReset(const std::vector<uint8_t>& expected, std::size_t encodedSize)
     {
-        EXPECT_CALL(observer, ReceivedMessage(testing::_, encodedSize)).WillOnce(testing::Invoke([this, expected](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, uint16_t encodedSize)
+        EXPECT_CALL(observer, ReceivedMessage(testing::_, encodedSize)).WillOnce(testing::Invoke([this, expected](infra::StreamReaderWithRewinding& reader, uint16_t encodedSize)
             {
-                infra::DataInputStream::WithErrorPolicy stream(*reader);
+                infra::DataInputStream::WithErrorPolicy stream(reader);
                 std::vector<uint8_t> data(stream.Available(), 0);
                 stream >> infra::MakeRange(data);
 
                 EXPECT_EQ(expected, data);
 
-                this->reader = std::move(reader);
+                communication.Reset();
+                EXPECT_CALL(serial, Reader()).WillOnce(testing::ReturnRef(emptyReader)).RetiresOnSaturation();
             }));
     }
 
@@ -99,7 +101,6 @@ public:
     infra::StdVectorInputStreamReader::WithStorage receivedDataReader;
     infra::StdVectorInputStreamReader::WithStorage emptyReader;
     infra::SharedPtr<infra::StreamWriter> writer;
-    infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
 };
 
 TEST_F(SesameCobsTest, MaxSendMessageSize)
@@ -107,11 +108,26 @@ TEST_F(SesameCobsTest, MaxSendMessageSize)
     EXPECT_EQ(277, communication.MaxSendMessageSize());
 }
 
+TEST_F(SesameCobsTest, WorstCaseEncodedMessageSize)
+{
+    EXPECT_EQ(2, communication.WorstCaseEncodedMessageSize(0));
+    EXPECT_EQ(255, communication.WorstCaseEncodedMessageSize(253));
+    EXPECT_EQ(257, communication.WorstCaseEncodedMessageSize(254));
+}
+
+TEST_F(SesameCobsTest, WorstCaseDecodedMessageSize)
+{
+    EXPECT_EQ(0, communication.WorstCaseDecodedMessageSize(2));
+    EXPECT_EQ(253, communication.WorstCaseDecodedMessageSize(255));
+    EXPECT_EQ(254, communication.WorstCaseDecodedMessageSize(257));
+}
+
 TEST_F(SesameCobsTest, MessageSize)
 {
-    EXPECT_EQ(2, communication.MessageSize(0));
-    EXPECT_EQ(255, communication.MessageSize(253));
-    EXPECT_EQ(257, communication.MessageSize(254));
+    EXPECT_EQ(2, communication.MessageSize(infra::StdVectorInputStreamReader::WithStorage{}));
+    EXPECT_EQ(255, communication.MessageSize(infra::StdVectorInputStreamReader::WithStorage{ std::in_place, std::vector<uint8_t>(253, 1) }));
+    EXPECT_EQ(257, communication.MessageSize(infra::StdVectorInputStreamReader::WithStorage{ std::in_place, std::vector<uint8_t>(254, 1) })); // Overhead byte needs to be inserted
+    EXPECT_EQ(256, communication.MessageSize(infra::StdVectorInputStreamReader::WithStorage{ std::in_place, std::vector<uint8_t>(254, 0) })); // Overhead byte will not be inserted
 }
 
 TEST_F(SesameCobsTest, send_data)
@@ -120,7 +136,7 @@ TEST_F(SesameCobsTest, send_data)
     infra::DataOutputStream::WithErrorPolicy stream(*writer);
     stream << infra::ConstructBin()({ 1, 2, 3, 4 }).Range();
 
-    ExpectSendSequence({ { 0 }, { 5 }, { 1, 2, 3, 4 }, { 0 } });
+    ExpectSendSequence({ { 0 }, { 5, 1, 2, 3, 4, 0 } });
 }
 
 TEST_F(SesameCobsTest, send_data_with_0)
@@ -129,7 +145,7 @@ TEST_F(SesameCobsTest, send_data_with_0)
     infra::DataOutputStream::WithErrorPolicy stream(*writer);
     stream << infra::ConstructBin()({ 1, 0, 3, 4 }).Range();
 
-    ExpectSendSequence({ { 0 }, { 2 }, { 1 }, { 3 }, { 3, 4 }, { 0 } });
+    ExpectSendSequence({ { 0 }, { 2, 1, 3, 3, 4, 0 } });
 }
 
 TEST_F(SesameCobsTest, send_data_ending_with_0)
@@ -138,7 +154,16 @@ TEST_F(SesameCobsTest, send_data_ending_with_0)
     infra::DataOutputStream::WithErrorPolicy stream(*writer);
     stream << infra::ConstructBin()({ 5, 6, 0 }).Range();
 
-    ExpectSendSequence({ { 0 }, { 3 }, { 5, 6 }, { 1 }, { 0 } });
+    ExpectSendSequence({ { 0 }, { 3, 5, 6, 1, 0 } });
+}
+
+TEST_F(SesameCobsTest, send_data_exactly_needing_overhead)
+{
+    RequestSendMessage(254, 258);
+    infra::DataOutputStream::WithErrorPolicy stream(*writer);
+    stream << infra::ConstructBin()(std::vector<uint8_t>(254, 3)).Range();
+
+    ExpectSendSequence({ { 0 }, infra::ConstructBin()(255).Repeat(254, 3).Vector(), infra::ConstructBin()(1)(0).Vector() });
 }
 
 TEST_F(SesameCobsTest, send_large_data)
@@ -147,7 +172,7 @@ TEST_F(SesameCobsTest, send_large_data)
     infra::DataOutputStream::WithErrorPolicy stream(*writer);
     stream << infra::ConstructBin()(std::vector<uint8_t>(280, 3)).Range();
 
-    ExpectSendSequence({ { 0 }, { 255 }, std::vector<uint8_t>(254, 3), { 27 }, std::vector<uint8_t>(26, 3), { 0 } });
+    ExpectSendSequence({ { 0 }, infra::ConstructBin()(255).Repeat(254, 3).Vector(), infra::ConstructBin()(27).Repeat(26, 3)(0).Vector() });
 }
 
 TEST_F(SesameCobsTest, send_two_packets)
@@ -157,18 +182,14 @@ TEST_F(SesameCobsTest, send_two_packets)
     stream << infra::ConstructBin()({ 1, 2, 3, 4 }).Range();
 
     ExpectSendDataAndHandle({ 0 });
-    ExpectSendDataAndHandle({ 5 });
-    ExpectSendDataAndHandle({ 1, 2, 3, 4 });
-    ExpectSendDataAndHandle({ 0 });
+    ExpectSendDataAndHandle({ 5, 1, 2, 3, 4, 0 });
     writer = nullptr;
 
     RequestSendMessage(2, 4);
     infra::DataOutputStream::WithErrorPolicy stream2(*writer);
     stream2 << infra::ConstructBin()({ 5, 6 }).Range();
 
-    ExpectSendDataAndHandle({ 3 });
-    ExpectSendDataAndHandle({ 5, 6 });
-    ExpectSendDataAndHandle({ 0 });
+    ExpectSendDataAndHandle({ 3, 5, 6, 0 });
     writer = nullptr;
 }
 
@@ -198,13 +219,9 @@ TEST_F(SesameCobsTest, receive_interrupted_data)
 
 TEST_F(SesameCobsTest, receive_two_messages)
 {
-    ExpectReceivedMessageKeepReader({ 1, 2, 3, 4 }, 7);
-    ReceiveData(infra::ConstructBin()({ 0, 5, 1, 2, 3, 4, 0, 3, 5, 6, 0 }).Vector());
-
+    ExpectReceivedMessage({ 1, 2, 3, 4 }, 7, false);
     ExpectReceivedMessage({ 5, 6 }, 4);
-    EXPECT_CALL(serial, Reader()).WillOnce(testing::ReturnRef(receivedDataReader)).RetiresOnSaturation();
-    EXPECT_CALL(serial, AckReceived());
-    reader = nullptr;
+    ReceiveData(infra::ConstructBin()({ 0, 5, 1, 2, 3, 4, 0, 3, 5, 6, 0 }).Vector());
 }
 
 TEST_F(SesameCobsTest, malformed_empty_message_is_discarded)
@@ -217,19 +234,6 @@ TEST_F(SesameCobsTest, malformed_message_is_forwarded)
 {
     ExpectReceivedMessage({ 1 }, 4);
     ReceiveData(infra::ConstructBin()({ 0, 5, 1, 0 }).Vector());
-}
-
-TEST_F(SesameCobsTest, no_new_received_message_after_stop)
-{
-    infra::VerifyingFunction<void()> onDone;
-
-    ExpectReceivedMessageKeepReader({ 1, 2, 3, 4 }, 7);
-    ReceiveData(infra::ConstructBin()({ 0, 5, 1, 2, 3, 4, 0, 3, 5, 6, 0 }).Vector());
-
-    communication.Stop(onDone);
-    reader = nullptr;
-
-    ExecuteAllActions();
 }
 
 TEST_F(SesameCobsTest, no_new_send_message_after_stop)
@@ -265,49 +269,6 @@ TEST_F(SesameCobsTest, stop_done_after_first_delimiter_sent)
     onSent();
 }
 
-TEST_F(SesameCobsTest, stop_done_after_frame_sent)
-{
-    infra::VerifyingFunction<void()> onDone;
-
-    EXPECT_CALL(observer, SendMessageStreamAvailable).WillOnce(testing::SaveArg<0>(&writer));
-    communication.RequestSendMessage(4);
-    infra::DataOutputStream::WithErrorPolicy stream(*writer);
-    stream << infra::ConstructBin()({ 1, 2, 3, 4 }).Range();
-
-    ExpectSendData({ 0 });
-    writer = nullptr;
-
-    ExpectSendData({ 5 });
-    onSent();
-
-    communication.Stop(onDone);
-
-    onSent();
-}
-
-TEST_F(SesameCobsTest, stop_done_after_data_sent)
-{
-    infra::VerifyingFunction<void()> onDone;
-
-    EXPECT_CALL(observer, SendMessageStreamAvailable).WillOnce(testing::SaveArg<0>(&writer));
-    communication.RequestSendMessage(4);
-    infra::DataOutputStream::WithErrorPolicy stream(*writer);
-    stream << infra::ConstructBin()({ 1, 2, 3, 4 }).Range();
-
-    ExpectSendData({ 0 });
-    writer = nullptr;
-
-    ExpectSendData({ 5 });
-    onSent();
-
-    ExpectSendData({ 1, 2, 3, 4 });
-    onSent();
-
-    communication.Stop(onDone);
-
-    onSent();
-}
-
 TEST_F(SesameCobsTest, stop_done_after_last_delimiter_sent)
 {
     infra::VerifyingFunction<void()> onDone;
@@ -320,12 +281,7 @@ TEST_F(SesameCobsTest, stop_done_after_last_delimiter_sent)
     ExpectSendData({ 0 });
     writer = nullptr;
 
-    ExpectSendData({ 5 });
-    onSent();
-
-    ExpectSendData({ 1, 2, 3, 4 });
-    onSent();
-    ExpectSendData({ 0 });
+    ExpectSendData({ 5, 1, 2, 3, 4, 0 });
     onSent();
 
     communication.Stop(onDone);
@@ -342,9 +298,7 @@ TEST_F(SesameCobsTest, Reset_invalidates_RequestSendMessage)
     }
 
     ExpectSendDataAndHandle({ 0 });
-    ExpectSendDataAndHandle({ 5 });
-    ExpectSendDataAndHandle({ 1, 2, 3, 4 });
-    ExpectSendDataAndHandle({ 0 });
+    ExpectSendDataAndHandle({ 5, 1, 2, 3, 4, 0 });
     writer = nullptr;
 
     EXPECT_CALL(observer, SendMessageStreamAvailable).WillOnce(testing::SaveArg<0>(&writer));
@@ -362,7 +316,7 @@ TEST_F(SesameCobsTest, Reset_invalidates_RequestSendMessage)
     infra::DataOutputStream::WithErrorPolicy stream(*writer);
     stream << infra::ConstructBin()({ 1, 2, 3, 4 }).Range();
 
-    ExpectSendSequence({ { 0 }, { 5 }, { 1, 2, 3, 4 }, { 0 } });
+    ExpectSendSequence({ { 0 }, { 5, 1, 2, 3, 4, 0 } });
 }
 
 TEST_F(SesameCobsTest, Reset_after_first_delimiter_stops_sending_current_packet)
@@ -389,27 +343,7 @@ TEST_F(SesameCobsTest, Reset_after_frame_stops_sending_current_packet)
     ExpectSendData({ 0 });
     writer = nullptr;
 
-    ExpectSendData({ 5 });
-    onSent();
-
-    communication.Reset();
-    onSent();
-}
-
-TEST_F(SesameCobsTest, Reset_after_data_stops_sending_current_packet)
-{
-    EXPECT_CALL(observer, SendMessageStreamAvailable).WillOnce(testing::SaveArg<0>(&writer));
-    communication.RequestSendMessage(4);
-    infra::DataOutputStream::WithErrorPolicy stream(*writer);
-    stream << infra::ConstructBin()({ 1, 2, 3, 4 }).Range();
-
-    ExpectSendData({ 0 });
-    writer = nullptr;
-
-    ExpectSendData({ 5 });
-    onSent();
-
-    ExpectSendData({ 1, 2, 3, 4 });
+    ExpectSendData({ 5, 1, 2, 3, 4, 0 });
     onSent();
 
     communication.Reset();
@@ -438,5 +372,11 @@ TEST_F(SesameCobsTest, new_request_after_reset_is_handled)
         stream << infra::ConstructBin()({ 1, 2 }).Range();
     }
 
-    ExpectSendSequence({ { 0 }, { 3 }, { 1, 2 }, { 0 } });
+    ExpectSendSequence({ { 0 }, { 3, 1, 2, 0 } });
+}
+
+TEST_F(SesameCobsTest, reset_as_a_result_of_ReceiveData)
+{
+    ExpectReceivedMessageAndSendReset({ 1, 2, 3, 4 }, 7);
+    ReceiveData(infra::ConstructBin()({ 0, 5, 1, 2, 3, 4, 0 }).Vector());
 }

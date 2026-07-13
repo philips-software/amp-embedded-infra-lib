@@ -23,6 +23,7 @@ target_sources(services.util_test PRIVATE
     TestCyclicStore.cpp
     TestDebouncedButton.cpp
     TestDebugLed.cpp
+    TestDoubleBufferedSerialCommunication.cpp
     TestEchoOnSesame.cpp
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestEchoPolicyDiffieHellman.cpp>
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestEchoPolicySymmetricKey.cpp>
@@ -43,6 +44,9 @@ target_sources(services.util_test PRIVATE
     TestRepeatingButton.cpp
     TestSerialCommunicationLoopback.cpp
     TestSesameCobs.cpp
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestSesameCryptoMbedTls.cpp>
+    TestSesameInstantiation.cpp
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestSesameInstantiationSecured.cpp>
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestSesameSecured.cpp>
     TestSesameWindowed.cpp
     TestSignalLed.cpp
@@ -50,6 +54,8 @@ target_sources(services.util_test PRIVATE
     TestSleepOnInactivityFlashDecorator.cpp
     TestSpiMasterWithChipSelect.cpp
     TestSpiMultipleAccess.cpp
+    TestSmiPhy.cpp
+    TestSmiPhyLinkMonitor.cpp
     TestTerminal.cpp
     TestTimeWithLocalization.cpp
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestWritableConfiguration.cpp>

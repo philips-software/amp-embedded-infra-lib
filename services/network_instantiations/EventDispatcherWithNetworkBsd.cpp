@@ -71,13 +71,11 @@ namespace services
 
     infra::SharedPtr<void> EventDispatcherWithNetwork::Listen(uint16_t port, services::ServerConnectionObserverFactory& factory, IPVersions versions)
     {
-        assert(versions != IPVersions::ipv6);
-        return infra::MakeSharedOnHeap<ListenerBsd>(*this, port, factory);
+        return infra::MakeSharedOnHeap<ListenerBsd>(*this, port, factory, versions);
     }
 
     void EventDispatcherWithNetwork::Connect(ClientConnectionObserverFactory& factory)
     {
-        assert(std::holds_alternative<IPv4Address>(factory.Address()));
         connectors.emplace_back(*this, factory);
     }
 
@@ -181,7 +179,8 @@ namespace services
             if (infra::SharedPtr<ConnectionBsd> connection = weakConnection)
             {
                 AddFileDescriptorToSet(connection->socket, readFileDescriptors);
-                AddFileDescriptorToSet(connection->socket, writeFileDescriptors);
+                if (!connection->SendBufferEmpty())
+                    AddFileDescriptorToSet(connection->socket, writeFileDescriptors);
             }
         }
 
@@ -194,7 +193,8 @@ namespace services
             if (infra::SharedPtr<DatagramBsd> datagram = weakDatagram)
             {
                 AddFileDescriptorToSet(datagram->socket, readFileDescriptors);
-                AddFileDescriptorToSet(datagram->socket, writeFileDescriptors);
+                if (!datagram->SendBufferEmpty())
+                    AddFileDescriptorToSet(datagram->socket, writeFileDescriptors);
             }
         }
 

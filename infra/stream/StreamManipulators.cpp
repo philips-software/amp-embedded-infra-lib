@@ -6,6 +6,7 @@ namespace infra
     const Text text;
     const Hex hex;
     const Bin bin;
+    const Dec dec;
     const Data data;
     const Endl endl;
 

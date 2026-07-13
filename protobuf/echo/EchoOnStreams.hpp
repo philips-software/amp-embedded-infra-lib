@@ -33,6 +33,7 @@ namespace services
         services::MethodSerializerFactory& SerializerFactory() override;
 
     protected:
+        void Reset();
         virtual infra::SharedPtr<MethodSerializer> GrantSend(ServiceProxy& proxy);
         virtual infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, infra::SharedPtr<MethodDeserializer>&& deserializer);
         virtual void RequestSendStream(std::size_t size) = 0;
@@ -43,15 +44,39 @@ namespace services
         void Initialized();
         virtual void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
         virtual void ReleaseDeserializer();
+        virtual void ResetReading();
 
     private:
         void TryGrantSend();
 
+        void StreamWriterDone();
         void DataReceivedInReader();
         void StartReceiveMessage();
         void ContinueReceiveMessage();
         void StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size);
         void LimitedReaderDone();
+
+    private:
+        struct CountingSentWriter
+        {
+            CountingSentWriter(infra::SharedPtr<infra::StreamWriter>&& writer, std::size_t& size)
+                : writer(std::move(writer))
+                , size(size)
+            {
+                size -= this->writer->Available();
+            }
+
+            CountingSentWriter(const CountingSentWriter& other) = delete;
+            CountingSentWriter& operator=(const CountingSentWriter& other) = delete;
+
+            ~CountingSentWriter()
+            {
+                size += writer->Available();
+            }
+
+            infra::SharedPtr<infra::StreamWriter> writer;
+            std::size_t& size;
+        };
 
     private:
         static EchoPolicy defaultPolicy;
@@ -62,6 +87,11 @@ namespace services
 
         infra::IntrusiveList<ServiceProxy> sendRequesters;
         ServiceProxy* sendingProxy = nullptr;
+        std::size_t sendingProxySize = 0;
+        infra::NotifyingSharedOptional<CountingSentWriter> countingSentWriter{ [this]()
+            {
+                StreamWriterDone();
+            } };
         infra::SharedPtr<MethodSerializer> methodSerializer;
         bool partlySent = false;
         bool skipNextStream = false;

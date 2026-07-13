@@ -164,9 +164,15 @@ namespace services
     };
 
     template<class T>
+    struct MessageDepth<ProtoRepeatedBase<T>>
+    {
+        static constexpr uint32_t value = 1 + MessageDepth<T>::value;
+    };
+
+    template<class T>
     struct MessageDepth<ProtoUnboundedRepeated<T>>
     {
-        static constexpr uint32_t value = 1;
+        static constexpr uint32_t value = 1 + MessageDepth<T>::value;
     };
 
     template<std::size_t Max>
@@ -184,7 +190,7 @@ namespace services
     template<std::size_t Max, class T>
     struct MessageDepth<ProtoRepeated<Max, T>>
     {
-        static constexpr uint32_t value = 1;
+        static constexpr uint32_t value = 1 + MessageDepth<T>::value;
     };
 
     template<uint32_t... V>

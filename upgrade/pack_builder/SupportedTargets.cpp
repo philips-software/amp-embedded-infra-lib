@@ -1,4 +1,5 @@
 #include "upgrade/pack_builder/SupportedTargets.hpp"
+#include "infra/util/ByteRange.hpp"
 
 namespace application
 {
@@ -20,11 +21,11 @@ namespace application
         return *this;
     }
 
-    SupportedTargetsBuilder& SupportedTargetsBuilder::AddCmd(const SupportedTargets::Target& target)
+    SupportedTargetsBuilder& SupportedTargetsBuilder::AddCmd(const SupportedTargets::Target& target, const infra::ConstByteRange& data)
     {
         AddToMandatoryWhenNecessary(target);
         AddInOrder(target);
-        targets.cmd.emplace_back(target);
+        targets.cmd.emplace_back(target, data);
         return *this;
     }
 

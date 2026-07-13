@@ -3,12 +3,10 @@
 
 #include "infra/stream/StreamErrorPolicy.hpp"
 #include "infra/stream/StreamManipulators.hpp"
-#include "infra/util/Base64.hpp"
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/ByteRange.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/IntegerNormalization.hpp"
-#include <optional>
 #include <type_traits>
 
 namespace infra
@@ -158,6 +156,7 @@ namespace infra
 
         TextOutputStream operator<<(Hex);
         TextOutputStream operator<<(Bin);
+        TextOutputStream operator<<(Dec);
         TextOutputStream operator<<(Width width);
         DataOutputStream operator<<(Data);
         TextOutputStream& operator<<(Endl);

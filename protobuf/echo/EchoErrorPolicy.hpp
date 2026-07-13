@@ -1,6 +1,7 @@
 #ifndef PROTOBUF_ECHO_ERROR_POLICY_HPP
 #define PROTOBUF_ECHO_ERROR_POLICY_HPP
 
+#include "services/tracer/Tracer.hpp"
 #include <cstdint>
 
 namespace services
@@ -31,6 +32,20 @@ namespace services
     public:
         void ServiceNotFound(uint32_t serviceId) const override;
         void MethodNotFound(uint32_t serviceId, uint32_t methodId) const override;
+    };
+
+    class EchoErrorPolicyWarn
+        : public EchoErrorPolicy
+    {
+    public:
+        explicit EchoErrorPolicyWarn(services::Tracer& tracer);
+
+        void MessageFormatError(const char* reason) const override;
+        void ServiceNotFound(uint32_t serviceId) const override;
+        void MethodNotFound(uint32_t serviceId, uint32_t methodId) const override;
+
+    private:
+        services::Tracer& tracer;
     };
 
     const inline EchoErrorPolicyAbortOnMessageFormatError echoErrorPolicyAbortOnMessageFormatError;

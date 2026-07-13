@@ -24,6 +24,11 @@ namespace services
         echo.SetPolicy(*this);
     }
 
+    void EchoPolicySymmetricKey::Reset()
+    {
+        initializingSending = true;
+    }
+
     void EchoPolicySymmetricKey::Initialized()
     {
         initializingSending = true;

@@ -94,6 +94,27 @@ TEST_F(TimerTest, TwoTimersTriggerInOrder)
     ForwardTime(std::chrono::seconds(5));
 };
 
+TEST_F(TimerTest, UpdatingArmedTimerToEarlierTimeTriggersAtUpdatedTime)
+{
+    infra::MockCallback<void()> earlyCallback;
+    infra::MockCallback<void()> lateCallback;
+    EXPECT_CALL(earlyCallback, callback()).With(After(std::chrono::seconds(1)));
+    EXPECT_CALL(lateCallback, callback()).With(After(std::chrono::seconds(10)));
+
+    infra::TimerSingleShot firstTimer(std::chrono::seconds(10), [&lateCallback]()
+        {
+            lateCallback.callback();
+        });
+    infra::TimerSingleShot secondTimer(std::chrono::seconds(20), []() {});
+
+    secondTimer.Start(std::chrono::seconds(1), [&earlyCallback]()
+        {
+            earlyCallback.callback();
+        });
+
+    ForwardTime(std::chrono::seconds(10));
+}
+
 TEST_F(TimerTest, RepeatingTimerTriggersRepeatedly)
 {
     infra::MockCallback<void()> callback;

@@ -11,6 +11,7 @@ namespace infra
     class ConstructBin
     {
     public:
+        ConstructBin& operator()(infra::ConstByteRange v);
         ConstructBin& operator()(const std::vector<uint8_t>& v);
         ConstructBin& operator()(const std::string& v);
         ConstructBin& operator()(uint8_t v);

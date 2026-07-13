@@ -650,6 +650,7 @@ namespace infra
     template<class T>
     typename BoundedDeque<T>::iterator BoundedDeque<T>::erase(const const_iterator& first, const const_iterator& last)
     {
+        really_assert(size() >= std::distance(first, last));
         size_type first_index = first - begin();
         size_type last_index = last - begin();
 

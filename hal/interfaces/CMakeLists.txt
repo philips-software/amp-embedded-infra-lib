@@ -44,6 +44,7 @@ target_sources(hal.interfaces PRIVATE
     SerialCommunication.cpp
     SerialCommunication.hpp
     Sleepable.hpp
+    SmiBus.hpp
     Spi.cpp
     Spi.hpp
     UsbCustomHid.hpp
