@@ -1,15 +1,15 @@
-#ifndef HAL_BLE_DTM_MOCK_HPP
-#define HAL_BLE_DTM_MOCK_HPP
+#ifndef BLE_TEST_DOUBLES_DTM_MOCK_HPP
+#define BLE_TEST_DOUBLES_DTM_MOCK_HPP
 
-#include "hal/interfaces/BleDtm.hpp"
+#include "services/ble/Dtm.hpp"
 #include "gmock/gmock.h"
 #include <cstdint>
 #include <optional>
 
-namespace hal
+namespace services
 {
-    class BleDtmMock
-        : public BleDtm
+    class DtmMock
+        : public Dtm
     {
     public:
         MOCK_METHOD(bool, StartTone, (uint8_t rfChannel, uint8_t offset), (override));
