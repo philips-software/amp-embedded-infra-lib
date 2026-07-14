@@ -47,8 +47,7 @@ class EchoInstantiationSecuredSymmetricKeyTest
     , public EchoInstantiationSecuredSymmetricKey<256, 1024>
 {};
 
-
- TEST_F(EchoInstantiationSecuredSymmetricKeyTest, send_message)
+TEST_F(EchoInstantiationSecuredSymmetricKeyTest, send_message)
 {
     EXPECT_CALL(service, Method(5)).WillOnce(testing::Invoke([this]()
         {
@@ -63,7 +62,7 @@ class EchoInstantiationSecuredSymmetricKeyTest
     ExecuteAllActions();
 }
 
- TEST_F(EchoInstantiationSecuredSymmetricKeyTest, send_multiple_messages)
+TEST_F(EchoInstantiationSecuredSymmetricKeyTest, send_multiple_messages)
 {
     EXPECT_CALL(service, Method(5)).WillOnce(testing::Invoke([this]()
         {
