@@ -31,7 +31,7 @@ namespace main_
     struct EchoOnSesame
         : public services::Stoppable
     {
-        template<std::size_t MessageSize, uint8_t SplitBuffers>
+        template<std::size_t MessageSize, uint8_t SplitBuffers = 2>
         struct WithMessageSize;
 
         EchoOnSesame(Sesame::CobsStorageBase& storage, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory);
