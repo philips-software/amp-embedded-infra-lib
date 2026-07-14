@@ -222,7 +222,7 @@ namespace services
         }
 
         if (currentBuffer == nullptr)
-            return infra::ConstByteRange();
+            return {};
 
         infra::ConstByteRange result = infra::Head(infra::ConstByteRange(reinterpret_cast<const uint8_t*>(currentBuffer->payload) + offset,
                                                        reinterpret_cast<const uint8_t*>(currentBuffer->payload) + currentBuffer->len),
