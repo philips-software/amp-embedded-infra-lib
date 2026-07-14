@@ -60,7 +60,7 @@ namespace services
         template<std::size_t MaxMessageSize, uint8_t SplitBuffers = 2>
         struct WithMaxMessageSize;
 
-        explicit SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, uint8_t splitBuffers, SesameEncoded& delegate, SesameInitializer& sesameInitializer = immediatelyGranted);
+        SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, uint8_t splitBuffers, SesameEncoded& delegate, SesameInitializer& sesameInitializer = immediatelyGranted);
 
         // Implementation of Sesame
         void RequestSendMessage(std::size_t size) override;

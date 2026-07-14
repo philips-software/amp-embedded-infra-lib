@@ -2,8 +2,8 @@
 
 namespace services
 {
-    TracingSesameWindowed::TracingSesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, SesameEncoded& delegate, uint8_t splitBuffers, Tracer& tracer)
-        : SesameWindowed(receivedMessage, splitBuffers, delegate)
+    TracingSesameWindowed::TracingSesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, uint8_t splitBuffers, SesameEncoded& delegate, Tracer& tracer, SesameInitializer& sesameInitializer)
+        : SesameWindowed(receivedMessage, splitBuffers, delegate, sesameInitializer)
         , tracer(tracer)
     {}
 
