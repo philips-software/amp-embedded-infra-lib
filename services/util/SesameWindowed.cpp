@@ -85,6 +85,7 @@ namespace services
         assert(currentReceiveMessageReader == std::nullopt);
         assert(!readerAccess.Referenced());
         initialized = false;
+        requestingInitialization = false;
         sentInitResponse = false;
         otherAvailableWindow = 0;
         maxUsableBufferSize = 0;
