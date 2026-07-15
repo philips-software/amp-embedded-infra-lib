@@ -51,7 +51,7 @@ namespace main_
         , EchoOnSesame
     {
         WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory)
-            : EchoOnSesame(static_cast<Sesame::CobsStorage<MessageSize, SplitBuffers>&>(*this), serialCommunication, serializerFactory)
+            : EchoOnSesame(static_cast<Sesame::CobsStorageBase&>(*this), serialCommunication, serializerFactory)
         {}
     };
 

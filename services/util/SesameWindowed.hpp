@@ -55,7 +55,7 @@ namespace services
         static constexpr std::size_t bufferSizeForMessage = MessageSize<sizeof(Operation) + MaxMessageSize>::size;
 
         template<std::size_t MaxMessageSize, uint8_t SplitBuffers>
-        static constexpr std::size_t receiveBufferSize = (MaxMessageSize + 2) * (SplitBuffers - 1);
+        static constexpr std::size_t receiveBufferSize = (MaxMessageSize + 2) * SplitBuffers;
 
         template<std::size_t MaxMessageSize, uint8_t SplitBuffers = 2>
         struct WithMaxMessageSize;
