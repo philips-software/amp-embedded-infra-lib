@@ -69,18 +69,15 @@ namespace services
         void ResetReading() override;
 
     protected:
-        // clang-format off
-        virtual void ReceivedInit(uint16_t newWindow) {}
-        virtual void ReceivedInitResponse(uint16_t newWindow) {}
-        virtual void ReceivedReleaseWindow(uint16_t oldWindow, uint16_t newWindow) {}
-        virtual void ForwardingReceivedMessage(infra::StreamReaderWithRewinding& reader) {}
-        virtual void SendingInit(uint16_t newWindow) {}
-        virtual void SendingInitResponse(uint16_t newWindow) {}
-        virtual void SendingReleaseWindow(uint16_t deltaWindow) {}
-        virtual void SendingMessage(infra::StreamWriter& writer) {}
-        virtual void SettingOperational(std::optional<std::size_t> requestedSize, uint16_t releasedWindow, uint16_t otherWindow) {}
-
-        // clang-format on
+        virtual void ReceivedInit(uint16_t newWindow);
+        virtual void ReceivedInitResponse(uint16_t newWindow);
+        virtual void ReceivedReleaseWindow(uint16_t oldWindow, uint16_t newWindow);
+        virtual void ForwardingReceivedMessage(infra::StreamReaderWithRewinding& reader);
+        virtual void SendingInit(uint16_t newWindow);
+        virtual void SendingInitResponse(uint16_t newWindow);
+        virtual void SendingReleaseWindow(uint16_t deltaWindow);
+        virtual void SendingMessage(infra::StreamWriter& writer);
+        virtual void SettingOperational(std::optional<std::size_t> requestedSize, uint16_t releasedWindow, uint16_t otherWindow);
 
     private:
         // Implementation of SesameEncodedObserver
@@ -193,10 +190,15 @@ namespace services
     {
         static_assert(SplitBuffers >= 2, "SesameWindowed requires at least 2 receive buffers");
 
-        WithMaxMessageSize(SesameEncoded& delegate, SesameInitializer& sesameInitializer = immediatelyGranted)
-            : infra::WithStorage<SesameWindowed, infra::BoundedDeque<uint8_t>::WithMaxSize<receiveBufferSize<MaxMessageSize, SplitBuffers>>>::WithStorage(SplitBuffers, delegate, sesameInitializer)
-        {}
+        WithMaxMessageSize(SesameEncoded& delegate, SesameInitializer& sesameInitializer = immediatelyGranted);
     };
+
+    //// Implementation ////
+
+    template<std::size_t MaxMessageSize, uint8_t SplitBuffers>
+    SesameWindowed::WithMaxMessageSize<MaxMessageSize, SplitBuffers>::WithMaxMessageSize(SesameEncoded& delegate, SesameInitializer& sesameInitializer)
+        : infra::WithStorage<SesameWindowed, infra::BoundedDeque<uint8_t>::WithMaxSize<receiveBufferSize<MaxMessageSize, SplitBuffers>>>::WithStorage(SplitBuffers, delegate, sesameInitializer)
+    {}
 }
 
 #endif

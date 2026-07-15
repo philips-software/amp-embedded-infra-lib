@@ -106,6 +106,33 @@ namespace services
             });
     }
 
+    void SesameWindowed::ReceivedInit(uint16_t newWindow)
+    {}
+
+    void SesameWindowed::ReceivedInitResponse(uint16_t newWindow)
+    {}
+
+    void SesameWindowed::ReceivedReleaseWindow(uint16_t oldWindow, uint16_t newWindow)
+    {}
+
+    void SesameWindowed::ForwardingReceivedMessage(infra::StreamReaderWithRewinding& reader)
+    {}
+
+    void SesameWindowed::SendingInit(uint16_t newWindow)
+    {}
+
+    void SesameWindowed::SendingInitResponse(uint16_t newWindow)
+    {}
+
+    void SesameWindowed::SendingReleaseWindow(uint16_t deltaWindow)
+    {}
+
+    void SesameWindowed::SendingMessage(infra::StreamWriter& writer)
+    {}
+
+    void SesameWindowed::SettingOperational(std::optional<std::size_t> requestedSize, uint16_t releasedWindow, uint16_t otherWindow)
+    {}
+
     void SesameWindowed::Initialized()
     {
         std::abort();
