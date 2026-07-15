@@ -215,11 +215,14 @@ namespace services
     {
         uint16_t offset = bufferOffset;
         pbuf* currentBuffer = buffer;
-        while (offset >= currentBuffer->len)
+        while (currentBuffer != nullptr && offset >= currentBuffer->len)
         {
             offset -= currentBuffer->len;
             currentBuffer = currentBuffer->next;
         }
+
+        if (currentBuffer == nullptr)
+            return {};
 
         infra::ConstByteRange result = infra::Head(infra::ConstByteRange(reinterpret_cast<const uint8_t*>(currentBuffer->payload) + offset,
                                                        reinterpret_cast<const uint8_t*>(currentBuffer->payload) + currentBuffer->len),
