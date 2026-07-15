@@ -190,7 +190,7 @@ namespace services
     {
         static_assert(SplitBuffers >= 2, "SesameWindowed requires at least 2 receive buffers");
 
-        WithMaxMessageSize(SesameEncoded& delegate, SesameInitializer& sesameInitializer = immediatelyGranted);
+        explicit WithMaxMessageSize(SesameEncoded& delegate, SesameInitializer& sesameInitializer = immediatelyGranted);
     };
 
     //// Implementation ////
