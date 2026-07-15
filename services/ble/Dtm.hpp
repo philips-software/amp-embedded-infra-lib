@@ -9,10 +9,13 @@ namespace services
     class Dtm
     {
     public:
+    protected:
         Dtm() = default;
+        ~Dtm() = default;
+
+    public:
         Dtm(const Dtm& other) = delete;
         Dtm& operator=(const Dtm& other) = delete;
-        ~Dtm() = default;
 
         virtual bool StartTone(uint8_t rfChannel, uint8_t offset) = 0;
         virtual bool StopTone() = 0;
