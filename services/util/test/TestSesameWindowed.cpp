@@ -18,6 +18,11 @@ class SesameWindowedTest
 public:
     SesameWindowedTest()
     {
+        SetEncodingSizeExpectations();
+    }
+
+    void SetEncodingSizeExpectations()
+    {
         EXPECT_CALL(base, WorstCaseEncodedMessageSize(testing::_)).WillRepeatedly(testing::Invoke([](std::size_t size)
             {
                 return size + size / 254 + 2;
@@ -64,9 +69,8 @@ public:
         ReceivePacket(infra::ConstructBin().Value<uint8_t>(1).Value<infra::LittleEndian<uint16_t>>(availableWindow)(initInfo).Vector());
     }
 
-    void ReceiveInitResponse(uint16_t availableWindow)
+    void ReceiveInitResponseWithoutInitialized(uint16_t availableWindow)
     {
-        EXPECT_CALL(observer, Initialized());
         EXPECT_CALL(initializer, InitInformationReceived(testing::_)).WillOnce(testing::Invoke([this](infra::StreamReaderWithRewinding& initInfoReader)
             {
                 infra::DataInputStream::WithErrorPolicy stream(initInfoReader);
@@ -75,6 +79,12 @@ public:
                 EXPECT_THAT(data, testing::ElementsAreArray(initInfo));
             }));
         ReceivePacket(infra::ConstructBin().Value<uint8_t>(2).Value<infra::LittleEndian<uint16_t>>(availableWindow)(initInfo).Vector());
+    }
+
+    void ReceiveInitResponse(uint16_t availableWindow)
+    {
+        EXPECT_CALL(observer, Initialized());
+        ReceiveInitResponseWithoutInitialized(availableWindow);
     }
 
     void ReceiveReleaseWindow(uint16_t availableWindow)
@@ -172,8 +182,9 @@ public:
             EXPECT_CALL(initializer, InitInformation()).WillRepeatedly(testing::Return(infra::MakeRange(initInfo)));
             ExpectRequestSendMessageForInit(24);
         } };
-    services::SesameWindowed::WithMaxMessageSize<24> communication{ base, initializer };
-    testing::StrictMock<services::SesameObserverMock> observer{ communication };
+    services::SesameWindowed::WithMaxMessageSize<6> communicationInstance{ base, initializer };
+    services::SesameWindowed* communication = &communicationInstance;
+    testing::StrictMock<services::SesameObserverMock> observer{ *communication };
     infra::SharedPtr<infra::StreamWriter> savedWriter;
     infra::SharedPtr<infra::StreamReaderWithRewinding> savedReader;
 };
@@ -182,9 +193,8 @@ TEST_F(SesameWindowedTest, MaxSendMessageSize)
 {
     ReceiveInitResponse(24);
     // 6 bytes in a message expands to 1 (cobs) + 1 (operation) + 6 (message) + 1 (delimiter) = 9
-    // Two of these messages plus one release window amount to 9 + 9 + 5 = 23, which is under the limit of the 24 bytes buffer of cobs
-    EXPECT_EQ(6, communication.MaxSendMessageSize());
-    EXPECT_EQ(23, (services::SesameWindowed::bufferSizeForMessage<6, services::SesameCobs::EncodedMessageSize>));
+    EXPECT_EQ(6, communication->MaxSendMessageSize());
+    EXPECT_EQ(9, (services::SesameWindowed::bufferSizeForMessage<6, services::SesameCobs::EncodedMessageSize>));
 }
 
 TEST_F(SesameWindowedTest, send_message_after_initialized)
@@ -193,14 +203,14 @@ TEST_F(SesameWindowedTest, send_message_after_initialized)
 
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
-    communication.RequestSendMessage(4);
+    communication->RequestSendMessage(4);
 }
 
 TEST_F(SesameWindowedTest, message_waits_until_window_is_freed)
 {
     ReceiveInitResponse(6);
 
-    communication.RequestSendMessage(4);
+    communication->RequestSendMessage(4);
 
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
@@ -216,16 +226,16 @@ TEST_F(SesameWindowedTest, long_message_waits_until_window_is_freed_taking_into_
     auto fillWindow = std::vector<uint8_t>(251, 1);
     ExpectRequestSendMessageForMessage(fillWindow.size() + 1, fillWindow);
     ExpectSendMessageStreamAvailable(fillWindow);
-    communication.RequestSendMessage(fillWindow.size());
+    communication->RequestSendMessage(fillWindow.size());
 
     auto fillWindow2 = std::vector<uint8_t>(1, 1);
     ExpectRequestSendMessageForMessage(fillWindow2.size() + 1, fillWindow2);
     ExpectSendMessageStreamAvailable(fillWindow2);
-    communication.RequestSendMessage(fillWindow2.size());
+    communication->RequestSendMessage(fillWindow2.size());
 
     // A message of size 253 plus one byte for the operation may consist of 254 zeros, and therefore need one extra COBS overhead byte.
     // Total window available needs therefore to be 254 + 1 (one extra COBS byte) + 2 (normal COBS byte and closing 0) + 5 (safeguard for another window release)
-    communication.RequestSendMessage(253);
+    communication->RequestSendMessage(253);
 
     ExpectRequestSendMessageForMessage(254, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
@@ -244,12 +254,12 @@ TEST_F(SesameWindowedTest, exact_used_window_size_is_consumed_by_message)
     // Sending longMessage, for which no extra COBS overhead bytes were necessary, results in 7 + 5 window still available
     ExpectRequestSendMessageForMessage(longMessage.size() + 1, longMessage);
     ExpectSendMessageStreamAvailable(longMessage);
-    communication.RequestSendMessage(longMessage.size());
+    communication->RequestSendMessage(longMessage.size());
 
     // Now prove that enough window is still available by sending another message
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
-    communication.RequestSendMessage(4);
+    communication->RequestSendMessage(4);
 }
 
 TEST_F(SesameWindowedTest, request_sending_new_message_while_previous_is_still_processing)
@@ -257,7 +267,7 @@ TEST_F(SesameWindowedTest, request_sending_new_message_while_previous_is_still_p
     ReceiveInitResponse(28);
 
     EXPECT_CALL(base, RequestSendMessage(5));
-    communication.RequestSendMessage(4);
+    communication->RequestSendMessage(4);
 
     EXPECT_CALL(observer, SendMessageStreamAvailable(testing::_)).WillOnce(testing::Invoke([this](infra::SharedPtr<infra::StreamWriter>&& writer)
         {
@@ -266,7 +276,7 @@ TEST_F(SesameWindowedTest, request_sending_new_message_while_previous_is_still_p
             stream << infra::MakeRange(data);
 
             writer = nullptr;
-            communication.RequestSendMessage(2);
+            communication->RequestSendMessage(2);
         }));
 
     EXPECT_CALL(base, RequestSendMessage(3));
@@ -322,9 +332,9 @@ TEST_F(SesameWindowedTest, init_response_consumes_window)
 
     ExpectRequestSendMessageForMessage(7, { 1, 2, 3, 4, 5, 6 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4, 5, 6 });
-    communication.RequestSendMessage(6);
+    communication->RequestSendMessage(6);
 
-    communication.RequestSendMessage(6);
+    communication->RequestSendMessage(6);
 
     ExpectRequestSendMessageForMessage(7, { 1, 2, 3, 4, 5, 6 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4, 5, 6 });
@@ -339,7 +349,7 @@ TEST_F(SesameWindowedTest, received_init_request_while_sending_message_finishes_
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailableAndSaveWriter();
 
-    communication.RequestSendMessage(4);
+    communication->RequestSendMessage(4);
 
     // operate
     EXPECT_CALL(initializer, InitializationRequested(testing::_)).WillOnce(testing::InvokeArgument<0>());
@@ -362,7 +372,7 @@ TEST_F(SesameWindowedTest, increase_window_while_sending)
 
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
-    communication.RequestSendMessage(4);
+    communication->RequestSendMessage(4);
 
     // operate
     ExpectRequestSendMessageForReleaseWindow(12);
@@ -371,7 +381,7 @@ TEST_F(SesameWindowedTest, increase_window_while_sending)
     // Send a new message that uses the newly announced window
     ExpectRequestSendMessageForMessage(3, { 5, 6 });
     ExpectSendMessageStreamAvailable({ 5, 6 });
-    communication.RequestSendMessage(2);
+    communication->RequestSendMessage(2);
 }
 
 TEST_F(SesameWindowedTest, init_response_while_sending)
@@ -382,7 +392,7 @@ TEST_F(SesameWindowedTest, init_response_while_sending)
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
 
-    communication.RequestSendMessage(4);
+    communication->RequestSendMessage(4);
 
     // operate
     ReceiveInitResponse(10);
@@ -390,7 +400,7 @@ TEST_F(SesameWindowedTest, init_response_while_sending)
     // Send a new message that uses the newly announced window
     ExpectRequestSendMessageForMessage(3, { 5, 6 });
     ExpectSendMessageStreamAvailable({ 5, 6 });
-    communication.RequestSendMessage(2);
+    communication->RequestSendMessage(2);
 }
 
 TEST_F(SesameWindowedTest, received_init_request_while_sending_init)
@@ -399,7 +409,7 @@ TEST_F(SesameWindowedTest, received_init_request_while_sending_init)
     EXPECT_CALL(initializer, InitializationRequested(testing::_)).WillOnce(testing::InvokeArgument<0>());
     ReceiveInitRequest(8);
 
-    ReceiveInitResponse(24);
+    ReceiveInitResponseWithoutInitialized(24);
 }
 
 TEST_F(SesameWindowedTest, init_response_while_sending_init_is_ignored)
@@ -423,12 +433,12 @@ TEST_F(SesameWindowedTest, requesting_message_while_sending_init_response)
     EXPECT_CALL(initializer, InitializationRequested(testing::_)).WillOnce(testing::InvokeArgument<0>());
     ReceiveInitRequest(8);
 
-    ReceiveInitResponse(24);
+    ReceiveInitResponseWithoutInitialized(24);
 
     // operate
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
-    communication.RequestSendMessage(4);
+    communication->RequestSendMessage(4);
 }
 
 TEST_F(SesameWindowedTest, init_request_while_sending_init_response_results_in_new_init_response)
@@ -438,7 +448,7 @@ TEST_F(SesameWindowedTest, init_request_while_sending_init_response_results_in_n
     EXPECT_CALL(initializer, InitializationRequested(testing::_)).WillOnce(testing::InvokeArgument<0>());
     ReceiveInitRequest(8);
 
-    ReceiveInitResponse(24);
+    ReceiveInitResponseWithoutInitialized(24);
 
     // operate
     ExpectRequestSendMessageForInitResponse(24);
@@ -453,7 +463,7 @@ TEST_F(SesameWindowedTest, release_window_while_sending_init_response_is_ignored
     EXPECT_CALL(initializer, InitializationRequested(testing::_)).WillOnce(testing::InvokeArgument<0>());
     ReceiveInitRequest(8);
 
-    ReceiveInitResponse(24);
+    ReceiveInitResponseWithoutInitialized(24);
 
     // operate
     ExpectRequestSendMessageForReleaseWindow(12);
@@ -520,7 +530,7 @@ TEST_F(SesameWindowedTest, no_new_message_after_ResetReading)
     ReceiveMessage("abcd");
 
     // ExpectRequestSendMessageForReleaseWindow(14);
-    communication.ResetReading();
+    communication->ResetReading();
     savedReader = nullptr;
 
     ExecuteAllActions();
@@ -531,17 +541,17 @@ TEST_F(SesameWindowedTest, Reset_forwards_to_cobs_and_requests_initialize)
     ReceiveInitResponse(24);
 
     EXPECT_CALL(base, Reset());
-    communication.Reset();
+    communication->Reset();
 
     ExpectRequestSendMessageForInitResponse(24);
     EXPECT_CALL(initializer, InitializationRequested(testing::_)).WillOnce(testing::InvokeArgument<0>());
     ReceiveInitRequest(8);
 
-    ReceiveInitResponse(24);
+    ReceiveInitResponseWithoutInitialized(24);
 
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
-    communication.RequestSendMessage(4);
+    communication->RequestSendMessage(4);
 }
 
 TEST_F(SesameWindowedTest, hold_initialization_until_initializer_grants)
@@ -549,8 +559,8 @@ TEST_F(SesameWindowedTest, hold_initialization_until_initializer_grants)
     observer.Detach();
     EXPECT_CALL(base, WorstCaseEncodedMessageSize(3)).WillOnce(testing::Return(5));
     ExpectRequestSendMessageForInit(24);
-    infra::ReConstruct(communication, base, initializer);
-    observer.Attach(communication);
+    infra::ReConstruct(static_cast<decltype(communicationInstance)&>(*communication), base, initializer);
+    observer.Attach(*communication);
 
     infra::Function<void()> onGranted;
     EXPECT_CALL(initializer, InitializationRequested(testing::_)).WillOnce(testing::SaveArg<0>(&onGranted));
@@ -561,4 +571,30 @@ TEST_F(SesameWindowedTest, hold_initialization_until_initializer_grants)
 
     ExpectRequestSendMessageForInitResponse(24);
     onGranted();
+}
+
+TEST_F(SesameWindowedTest, MaxSendMessageSize_for_3_way_buffer)
+{
+    ReceiveInitResponse(24);
+    testing::Mock::VerifyAndClearExpectations(&base);
+
+    base.GetObserver().Detach();
+    observer.Detach();
+
+    SetEncodingSizeExpectations();
+
+    EXPECT_CALL(base, MaxSendMessageSize()).WillRepeatedly(testing::Return(32));
+    EXPECT_CALL(base, WorstCaseEncodedMessageSize(3)).WillOnce(testing::Return(5));
+    EXPECT_CALL(initializer, InitInformation()).WillRepeatedly(testing::Return(infra::MakeRange(initInfo)));
+    ExpectRequestSendMessageForInit(32);
+    services::SesameWindowed::WithMaxMessageSize<6, 3> communicationInstance{ base, initializer };
+    communication = &communicationInstance;
+    observer.Attach(*communication);
+
+    ReceiveInitResponse(32);
+    // 6 bytes in a message expands to 1 (cobs) + 1 (operation) + 6 (message) + 1 (delimiter) = 9
+    EXPECT_EQ(6, communication->MaxSendMessageSize());
+    EXPECT_EQ(9, (services::SesameWindowed::bufferSizeForMessage<6, services::SesameCobs::EncodedMessageSize>));
+
+    observer.Detach();
 }
