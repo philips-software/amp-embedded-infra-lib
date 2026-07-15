@@ -10,7 +10,7 @@ namespace services
         : public SesameWindowed
     {
     public:
-        template<std::size_t MaxMessageSize, uint8_t SplitBuffers>
+        template<std::size_t MaxMessageSize, uint8_t SplitBuffers = 2>
         struct WithMaxMessageSize;
 
         TracingSesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, uint8_t splitBuffers, SesameEncoded& delegate, Tracer& tracer, SesameInitializer& sesameInitializer = immediatelyGranted);

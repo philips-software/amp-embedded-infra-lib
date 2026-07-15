@@ -26,15 +26,13 @@ namespace
         services::SesameSecured::KeyMaterial keyMaterialLeft{ keyA, ivA, keyB, ivB };
         services::SesameSecured::KeyMaterial keyMaterialRight{ keyB, ivB, keyA, ivA };
 
-        constexpr static std::size_t leftSize = LeftSize;
-        hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<leftSize> leftSerial{ serial.Server() };
+        hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<LeftSize> leftSerial{ serial.Server() };
         services::MethodSerializerFactory::OnHeap leftSerializerFactory;
-        main_::EchoOnSesameSecuredSymmetricKey::WithMessageSize<leftSize, 2> leftEcho{ leftSerial, leftSerializerFactory, keyMaterialLeft, randomDataGenerator };
+        main_::EchoOnSesameSecuredSymmetricKey::WithMessageSize<LeftSize, 2> leftEcho{ leftSerial, leftSerializerFactory, keyMaterialLeft, randomDataGenerator };
 
-        constexpr static std::size_t rightSize = RightSize;
-        hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<rightSize> rightSerial{ serial.Client() };
+        hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<RightSize> rightSerial{ serial.Client() };
         services::MethodSerializerFactory::OnHeap rightSerializerFactory;
-        main_::EchoOnSesameSecuredSymmetricKey::WithMessageSize<rightSize, 2> rightEcho{ rightSerial, rightSerializerFactory, keyMaterialRight, randomDataGenerator };
+        main_::EchoOnSesameSecuredSymmetricKey::WithMessageSize<RightSize, 2> rightEcho{ rightSerial, rightSerializerFactory, keyMaterialRight, randomDataGenerator };
 
         services::ServiceStubProxy serviceProxy{ leftEcho.echo };
         testing::StrictMock<services::ServiceStub> service{ rightEcho.echo };
@@ -64,18 +62,10 @@ TEST_F(EchoInstantiationSecuredSymmetricKeyTest, send_message)
 
 TEST_F(EchoInstantiationSecuredSymmetricKeyTest, send_multiple_messages)
 {
-    EXPECT_CALL(service, Method(5)).WillOnce(testing::Invoke([this]()
+    EXPECT_CALL(service, Method(5)).Times(3).WillRepeatedly([this]()
         {
-            EXPECT_CALL(service, Method(5)).WillOnce(testing::Invoke([this]()
-                {
-                    EXPECT_CALL(service, Method(5)).WillOnce(testing::Invoke([this]()
-                        {
-                            service.MethodDone();
-                        }));
-                    service.MethodDone();
-                }));
             service.MethodDone();
-        }));
+        });
 
     serviceProxy.RequestSend([this]()
         {
@@ -129,16 +119,14 @@ namespace
         services::EchoPolicyDiffieHellman::KeyMaterial keyMaterialRight{ infra::MakeRange(certificateRightDer), infra::MakeRange(privateKeyRightDer), infra::MakeRange(rootCaCertificateDer) };
 
         services::TracerWithPrefix tracerLeft{ "Left ", services::GlobalTracer() };
-        constexpr static std::size_t leftSize = LeftSize;
-        hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<leftSize> leftSerial{ serial.Server() };
+        hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<LeftSize> leftSerial{ serial.Server() };
         services::MethodSerializerFactory::OnHeap leftSerializerFactory;
-        typename main_::TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<leftSize, 2>::WithCryptoMbedTls leftEcho{ leftSerial, leftSerializerFactory, keyMaterialLeft, randomDataGenerator, tracerLeft };
+        typename main_::TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<LeftSize, 2>::WithCryptoMbedTls leftEcho{ leftSerial, leftSerializerFactory, keyMaterialLeft, randomDataGenerator, tracerLeft };
 
         services::TracerWithPrefix tracerRight{ "Right                                                      ", services::GlobalTracer() };
-        constexpr static std::size_t rightSize = RightSize;
-        hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<rightSize> rightSerial{ serial.Client() };
+        hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<RightSize> rightSerial{ serial.Client() };
         services::MethodSerializerFactory::OnHeap rightSerializerFactory;
-        typename main_::TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<rightSize, 2>::WithCryptoMbedTls rightEcho{ rightSerial, rightSerializerFactory, keyMaterialRight, randomDataGenerator, tracerRight };
+        typename main_::TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<RightSize, 2>::WithCryptoMbedTls rightEcho{ rightSerial, rightSerializerFactory, keyMaterialRight, randomDataGenerator, tracerRight };
 
         services::ServiceStubProxy serviceProxy{ leftEcho.echo };
         testing::StrictMock<services::ServiceStub> service{ rightEcho.echo };
@@ -171,18 +159,10 @@ TEST_F(EchoInstantiationSecuredDiffieHellmanTest, send_message)
 
 TEST_F(EchoInstantiationSecuredDiffieHellmanTest, send_multiple_messages)
 {
-    EXPECT_CALL(service, Method(5)).WillOnce(testing::Invoke([this]()
+    EXPECT_CALL(service, Method(5)).Times(3).WillRepeatedly([this]()
         {
-            EXPECT_CALL(service, Method(5)).WillOnce(testing::Invoke([this]()
-                {
-                    EXPECT_CALL(service, Method(5)).WillOnce(testing::Invoke([this]()
-                        {
-                            service.MethodDone();
-                        }));
-                    service.MethodDone();
-                }));
             service.MethodDone();
-        }));
+        });
 
     serviceProxy.RequestSend([this]()
         {
