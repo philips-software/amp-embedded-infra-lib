@@ -131,10 +131,12 @@ namespace services
                 auto window = stream.Extract<infra::LittleEndian<uint16_t>>();
                 sesameInitializer.InitInformationReceived(reader);
                 ReceivedInit(window);
+                requestingInitialization = true;
                 sesameInitializer.InitializationRequested([this, window]()
                     {
                         otherAvailableWindow = window;
                         sendInitResponse = true;
+                        requestingInitialization = false;
                         ReceivedInitialize();
                         SetNextState();
                     });
@@ -147,7 +149,7 @@ namespace services
                 sesameInitializer.InitInformationReceived(reader);
                 // When peers send an init message at the same time, both will respond with an init response.
                 // In that case, the first init response received will already trigger ReceivedInitialize()
-                if (!sentInitResponse)
+                if (!sentInitResponse && !requestingInitialization)
                     ReceivedInitialize();
                 break;
             case Operation::releaseWindow:
