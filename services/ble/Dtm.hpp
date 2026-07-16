@@ -9,7 +9,6 @@ namespace services
 {
     class Dtm
     {
-    public:
     protected:
         Dtm() = default;
         ~Dtm() = default;
