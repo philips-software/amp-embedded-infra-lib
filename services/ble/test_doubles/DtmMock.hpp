@@ -18,7 +18,7 @@ namespace services
         MOCK_METHOD(bool, SetTxPowerLevel, (uint8_t txPower), (override));
         MOCK_METHOD(bool, StartRxTest, (uint8_t frequency, uint8_t phy), (override));
         MOCK_METHOD(bool, StartTxTest, (uint8_t frequency, uint8_t dataLength, uint8_t packetPayload, uint8_t phy), (override));
-        MOCK_METHOD(void, StopTest, (const infra::AutoResetFunction<void(std::optional<uint16_t>)>&), (override));
+        MOCK_METHOD(void, StopTest, (infra::AutoResetFunction<void(std::optional<uint16_t>)>&&), (override));
     };
 }
 
