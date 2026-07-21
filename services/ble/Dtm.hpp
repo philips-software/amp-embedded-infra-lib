@@ -1,7 +1,7 @@
 #ifndef SERVICES_BLE_DTM_HPP
 #define SERVICES_BLE_DTM_HPP
 
-#include "infra/util/Function.hpp"
+#include "infra/util/AutoResetFunction.hpp"
 #include <cstdint>
 #include <optional>
 
@@ -22,7 +22,7 @@ namespace services
         virtual bool SetTxPowerLevel(uint8_t txPower) = 0;
         virtual bool StartRxTest(uint8_t frequency, uint8_t phy) = 0;
         virtual bool StartTxTest(uint8_t frequency, uint8_t dataLength, uint8_t packetPayload, uint8_t phy) = 0;
-        virtual void StopTest(const infra::Function<void(std::optional<uint16_t>)>& onStopped) = 0; // In case of error returns std::nullopt.
+        virtual void StopTest(infra::AutoResetFunction<void(std::optional<uint16_t>)>&& onStopped) = 0; // In case of error returns std::nullopt.
     };
 }
 
