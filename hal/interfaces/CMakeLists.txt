@@ -36,6 +36,7 @@ target_sources(hal.interfaces PRIVATE
     I2cRegisterAccess.hpp
     MacAddress.cpp
     MacAddress.hpp
+    PowerMode.hpp
     PulseWidthModulation.hpp
     QuadSpi.cpp
     QuadSpi.hpp
