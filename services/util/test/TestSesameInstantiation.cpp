@@ -14,14 +14,12 @@ namespace
     public:
         services::SerialCommunicationLoopback serial;
 
-        constexpr static std::size_t leftSize = LeftSize;
-        hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<leftSize> leftSerial{ serial.Server() };
-        main_::Sesame::WithMessageSize<leftSize> leftSesame{ leftSerial };
+        hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<LeftSize> leftSerial{ serial.Server() };
+        main_::Sesame::WithMessageSize<LeftSize> leftSesame{ leftSerial };
         testing::StrictMock<services::SesameObserverMock> leftUpper{ leftSesame.windowed };
 
-        constexpr static std::size_t rightSize = RightSize;
-        hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<rightSize> rightSerial{ serial.Client() };
-        main_::Sesame::WithMessageSize<rightSize> rightSesame{ rightSerial };
+        hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<RightSize> rightSerial{ serial.Client() };
+        main_::Sesame::WithMessageSize<RightSize> rightSesame{ rightSerial };
         testing::StrictMock<services::SesameObserverMock> rightUpper{ rightSesame.windowed };
     };
 }

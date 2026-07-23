@@ -1,14 +1,12 @@
 #ifndef SERVICES_CONNECTION_WIN_HPP
 #define SERVICES_CONNECTION_WIN_HPP
 
-#include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "infra/stream/BoundedDequeInputStream.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/util/IntrusiveList.hpp"
 #include "infra/util/SharedObjectAllocator.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "services/network/Connection.hpp"
-#include <list>
 #include <winsock2.h>
 
 namespace services
@@ -43,6 +41,7 @@ namespace services
         void SetSelfOwnership(const infra::SharedPtr<ConnectionObserver>& observer);
         void ResetOwnership();
         void TryAllocateSendStream();
+        void ProcessDataReceived();
 
     private:
         class StreamWriterWin
@@ -84,6 +83,9 @@ namespace services
         infra::NotifyingSharedOptional<StreamReaderWin> streamReader;
         infra::SharedPtr<void> keepAliveForReader;
         bool trySend = false;
+        bool closePending = false;
+        bool readProgress = false;
+        bool recursiveStreamReaderRelease = false;
 
         infra::SharedPtr<void> self;
     };

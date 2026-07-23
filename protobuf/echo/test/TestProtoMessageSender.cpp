@@ -251,3 +251,23 @@ TEST_F(ProtoMessageSenderTest, format_many_bytes)
     EXPECT_EQ((std::vector<uint8_t>{ 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5 }), stream.Storage());
     EXPECT_FALSE(stream.Failed());
 }
+
+TEST_F(ProtoMessageSenderTest, format_repeated_everything)
+{
+    test_messages::TestRepeatedEverything message;
+    services::ProtoMessageSender sender{ message };
+
+    infra::StdVectorOutputStream::WithStorage stream(infra::noFail);
+    sender.Fill(stream);
+    EXPECT_EQ(std::vector<uint8_t>{}, stream.Storage());
+}
+
+TEST_F(ProtoMessageSenderTest, format_unbounded_repeated_everything)
+{
+    test_messages::TestUnboundedRepeatedEverything message;
+    services::ProtoMessageSender sender{ message };
+
+    infra::StdVectorOutputStream::WithStorage stream(infra::noFail);
+    sender.Fill(stream);
+    EXPECT_EQ(std::vector<uint8_t>{}, stream.Storage());
+}

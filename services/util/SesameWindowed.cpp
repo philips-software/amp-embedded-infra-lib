@@ -55,9 +55,10 @@ namespace services
         const char ExtraCharacterReader::character = '\x4';
     }
 
-    SesameWindowed::SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, SesameEncoded& delegate, SesameInitializer& sesameInitializer)
+    SesameWindowed::SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, uint8_t splitBuffers, SesameEncoded& delegate, SesameInitializer& sesameInitializer)
         : SesameEncodedObserver(delegate)
         , receivedMessage(receivedMessage)
+        , splitBuffers(splitBuffers)
         , sesameInitializer(sesameInitializer)
         , ownBufferSize(static_cast<uint16_t>(SesameEncodedObserver::Subject().MaxSendMessageSize()))
         , releaseWindowSize(static_cast<uint16_t>(SesameEncodedObserver::Subject().WorstCaseEncodedMessageSize(sizeof(PacketReleaseWindow))))
@@ -75,7 +76,7 @@ namespace services
     std::size_t SesameWindowed::MaxSendMessageSize() const
     {
         assert(initialized);
-        return SesameEncodedObserver::Subject().WorstCaseDecodedMessageSize((maxUsableBufferSize - releaseWindowSize) / 2) - sizeof(Operation);
+        return SesameEncodedObserver::Subject().WorstCaseDecodedMessageSize((maxUsableBufferSize - releaseWindowSize) / splitBuffers) - sizeof(Operation);
     }
 
     void SesameWindowed::Reset()
@@ -84,6 +85,8 @@ namespace services
         assert(currentReceiveMessageReader == std::nullopt);
         assert(!readerAccess.Referenced());
         initialized = false;
+        requestingInitialization = false;
+        sentInitResponse = false;
         otherAvailableWindow = 0;
         maxUsableBufferSize = 0;
         releasedWindow = 0;
@@ -103,6 +106,33 @@ namespace services
                 receivedMessage.clear();
             });
     }
+
+    void SesameWindowed::ReceivedInit(uint16_t newWindow)
+    {}
+
+    void SesameWindowed::ReceivedInitResponse(uint16_t newWindow)
+    {}
+
+    void SesameWindowed::ReceivedReleaseWindow(uint16_t oldWindow, uint16_t newWindow)
+    {}
+
+    void SesameWindowed::ForwardingReceivedMessage(infra::StreamReaderWithRewinding& reader)
+    {}
+
+    void SesameWindowed::SendingInit(uint16_t newWindow)
+    {}
+
+    void SesameWindowed::SendingInitResponse(uint16_t newWindow)
+    {}
+
+    void SesameWindowed::SendingReleaseWindow(uint16_t deltaWindow)
+    {}
+
+    void SesameWindowed::SendingMessage(infra::StreamWriter& writer)
+    {}
+
+    void SesameWindowed::SettingOperational(std::optional<std::size_t> requestedSize, uint16_t releasedWindow, uint16_t otherWindow)
+    {}
 
     void SesameWindowed::Initialized()
     {
@@ -129,10 +159,12 @@ namespace services
                 auto window = stream.Extract<infra::LittleEndian<uint16_t>>();
                 sesameInitializer.InitInformationReceived(reader);
                 ReceivedInit(window);
+                requestingInitialization = true;
                 sesameInitializer.InitializationRequested([this, window]()
                     {
                         otherAvailableWindow = window;
                         sendInitResponse = true;
+                        requestingInitialization = false;
                         ReceivedInitialize();
                         SetNextState();
                     });
@@ -143,7 +175,10 @@ namespace services
                 ReceivedInitResponse(otherAvailableWindow);
                 releasedWindow = static_cast<uint16_t>(encodedSize);
                 sesameInitializer.InitInformationReceived(reader);
-                ReceivedInitialize();
+                // When peers send an init message at the same time, both will respond with an init response.
+                // In that case, the first init response received will already trigger ReceivedInitialize()
+                if (!sentInitResponse && !requestingInitialization)
+                    ReceivedInitialize();
                 break;
             case Operation::releaseWindow:
                 if (initialized)
@@ -221,7 +256,7 @@ namespace services
             }
             else if (requestedSendMessageSize != std::nullopt && SesameEncodedObserver::Subject().WorstCaseEncodedMessageSize(*requestedSendMessageSize + 1) + releaseWindowSize <= otherAvailableWindow)
                 state.Emplace<StateSendingMessage>(*this).Request();
-            else if (releasedWindow >= (ownBufferSize - releaseWindowSize) / 2 && releaseWindowSize <= otherAvailableWindow)
+            else if (releasedWindow >= (ownBufferSize - releaseWindowSize) / splitBuffers && releaseWindowSize <= otherAvailableWindow)
                 state.Emplace<StateSendingReleaseWindow>(*this).Request();
             else
                 state.Emplace<StateOperational>(*this);
@@ -295,6 +330,7 @@ namespace services
         : State(communication)
     {
         communication.sending = true;
+        communication.sentInitResponse = true;
     }
 
     void SesameWindowed::StateSendingInitResponse::Request()

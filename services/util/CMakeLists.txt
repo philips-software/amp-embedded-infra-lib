@@ -21,6 +21,8 @@ target_sources(services.util PRIVATE
     DebouncedButton.hpp
     DebugLed.cpp
     DebugLed.hpp
+    DoubleBufferedSerialCommunication.cpp
+    DoubleBufferedSerialCommunication.hpp
     EchoInstantiation.cpp
     EchoInstantiation.hpp
     EchoOnMessageCommunication.cpp

@@ -14,22 +14,18 @@ namespace services
         explicit RetryGattClientCharacteristicsOperations(GattClientCharacteristicOperations& gattClient);
 
         // Implementation of GattClientCharacteristicOperations
-        void Read(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone) override;
-        void Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
-        void WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
-
-        void EnableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
-        void DisableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
-
-        void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
-        void DisableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
+        void ReadCharacteristic(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone) override;
+        void WriteCharacteristic(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
+        void WriteCharacteristicWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
+        void ReadDescriptor(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone) override;
+        void WriteDescriptor(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
 
         // Implementation of GattClientStackUpdateObserver
         void NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data) override;
         void IndicationReceived(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void()>& onDone) override;
 
     private:
-        void TryWriteWithoutResponse();
+        void TryWriteCharacteristicWithoutResponse();
 
     private:
         struct Operation

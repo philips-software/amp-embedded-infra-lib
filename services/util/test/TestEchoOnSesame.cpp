@@ -67,14 +67,14 @@ TEST_F(EchoOnSesameTest, invoke_service_proxy_method_is_split_over_two_packets)
     EXPECT_CALL(sesame, ResetReading());
     sesame.GetObserver().Initialized();
 
-    EXPECT_CALL(sesame, MaxSendMessageSize()).WillRepeatedly(testing::Return(4));
+    EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(4)).WillOnce(testing::Return(10000));
     EXPECT_CALL(sesame, RequestSendMessage(4));
     serviceProxy.RequestSend([this]()
         {
             serviceProxy.Method(5);
         });
 
-    EXPECT_CALL(sesame, RequestSendMessage(4));
+    EXPECT_CALL(sesame, RequestSendMessage(94));
     infra::ByteOutputStreamWriter::WithStorage<128> writer;
     infra::LimitedStreamWriter limitedWriter(writer, 4);
     sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(limitedWriter));

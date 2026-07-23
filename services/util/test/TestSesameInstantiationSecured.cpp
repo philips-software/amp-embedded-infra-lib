@@ -19,14 +19,12 @@ namespace
         services::SesameSecured::IvType ivA{ 5, 6 };
         services::SesameSecured::IvType ivB{ 7, 8 };
 
-        constexpr static std::size_t leftSize = LeftSize;
-        hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<leftSize> leftSerial{ serial.Server() };
-        main_::SesameSecured::WithMessageSize<leftSize> leftSesame{ leftSerial, services::SesameSecured::KeyMaterial{ keyA, ivA, keyB, ivB } };
+        hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<LeftSize> leftSerial{ serial.Server() };
+        main_::SesameSecured::WithMessageSize<LeftSize> leftSesame{ leftSerial, services::SesameSecured::KeyMaterial{ keyA, ivA, keyB, ivB } };
         testing::StrictMock<services::SesameObserverMock> leftUpper{ leftSesame.secured };
 
-        constexpr static std::size_t rightSize = RightSize;
-        hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<rightSize> rightSerial{ serial.Client() };
-        main_::SesameSecured::WithMessageSize<rightSize> rightSesame{ rightSerial, services::SesameSecured::KeyMaterial{ keyB, ivB, keyA, ivA } };
+        hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<RightSize> rightSerial{ serial.Client() };
+        main_::SesameSecured::WithMessageSize<RightSize> rightSesame{ rightSerial, services::SesameSecured::KeyMaterial{ keyB, ivB, keyA, ivA } };
         testing::StrictMock<services::SesameObserverMock> rightUpper{ rightSesame.secured };
     };
 }
