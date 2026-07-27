@@ -13,7 +13,7 @@ option java_outer_classname = "GapProto";
 message Address
 {
     // A 48-bit Bluetooth device address, as defined in Bluetooth Core Specification v6.3, Vol 6, Part B, Section 1.3
-    // Encoded as 6 bytes, least-significant byte first (little-endian).
+    // Encoded as a 6-byte Bluetooth device address in least-significant-octet-first order.
     // Example: "AA:BB:CC:DD:EE:FF" is represented as { 0xFF, 0xEE, 0xDD, 0xCC, 0xBB, 0xAA }.
     bytes address = 1 [(bytes_size) = 6];
 }
