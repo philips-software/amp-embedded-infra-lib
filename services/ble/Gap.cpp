@@ -433,9 +433,9 @@ namespace infra
     TextOutputStream& operator<<(TextOutputStream& stream, const services::GapDeviceAddressType& addressType)
     {
         if (addressType == services::GapDeviceAddressType::publicAddress)
-            stream << "Public Device Address";
+            stream << "Public";
         else if (addressType == services::GapDeviceAddressType::randomAddress)
-            stream << "Random Device Address";
+            stream << "Random";
         else
             LOG_AND_ABORT_ENUM(addressType);
 
