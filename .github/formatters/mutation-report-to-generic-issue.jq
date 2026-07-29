@@ -10,7 +10,7 @@
         | del(.value) as $file
         | $mutants
         | select(.status == ("Survived", "NoCoverage"))
-        | select(.location.start.line > 0)
+        | select((.location.start.line // 0) > 0)
         | (
             if .replacement then
                 "The mutation operator '" + .mutatorName + "' has mutated the input to " + .replacement + " without any tests failing."
@@ -38,12 +38,25 @@
                         $file.key
                     end
                 ),
-                textRange: {
-                    startLine: .location.start.line,
-                    endLine: .location.end.line,
-                    startColumn: (.location.start.column - 1),
-                    endColumn: (.location.end.column - 1)
-                }
+                textRange: (
+                    if (
+                        (.location.end.line // 0) >= .location.start.line
+                        and (.location.start.column // 0) >= 1
+                        and (.location.end.column // 0) >= 1
+                        and (.location.end.line > .location.start.line or .location.end.column > .location.start.column)
+                    ) then
+                        {
+                            startLine: .location.start.line,
+                            endLine: .location.end.line,
+                            startColumn: (.location.start.column - 1),
+                            endColumn: (.location.end.column - 1)
+                        }
+                    else
+                        {
+                            startLine: .location.start.line
+                        }
+                    end
+                )
             },
             type: "CODE_SMELL",
             severity: "MAJOR",
