@@ -49,7 +49,7 @@ namespace services
         , tracer(tracer)
     {}
 
-    void TracingAsciiStreamWriter::TracingAsciiStreamWriter::Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy)
+    void TracingAsciiStreamWriter::Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy)
     {
         writer.Insert(range, errorPolicy);
         tracer.Continue() << infra::AsAscii(range);
