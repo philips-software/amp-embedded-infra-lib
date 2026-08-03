@@ -1,4 +1,5 @@
 .cache/
+.megalinter_github_conf/
 .vs/
 .xwin-cache/
 build/

@@ -21,7 +21,7 @@ namespace services
         infra::DataInputStream::WithErrorPolicy stream(*reader);
         auto marker = reader->ConstructSaveMarker();
         while (!stream.Empty())
-            tracer.Trace() << infra::ByteRangeAsString(stream.ContiguousRange());
+            tracer.Trace() << infra::AsAscii(stream.ContiguousRange());
 
         reader->Rewind(marker);
         HttpClientImpl::BodyReaderAvailable(std::move(reader));
@@ -74,7 +74,7 @@ namespace services
         infra::DataInputStream::WithErrorPolicy stream(*reader);
         auto marker = reader->ConstructSaveMarker();
         while (!stream.Empty())
-            tracer.Trace() << infra::ByteRangeAsString(stream.ContiguousRange());
+            tracer.Trace() << infra::AsAscii(stream.ContiguousRange());
 
         reader->Rewind(marker);
         HttpClientImplWithRedirection::BodyReaderAvailable(std::move(reader));

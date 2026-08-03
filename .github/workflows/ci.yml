@@ -24,7 +24,7 @@ jobs:
     name: Host Build & Test (ubuntu-latest)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: hendrikmuhs/ccache-action@d62db5f07c26379fc4b4e0916f098a92573c3b03 # v1.2.23
@@ -51,9 +51,9 @@ jobs:
   host_build_test_container:
     name: Host Build & Test (amp-devcontainer-cpp)
     runs-on: ubuntu-latest
-    container: ghcr.io/philips-software/amp-devcontainer-cpp:7.0.0@sha256:dc6bb049da53127b887c4ad5312ddbafd7daf57fb76bcca26abe643e65af9f59 # 7.0.0
+    container: ghcr.io/philips-software/amp-devcontainer-cpp:8.0.1@sha256:489772f6e442f93804c0ccdb8879d84fbb1a70a203e8a2885ec97b39858bddee # 8.0.1
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: hendrikmuhs/ccache-action@d62db5f07c26379fc4b4e0916f098a92573c3b03 # v1.2.23
@@ -74,9 +74,9 @@ jobs:
   host_build_test_clang_msvc:
     name: Host Build & Test (clang-msvc)
     runs-on: ubuntu-latest
-    container: ghcr.io/philips-software/amp-devcontainer-cpp:7.0.0@sha256:dc6bb049da53127b887c4ad5312ddbafd7daf57fb76bcca26abe643e65af9f59 # 7.0.0
+    container: ghcr.io/philips-software/amp-devcontainer-cpp:8.0.1@sha256:489772f6e442f93804c0ccdb8879d84fbb1a70a203e8a2885ec97b39858bddee # 8.0.1
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -104,7 +104,7 @@ jobs:
         os: [macos-latest, windows-latest]
       fail-fast: false
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: hendrikmuhs/ccache-action@d62db5f07c26379fc4b4e0916f098a92573c3b03 # v1.2.23
@@ -126,7 +126,7 @@ jobs:
     name: Host Build without MbedTLS
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: hendrikmuhs/ccache-action@d62db5f07c26379fc4b4e0916f098a92573c3b03 # v1.2.23
@@ -147,11 +147,11 @@ jobs:
         gcc: ["7-2018-q2", "8-2019-q3", "9-2020-q2", "10.3-2021.10"]
         configuration: ["RelWithDebInfo", "Debug"]
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Install GNU Arm Embedded Toolchain ${{ matrix.gcc }}
-        uses: carlosperate/arm-none-eabi-gcc-action@0725d97b026acf7fc8e22dfd5bee912998879ba8 # v1.12.3
+        uses: carlosperate/arm-none-eabi-gcc-action@98c40e51546516419841748d3210c290df0d2c6c # v1.13.0
         with:
           release: ${{ matrix.gcc }}
       - run: sudo apt-get update && sudo apt-get install ninja-build
@@ -172,11 +172,11 @@ jobs:
     name: Embedded Build Without Host Install
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Install GNU Arm Embedded Toolchain 10.3-2021.10
-        uses: carlosperate/arm-none-eabi-gcc-action@0725d97b026acf7fc8e22dfd5bee912998879ba8 # v1.12.3
+        uses: carlosperate/arm-none-eabi-gcc-action@98c40e51546516419841748d3210c290df0d2c6c # v1.13.0
         with:
           release: "10.3-2021.10"
       - run: sudo apt-get update && sudo apt-get install ninja-build
@@ -196,11 +196,11 @@ jobs:
       matrix:
         rtos: ["FreeRTOS", "ThreadX"]
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Install GNU Arm Embedded Toolchain 10.3-2021.10
-        uses: carlosperate/arm-none-eabi-gcc-action@0725d97b026acf7fc8e22dfd5bee912998879ba8 # v1.12.3
+        uses: carlosperate/arm-none-eabi-gcc-action@98c40e51546516419841748d3210c290df0d2c6c # v1.13.0
         with:
           release: "10.3-2021.10"
       - run: sudo apt-get update && sudo apt-get install ninja-build
