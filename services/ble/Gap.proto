@@ -234,12 +234,12 @@ message SecurityPreference
 // State constraints:
 //  After startup this service is only available after GapPeripheralResponse.CurrentState with state standby is received.
 //  Unless otherwise specified, all methods are allowed in all link layer states.
-//  Non-conformance will results in an assertion.
+//  Non-conformance will result in an assertion.
 // Callback constraints:
 //  Unless otherwise specified, methods do not by default result in any callbacks on the response service
 //  When a callback is specified for a method and only for that method, another call of the same method is not allowed until the callback has been received.
 //  When a callback is specified for more than one method, any of the associated method calls is not allowed until the callback for the previous call has been received
-//  Non-conformance will results in an assertion.
+//  Non-conformance will result in an assertion.
 // Startup:
 //  On startup, the first CurrentState(standby) message signals that the GapPeripheral service
 //  is initialized and ready to accept method calls. No GapPeripheral methods shall be called
@@ -333,7 +333,7 @@ service GapPeripheralResponse
 {
     option(service_id) = 34;
 
-    // CurrentState is triggered as a response to a method and/or invoked by BLE Stack events
+    // CurrentState is triggered as a response to a method and/or invoked by BLE stack events
     // Example: if GetState() is called while the device is in the connected state and the peer disconnects concurrently,
     // both actions will result in a CurrentState response, however the last received CurrentState is the latest state
     rpc CurrentState(State) returns(Nothing) { option(method_id) = 2; }
@@ -344,7 +344,7 @@ service GapPeripheralResponse
 
     rpc PairingResult(PairingStatus) returns (Nothing) { option (method_id) = 5; }
 
-    // NumberOfBondsChanged triggered when bondlist is updated after events like bonding or remove bond.
+    // NumberOfBondsChanged is triggered when the bond list is updated after bonding or bond removal.
     rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 6; }
     
     rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 7; }
