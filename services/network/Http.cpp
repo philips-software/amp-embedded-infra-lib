@@ -101,40 +101,24 @@ namespace services
 
     std::size_t HttpRequestFormatter::Size() const
     {
-        if (!sentHeader)
-            return HttpVerbToString(verb).size() + requestTarget.size() + httpVersion.size() + HeadersSize() + (2 * crlf.size()) + (2 * sp.size()) + content.size();
-        else
-            return content.size();
+        return (HeaderBlockSize() - headerPosition) + content.size();
     }
 
     std::size_t HttpRequestFormatter::Write(infra::TextOutputStream stream) const
     {
-        if (!sentHeader)
-        {
-            stream << verb << sp << requestTarget << sp << httpVersion << crlf;
-
-            for (const auto& header : headers)
-                stream << header << crlf;
-
-            stream << hostHeader << crlf;
-
-            if (contentLengthHeader)
-                stream << *contentLengthHeader << crlf;
-            if (chunked)
-                stream << HttpHeader{ "Transfer-Encoding", "chunked" } << crlf;
-
-            stream << crlf;
-        }
+        auto written = WriteHeader(stream, headerPosition);
 
         auto available = std::min(stream.Available(), content.size());
         stream << content.substr(0, available);
-        return available;
+
+        return written + available;
     }
 
     void HttpRequestFormatter::Consume(std::size_t amount)
     {
-        sentHeader = true;
-        content = content.substr(amount);
+        auto headerAmount = std::min(amount, HeaderBlockSize() - headerPosition);
+        headerPosition += headerAmount;
+        content = content.substr(amount - headerAmount);
     }
 
     void HttpRequestFormatter::AddContentLength(std::size_t size)
@@ -158,6 +142,60 @@ namespace services
         headerSize += hostHeader.Size() + crlf.size();
 
         return headerSize;
+    }
+
+    std::size_t HttpRequestFormatter::HeaderBlockSize() const
+    {
+        return HttpVerbToString(verb).size() + requestTarget.size() + httpVersion.size() + HeadersSize() + (2 * crlf.size()) + (2 * sp.size());
+    }
+
+    std::size_t HttpRequestFormatter::WriteHeader(infra::TextOutputStream& stream, std::size_t skip) const
+    {
+        std::size_t written = 0;
+
+        auto writeFragment = [&stream, &skip, &written](infra::BoundedConstString fragment)
+        {
+            if (skip >= fragment.size())
+                skip -= fragment.size();
+            else
+            {
+                fragment = fragment.substr(skip);
+                skip = 0;
+
+                auto amount = std::min(stream.Available(), fragment.size());
+                stream << fragment.substr(0, amount);
+                written += amount;
+            }
+        };
+
+        auto writeHeaderLine = [&writeFragment](const HttpHeader& header)
+        {
+            writeFragment(header.Field());
+            writeFragment(separator);
+            writeFragment(header.Value());
+            writeFragment(crlf);
+        };
+
+        writeFragment(HttpVerbToString(verb));
+        writeFragment(sp);
+        writeFragment(requestTarget);
+        writeFragment(sp);
+        writeFragment(httpVersion);
+        writeFragment(crlf);
+
+        for (const auto& header : headers)
+            writeHeaderLine(header);
+
+        writeHeaderLine(hostHeader);
+
+        if (contentLengthHeader)
+            writeHeaderLine(*contentLengthHeader);
+        if (chunked)
+            writeHeaderLine(HttpHeader{ "Transfer-Encoding", "chunked" });
+
+        writeFragment(crlf);
+
+        return written;
     }
 
     HttpHeaderParser::HttpHeaderParser(HttpHeaderParserObserver& observer)
