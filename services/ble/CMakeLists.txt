@@ -31,6 +31,8 @@ target_sources(services.ble PRIVATE
     Gap.hpp
     GapPeripheralIntervalDecorator.cpp
     GapPeripheralIntervalDecorator.hpp
+    GapPeripheralStateGuardDecorator.cpp
+    GapPeripheralStateGuardDecorator.hpp
     Gatt.cpp
     Gatt.hpp
     GattClient.cpp
