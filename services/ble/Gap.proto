@@ -340,12 +340,15 @@ service GapPeripheralResponse
     rpc CurrentState(State) returns(Nothing) { option(method_id) = 2; }
 
     // Expected states: standby, advertising, connected
+    // Sent in response to GapPeripheral.GetAdvertisingAddress.
     rpc AdvertisingAddress(AddressWithType) returns(Nothing) { option(method_id) = 3; }
 
     // Expected states: standby, advertising, connected
+    // Sent in response to GapPeripheral.GetIdentityAddress.
     rpc IdentityAddress(AddressWithType) returns(Nothing) { option(method_id) = 4; }
 
     // Expected states: connected
+    // Sent when a pairing/bonding procedure completes or fails.
     rpc PairingResult(PairingStatus) returns (Nothing) { option (method_id) = 5; }
 
     // Expected states: standby, connected
@@ -353,6 +356,7 @@ service GapPeripheralResponse
     rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 6; }
     
     // Expected states: standby, advertising, connected
+    // Sent in response to GapPeripheral.GetBondInformation.
     rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 7; }
 
     // Expected states: connected
