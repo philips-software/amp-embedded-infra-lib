@@ -484,12 +484,12 @@ service GapCentral
 {
     option (service_id) = 33;
 
-    ## Allowed states: standby, scanning, initiating, connected [Note: Use new structured format]
+    ## Allowed states: standby, scanning, connected, initiating [Note: Use new structured format]
     ## Expected return: GapCentralResponse.CurrentState with current state [Note: Use new structured format]
     rpc GetState(Nothing) returns (Nothing) { option (method_id) = 1; }
 
     ## Allowed states: standby [Note: Use new structured format]
-    ## Description: Only devices matching the filter will be reported via GapCentralResponse.DeviceDiscovered. [Note: Use new structured format]
+    ## Description: Only devices matching the filter will be reported via GapCentralResponse.DeviceDiscovered [Note: Use new structured format]
     ##   Filters are reset when scanning is stopped. [Note: Continuation indent under Description]
     rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 2; }
 
@@ -605,8 +605,9 @@ service GapCentralResponse {
     ## Expected states: connected [Note: Only during active pairing]
     ## Triggered by: GapCentral.PairAndBond (during pairing, when negotiated pairing method requires user interaction) [Note: Clarify trigger context]
     ## Description: Requests user interaction during an active pairing procedure.
-    ##   The caller must respond with GapCentral.NumericComparisonConfirm or GapCentral.AuthenticateWithPasskey
-    ##   within 30 seconds (SMP protocol timeout), depending on AuthenticationRequest.isNumericComparison.
+    ##   This will only be triggered when the negotiated pairing method requires it, which is determined by the I/O capabilities configured via GapPeripheral.SetSecurityPreferences
+    ##   Not all pairing methods require user interaction (e.g. Just Works will never trigger this).
+    ##   Must be responded to with GapPeripheral.NumericComparisonConfirm when AuthenticationRequest.isNumericComparison is true.
     rpc AuthenticationRequired(AuthenticationRequest) returns (Nothing) { option (method_id) = 3; }
 
     ## Expected states: connected, standby [Note: Connected if pairing succeeded/failed; standby if disconnect occurred during pairing]
