@@ -469,138 +469,169 @@ message BondList
 // State constraints:
 //  After startup this service is only available after GapCentralResponse.CurrentState with state standby is received.
 //  Unless otherwise specified, all methods are allowed in all link layer states.
-//  Non-conformance may cause undefined behavior
+##  Non-conformance will result in an assertion. [Note: Align with GapPeripheral]
 // Callback constraints:
 //  Unless otherwise specified, methods do not by default result in any callbacks on the response service
 //  When a callback is specified for a method and only for that method, another call of the same method is not allowed until the callback has been received.
 //  When a callback is specified for more than one method, any of the associated method calls is not allowed until the callback for the previous call has been received
-//  Non-conformance may cause undefined behavior
+//  Non-conformance will result in an assertion.
+## Startup: [Note: Align with GapPeripheral]
+##  On startup, the first CurrentState(standby) message signals that the GapCentral service
+##  is initialized and ready to accept method calls. No GapCentral methods shall be called
+##  before this initial CurrentState(standby) is received.
 // ==================================================
 service GapCentral
 {
     option (service_id) = 33;
 
-    // ==================================================
-    // CORE FEATURE SET
-    // All servers must implement these methods  
-    // ==================================================
-
-    // Results in GapCentralResponse.CurrentState with current state
+    ## Allowed states: standby, scanning, initiating, connected [Note: Use new structured format]
+    ## Expected return: GapCentralResponse.CurrentState with current state [Note: Use new structured format]
     rpc GetState(Nothing) returns (Nothing) { option (method_id) = 1; }
 
-    // Allowed states: standby
-    // Only devices matching the filter will be reported via GapCentralResponse.DeviceDiscovered.
-    // Filters are reset when scanning is stopped
+    ## Allowed states: standby [Note: Use new structured format]
+    ## Description: Only devices matching the filter will be reported via GapCentralResponse.DeviceDiscovered. [Note: Use new structured format]
+    ##   Filters are reset when scanning is stopped. [Note: Continuation indent under Description]
     rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 2; }
 
-    // Allowed states: standby
-    // Starts scanning for advertising peripheral devices until Standby is called.
-    // Discovered devices will be reported via GapCentralResponse.DeviceDiscovered.
-    // It's recommended to add a DeviceDiscoveryFilter, otherwise devices might be missed due to too many being discovered.
-    // Results in GapCentralResponse.CurrentState with state scanning
+    ## Allowed states: standby [Note: Use new structured format]
+    ## Expected return: GapCentralResponse.CurrentState with state scanning [Note: Use new structured format]
+    ## Additional returns: GapCentralResponse.DeviceDiscovered for each matching device [Note: DeviceDiscovered was buried in description, promoted to structured field]
+    ## Description: Starts scanning for advertising peripheral devices until Standby is called. [Note: Use new structured format]
+    ##   It's recommended to add a DeviceDiscoveryFilter, otherwise devices might be missed due to too many being discovered. [Note: Continuation indent under Description]
     rpc StartDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 3; }
 
-    // Allowed states: standby
-    // Initiates a connection to a peripheral device with the given address.
-    // For successful connection establishment, state will follow: standby -> initiating -> connected
-    // For failed connection establishment, state will follow: standby -> initiating -> standby
-    // Results in GapCentralResponse.CurrentState
+    ## Allowed states: standby [Note: Use new structured format]
+    ## Expected return: GapCentralResponse.CurrentState (standby -> initiating -> connected on success, standby -> initiating -> standby on failure) [Note: Merged state sequence from description into Expected return]
+    ## Description: Initiates a connection to a peripheral device with the given address. [Note: Use new structured format; removed redundant state sequence]
     rpc Connect(ConnectionParameters) returns (Nothing) { option (method_id) = 4; }
 
-    // Allowed states: scanning, initiating, connected
-    // Terminates the current (or initiating) connection.
-    // Results in GapCentralResponse.CurrentState with state standby
+    ## Allowed states: standby, scanning, connected, initiating [Note: Added standby to align with enum order; reordered]
+    ## Expected return: GapCentralResponse.CurrentState with state standby [Note: Use new structured format]
+    // Description: Terminates the current (or initiating) connection.
     rpc Standby(Nothing) returns (Nothing) { option (method_id) = 5; }
 
-    // Allowed states: connected
-    // Can be called to secure a existing connection.
-    // If the peripheral sends a security request, this procedure is triggered automatically.
-    // 1. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
-    // 2. If there is a pre-existing bond, then the connection will be encrypted using the existing keys.
-    // During pairing, GapCentralResponse.AuthenticationRequired may be called if user interaction is required.
-    // Results in GapCentralResponse.PairingResult
-    // Can result in GapCentralResponse.NumberOfBondsChanged if a new bond was created
-    // Can result in GapCentralResponse.CurrentState with standby if device disconnected
+    ## Allowed states: connected [Note: Use new structured format]
+    ## Expected return: GapCentralResponse.PairingResult [Note: Use new structured format]
+    ## Additional returns: GapCentralResponse.NumberOfBondsChanged if a new bond was created, [Note: Promoted from inline comments to structured field]
+    ##   GapCentralResponse.CurrentState with standby if device disconnected, [Note: Continuation indent under Additional returns]
+    ##   GapCentralResponse.AuthenticationRequired if user interaction is required during pairing [Note: Was buried at end of description, promoted]
+    ## Description: Secures an existing connection. [Note: Condensed opening line; fixed "a existing" -> "an existing"]
+    //   If the peripheral sends a security request, this procedure is triggered automatically.
+    //   1. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
+    //   2. If there is a pre-existing bond, then the connection will be encrypted using the existing keys.
     rpc PairAndBond(Nothing) returns (Nothing) { option (method_id) = 6; }
 
-    // Allowed in link layer states: standby
-    // Configures the minimum security mode and level required for connections.
-    // Should be called once during initialization before any connections are made.
-    // If a connected peer does not meet the required security level, the connection will be rejected.
+    ## Allowed states: standby [Note: Use new structured format; was "Allowed in link layer states"]
+    ## Description: Configures the minimum security mode and level required for connections. [Note: Use new structured format]
+    //   Should be called once during initialization before any connections are made.
+    //   If a connected peer does not meet the required security level, the connection will be rejected.
     rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 7; }
 
-    // Allowed in link layer states: standby
-    // Configures the I/O capabilities of this device, used to determine the pairing method during PairAndBond.
-    // Should be called once during initialization before any pairing takes place.
-    // The selected capabilities influence which pairing method is chosen (e.g. Just Works, Passkey Entry, or Numeric Comparison).
+    ## Allowed states: standby [Note: Use new structured format; was "Allowed in link layer states"]
+    ## Description: Configures the I/O capabilities of this device, used to determine the pairing method during PairAndBond. [Note: Use new structured format]
+    //   Should be called once during initialization before any pairing takes place.
+    //   The selected capabilities influence which pairing method is chosen (e.g. Just Works, Passkey Entry, or Numeric Comparison).
     rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 8; }
 
-    // Allowed in link layer states: connected
-    // Provides the passkey entered by the user in response to GapCentralResponse.AuthenticationRequired.
-    // Only valid when AuthenticationRequest.isNumericComparison is false.
-    // Must be called within the SMP protocol timeout (30 seconds, Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4) of receiving AuthenticationRequired, otherwise pairing will fail with PairingFailedReason.timeout.
-    // Influences GapCentralResponse.PairingResult response of PairAndBond
+    ## Allowed states: connected [Note: Use new structured format; was "Allowed in link layer states"]
+    ## Description: Provides the passkey entered by the user in response to GapCentralResponse.AuthenticationRequired. [Note: Use new structured format]
+    //   Only valid when AuthenticationRequest.isNumericComparison is false.
+    //   Must be called within the SMP protocol timeout (30 seconds) of receiving AuthenticationRequired,
+    //   otherwise pairing will fail with PairingFailedReason.timeout.
+    //   Influences GapCentralResponse.PairingResult response of PairAndBond.
     rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 9; }
 
-    // Allowed in link layer states: connected
-    // Confirms or rejects the numeric comparison in response to GapCentralResponse.AuthenticationRequired.
-    // Only valid when AuthenticationRequest.isNumericComparison is true.
-    // Must be called within the SMP protocol timeout (30 seconds, Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4) of receiving AuthenticationRequired, otherwise pairing will fail with PairingFailedReason.timeout.
-    // Influences GapCentralResponse.PairingResult response of PairAndBond
+    ## Allowed states: connected [Note: Use new structured format; was "Allowed in link layer states"]
+    ## Description: Confirms or rejects the numeric comparison in response to GapCentralResponse.AuthenticationRequired. [Note: Use new structured format]
+    //   Only valid when AuthenticationRequest.isNumericComparison is true.
+    //   Must be called within the SMP protocol timeout (30 seconds) of receiving AuthenticationRequired,
+    //   otherwise pairing will fail with PairingFailedReason.timeout.
+    //   Influences GapCentralResponse.PairingResult response of PairAndBond.
     rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 10; }
 
-    // Allowed in link layer states: standby
-    // Removes all stored bonds.
-    // Results in GapCentralResponse.NumberOfBondsChanged
+    ## Allowed states: standby [Note: Use new structured format; was "Allowed in link layer states"]
+    ## Expected return: GapCentralResponse.NumberOfBondsChanged [Note: Use new structured format; was "Results in"]
+    ## Description: Removes all stored bonds. [Note: Use new structured format]
     rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 11; }
-  
-    // Allowed in link layer states: standby
-    // Removes the bond associated with the given identity address.
-    // Results in GapCentralResponse.NumberOfBondsChanged
+
+    ## Allowed states: standby [Note: Use new structured format; was "Allowed in link layer states"]
+    ## Expected return: GapCentralResponse.NumberOfBondsChanged [Note: Use new structured format; was "Results in"]
+    ## Description: Removes the bond associated with the given identity address. [Note: Use new structured format]
     rpc RemoveBondWithAddress(AddressWithType) returns (Nothing) { option (method_id) = 12; }
 
-    // Allowed in link layer states: standby, scanning, initiating, connected
-    // Resolves a resolvable private address to the identity address of an already bonded device.
-    // Useful to identify whether a device seen during scanning is already bonded, without needing to connect first.
-    // Will only succeed if the address is a resolvable private address and the device is bonded.
-    // Results in GapCentralResponse.ResolvePrivateAddressResult
+    ## Allowed states: standby, scanning, connected, initiating [Note: Use new structured format; was "Allowed in link layer states"]
+    ## Expected return: GapCentralResponse.ResolvePrivateAddressResult [Note: Use new structured format; was "Results in"]
+    ## Description: Resolves a resolvable private address to the identity address of an already bonded device. [Note: Use new structured format]
+    //   Will only succeed if the address is a resolvable private address and the device is bonded.
     rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; }
 
-    // Allowed in link layer states: standby, scanning, initiating, connected
-    // Returns the list of bonded devices including their identity address and device name, sorted oldest to newest.
-    // Results in GapCentralResponse.BondListReceived
+    ## Allowed states: standby, scanning, connected, initiating [Note: Use new structured format; was "Allowed in link layer states"]
+    ## Expected return: GapCentralResponse.BondListReceived [Note: Use new structured format; was "Results in"]
+    ## Description: Returns the list of bonded devices including their identity address and device name, sorted oldest to newest. [Note: Use new structured format]
     rpc GetBondList(Nothing) returns (Nothing) { option (method_id) = 14; }
 
-    // Allowed in link layer states: standby
-    // Sets the local identity address used by the central when privacy mode is disabled.
-    // The address type may be public or random.
-    // This does not set a resolvable private address; when privacy mode is enabled, the controller generates and rotates resolvable private addresses automatically.
+    ## Allowed states: standby [Note: Use new structured format; was "Allowed in link layer states"]
+    ## Description: Sets the local identity address used by the central when privacy mode is disabled. [Note: Use new structured format]
+    //   The address type may be public or random.
+    //   This does not set a resolvable private address; when privacy mode is enabled, the controller generates and rotates resolvable private addresses automatically.
     rpc SetIdentityAddress(AddressWithType) returns (Nothing) { option (method_id) = 15; }
 
-    // Allowed in link layer states: standby
-    // Enables or disables use of a resolvable private address for the central.
-    // When enabled, the controller generates and rotates the private address automatically based on the local IRK.
-    // When disabled, the central uses its configured identity address.
+    ## Allowed states: standby [Note: Use new structured format; was "Allowed in link layer states"]
+    ## Description: Enables or disables use of a resolvable private address for the central. [Note: Use new structured format]
+    //   When enabled, the controller generates and rotates the private address automatically based on the local IRK.
+    //   When disabled, the central uses its configured identity address.
     rpc SetPrivacyMode(BoolValue) returns (Nothing) { option (method_id) = 16; }
 
     // DEPRECATED: Will be removed in the near future.
-    // Responds with GapCentralResponse.DeviceBonded
+    ## Expected return: GapCentralResponse.DeviceBonded [Note: Use new structured format; was "Responds with"]
     rpc IsDeviceBonded(AddressWithType) returns (Nothing) { option (method_id) = 17; }
 }
 
 service GapCentralResponse {
     option(service_id) = 35;
 
+    ## Expected states: standby, scanning, initiating, connected [Note: All states possible; filled in]
+    ## Triggered by: GapCentral.GetState, GapCentral.StartDeviceDiscovery, GapCentral.Connect, GapCentral.Standby, GapCentral.PairAndBond, BLE stack events (e.g. peer-initiated disconnect) [Note: Exhaustive list of triggers]
+    ## Description: CurrentState is triggered as a response to a method and/or invoked by BLE stack events
+    ## Example: if GetState() is called while the device is in the connected state and the peer disconnects concurrently,
+    ##   both actions will result in a CurrentState response, however the last received CurrentState is the latest state
     rpc CurrentState(State) returns (Nothing) { option (method_id) = 1; }
     
+    ## Expected states: scanning [Note: Only emitted while scanning is active]
+    ## Triggered by: GapCentral.StartDeviceDiscovery (continuously, for each matching device) [Note: Clarify it's a stream, not a single response]
+    ## Description: Reports a discovered advertising device. Only devices matching the configured DeviceDiscoveryFilter are reported.
     rpc DeviceDiscovered(DiscoveredDevice) returns (Nothing) { option (method_id) = 2; }
+
+    ## Expected states: connected [Note: Only during active pairing]
+    ## Triggered by: GapCentral.PairAndBond (during pairing, when negotiated pairing method requires user interaction) [Note: Clarify trigger context]
+    ## Description: Requests user interaction during an active pairing procedure.
+    ##   The caller must respond with GapCentral.NumericComparisonConfirm or GapCentral.AuthenticateWithPasskey
+    ##   within 30 seconds (SMP protocol timeout), depending on AuthenticationRequest.isNumericComparison.
     rpc AuthenticationRequired(AuthenticationRequest) returns (Nothing) { option (method_id) = 3; }
+
+    ## Expected states: connected, standby [Note: Connected if pairing succeeded/failed; standby if disconnect occurred during pairing]
+    ## Triggered by: GapCentral.PairAndBond (on completion or failure of the pairing procedure) [Note: Clarify it's the terminal callback for PairAndBond]
+    ## Description: Reports the outcome of a PairAndBond procedure.
+    ##   If PairingStatus.pairedSuccessfully is false, PairingFailedReason indicates the cause.
     rpc PairingResult(PairingStatus) returns (Nothing) { option (method_id) =  4; }
+
+    ## Expected states: standby, scanning, initiating, connected [Note: Can be called in any state per GapCentral.ResolvePrivateAddress]
+    ## Triggered by: GapCentral.ResolvePrivateAddress [Note: Single trigger]
+    ## Description: Returns the result of a private address resolution attempt.
+    ##   If successful, contains the resolved identity address of the bonded device.
     rpc ResolvePrivateAddressResult(ResolvedPrivateAddress) returns (Nothing) { option (method_id) = 5; }
     
+    ## Expected states: standby, connected [Note: Standby for RemoveAllBonds/RemoveBondWithAddress; connected for PairAndBond]
+    ## Triggered by: GapCentral.RemoveAllBonds, GapCentral.RemoveBondWithAddress, GapCentral.PairAndBond (if a new bond was created) [Note: Exhaustive list of triggers]
+    ## Description: Reports the updated number of stored bonds after a bond was added or removed.
     rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
+
+    ## Expected states: standby, scanning, initiating, connected [Note: Can be called in any state per GapCentral.GetBondList]
+    ## Triggered by: GapCentral.GetBondList [Note: Single trigger]
+    ## Description: Returns the list of bonded devices sorted oldest to newest.
     rpc BondListReceived(BondList) returns (Nothing) { option(method_id) = 7; }
 
     // DEPRECATED: Will be removed in the near future.
+    ## Triggered by: GapCentral.IsDeviceBonded [Note: Added structured field for deprecated method]
     rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 8; }
 }
