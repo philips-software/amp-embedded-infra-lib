@@ -352,7 +352,7 @@ service GapPeripheralResponse
     rpc PairingResult(PairingStatus) returns (Nothing) { option (method_id) = 5; }
 
     // Expected states: standby, connected
-    // NumberOfBondsChanged is triggered when the bond list is updated after bonding or bond removal.
+    // Triggered when a new bond is created, an existing bond is removed, or re-bonding occurs with an already bonded peer.
     rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 6; }
     
     // Expected states: standby, advertising, connected
