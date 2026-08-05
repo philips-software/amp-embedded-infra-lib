@@ -62,6 +62,21 @@ namespace services
             WriteFragment(stream, header.Value(), skip, written);
             WriteFragment(stream, crlf, skip, written);
         }
+
+        infra::BoundedString::WithStorage<8> ContentLengthValue(std::size_t size)
+        {
+            infra::BoundedString::WithStorage<8> value;
+            infra::StringOutputStream stream(value);
+            stream << size;
+            return value;
+        }
+
+        std::optional<HttpHeader> MakeContentLengthHeader(bool present, infra::BoundedConstString value)
+        {
+            if (present)
+                return HttpHeader{ "Content-Length", value };
+            return std::nullopt;
+        }
     }
 
     HttpHeader::HttpHeader(infra::BoundedConstString field, infra::BoundedConstString value)
@@ -98,21 +113,20 @@ namespace services
         : verb(verb)
         , requestTarget(requestTarget.empty() ? "/" : requestTarget)
         , content(content)
+        , contentLength(content.empty() ? infra::BoundedString::WithStorage<8>{} : ContentLengthValue(content.size()))
+        , contentLengthHeader(MakeContentLengthHeader(!content.empty(), contentLength))
         , hostHeader("Host", hostname)
         , headers(headers)
-    {
-        if (!content.empty())
-            AddContentLength(content.size());
-    }
+    {}
 
     HttpRequestFormatter::HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, std::size_t contentSize, const HttpHeaders headers)
         : verb(verb)
         , requestTarget(requestTarget.empty() ? "/" : requestTarget)
+        , contentLength(ContentLengthValue(contentSize))
+        , contentLengthHeader(MakeContentLengthHeader(true, contentLength))
         , hostHeader("Host", hostname)
         , headers(headers)
-    {
-        AddContentLength(contentSize);
-    }
+    {}
 
     HttpRequestFormatter::HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, const HttpHeaders headers, Chunked)
         : verb(verb)
@@ -124,7 +138,7 @@ namespace services
 
     std::size_t HttpRequestFormatter::Size() const
     {
-        return (HeaderBlockSize() - headerPosition) + content.size();
+        return (headerBlockSize - headerPosition) + content.size();
     }
 
     std::size_t HttpRequestFormatter::Write(infra::TextOutputStream stream) const
@@ -139,16 +153,9 @@ namespace services
 
     void HttpRequestFormatter::Consume(std::size_t amount)
     {
-        auto headerAmount = std::min(amount, HeaderBlockSize() - headerPosition);
+        auto headerAmount = std::min(amount, headerBlockSize - headerPosition);
         headerPosition += headerAmount;
         content = content.substr(amount - headerAmount);
-    }
-
-    void HttpRequestFormatter::AddContentLength(std::size_t size)
-    {
-        infra::StringOutputStream contentLengthStream(contentLength);
-        contentLengthStream << size;
-        contentLengthHeader.emplace("Content-Length", contentLength);
     }
 
     std::size_t HttpRequestFormatter::HeadersSize() const
