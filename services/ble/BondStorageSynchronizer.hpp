@@ -5,6 +5,7 @@
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/Function.hpp"
 #include "services/ble/Gap.hpp"
+#include <cstddef>
 
 namespace services
 {
@@ -34,6 +35,8 @@ namespace services
         virtual infra::BoundedConstString GetDeviceName(GapAddress address) const = 0;
         virtual void RemoveDeviceName(GapAddress address) = 0;
         virtual void RemoveAll() = 0;
+        virtual std::size_t Size() const = 0;
+        virtual std::size_t Capacity() const = 0;
     };
 
     class BondStorage
