@@ -39,6 +39,29 @@ namespace services
 
             return schemeEnd;
         }
+
+        void WriteFragment(infra::TextOutputStream& stream, infra::BoundedConstString fragment, std::size_t& skip, std::size_t& written)
+        {
+            if (skip >= fragment.size())
+                skip -= fragment.size();
+            else
+            {
+                fragment = fragment.substr(skip);
+                skip = 0;
+
+                auto amount = std::min(stream.Available(), fragment.size());
+                stream << fragment.substr(0, amount);
+                written += amount;
+            }
+        }
+
+        void WriteHeaderLine(infra::TextOutputStream& stream, const HttpHeader& header, std::size_t& skip, std::size_t& written)
+        {
+            WriteFragment(stream, header.Field(), skip, written);
+            WriteFragment(stream, separator, skip, written);
+            WriteFragment(stream, header.Value(), skip, written);
+            WriteFragment(stream, crlf, skip, written);
+        }
     }
 
     HttpHeader::HttpHeader(infra::BoundedConstString field, infra::BoundedConstString value)
@@ -153,47 +176,24 @@ namespace services
     {
         std::size_t written = 0;
 
-        auto writeFragment = [&stream, &skip, &written](infra::BoundedConstString fragment)
-        {
-            if (skip >= fragment.size())
-                skip -= fragment.size();
-            else
-            {
-                fragment = fragment.substr(skip);
-                skip = 0;
-
-                auto amount = std::min(stream.Available(), fragment.size());
-                stream << fragment.substr(0, amount);
-                written += amount;
-            }
-        };
-
-        auto writeHeaderLine = [&writeFragment](const HttpHeader& header)
-        {
-            writeFragment(header.Field());
-            writeFragment(separator);
-            writeFragment(header.Value());
-            writeFragment(crlf);
-        };
-
-        writeFragment(HttpVerbToString(verb));
-        writeFragment(sp);
-        writeFragment(requestTarget);
-        writeFragment(sp);
-        writeFragment(httpVersion);
-        writeFragment(crlf);
+        WriteFragment(stream, HttpVerbToString(verb), skip, written);
+        WriteFragment(stream, sp, skip, written);
+        WriteFragment(stream, requestTarget, skip, written);
+        WriteFragment(stream, sp, skip, written);
+        WriteFragment(stream, httpVersion, skip, written);
+        WriteFragment(stream, crlf, skip, written);
 
         for (const auto& header : headers)
-            writeHeaderLine(header);
+            WriteHeaderLine(stream, header, skip, written);
 
-        writeHeaderLine(hostHeader);
+        WriteHeaderLine(stream, hostHeader, skip, written);
 
         if (contentLengthHeader)
-            writeHeaderLine(*contentLengthHeader);
+            WriteHeaderLine(stream, *contentLengthHeader, skip, written);
         if (chunked)
-            writeHeaderLine(HttpHeader{ "Transfer-Encoding", "chunked" });
+            WriteHeaderLine(stream, HttpHeader{ "Transfer-Encoding", "chunked" }, skip, written);
 
-        writeFragment(crlf);
+        WriteFragment(stream, crlf, skip, written);
 
         return written;
     }
