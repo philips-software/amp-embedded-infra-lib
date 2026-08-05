@@ -528,6 +528,8 @@ service GapCentral
     ## Allowed states: standby, scanning, connected, initiating [Note: Added standby to align with enum order; reordered]
     ## Expected return: GapCentralResponse.CurrentState with state standby [Note: Use new structured format]
     // Description: Terminates the current (or initiating) connection.
+    ##   If called while PairAndBond is in progress, GapCentralResponse.PairingResult is not guaranteed. GapCentralResponse.CurrentState(standby) is the terminal callback. [Note: Clear up possible race condition]
+    ##   If called while already in standby, results in GapCentralResponse.CurrentState(standby).
     rpc Standby(Nothing) returns (Nothing) { option (method_id) = 5; }
 
     ## Allowed states: connected [Note: Use new structured format]
@@ -539,6 +541,10 @@ service GapCentral
     //   If the peripheral sends a security request, this procedure is triggered automatically.
     //   1. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
     //   2. If there is a pre-existing bond, then the connection will be encrypted using the existing keys.
+    ##   On successful pairing with new bond: GapCentralResponse.AuthenticationRequired (if applicable) -> GapCentralResponse.NumberOfBondsChanged -> GapCentralResponse.PairingResult
+    ##   On successful re-encryption with existing bond: GapCentralResponse.PairingResult
+    ##   On pairing failure: GapCentralResponse.AuthenticationRequired (if applicable) -> GapCentralResponse.PairingResult
+    ##   On peer-initiated disconnect during pairing: GapCentralResponse.PairingResult -> GapCentralResponse.CurrentState(standby) [Note: Clear up possible race condition]
     rpc PairAndBond(Nothing) returns (Nothing) { option (method_id) = 6; }
 
     ## Allowed states: standby [Note: Use new structured format; was "Allowed in link layer states"]
@@ -559,6 +565,8 @@ service GapCentral
     //   Must be called within the SMP protocol timeout (30 seconds) of receiving AuthenticationRequired,
     //   otherwise pairing will fail with PairingFailedReason.timeout.
     //   Influences GapCentralResponse.PairingResult response of PairAndBond.
+    ##   If peer disconnects before AuthenticateWithPasskey is called, state becomes standby. [Note: Clear up possible race condition]
+    ##   GapCentralResponse.PairingResult may or may not be generated in that case.
     rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 9; }
 
     ## Allowed states: connected [Note: Use new structured format; was "Allowed in link layer states"]
@@ -567,6 +575,8 @@ service GapCentral
     //   Must be called within the SMP protocol timeout (30 seconds) of receiving AuthenticationRequired,
     //   otherwise pairing will fail with PairingFailedReason.timeout.
     //   Influences GapCentralResponse.PairingResult response of PairAndBond.
+    ##   If peer disconnects before NumericComparisonConfirm is called, state becomes standby. [Note: Clear up possible race condition]
+    ##   GapCentralResponse.PairingResult may or may not be generated in that case.
     rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 10; }
 
     ## Allowed states: standby [Note: Use new structured format; was "Allowed in link layer states"]
@@ -614,12 +624,13 @@ service GapCentralResponse {
     ## Triggered by: GapCentral.GetState, GapCentral.StartDeviceDiscovery, GapCentral.Connect, GapCentral.Standby, GapCentral.PairAndBond, BLE stack events (e.g. peer-initiated disconnect) [Note: Exhaustive list of triggers]
     ## Description: CurrentState is triggered as a response to a method and/or invoked by BLE stack events
     ## Example: if GetState() is called while the device is in the connected state and the peer disconnects concurrently,
-    ##   both actions will result in a CurrentState response, however the last received CurrentState is the latest state
+    ##   both actions will result in a CurrentState response, however the last received CurrentState is the latest state [Note: Clear up possible race condition]
     rpc CurrentState(State) returns (Nothing) { option (method_id) = 1; }
     
     ## Expected states: scanning [Note: Only emitted while scanning is active]
     ## Triggered by: GapCentral.StartDeviceDiscovery (continuously, for each matching device) [Note: Clarify it's a stream, not a single response]
     ## Description: Reports a discovered advertising device. Only devices matching the configured DeviceDiscoveryFilter are reported.
+    ##   If device is put in Standby, DeviceDiscovered will always arrive before CurrentState(standby) [Note: Clear up possible race condition]
     rpc DeviceDiscovered(DiscoveredDevice) returns (Nothing) { option (method_id) = 2; }
 
     ## Expected states: connected [Note: Only during active pairing]
@@ -627,13 +638,16 @@ service GapCentralResponse {
     ## Description: Requests user interaction during an active pairing procedure.
     ##   This will only be triggered when the negotiated pairing method requires it, which is determined by the I/O capabilities configured via GapPeripheral.SetSecurityPreferences
     ##   Not all pairing methods require user interaction (e.g. Just Works will never trigger this).
-    ##   Must be responded to with GapPeripheral.NumericComparisonConfirm when AuthenticationRequest.isNumericComparison is true.
+    ##   Must be responded to with GapCentral.NumericComparisonConfirm when AuthenticationRequest.isNumericComparison is true,
+    ##   or GapCentral.AuthenticateWithPasskey when AuthenticationRequest.isNumericComparison is false.
     rpc AuthenticationRequired(AuthenticationRequest) returns (Nothing) { option (method_id) = 3; }
 
     ## Expected states: connected, standby [Note: Connected if pairing succeeded/failed; standby if disconnect occurred during pairing]
     ## Triggered by: GapCentral.PairAndBond (on completion or failure of the pairing procedure) [Note: Clarify it's the terminal callback for PairAndBond]
     ## Description: Reports the outcome of a PairAndBond procedure.
     ##   If PairingStatus.pairedSuccessfully is false, PairingFailedReason indicates the cause.
+    ##   PairingResult is always emitted before CurrentState(standby) when a peer-initiated disconnect occurs during pairing. [Note: Clear up possible race condition]
+    ##   If Standby() is called during pairing, PairingResult may not be emitted. [Note: Clear up possible race condition]
     rpc PairingResult(PairingStatus) returns (Nothing) { option (method_id) =  4; }
 
     ## Expected states: standby, scanning, initiating, connected [Note: Can be called in any state per GapCentral.ResolvePrivateAddress]
