@@ -130,8 +130,9 @@ namespace services
         void Consume(std::size_t amount);
 
     private:
-        void AddContentLength(std::size_t size);
         std::size_t HeadersSize() const;
+        std::size_t HeaderBlockSize() const;
+        std::size_t WriteHeader(infra::TextOutputStream& stream, std::size_t skip) const;
 
     private:
         HttpVerb verb;
@@ -142,7 +143,8 @@ namespace services
         HttpHeader hostHeader;
         const HttpHeaders headers;
         bool chunked{ false };
-        bool sentHeader{ false };
+        std::size_t headerPosition = 0;
+        std::size_t headerBlockSize = HeaderBlockSize();
     };
 
     class HttpHeaderParserObserver
