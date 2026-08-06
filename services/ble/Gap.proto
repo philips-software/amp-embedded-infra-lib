@@ -300,13 +300,6 @@ service GapPeripheral
     // When enabled, connection requests from all peers are accepted; when disabled, connection requests from non-bonded peers are rejected.
     rpc SetAllowPairing(BoolValue) returns (Nothing) { option (method_id) = 9; }
 
-    // Allowed in link layer states: connected
-    // Send a slave security request to the master.
-    // This command has to be issued to notify the master of the security
-    // requirements of the slave. The master may encrypt the link, initiate the
-    // pairing procedure, or reject the request.
-    rpc SendSecurityRequest(Nothing) returns (Nothing) { option (method_id) = 10; }
-
     // Allowed states: standby
     // Results in GapPeripheralResponse.NumberOfBondsChanged
     rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 11; }
