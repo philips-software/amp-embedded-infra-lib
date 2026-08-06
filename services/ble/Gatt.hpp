@@ -48,6 +48,7 @@ namespace services
         constexpr inline AttAttribute::Uuid16 deviceInformationService{ 0x180A };
 
         // Characteristics
+        constexpr inline AttAttribute::Uuid16 deviceName{ 0x2A00 };
         constexpr inline AttAttribute::Uuid16 systemId{ 0x2A23 };
         constexpr inline AttAttribute::Uuid16 modelNumber{ 0x2A24 };
         constexpr inline AttAttribute::Uuid16 serialNumber{ 0x2A25 };
