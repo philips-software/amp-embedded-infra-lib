@@ -28,6 +28,7 @@ namespace services
     {
     protected:
         BondNameStorage() = default;
+         ~BondNameStorage() = default;
         BondNameStorage(const BondNameStorage& other) = delete;
         BondNameStorage& operator=(const BondNameStorage& other) = delete;
 
@@ -35,7 +36,7 @@ namespace services
         virtual void SetBondName(GapAddress address, infra::BoundedConstString name) = 0;
         virtual std::optional<infra::BoundedConstString> GetBondName(GapAddress address) const = 0;
         virtual void RemoveBondName(GapAddress address) = 0;
-        virtual void RemoveAll() = 0;
+        virtual void RemoveAllBondNames() = 0;
         virtual std::size_t Size() const = 0;
         virtual std::size_t Capacity() const = 0;
     };
