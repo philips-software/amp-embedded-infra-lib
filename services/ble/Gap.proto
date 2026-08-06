@@ -13,6 +13,8 @@ option java_outer_classname = "GapProto";
 message Address
 {
     // A 48-bit Bluetooth device address, as defined in Bluetooth Core Specification v6.3, Vol 6, Part B, Section 1.3
+    // Encoded as a 6-byte Bluetooth device address in least-significant-octet-first order.
+    // Example: "AA:BB:CC:DD:EE:FF" is represented as { 0xFF, 0xEE, 0xDD, 0xCC, 0xBB, 0xAA }.
     bytes address = 1 [(bytes_size) = 6];
 }
 
@@ -153,10 +155,6 @@ message BondsStatus
     uint32 maxBonds = 2;
 }
 
-// Sent during an active pairing/bonding procedure when user interaction is required to complete pairing.
-// This will only be triggered when the negotiated pairing method requires it, which is determined by the
-// I/O capabilities configured via GapCentral.SetIoCapabilities or GapPeripheral.SetSecurityPreferences.ioCapabilities.
-// Not all pairing methods require user interaction (e.g. Just Works will never trigger this).
 message AuthenticationRequest
 {
     // Indicates whether this is a Numeric Comparison (LE Secure Connections) or Passkey Entry pairing.
@@ -197,11 +195,13 @@ message AdvertisementMode
     uint32 advertisingInterval = 2;
 }
 
+// Data layout as per Bluetooth Core Specification v6.3, Vol 3, Part C, Section 11
 message AdvertisementData
 {
     bytes data = 1 [(bytes_size) = 28]; 
 }
 
+// Data layout as per Bluetooth Core Specification v6.3, Vol 3, Part C, Section 11
 message ScanResponseData
 {
     bytes data = 1 [(bytes_size) = 13]; 
@@ -236,62 +236,68 @@ message SecurityPreference
 // State constraints:
 //  After startup this service is only available after GapPeripheralResponse.CurrentState with state standby is received.
 //  Unless otherwise specified, all methods are allowed in all link layer states.
-//  Non-conformance may cause undefined behavior
+//  Non-conformance will result in an assertion.
 // Callback constraints:
 //  Unless otherwise specified, methods do not by default result in any callbacks on the response service
 //  When a callback is specified for a method and only for that method, another call of the same method is not allowed until the callback has been received.
 //  When a callback is specified for more than one method, any of the associated method calls is not allowed until the callback for the previous call has been received
-//  Non-conformance may cause undefined behavior
+//  Non-conformance will result in an assertion.
+// Startup:
+//  On startup, the first CurrentState(standby) message signals that the GapPeripheral service
+//  is initialized and ready to accept method calls. No GapPeripheral methods shall be called
+//  before this initial CurrentState(standby) is received.
 // ==================================================
 service GapPeripheral
 {
     option (service_id) = 32;
 
-    // ==================================================
-    // CORE FEATURE SET
-    // All servers must implement these methods  
-    // ==================================================
-
+    // Allowed states: standby, advertising, connected
     // Results in GapPeripheralResponse.CurrentState with current state
     rpc GetState(Nothing) returns (Nothing) { option (method_id) = 1; }
 
-    // Allowed in link layer states: standby
+    // Allowed states: standby
+    // When an advertisement mode is not supported by a platform it results in an assertion
+    // If an advertisement mode is not supported by a configuration then it results in an assertion
     // Results in GapPeripheralResponse.CurrentState with state advertising
     rpc Advertise(AdvertisementMode) returns (Nothing) { option (method_id) = 2; }
 
-    // Allowed in link layer states: advertising, connected
+    // Allowed states: standby, advertising, connected
     // Results in GapPeripheralResponse.CurrentState with state standby
     rpc Standby(Nothing) returns (Nothing) { option (method_id) = 3; }
 
-    // Allowed in link layer states: standby
-    // Formatting of advertisement data is as per Bluetooth Core Specification.
+    // Allowed states: standby
     // Maximum advertisement data length for this method is 28 bytes. Server reserves an additional 3 bytes for flags data with the flag bits 'LE General Discoverable Mode' and 'BR/EDR Not Supported' enabled.
     // Server will not check validity of the advertisement data and only maximum length of each field will be passed to BLE stack
+    // If set, the advertisement data remains in effect until it is overwritten or the device is rebooted.
     // If not set by this method, server will have as advertisement data only flags field.
     rpc SetAdvertisementData(AdvertisementData) returns (Nothing) { option (method_id) = 4; }
 
-    // Allowed in link layer states: standby
-    // Formatting of scan response data is as per Bluetooth Core Specification.
+    // Allowed states: standby
     // Maximum scan response length for this method is 13 bytes. Server reserves 18 bytes for streaming service uuids. Scan Response is only possible with scannable advertisements
     // Server will not check validity of the scan response data and only maximum length of each field will be passed to BLE stack
+    // If set, the scan response data remains in effect until it is overwritten or the device is rebooted.
     // If not set by this method, server will have as scan response data only service uuids.
     rpc SetScanResponseData(ScanResponseData) returns (Nothing) { option (method_id) = 5; }
     
-    // Allowed in link layer states: advertising
+    // Allowed states: standby, advertising, connected
     // Results in GapPeripheralResponse.AdvertisingAddress
-    // Type of the advertising address is statically configured. It is the same with Identity Address when privacy is 
-    // not used and different otherwise.
+    // When privacy is disabled, it matches the identity address; when privacy is enabled, it returns the resolvable private address generated by the BLE stack
+    // If GapPeripheral.Advertise was never called and the device is in standby, always returns the identity address.
+    // Once advertised it will return the latest advertising address
     rpc GetAdvertisingAddress(Nothing) returns (Nothing) { option (method_id) = 6; }
 
+    // Allowed states: standby, advertising, connected
     // Results in GapPeripheralResponse.IdentityAddress
-    // Type of the identity address is statically configured
+    // The address type (public or random) is determined by the HAL implementation and is not configurable via the service.
     rpc GetIdentityAddress(Nothing) returns (Nothing) { option (method_id) = 7; }
 
-    // Allowed in link layer states: standby
+    // Allowed states: standby
+    // When a SecurityPreference is not supported by the configuration it results in an assertion
     rpc SetSecurityPreferences(SecurityPreference) returns (Nothing) { option (method_id) = 8; }
 
-    // Allowed in link layer states: standby
+    // Allowed states: standby
     // Default is to allow pairing
+    // When enabled, connection requests from all peers are accepted; when disabled, connection requests from non-bonded peers are rejected.
     rpc SetAllowPairing(BoolValue) returns (Nothing) { option (method_id) = 9; }
 
     // Allowed in link layer states: connected
@@ -301,23 +307,25 @@ service GapPeripheral
     // pairing procedure, or reject the request.
     rpc SendSecurityRequest(Nothing) returns (Nothing) { option (method_id) = 10; }
 
-    // Allowed in link layer states: standby
+    // Allowed states: standby
     // Results in GapPeripheralResponse.NumberOfBondsChanged
     rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 11; }
 
-    // Allowed in link layer states: standby
+    // Allowed states: standby
     // Results in GapPeripheralResponse.NumberOfBondsChanged
     // Oldest bond means the least recently used, i.e. connected, bonded peer.
     rpc RemoveOldestBond(Nothing) returns (Nothing) { option (method_id) = 12; }
 
+    // Allowed states: standby, advertising, connected
     // Results in GapPeripheralResponse.BondInformation
     rpc GetBondInformation(Nothing) returns (Nothing) { option (method_id) = 13; }
 
-    // Allowed in link layer states: connected
+    // Allowed states: standby, connected
     // Confirms or rejects the numeric comparison in response to GapPeripheralResponse.AuthenticationRequired.
     // Only valid when AuthenticationRequest.isNumericComparison is true.
     // Must be called within the SMP protocol timeout (30 seconds, Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4)
     // of receiving AuthenticationRequired, otherwise pairing will fail.
+    // If peer disconnects before NumericComparisonConfirm, state becomes standby. PairingResult may or may not be generated
     rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 14; }
 }
 
@@ -325,24 +333,38 @@ service GapPeripheralResponse
 {
     option(service_id) = 34;
 
-    // ==================================================
-    // CORE FEATURE SET
-    // All servers must implement these methods  
-    // ==================================================
-
-    // Default state after device start is standby
+    // Expected states: standby, advertising, connected
+    // CurrentState is triggered as a response to a method and/or invoked by BLE stack events
+    // Example: if GetState() is called while the device is in the connected state and the peer disconnects concurrently,
+    // both actions will result in a CurrentState response, however the last received CurrentState is the latest state
     rpc CurrentState(State) returns(Nothing) { option(method_id) = 2; }
 
+    // Expected states: standby, advertising, connected
+    // Sent in response to GapPeripheral.GetAdvertisingAddress.
     rpc AdvertisingAddress(AddressWithType) returns(Nothing) { option(method_id) = 3; }
 
+    // Expected states: standby, advertising, connected
+    // Sent in response to GapPeripheral.GetIdentityAddress.
     rpc IdentityAddress(AddressWithType) returns(Nothing) { option(method_id) = 4; }
 
+    // Expected states: connected
+    // Sent when a pairing/bonding procedure completes or fails.
     rpc PairingResult(PairingStatus) returns (Nothing) { option (method_id) = 5; }
 
+    // Expected states: standby, connected
+    // Triggered when a new bond is created, an existing bond is removed, or re-bonding occurs with an already bonded peer.
     rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 6; }
-
+    
+    // Expected states: standby, advertising, connected
+    // Sent in response to GapPeripheral.GetBondInformation.
     rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 7; }
 
+    // Expected states: connected
+    // Sent during an active pairing/bonding procedure when user interaction is required to complete pairing.
+    // This will only be triggered when the negotiated pairing method requires it, which is determined by the
+    // I/O capabilities configured via GapPeripheral.SetSecurityPreferences
+    // Not all pairing methods require user interaction (e.g. Just Works will never trigger this).
+    // Must be responded to with GapPeripheral.NumericComparisonConfirm when AuthenticationRequest.isNumericComparison is true.
     rpc AuthenticationRequired(AuthenticationRequest) returns (Nothing) { option (method_id) = 8; }
 }
 
@@ -493,8 +515,8 @@ service GapCentral
 
     // Allowed states: standby
     // Starts scanning for advertising peripheral devices until Standby is called.
-    // Discovered devices will be reported via GapCentralResponse.DeviceDiscovered.
-    // It's recommended to add a DeviceDiscoveryFilter, otherwise devices might be missed due to too many being discovered.
+    // Each advertising report that matches the filter will be reported via GapCentralResponse.DeviceDiscovered.
+    // It's recommended to add a DeviceDiscoveryFilter, otherwise reports might be dropped due to too many devices being found.
     // Results in GapCentralResponse.CurrentState with state scanning
     rpc StartDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 3; }
 

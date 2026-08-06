@@ -24,6 +24,9 @@ target_sources(services.ble PRIVATE
     BondBlobPersistence.hpp
     BondStorageSynchronizer.cpp
     BondStorageSynchronizer.hpp
+    ClaimingGattClientAdapter.cpp
+    ClaimingGattClientAdapter.hpp
+    Dtm.hpp
     Gap.cpp
     Gap.hpp
     GapPeripheralIntervalDecorator.cpp
@@ -32,8 +35,6 @@ target_sources(services.ble PRIVATE
     Gatt.hpp
     GattClient.cpp
     GattClient.hpp
-    ClaimingGattClientAdapter.cpp
-    ClaimingGattClientAdapter.hpp
     GattServer.cpp
     GattServer.hpp
     GattServerCharacteristicImpl.cpp
