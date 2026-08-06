@@ -473,7 +473,7 @@ message DeviceDiscoveryFilter
         // data: the manufacturer specific data to match, including the 2-byte manufacturer ID.
         manufacturerSpecificData = 2;
 
-        // TODO: Add filter for Service UUID to allow filtering on device type/profile.
+        ## TODO: Add filter for Service UUID to allow filtering on device type/profile.
     }
 
     Filter filter = 1;
@@ -481,6 +481,9 @@ message DeviceDiscoveryFilter
     bytes data = 2 [(bytes_size) = 32];
 }
 
+
+## TODO: Change ResolvePrivateAddress to accept AddressWithType (consistent with Connect, RemoveBondWithAddress)
+##   and return AddressWithType in ResolvedPrivateAddress (identity address type is not derivable from address bytes; needed to use result with other methods).
 message ResolvedPrivateAddress
 {
     bool success = 1; // True if the address was successfully resolved to a bond, false otherwise.
@@ -527,6 +530,10 @@ service GapCentral
     ## Description: Only devices matching the filter will be reported via GapCentralResponse.DeviceDiscovered [Note: Use new structured format]
     ##   Filters are reset when scanning is stopped. [Note: Continuation indent under Description]
     rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 2; }
+
+    ## TODO: Add scan window and scan interval parameters (BT Core Spec Vol 4, Part E, §7.8.10, units of 0.625 ms).
+    ##   Either as parameters to StartDeviceDiscovery () (consitent with Advertise(AdvertisementMode)) or via a separate SetScanParameters method (consistent with SetDeviceDiscoveryFilter pattern).
+    ##   Both ST and TI stacks support this; needed for robust scan timing in integration tests.
 
     ## Allowed states: standby [Note: Use new structured format]
     ## Expected return: GapCentralResponse.CurrentState with state scanning [Note: Use new structured format]
@@ -635,6 +642,12 @@ service GapCentral
 service GapCentralResponse {
     option(service_id) = 35;
 
+    ## TODO: Rename DiscoveredDevice -> AdvertisingReport and DeviceDiscovered -> AdvertisingReportReceived to align with BT Core Spec (Vol 4, Part E, §7.7.65.2)
+    ##   and fix semantic mismatch: the same device produces multiple reports (including scanResponse events).
+    ##   Cascade: consider DeviceDiscoveryFilter -> AdvertisingReportFilter, SetDeviceDiscoveryFilter -> SetAdvertisingReportFilter, StartDeviceDiscovery -> StartScanning.
+
+    ## TODO: Should there be a way to determine maximum amount of bonds using interface?
+
     ## Expected states: standby, scanning, initiating, connected [Note: All states possible; filled in]
     ## Triggered by: GapCentral.GetState, GapCentral.StartDeviceDiscovery, GapCentral.Connect, GapCentral.Standby, GapCentral.PairAndBond, BLE stack events (e.g. peer-initiated disconnect) [Note: Exhaustive list of triggers]
     ## Description: CurrentState is triggered as a response to a method and/or invoked by BLE stack events
@@ -669,6 +682,7 @@ service GapCentralResponse {
     ## Triggered by: GapCentral.ResolvePrivateAddress [Note: Single trigger]
     ## Description: Returns the result of a private address resolution attempt.
     ##   If successful, contains the resolved identity address of the bonded device.
+    ## T
     rpc ResolvePrivateAddressResult(ResolvedPrivateAddress) returns (Nothing) { option (method_id) = 5; }
     
     ## Expected states: standby, connected [Note: Standby for RemoveAllBonds/RemoveBondWithAddress; connected for PairAndBond]
