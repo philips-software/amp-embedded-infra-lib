@@ -481,9 +481,6 @@ message DeviceDiscoveryFilter
     bytes data = 2 [(bytes_size) = 32];
 }
 
-
-## TODO: Change ResolvePrivateAddress to accept AddressWithType (consistent with Connect, RemoveBondWithAddress)
-##   and return AddressWithType in ResolvedPrivateAddress (identity address type is not derivable from address bytes; needed to use result with other methods).
 message ResolvedPrivateAddress
 {
     bool success = 1; // True if the address was successfully resolved to a bond, false otherwise.
@@ -570,7 +567,7 @@ service GapCentral
     ##   On peer-initiated disconnect during pairing: GapCentralResponse.PairingResult -> GapCentralResponse.CurrentState(standby)
     rpc PairAndBond(Nothing) returns (Nothing) { option (method_id) = 6; }
 
-    ## Todo: Should GapCentral also have SetSecurityPreferences, like GapPeripheral?
+    ## TODO: Should GapCentral also have SetSecurityPreferences, like GapPeripheral?
 
     ## Allowed states: standby [Note: Use new structured format; was "Allowed in link layer states"]
     ## Description: Configures the minimum security mode and level required for connections. [Note: Use new structured format]
