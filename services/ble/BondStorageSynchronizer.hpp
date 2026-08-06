@@ -28,7 +28,7 @@ namespace services
     {
     protected:
         BondNameStorage() = default;
-         ~BondNameStorage() = default;
+        ~BondNameStorage() = default;
         BondNameStorage(const BondNameStorage& other) = delete;
         BondNameStorage& operator=(const BondNameStorage& other) = delete;
 
