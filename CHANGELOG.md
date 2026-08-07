@@ -7,6 +7,43 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
+## [10.0.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v9.1.0...v10.0.0) (2026-08-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* change GattClient ECHO interface ([#1245](https://github.com/philips-software/amp-embedded-infra-lib/issues/1245))
+* expand GapCentral ECHO interface ([#1196](https://github.com/philips-software/amp-embedded-infra-lib/issues/1196))
+
+### Features
+
+* Add DoubleBufferedSerialCommunication ([#1253](https://github.com/philips-software/amp-embedded-infra-lib/issues/1253)) ([0562426](https://github.com/philips-software/amp-embedded-infra-lib/commit/056242663479e8d6cf138598ca12dbb98ed1e116))
+* Add mock for gatt client mtu exchange ([#1251](https://github.com/philips-software/amp-embedded-infra-lib/issues/1251)) ([fafa551](https://github.com/philips-software/amp-embedded-infra-lib/commit/fafa551f9c205f60684adb65052c8d2b0145d373))
+* Add passkey auth interfaces for gap peripheral ([#1243](https://github.com/philips-software/amp-embedded-infra-lib/issues/1243)) ([149ae25](https://github.com/philips-software/amp-embedded-infra-lib/commit/149ae25f1c042300430ef97e40939f67f51cf5c8))
+* **ble:** Add BLE bond name storage interface ([#1295](https://github.com/philips-software/amp-embedded-infra-lib/issues/1295)) ([775eb0f](https://github.com/philips-software/amp-embedded-infra-lib/commit/775eb0feee25ef31c7dee194b0e9c5b513ef0ed2))
+* Change GattClient ECHO interface ([#1245](https://github.com/philips-software/amp-embedded-infra-lib/issues/1245)) ([cabe803](https://github.com/philips-software/amp-embedded-infra-lib/commit/cabe803156c4ae9766db548c1e728a18a1c4f1d2))
+* Changed interface for Dtm::StopTest to take an AutoResetFunction instead of a normal Function ([#1276](https://github.com/philips-software/amp-embedded-infra-lib/issues/1276)) ([4ac7c4a](https://github.com/philips-software/amp-embedded-infra-lib/commit/4ac7c4a01e0d21067e3ef244fd537a61556d3ce5))
+* Enable lwip checksum in software as option ([#1267](https://github.com/philips-software/amp-embedded-infra-lib/issues/1267)) ([0be8534](https://github.com/philips-software/amp-embedded-infra-lib/commit/0be8534a2a11c4acaf7629c9b1aef443a6d58148))
+* Enable splitting SesameWindowed buffers into 2 or 3 ([#1260](https://github.com/philips-software/amp-embedded-infra-lib/issues/1260)) ([90cb593](https://github.com/philips-software/amp-embedded-infra-lib/commit/90cb593c29af70b63466bf3c537317c1eff014ef))
+* Expand GapCentral ECHO interface ([#1196](https://github.com/philips-software/amp-embedded-infra-lib/issues/1196)) ([0119fad](https://github.com/philips-software/amp-embedded-infra-lib/commit/0119fadeaca331b6b56b9168ba83346c9cdd6c50))
+* In EchoOnStreams request only as much as needed for the current packet ([#1246](https://github.com/philips-software/amp-embedded-infra-lib/issues/1246)) ([f69cbe9](https://github.com/philips-software/amp-embedded-infra-lib/commit/f69cbe9df9fe1cd573ca965f60a1326a6845247c))
+* IPv6 support for BSD and Win connections ([#1230](https://github.com/philips-software/amp-embedded-infra-lib/issues/1230)) ([462eddc](https://github.com/philips-software/amp-embedded-infra-lib/commit/462eddc50b3936cccd78b71bd18448e79b76c6f8))
+* Move hal/interfaces/BleDtm -&gt; services/ble/Dtm ([#1272](https://github.com/philips-software/amp-embedded-infra-lib/issues/1272)) ([5c031d2](https://github.com/philips-software/amp-embedded-infra-lib/commit/5c031d2c6df635a4e17c7c65ea850796fe144cf6))
+* Trace binary data as ascii in http client ([#1287](https://github.com/philips-software/amp-embedded-infra-lib/issues/1287)) ([0c853cf](https://github.com/philips-software/amp-embedded-infra-lib/commit/0c853cfc743f7c6ab86f0778f82e160988d9fe45))
+
+
+### Bug Fixes
+
+* Communication stall after TLS session ticket ([0be8534](https://github.com/philips-software/amp-embedded-infra-lib/commit/0be8534a2a11c4acaf7629c9b1aef443a6d58148))
+* Echo (de)serialization for bounded repeated nested messages ([#1236](https://github.com/philips-software/amp-embedded-infra-lib/issues/1236)) ([7c8e1d2](https://github.com/philips-software/amp-embedded-infra-lib/commit/7c8e1d28830148ca57070b0f71fef6628a197b45))
+* Ensure SendStreamAvailable is ignored after observer detach ([#1299](https://github.com/philips-software/amp-embedded-infra-lib/issues/1299)) ([53776aa](https://github.com/philips-software/amp-embedded-infra-lib/commit/53776aa127e1e6695b45b31d3a32c9d2aceb2238))
+* Fix sesame received decryption Finish outputs leftover after Update ([#1237](https://github.com/philips-software/amp-embedded-infra-lib/issues/1237)) ([f0744c2](https://github.com/philips-software/amp-embedded-infra-lib/commit/f0744c221e31e662d4f74017e4911f6432c29051))
+* Guard MessageCommunicationCobs against receiving a message before an observer is attached ([#1290](https://github.com/philips-software/amp-embedded-infra-lib/issues/1290)) ([4f09c5c](https://github.com/philips-software/amp-embedded-infra-lib/commit/4f09c5c5a5b1862d1ffd94a48039b451f5aecaf1))
+* Handle nullptr in currentBuffer in DatagramExchangeLwIP::UdpReader::ExtractContiguousRange ([#1269](https://github.com/philips-software/amp-embedded-infra-lib/issues/1269)) ([8ea4ce7](https://github.com/philips-software/amp-embedded-infra-lib/commit/8ea4ce7f48a518dc5da5893b5111971824e629bd))
+* Http path and headers larger than available stream size ([#1292](https://github.com/philips-software/amp-embedded-infra-lib/issues/1292)) ([4b69802](https://github.com/philips-software/amp-embedded-infra-lib/commit/4b698024952590e33fb49fca917ceb59ffe5caf7))
+* Increase host network event dispatcher capacity to 1024 ([#1277](https://github.com/philips-software/amp-embedded-infra-lib/issues/1277)) ([0af913e](https://github.com/philips-software/amp-embedded-infra-lib/commit/0af913e302bbc22b9838e4b2c828e5fe4945213a))
+* Windows network race condition: defer FD_CLOSE until data drained ([#1254](https://github.com/philips-software/amp-embedded-infra-lib/issues/1254)) ([2568e6c](https://github.com/philips-software/amp-embedded-infra-lib/commit/2568e6c9ad9f3c7047805ab2954c0c2923853a19))
+
 ## [9.1.0](https://github.com/philips-software/amp-embedded-infra-lib/compare/v9.0.0...v9.1.0) (2026-05-26)
 
 
