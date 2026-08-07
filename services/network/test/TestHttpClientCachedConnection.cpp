@@ -413,7 +413,6 @@ TEST_F(HttpClientCachedConnectionTest, SendStreamAvailable_after_detach_is_ignor
     EXPECT_CALL(*clientObserver, Detaching());
     clientObserver->Detach();
 
-    // Late callbacks may still arrive from the lower layer after detach.
     infra::StreamWriterMock writer;
     infra::AccessedBySharedPtr writerAccess(infra::emptyFunction);
     clientSubject.Observer().SendStreamAvailable(writerAccess.MakeShared(writer));
