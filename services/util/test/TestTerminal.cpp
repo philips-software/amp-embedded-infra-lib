@@ -490,6 +490,7 @@ TEST_F(TerminalWithCommandsDuplicateDetectorTest, forwards_unregistered_observer
     EXPECT_THAT(processed, testing::IsFalse());
 }
 
+#ifndef EMIL_MUTATION_TESTING
 TEST_F(TerminalWithCommandsDuplicateDetectorTest, aborts_when_new_long_name_matches_existing_long_name)
 {
     EXPECT_DEATH(RegisterConflictingObserversAndDispatch("alpha", "a", "alpha", "b"), "");
@@ -514,3 +515,4 @@ TEST_F(TerminalWithCommandsDuplicateDetectorTest, re_evaluates_when_observer_is_
 {
     EXPECT_DEATH(EvaluateThenRegisterConflictingObserver(), "");
 }
+#endif
