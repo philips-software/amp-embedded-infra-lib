@@ -47,6 +47,11 @@ namespace services
         // Generic Access Service
         constexpr inline AttAttribute::Uuid16 gapService{ 0x1800 };
         constexpr inline AttAttribute::Uuid16 deviceName{ 0x2A00 };
+        constexpr inline AttAttribute::Uuid16 appearance{ 0x2A01 };
+
+        // Generic Attribute Service
+        constexpr inline AttAttribute::Uuid16 genericAttributeService{ 0x1801 };
+        constexpr inline AttAttribute::Uuid16 serviceChanged{ 0x2A05 };
 
         // Device Information Service
         constexpr inline AttAttribute::Uuid16 deviceInformationService{ 0x180A };
