@@ -1,23 +1,7 @@
 #include "infra/util/Function.hpp"
 
-namespace infra::detail
-{
-    struct AbortOnExecuteFunction
-    {
-        [[noreturn]] void operator()() const;
-    };
-}
-
 namespace infra
 {
-    namespace detail
-    {
-        const InvokerFunctions<void(), INFRA_DEFAULT_FUNCTION_EXTRA_SIZE>::VirtualMethodTable* GetAbortOnExecuteSentinelTable()
-        {
-            return InvokerFunctions<void(), INFRA_DEFAULT_FUNCTION_EXTRA_SIZE>::template StaticVirtualMethodTable<AbortOnExecuteFunction>();
-        }
-    }
-
     const infra::Function<void()> emptyFunction = []() {
     };
 
