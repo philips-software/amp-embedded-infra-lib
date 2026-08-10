@@ -10,6 +10,9 @@ namespace infra
     {
         LogAndAbortHook& LogAndAbortHookStorage()
         {
+            // NOSONAR: function-local static (construct-on-first-use) is required here;
+            // an inline/global variable would be dynamically initialized and could be
+            // read before construction if the abort hook fires during static init (SIOF).
             static LogAndAbortHook hook = nullptr;
             return hook;
         }
