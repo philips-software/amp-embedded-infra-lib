@@ -1,20 +1,13 @@
 #include "infra/util/Function.hpp"
+#include "infra/util/AbortOnExecuteFunction.hpp"
 
 namespace infra
 {
     namespace detail
     {
-        namespace
-        {
-            constexpr auto abortOnExecute = []()
-            {
-                std::abort();
-            };
-        }
-
         const InvokerFunctions<void(), INFRA_DEFAULT_FUNCTION_EXTRA_SIZE>::VirtualMethodTable* GetAbortOnExecuteSentinelTable()
         {
-            return InvokerFunctions<void(), INFRA_DEFAULT_FUNCTION_EXTRA_SIZE>::template StaticVirtualMethodTable<decltype(abortOnExecute)>();
+            return InvokerFunctions<void(), INFRA_DEFAULT_FUNCTION_EXTRA_SIZE>::template StaticVirtualMethodTable<AbortOnExecuteFunction>();
         }
     }
 
