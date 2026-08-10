@@ -7,7 +7,7 @@ namespace infra
     {
         struct AbortOnExecuteFunction
         {
-            void operator()() const;
+            [[noreturn]] void operator()() const;
         };
     }
 }
