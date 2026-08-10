@@ -1,15 +1,12 @@
 #ifndef INFRA_ABORT_ON_EXECUTE_FUNCTION_HPP
 #define INFRA_ABORT_ON_EXECUTE_FUNCTION_HPP
 
-namespace infra
+namespace infra::detail
 {
-    namespace detail
+    struct AbortOnExecuteFunction
     {
-        struct AbortOnExecuteFunction
-        {
-            [[noreturn]] void operator()() const;
-        };
-    }
+        [[noreturn]] void operator()() const;
+    };
 }
 
 #endif
