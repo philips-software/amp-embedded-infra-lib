@@ -382,9 +382,9 @@ TEST(FunctionTest, TestMutable)
 #ifndef EMIL_MUTATION_TESTING
 TEST(FunctionTest, TestCallingEmptyFunctionCallsLogAndAbortHook)
 {
-    infra::RegisterLogAndAbortHook([](const char* reason, const char* file, int line, const char* format, va_list* args)
+    infra::RegisterLogAndAbortHook([]([[maybe_unused]] const char* reason, [[maybe_unused]] const char* file, [[maybe_unused]] int line, const char* format, va_list* args)
         {
-            std::fprintf(stderr, "%s", format);
+            std::vfprintf(stderr, format, *args);
         });
 
     infra::Function<void()> f;
