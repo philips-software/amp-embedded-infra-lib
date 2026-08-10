@@ -2,7 +2,6 @@
 #include "infra/util/Function.hpp"
 #include <atomic>
 #include <cstdarg>
-#include <utility>
 
 namespace infra
 {
@@ -20,7 +19,7 @@ namespace infra
 
     void RegisterLogAndAbortHook(LogAndAbortHook hook)
     {
-        LogAndAbortHookStorage() = std::move(hook);
+        LogAndAbortHookStorage() = hook;
     }
 
     void ExecuteLogAndAbortHook(const char* reason, const char* file, int line, const char* format, ...)
