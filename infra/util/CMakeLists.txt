@@ -13,7 +13,6 @@ target_compile_options(infra.util PUBLIC
 )
 
 target_sources(infra.util PRIVATE
-    AbortOnExecuteFunction.cpp
     Aligned.hpp
     Allocator.hpp
     AllocatorFixedSpace.hpp
@@ -43,6 +42,7 @@ target_sources(infra.util PRIVATE
     FixedPoint.hpp
     Function.cpp
     Function.hpp
+    FunctionAbortSentinel.cpp
     IntegerNormalization.hpp
     InterfaceConnector.hpp
     IntrusiveBinarySearchTree.hpp
