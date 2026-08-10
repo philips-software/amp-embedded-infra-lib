@@ -1,5 +1,12 @@
-#include "infra/util/AbortOnExecuteFunction.hpp"
 #include "infra/util/LogAndAbort.hpp"
+
+namespace infra::detail
+{
+    struct AbortOnExecuteFunction
+    {
+        [[noreturn]] void operator()() const;
+    };
+}
 
 [[noreturn]] void infra::detail::AbortOnExecuteFunction::operator()() const
 {

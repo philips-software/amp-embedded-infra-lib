@@ -14,7 +14,6 @@ target_compile_options(infra.util PUBLIC
 
 target_sources(infra.util PRIVATE
     AbortOnExecuteFunction.cpp
-    AbortOnExecuteFunction.hpp
     Aligned.hpp
     Allocator.hpp
     AllocatorFixedSpace.hpp

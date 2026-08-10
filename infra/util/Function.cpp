@@ -1,5 +1,12 @@
 #include "infra/util/Function.hpp"
-#include "infra/util/AbortOnExecuteFunction.hpp"
+
+namespace infra::detail
+{
+    struct AbortOnExecuteFunction
+    {
+        [[noreturn]] void operator()() const;
+    };
+}
 
 namespace infra
 {
