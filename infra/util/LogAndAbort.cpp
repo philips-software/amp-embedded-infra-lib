@@ -8,12 +8,16 @@ namespace infra
 {
     namespace
     {
-        LogAndAbortHook logAndAbortHook = nullptr;
+        LogAndAbortHook& LogAndAbortHookStorage()
+        {
+            static LogAndAbortHook hook = nullptr;
+            return hook;
+        }
     }
 
     void RegisterLogAndAbortHook(LogAndAbortHook hook)
     {
-        logAndAbortHook = std::move(hook);
+        LogAndAbortHookStorage() = std::move(hook);
     }
 
     void ExecuteLogAndAbortHook(const char* reason, const char* file, int line, const char* format, ...)
@@ -28,11 +32,12 @@ namespace infra
                 busy = false;
             });
 
-        if (logAndAbortHook)
+        auto& hook = LogAndAbortHookStorage();
+        if (hook)
         {
             va_list args;
             va_start(args, format);
-            logAndAbortHook(reason, file, line, format, &args);
+            hook(reason, file, line, format, &args);
             va_end(args);
         }
     }
