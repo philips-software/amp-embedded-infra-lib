@@ -2,7 +2,11 @@
 #define SERVICES_BOND_STORAGE_SYNCHRONIZER_HPP
 
 #include "hal/interfaces/MacAddress.hpp"
+#include "infra/util/BoundedString.hpp"
 #include "infra/util/Function.hpp"
+#include "services/ble/Gap.hpp"
+#include <cstddef>
+#include <optional>
 
 namespace services
 {
@@ -18,6 +22,23 @@ namespace services
         virtual void RemoveBond(hal::MacAddress address) = 0;
         virtual void RemoveAllBonds() = 0;
         virtual uint32_t GetMaxNumberOfBonds() const = 0;
+    };
+
+    class BondNameStorage
+    {
+    protected:
+        BondNameStorage() = default;
+        ~BondNameStorage() = default;
+        BondNameStorage(const BondNameStorage& other) = delete;
+        BondNameStorage& operator=(const BondNameStorage& other) = delete;
+
+    public:
+        virtual void SetBondName(GapAddress address, infra::BoundedConstString name) = 0;
+        virtual std::optional<infra::BoundedConstString> GetBondName(GapAddress address) const = 0;
+        virtual void RemoveBondName(GapAddress address) = 0;
+        virtual void RemoveAllBondNames() = 0;
+        virtual std::size_t Size() const = 0;
+        virtual std::size_t Capacity() const = 0;
     };
 
     class BondStorage
