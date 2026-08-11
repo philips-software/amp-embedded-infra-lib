@@ -27,7 +27,7 @@ namespace infra
         std::size_t Available() const override;
 
     private:
-        uint32_t offset = 0;
+        std::size_t offset = 0;
         std::string_view string;
     };
 
