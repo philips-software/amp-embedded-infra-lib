@@ -150,7 +150,7 @@ service GattClientResponse
     rpc ReadCharacteristicResponse(ReadResult) returns (Nothing) { option (method_id) = 8; }
     rpc ReadDescriptorResponse(ReadResult) returns (Nothing) { option (method_id) = 9; }
 
-    // Called after completion of characteristic operations
+    // Called after completion of characteristic and descriptor operations
     rpc OperationComplete(OperationResult) returns (Nothing) { option (method_id) = 10; }
 
     rpc IndicationReceived(AttributeData) returns (Nothing) { option (method_id) = 11; }
