@@ -42,7 +42,6 @@ target_sources(infra.util PRIVATE
     FixedPoint.hpp
     Function.cpp
     Function.hpp
-    FunctionAbortSentinel.cpp
     IntegerNormalization.hpp
     InterfaceConnector.hpp
     IntrusiveBinarySearchTree.hpp
