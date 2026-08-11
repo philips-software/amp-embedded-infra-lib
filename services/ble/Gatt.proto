@@ -105,6 +105,7 @@ service GattClient
 
     // Discovery must follow the sequence: Service -> Characteristic -> Descriptor.
     // Each step must complete (indicated by the corresponding *Complete response) before initiating the next.
+    // The maximum number of items which will be returned depends on the configuration.
     //
     // Discovers all services on the remote device.
     // Responses: zero or more GattClientResponse.ServiceDiscovered, followed by GattClientResponse.ServiceDiscoveryComplete.
