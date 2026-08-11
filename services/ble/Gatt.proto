@@ -110,7 +110,7 @@ service GattClient
     // Responses: zero or more GattClientResponse.ServiceDiscovered, followed by GattClientResponse.ServiceDiscoveryComplete.
     rpc StartServiceDiscovery(Nothing) returns (Nothing) { option (method_id) = 2; }
     // Discovers all characteristics within a single service's handle range.
-    // Must be called once per discovered service, sequentially, after GattClientResponse.ServiceDiscoveryComplete.
+    // Must be called once per discovered service, after GattClientResponse.ServiceDiscoveryComplete.
     // Responses: zero or more GattClientResponse.CharacteristicDiscovered, followed by GattClientResponse.CharacteristicDiscoveryComplete.
     rpc StartCharacteristicDiscovery(HandleRange) returns (Nothing) { option (method_id) = 3; }
     // Discovers all descriptors within the given handle range of a characteristic.
