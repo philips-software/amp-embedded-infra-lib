@@ -30,25 +30,6 @@ namespace services
     protected:
         virtual GapState DetermineCurrentState() const = 0;
     };
-
-    template<typename Owner>
-    class StateGuardWithOwner
-        : public StateGuard
-    {
-    public:
-        explicit StateGuardWithOwner(const Owner& owner)
-            : owner(owner)
-        {}
-
-    protected:
-        GapState DetermineCurrentState() const override
-        {
-            return owner.DetermineCurrentState();
-        }
-
-    private:
-        const Owner& owner;
-    };
 } // namespace services
 
 #endif // SERVICES_BLE_STATE_GUARD_HPP
