@@ -457,6 +457,9 @@ message DiscoveredDevice
     AdvertisingReportType advertisingReportType = 4;
 }
 
+// Filtering is performed in software by the service implementation, not by the BLE controller.
+// Duplicate reports from the same device are not suppressed; a device will be reported each time it advertises.
+// Only one DeviceDiscovered response is sent at a time; if new matching reports arrive before the previous one is delivered, only the most recent is kept.
 message DeviceDiscoveryFilter
 {
     enum Filter
