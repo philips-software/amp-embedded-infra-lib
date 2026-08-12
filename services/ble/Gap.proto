@@ -207,6 +207,8 @@ message ScanResponseData
     bytes data = 1 [(bytes_size) = 13]; 
 }
 
+// Configures security mode, MITM protection, and I/O capabilities used during pairing.
+// Should be set once during initialization before advertising or connecting.
 message SecurityPreference
 {
     enum SupportEnum
@@ -555,20 +557,6 @@ service GapCentral
     //   On peer-initiated disconnect during pairing: GapCentralResponse.PairingResult -> GapCentralResponse.CurrentState(standby)
     rpc PairAndBond(Nothing) returns (Nothing) { option (method_id) = 6; }
 
-    ## TODO: Should GapCentral also have SetSecurityPreferences, like GapPeripheral?
-
-    // Allowed states: standby
-    // Description: Configures the minimum security mode and level required for connections.
-    //   Should be called once during initialization before any connections are made.
-    //   If a connected peer does not meet the required security level, the connection will be rejected.
-    rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 7; }
-
-    // Allowed states: standby
-    // Description: Configures the I/O capabilities of this device, used to determine the pairing method during PairAndBond.
-    //   Should be called once during initialization before any pairing takes place.
-    //   The selected capabilities influence which pairing method is chosen (e.g. Just Works, Passkey Entry, or Numeric Comparison).
-    rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 8; }
-
     // Allowed states: connected
     // Description: Provides the passkey entered by the user in response to GapCentralResponse.AuthenticationRequired.
     //   Only valid when AuthenticationRequest.isNumericComparison is false.
@@ -619,6 +607,10 @@ service GapCentral
     //   When enabled, the controller generates and rotates the private address automatically based on the local IRK.
     //   When disabled, the central uses its configured identity address.
     rpc SetPrivacyMode(BoolValue) returns (Nothing) { option (method_id) = 16; }
+
+    // Allowed states: standby
+    // When a SecurityPreference is not supported by the configuration it results in an assertion
+    rpc SetSecurityPreferences(SecurityPreference) returns (Nothing) { option (method_id) = 17; }
 }
 
 service GapCentralResponse {
