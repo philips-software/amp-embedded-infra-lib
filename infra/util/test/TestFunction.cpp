@@ -1,7 +1,10 @@
 #include "infra/util/Function.hpp"
+#include "infra/util/LogAndAbort.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include <cstdarg>
+#include <cstdio>
 
 TEST(FunctionTest, TestConstructedEmpty)
 {
@@ -375,3 +378,18 @@ TEST(FunctionTest, TestMutable)
     EXPECT_EQ(2, f());
     EXPECT_EQ(3, f());
 }
+
+#ifndef EMIL_MUTATION_TESTING
+TEST(FunctionTest, TestCallingEmptyFunctionCallsLogAndAbortHook)
+{
+    infra::RegisterLogAndAbortHook([]([[maybe_unused]] const char* reason, [[maybe_unused]] const char* file, [[maybe_unused]] int line, const char* format, va_list* args)
+        {
+            std::vfprintf(stderr, format, *args);
+        });
+
+    infra::Function<void()> f;
+    EXPECT_DEATH(f(), "Aborting on uninitialized function call");
+
+    infra::RegisterLogAndAbortHook(nullptr);
+}
+#endif
