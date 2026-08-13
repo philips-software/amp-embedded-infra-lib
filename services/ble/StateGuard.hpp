@@ -1,6 +1,7 @@
 #ifndef SERVICES_BLE_STATE_GUARD_HPP
 #define SERVICES_BLE_STATE_GUARD_HPP
 
+#include "infra/stream/StringOutputStream.hpp"
 #include "infra/util/ReallyAssert.hpp"
 #include "services/ble/Gap.hpp"
 #include <algorithm>
@@ -17,14 +18,32 @@ namespace services
         StateGuard& operator=(const StateGuard& other) = delete;
         virtual ~StateGuard() = default;
 
-        void AssertStateIs(std::initializer_list<GapState> states) const
+        bool StateIs(std::initializer_list<GapState> states) const
         {
             auto currentState = DetermineCurrentState();
-
-            really_assert(std::any_of(states.begin(), states.end(), [currentState](auto state)
+            return std::any_of(states.begin(), states.end(), [currentState](auto state)
                 {
                     return state == currentState;
-                }));
+                });
+        }
+
+        void AssertStateIs(std::initializer_list<GapState> states) const
+        {
+            if (!StateIs(states))
+            {
+                infra::StringOutputStream::WithStorage<16> stream;
+                for (auto it = states.begin(); it != states.end(); ++it)
+                {
+                    if (it != states.begin())
+                        stream << ",";
+                    stream << static_cast<int>(*it);
+                }
+
+                really_assert_with_msg(false,
+                    "GAP state: %d, expected: [%s]",
+                    static_cast<int>(DetermineCurrentState()),
+                    stream.Storage().data());
+            }
         }
 
     protected:
