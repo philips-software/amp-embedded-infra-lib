@@ -622,9 +622,13 @@ service GapCentral
     //   When disabled, the central uses its configured identity address.
     rpc SetPrivacyMode(BoolValue) returns (Nothing) { option (method_id) = 16; }
 
+    // DEPRECATED: Will be removed in the near future.
+    // Expected response: GapCentralResponse.DeviceBonded
+    rpc IsDeviceBonded(AddressWithType) returns (Nothing) { option (method_id) = 17; }
+
     // Allowed states: standby
     // When a SecurityPreference is not supported by the configuration it results in an assertion
-    rpc SetSecurityPreferences(SecurityPreference) returns (Nothing) { option (method_id) = 17; }
+    rpc SetSecurityPreferences(SecurityPreference) returns (Nothing) { option (method_id) = 18; }
 }
 
 service GapCentralResponse {
@@ -675,4 +679,7 @@ service GapCentralResponse {
     // Triggered by: GapCentral.GetBondList
     // Description: Returns the list of bonded devices sorted oldest to newest.
     rpc BondListReceived(BondList) returns (Nothing) { option(method_id) = 7; }
+
+    // DEPRECATED: Will be removed in the near future.
+    rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 8; }
 }
