@@ -530,8 +530,11 @@ service GapCentral
     rpc StartDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 3; }
 
     // Allowed states: standby
-    // Expected response: GapCentralResponse.CurrentState (standby -> initiating -> connected on success, standby -> initiating -> standby on failure)
+    // Expected response: GapCentralResponse.CurrentState
     // Description: Initiates a connection to a peripheral device with the given address.
+    // Response Sequences:
+    //   On successful connection establishment: standby -> initiating -> connected
+    //   On failed connection establishment: standby -> initiating -> standby
     rpc Connect(ConnectionParameters) returns (Nothing) { option (method_id) = 4; }
 
     // Allowed states: standby, scanning, connected, initiating
@@ -560,8 +563,8 @@ service GapCentral
     // Allowed states: connected
     // Description: Provides the passkey entered by the user in response to GapCentralResponse.AuthenticationRequired.
     //   Only valid when AuthenticationRequest.isNumericComparison is false.
-    //   Must be called within the SMP protocol timeout (30 seconds) of receiving AuthenticationRequired,
-    //   otherwise pairing will fail with PairingFailedReason.timeout.
+    //   Must be called within the SMP protocol timeout (30 seconds, Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4) 
+    //   of receiving AuthenticationRequired, otherwise pairing will fail with PairingFailedReason.timeout
     //   Influences GapCentralResponse.PairingResult response of PairAndBond.
     //   If peer disconnects before AuthenticateWithPasskey is called, state becomes standby. GapCentralResponse.PairingResult may or may not be generated in that case.
     rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 9; }
@@ -569,8 +572,8 @@ service GapCentral
     // Allowed states: connected
     // Description: Confirms or rejects the numeric comparison in response to GapCentralResponse.AuthenticationRequired.
     //   Only valid when AuthenticationRequest.isNumericComparison is true.
-    //   Must be called within the SMP protocol timeout (30 seconds) of receiving AuthenticationRequired,
-    //   otherwise pairing will fail with PairingFailedReason.timeout.
+    //   Must be called within the SMP protocol timeout (30 seconds, Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4) 
+    //   of receiving AuthenticationRequired, otherwise pairing will fail with PairingFailedReason.timeout
     //   Influences GapCentralResponse.PairingResult response of PairAndBond.
     //   If peer disconnects before NumericComparisonConfirm is called, state becomes standby. GapCentralResponse.PairingResult may or may not be generated in that case.
     rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 10; }
@@ -589,6 +592,7 @@ service GapCentral
     // Expected response: GapCentralResponse.ResolvePrivateAddressResult
     // Description: Resolves a resolvable private address to the identity address of an already bonded device.
     //   Will only succeed if the address is a resolvable private address and the device is bonded.
+    //   Useful to identify whether a device seen during scanning is already bonded, without needing to connect first.
     rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; }
 
     // Allowed states: standby, scanning, connected, initiating
