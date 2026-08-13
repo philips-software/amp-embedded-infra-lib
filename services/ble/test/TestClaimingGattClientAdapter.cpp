@@ -177,7 +177,7 @@ TEST_F(ClaimingGattClientAdapterTest, uses_external_resource_shared_with_other_c
 {
     infra::ClaimableResource sharedResource;
     infra::ClaimableResource::Claimer otherClaimer{ sharedResource };
-    auto adapterWithResource = services::ClaimingGattClientAdapter::WithResource(sharedResource, gattClient, attMtuExchange, gapCentral);
+    services::ClaimingGattClientAdapter adapterWithResource{ sharedResource, gattClient, attMtuExchange, gapCentral };
 
     otherClaimer.Claim([]() {});
     ExecuteAllActions();

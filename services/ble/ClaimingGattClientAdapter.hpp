@@ -25,8 +25,7 @@ namespace services
     {
     public:
         ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchange& attMtuExchange, GapCentral& gapCentral);
-
-        static ClaimingGattClientAdapter WithResource(infra::ClaimableResource& resource, GattClient& gattClient, AttMtuExchange& attMtuExchange, GapCentral& gapCentral);
+        ClaimingGattClientAdapter(infra::ClaimableResource& resource, GattClient& gattClient, AttMtuExchange& attMtuExchange, GapCentral& gapCentral);
 
         // Implementation of GattClientDiscovery
         void StartServiceDiscovery() override;
@@ -47,8 +46,6 @@ namespace services
         uint16_t EffectiveAttMtuSize() const override;
 
     private:
-        ClaimingGattClientAdapter(infra::ClaimableResource& resource, GattClient& gattClient, AttMtuExchange& attMtuExchange, GapCentral& gapCentral);
-
         // Implementation of GattClientObserver
         void ServiceDiscovered(const AttAttribute::Uuid& type, AttAttribute::Handle handle, AttAttribute::Handle endHandle) override;
         void ServiceDiscoveryComplete(OperationStatus status) override;
