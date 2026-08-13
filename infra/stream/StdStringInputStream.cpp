@@ -1,8 +1,15 @@
 #include "infra/stream/StdStringInputStream.hpp"
+#include "infra/stream/InputStream.hpp"
+#include "infra/stream/StreamErrorPolicy.hpp"
+#include "infra/util/ByteRange.hpp"
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <string_view>
 
 namespace infra
 {
-    StdStringInputStreamReader::StdStringInputStreamReader(const std::string& string)
+    StdStringInputStreamReader::StdStringInputStreamReader(std::string_view string)
         : string(string)
     {}
 
@@ -52,15 +59,15 @@ namespace infra
         return string.size() - offset;
     }
 
-    StdStringInputStream::StdStringInputStream(const std::string& storage)
+    StdStringInputStream::StdStringInputStream(std::string_view storage)
         : TextInputStream::WithReader<StdStringInputStreamReader>(storage)
     {}
 
-    StdStringInputStream::StdStringInputStream(const std::string& storage, const SoftFail&)
+    StdStringInputStream::StdStringInputStream(std::string_view storage, const SoftFail&)
         : TextInputStream::WithReader<StdStringInputStreamReader>(storage, softFail)
     {}
 
-    StdStringInputStream::StdStringInputStream(const std::string& storage, const NoFail&)
+    StdStringInputStream::StdStringInputStream(std::string_view storage, const NoFail&)
         : TextInputStream::WithReader<StdStringInputStreamReader>(storage, noFail)
     {}
 }
