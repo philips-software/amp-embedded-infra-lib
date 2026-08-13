@@ -671,7 +671,7 @@ service GapCentralResponse {
     rpc ResolvePrivateAddressResult(ResolvedPrivateAddress) returns (Nothing) { option (method_id) = 5; }
     
     // Expected states: standby, connected
-    // Triggered by: GapCentral.RemoveAllBonds, GapCentral.RemoveBondWithAddress, GapCentral.PairAndBond (if a new bond was created)
+    // Triggered by: GapCentral.RemoveAllBonds, GapCentral.RemoveBondWithAddress, GapCentral.PairAndBond
     // Description: Reports the updated number of stored bonds after a bond was added or removed.
     rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
 
