@@ -17,7 +17,17 @@ updates:
     directory: .clusterfuzzlite
     schedule:
       interval: monthly
+    groups:
+      minor-and-patch-docker-updates:
+        update-types:
+          - minor
+          - patch
   - package-ecosystem: docker
     directory: .devcontainer
     schedule:
       interval: daily
+    groups:
+      minor-and-patch-docker-updates:
+        update-types:
+          - minor
+          - patch
