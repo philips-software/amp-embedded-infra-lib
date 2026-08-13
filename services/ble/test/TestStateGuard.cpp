@@ -62,9 +62,9 @@ namespace services
         ON_CALL(stateGuard, DetermineCurrentState()).WillByDefault(testing::Return(GapState::standby));
 
         stateGuard.AssertStateIs({ GapState::standby, GapState::connected });
-#ifndef EMIL_MUTATION_TESTING
     }
 
+#ifndef EMIL_MUTATION_TESTING
     TEST_F(TestStateGuard, assert_state_is_aborts_with_message_for_single_expected_state)
     {
         ON_CALL(stateGuard, DetermineCurrentState()).WillByDefault(testing::Return(GapState::advertising));
