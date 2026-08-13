@@ -40,8 +40,9 @@ namespace services
                 }
 
                 really_assert_with_msg(false,
-                    "GAP state: %d, expected: [%s]",
+                    "Unexpected state found: %d, expected: [%.*s]",
                     static_cast<int>(DetermineCurrentState()),
+                    static_cast<int>(stream.Storage().size()),
                     stream.Storage().data());
             }
         }
