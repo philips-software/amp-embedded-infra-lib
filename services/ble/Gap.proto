@@ -451,7 +451,11 @@ message DeviceDiscoveryFilter
         // data: the manufacturer specific data to match, including the 2-byte manufacturer ID.
         manufacturerSpecificData = 2;
 
-        // TODO: Add filter for Service UUID to allow filtering on device type/profile.
+        // Filters on the Incomplete and Complete List of Service UUIDs fields in the advertising or scan response data.
+        // See Core Specification Supplement, Part A, Section 1.1
+        // Passes if the service UUID in the filter data is found in either the incomplete or complete service UUID list.
+        // data: the service UUID to match (2 bytes for a 16-bit UUID, 4 bytes for 32-bit, or 16 bytes for 128-bit).
+        serviceUuid = 3;
     }
 
     Filter filter = 1;
