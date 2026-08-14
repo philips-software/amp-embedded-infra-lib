@@ -536,18 +536,6 @@ service GapCentral
     // Can result in GapCentralResponse.CurrentState with standby if device disconnected
     rpc PairAndBond(Nothing) returns (Nothing) { option (method_id) = 6; }
 
-    // Allowed in link layer states: standby
-    // Configures the minimum security mode and level required for connections.
-    // Should be called once during initialization before any connections are made.
-    // If a connected peer does not meet the required security level, the connection will be rejected.
-    rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 7; }
-
-    // Allowed in link layer states: standby
-    // Configures the I/O capabilities of this device, used to determine the pairing method during PairAndBond.
-    // Should be called once during initialization before any pairing takes place.
-    // The selected capabilities influence which pairing method is chosen (e.g. Just Works, Passkey Entry, or Numeric Comparison).
-    rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 8; }
-
     // Allowed in link layer states: connected
     // Provides the passkey entered by the user in response to GapCentralResponse.AuthenticationRequired.
     // Only valid when AuthenticationRequest.isNumericComparison is false.
@@ -599,6 +587,10 @@ service GapCentral
     // DEPRECATED: Will be removed in the near future.
     // Responds with GapCentralResponse.DeviceBonded
     rpc IsDeviceBonded(AddressWithType) returns (Nothing) { option (method_id) = 17; }
+
+    // Allowed states: standby
+    // Description: When a SecurityPreference is not supported by the configuration it results in an assertion
+    rpc SetSecurityPreferences(SecurityPreference) returns (Nothing) { option (method_id) = 18; }
 }
 
 service GapCentralResponse {
