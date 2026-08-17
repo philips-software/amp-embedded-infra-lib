@@ -210,7 +210,7 @@ message ScanResponseData
     bytes data = 1 [(bytes_size) = 13]; 
 }
 
-// Configures security mode, MITM protection, and I/O capabilities used during pairing.
+// Configures pairing preferences: LE Secure Connections support, MITM protection, and I/O capabilities.
 // Should be set once during initialization before advertising or connecting.
 message SecurityPreference
 {
