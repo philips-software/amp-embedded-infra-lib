@@ -108,8 +108,11 @@ namespace services
 
         if (messageSize != 0)
         {
-            infra::LimitedStreamReader::WithInput<infra::BoundedVectorInputStreamReader> reader(std::in_place, receivedMessage, messageSize);
-            GetObserver().ReceivedMessageOnInterrupt(reader);
+            if (HasObserver())
+            {
+                infra::LimitedStreamReader::WithInput<infra::BoundedVectorInputStreamReader> reader(std::in_place, receivedMessage, messageSize);
+                GetObserver().ReceivedMessageOnInterrupt(reader);
+            }
             receivedMessage.erase(receivedMessage.begin(), receivedMessage.begin() + messageSize);
         }
     }

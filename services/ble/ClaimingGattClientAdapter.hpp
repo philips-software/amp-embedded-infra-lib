@@ -25,6 +25,7 @@ namespace services
     {
     public:
         ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchange& attMtuExchange, GapCentral& gapCentral);
+        ClaimingGattClientAdapter(infra::ClaimableResource& resource, GattClient& gattClient, AttMtuExchange& attMtuExchange, GapCentral& gapCentral);
 
         // Implementation of GattClientDiscovery
         void StartServiceDiscovery() override;
@@ -119,7 +120,8 @@ namespace services
         std::optional<CharacteristicOperation> characteristicOperationContext;
         infra::AutoResetFunction<void(OperationStatus)> mtuExchangeOnDone;
 
-        infra::ClaimableResource resource;
+        std::optional<infra::ClaimableResource> ownedResource;
+        infra::ClaimableResource& resource;
         infra::ClaimableResource::Claimer characteristicOperationsClaimer{ resource };
         infra::ClaimableResource::Claimer discoveryClaimer{ resource };
         infra::ClaimableResource::Claimer attMtuExchangeClaimer{ resource };

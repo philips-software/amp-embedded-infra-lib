@@ -212,3 +212,27 @@ TEST_F(MessageCommunicationCobsTest, receive_interrupted_data)
     ExpectReceivedMessage({ 1, 2 });
     receiveData(infra::ConstructBin()({ 0, 5, 1, 2, 0 }).Range());
 }
+
+class MessageCommunicationCobsWithoutObserverTest
+    : public testing::Test
+    , public infra::EventDispatcherFixture
+{
+public:
+    ~MessageCommunicationCobsWithoutObserverTest()
+    {
+        EXPECT_CALL(serial, ReceiveData(testing::_));
+    }
+
+    testing::StrictMock<hal::SerialCommunicationCleanMock> serial;
+    infra::Function<void(infra::ConstByteRange data)> receiveData;
+    infra::Execute execute{ [this]()
+        {
+            EXPECT_CALL(serial, ReceiveData(testing::_)).WillOnce(testing::SaveArg<0>(&receiveData));
+        } };
+    services::MessageCommunicationCobs::WithMaxMessageSize<280> communication{ serial };
+};
+
+TEST_F(MessageCommunicationCobsWithoutObserverTest, message_received_before_observer_is_attached_is_discarded)
+{
+    receiveData(infra::ConstructBin()({ 0, 5, 1, 2, 3, 4, 0 }).Range());
+}

@@ -173,6 +173,23 @@ TEST_F(ClaimingGattClientAdapterTest, should_release_claimer_when_disconnected)
     ExecuteAllActions();
 }
 
+TEST_F(ClaimingGattClientAdapterTest, uses_external_resource_shared_with_other_claimer)
+{
+    infra::ClaimableResource sharedResource;
+    infra::ClaimableResource::Claimer otherClaimer{ sharedResource };
+    services::ClaimingGattClientAdapter adapterWithResource{ sharedResource, gattClient, attMtuExchange, gapCentral };
+
+    otherClaimer.Claim([]() {});
+    ExecuteAllActions();
+
+    adapterWithResource.StartServiceDiscovery();
+    ExecuteAllActions();
+
+    EXPECT_CALL(gattClient, StartServiceDiscovery());
+    otherClaimer.Release();
+    ExecuteAllActions();
+}
+
 class ClaimingGattClientAdapterStatusTest
     : public ClaimingGattClientAdapterTest
     , public testing::WithParamInterface<services::OperationStatus>
