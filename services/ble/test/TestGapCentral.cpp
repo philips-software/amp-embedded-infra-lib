@@ -32,7 +32,7 @@ namespace services
 
     MATCHER_P(ConnectionParametersEqual, x, negation ? "Contents not equal" : "Contents are equal")
     {
-        return x.minConnIntMultiplier == arg.minConnIntMultiplier && x.maxConnIntMultiplier == arg.maxConnIntMultiplier && x.slaveLatency == arg.slaveLatency && x.supervisorTimeoutMs == arg.supervisorTimeoutMs;
+        return x.minConnectionIntervalMultiplier == arg.minConnectionIntervalMultiplier && x.maxConnectionIntervalMultiplier == arg.maxConnectionIntervalMultiplier && x.peripheralLatency == arg.peripheralLatency && x.supervisionTimeoutMultiplier == arg.supervisionTimeoutMultiplier;
     }
 
     TEST_F(GapCentralDecoratorTest, forward_all_state_changed_events_to_observers)

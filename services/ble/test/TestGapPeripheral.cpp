@@ -64,10 +64,10 @@ namespace services
         services::GapConnectionParameters connParam{ 10, 20, 30, 40 };
         EXPECT_CALL(gap, SetConnectionParameters(testing::_)).WillOnce(testing::Invoke([connParam](const services::GapConnectionParameters& param)
             {
-                EXPECT_EQ(param.maxConnIntMultiplier, connParam.maxConnIntMultiplier);
-                EXPECT_EQ(param.minConnIntMultiplier, connParam.minConnIntMultiplier);
-                EXPECT_EQ(param.slaveLatency, connParam.slaveLatency);
-                EXPECT_EQ(param.supervisorTimeoutMs, connParam.supervisorTimeoutMs);
+                    EXPECT_EQ(param.maxConnectionIntervalMultiplier, connParam.maxConnectionIntervalMultiplier);
+                    EXPECT_EQ(param.minConnectionIntervalMultiplier, connParam.minConnectionIntervalMultiplier);
+                    EXPECT_EQ(param.peripheralLatency, connParam.peripheralLatency);
+                    EXPECT_EQ(param.supervisionTimeoutMultiplier, connParam.supervisionTimeoutMultiplier);
             }));
         decorator.SetConnectionParameters(connParam);
     }

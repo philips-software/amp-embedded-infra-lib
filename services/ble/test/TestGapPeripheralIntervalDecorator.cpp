@@ -71,10 +71,10 @@ TEST_F(GapPeripheralIntervalDecoratorTest, use_default_connection_parameter_when
     EXPECT_CALL(gapObserver, StateChanged(services::GapState::connected));
     EXPECT_CALL(gap, SetConnectionParameters(testing::_)).WillOnce(testing::Invoke([](const services::GapConnectionParameters& connParam)
         {
-            EXPECT_EQ(connParam.minConnIntMultiplier, 6);
-            EXPECT_EQ(connParam.maxConnIntMultiplier, 6);
-            EXPECT_EQ(connParam.slaveLatency, 0);
-            EXPECT_EQ(connParam.supervisorTimeoutMs, 500);
+            EXPECT_EQ(connParam.minConnectionIntervalMultiplier, 6);
+            EXPECT_EQ(connParam.maxConnectionIntervalMultiplier, 6);
+            EXPECT_EQ(connParam.peripheralLatency, 0);
+            EXPECT_EQ(connParam.supervisionTimeoutMultiplier, 500);
         }));
     gapPeripheralIntervalDecorator.StateChanged(services::GapState::connected);
 }
@@ -87,10 +87,10 @@ TEST_F(GapPeripheralIntervalDecoratorTest, use_user_connection_parameter_when_co
     EXPECT_CALL(gapObserver, StateChanged(services::GapState::connected));
     EXPECT_CALL(gap, SetConnectionParameters(testing::_)).WillOnce(testing::Invoke([](const services::GapConnectionParameters& connParam)
         {
-            EXPECT_EQ(connParam.minConnIntMultiplier, 10);
-            EXPECT_EQ(connParam.maxConnIntMultiplier, 10);
-            EXPECT_EQ(connParam.slaveLatency, 0);
-            EXPECT_EQ(connParam.supervisorTimeoutMs, 500);
+            EXPECT_EQ(connParam.minConnectionIntervalMultiplier, 10);
+            EXPECT_EQ(connParam.maxConnectionIntervalMultiplier, 10);
+            EXPECT_EQ(connParam.peripheralLatency, 0);
+            EXPECT_EQ(connParam.supervisionTimeoutMultiplier, 500);
         }));
     gapPeripheralIntervalDecorator.StateChanged(services::GapState::connected);
 }
@@ -102,10 +102,10 @@ TEST_F(GapPeripheralIntervalDecoratorTest, use_long_connection_parameter_when_co
     EXPECT_CALL(gapObserver, StateChanged(services::GapState::connected));
     EXPECT_CALL(gap, SetConnectionParameters(testing::_)).WillOnce(testing::Invoke([](const services::GapConnectionParameters& connParam)
         {
-            EXPECT_EQ(connParam.minConnIntMultiplier, 50);
-            EXPECT_EQ(connParam.maxConnIntMultiplier, 50);
-            EXPECT_EQ(connParam.slaveLatency, 0);
-            EXPECT_EQ(connParam.supervisorTimeoutMs, 500);
+            EXPECT_EQ(connParam.minConnectionIntervalMultiplier, 50);
+            EXPECT_EQ(connParam.maxConnectionIntervalMultiplier, 50);
+            EXPECT_EQ(connParam.peripheralLatency, 0);
+            EXPECT_EQ(connParam.supervisionTimeoutMultiplier, 500);
         }));
     gapPeripheralIntervalDecorator.StateChanged(services::GapState::connected);
 }
@@ -115,28 +115,28 @@ TEST_F(GapPeripheralIntervalDecoratorTest, switch_to_long_connection_interval_an
     EXPECT_CALL(gapObserver, StateChanged(services::GapState::connected));
     EXPECT_CALL(gap, SetConnectionParameters(testing::_)).WillOnce(testing::Invoke([](const services::GapConnectionParameters& connParam)
         {
-            EXPECT_EQ(connParam.minConnIntMultiplier, 6);
-            EXPECT_EQ(connParam.maxConnIntMultiplier, 6);
-            EXPECT_EQ(connParam.slaveLatency, 0);
-            EXPECT_EQ(connParam.supervisorTimeoutMs, 500);
+            EXPECT_EQ(connParam.minConnectionIntervalMultiplier, 6);
+            EXPECT_EQ(connParam.maxConnectionIntervalMultiplier, 6);
+            EXPECT_EQ(connParam.peripheralLatency, 0);
+            EXPECT_EQ(connParam.supervisionTimeoutMultiplier, 500);
         }));
     gapPeripheralIntervalDecorator.StateChanged(services::GapState::connected);
 
     EXPECT_CALL(gap, SetConnectionParameters(testing::_)).WillOnce(testing::Invoke([](const services::GapConnectionParameters& connParam)
         {
-            EXPECT_EQ(connParam.minConnIntMultiplier, 50);
-            EXPECT_EQ(connParam.maxConnIntMultiplier, 50);
-            EXPECT_EQ(connParam.slaveLatency, 0);
-            EXPECT_EQ(connParam.supervisorTimeoutMs, 500);
+            EXPECT_EQ(connParam.minConnectionIntervalMultiplier, 50);
+            EXPECT_EQ(connParam.maxConnectionIntervalMultiplier, 50);
+            EXPECT_EQ(connParam.peripheralLatency, 0);
+            EXPECT_EQ(connParam.supervisionTimeoutMultiplier, 500);
         }));
     gapPeripheralIntervalDecorator.SwitchToLongInterval();
 
     EXPECT_CALL(gap, SetConnectionParameters(testing::_)).WillOnce(testing::Invoke([](const services::GapConnectionParameters& connParam)
         {
-            EXPECT_EQ(connParam.minConnIntMultiplier, 6);
-            EXPECT_EQ(connParam.maxConnIntMultiplier, 6);
-            EXPECT_EQ(connParam.slaveLatency, 0);
-            EXPECT_EQ(connParam.supervisorTimeoutMs, 500);
+            EXPECT_EQ(connParam.minConnectionIntervalMultiplier, 6);
+            EXPECT_EQ(connParam.maxConnectionIntervalMultiplier, 6);
+            EXPECT_EQ(connParam.peripheralLatency, 0);
+            EXPECT_EQ(connParam.supervisionTimeoutMultiplier, 500);
         }));
     gapPeripheralIntervalDecorator.SwitchToUserInterval();
 }

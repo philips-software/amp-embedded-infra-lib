@@ -59,10 +59,10 @@ namespace services
 
     struct GapConnectionParameters
     {
-        uint16_t minConnIntMultiplier;
-        uint16_t maxConnIntMultiplier;
-        uint16_t slaveLatency;
-        uint16_t supervisorTimeoutMs;
+        uint16_t minConnectionIntervalMultiplier;
+        uint16_t maxConnectionIntervalMultiplier;
+        uint16_t peripheralLatency;
+        uint16_t supervisionTimeoutMultiplier;
 
         static constexpr uint16_t connectionInitialMaxTxOctets = 251;
         static constexpr uint16_t connectionInitialMaxTxTime = 2120; // (connectionInitialMaxTxOctets + 14) * 8
