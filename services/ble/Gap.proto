@@ -482,7 +482,7 @@ message Bond
 
 message BondList
 {    
-    // Will be sorted by least recently used (LRU), oldest -> newest.
+    // Sorted by least recently used (LRU): least recently used -> most recently used.
     repeated Bond bonds = 1 [(array_size) = 32];
 }
 
