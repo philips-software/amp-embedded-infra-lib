@@ -11,8 +11,7 @@ namespace services
     {
     public:
         MOCK_METHOD(void, BondStorageSynchronizerCreated, (BondStorageSynchronizer & manager), (override));
-        MOCK_METHOD(void, AddBond, (const services::Bond& bond), (override));
-        MOCK_METHOD(void, MarkAsRecentlyUsed, (hal::MacAddress address), (override));
+        MOCK_METHOD(void, UpdateBond, (const services::Bond& bond), (override));
         MOCK_METHOD(void, RemoveBond, (hal::MacAddress address), (override));
         MOCK_METHOD(void, RemoveAllBonds, (), (override));
         MOCK_METHOD(void, RemoveBondIf, (const infra::Function<bool(hal::MacAddress)>& onAddress), (override));
@@ -25,8 +24,7 @@ namespace services
         : public BondStorageSynchronizer
     {
     public:
-        MOCK_METHOD(void, AddBond, (const services::Bond& bond), (override));
-        MOCK_METHOD(void, MarkAsRecentlyUsed, (hal::MacAddress address), (override));
+        MOCK_METHOD(void, UpdateBond, (const services::Bond& bond), (override));
         MOCK_METHOD(void, RemoveBond, (hal::MacAddress address), (override));
         MOCK_METHOD(void, RemoveAllBonds, (), (override));
         MOCK_METHOD(uint32_t, GetMaxNumberOfBonds, (), (const, override));

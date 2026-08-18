@@ -18,8 +18,7 @@ namespace services
         BondStorageSynchronizer& operator=(const BondStorageSynchronizer& other) = delete;
 
     public:
-        virtual void AddBond(const services::Bond& bond) = 0;
-        virtual void MarkAsRecentlyUsed(hal::MacAddress address) = 0;
+        virtual void UpdateBond(const services::Bond& bond) = 0;
         virtual void RemoveBond(hal::MacAddress address) = 0;
         virtual void RemoveAllBonds() = 0;
         virtual uint32_t GetMaxNumberOfBonds() const = 0;
@@ -51,8 +50,7 @@ namespace services
 
     public:
         virtual void BondStorageSynchronizerCreated(BondStorageSynchronizer& manager) = 0;
-        virtual void AddBond(const services::Bond& bond) = 0;
-        virtual void MarkAsRecentlyUsed(hal::MacAddress address) = 0;
+        virtual void UpdateBond(const services::Bond& bond) = 0;
         virtual void RemoveBond(hal::MacAddress address) = 0;
         virtual void RemoveAllBonds() = 0;
         virtual void RemoveBondIf(const infra::Function<bool(hal::MacAddress)>& onAddress) = 0;
@@ -68,8 +66,7 @@ namespace services
         BondStorageSynchronizerImpl(BondStorage& referenceBondStorage, BondStorage& otherBondStorage);
 
         // Implementation of BondStorageSynchronizer
-        void AddBond(const services::Bond& bond) override;
-        void MarkAsRecentlyUsed(hal::MacAddress address) override;
+        void UpdateBond(const services::Bond& bond) override;
         void RemoveBond(hal::MacAddress address) override;
         void RemoveAllBonds() override;
         uint32_t GetMaxNumberOfBonds() const override;

@@ -73,11 +73,11 @@ TEST_F(BondStorageSynchronizerTest, construction_adds_all_bonds_to_other_storage
     EXPECT_CALL(referenceStorage, IterateBondedDevices(testing::_)).WillOnce([this](const infra::Function<void(const services::Bond&)>& onBond)
         {
             EXPECT_CALL(otherStorage, IsBondStored(address1)).WillOnce(testing::Return(false));
-            EXPECT_CALL(otherStorage, AddBond(bond1));
+            EXPECT_CALL(otherStorage, UpdateBond(bond1));
             onBond(bond1);
 
             EXPECT_CALL(otherStorage, IsBondStored(address2)).WillOnce(testing::Return(false));
-            EXPECT_CALL(otherStorage, AddBond(bond2));
+            EXPECT_CALL(otherStorage, UpdateBond(bond2));
             onBond(bond2);
         });
 
@@ -101,7 +101,7 @@ TEST_F(BondStorageSynchronizerTest, construction_synchronises_unequal_bond_stora
             onBond(bond1);
 
             EXPECT_CALL(otherStorage, IsBondStored(address2)).WillOnce(testing::Return(false));
-            EXPECT_CALL(otherStorage, AddBond(bond2));
+            EXPECT_CALL(otherStorage, UpdateBond(bond2));
             onBond(bond2);
         });
 
@@ -145,18 +145,11 @@ TEST_F(BondStorageSynchronizerTestWithConstruction, construction_notifies_bondst
     EXPECT_THAT(bondStorageSynchronizer.GetMaxNumberOfBonds(), testing::Eq(maxNumberOfBonds));
 }
 
-TEST_F(BondStorageSynchronizerTestWithConstruction, add_bond_is_forwarded_to_bondstorages)
+TEST_F(BondStorageSynchronizerTestWithConstruction, update_bond_is_forwarded_to_bondstorages)
 {
-    EXPECT_CALL(referenceStorage, AddBond(bond1));
-    EXPECT_CALL(otherStorage, AddBond(bond1));
-    bondStorageSynchronizer.AddBond(bond1);
-}
-
-TEST_F(BondStorageSynchronizerTestWithConstruction, mark_as_recently_used_is_forwarded_to_bondstorages)
-{
-    EXPECT_CALL(referenceStorage, MarkAsRecentlyUsed(address1));
-    EXPECT_CALL(otherStorage, MarkAsRecentlyUsed(address1));
-    bondStorageSynchronizer.MarkAsRecentlyUsed(address1);
+    EXPECT_CALL(referenceStorage, UpdateBond(bond1));
+    EXPECT_CALL(otherStorage, UpdateBond(bond1));
+    bondStorageSynchronizer.UpdateBond(bond1);
 }
 
 TEST_F(BondStorageSynchronizerTestWithConstruction, remove_bond_is_forwarded_to_bondstorages)

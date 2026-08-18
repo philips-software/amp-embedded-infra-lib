@@ -16,16 +16,10 @@ namespace services
         SyncBondStorages();
     }
 
-    void BondStorageSynchronizerImpl::AddBond(const services::Bond& bond)
+    void BondStorageSynchronizerImpl::UpdateBond(const services::Bond& bond)
     {
-        referenceBondStorage.AddBond(bond);
-        otherBondStorage.AddBond(bond);
-    }
-
-    void BondStorageSynchronizerImpl::MarkAsRecentlyUsed(hal::MacAddress address)
-    {
-        referenceBondStorage.MarkAsRecentlyUsed(address);
-        otherBondStorage.MarkAsRecentlyUsed(address);
+        referenceBondStorage.UpdateBond(bond);
+        otherBondStorage.UpdateBond(bond);
     }
 
     void BondStorageSynchronizerImpl::RemoveBond(hal::MacAddress address)
@@ -55,7 +49,7 @@ namespace services
         referenceBondStorage.IterateBondedDevices([this](const services::Bond& bond)
             {
                 if (!otherBondStorage.IsBondStored(bond.address.address))
-                    otherBondStorage.AddBond(bond);
+                    otherBondStorage.UpdateBond(bond);
             });
     }
 }
