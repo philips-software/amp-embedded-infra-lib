@@ -19,8 +19,8 @@ namespace services
         , public infra::EnableSharedFromThis<DatagramBsd>
     {
     public:
-        DatagramBsd(uint16_t port, DatagramExchangeObserver& observer);
-        explicit DatagramBsd(DatagramExchangeObserver& observer);
+        DatagramBsd(uint16_t port, DatagramExchangeObserver& observer, IPVersions versions = IPVersions::ipv4);
+        explicit DatagramBsd(DatagramExchangeObserver& observer, IPVersions versions = IPVersions::ipv4);
         DatagramBsd(const UdpSocket& remote, DatagramExchangeObserver& observer);
         DatagramBsd(uint16_t localPort, const UdpSocket& remote, DatagramExchangeObserver& observer);
         DatagramBsd(IPAddress localAddress, DatagramExchangeObserver& observer);
@@ -40,6 +40,8 @@ namespace services
 
         void JoinMulticastGroup(IPv4Address multicastAddress);
         void LeaveMulticastGroup(IPv4Address multicastAddress);
+        void JoinMulticastGroup(IPv6Address multicastAddress);
+        void LeaveMulticastGroup(IPv6Address multicastAddress);
 
     private:
         void InitSocket();
@@ -62,7 +64,8 @@ namespace services
     private:
         friend class EventDispatcherWithNetwork;
 
-        int socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        int family = AF_INET;
+        int socket = -1;
         IPv4Address localAddress{};
         std::optional<UdpSocket> connectedTo;
 

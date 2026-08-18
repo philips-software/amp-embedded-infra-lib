@@ -24,8 +24,8 @@ namespace services
         , public infra::EnableSharedFromThis<DatagramWin>
     {
     public:
-        DatagramWin(uint16_t port, DatagramExchangeObserver& observer);
-        explicit DatagramWin(DatagramExchangeObserver& observer);
+        DatagramWin(uint16_t port, DatagramExchangeObserver& observer, IPVersions versions = IPVersions::ipv4);
+        explicit DatagramWin(DatagramExchangeObserver& observer, IPVersions versions = IPVersions::ipv4);
         DatagramWin(const UdpSocket& remote, DatagramExchangeObserver& observer);
         DatagramWin(uint16_t localPort, const UdpSocket& remote, DatagramExchangeObserver& observer);
         DatagramWin(IPAddress localAddress, DatagramExchangeObserver& observer);
@@ -44,6 +44,8 @@ namespace services
 
         void JoinMulticastGroup(IPv4Address multicastAddress);
         void LeaveMulticastGroup(IPv4Address multicastAddress);
+        void JoinMulticastGroup(IPv6Address multicastAddress);
+        void LeaveMulticastGroup(IPv6Address multicastAddress);
 
     private:
         void InitSocket();
@@ -66,7 +68,8 @@ namespace services
     private:
         friend class EventDispatcherWithNetwork;
 
-        SOCKET socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        int family = AF_INET;
+        SOCKET socket = INVALID_SOCKET;
         WSAEVENT event = WSACreateEvent();
         IPv4Address localAddress{};
         std::optional<UdpSocket> connectedTo;
@@ -108,6 +111,8 @@ namespace services
 
         void JoinMulticastGroup(IPv4Address multicastAddress);
         void LeaveMulticastGroup(IPv4Address multicastAddress);
+        void JoinMulticastGroup(IPv6Address multicastAddress);
+        void LeaveMulticastGroup(IPv6Address multicastAddress);
 
         // Implementation of DatagramExchange
         void RequestSendStream(std::size_t sendSize) override;

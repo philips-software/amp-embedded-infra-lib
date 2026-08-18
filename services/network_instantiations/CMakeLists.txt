@@ -8,6 +8,8 @@ target_sources(services.network_instantiations PRIVATE
     NameLookup.hpp
     NetworkAdapter.cpp
     NetworkAdapter.hpp
+    SocketAddress.cpp
+    SocketAddress.hpp
 )
 
 target_link_libraries(services.network_instantiations PUBLIC

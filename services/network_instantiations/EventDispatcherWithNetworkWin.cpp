@@ -83,16 +83,14 @@ namespace services
 
     infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Listen(DatagramExchangeObserver& observer, uint16_t port, IPVersions versions)
     {
-        assert(versions != IPVersions::ipv6);
-        auto result = infra::MakeSharedOnHeap<DatagramWin>(port, observer);
+        auto result = infra::MakeSharedOnHeap<DatagramWin>(port, observer, versions);
         RegisterDatagram(result);
         return result;
     }
 
     infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Listen(DatagramExchangeObserver& observer, IPVersions versions)
     {
-        assert(versions != IPVersions::ipv6);
-        auto result = infra::MakeSharedOnHeap<DatagramWin>(observer);
+        auto result = infra::MakeSharedOnHeap<DatagramWin>(observer, versions);
         RegisterDatagram(result);
         return result;
     }
@@ -171,12 +169,32 @@ namespace services
 
     void EventDispatcherWithNetwork::JoinMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv6Address multicastAddress)
     {
-        std::abort();
+        auto datagram = std::find(datagrams.begin(), datagrams.end(), datagramExchange);
+
+        if (datagram != datagrams.end())
+            datagram->lock()->JoinMulticastGroup(multicastAddress);
+        else
+        {
+            auto datagram = std::find(datagramsMultiple.begin(), datagramsMultiple.end(), datagramExchange);
+
+            if (datagram != datagramsMultiple.end())
+                datagram->lock()->JoinMulticastGroup(multicastAddress);
+        }
     }
 
     void EventDispatcherWithNetwork::LeaveMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv6Address multicastAddress)
     {
-        std::abort();
+        auto datagram = std::find(datagrams.begin(), datagrams.end(), datagramExchange);
+
+        if (datagram != datagrams.end())
+            datagram->lock()->LeaveMulticastGroup(multicastAddress);
+        else
+        {
+            auto datagram = std::find(datagramsMultiple.begin(), datagramsMultiple.end(), datagramExchange);
+
+            if (datagram != datagramsMultiple.end())
+                datagram->lock()->LeaveMulticastGroup(multicastAddress);
+        }
     }
 
     void EventDispatcherWithNetwork::RequestExecution()
