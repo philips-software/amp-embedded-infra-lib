@@ -255,7 +255,7 @@ namespace services
         auto eventAddressTypeRandomDevice = services::GapDeviceAddressType::randomAddress;
         stream << eventAddressTypePublicDevice << " " << eventAddressTypeRandomDevice;
 
-        EXPECT_EQ("Public Device Address Random Device Address", stream.Storage());
+        EXPECT_EQ("Public Random", stream.Storage());
     }
 
     TEST(GapInsertionOperatorStateTest, state_overload_operator)
