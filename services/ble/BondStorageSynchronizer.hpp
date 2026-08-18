@@ -18,13 +18,14 @@ namespace services
         BondStorageSynchronizer& operator=(const BondStorageSynchronizer& other) = delete;
 
     public:
-        virtual void UpdateBondedDevice(hal::MacAddress address) = 0;
+        virtual void AddBond(const services::Bond& bond) = 0;
+        virtual void MarkAsRecentlyUsed(hal::MacAddress address) = 0;
         virtual void RemoveBond(hal::MacAddress address) = 0;
         virtual void RemoveAllBonds() = 0;
         virtual uint32_t GetMaxNumberOfBonds() const = 0;
     };
 
-    class BondNameStorage
+    class BondNameStorage // TODO: Remove
     {
     protected:
         BondNameStorage() = default;
@@ -50,13 +51,14 @@ namespace services
 
     public:
         virtual void BondStorageSynchronizerCreated(BondStorageSynchronizer& manager) = 0;
-        virtual void UpdateBondedDevice(hal::MacAddress address) = 0;
+        virtual void AddBond(const services::Bond& bond) = 0;
+        virtual void MarkAsRecentlyUsed(hal::MacAddress address) = 0;
         virtual void RemoveBond(hal::MacAddress address) = 0;
         virtual void RemoveAllBonds() = 0;
         virtual void RemoveBondIf(const infra::Function<bool(hal::MacAddress)>& onAddress) = 0;
         virtual uint32_t GetMaxNumberOfBonds() const = 0;
         virtual bool IsBondStored(hal::MacAddress address) const = 0;
-        virtual void IterateBondedDevices(const infra::Function<void(hal::MacAddress)>& onAddress) = 0;
+        virtual void IterateBondedDevices(const infra::Function<void(const services::Bond&)>& onAddress) = 0;
     };
 
     class BondStorageSynchronizerImpl
@@ -66,7 +68,8 @@ namespace services
         BondStorageSynchronizerImpl(BondStorage& referenceBondStorage, BondStorage& otherBondStorage);
 
         // Implementation of BondStorageSynchronizer
-        void UpdateBondedDevice(hal::MacAddress address) override;
+        void AddBond(const services::Bond& bond) override;
+        void MarkAsRecentlyUsed(hal::MacAddress address) override;
         void RemoveBond(hal::MacAddress address) override;
         void RemoveAllBonds() override;
         uint32_t GetMaxNumberOfBonds() const override;

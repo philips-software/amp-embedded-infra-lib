@@ -57,6 +57,13 @@ namespace services
         manufacturerSpecificData = 0xffu
     };
 
+    enum class Role : uint8_t
+    {
+        unknown = 0,
+        central,
+        peripheral,
+    };
+
     struct GapConnectionParameters
     {
         uint16_t minConnIntMultiplier;
@@ -96,12 +103,14 @@ namespace services
     {
         GapAddress address;
         infra::BoundedConstString deviceName;
+        Role localRole = Role::unknown;
 
         bool operator==(Bond const& rhs) const
         {
-            return address == rhs.address && deviceName == rhs.deviceName;
+            return address == rhs.address && deviceName == rhs.deviceName && localRole == rhs.localRole;
         }
     };
+
     class GapPairing;
 
     class GapPairingObserver
