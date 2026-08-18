@@ -482,7 +482,8 @@ message Bond
 
 message BondList
 {    
-    repeated Bond bonds = 1 [(array_size) = 32]; // Will be sorted by age, oldest -> newest.
+    // Sorted by least recently used (LRU): least recently used -> most recently used.
+    repeated Bond bonds = 1 [(array_size) = 32];
 }
 
 // ==================================================
@@ -604,7 +605,7 @@ service GapCentral
 
     // Allowed states: standby, scanning, connected, initiating
     // Expected response: GapCentralResponse.BondListReceived
-    // Description: Returns the list of bonded devices including their identity address and device name, sorted oldest to newest.
+    // Description: Returns the list of bonded devices.
     rpc GetBondList(Nothing) returns (Nothing) { option (method_id) = 14; }
 
     // Allowed states: standby
@@ -670,7 +671,7 @@ service GapCentralResponse {
 
     // Expected states: standby, scanning, initiating, connected
     // Triggered by: GapCentral.GetBondList
-    // Description: Returns the list of bonded devices sorted oldest to newest.
+    // Description: Returns the list of bonded devices.
     rpc BondListReceived(BondList) returns (Nothing) { option(method_id) = 7; }
 
     // DEPRECATED: Will be removed in the near future.
