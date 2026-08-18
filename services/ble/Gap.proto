@@ -403,8 +403,6 @@ message ConnectionParameters
     uint32 peripheralLatency = 3;
 
     // Time without a successful connection event after which the link is considered lost, in milliseconds.
-    // Must outlast the slowest operation the peer performs while connected. A peripheral without a hardware
-    // ECC engine can block for well over a second computing LE Secure Connections key material.
     uint32 supervisionTimeoutInMs = 4;
 }
 
