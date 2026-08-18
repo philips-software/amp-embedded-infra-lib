@@ -10,8 +10,7 @@ namespace services
         otherBondStorage.BondStorageSynchronizerCreated(*this);
         referenceBondStorage.BondStorageSynchronizerCreated(*this);
 
-        if (otherBondStorage.GetMaxNumberOfBonds() < maxNumberOfBonds)
-            std::abort();
+        really_assert(otherBondStorage.GetMaxNumberOfBonds() >= maxNumberOfBonds);
 
         SyncBondStorages();
     }
