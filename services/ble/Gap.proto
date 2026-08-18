@@ -392,17 +392,36 @@ message SecurityModeAndLevel
     SecurityLevelEnum level = 2;
 }
 
+// Link layer connection parameters, as defined in Bluetooth Core Specification v6.3, Vol 6, Part B, Section 4.5.1.
 message ConnectionParameters
+{
+    // Minimum and maximum connection interval, in units of 1.25 ms.
+    uint32 minConnectionIntervalMultiplier = 1;
+    uint32 maxConnectionIntervalMultiplier = 2;
+
+    // Number of consecutive connection events the peripheral is allowed to skip.
+    uint32 peripheralLatency = 3;
+
+    // Time without a successful connection event after which the link is considered lost, in milliseconds.
+    // Must outlast the slowest operation the peer performs while connected. A peripheral without a hardware
+    // ECC engine can block for well over a second computing LE Secure Connections key material.
+    uint32 supervisionTimeoutInMs = 4;
+}
+
+message ConnectRequest
 {
     // The address of the peripheral to connect to, as discovered during scanning (e.g. from DiscoveredDevice).
     AddressWithType addressWithType = 1;
+
+    // The link layer parameters requested for this connection.
+    ConnectionParameters connectionParameters = 2;
 
     // How long the central will wait for the peripheral to respond to the connection request, in milliseconds.
     // After the central sends the connection request, the peripheral may take time to process and confirm it.
     // If the peripheral does not respond within this timeout, the connection attempt is aborted.
     // A value of zero waits indefinitely.
     // Recommended: set to at least several multiples of the peripheral's advertising interval.
-    uint32 initiatingTimeoutInMs = 2;
+    uint32 initiatingTimeoutInMs = 3;
 }
 
 message AdvertisingReportType
@@ -422,7 +441,7 @@ message AdvertisingReportType
 
 message DiscoveredDevice
 {
-    // The address as received in the advertising packet. Use this address directly when connecting via ConnectionParameters.
+    // The address as received in the advertising packet. Use this address directly when connecting via ConnectRequest.
     // If the peripheral uses a resolvable private address (RPA), the controller will resolve it automatically
     // after a bond has been established and the peer's IRK is stored.
     AddressWithType addressWithType = 1;
@@ -518,7 +537,7 @@ service GapCentral
     // For successful connection establishment, state will follow: standby -> initiating -> connected
     // For failed connection establishment, state will follow: standby -> initiating -> standby
     // Results in GapCentralResponse.CurrentState
-    rpc Connect(ConnectionParameters) returns (Nothing) { option (method_id) = 4; }
+    rpc Connect(ConnectRequest) returns (Nothing) { option (method_id) = 4; }
 
     // Allowed states: scanning, initiating, connected
     // Terminates the current (or initiating) connection.

@@ -30,6 +30,11 @@ namespace services
         return x.reportType == arg.reportType && x.gapAddress == arg.gapAddress && x.rssi == arg.rssi;
     }
 
+    MATCHER_P(ConnectionParametersEqual, x, negation ? "Contents not equal" : "Contents are equal")
+    {
+        return x.minConnIntMultiplier == arg.minConnIntMultiplier && x.maxConnIntMultiplier == arg.maxConnIntMultiplier && x.slaveLatency == arg.slaveLatency && x.supervisorTimeoutMs == arg.supervisorTimeoutMs;
+    }
+
     TEST_F(GapCentralDecoratorTest, forward_all_state_changed_events_to_observers)
     {
         EXPECT_CALL(gapObserver, StateChanged(GapState::connected));
@@ -66,9 +71,11 @@ namespace services
     TEST_F(GapCentralDecoratorTest, forward_all_calls_to_subject)
     {
         hal::MacAddress macAddress{ 0, 1, 2, 3, 4, 5 };
+        const GapAddress address{ macAddress, GapDeviceAddressType::publicAddress };
+        const GapConnectionParameters connectionParameters{ 6, 6, 0, 500 };
 
-        EXPECT_CALL(gap, Connect(MacAddressContentsEqual(macAddress), services::GapDeviceAddressType::publicAddress, infra::Duration{ 0 }));
-        decorator.Connect(macAddress, services::GapDeviceAddressType::publicAddress, std::chrono::seconds(0));
+        EXPECT_CALL(gap, Connect(address, ConnectionParametersEqual(connectionParameters), infra::Duration{ 0 }));
+        decorator.Connect(address, connectionParameters, std::chrono::seconds(0));
 
         EXPECT_CALL(gap, Standby());
         decorator.Standby();

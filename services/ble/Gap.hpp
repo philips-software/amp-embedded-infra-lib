@@ -399,7 +399,7 @@ namespace services
         : public infra::Subject<GapCentralObserver>
     {
     public:
-        virtual void Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType, infra::Duration initiatingTimeout) = 0;
+        virtual void Connect(GapAddress address, const GapConnectionParameters& connectionParameters, infra::Duration initiatingTimeout) = 0;
         virtual void Standby() = 0;
         virtual void SetIdentityAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) = 0;
         virtual void StartDeviceDiscovery() = 0;
@@ -419,7 +419,7 @@ namespace services
         void StateChanged(GapState state) override;
 
         // Implementation of GapCentral
-        void Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType, infra::Duration initiatingTimeout) override;
+        void Connect(GapAddress address, const GapConnectionParameters& connectionParameters, infra::Duration initiatingTimeout) override;
         void Standby() override;
         void SetIdentityAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) override;
         void StartDeviceDiscovery() override;

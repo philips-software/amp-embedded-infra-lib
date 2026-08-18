@@ -10,7 +10,7 @@ namespace services
         : public GapCentral
     {
     public:
-        MOCK_METHOD(void, Connect, (hal::MacAddress macAddress, GapDeviceAddressType addressType, infra::Duration initiatingTimeout));
+        MOCK_METHOD(void, Connect, (GapAddress address, const GapConnectionParameters& connectionParameters, infra::Duration initiatingTimeout));
         MOCK_METHOD(void, Standby, ());
         MOCK_METHOD(void, SetIdentityAddress, (hal::MacAddress macAddress, GapDeviceAddressType addressType));
         MOCK_METHOD(void, StartDeviceDiscovery, ());
