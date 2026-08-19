@@ -480,8 +480,9 @@ message Bond
     AddressWithType addressWithType = 1;
     
     // Device Name from GAP (Generic Access) service.
+    // Read from the peer on bond created and on every successful encryption change.
     // Not unique; truncated to 32 bytes.
-    // Can be empty if the device does not have a name or has not been read yet.
+    // Can be empty if read name is empty, or has not been read yet.
     bytes deviceName = 2 [(bytes_size) = 32];
 }
 
