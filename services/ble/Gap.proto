@@ -476,8 +476,13 @@ message ResolvedPrivateAddress
 
 message Bond
 {
-    AddressWithType addressWithType = 1;        // Identity address
-    bytes deviceName = 2 [(bytes_size) = 32];   // Device Name from GAP (Generic Access) service. Not unique; truncated to 32 bytes.
+    // Identity address of the peer
+    AddressWithType addressWithType = 1;
+    
+    // Device Name from GAP (Generic Access) service.
+    // Not unique; truncated to 32 bytes.
+    // Can be empty if the device does not have a name or has not been read yet.
+    bytes deviceName = 2 [(bytes_size) = 32];
 }
 
 message BondList
