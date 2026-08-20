@@ -63,13 +63,13 @@ TEST_F(BondStorageSynchronizerTest, construction_synchronises_empty_bond_storage
 TEST_F(BondStorageSynchronizerTest, construction_removes_bond_from_bond_storage_when_not_in_absolute_storage)
 {
     EXPECT_CALL(bondStorage, RemoveBondIf(testing::_))
-        .WillOnce([this](const infra::Function<bool(services::Role, const services::GapAddress&)>& onAddress)
+        .WillOnce([this](const infra::Function<bool(const services::Bond&)>& onBond)
             {
                 EXPECT_CALL(absoluteStorage, IsBondStored(gapAddress1)).WillOnce(testing::Return(false));
-                EXPECT_THAT(onAddress(services::Role::peripheral, gapAddress1), testing::IsTrue());
+                EXPECT_THAT(onBond(bond1), testing::IsTrue());
 
                 EXPECT_CALL(absoluteStorage, IsBondStored(gapAddress2)).WillOnce(testing::Return(true));
-                EXPECT_THAT(onAddress(services::Role::peripheral, gapAddress2), testing::IsFalse());
+                EXPECT_THAT(onBond(bond2), testing::IsFalse());
             });
 
     EXPECT_CALL(absoluteStorage, IterateBondedDevices(testing::_));

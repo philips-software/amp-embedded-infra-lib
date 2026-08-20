@@ -53,9 +53,9 @@ namespace services
 
     void BondStorageSynchronizerImpl::SyncBondStorages()
     {
-        bondStorage.RemoveBondIf([this](Role, const services::GapAddress& address)
+        bondStorage.RemoveBondIf([this](const services::Bond& bond)
             {
-                return !absoluteBondStorage.IsBondStored(address);
+                return !absoluteBondStorage.IsBondStored(bond.address);
             });
 
         absoluteBondStorage.IterateBondedDevices([this](const services::GapAddress& address)

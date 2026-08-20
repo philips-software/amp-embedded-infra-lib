@@ -15,7 +15,7 @@ namespace services
         MOCK_METHOD(void, RemoveBond, (Role role, const services::GapAddress& address), (override));
         MOCK_METHOD(void, RemoveAllBondsForRole, (Role role), (override));
         MOCK_METHOD(void, RemoveAllBonds, (), (override));
-        MOCK_METHOD(void, RemoveBondIf, (const infra::Function<bool(Role, const services::GapAddress&)>& onAddress), (override));
+        MOCK_METHOD(void, RemoveBondIf, (const infra::Function<bool(const services::Bond&)>& onAddress), (override));
         MOCK_METHOD(uint32_t, GetMaxNumberOfBonds, (), (const, override));
         MOCK_METHOD(std::optional<services::Bond>, GetBond, (Role role, const services::GapAddress& address), (const, override));
         MOCK_METHOD(void, IterateBondedDevices, (Role role, const infra::Function<void(const services::Bond&)>& onBond), (override));
