@@ -62,6 +62,7 @@ namespace services
         unknown = 0,
         central,
         peripheral,
+        both
     };
 
     struct GapConnectionParameters

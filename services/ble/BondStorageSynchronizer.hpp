@@ -22,23 +22,7 @@ namespace services
         virtual void RemoveBond(hal::MacAddress address) = 0;
         virtual void RemoveAllBonds() = 0;
         virtual uint32_t GetMaxNumberOfBonds() const = 0;
-    };
-
-    class BondNameStorage // TODO: Remove
-    {
-    protected:
-        BondNameStorage() = default;
-        ~BondNameStorage() = default;
-        BondNameStorage(const BondNameStorage& other) = delete;
-        BondNameStorage& operator=(const BondNameStorage& other) = delete;
-
-    public:
-        virtual void SetBondName(GapAddress address, infra::BoundedConstString name) = 0;
-        virtual std::optional<infra::BoundedConstString> GetBondName(GapAddress address) const = 0;
-        virtual void RemoveBondName(GapAddress address) = 0;
-        virtual void RemoveAllBondNames() = 0;
-        virtual std::size_t Size() const = 0;
-        virtual std::size_t Capacity() const = 0;
+        virtual void IterateBondedDevices(const infra::Function<void(const services::Bond&)>& onBond) = 0;
     };
 
     class BondStorage
@@ -56,7 +40,7 @@ namespace services
         virtual void RemoveBondIf(const infra::Function<bool(hal::MacAddress)>& onAddress) = 0;
         virtual uint32_t GetMaxNumberOfBonds() const = 0;
         virtual bool IsBondStored(hal::MacAddress address) const = 0;
-        virtual void IterateBondedDevices(const infra::Function<void(const services::Bond&)>& onAddress) = 0;
+        virtual void IterateBondedDevices(const infra::Function<void(const services::Bond&)>& onBond) = 0;
     };
 
     class BondStorageSynchronizerImpl
@@ -70,6 +54,7 @@ namespace services
         void RemoveBond(hal::MacAddress address) override;
         void RemoveAllBonds() override;
         uint32_t GetMaxNumberOfBonds() const override;
+        void IterateBondedDevices(const infra::Function<void(const services::Bond&)>& onBond) override;
 
     private:
         void SyncBondStorages();

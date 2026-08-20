@@ -38,6 +38,11 @@ namespace services
         return maxNumberOfBonds;
     }
 
+    void BondStorageSynchronizerImpl::IterateBondedDevices(const infra::Function<void(const services::Bond&)>& onBond)
+    {
+        referenceBondStorage.IterateBondedDevices(onBond);
+    }
+
     void BondStorageSynchronizerImpl::SyncBondStorages()
     {
         otherBondStorage.RemoveBondIf([this](hal::MacAddress address)
