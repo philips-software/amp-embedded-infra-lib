@@ -8,10 +8,8 @@ namespace services
 {
     class BondStorageInteractor
     {
-    protected:
-        BondStorageInteractor(Role role, BondStorageSynchronizer& bondStorageSynchroniser);
-
     public:
+        BondStorageInteractor(Role role, BondStorageSynchronizer& bondStorageSynchroniser);
         void UpdateBond(const services::Bond& bond);
         void RemoveBond(services::GapAddress address);
         void RemoveAllBonds();
