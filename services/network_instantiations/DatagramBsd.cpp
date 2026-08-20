@@ -18,6 +18,7 @@ namespace services
     {
         observer.Attach(*this);
         family = AddressFamily(versions);
+        dualStack = versions == IPVersions::both;
         InitSocket();
         BindLocal(AnyAddressSocket(family, port));
     }
@@ -26,6 +27,7 @@ namespace services
     {
         observer.Attach(*this);
         family = AddressFamily(versions);
+        dualStack = versions == IPVersions::both;
         InitSocket();
         BindLocal(AnyAddressSocket(family, 0));
     }
@@ -90,6 +92,9 @@ namespace services
         int result = close(socket);
         if (result == -1)
             std::abort();
+
+        if (socketAdditional != -1 && close(socketAdditional) == -1)
+            std::abort();
     }
 
     bool DatagramBsd::SendBufferEmpty() const
@@ -110,7 +115,7 @@ namespace services
         TryAllocateSendStream();
     }
 
-    void DatagramBsd::Receive()
+    void DatagramBsd::Receive(int socketToReceive)
     {
         infra::BoundedVector<uint8_t>::WithMaxSize<508> receiveBuffer;
         receiveBuffer.resize(receiveBuffer.max_size());
@@ -118,7 +123,7 @@ namespace services
         sockaddr_storage fromAddress{};
         socklen_t fromAddressSize = sizeof(fromAddress);
 
-        auto received = recvfrom(socket, reinterpret_cast<char*>(receiveBuffer.data()), receiveBuffer.size(), 0, reinterpret_cast<sockaddr*>(&fromAddress), &fromAddressSize);
+        auto received = recvfrom(socketToReceive, reinterpret_cast<char*>(receiveBuffer.data()), receiveBuffer.size(), 0, reinterpret_cast<sockaddr*>(&fromAddress), &fromAddressSize);
         if (received == -1)
         {
             if (errno != EWOULDBLOCK && errno != EMSGSIZE)
@@ -151,7 +156,7 @@ namespace services
         sockaddr_storage address{};
         auto addressSize = FillSocketAddress(requestedTo, address);
 
-        auto sent = sendto(socket, reinterpret_cast<char*>(sendBuffer->data()), sendBuffer->size(), 0, reinterpret_cast<sockaddr*>(&address), addressSize);
+        auto sent = sendto(SocketFor(requestedTo), reinterpret_cast<char*>(sendBuffer->data()), sendBuffer->size(), 0, reinterpret_cast<sockaddr*>(&address), addressSize);
 
         if (sent == -1)
         {
@@ -205,7 +210,7 @@ namespace services
         std::memcpy(&multicastRequest.ipv6mr_multiaddr, networkOrder.data(), sizeof(multicastRequest.ipv6mr_multiaddr));
         multicastRequest.ipv6mr_interface = 0;
 
-        setsockopt(socket, IPPROTO_IPV6, IPV6_JOIN_GROUP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+        setsockopt(Ipv6Socket(), IPPROTO_IPV6, IPV6_JOIN_GROUP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
     }
 
     void DatagramBsd::LeaveMulticastGroup(IPv6Address multicastAddress)
@@ -215,7 +220,7 @@ namespace services
         std::memcpy(&multicastRequest.ipv6mr_multiaddr, networkOrder.data(), sizeof(multicastRequest.ipv6mr_multiaddr));
         multicastRequest.ipv6mr_interface = 0;
 
-        setsockopt(socket, IPPROTO_IPV6, IPV6_LEAVE_GROUP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+        setsockopt(Ipv6Socket(), IPPROTO_IPV6, IPV6_LEAVE_GROUP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
     }
 
     void DatagramBsd::InitSocket()
@@ -236,6 +241,34 @@ namespace services
 
         if (fcntl(socket, F_SETFL, fcntl(socket, F_GETFL, 0) | O_NONBLOCK) == -1)
             std::abort();
+
+        if (dualStack)
+        {
+            socketAdditional = ::socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
+            assert(socketAdditional != -1);
+
+            if (setsockopt(socketAdditional, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)) == -1)
+                std::abort();
+
+            int v6Only = 1;
+            if (setsockopt(socketAdditional, IPPROTO_IPV6, IPV6_V6ONLY, &v6Only, sizeof(v6Only)) == -1)
+                std::abort();
+
+            if (fcntl(socketAdditional, F_SETFL, fcntl(socketAdditional, F_GETFL, 0) | O_NONBLOCK) == -1)
+                std::abort();
+        }
+    }
+
+    int DatagramBsd::SocketFor(const UdpSocket& to) const
+    {
+        if (std::holds_alternative<Udpv6Socket>(to))
+            return Ipv6Socket();
+        return socket;
+    }
+
+    int DatagramBsd::Ipv6Socket() const
+    {
+        return family == AF_INET6 ? socket : socketAdditional;
     }
 
     void DatagramBsd::BindLocal(const UdpSocket& local)
@@ -249,6 +282,15 @@ namespace services
         auto addressSize = FillSocketAddress(local, address);
         auto result = bind(socket, reinterpret_cast<sockaddr*>(&address), addressSize);
         assert(result == 0);
+
+        if (socketAdditional != -1)
+        {
+            uint16_t port = std::holds_alternative<Udpv4Socket>(local) ? std::get<Udpv4Socket>(local).second : std::get<Udpv6Socket>(local).second;
+            sockaddr_storage address6{};
+            auto address6Size = FillSocketAddress(AnyAddressSocket(AF_INET6, port), address6);
+            auto result6 = bind(socketAdditional, reinterpret_cast<sockaddr*>(&address6), address6Size);
+            assert(result6 == 0);
+        }
     }
 
     void DatagramBsd::BindRemote(const UdpSocket& remote)

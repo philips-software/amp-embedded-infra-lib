@@ -30,6 +30,7 @@ namespace services
         DatagramWin(uint16_t localPort, const UdpSocket& remote, DatagramExchangeObserver& observer);
         DatagramWin(IPAddress localAddress, DatagramExchangeObserver& observer);
         DatagramWin(IPAddress localAddress, uint16_t localPort, DatagramExchangeObserver& observer);
+        DatagramWin(IPv6Address localAddress, uint32_t interfaceIndex, uint16_t localPort, DatagramExchangeObserver& observer);
         DatagramWin(IPAddress localAddress, const UdpSocket& remote, DatagramExchangeObserver& observer);
         DatagramWin(const UdpSocket& local, const UdpSocket& remote, DatagramExchangeObserver& observer);
         ~DatagramWin();
@@ -37,7 +38,7 @@ namespace services
         void RequestSendStream(std::size_t sendSize) override;
         void RequestSendStream(std::size_t sendSize, UdpSocket to) override;
 
-        void Receive();
+        void Receive(SOCKET socketToReceive);
         void Send();
         void TrySend();
         void UpdateEventFlags();
@@ -52,6 +53,8 @@ namespace services
         void BindLocal(const UdpSocket& local);
         void BindRemote(const UdpSocket& remote);
         void TryAllocateSendStream();
+        SOCKET SocketFor(const UdpSocket& to) const;
+        SOCKET Ipv6Socket() const;
 
     private:
         class StreamWriterWin
@@ -69,8 +72,12 @@ namespace services
         friend class EventDispatcherWithNetwork;
 
         int family = AF_INET;
+        bool dualStack = false;
+        uint32_t ipv6InterfaceIndex = 0;
         SOCKET socket = INVALID_SOCKET;
+        SOCKET socketAdditional = INVALID_SOCKET;
         WSAEVENT event = WSACreateEvent();
+        WSAEVENT eventAdditional = WSA_INVALID_EVENT;
         IPv4Address localAddress{};
         std::optional<UdpSocket> connectedTo;
 
@@ -92,6 +99,7 @@ namespace services
         using DatagramFactory::Listen;
         virtual infra::SharedPtr<DatagramExchange> Listen(DatagramExchangeObserver& observer, IPAddress localAddress, uint16_t port, IPVersions versions = IPVersions::both) = 0;
         virtual infra::SharedPtr<DatagramExchange> Listen(DatagramExchangeObserver& observer, IPAddress localAddress, IPVersions versions = IPVersions::both) = 0;
+        virtual infra::SharedPtr<DatagramExchange> Listen(DatagramExchangeObserver& observer, IPv6Address localAddress, uint32_t interfaceIndex, uint16_t port) = 0;
         using DatagramFactory::Connect;
         virtual infra::SharedPtr<DatagramExchange> Connect(DatagramExchangeObserver& observer, IPAddress localAddress, UdpSocket remote) = 0;
         virtual infra::SharedPtr<DatagramExchange> Connect(DatagramExchangeObserver& observer, UdpSocket local, UdpSocket remote) = 0;
@@ -106,6 +114,7 @@ namespace services
 
         void Add(DatagramFactoryWithLocalIpBinding& factory, IPAddress local, uint16_t port, IPVersions versions);
         void Add(DatagramFactoryWithLocalIpBinding& factory, IPAddress local, IPVersions versions);
+        void Add(DatagramFactoryWithLocalIpBinding& factory, IPv6Address local, uint32_t interfaceIndex, uint16_t port);
         void Add(DatagramFactoryWithLocalIpBinding& factory, IPAddress local, UdpSocket remote);
         void Add(DatagramFactoryWithLocalIpBinding& factory, UdpSocket local, UdpSocket remote);
 
@@ -125,6 +134,7 @@ namespace services
         public:
             Observer(DatagramExchangeMultiple& parent, DatagramFactoryWithLocalIpBinding& factory, IPAddress local, uint16_t port, IPVersions versions);
             Observer(DatagramExchangeMultiple& parent, DatagramFactoryWithLocalIpBinding& factory, IPAddress local, IPVersions versions);
+            Observer(DatagramExchangeMultiple& parent, DatagramFactoryWithLocalIpBinding& factory, IPv6Address local, uint32_t interfaceIndex, uint16_t port);
             Observer(DatagramExchangeMultiple& parent, DatagramFactoryWithLocalIpBinding& factory, IPAddress local, UdpSocket remote);
             Observer(DatagramExchangeMultiple& parent, DatagramFactoryWithLocalIpBinding& factory, UdpSocket local, UdpSocket remote);
 
@@ -178,6 +188,7 @@ namespace services
 
     private:
         std::vector<IPv4Address> GetIpAddresses();
+        std::vector<std::pair<IPv6Address, uint32_t>> GetIpv6Addresses();
 
     private:
         EventDispatcherWithNetwork& eventDispatcher;

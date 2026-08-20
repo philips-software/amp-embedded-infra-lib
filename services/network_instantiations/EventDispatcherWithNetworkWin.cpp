@@ -123,6 +123,13 @@ namespace services
         return result;
     }
 
+    infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Listen(DatagramExchangeObserver& observer, IPv6Address localAddress, uint32_t interfaceIndex, uint16_t port)
+    {
+        auto result = infra::MakeSharedOnHeap<DatagramWin>(localAddress, interfaceIndex, port, observer);
+        RegisterDatagram(result);
+        return result;
+    }
+
     infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Connect(DatagramExchangeObserver& observer, IPAddress localAddress, UdpSocket remote)
     {
         auto result = infra::MakeSharedOnHeap<DatagramWin>(localAddress, remote, observer);
@@ -291,11 +298,29 @@ namespace services
                             WSAEnumNetworkEvents(datagram->socket, datagram->event, &networkEvents);
 
                             if ((networkEvents.lNetworkEvents & FD_READ) != 0)
-                                datagram->Receive();
+                                datagram->Receive(datagram->socket);
                             if ((networkEvents.lNetworkEvents & FD_WRITE) != 0)
                                 datagram->Send();
                         }
                     });
+
+                if (datagram->socketAdditional != INVALID_SOCKET)
+                {
+                    events.push_back(datagram->eventAdditional);
+                    functions.push_back([weakDatagram]()
+                        {
+                            if (infra::SharedPtr<DatagramWin> datagram = weakDatagram)
+                            {
+                                WSANETWORKEVENTS networkEvents;
+                                WSAEnumNetworkEvents(datagram->socketAdditional, datagram->eventAdditional, &networkEvents);
+
+                                if ((networkEvents.lNetworkEvents & FD_READ) != 0)
+                                    datagram->Receive(datagram->socketAdditional);
+                                if ((networkEvents.lNetworkEvents & FD_WRITE) != 0)
+                                    datagram->Send();
+                            }
+                        });
+                }
             }
         }
 

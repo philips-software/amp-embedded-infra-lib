@@ -34,7 +34,7 @@ namespace services
         void RequestSendStream(std::size_t sendSize) override;
         void RequestSendStream(std::size_t sendSize, UdpSocket to) override;
 
-        void Receive();
+        void Receive(int socketToReceive);
         void Send();
         void TrySend();
 
@@ -48,6 +48,8 @@ namespace services
         void BindLocal(const UdpSocket& local);
         void BindRemote(const UdpSocket& remote);
         void TryAllocateSendStream();
+        int SocketFor(const UdpSocket& to) const;
+        int Ipv6Socket() const;
 
     private:
         class StreamWriterBsd
@@ -65,7 +67,9 @@ namespace services
         friend class EventDispatcherWithNetwork;
 
         int family = AF_INET;
+        bool dualStack = false;
         int socket = -1;
+        int socketAdditional = -1;
         IPv4Address localAddress{};
         std::optional<UdpSocket> connectedTo;
 

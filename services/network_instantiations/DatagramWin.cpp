@@ -15,6 +15,7 @@ namespace services
     {
         observer.Attach(*this);
         family = AddressFamily(versions);
+        dualStack = versions == IPVersions::both;
         InitSocket();
         BindLocal(AnyAddressSocket(family, port));
     }
@@ -23,6 +24,7 @@ namespace services
     {
         observer.Attach(*this);
         family = AddressFamily(versions);
+        dualStack = versions == IPVersions::both;
         InitSocket();
         BindLocal(AnyAddressSocket(family, 0));
     }
@@ -61,6 +63,15 @@ namespace services
         BindLocal(MakeUdpSocket(localAddress, localPort));
     }
 
+    DatagramWin::DatagramWin(IPv6Address localAddress, uint32_t interfaceIndex, uint16_t localPort, DatagramExchangeObserver& observer)
+    {
+        observer.Attach(*this);
+        family = AF_INET6;
+        ipv6InterfaceIndex = interfaceIndex;
+        InitSocket();
+        BindLocal(MakeUdpSocket(localAddress, localPort));
+    }
+
     DatagramWin::DatagramWin(IPAddress localAddress, const UdpSocket& remote, DatagramExchangeObserver& observer)
     {
         observer.Attach(*this);
@@ -92,6 +103,13 @@ namespace services
             DWORD error = GetLastError();
             std::abort();
         }
+
+        if (socketAdditional != INVALID_SOCKET)
+        {
+            WSACloseEvent(eventAdditional);
+            if (closesocket(socketAdditional) == SOCKET_ERROR)
+                std::abort();
+        }
     }
 
     void DatagramWin::RequestSendStream(std::size_t sendSize)
@@ -107,7 +125,7 @@ namespace services
         TryAllocateSendStream();
     }
 
-    void DatagramWin::Receive()
+    void DatagramWin::Receive(SOCKET socketToReceive)
     {
         infra::BoundedVector<uint8_t>::WithMaxSize<508> receiveBuffer;
         receiveBuffer.resize(receiveBuffer.max_size());
@@ -115,7 +133,7 @@ namespace services
         sockaddr_storage fromAddress{};
         int fromAddressSize = sizeof(fromAddress);
 
-        auto received = recvfrom(socket, reinterpret_cast<char*>(receiveBuffer.data()), receiveBuffer.size(), 0, reinterpret_cast<sockaddr*>(&fromAddress), &fromAddressSize);
+        auto received = recvfrom(socketToReceive, reinterpret_cast<char*>(receiveBuffer.data()), receiveBuffer.size(), 0, reinterpret_cast<sockaddr*>(&fromAddress), &fromAddressSize);
         if (received == SOCKET_ERROR)
         {
             auto error = WSAGetLastError();
@@ -150,7 +168,7 @@ namespace services
         sockaddr_storage address{};
         auto addressSize = FillSocketAddress(requestedTo, address);
 
-        auto sent = sendto(socket, reinterpret_cast<char*>(sendBuffer->data()), sendBuffer->size(), 0, reinterpret_cast<sockaddr*>(&address), addressSize);
+        auto sent = sendto(SocketFor(requestedTo), reinterpret_cast<char*>(sendBuffer->data()), sendBuffer->size(), 0, reinterpret_cast<sockaddr*>(&address), addressSize);
 
         if (sent == SOCKET_ERROR)
         {
@@ -178,6 +196,12 @@ namespace services
     {
         int result = WSAEventSelect(socket, event, FD_READ | (sendBuffer ? FD_WRITE : 0));
         assert(result == 0);
+
+        if (socketAdditional != INVALID_SOCKET)
+        {
+            result = WSAEventSelect(socketAdditional, eventAdditional, FD_READ | (sendBuffer ? FD_WRITE : 0));
+            assert(result == 0);
+        }
     }
 
     void DatagramWin::JoinMulticastGroup(IPv4Address multicastAddress)
@@ -209,9 +233,9 @@ namespace services
         ipv6_mreq multicastRequest{};
         auto networkOrder = services::ToNetworkOrder(multicastAddress);
         std::memcpy(&multicastRequest.ipv6mr_multiaddr, networkOrder.data(), sizeof(multicastRequest.ipv6mr_multiaddr));
-        multicastRequest.ipv6mr_interface = 0;
+        multicastRequest.ipv6mr_interface = ipv6InterfaceIndex;
 
-        setsockopt(socket, IPPROTO_IPV6, IPV6_JOIN_GROUP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+        setsockopt(Ipv6Socket(), IPPROTO_IPV6, IPV6_JOIN_GROUP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
     }
 
     void DatagramWin::LeaveMulticastGroup(IPv6Address multicastAddress)
@@ -219,9 +243,9 @@ namespace services
         ipv6_mreq multicastRequest{};
         auto networkOrder = services::ToNetworkOrder(multicastAddress);
         std::memcpy(&multicastRequest.ipv6mr_multiaddr, networkOrder.data(), sizeof(multicastRequest.ipv6mr_multiaddr));
-        multicastRequest.ipv6mr_interface = 0;
+        multicastRequest.ipv6mr_interface = ipv6InterfaceIndex;
 
-        setsockopt(socket, IPPROTO_IPV6, IPV6_LEAVE_GROUP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+        setsockopt(Ipv6Socket(), IPPROTO_IPV6, IPV6_LEAVE_GROUP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
     }
 
     void DatagramWin::InitSocket()
@@ -243,7 +267,35 @@ namespace services
         if (ioctlsocket(socket, FIONBIO, &nonBlock) == SOCKET_ERROR)
             std::abort();
 
+        if (dualStack)
+        {
+            socketAdditional = ::socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
+            assert(socketAdditional != INVALID_SOCKET);
+            eventAdditional = WSACreateEvent();
+
+            setsockopt(socketAdditional, SOL_SOCKET, SO_REUSEADDR, option.data(), option.size());
+
+            DWORD v6Only = 1;
+            if (setsockopt(socketAdditional, IPPROTO_IPV6, IPV6_V6ONLY, reinterpret_cast<char*>(&v6Only), sizeof(v6Only)) == SOCKET_ERROR)
+                std::abort();
+
+            if (ioctlsocket(socketAdditional, FIONBIO, &nonBlock) == SOCKET_ERROR)
+                std::abort();
+        }
+
         UpdateEventFlags();
+    }
+
+    SOCKET DatagramWin::SocketFor(const UdpSocket& to) const
+    {
+        if (std::holds_alternative<Udpv6Socket>(to))
+            return Ipv6Socket();
+        return socket;
+    }
+
+    SOCKET DatagramWin::Ipv6Socket() const
+    {
+        return family == AF_INET6 ? socket : socketAdditional;
     }
 
     void DatagramWin::BindLocal(const UdpSocket& local)
@@ -257,6 +309,15 @@ namespace services
         auto addressSize = FillSocketAddress(local, address);
         auto result = bind(socket, reinterpret_cast<sockaddr*>(&address), addressSize);
         assert(result == 0);
+
+        if (socketAdditional != INVALID_SOCKET)
+        {
+            uint16_t port = std::holds_alternative<Udpv4Socket>(local) ? std::get<Udpv4Socket>(local).second : std::get<Udpv6Socket>(local).second;
+            sockaddr_storage address6{};
+            auto address6Size = FillSocketAddress(AnyAddressSocket(AF_INET6, port), address6);
+            auto result6 = bind(socketAdditional, reinterpret_cast<sockaddr*>(&address6), address6Size);
+            assert(result6 == 0);
+        }
     }
 
     void DatagramWin::BindRemote(const UdpSocket& remote)
@@ -316,6 +377,11 @@ namespace services
     void DatagramExchangeMultiple::Add(DatagramFactoryWithLocalIpBinding& factory, IPAddress local, IPVersions versions)
     {
         observers.push_back(infra::MakeSharedOnHeap<Observer>(*this, factory, local, versions));
+    }
+
+    void DatagramExchangeMultiple::Add(DatagramFactoryWithLocalIpBinding& factory, IPv6Address local, uint32_t interfaceIndex, uint16_t port)
+    {
+        observers.push_back(infra::MakeSharedOnHeap<Observer>(*this, factory, local, interfaceIndex, port));
     }
 
     void DatagramExchangeMultiple::Add(DatagramFactoryWithLocalIpBinding& factory, IPAddress local, UdpSocket remote)
@@ -378,6 +444,12 @@ namespace services
         : parent(parent)
     {
         exchange = factory.Listen(*this, local, versions);
+    }
+
+    DatagramExchangeMultiple::Observer::Observer(DatagramExchangeMultiple& parent, DatagramFactoryWithLocalIpBinding& factory, IPv6Address local, uint32_t interfaceIndex, uint16_t port)
+        : parent(parent)
+    {
+        exchange = factory.Listen(*this, local, interfaceIndex, port);
     }
 
     DatagramExchangeMultiple::Observer::Observer(DatagramExchangeMultiple& parent, DatagramFactoryWithLocalIpBinding& factory, IPAddress local, UdpSocket remote)
@@ -458,8 +530,13 @@ namespace services
         auto result = infra::MakeSharedOnHeap<DatagramExchangeMultiple>(observer, eventDispatcher);
         eventDispatcher.RegisterDatagramMultiple(result);
 
-        for (auto address : GetIpAddresses())
-            result->Add(eventDispatcher, address, port, versions);
+        if (versions != IPVersions::ipv6)
+            for (auto address : GetIpAddresses())
+                result->Add(eventDispatcher, address, port, versions);
+
+        if (versions != IPVersions::ipv4)
+            for (auto [address, interfaceIndex] : GetIpv6Addresses())
+                result->Add(eventDispatcher, address, interfaceIndex, port);
 
         return result;
     }
@@ -469,8 +546,13 @@ namespace services
         auto result = infra::MakeSharedOnHeap<DatagramExchangeMultiple>(observer, eventDispatcher);
         eventDispatcher.RegisterDatagramMultiple(result);
 
-        for (auto address : GetIpAddresses())
-            result->Add(eventDispatcher, address, versions);
+        if (versions != IPVersions::ipv6)
+            for (auto address : GetIpAddresses())
+                result->Add(eventDispatcher, address, versions);
+
+        if (versions != IPVersions::ipv4)
+            for (auto [address, interfaceIndex] : GetIpv6Addresses())
+                result->Add(eventDispatcher, address, interfaceIndex, 0);
 
         return result;
     }
@@ -515,6 +597,33 @@ namespace services
                 {
                     auto address = reinterpret_cast<sockaddr_in&>(*ipAddresses->Address.lpSockaddr);
                     addresses.push_back(IPv4Address{ address.sin_addr.s_net, address.sin_addr.s_host, address.sin_addr.s_lh, address.sin_addr.s_impno });
+                }
+
+        free(originalAdapterInfo);
+
+        return addresses;
+    }
+
+    std::vector<std::pair<IPv6Address, uint32_t>> UdpOnAllInterfaces::GetIpv6Addresses()
+    {
+        ULONG size(0);
+        auto result = GetAdaptersAddresses(AF_INET6, 0, nullptr, nullptr, &size);
+        assert(result == ERROR_BUFFER_OVERFLOW);
+        auto adapterInfo = reinterpret_cast<IP_ADAPTER_ADDRESSES*>(malloc(size));
+        auto originalAdapterInfo = adapterInfo;
+        result = GetAdaptersAddresses(AF_INET6, 0, nullptr, adapterInfo, &size);
+        assert(result == NO_ERROR);
+
+        std::vector<std::pair<IPv6Address, uint32_t>> addresses;
+
+        for (; adapterInfo != nullptr; adapterInfo = adapterInfo->Next)
+            for (auto ipAddresses = adapterInfo->FirstUnicastAddress; ipAddresses != nullptr; ipAddresses = ipAddresses->Next)
+                if (adapterInfo->OperStatus == IfOperStatusUp && ipAddresses->Address.lpSockaddr != nullptr && ipAddresses->Address.lpSockaddr->sa_family == AF_INET6)
+                {
+                    auto& address = reinterpret_cast<sockaddr_in6&>(*ipAddresses->Address.lpSockaddr);
+                    IPv6AddressNetworkOrder networkOrder;
+                    std::memcpy(networkOrder.data(), &address.sin6_addr, sizeof(address.sin6_addr));
+                    addresses.emplace_back(services::FromNetworkOrder(networkOrder), adapterInfo->Ipv6IfIndex);
                 }
 
         free(originalAdapterInfo);

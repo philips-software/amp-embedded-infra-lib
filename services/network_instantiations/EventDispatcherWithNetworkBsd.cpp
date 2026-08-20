@@ -197,8 +197,14 @@ namespace services
             if (infra::SharedPtr<DatagramBsd> datagram = weakDatagram)
             {
                 AddFileDescriptorToSet(datagram->socket, readFileDescriptors);
+                if (datagram->socketAdditional != -1)
+                    AddFileDescriptorToSet(datagram->socketAdditional, readFileDescriptors);
                 if (!datagram->SendBufferEmpty())
+                {
                     AddFileDescriptorToSet(datagram->socket, writeFileDescriptors);
+                    if (datagram->socketAdditional != -1)
+                        AddFileDescriptorToSet(datagram->socketAdditional, writeFileDescriptors);
+                }
             }
         }
 
@@ -254,8 +260,12 @@ namespace services
             if (infra::SharedPtr<DatagramBsd> datagram = weakDatagram)
             {
                 if (FD_ISSET(datagram->socket, &readFileDescriptors))
-                    datagram->Receive();
+                    datagram->Receive(datagram->socket);
+                if (datagram->socketAdditional != -1 && FD_ISSET(datagram->socketAdditional, &readFileDescriptors))
+                    datagram->Receive(datagram->socketAdditional);
                 if (FD_ISSET(datagram->socket, &writeFileDescriptors))
+                    datagram->TrySend();
+                else if (datagram->socketAdditional != -1 && FD_ISSET(datagram->socketAdditional, &writeFileDescriptors))
                     datagram->TrySend();
             }
         }
