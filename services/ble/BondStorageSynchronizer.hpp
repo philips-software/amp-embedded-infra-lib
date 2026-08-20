@@ -20,7 +20,7 @@ namespace services
         virtual void RemoveAllBondsForRole(Role role) = 0;
         virtual void RemoveAllBonds() = 0;
         virtual uint32_t GetMaxNumberOfBonds() const = 0;
-        virtual void IterateBondedDevices(const infra::Function<void(const services::Bond&)>& onBond) = 0;
+        virtual void IterateBondedDevices(Role role, const infra::Function<void(const services::Bond&)>& onBond) = 0;
     };
 
     class BondStorage
@@ -39,7 +39,7 @@ namespace services
         virtual void RemoveBondIf(const infra::Function<bool(Role, const services::GapAddress&)>& onAddress) = 0;
         virtual uint32_t GetMaxNumberOfBonds() const = 0;
         virtual std::optional<services::Bond> GetBond(Role role, const services::GapAddress& address) const = 0;
-        virtual void IterateBondedDevices(const infra::Function<void(Role, const services::Bond&)>& onBond) = 0;
+        virtual void IterateBondedDevices(Role role, const infra::Function<void(const services::Bond&)>& onBond) = 0;
     };
 
     class BondStorageAbsolute
@@ -71,7 +71,7 @@ namespace services
         void RemoveAllBondsForRole(Role role) override;
         void RemoveAllBonds() override;
         uint32_t GetMaxNumberOfBonds() const override;
-        void IterateBondedDevices(const infra::Function<void(const services::Bond&)>& onBond) override;
+        void IterateBondedDevices(Role role, const infra::Function<void(const services::Bond&)>& onBond) override;
 
     private:
         void SyncBondStorages();

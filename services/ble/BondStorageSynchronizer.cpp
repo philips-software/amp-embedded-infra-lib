@@ -28,10 +28,9 @@ namespace services
 
     void BondStorageSynchronizerImpl::RemoveAllBondsForRole(Role role)
     {
-        bondStorage.IterateBondedDevices([this, role](Role thisBondsRole, const services::Bond& bond)
+        bondStorage.IterateBondedDevices(role, [this](const services::Bond& bond)
             {
-                if (thisBondsRole == role)
-                    absoluteBondStorage.RemoveBond(bond.address);
+                absoluteBondStorage.RemoveBond(bond.address);
             });
         bondStorage.RemoveAllBondsForRole(role);
     }
@@ -47,9 +46,9 @@ namespace services
         return maxNumberOfBonds;
     }
 
-    void BondStorageSynchronizerImpl::IterateBondedDevices(const infra::Function<void(const services::Bond&)>& onBond)
+    void BondStorageSynchronizerImpl::IterateBondedDevices(Role role, const infra::Function<void(const services::Bond&)>& onBond)
     {
-        bondStorage.IterateBondedDevices(onBond);
+        bondStorage.IterateBondedDevices(role, onBond);
     }
 
     void BondStorageSynchronizerImpl::SyncBondStorages()
@@ -59,18 +58,19 @@ namespace services
                 return !absoluteBondStorage.IsBondStored(address);
             });
 
-        absoluteBondStorage.IterateBondedDevices([this](const services::Bond& bond)
+        absoluteBondStorage.IterateBondedDevices([this](const services::GapAddress& address)
             {
                 const auto bondIsStored =
-                    bondStorage.GetBond(Role::central, bond.address).has_value() ||
-                    bondStorage.GetBond(Role::peripheral, bond.address).has_value();
+                    bondStorage.GetBond(Role::central, address).has_value() ||
+                    bondStorage.GetBond(Role::peripheral, address).has_value();
 
                 if (!bondIsStored)
                 {
                     if (hardcodedRole.has_value())
-                        bondStorage.UpdateBond(hardcodedRole.value(), bond);
+                        // Could we create the bond here?
+                        LOG_AND_ABORT_NOT_IMPLEMENTED();
                     else
-                        absoluteBondStorage.RemoveBond(bond.address);
+                        absoluteBondStorage.RemoveBond(address);
                 }
             });
     }
