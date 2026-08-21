@@ -213,7 +213,8 @@ namespace services
             multicastRequest.imr_interface.s_addr = htonl(services::ConvertToUint32(localAddress));
         multicastRequest.imr_multiaddr.s_addr = htonl(services::ConvertToUint32(multicastAddress));
 
-        setsockopt(socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+        auto result = setsockopt(socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+        assert(result == 0);
     }
 
     void DatagramWin::LeaveMulticastGroup(IPv4Address multicastAddress)
@@ -225,7 +226,8 @@ namespace services
             multicastRequest.imr_interface.s_addr = htonl(services::ConvertToUint32(localAddress));
         multicastRequest.imr_multiaddr.s_addr = htonl(services::ConvertToUint32(multicastAddress));
 
-        setsockopt(socket, IPPROTO_IP, IP_DROP_MEMBERSHIP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+        auto result = setsockopt(socket, IPPROTO_IP, IP_DROP_MEMBERSHIP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+        assert(result == 0);
     }
 
     void DatagramWin::JoinMulticastGroup(IPv6Address multicastAddress)
@@ -235,7 +237,8 @@ namespace services
         std::memcpy(&multicastRequest.ipv6mr_multiaddr, networkOrder.data(), sizeof(multicastRequest.ipv6mr_multiaddr));
         multicastRequest.ipv6mr_interface = ipv6InterfaceIndex;
 
-        setsockopt(Ipv6Socket(), IPPROTO_IPV6, IPV6_JOIN_GROUP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+        auto result = setsockopt(Ipv6Socket(), IPPROTO_IPV6, IPV6_JOIN_GROUP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+        assert(result == 0);
     }
 
     void DatagramWin::LeaveMulticastGroup(IPv6Address multicastAddress)
@@ -245,7 +248,8 @@ namespace services
         std::memcpy(&multicastRequest.ipv6mr_multiaddr, networkOrder.data(), sizeof(multicastRequest.ipv6mr_multiaddr));
         multicastRequest.ipv6mr_interface = ipv6InterfaceIndex;
 
-        setsockopt(Ipv6Socket(), IPPROTO_IPV6, IPV6_LEAVE_GROUP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+        auto result = setsockopt(Ipv6Socket(), IPPROTO_IPV6, IPV6_LEAVE_GROUP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+        assert(result == 0);
     }
 
     void DatagramWin::InitSocket()
@@ -397,25 +401,29 @@ namespace services
     void DatagramExchangeMultiple::JoinMulticastGroup(IPv4Address multicastAddress)
     {
         for (const auto& observer : observers)
-            eventDispatcher.JoinMulticastGroup(observer->exchange, multicastAddress);
+            if (observer->version == IPVersions::ipv4)
+                eventDispatcher.JoinMulticastGroup(observer->exchange, multicastAddress);
     }
 
     void DatagramExchangeMultiple::LeaveMulticastGroup(IPv4Address multicastAddress)
     {
         for (const auto& observer : observers)
-            eventDispatcher.LeaveMulticastGroup(observer->exchange, multicastAddress);
+            if (observer->version == IPVersions::ipv4)
+                eventDispatcher.LeaveMulticastGroup(observer->exchange, multicastAddress);
     }
 
     void DatagramExchangeMultiple::JoinMulticastGroup(IPv6Address multicastAddress)
     {
         for (const auto& observer : observers)
-            eventDispatcher.JoinMulticastGroup(observer->exchange, multicastAddress);
+            if (observer->version == IPVersions::ipv6)
+                eventDispatcher.JoinMulticastGroup(observer->exchange, multicastAddress);
     }
 
     void DatagramExchangeMultiple::LeaveMulticastGroup(IPv6Address multicastAddress)
     {
         for (const auto& observer : observers)
-            eventDispatcher.LeaveMulticastGroup(observer->exchange, multicastAddress);
+            if (observer->version == IPVersions::ipv6)
+                eventDispatcher.LeaveMulticastGroup(observer->exchange, multicastAddress);
     }
 
     void DatagramExchangeMultiple::RequestSendStream(std::size_t sendSize)
@@ -437,6 +445,8 @@ namespace services
         for (auto& observer : observers)
             if (observer->version == toVersion)
                 ++expectedWriters;
+
+        assert(expectedWriters != 0);
 
         for (auto& observer : observers)
             if (observer->version == toVersion)

@@ -50,3 +50,5 @@ if (EMIL_BUILD_UNIX OR EMIL_BUILD_DARWIN)
 
     target_compile_definitions(services.network_instantiations PUBLIC EMIL_NETWORK_BSD)
 endif()
+
+add_subdirectory(test)

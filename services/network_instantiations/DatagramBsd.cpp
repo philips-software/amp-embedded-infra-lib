@@ -188,7 +188,8 @@ namespace services
             multicastRequest.imr_interface.s_addr = htonl(services::ConvertToUint32(localAddress));
         multicastRequest.imr_multiaddr.s_addr = htonl(services::ConvertToUint32(multicastAddress));
 
-        setsockopt(socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+        auto result = setsockopt(socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+        assert(result == 0);
     }
 
     void DatagramBsd::LeaveMulticastGroup(IPv4Address multicastAddress)
@@ -200,7 +201,8 @@ namespace services
             multicastRequest.imr_interface.s_addr = htonl(services::ConvertToUint32(localAddress));
         multicastRequest.imr_multiaddr.s_addr = htonl(services::ConvertToUint32(multicastAddress));
 
-        setsockopt(socket, IPPROTO_IP, IP_DROP_MEMBERSHIP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+        auto result = setsockopt(socket, IPPROTO_IP, IP_DROP_MEMBERSHIP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+        assert(result == 0);
     }
 
     void DatagramBsd::JoinMulticastGroup(IPv6Address multicastAddress)
@@ -210,7 +212,8 @@ namespace services
         std::memcpy(&multicastRequest.ipv6mr_multiaddr, networkOrder.data(), sizeof(multicastRequest.ipv6mr_multiaddr));
         multicastRequest.ipv6mr_interface = 0;
 
-        setsockopt(Ipv6Socket(), IPPROTO_IPV6, IPV6_JOIN_GROUP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+        auto result = setsockopt(Ipv6Socket(), IPPROTO_IPV6, IPV6_JOIN_GROUP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+        assert(result == 0);
     }
 
     void DatagramBsd::LeaveMulticastGroup(IPv6Address multicastAddress)
@@ -220,7 +223,8 @@ namespace services
         std::memcpy(&multicastRequest.ipv6mr_multiaddr, networkOrder.data(), sizeof(multicastRequest.ipv6mr_multiaddr));
         multicastRequest.ipv6mr_interface = 0;
 
-        setsockopt(Ipv6Socket(), IPPROTO_IPV6, IPV6_LEAVE_GROUP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+        auto result = setsockopt(Ipv6Socket(), IPPROTO_IPV6, IPV6_LEAVE_GROUP, reinterpret_cast<char*>(&multicastRequest), sizeof(multicastRequest));
+        assert(result == 0);
     }
 
     void DatagramBsd::InitSocket()
