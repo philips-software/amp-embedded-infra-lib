@@ -57,7 +57,7 @@ message Service
 message Characteristic
 {
     bytes uuid = 1 [(bytes_size) = 16];
-    Handle handle = 2;
+    Handle declarationHandle = 2;
     Handle valueHandle = 3;
     uint32 properties = 4;
 }
