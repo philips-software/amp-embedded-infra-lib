@@ -42,7 +42,6 @@ namespace services
         hal::SynchronousRandomDataGenerator& randomDataGenerator;
         mbedtls_ecp_group group;
         mbedtls_mpi privateKey;
-        mbedtls_ecdh_context context;
     };
 
     class EcSecP256r1DsaVerifierMbedTls

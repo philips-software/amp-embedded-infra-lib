@@ -130,6 +130,11 @@ namespace infra
         stream << infra::text << 'Z';
     }
 
+    void Asn1Formatter::AddDer(infra::ConstByteRange der)
+    {
+        stream << der;
+    }
+
     Asn1ContainerFormatter Asn1Formatter::StartSequence()
     {
         stream << static_cast<uint8_t>(Tag::Constructed | Tag::Sequence);
