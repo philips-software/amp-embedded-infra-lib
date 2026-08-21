@@ -422,6 +422,7 @@ namespace services
     {
         assert(writers.empty());
 
+        expectedWriters = observers.size();
         for (auto& observer : observers)
             observer->Subject().RequestSendStream(sendSize);
     }
@@ -430,36 +431,49 @@ namespace services
     {
         assert(writers.empty());
 
+        auto toVersion = std::holds_alternative<Udpv6Socket>(to) ? IPVersions::ipv6 : IPVersions::ipv4;
+
+        expectedWriters = 0;
         for (auto& observer : observers)
-            observer->Subject().RequestSendStream(sendSize, to);
+            if (observer->version == toVersion)
+                ++expectedWriters;
+
+        for (auto& observer : observers)
+            if (observer->version == toVersion)
+                observer->Subject().RequestSendStream(sendSize, to);
     }
 
     DatagramExchangeMultiple::Observer::Observer(DatagramExchangeMultiple& parent, DatagramFactoryWithLocalIpBinding& factory, IPAddress local, uint16_t port, IPVersions versions)
         : parent(parent)
+        , version(std::holds_alternative<IPv6Address>(local) ? IPVersions::ipv6 : IPVersions::ipv4)
     {
         exchange = factory.Listen(*this, local, port, versions);
     }
 
     DatagramExchangeMultiple::Observer::Observer(DatagramExchangeMultiple& parent, DatagramFactoryWithLocalIpBinding& factory, IPAddress local, IPVersions versions)
         : parent(parent)
+        , version(std::holds_alternative<IPv6Address>(local) ? IPVersions::ipv6 : IPVersions::ipv4)
     {
         exchange = factory.Listen(*this, local, versions);
     }
 
     DatagramExchangeMultiple::Observer::Observer(DatagramExchangeMultiple& parent, DatagramFactoryWithLocalIpBinding& factory, IPv6Address local, uint32_t interfaceIndex, uint16_t port)
         : parent(parent)
+        , version(IPVersions::ipv6)
     {
         exchange = factory.Listen(*this, local, interfaceIndex, port);
     }
 
     DatagramExchangeMultiple::Observer::Observer(DatagramExchangeMultiple& parent, DatagramFactoryWithLocalIpBinding& factory, IPAddress local, UdpSocket remote)
         : parent(parent)
+        , version(std::holds_alternative<Udpv6Socket>(remote) ? IPVersions::ipv6 : IPVersions::ipv4)
     {
         exchange = factory.Connect(*this, local, remote);
     }
 
     DatagramExchangeMultiple::Observer::Observer(DatagramExchangeMultiple& parent, DatagramFactoryWithLocalIpBinding& factory, UdpSocket local, UdpSocket remote)
         : parent(parent)
+        , version(std::holds_alternative<Udpv6Socket>(remote) ? IPVersions::ipv6 : IPVersions::ipv4)
     {
         exchange = factory.Connect(*this, local, remote);
     }
@@ -473,7 +487,7 @@ namespace services
     {
         parent.writers.emplace_back(std::move(writer));
 
-        if (parent.writers.size() == parent.observers.size())
+        if (parent.writers.size() == parent.expectedWriters)
         {
             parent.GetObserver().SendStreamAvailable(parent.multipleWriter.Emplace(parent.writers));
         }

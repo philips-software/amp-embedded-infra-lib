@@ -145,6 +145,7 @@ namespace services
         private:
             friend class DatagramExchangeMultiple;
             DatagramExchangeMultiple& parent;
+            IPVersions version;
             infra::SharedPtr<DatagramExchange> exchange;
         };
 
@@ -171,6 +172,7 @@ namespace services
         EventDispatcherWithNetwork& eventDispatcher;
         std::vector<infra::SharedPtr<Observer>> observers;
         std::vector<infra::SharedPtr<infra::StreamWriter>> writers;
+        std::size_t expectedWriters = 0;
 
         infra::SharedOptional<MultipleWriter> multipleWriter;
     };
