@@ -20,6 +20,9 @@ updates:
     directory: .clusterfuzzlite
     schedule:
       interval: monthly
+    commit-message:
+      prefix: "build(deps)"
+
   - package-ecosystem: docker
     directory: .devcontainer
     schedule:
