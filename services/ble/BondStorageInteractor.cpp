@@ -3,14 +3,21 @@
 namespace services
 {
 
-    BondStorageInteractor::BondStorageInteractor(Role role, BondStorageSynchronizer& bondStorageSynchroniser)
+    BondStorageInteractor::BondStorageInteractor(Role role, BondStorageSynchronizer& bondStorageSynchroniser, uint32_t maxNumberOfBonds)
         : role(role)
         , bondStorageSynchroniser(bondStorageSynchroniser)
-    {}
+        , maxNumberOfBonds(maxNumberOfBonds)
+    {
+        // TODO: This does not account for multiple roles being active.
+        really_assert(maxNumberOfBonds <= bondStorageSynchroniser.GetMaxNumberOfBonds());
+    }
 
     void BondStorageInteractor::UpdateBond(const services::Bond& bond)
     {
-        // TODO: Here we should evict if full
+        // TODO: This is not correct. Update also happens for existing bonds.
+        if (GetNumberOfBonds() >= maxNumberOfBonds)
+            RemoveLeastRecentlyUsedBond();
+        really_assert(GetNumberOfBonds() < maxNumberOfBonds);
 
         bondStorageSynchroniser.UpdateBond(role, bond);
     }
@@ -38,5 +45,19 @@ namespace services
     uint32_t BondStorageInteractor::GetMaxNumberOfBonds() const
     {
         return bondStorageSynchroniser.GetMaxNumberOfBonds();
+    }
+
+    void BondStorageInteractor::RemoveLeastRecentlyUsedBond()
+    {
+        // This removes the least recently used bond.
+        std::optional<services::Bond> oldestBond;
+        bondStorageSynchroniser.IterateBondedDevices(role, [&oldestBond](const services::Bond& bond)
+            {
+                if (!oldestBond.has_value())
+                    oldestBond = bond;
+            });
+
+        if (oldestBond.has_value())
+            bondStorageSynchroniser.RemoveBond(role, oldestBond->address);
     }
 }

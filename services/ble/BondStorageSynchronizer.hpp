@@ -21,6 +21,8 @@ namespace services
         virtual void RemoveAllBonds() = 0;
         virtual uint32_t GetNumberOfBondsForRole(Role role) const = 0;
         virtual uint32_t GetMaxNumberOfBonds() const = 0;
+
+        // Iteration is in least recently used order, i.e. the first bond returned is the least recently used one.
         virtual void IterateBondedDevices(Role role, const infra::Function<void(const services::Bond&)>& onBond) = 0;
     };
 
@@ -41,6 +43,8 @@ namespace services
         virtual uint32_t GetNumberOfBondsForRole(const Role role) const = 0;
         virtual uint32_t GetMaxNumberOfBonds() const = 0;
         virtual std::optional<services::Bond> GetBond(Role role, const services::GapAddress& address) const = 0;
+
+        // Iteration is in least recently used order, i.e. the first bond returned is the least recently used one.
         virtual void IterateBondedDevices(Role role, const infra::Function<void(const services::Bond&)>& onBond) = 0;
     };
 
