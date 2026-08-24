@@ -25,17 +25,17 @@ public:
         return services::GapAddress{ address, services::GapDeviceAddressType::publicAddress };
     }
 
-    static services::Bond MakeBond(const services::GapAddress& address, infra::BoundedConstString deviceName, services::Role role)
+    static services::Bond MakeBond(const services::GapAddress& address, infra::BoundedConstString deviceName)
     {
-        return services::Bond{ address, deviceName, role };
+        return services::Bond{ address, deviceName };
     }
 
     services::GapAddress gapAddress1{ MakeGapAddress({ 0x00, 0x01, 0x02, 0x03, 0x04, 0x05 }) };
     services::GapAddress gapAddress2{ MakeGapAddress({ 0x06, 0x07, 0x08, 0x09, 0x10, 0x11 }) };
     services::GapAddress gapAddress3{ MakeGapAddress({ 0x12, 0x13, 0x14, 0x15, 0x16, 0x17 }) };
 
-    services::Bond bond1{ MakeBond(gapAddress1, "device1", services::Role::peripheral) };
-    services::Bond bond2{ MakeBond(gapAddress2, "device2", services::Role::central) };
+    services::Bond bond1{ MakeBond(gapAddress1, "device1") };
+    services::Bond bond2{ MakeBond(gapAddress2, "device2") };
 
     testing::StrictMock<services::BondStorageAbsoluteMock> absoluteStorage;
     testing::StrictMock<services::BondStorageMock> bondStorage;
@@ -125,7 +125,6 @@ public:
 
 TEST_F(BondStorageSynchronizerTestWithConstruction, construction_notifies_bondstorages_of_creation_checks_max_number_of_bonds_and_synchronises_the_storages)
 {
-    EXPECT_THAT(bondStorageSynchronizer.GetMaxNumberOfBonds(), testing::Eq(maxNumberOfBonds));
 }
 
 TEST_F(BondStorageSynchronizerTestWithConstruction, update_bond_is_forwarded_to_bond_storage)
@@ -158,6 +157,18 @@ TEST_F(BondStorageSynchronizerTestWithConstruction, remove_all_bonds_is_forwarde
     EXPECT_CALL(absoluteStorage, RemoveAllBonds());
     EXPECT_CALL(bondStorage, RemoveAllBonds());
     bondStorageSynchronizer.RemoveAllBonds();
+}
+
+TEST_F(BondStorageSynchronizerTestWithConstruction, get_max_number_of_bonds_is_forwarded_to_absolute_storage)
+{
+    EXPECT_CALL(absoluteStorage, GetMaxNumberOfBonds()).WillOnce(testing::Return(maxNumberOfBonds));
+    EXPECT_THAT(bondStorageSynchronizer.GetMaxNumberOfBonds(), testing::Eq(maxNumberOfBonds));
+}
+
+TEST_F(BondStorageSynchronizerTestWithConstruction, get_number_of_bonds_for_role_is_forwarded_to_bond_storage)
+{
+    EXPECT_CALL(bondStorage, GetNumberOfBondsForRole(services::Role::peripheral)).WillOnce(testing::Return(2));
+    EXPECT_THAT(bondStorageSynchronizer.GetNumberOfBondsForRole(services::Role::peripheral), testing::Eq(2u));
 }
 
 TEST_F(BondStorageSynchronizerTestWithConstruction, iterate_bonded_devices_is_forwarded_to_bond_storage)

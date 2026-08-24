@@ -11,15 +11,15 @@ public:
         return services::GapAddress{ address, services::GapDeviceAddressType::publicAddress };
     }
 
-    static services::Bond MakeBond(const services::GapAddress& address, infra::BoundedConstString deviceName, services::Role role)
+    static services::Bond MakeBond(const services::GapAddress& address, infra::BoundedConstString deviceName)
     {
-        return services::Bond{ address, deviceName, role };
+        return services::Bond{ address, deviceName };
     }
 
     hal::MacAddress address1{ { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05 } };
 
     services::GapAddress gapAddress1{ MakeGapAddress(address1) };
-    services::Bond bond1{ MakeBond(gapAddress1, "device1", services::Role::peripheral) };
+    services::Bond bond1{ MakeBond(gapAddress1, "device1") };
 
     services::Role role = services::Role::peripheral;
     uint32_t maxNumberOfBonds = 3;

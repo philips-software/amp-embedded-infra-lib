@@ -5,12 +5,11 @@ namespace services
     BondStorageSynchronizerImpl::BondStorageSynchronizerImpl(BondStorageAbsolute& absoluteBondStorage, BondStorage& bondStorage)
         : absoluteBondStorage(absoluteBondStorage)
         , bondStorage(bondStorage)
-        , maxNumberOfBonds(absoluteBondStorage.GetMaxNumberOfBonds())
     {
         bondStorage.BondStorageSynchronizerCreated(*this);
         absoluteBondStorage.BondStorageSynchronizerCreated(*this);
 
-        really_assert(bondStorage.GetMaxNumberOfBonds() >= maxNumberOfBonds);
+        really_assert(bondStorage.GetMaxNumberOfBonds() >= absoluteBondStorage.GetMaxNumberOfBonds());
 
         SyncBondStorages();
     }
@@ -41,9 +40,14 @@ namespace services
         bondStorage.RemoveAllBonds();
     }
 
+    uint32_t BondStorageSynchronizerImpl::GetNumberOfBondsForRole(Role role) const
+    {
+        return bondStorage.GetNumberOfBondsForRole(role);
+    }
+
     uint32_t BondStorageSynchronizerImpl::GetMaxNumberOfBonds() const
     {
-        return maxNumberOfBonds;
+        return absoluteBondStorage.GetMaxNumberOfBonds();
     }
 
     void BondStorageSynchronizerImpl::IterateBondedDevices(Role role, const infra::Function<void(const services::Bond&)>& onBond)
