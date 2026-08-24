@@ -14,9 +14,19 @@ namespace services
         SyncBondStorages();
     }
 
-    void BondStorageSynchronizerImpl::UpdateBond(Role role, const services::Bond& bond)
+    void BondStorageSynchronizerImpl::AddBond(Role role, const services::Bond& bond)
     {
-        bondStorage.UpdateBond(role, bond);
+        bondStorage.AddBond(role, bond);
+    }
+
+    void BondStorageSynchronizerImpl::UpdateBondName(Role role, const services::GapAddress& address, infra::BoundedConstString name)
+    {
+        bondStorage.UpdateBondName(role, address, name);
+    }
+
+    void BondStorageSynchronizerImpl::MarkAsRecentlyUsed(Role role, const services::GapAddress& address)
+    {
+        bondStorage.MarkAsRecentlyUsed(role, address);
     }
 
     void BondStorageSynchronizerImpl::RemoveBond(Role role, const services::GapAddress& address)

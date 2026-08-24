@@ -12,14 +12,23 @@ namespace services
         really_assert(maxNumberOfBonds <= bondStorageSynchroniser.GetMaxNumberOfBonds());
     }
 
-    void BondStorageInteractor::UpdateBond(const services::Bond& bond)
+    void BondStorageInteractor::AddBond(const services::Bond& bond)
     {
-        // TODO: This is not correct. Update also happens for existing bonds.
         if (GetNumberOfBonds() >= maxNumberOfBonds)
             RemoveLeastRecentlyUsedBond();
         really_assert(GetNumberOfBonds() < maxNumberOfBonds);
 
-        bondStorageSynchroniser.UpdateBond(role, bond);
+        bondStorageSynchroniser.AddBond(role, bond);
+    }
+
+    void BondStorageInteractor::UpdateBondName(services::GapAddress address, infra::BoundedConstString name)
+    {
+        bondStorageSynchroniser.UpdateBondName(role, address, name);
+    }
+
+    void BondStorageInteractor::MarkAsRecentlyUsed(services::GapAddress address)
+    {
+        bondStorageSynchroniser.MarkAsRecentlyUsed(role, address);
     }
 
     void BondStorageInteractor::RemoveBond(services::GapAddress address)

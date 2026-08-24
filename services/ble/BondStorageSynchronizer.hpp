@@ -15,7 +15,9 @@ namespace services
         BondStorageSynchronizer& operator=(const BondStorageSynchronizer& other) = delete;
 
     public:
-        virtual void UpdateBond(Role role, const services::Bond& bond) = 0;
+        virtual void AddBond(Role role, const services::Bond& bond) = 0;
+        virtual void UpdateBondName(Role role, const services::GapAddress& address, infra::BoundedConstString name) = 0;
+        virtual void MarkAsRecentlyUsed(Role role, const services::GapAddress& address) = 0;
         virtual void RemoveBond(Role role, const services::GapAddress& address) = 0;
         virtual void RemoveAllBondsForRole(Role role) = 0;
         virtual void RemoveAllBonds() = 0;
@@ -35,7 +37,9 @@ namespace services
 
     public:
         virtual void BondStorageSynchronizerCreated(BondStorageSynchronizer& manager) = 0;
-        virtual void UpdateBond(Role role, const services::Bond& bond) = 0;
+        virtual void AddBond(Role role, const services::Bond& bond) = 0;
+        virtual void UpdateBondName(Role role, const services::GapAddress& address, infra::BoundedConstString name) = 0;
+        virtual void MarkAsRecentlyUsed(Role role, const services::GapAddress& address) = 0;
         virtual void RemoveBond(Role role, const services::GapAddress& address) = 0;
         virtual void RemoveAllBondsForRole(Role role) = 0;
         virtual void RemoveAllBonds() = 0;
@@ -72,7 +76,9 @@ namespace services
         BondStorageSynchronizerImpl(BondStorageAbsolute& absoluteBondStorage, BondStorage& bondStorage);
 
         // Implementation of BondStorageSynchronizer
-        void UpdateBond(Role role, const services::Bond& bond) override;
+        void AddBond(Role role, const services::Bond& bond) override;
+        void UpdateBondName(Role role, const services::GapAddress& address, infra::BoundedConstString name) override;
+        void MarkAsRecentlyUsed(Role role, const services::GapAddress& address) override;
         void RemoveBond(Role role, const services::GapAddress& address) override;
         void RemoveAllBondsForRole(Role role) override;
         void RemoveAllBonds() override;

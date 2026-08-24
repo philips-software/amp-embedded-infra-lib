@@ -41,14 +41,14 @@ TEST_F(BondStorageInteractorTest, construction_checks_max_number_of_bonds)
 {
 }
 
-TEST_F(BondStorageInteractorTest, update_bond_is_forwarded_with_role)
+TEST_F(BondStorageInteractorTest, add_bond_is_forwarded_with_role)
 {
     EXPECT_CALL(bondStorageSynchroniser, GetNumberOfBondsForRole(role)).WillRepeatedly(testing::Return(1));
-    EXPECT_CALL(bondStorageSynchroniser, UpdateBond(role, bond1));
-    interactor.UpdateBond(bond1);
+    EXPECT_CALL(bondStorageSynchroniser, AddBond(role, bond1));
+    interactor.AddBond(bond1);
 }
 
-TEST_F(BondStorageInteractorTest, update_bond_removes_least_recently_used_bond_when_storage_is_full)
+TEST_F(BondStorageInteractorTest, add_bond_removes_least_recently_used_bond_when_storage_is_full)
 {
     EXPECT_CALL(bondStorageSynchroniser, GetNumberOfBondsForRole(role))
         .WillOnce(testing::Return(maxNumberOfBonds))
@@ -60,8 +60,20 @@ TEST_F(BondStorageInteractorTest, update_bond_removes_least_recently_used_bond_w
                 onBond(bond2);
             });
     EXPECT_CALL(bondStorageSynchroniser, RemoveBond(role, bond1.address));
-    EXPECT_CALL(bondStorageSynchroniser, UpdateBond(role, bond2));
-    interactor.UpdateBond(bond2);
+    EXPECT_CALL(bondStorageSynchroniser, AddBond(role, bond2));
+    interactor.AddBond(bond2);
+}
+
+TEST_F(BondStorageInteractorTest, update_bond_name_is_forwarded_with_role)
+{
+    EXPECT_CALL(bondStorageSynchroniser, UpdateBondName(role, gapAddress1, infra::BoundedConstString("device1")));
+    interactor.UpdateBondName(gapAddress1, "device1");
+}
+
+TEST_F(BondStorageInteractorTest, mark_as_recently_used_is_forwarded_with_role)
+{
+    EXPECT_CALL(bondStorageSynchroniser, MarkAsRecentlyUsed(role, gapAddress1));
+    interactor.MarkAsRecentlyUsed(gapAddress1);
 }
 
 TEST_F(BondStorageInteractorTest, remove_bond_is_forwarded_with_role)

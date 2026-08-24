@@ -10,7 +10,9 @@ namespace services
     {
     public:
         BondStorageInteractor(Role role, BondStorageSynchronizer& bondStorageSynchroniser, uint32_t maxNumberOfBonds = 0);
-        void UpdateBond(const services::Bond& bond);
+        void AddBond(const services::Bond& bond);
+        void UpdateBondName(services::GapAddress address, infra::BoundedConstString name);
+        void MarkAsRecentlyUsed(services::GapAddress address);
         void RemoveBond(services::GapAddress address);
         void RemoveAllBonds();
         void IterateBondedDevices(const infra::Function<void(const services::Bond&)>& onBond);

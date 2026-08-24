@@ -11,7 +11,9 @@ namespace services
     {
     public:
         MOCK_METHOD(void, BondStorageSynchronizerCreated, (BondStorageSynchronizer & manager), (override));
-        MOCK_METHOD(void, UpdateBond, (Role role, const services::Bond& bond), (override));
+        MOCK_METHOD(void, AddBond, (Role role, const services::Bond& bond), (override));
+        MOCK_METHOD(void, UpdateBondName, (Role role, const services::GapAddress& address, infra::BoundedConstString name), (override));
+        MOCK_METHOD(void, MarkAsRecentlyUsed, (Role role, const services::GapAddress& address), (override));
         MOCK_METHOD(void, RemoveBond, (Role role, const services::GapAddress& address), (override));
         MOCK_METHOD(void, RemoveAllBondsForRole, (Role role), (override));
         MOCK_METHOD(void, RemoveAllBonds, (), (override));
@@ -39,7 +41,9 @@ namespace services
         : public BondStorageSynchronizer
     {
     public:
-        MOCK_METHOD(void, UpdateBond, (Role role, const services::Bond& bond), (override));
+        MOCK_METHOD(void, AddBond, (Role role, const services::Bond& bond), (override));
+        MOCK_METHOD(void, UpdateBondName, (Role role, const services::GapAddress& address, infra::BoundedConstString name), (override));
+        MOCK_METHOD(void, MarkAsRecentlyUsed, (Role role, const services::GapAddress& address), (override));
         MOCK_METHOD(void, RemoveBond, (Role role, const services::GapAddress& address), (override));
         MOCK_METHOD(void, RemoveAllBondsForRole, (Role role), (override));
         MOCK_METHOD(void, RemoveAllBonds, (), (override));

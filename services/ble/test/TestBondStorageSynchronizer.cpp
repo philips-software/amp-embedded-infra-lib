@@ -127,10 +127,22 @@ TEST_F(BondStorageSynchronizerTestWithConstruction, construction_notifies_bondst
 {
 }
 
-TEST_F(BondStorageSynchronizerTestWithConstruction, update_bond_is_forwarded_to_bond_storage)
+TEST_F(BondStorageSynchronizerTestWithConstruction, add_bond_is_forwarded_to_bond_storage)
 {
-    EXPECT_CALL(bondStorage, UpdateBond(services::Role::peripheral, bond1));
-    bondStorageSynchronizer.UpdateBond(services::Role::peripheral, bond1);
+    EXPECT_CALL(bondStorage, AddBond(services::Role::peripheral, bond1));
+    bondStorageSynchronizer.AddBond(services::Role::peripheral, bond1);
+}
+
+TEST_F(BondStorageSynchronizerTestWithConstruction, update_bond_name_is_forwarded_to_bond_storage)
+{
+    EXPECT_CALL(bondStorage, UpdateBondName(services::Role::peripheral, gapAddress1, infra::BoundedConstString("device1")));
+    bondStorageSynchronizer.UpdateBondName(services::Role::peripheral, gapAddress1, "device1");
+}
+
+TEST_F(BondStorageSynchronizerTestWithConstruction, mark_as_recently_used_is_forwarded_to_bond_storage)
+{
+    EXPECT_CALL(bondStorage, MarkAsRecentlyUsed(services::Role::peripheral, gapAddress1));
+    bondStorageSynchronizer.MarkAsRecentlyUsed(services::Role::peripheral, gapAddress1);
 }
 
 TEST_F(BondStorageSynchronizerTestWithConstruction, remove_bond_is_forwarded_to_both_storages)
