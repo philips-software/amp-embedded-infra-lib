@@ -104,11 +104,10 @@ namespace services
     {
         GapAddress address;
         infra::BoundedConstString deviceName;
-        Role localRole = Role::unknown;
 
         bool operator==(Bond const& rhs) const
         {
-            return address == rhs.address && deviceName == rhs.deviceName && localRole == rhs.localRole;
+            return address == rhs.address && deviceName == rhs.deviceName;
         }
     };
 

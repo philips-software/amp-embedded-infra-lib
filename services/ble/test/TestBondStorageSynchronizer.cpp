@@ -30,13 +30,9 @@ public:
         return services::Bond{ address, deviceName, role };
     }
 
-    hal::MacAddress address1{ { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05 } };
-    hal::MacAddress address2{ { 0x06, 0x07, 0x08, 0x09, 0x10, 0x11 } };
-    hal::MacAddress address3{ { 0x12, 0x13, 0x14, 0x15, 0x16, 0x17 } };
-
-    services::GapAddress gapAddress1{ MakeGapAddress(address1) };
-    services::GapAddress gapAddress2{ MakeGapAddress(address2) };
-    services::GapAddress gapAddress3{ MakeGapAddress(address3) };
+    services::GapAddress gapAddress1{ MakeGapAddress({ 0x00, 0x01, 0x02, 0x03, 0x04, 0x05 }) };
+    services::GapAddress gapAddress2{ MakeGapAddress({ 0x06, 0x07, 0x08, 0x09, 0x10, 0x11 }) };
+    services::GapAddress gapAddress3{ MakeGapAddress({ 0x12, 0x13, 0x14, 0x15, 0x16, 0x17 }) };
 
     services::Bond bond1{ MakeBond(gapAddress1, "device1", services::Role::peripheral) };
     services::Bond bond2{ MakeBond(gapAddress2, "device2", services::Role::central) };
