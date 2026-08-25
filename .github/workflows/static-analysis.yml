@@ -40,7 +40,17 @@ jobs:
 
       - name: Collect coverage
         run: |
-          gcovr --sonarqube=coverage.xml --merge-mode-functions=separate --exclude-lines-by-pattern '.*assert\(.*\);|.*really_assert\(.*\);|.*std::abort\(\);' --exclude-unreachable-branches --exclude-throw-branches -j "$(nproc)" --exclude=.*/generated/.* --exclude=.*/examples/.* --exclude=.*/external/.* --exclude=.*/lwip/.* --exclude=.*/tracing/.*
+          gcovr --sonarqube=coverage.xml \
+            --merge-mode-functions=separate \
+            --exclude-lines-by-pattern '.*assert\(.*\);|.*really_assert\(.*\);|.*std::abort\(\);|.*LOG_AND_ABORT.*' \
+            --exclude-unreachable-branches \
+            --exclude-throw-branches \
+            -j "$(nproc)" \
+            --exclude=.*/generated/.* \
+            --exclude=.*/examples/.* \
+            --exclude=.*/external/.* \
+            --exclude=.*/lwip/.* \
+            --exclude=.*/tracing/.*
       - name: Perform mutation testing
         uses: lukka/run-cmake@5d55ea7949e25f69f0ecb516d8d572297e03a956 # v10.9
         with:
@@ -74,7 +84,7 @@ jobs:
       - uses: hendrikmuhs/ccache-action@d62db5f07c26379fc4b4e0916f098a92573c3b03 # v1.2.23
         with:
           key: ${{ github.job }}
-      - uses: github/codeql-action/init@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
+      - uses: github/codeql-action/init@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd # v4.37.7
         with:
           languages: cpp
       - uses: lukka/run-cmake@5d55ea7949e25f69f0ecb516d8d572297e03a956 # v10.9
@@ -82,4 +92,4 @@ jobs:
           configurePreset: "host"
           buildPreset: "host-Debug"
           configurePresetAdditionalArgs: "['-DCMAKE_C_COMPILER_LAUNCHER=ccache', '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache']"
-      - uses: github/codeql-action/analyze@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
+      - uses: github/codeql-action/analyze@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd # v4.37.7

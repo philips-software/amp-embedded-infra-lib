@@ -18,6 +18,9 @@ namespace hal
     {
         delegate.ReceiveData([this](infra::ConstByteRange data)
             {
+                really_assert_with_msg(this->buffer.Size() + data.size() <= this->buffer.MaxSize(),
+                    "BufferedSerialCommunicationOnUnbuffered buffer overflow: size=%u incoming=%u max=%u",
+                    static_cast<unsigned>(this->buffer.Size()), static_cast<unsigned>(data.size()), static_cast<unsigned>(this->buffer.MaxSize()));
                 this->buffer.Push(data);
                 scheduler.Schedule([this]()
                     {

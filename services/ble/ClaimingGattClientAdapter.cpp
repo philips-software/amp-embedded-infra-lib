@@ -9,6 +9,15 @@ namespace services
         : GattClientObserver(gattClient)
         , AttMtuExchangeObserver(attMtuExchange)
         , GapCentralObserver(gapCentral)
+        , ownedResource(std::in_place)
+        , resource(ownedResource.value())
+    {}
+
+    ClaimingGattClientAdapter::ClaimingGattClientAdapter(infra::ClaimableResource& resource, GattClient& gattClient, AttMtuExchange& attMtuExchange, GapCentral& gapCentral)
+        : GattClientObserver(gattClient)
+        , AttMtuExchangeObserver(attMtuExchange)
+        , GapCentralObserver(gapCentral)
+        , resource(resource)
     {}
 
     void ClaimingGattClientAdapter::StartServiceDiscovery()

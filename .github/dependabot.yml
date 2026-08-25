@@ -13,11 +13,19 @@ updates:
         update-types:
           - minor
           - patch
+    commit-message:
+      prefix: "ci(deps)"
+
   - package-ecosystem: docker
     directory: .clusterfuzzlite
     schedule:
       interval: monthly
+    commit-message:
+      prefix: "build(deps)"
+
   - package-ecosystem: docker
     directory: .devcontainer
     schedule:
       interval: daily
+    commit-message:
+      prefix: "build(deps)"
