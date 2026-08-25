@@ -171,7 +171,10 @@ namespace services
 
                     // PublicKeyInfo
                     {
-                        unsigned char spki[MBEDTLS_PK_MAX_PUBKEY_RAW_LEN + 32];
+                        // AlgorithmIdentifier (SEQUENCE 2 + OID 11 + NULL 2 = 15) + BIT STRING header 4 + unused-bits byte 1 + outer SEQUENCE header 4.
+                        constexpr std::size_t subjectPublicKeyInfoOverhead = 24;
+                        unsigned char spki[PSA_EXPORT_PUBLIC_KEY_MAX_SIZE + subjectPublicKeyInfoOverhead];
+
                         auto length = mbedtls_pk_write_pubkey_der(&privateKey, spki, sizeof(spki));
                         really_assert(length > 0);
 

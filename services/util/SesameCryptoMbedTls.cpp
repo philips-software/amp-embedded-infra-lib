@@ -76,6 +76,9 @@ namespace services
         mbedtls_ecp_group_init(&group);
         really_assert(mbedtls_ecp_group_load(&group, MBEDTLS_ECP_DP_SECP256R1) == 0);
 
+        mbedtls_ecdh_init(&context);
+        really_assert(mbedtls_ecdh_setup(&context, group.id) == 0);
+
         mbedtls_mpi_init(&privateKey);
         mbedtls_ecp_point dsaPublicKey;
         mbedtls_ecp_point_init(&dsaPublicKey);
@@ -91,6 +94,7 @@ namespace services
     EcSecP256r1DsaSignerMbedTls::~EcSecP256r1DsaSignerMbedTls()
     {
         mbedtls_mpi_free(&privateKey);
+        mbedtls_ecdh_free(&context);
         mbedtls_ecp_group_free(&group);
     }
 
