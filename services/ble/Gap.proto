@@ -264,16 +264,14 @@ service GapPeripheral
 
     // Allowed states: standby
     // Expected response: GapPeripheralResponse.CurrentState with state advertising
-    // Description: When an advertisement mode is not supported by a platform it results in an assertion.
-    //   If an advertisement mode is not supported by a configuration then it results in an assertion.
+    // Description: If an advertisement mode is not supported by a configuration then it results in an assertion.
     rpc Advertise(AdvertisementMode) returns (Nothing) { option (method_id) = 2; }
 
     // Allowed states: standby, advertising, connected
     // Expected response: GapPeripheralResponse.CurrentState with state standby
     rpc Standby(Nothing) returns (Nothing) { option (method_id) = 3; }
 
-    // Allowed states: standby
-    // Description: Does not assert outside standby; changes take effect on the next GapPeripheral.Advertise call.
+    // Description: Changes take effect on the next GapPeripheral.Advertise call.
     //   Maximum advertisement data length for this method is 28 bytes. Server reserves an additional 3 bytes for flags data with the flag bits 'LE General Discoverable Mode' and 'BR/EDR Not Supported' enabled.
     //   See Core Specification Supplement, Part A, Section 1.3
     //   Server will not check validity of the advertisement data and only maximum length of each field will be passed to BLE stack
@@ -281,8 +279,7 @@ service GapPeripheral
     //   If not set by this method, server will have as advertisement data only flags field.
     rpc SetAdvertisementData(AdvertisementData) returns (Nothing) { option (method_id) = 4; }
 
-    // Allowed states: standby
-    // Description: Does not assert outside standby; changes take effect on the next GapPeripheral.Advertise call.
+    // Description: Changes take effect on the next GapPeripheral.Advertise call.
     //   Maximum scan response length for this method is 13 bytes. Server reserves 18 bytes for streaming service uuids. Scan Response is only possible with scannable advertisements
     //   Server will not check validity of the scan response data and only maximum length of each field will be passed to BLE stack
     //   If set, the scan response data remains in effect until it is overwritten or the device is rebooted.
