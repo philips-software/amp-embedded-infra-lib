@@ -22,7 +22,7 @@ namespace services
         auto requests = std::move(deferredRequests);
         deferredRequests.clear();
 
-        for (auto& [proxy, onRequest] : requests)
+        for (const auto& [proxy, onRequest] : requests)
             onRequest(*proxy);
     }
 
