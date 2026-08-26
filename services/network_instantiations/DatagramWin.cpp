@@ -442,7 +442,8 @@ namespace services
             if (observer->version == toVersion)
                 ++expectedWriters;
 
-        assert(expectedWriters != 0);
+        if (expectedWriters == 0)
+            return;
 
         for (auto& observer : observers)
             if (observer->version == toVersion)
