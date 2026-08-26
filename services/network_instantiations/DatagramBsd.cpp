@@ -289,7 +289,7 @@ namespace services
 
         if (socketAdditional != -1)
         {
-            uint16_t port = std::holds_alternative<Udpv4Socket>(local) ? std::get<Udpv4Socket>(local).second : std::get<Udpv6Socket>(local).second;
+            uint16_t port = GetPort(local);
             sockaddr_storage address6{};
             auto address6Size = FillSocketAddress(AnyAddressSocket(AF_INET6, port), address6);
             auto result6 = bind(socketAdditional, reinterpret_cast<sockaddr*>(&address6), address6Size);

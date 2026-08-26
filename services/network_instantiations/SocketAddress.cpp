@@ -10,12 +10,12 @@ namespace services::detail
 
     int AddressFamily(const UdpSocket& socket)
     {
-        return std::holds_alternative<Udpv6Socket>(socket) ? AF_INET6 : AF_INET;
+        return AddressFamily(GetVersion(socket));
     }
 
     int AddressFamily(const IPAddress& address)
     {
-        return std::holds_alternative<IPv6Address>(address) ? AF_INET6 : AF_INET;
+        return AddressFamily(GetVersion(address));
     }
 
     UdpSocket AnyAddressSocket(int family, uint16_t port)

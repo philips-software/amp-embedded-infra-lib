@@ -316,7 +316,7 @@ namespace services
 
         if (socketAdditional != INVALID_SOCKET)
         {
-            uint16_t port = std::holds_alternative<Udpv4Socket>(local) ? std::get<Udpv4Socket>(local).second : std::get<Udpv6Socket>(local).second;
+            uint16_t port = GetPort(local);
             sockaddr_storage address6{};
             auto address6Size = FillSocketAddress(AnyAddressSocket(AF_INET6, port), address6);
             auto result6 = bind(socketAdditional, reinterpret_cast<sockaddr*>(&address6), address6Size);
@@ -439,7 +439,7 @@ namespace services
     {
         assert(writers.empty());
 
-        auto toVersion = std::holds_alternative<Udpv6Socket>(to) ? IPVersions::ipv6 : IPVersions::ipv4;
+        auto toVersion = GetVersion(to);
 
         expectedWriters = 0;
         for (auto& observer : observers)
@@ -455,14 +455,14 @@ namespace services
 
     DatagramExchangeMultiple::Observer::Observer(DatagramExchangeMultiple& parent, DatagramFactoryWithLocalIpBinding& factory, IPAddress local, uint16_t port, IPVersions versions)
         : parent(parent)
-        , version(std::holds_alternative<IPv6Address>(local) ? IPVersions::ipv6 : IPVersions::ipv4)
+        , version(GetVersion(local))
     {
         exchange = factory.Listen(*this, local, port, versions);
     }
 
     DatagramExchangeMultiple::Observer::Observer(DatagramExchangeMultiple& parent, DatagramFactoryWithLocalIpBinding& factory, IPAddress local, IPVersions versions)
         : parent(parent)
-        , version(std::holds_alternative<IPv6Address>(local) ? IPVersions::ipv6 : IPVersions::ipv4)
+        , version(GetVersion(local))
     {
         exchange = factory.Listen(*this, local, versions);
     }
@@ -476,14 +476,14 @@ namespace services
 
     DatagramExchangeMultiple::Observer::Observer(DatagramExchangeMultiple& parent, DatagramFactoryWithLocalIpBinding& factory, IPAddress local, UdpSocket remote)
         : parent(parent)
-        , version(std::holds_alternative<Udpv6Socket>(remote) ? IPVersions::ipv6 : IPVersions::ipv4)
+        , version(GetVersion(remote))
     {
         exchange = factory.Connect(*this, local, remote);
     }
 
     DatagramExchangeMultiple::Observer::Observer(DatagramExchangeMultiple& parent, DatagramFactoryWithLocalIpBinding& factory, UdpSocket local, UdpSocket remote)
         : parent(parent)
-        , version(std::holds_alternative<Udpv6Socket>(remote) ? IPVersions::ipv6 : IPVersions::ipv4)
+        , version(GetVersion(remote))
     {
         exchange = factory.Connect(*this, local, remote);
     }
