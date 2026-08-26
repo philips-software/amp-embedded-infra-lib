@@ -123,6 +123,7 @@ service GattClient
     // Read/write operations are sequential; wait for GattClientResponse.OperationComplete before issuing the next.
     rpc ReadCharacteristic(Handle) returns (Nothing) { option (method_id) = 5; }
     rpc WriteCharacteristic(AttributeData) returns (Nothing) { option (method_id) = 6; }
+    // OperationComplete indicates the request was processed by the GATT client, but does not guarantee success on the GATT server side
     rpc WriteCharacteristicWithoutResponse(AttributeData) returns (Nothing) { option (method_id) = 7; }
     rpc ReadCharacteristicDescriptor(Handle) returns (Nothing) { option (method_id) = 8; }
     rpc WriteCharacteristicDescriptor(AttributeData) returns (Nothing) { option (method_id) = 9; }
