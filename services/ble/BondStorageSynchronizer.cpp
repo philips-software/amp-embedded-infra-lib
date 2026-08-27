@@ -73,6 +73,7 @@ namespace services
 
     void BondStorageSynchronizerImpl::AllocateInteractableBondStorage(uint32_t size)
     {
+        // TODO: This doesn't prevent two interactors of same role from being created. Do we care?
         interactableBondStorage += size;
         really_assert(interactableBondStorage <= maxNumberOfBonds);
     }
