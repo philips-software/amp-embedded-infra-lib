@@ -35,6 +35,11 @@ namespace services
         bondStorageSynchroniser.MarkAsRecentlyUsed(role, address);
     }
 
+    std::optional<services::Bond> BondStorageInteractor::GetBond(services::GapAddress address)
+    {
+        return bondStorageSynchroniser.GetBond(role, address);
+    }
+
     void BondStorageInteractor::RemoveBond(services::GapAddress address)
     {
         bondStorageSynchroniser.RemoveBond(role, address);

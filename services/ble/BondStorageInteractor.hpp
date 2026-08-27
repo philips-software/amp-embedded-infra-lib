@@ -13,6 +13,7 @@ namespace services
         void AddBond(const services::Bond& bond);
         void UpdateBondName(services::GapAddress address, infra::BoundedConstString name);
         void MarkAsRecentlyUsed(services::GapAddress address);
+        std::optional<services::Bond> GetBond(services::GapAddress address);
         void RemoveBond(services::GapAddress address);
         void RemoveAllBonds();
         void IterateBondedDevices(const infra::Function<void(const services::Bond&)>& onBond);
