@@ -143,22 +143,26 @@ service GattClient
 
     // Expected response: GattClientResponse.OperationComplete
     // Additional responses: GattClientResponse.ReadCharacteristicResponse
-    // Description: Read/write operations are sequential; wait for GattClientResponse.OperationComplete before issuing the next.
+    // Description: Reads the value of a characteristic from the GATT server.
     rpc ReadCharacteristic(Handle) returns (Nothing) { option (method_id) = 5; }
 
     // Expected response: GattClientResponse.OperationComplete
+    // Description: Writes the value of a characteristic to the GATT server.
     rpc WriteCharacteristic(AttributeData) returns (Nothing) { option (method_id) = 6; }
 
     // Expected response: GattClientResponse.OperationComplete
-    // Description: OperationComplete indicates the request was processed by the GATT client,
+    // Description: Writes the value of a characteristic to the GATT server without requiring a response.
+    //  OperationComplete indicates the request was processed by the GATT client,
     //   but does not guarantee success on the GATT server side.
     rpc WriteCharacteristicWithoutResponse(AttributeData) returns (Nothing) { option (method_id) = 7; }
 
     // Expected response: GattClientResponse.OperationComplete
     // Additional responses: GattClientResponse.ReadDescriptorResponse
+    // Description: Reads the value of a descriptor from the GATT server.
     rpc ReadDescriptor(Handle) returns (Nothing) { option (method_id) = 8; }
 
     // Expected response: GattClientResponse.OperationComplete
+    // Description: Writes the value of a descriptor to the GATT server.
     rpc WriteDescriptor(AttributeData) returns (Nothing) { option (method_id) = 9; }
 
     // Description: Must be called for every GattClientResponse.IndicationReceived to acknowledge the indication.
@@ -174,27 +178,35 @@ service GattClientResponse
     rpc MtuSizeExchangeComplete(MtuSize) returns (Nothing) { option (method_id) = 1; }
 
     // Triggered by: GattClient.StartServiceDiscovery (for each discovered service)
+    // Description: Reports a single discovered service, including its UUID and handle range.
     rpc ServiceDiscovered(Service) returns (Nothing) { option (method_id) = 2; }
 
     // Triggered by: GattClient.StartServiceDiscovery (on completion)
+    // Description: Signals that service discovery has finished.
     rpc ServiceDiscoveryComplete(Nothing) returns (Nothing) { option (method_id) = 3; }
 
     // Triggered by: GattClient.StartCharacteristicDiscovery (for each discovered characteristic)
+    // Description: Reports a single discovered characteristic, including its UUID, handles, and properties.
     rpc CharacteristicDiscovered(Characteristic) returns (Nothing) { option (method_id) = 4; }
 
     // Triggered by: GattClient.StartCharacteristicDiscovery (on completion)
+    // Description: Signals that characteristic discovery has finished.
     rpc CharacteristicDiscoveryComplete(Nothing) returns (Nothing) { option (method_id) = 5; }
 
     // Triggered by: GattClient.StartDescriptorDiscovery (for each discovered descriptor)
+    // Description: Reports a single discovered descriptor, including its UUID and handle.
     rpc DescriptorDiscovered(Descriptr) returns (Nothing) { option (method_id) = 6; }
 
     // Triggered by: GattClient.StartDescriptorDiscovery (on completion)
+    // Description: Signals that descriptor discovery has finished.
     rpc DescriptorDiscoveryComplete(Nothing) returns (Nothing) { option (method_id) = 7; }
 
     // Triggered by: GattClient.ReadCharacteristic
+    // Description: Returns the value read from the characteristic.
     rpc ReadCharacteristicResponse(ReadResult) returns (Nothing) { option (method_id) = 8; }
 
     // Triggered by: GattClient.ReadDescriptor
+    // Description: Returns the value read from the descriptor.
     rpc ReadDescriptorResponse(ReadResult) returns (Nothing) { option (method_id) = 9; }
 
     // Triggered by: GattClient.ReadCharacteristic, GattClient.WriteCharacteristic, GattClient.WriteCharacteristicWithoutResponse, GattClient.ReadDescriptor, GattClient.WriteDescriptor
@@ -202,9 +214,10 @@ service GattClientResponse
     rpc OperationComplete(OperationResult) returns (Nothing) { option (method_id) = 10; }
 
     // Triggered by: Remote GATT server sending an indication
-    // Description: Must be acknowledged by calling GattClient.IndicationDone.
+    // Description: Indicates that an attribute value has changed on the GATT server, and must be acknowledged by the client.
     rpc IndicationReceived(AttributeData) returns (Nothing) { option (method_id) = 11; }
 
     // Triggered by: Remote GATT server sending a notification
+    // Description: Notifies that an attribute value has changed on the GATT server.
     rpc NotificationReceived(AttributeData) returns (Nothing) { option (method_id) = 12; }
 }
