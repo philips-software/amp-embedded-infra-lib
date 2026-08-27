@@ -16,6 +16,8 @@ namespace services
         void RemoveBond(services::GapAddress address);
         void RemoveAllBonds();
         void IterateBondedDevices(const infra::Function<void(const services::Bond&)>& onBond);
+
+        // TODO: There's still some abiguity on what these mean and what they represent
         uint32_t GetNumberOfBonds() const;
         uint32_t GetMaxNumberOfBonds() const;
 

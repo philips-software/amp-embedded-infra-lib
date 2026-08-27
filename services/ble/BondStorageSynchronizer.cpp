@@ -9,6 +9,7 @@ namespace services
         bondStorage.BondStorageSynchronizerCreated(*this);
         absoluteBondStorage.BondStorageSynchronizerCreated(*this);
 
+        // TODO: Should use the minimum between the two storages
         really_assert(bondStorage.GetMaxNumberOfBonds() >= absoluteBondStorage.GetMaxNumberOfBonds());
 
         SyncBondStorages();
@@ -27,6 +28,11 @@ namespace services
     void BondStorageSynchronizerImpl::MarkAsRecentlyUsed(Role role, const services::GapAddress& address)
     {
         bondStorage.MarkAsRecentlyUsed(role, address);
+    }
+
+    std::optional<services::Bond> BondStorageSynchronizerImpl::GetBond(Role role, const services::GapAddress& address) const
+    {
+        return bondStorage.GetBond(role, address);
     }
 
     void BondStorageSynchronizerImpl::RemoveBond(Role role, const services::GapAddress& address)

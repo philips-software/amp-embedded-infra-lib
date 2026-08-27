@@ -8,16 +8,21 @@ namespace services
         , bondStorageSynchroniser(bondStorageSynchroniser)
         , maxNumberOfBonds(maxNumberOfBonds)
     {
-        // TODO: This does not account for multiple roles being active.
+        // TODO: This does not account for multiple interactors being active.
         really_assert(maxNumberOfBonds <= bondStorageSynchroniser.GetMaxNumberOfBonds());
     }
 
     void BondStorageInteractor::AddBond(const services::Bond& bond)
     {
+        if (bondStorageSynchroniser.GetBond(role, bond.address).has_value())
+            // TODO: Should we update the name in this case?
+            // TODO: This should never occur? Do we care about that?
+            return;
+
         if (GetNumberOfBonds() >= maxNumberOfBonds)
             RemoveLeastRecentlyUsedBond();
-        really_assert(GetNumberOfBonds() < maxNumberOfBonds);
 
+        really_assert(GetNumberOfBonds() < maxNumberOfBonds);
         bondStorageSynchroniser.AddBond(role, bond);
     }
 
@@ -53,7 +58,7 @@ namespace services
 
     uint32_t BondStorageInteractor::GetMaxNumberOfBonds() const
     {
-        return bondStorageSynchroniser.GetMaxNumberOfBonds();
+        return maxNumberOfBonds;
     }
 
     void BondStorageInteractor::RemoveLeastRecentlyUsedBond()

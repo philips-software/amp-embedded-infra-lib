@@ -43,13 +43,21 @@ TEST_F(BondStorageInteractorTest, construction_checks_max_number_of_bonds)
 
 TEST_F(BondStorageInteractorTest, add_bond_is_forwarded_with_role)
 {
+    EXPECT_CALL(bondStorageSynchroniser, GetBond(role, bond1.address)).WillOnce(testing::Return(std::optional<services::Bond>{}));
     EXPECT_CALL(bondStorageSynchroniser, GetNumberOfBondsForRole(role)).WillRepeatedly(testing::Return(1));
     EXPECT_CALL(bondStorageSynchroniser, AddBond(role, bond1));
     interactor.AddBond(bond1);
 }
 
+TEST_F(BondStorageInteractorTest, add_bond_is_ignored_when_bond_already_exists)
+{
+    EXPECT_CALL(bondStorageSynchroniser, GetBond(role, bond1.address)).WillOnce(testing::Return(std::optional<services::Bond>{ bond1 }));
+    interactor.AddBond(bond1);
+}
+
 TEST_F(BondStorageInteractorTest, add_bond_removes_least_recently_used_bond_when_storage_is_full)
 {
+    EXPECT_CALL(bondStorageSynchroniser, GetBond(role, bond2.address)).WillOnce(testing::Return(std::optional<services::Bond>{}));
     EXPECT_CALL(bondStorageSynchroniser, GetNumberOfBondsForRole(role))
         .WillOnce(testing::Return(maxNumberOfBonds))
         .WillOnce(testing::Return(maxNumberOfBonds - 1));
@@ -100,8 +108,7 @@ TEST_F(BondStorageInteractorTest, get_number_of_bonds_is_forwarded_with_role)
     EXPECT_THAT(interactor.GetNumberOfBonds(), testing::Eq(2u));
 }
 
-TEST_F(BondStorageInteractorTest, get_max_number_of_bonds_is_forwarded)
+TEST_F(BondStorageInteractorTest, get_max_number_of_bonds_returns_configured_maximum)
 {
-    EXPECT_CALL(bondStorageSynchroniser, GetMaxNumberOfBonds()).WillOnce(testing::Return(maxNumberOfBonds));
     EXPECT_THAT(interactor.GetMaxNumberOfBonds(), testing::Eq(maxNumberOfBonds));
 }

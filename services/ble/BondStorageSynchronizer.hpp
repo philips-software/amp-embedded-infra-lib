@@ -18,6 +18,7 @@ namespace services
         virtual void AddBond(Role role, const services::Bond& bond) = 0;
         virtual void UpdateBondName(Role role, const services::GapAddress& address, infra::BoundedConstString name) = 0;
         virtual void MarkAsRecentlyUsed(Role role, const services::GapAddress& address) = 0;
+        virtual std::optional<services::Bond> GetBond(Role role, const services::GapAddress& address) const = 0;
         virtual void RemoveBond(Role role, const services::GapAddress& address) = 0;
         virtual void RemoveAllBondsForRole(Role role) = 0;
         virtual void RemoveAllBonds() = 0;
@@ -79,6 +80,7 @@ namespace services
         void AddBond(Role role, const services::Bond& bond) override;
         void UpdateBondName(Role role, const services::GapAddress& address, infra::BoundedConstString name) override;
         void MarkAsRecentlyUsed(Role role, const services::GapAddress& address) override;
+        std::optional<services::Bond> GetBond(Role role, const services::GapAddress& address) const override;
         void RemoveBond(Role role, const services::GapAddress& address) override;
         void RemoveAllBondsForRole(Role role) override;
         void RemoveAllBonds() override;

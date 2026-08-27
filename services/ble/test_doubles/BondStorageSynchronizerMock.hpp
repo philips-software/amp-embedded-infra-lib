@@ -44,6 +44,7 @@ namespace services
         MOCK_METHOD(void, AddBond, (Role role, const services::Bond& bond), (override));
         MOCK_METHOD(void, UpdateBondName, (Role role, const services::GapAddress& address, infra::BoundedConstString name), (override));
         MOCK_METHOD(void, MarkAsRecentlyUsed, (Role role, const services::GapAddress& address), (override));
+        MOCK_METHOD(std::optional<services::Bond>, GetBond, (Role role, const services::GapAddress& address), (const, override));
         MOCK_METHOD(void, RemoveBond, (Role role, const services::GapAddress& address), (override));
         MOCK_METHOD(void, RemoveAllBondsForRole, (Role role), (override));
         MOCK_METHOD(void, RemoveAllBonds, (), (override));

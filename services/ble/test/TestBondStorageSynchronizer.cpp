@@ -145,6 +145,12 @@ TEST_F(BondStorageSynchronizerTestWithConstruction, mark_as_recently_used_is_for
     bondStorageSynchronizer.MarkAsRecentlyUsed(services::Role::peripheral, gapAddress1);
 }
 
+TEST_F(BondStorageSynchronizerTestWithConstruction, get_bond_is_forwarded_to_bond_storage)
+{
+    EXPECT_CALL(bondStorage, GetBond(services::Role::peripheral, gapAddress1)).WillOnce(testing::Return(std::optional<services::Bond>{ bond1 }));
+    EXPECT_THAT(bondStorageSynchronizer.GetBond(services::Role::peripheral, gapAddress1), testing::Eq(std::optional<services::Bond>{ bond1 }));
+}
+
 TEST_F(BondStorageSynchronizerTestWithConstruction, remove_bond_is_forwarded_to_both_storages)
 {
     EXPECT_CALL(absoluteStorage, RemoveBond(gapAddress1));
