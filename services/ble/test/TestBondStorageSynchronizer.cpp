@@ -16,8 +16,8 @@ public:
 
     void ExpectGetMaxNumberOfBonds()
     {
-        EXPECT_CALL(absoluteStorage, GetMaxNumberOfBonds()).WillOnce(testing::Return(maxNumberOfBonds));
-        EXPECT_CALL(bondStorage, GetMaxNumberOfBonds()).WillOnce(testing::Return(maxNumberOfBonds));
+        EXPECT_CALL(absoluteStorage, GetMaxNumberOfBonds()).Times(2).WillRepeatedly(testing::Return(maxNumberOfBonds));
+        EXPECT_CALL(bondStorage, GetMaxNumberOfBonds()).Times(2).WillRepeatedly(testing::Return(maxNumberOfBonds));
     }
 
     static services::GapAddress MakeGapAddress(hal::MacAddress address)
@@ -177,11 +177,22 @@ TEST_F(BondStorageSynchronizerTestWithConstruction, remove_all_bonds_is_forwarde
     bondStorageSynchronizer.RemoveAllBonds();
 }
 
-TEST_F(BondStorageSynchronizerTestWithConstruction, get_max_number_of_bonds_is_forwarded_to_absolute_storage)
+TEST_F(BondStorageSynchronizerTestWithConstruction, get_max_number_of_bonds_returns_minimum_of_both_storages)
 {
-    EXPECT_CALL(absoluteStorage, GetMaxNumberOfBonds()).WillOnce(testing::Return(maxNumberOfBonds));
     EXPECT_THAT(bondStorageSynchronizer.GetMaxNumberOfBonds(), testing::Eq(maxNumberOfBonds));
 }
+
+TEST_F(BondStorageSynchronizerTestWithConstruction, allocate_interactable_bond_storage_accepts_allocations_up_to_the_maximum)
+{
+    bondStorageSynchronizer.AllocateInteractableBondStorage(maxNumberOfBonds);
+}
+
+#ifndef EMIL_MUTATION_TESTING
+TEST_F(BondStorageSynchronizerTestWithConstruction, allocate_interactable_bond_storage_asserts_when_exceeding_the_maximum)
+{
+    EXPECT_DEATH(bondStorageSynchronizer.AllocateInteractableBondStorage(maxNumberOfBonds + 1), "");
+}
+#endif
 
 TEST_F(BondStorageSynchronizerTestWithConstruction, get_number_of_bonds_for_role_is_forwarded_to_bond_storage)
 {

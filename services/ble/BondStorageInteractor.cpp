@@ -3,13 +3,12 @@
 namespace services
 {
 
-    BondStorageInteractor::BondStorageInteractor(Role role, BondStorageSynchronizer& bondStorageSynchroniser, uint32_t maxNumberOfBonds)
+    BondStorageInteractor::BondStorageInteractor(Role role, BondStorageSynchronizer& bondStorageSynchroniser, uint32_t maxBondsForThisRole)
         : role(role)
         , bondStorageSynchroniser(bondStorageSynchroniser)
-        , maxNumberOfBonds(maxNumberOfBonds)
+        , maxBondsForThisRole(maxBondsForThisRole)
     {
-        // TODO: This does not account for multiple interactors being active.
-        really_assert(maxNumberOfBonds <= bondStorageSynchroniser.GetMaxNumberOfBonds());
+        bondStorageSynchroniser.AllocateInteractableBondStorage(maxBondsForThisRole);
     }
 
     void BondStorageInteractor::AddBond(const services::Bond& bond)
@@ -19,10 +18,10 @@ namespace services
             // TODO: This should never occur? Do we care about that?
             return;
 
-        if (GetNumberOfBonds() >= maxNumberOfBonds)
+        if (GetNumberOfBonds() >= maxBondsForThisRole)
             RemoveLeastRecentlyUsedBond();
 
-        really_assert(GetNumberOfBonds() < maxNumberOfBonds);
+        really_assert(GetNumberOfBonds() < maxBondsForThisRole);
         bondStorageSynchroniser.AddBond(role, bond);
     }
 
@@ -58,7 +57,7 @@ namespace services
 
     uint32_t BondStorageInteractor::GetMaxNumberOfBonds() const
     {
-        return maxNumberOfBonds;
+        return maxBondsForThisRole;
     }
 
     void BondStorageInteractor::RemoveLeastRecentlyUsedBond()

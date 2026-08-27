@@ -5,11 +5,11 @@ namespace services
     BondStorageSynchronizerImpl::BondStorageSynchronizerImpl(BondStorageAbsolute& absoluteBondStorage, BondStorage& bondStorage)
         : absoluteBondStorage(absoluteBondStorage)
         , bondStorage(bondStorage)
+        , maxNumberOfBonds(std::min(absoluteBondStorage.GetMaxNumberOfBonds(), bondStorage.GetMaxNumberOfBonds()))
     {
         bondStorage.BondStorageSynchronizerCreated(*this);
         absoluteBondStorage.BondStorageSynchronizerCreated(*this);
 
-        // TODO: Should use the minimum between the two storages
         really_assert(bondStorage.GetMaxNumberOfBonds() >= absoluteBondStorage.GetMaxNumberOfBonds());
 
         SyncBondStorages();
@@ -63,12 +63,18 @@ namespace services
 
     uint32_t BondStorageSynchronizerImpl::GetMaxNumberOfBonds() const
     {
-        return absoluteBondStorage.GetMaxNumberOfBonds();
+        return maxNumberOfBonds;
     }
 
     void BondStorageSynchronizerImpl::IterateBondedDevices(Role role, const infra::Function<void(const services::Bond&)>& onBond)
     {
         bondStorage.IterateBondedDevices(role, onBond);
+    }
+
+    void BondStorageSynchronizerImpl::AllocateInteractableBondStorage(uint32_t size)
+    {
+        interactableBondStorage += size;
+        really_assert(interactableBondStorage <= maxNumberOfBonds);
     }
 
     void BondStorageSynchronizerImpl::SyncBondStorages()
@@ -85,13 +91,7 @@ namespace services
                     bondStorage.GetBond(Role::peripheral, address).has_value();
 
                 if (!bondIsStored)
-                {
-                    if (hardcodedRole.has_value())
-                        // Could we create the bond here?
-                        LOG_AND_ABORT_NOT_IMPLEMENTED();
-                    else
-                        absoluteBondStorage.RemoveBond(address);
-                }
+                    absoluteBondStorage.RemoveBond(address);
             });
     }
 }

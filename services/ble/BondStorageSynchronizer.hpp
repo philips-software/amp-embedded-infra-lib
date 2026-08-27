@@ -24,6 +24,7 @@ namespace services
         virtual void RemoveAllBonds() = 0;
         virtual uint32_t GetNumberOfBondsForRole(Role role) const = 0;
         virtual uint32_t GetMaxNumberOfBonds() const = 0;
+        virtual void AllocateInteractableBondStorage(uint32_t size) = 0;
 
         // Iteration is in least recently used order, i.e. the first bond returned is the least recently used one.
         virtual void IterateBondedDevices(Role role, const infra::Function<void(const services::Bond&)>& onBond) = 0;
@@ -87,6 +88,7 @@ namespace services
         uint32_t GetNumberOfBondsForRole(Role role) const override;
         uint32_t GetMaxNumberOfBonds() const override;
         void IterateBondedDevices(Role role, const infra::Function<void(const services::Bond&)>& onBond) override;
+        void AllocateInteractableBondStorage(uint32_t size) override;
 
     private:
         void SyncBondStorages();
@@ -94,7 +96,9 @@ namespace services
     private:
         BondStorageAbsolute& absoluteBondStorage;
         BondStorage& bondStorage;
-        std::optional<services::Role> hardcodedRole; // TODO: Remove? Still needs tests and impl
+
+        uint32_t maxNumberOfBonds;
+        uint32_t interactableBondStorage;
     };
 }
 

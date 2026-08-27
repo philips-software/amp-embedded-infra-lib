@@ -32,12 +32,12 @@ public:
 
     infra::Execute execute{ [this]()
         {
-            EXPECT_CALL(bondStorageSynchroniser, GetMaxNumberOfBonds()).WillOnce(testing::Return(maxNumberOfBonds));
+            EXPECT_CALL(bondStorageSynchroniser, AllocateInteractableBondStorage(maxNumberOfBonds));
         } };
     services::BondStorageInteractor interactor{ role, bondStorageSynchroniser, maxNumberOfBonds };
 };
 
-TEST_F(BondStorageInteractorTest, construction_checks_max_number_of_bonds)
+TEST_F(BondStorageInteractorTest, construction_allocates_interactable_bond_storage)
 {
 }
 

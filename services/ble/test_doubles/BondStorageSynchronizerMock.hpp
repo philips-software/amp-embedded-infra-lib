@@ -50,6 +50,7 @@ namespace services
         MOCK_METHOD(void, RemoveAllBonds, (), (override));
         MOCK_METHOD(uint32_t, GetNumberOfBondsForRole, (Role role), (const, override));
         MOCK_METHOD(uint32_t, GetMaxNumberOfBonds, (), (const, override));
+        MOCK_METHOD(void, AllocateInteractableBondStorage, (uint32_t size), (override));
         MOCK_METHOD(void, IterateBondedDevices, (Role role, const infra::Function<void(const services::Bond&)>& onBond), (override));
     };
 }
