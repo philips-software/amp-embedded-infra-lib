@@ -183,7 +183,7 @@ service GattClientResponse
 
     // Triggered by: GattClient.StartServiceDiscovery (on completion)
     // Description: Signals that service discovery has finished.
-    rpc ServiceDiscoveryComplete(Nothing) returns (Nothing) { option (method_id) = 3; }
+    rpc ServiceDiscoveryComplete(OperationResult) returns (Nothing) { option (method_id) = 3; }
 
     // Triggered by: GattClient.StartCharacteristicDiscovery (for each discovered characteristic)
     // Description: Reports a single discovered characteristic, including its UUID, handles, and properties.
@@ -191,7 +191,7 @@ service GattClientResponse
 
     // Triggered by: GattClient.StartCharacteristicDiscovery (on completion)
     // Description: Signals that characteristic discovery has finished.
-    rpc CharacteristicDiscoveryComplete(Nothing) returns (Nothing) { option (method_id) = 5; }
+    rpc CharacteristicDiscoveryComplete(OperationResult) returns (Nothing) { option (method_id) = 5; }
 
     // Triggered by: GattClient.StartDescriptorDiscovery (for each discovered descriptor)
     // Description: Reports a single discovered descriptor, including its UUID and handle.
@@ -199,7 +199,7 @@ service GattClientResponse
 
     // Triggered by: GattClient.StartDescriptorDiscovery (on completion)
     // Description: Signals that descriptor discovery has finished.
-    rpc DescriptorDiscoveryComplete(Nothing) returns (Nothing) { option (method_id) = 7; }
+    rpc DescriptorDiscoveryComplete(OperationResult) returns (Nothing) { option (method_id) = 7; }
 
     // Triggered by: GattClient.ReadCharacteristic
     // Description: Returns the value read from the characteristic.
