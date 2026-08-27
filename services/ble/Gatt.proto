@@ -118,6 +118,7 @@ service GattClient
 
     // Expected response: GattClientResponse.MtuSizeExchangeComplete
     // Description: Requests the MTU size to be increased from the default, for better throughput.
+    //   May only be called once per connection.
     //   The effective MTU size is implementation defined.
     rpc MtuSizeExchangeRequest(Nothing) returns (Nothing) { option (method_id) = 1; }
 
