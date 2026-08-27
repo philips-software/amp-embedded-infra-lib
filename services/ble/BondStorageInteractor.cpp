@@ -19,6 +19,8 @@ namespace services
             return;
 
         if (GetNumberOfBonds() >= maxBondsForThisRole)
+            // Note: This will also remove the bond even in the unlikely
+            // scenario where it's currently connected.
             RemoveLeastRecentlyUsedBond();
 
         really_assert(GetNumberOfBonds() < maxBondsForThisRole);
