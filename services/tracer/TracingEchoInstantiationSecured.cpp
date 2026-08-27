@@ -5,7 +5,7 @@ namespace main_
 {
     TracingEchoOnSesameSecured::TracingEchoOnSesameSecured(Sesame::CobsStorageBase& storage, infra::BoundedVector<uint8_t>& securedSendBuffer, infra::BoundedVector<uint8_t>& securedReceiveBuffer, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::SesameSecured::KeyMaterial& keyMaterial, services::Tracer& tracer, const services::EchoErrorPolicy& echoErrorPolicy, services::SesameInitializer& initializer)
         : cobs(storage.cobsSendStorage, storage.cobsReceivedMessage, serialCommunication)
-        , windowed(storage.windowedReceivedMessage, storage.windowedReceiveBuffers, cobs, initializer)
+        , windowed(storage.windowedReceivedMessage, storage.windowedReceiveBuffers, cobs, tracer, initializer)
         , secured(securedSendBuffer, securedReceiveBuffer, windowed, keyMaterial)
         , echo(serializerFactory, echoErrorPolicy, tracer, secured)
     {}
