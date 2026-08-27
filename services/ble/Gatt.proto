@@ -77,7 +77,7 @@ message ReadResult
 enum OperationStatus
 {
     success = 0;
-    // Returned when WriteWithoutResponse can't be processed due to a busy connection. The operation can be retried.
+    // Returned when WriteCharacteristicWithoutResponse can't be processed due to a busy connection. The operation can be retried.
     retry = 1;
     error = 2;
 }
