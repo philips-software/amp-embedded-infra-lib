@@ -62,7 +62,8 @@ message Characteristic
     uint32 properties = 4;
 }
 
-message CharacteristicDescriptor
+//'Descriptor' keyword is not allowed by Echo code generator
+message Descriptr
 {
     bytes uuid = 1 [(bytes_size) = 16];
     Handle handle = 2;
@@ -132,8 +133,8 @@ service GattClient
     //   The handle range should be the service's start and end handles.
     rpc StartCharacteristicDiscovery(HandleRange) returns (Nothing) { option (method_id) = 3; }
 
-    // Expected response: GattClientResponse.CharacteristicDescriptorDiscoveryComplete
-    // Additional responses: zero or more GattClientResponse.CharacteristicDescriptorDiscovered
+    // Expected response: GattClientResponse.DescriptorDiscoveryComplete
+    // Additional responses: zero or more GattClientResponse.DescriptorDiscovered
     // Description: Discovers all descriptors within the given handle range of a characteristic.
     //   The handle range spans from the characteristic's value handle to the next characteristic's declaration handle - 1
     //   (or the service's end handle for the last characteristic in a service).
@@ -154,10 +155,10 @@ service GattClient
 
     // Expected response: GattClientResponse.OperationComplete
     // Additional responses: GattClientResponse.ReadDescriptorResponse
-    rpc ReadCharacteristicDescriptor(Handle) returns (Nothing) { option (method_id) = 8; }
+    rpc ReadDescriptor(Handle) returns (Nothing) { option (method_id) = 8; }
 
     // Expected response: GattClientResponse.OperationComplete
-    rpc WriteCharacteristicDescriptor(AttributeData) returns (Nothing) { option (method_id) = 9; }
+    rpc WriteDescriptor(AttributeData) returns (Nothing) { option (method_id) = 9; }
 
     // Description: Must be called for every GattClientResponse.IndicationReceived to acknowledge the indication.
     rpc IndicationDone(Nothing) returns (Nothing) { option (method_id) = 10; }
@@ -184,18 +185,18 @@ service GattClientResponse
     rpc CharacteristicDiscoveryComplete(Nothing) returns (Nothing) { option (method_id) = 5; }
 
     // Triggered by: GattClient.StartDescriptorDiscovery (for each discovered descriptor)
-    rpc CharacteristicDescriptorDiscovered(CharacteristicDescriptor) returns (Nothing) { option (method_id) = 6; }
+    rpc DescriptorDiscovered(Descriptr) returns (Nothing) { option (method_id) = 6; }
 
     // Triggered by: GattClient.StartDescriptorDiscovery (on completion)
-    rpc CharacteristicDescriptorDiscoveryComplete(Nothing) returns (Nothing) { option (method_id) = 7; }
+    rpc DescriptorDiscoveryComplete(Nothing) returns (Nothing) { option (method_id) = 7; }
 
     // Triggered by: GattClient.ReadCharacteristic
     rpc ReadCharacteristicResponse(ReadResult) returns (Nothing) { option (method_id) = 8; }
 
-    // Triggered by: GattClient.ReadCharacteristicDescriptor
+    // Triggered by: GattClient.ReadDescriptor
     rpc ReadDescriptorResponse(ReadResult) returns (Nothing) { option (method_id) = 9; }
 
-    // Triggered by: GattClient.ReadCharacteristic, GattClient.WriteCharacteristic, GattClient.WriteCharacteristicWithoutResponse, GattClient.ReadCharacteristicDescriptor, GattClient.WriteCharacteristicDescriptor
+    // Triggered by: GattClient.ReadCharacteristic, GattClient.WriteCharacteristic, GattClient.WriteCharacteristicWithoutResponse, GattClient.ReadDescriptor, GattClient.WriteDescriptor
     // Description: Reports the outcome of a read or write operation.
     rpc OperationComplete(OperationResult) returns (Nothing) { option (method_id) = 10; }
 
