@@ -17,6 +17,7 @@ namespace services
 
     void BondStorageSynchronizerImpl::AddBond(Role role, const services::Bond& bond)
     {
+        // TODO: What if this bond exists for the other role?
         bondStorage.AddBond(role, bond);
     }
 
@@ -74,8 +75,8 @@ namespace services
     void BondStorageSynchronizerImpl::AllocateInteractableBondStorage(uint32_t size)
     {
         // TODO: This doesn't prevent two interactors of same role from being created. Do we care?
+        really_assert(size <= maxNumberOfBonds - interactableBondStorage);
         interactableBondStorage += size;
-        really_assert(interactableBondStorage <= maxNumberOfBonds);
     }
 
     void BondStorageSynchronizerImpl::SyncBondStorages()

@@ -98,7 +98,7 @@ namespace services
         BondStorage& bondStorage;
 
         uint32_t maxNumberOfBonds;
-        uint32_t interactableBondStorage;
+        uint32_t interactableBondStorage = 0;
     };
 }
 
