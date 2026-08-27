@@ -26,14 +26,14 @@ namespace services
     {
         tracer.Trace() << "SesameWindowed::ForwardingReceivedMessage ";
 
-        std::size_t index = 0;
+        // std::size_t index = 0;
 
-        while (index != reader.Available())
-        {
-            auto range = reader.PeekContiguousRange(index);
-            tracer.Continue() << infra::AsHex(range);
-            index += range.size();
-        }
+        // while (index != reader.Available())
+        // {
+        //     auto range = reader.PeekContiguousRange(index);
+        //     tracer.Continue() << infra::AsHex(range);
+        //     index += range.size();
+        // }
     }
 
     void TracingSesameWindowed::SendingInit(uint16_t newWindow)
