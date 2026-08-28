@@ -515,15 +515,26 @@ TEST_F(SesameWindowedTestDouble, window_release_after_second_release_window)
     ReceiveReleaseWindow(50);
 }
 
-TEST_F(SesameWindowedTestDouble, window_is_released_after_message_has_been_processed)
+TEST_F(SesameWindowedTestDouble, window_is_released_while_message_is_processed_when_other_party_is_nearly_out_of_window)
 {
+    // build; consume the window of the other party, leaving too little for the message requested below
     ReceiveInitResponse(24);
 
-    ExpectReceivedMessageAndSaveReader("abcd");
-    ReceiveMessage("abcd");
+    ExpectRequestSendMessageForMessage(7, { 1, 2, 3, 4, 5, 6 });
+    ExpectSendMessageStreamAvailable({ 1, 2, 3, 4, 5, 6 });
+    communication->RequestSendMessage(6);
 
-    ExpectRequestSendMessageForReleaseWindow(14);
-    savedReader = nullptr;
+    ExpectRequestSendMessageForMessage(7, { 1, 2, 3, 4, 5, 6 });
+    ExpectSendMessageStreamAvailable({ 1, 2, 3, 4, 5, 6 });
+    communication->RequestSendMessage(6);
+
+    communication->RequestSendMessage(6);
+
+    // operate; the window held by the message being processed is not enough to reach the release threshold,
+    // but without releasing what is already available neither party would be able to send anything
+    ExpectReceivedMessageAndSaveReader("abcd");
+    ExpectRequestSendMessageForReleaseWindow(7);
+    ReceiveMessage("abcd");
 }
 
 TEST_F(SesameWindowedTestDouble, no_new_message_after_ResetReading)
@@ -531,9 +542,10 @@ TEST_F(SesameWindowedTestDouble, no_new_message_after_ResetReading)
     ReceiveInitResponse(24);
 
     ExpectReceivedMessageAndSaveReader("abcd");
+    ExpectRequestSendMessageForReleaseWindow(7);
     ReceiveMessage("abcd");
 
-    // ExpectRequestSendMessageForReleaseWindow(14);
+    // ExpectRequestSendMessageForReleaseWindow(7);
     communication->ResetReading();
     savedReader = nullptr;
 
@@ -585,4 +597,15 @@ TEST_F(SesameWindowedTestTriple, MaxSendMessageSize_for_3_way_buffer)
     EXPECT_EQ(9, (services::SesameWindowed::bufferSizeForMessage<6, services::SesameCobs::EncodedMessageSize>));
 
     observer.Detach();
+}
+
+TEST_F(SesameWindowedTestTriple, window_is_released_after_message_has_been_processed)
+{
+    ReceiveInitResponse(24);
+
+    ExpectReceivedMessageAndSaveReader("abcd");
+    ReceiveMessage("abcd");
+
+    ExpectRequestSendMessageForReleaseWindow(14);
+    savedReader = nullptr;
 }

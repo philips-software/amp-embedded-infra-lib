@@ -148,7 +148,13 @@ size of the biggest packet should be increased by 5 to accommodate for a `Releas
 2. A sender should only send a message when enough window remains to also send a a `ReleaseWindow`
 packet. Otherwise, if both peers consume each other's window, the protocol would enter a deadlock
 since neither peer is allowed to send a `ReleaseWindow` packet.
-3. If enough buffer space is available, a sender should avoid consuming the entire peer's
+3. Withholding a `ReleaseWindow` under rule 1 is only safe while the peer still has enough window
+left to send a message. Once the window left to the peer drops below the size of one message plus
+a `ReleaseWindow` packet, any freed up buffer space must be advertised immediately. Otherwise the
+peer is unable to send anything, including the `ReleaseWindow` packet that would free up window on
+this side, and the protocol deadlocks. This situation arises when a host holds on to received
+packets while processing them, since that buffer space is not yet available for advertisement.
+4. If enough buffer space is available, a sender should avoid consuming the entire peer's
 buffer with one message. This would result in the sender sending a big message, the peer
 processing that message and responding with a window release message, for which the sender had
 to wait until it sends its next message. Instead, a sender should send packets of only half the peer's

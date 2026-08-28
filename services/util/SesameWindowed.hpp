@@ -92,6 +92,9 @@ namespace services
         void TryForwardReceivedMessage();
         void ForwardReceivedMessage(uint16_t encodedSize);
         void SetNextState();
+        bool ShouldReleaseWindow() const;
+        uint16_t WindowSliceSize() const;
+        void ConsumeWindowAvailableToOther(std::size_t encodedSize);
 
     private:
         class State
@@ -175,6 +178,7 @@ namespace services
         std::optional<infra::LimitedStreamReaderWithRewinding::WithInput<infra::BoundedDequeInputStreamReader>> currentReceiveMessageReader;
         infra::AccessedBySharedPtr readerAccess;
         uint16_t otherAvailableWindow{ 0 };
+        uint16_t windowAvailableToOther{ 0 };
         uint16_t maxUsableBufferSize{ 0 };
         uint16_t releasedWindow{ 0 };
         bool requestingInitialization{ false };
