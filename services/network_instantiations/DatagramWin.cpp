@@ -619,19 +619,18 @@ namespace services
         ULONG size(0);
         auto result = GetAdaptersAddresses(AF_INET6, 0, nullptr, nullptr, &size);
         assert(result == ERROR_BUFFER_OVERFLOW);
-        std::unique_ptr<IP_ADAPTER_ADDRESSES, void (*)(void*)> adapterInfo(
+        std::unique_ptr<IP_ADAPTER_ADDRESSES, void (*)(void*)> originalAdapterInfo(
             reinterpret_cast<IP_ADAPTER_ADDRESSES*>(std::malloc(size)),
             [](void* p)
             {
                 std::free(p);
             });
-        auto originalAdapterInfo = adapterInfo;
-        result = GetAdaptersAddresses(AF_INET6, 0, nullptr, adapterInfo, &size);
+        result = GetAdaptersAddresses(AF_INET6, 0, nullptr, originalAdapterInfo.get(), &size);
         assert(result == NO_ERROR);
 
         std::vector<std::pair<IPv6Address, uint32_t>> addresses;
 
-        for (; adapterInfo != nullptr; adapterInfo = adapterInfo->Next)
+        for (auto adapterInfo = originalAdapterInfo.get(); adapterInfo != nullptr; adapterInfo = adapterInfo->Next)
             for (auto ipAddresses = adapterInfo->FirstUnicastAddress; ipAddresses != nullptr; ipAddresses = ipAddresses->Next)
                 if (adapterInfo->OperStatus == IfOperStatusUp && ipAddresses->Address.lpSockaddr != nullptr && ipAddresses->Address.lpSockaddr->sa_family == AF_INET6)
                 {
