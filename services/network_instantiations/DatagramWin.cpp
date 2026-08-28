@@ -627,7 +627,10 @@ namespace services
         ULONG size(0);
         auto result = GetAdaptersAddresses(AF_INET6, 0, nullptr, nullptr, &size);
         assert(result == ERROR_BUFFER_OVERFLOW);
-        auto adapterInfo = reinterpret_cast<IP_ADAPTER_ADDRESSES*>(malloc(size));
+        std::unique_ptr<IP_ADAPTER_ADDRESSES, void(*)(void*)> adapterInfo(
+            reinterpret_cast<IP_ADAPTER_ADDRESSES*>(std::malloc(size)),
+            [](void* p) { std::free(p); }
+        );
         auto originalAdapterInfo = adapterInfo;
         result = GetAdaptersAddresses(AF_INET6, 0, nullptr, adapterInfo, &size);
         assert(result == NO_ERROR);
@@ -643,8 +646,6 @@ namespace services
                     std::memcpy(networkOrder.data(), &address.sin6_addr, sizeof(address.sin6_addr));
                     addresses.emplace_back(services::FromNetworkOrder(networkOrder), adapterInfo->Ipv6IfIndex);
                 }
-
-        free(originalAdapterInfo);
 
         return addresses;
     }
