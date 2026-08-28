@@ -276,11 +276,8 @@ namespace services
             setsockopt(socketAdditional, SOL_SOCKET, SO_REUSEADDR, option.data(), option.size());
 
             DWORD v6Only = 1;
-            if (setsockopt(socketAdditional, IPPROTO_IPV6, IPV6_V6ONLY, reinterpret_cast<char*>(&v6Only), sizeof(v6Only)) == SOCKET_ERROR)
-                std::abort();
-
-            if (ioctlsocket(socketAdditional, FIONBIO, &nonBlock) == SOCKET_ERROR)
-                std::abort();
+            really_assert(setsockopt(socketAdditional, IPPROTO_IPV6, IPV6_V6ONLY, reinterpret_cast<char*>(&v6Only), sizeof(v6Only)) != SOCKET_ERROR);
+            really_assert(ioctlsocket(socketAdditional, FIONBIO, &nonBlock) != SOCKET_ERROR);
         }
 
         UpdateEventFlags();
