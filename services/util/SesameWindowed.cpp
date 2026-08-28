@@ -108,6 +108,11 @@ namespace services
             });
     }
 
+    uint16_t SesameWindowed::WindowAvailableToOther() const
+    {
+        return windowAvailableToOther;
+    }
+
     void SesameWindowed::ReceivedInit(uint16_t newWindow)
     {}
 

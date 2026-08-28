@@ -4,6 +4,7 @@
 #include "hal/interfaces/SerialCommunication.hpp"
 #include "protobuf/echo/EchoErrorPolicy.hpp"
 #include "services/tracer/Tracer.hpp"
+#include "services/tracer/TracingSesameWindowed.hpp"
 #include "services/util/EchoInstantiationSecured.hpp"
 #include "services/util/EchoPolicyDiffieHellman.hpp"
 #include "services/util/EchoPolicySymmetricKey.hpp"
@@ -27,7 +28,7 @@ namespace main_
         void Stop(const infra::Function<void()>& onDone) override;
 
         services::SesameCobs cobs;
-        services::SesameWindowed windowed;
+        services::TracingSesameWindowed windowed;
         services::SesameSecured::WithCryptoMbedTls secured;
         services::TracingEchoOnSesame echo;
 

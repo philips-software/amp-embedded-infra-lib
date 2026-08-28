@@ -69,6 +69,8 @@ namespace services
         void ResetReading() override;
 
     protected:
+        uint16_t WindowAvailableToOther() const;
+
         virtual void ReceivedInit(uint16_t newWindow);
         virtual void ReceivedInitResponse(uint16_t newWindow);
         virtual void ReceivedReleaseWindow(uint16_t oldWindow, uint16_t newWindow);
