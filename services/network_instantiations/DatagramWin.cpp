@@ -1,5 +1,6 @@
 #include "services/network_instantiations/DatagramWin.hpp"
 #include "infra/stream/StdVectorInputStream.hpp"
+#include "infra/util/LogAndAbort.hpp"
 #include "services/network_instantiations/EventDispatcherWithNetworkWin.hpp"
 #include "services/network_instantiations/SocketAddress.hpp"
 #include <cstring>
@@ -516,17 +517,17 @@ namespace services
 
     infra::ByteRange DatagramExchangeMultiple::MultipleWriter::SaveState(std::size_t marker)
     {
-        std::abort();
+        LOG_AND_ABORT_NOT_IMPLEMENTED();
     }
 
     void DatagramExchangeMultiple::MultipleWriter::RestoreState(infra::ByteRange range)
     {
-        std::abort();
+        LOG_AND_ABORT_NOT_IMPLEMENTED();
     }
 
     infra::ByteRange DatagramExchangeMultiple::MultipleWriter::Overwrite(std::size_t marker)
     {
-        std::abort();
+        LOG_AND_ABORT_NOT_IMPLEMENTED();
     }
 
     UdpOnAllInterfaces::UdpOnAllInterfaces(EventDispatcherWithNetwork& eventDispatcher)
