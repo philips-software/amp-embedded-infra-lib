@@ -97,18 +97,12 @@ namespace services
 
         BOOL result = WSACloseEvent(event);
         assert(result == TRUE);
-        result = closesocket(socket);
-        if (result == SOCKET_ERROR)
-        {
-            DWORD error = GetLastError();
-            std::abort();
-        }
+        really_assert(closesocket(socket) != SOCKET_ERROR);
 
         if (socketAdditional != INVALID_SOCKET)
         {
             WSACloseEvent(eventAdditional);
-            if (closesocket(socketAdditional) == SOCKET_ERROR)
-                std::abort();
+            really_assert(closesocket(socketAdditional) != SOCKET_ERROR);
         }
     }
 
@@ -137,8 +131,7 @@ namespace services
         if (received == SOCKET_ERROR)
         {
             auto error = WSAGetLastError();
-            if (error != WSAEWOULDBLOCK && error != WSAEMSGSIZE)
-                std::abort();
+            really_assert(error == WSAEWOULDBLOCK || error == WSAEMSGSIZE);
             return;
         }
 
@@ -172,8 +165,7 @@ namespace services
 
         if (sent == SOCKET_ERROR)
         {
-            if (WSAGetLastError() != WSAEWOULDBLOCK)
-                std::abort();
+            really_assert(WSAGetLastError() == WSAEWOULDBLOCK);
             return;
         }
 
@@ -259,13 +251,11 @@ namespace services
         if (family == AF_INET6)
         {
             DWORD v6Only = 1;
-            if (setsockopt(socket, IPPROTO_IPV6, IPV6_V6ONLY, reinterpret_cast<char*>(&v6Only), sizeof(v6Only)) == SOCKET_ERROR)
-                std::abort();
+            really_assert(setsockopt(socket, IPPROTO_IPV6, IPV6_V6ONLY, reinterpret_cast<char*>(&v6Only), sizeof(v6Only)) != SOCKET_ERROR);
         }
 
         ULONG nonBlock = 1;
-        if (ioctlsocket(socket, FIONBIO, &nonBlock) == SOCKET_ERROR)
-            std::abort();
+        really_assert(ioctlsocket(socket, FIONBIO, &nonBlock) != SOCKET_ERROR);
 
         if (dualStack)
         {
@@ -627,10 +617,12 @@ namespace services
         ULONG size(0);
         auto result = GetAdaptersAddresses(AF_INET6, 0, nullptr, nullptr, &size);
         assert(result == ERROR_BUFFER_OVERFLOW);
-        std::unique_ptr<IP_ADAPTER_ADDRESSES, void(*)(void*)> adapterInfo(
+        std::unique_ptr<IP_ADAPTER_ADDRESSES, void (*)(void*)> adapterInfo(
             reinterpret_cast<IP_ADAPTER_ADDRESSES*>(std::malloc(size)),
-            [](void* p) { std::free(p); }
-        );
+            [](void* p)
+            {
+                std::free(p);
+            });
         auto originalAdapterInfo = adapterInfo;
         result = GetAdaptersAddresses(AF_INET6, 0, nullptr, adapterInfo, &size);
         assert(result == NO_ERROR);

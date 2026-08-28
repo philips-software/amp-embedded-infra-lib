@@ -89,12 +89,8 @@ namespace services
         if (HasObserver())
             GetObserver().Detach();
 
-        int result = close(socket);
-        if (result == -1)
-            std::abort();
-
-        if (socketAdditional != -1 && close(socketAdditional) == -1)
-            std::abort();
+        really_assert(close(socket) != -1);
+        really_assert(socketAdditional == -1 || close(socketAdditional) != -1);
     }
 
     bool DatagramBsd::SendBufferEmpty() const
@@ -126,8 +122,7 @@ namespace services
         auto received = recvfrom(socketToReceive, reinterpret_cast<char*>(receiveBuffer.data()), receiveBuffer.size(), 0, reinterpret_cast<sockaddr*>(&fromAddress), &fromAddressSize);
         if (received == -1)
         {
-            if (errno != EWOULDBLOCK && errno != EMSGSIZE)
-                std::abort();
+            really_assert(errno == EWOULDBLOCK || errno == EMSGSIZE);
             return;
         }
 
@@ -160,8 +155,7 @@ namespace services
 
         if (sent == -1)
         {
-            if (errno != EWOULDBLOCK)
-                std::abort();
+            really_assert(errno == EWOULDBLOCK);
             return;
         }
 
@@ -229,33 +223,27 @@ namespace services
         assert(socket != -1);
 
         int flag = 1;
-        if (setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)) == -1)
-            std::abort();
+        really_assert(setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)) != -1);
 
         if (family == AF_INET6)
         {
             int v6Only = 1;
-            if (setsockopt(socket, IPPROTO_IPV6, IPV6_V6ONLY, &v6Only, sizeof(v6Only)) == -1)
-                std::abort();
+            really_assert(setsockopt(socket, IPPROTO_IPV6, IPV6_V6ONLY, &v6Only, sizeof(v6Only)) != -1);
         }
 
-        if (fcntl(socket, F_SETFL, fcntl(socket, F_GETFL, 0) | O_NONBLOCK) == -1)
-            std::abort();
+        really_assert(fcntl(socket, F_SETFL, fcntl(socket, F_GETFL, 0) | O_NONBLOCK) != -1);
 
         if (dualStack)
         {
             socketAdditional = ::socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
             assert(socketAdditional != -1);
 
-            if (setsockopt(socketAdditional, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)) == -1)
-                std::abort();
+            really_assert(setsockopt(socketAdditional, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag)) != -1);
 
             int v6Only = 1;
-            if (setsockopt(socketAdditional, IPPROTO_IPV6, IPV6_V6ONLY, &v6Only, sizeof(v6Only)) == -1)
-                std::abort();
+            really_assert(setsockopt(socketAdditional, IPPROTO_IPV6, IPV6_V6ONLY, &v6Only, sizeof(v6Only)) != -1);
 
-            if (fcntl(socketAdditional, F_SETFL, fcntl(socketAdditional, F_GETFL, 0) | O_NONBLOCK) == -1)
-                std::abort();
+            really_assert(fcntl(socketAdditional, F_SETFL, fcntl(socketAdditional, F_GETFL, 0) | O_NONBLOCK) != -1);
         }
     }
 
