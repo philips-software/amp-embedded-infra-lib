@@ -1,5 +1,6 @@
 #include "services/network_instantiations/DatagramBsd.hpp"
 #include "infra/stream/StdVectorInputStream.hpp"
+#include "infra/util/ReallyAssert.hpp"
 #include "services/network_instantiations/EventDispatcherWithNetworkBsd.hpp"
 #include "services/network_instantiations/SocketAddress.hpp"
 #include <cstring>
