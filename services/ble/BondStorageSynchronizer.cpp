@@ -1,4 +1,5 @@
 #include "services/ble/BondStorageSynchronizer.hpp"
+#include "services/ble/Gap.hpp"
 
 namespace services
 {
@@ -17,7 +18,8 @@ namespace services
 
     void BondStorageSynchronizerImpl::AddBond(Role role, const services::Bond& bond)
     {
-        // TODO: What if this bond exists for the other role?
+        really_assert(!bondStorage.GetBond(services::Role::central, bond.address).has_value());
+        really_assert(!bondStorage.GetBond(services::Role::peripheral, bond.address).has_value());
         bondStorage.AddBond(role, bond);
     }
 

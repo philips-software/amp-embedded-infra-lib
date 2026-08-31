@@ -129,9 +129,26 @@ TEST_F(BondStorageSynchronizerTestWithConstruction, construction_notifies_bondst
 
 TEST_F(BondStorageSynchronizerTestWithConstruction, add_bond_is_forwarded_to_bond_storage)
 {
+    EXPECT_CALL(bondStorage, GetBond(services::Role::central, bond1.address)).WillOnce(testing::Return(std::optional<services::Bond>{}));
+    EXPECT_CALL(bondStorage, GetBond(services::Role::peripheral, bond1.address)).WillOnce(testing::Return(std::optional<services::Bond>{}));
     EXPECT_CALL(bondStorage, AddBond(services::Role::peripheral, bond1));
     bondStorageSynchronizer.AddBond(services::Role::peripheral, bond1);
 }
+
+#ifndef EMIL_MUTATION_TESTING
+TEST_F(BondStorageSynchronizerTestWithConstruction, add_bond_asserts_when_bond_already_exists_for_central_role)
+{
+    ON_CALL(bondStorage, GetBond(services::Role::central, bond1.address)).WillByDefault(testing::Return(std::optional<services::Bond>{ bond1 }));
+    EXPECT_DEATH(bondStorageSynchronizer.AddBond(services::Role::peripheral, bond1), "");
+}
+
+TEST_F(BondStorageSynchronizerTestWithConstruction, add_bond_asserts_when_bond_already_exists_for_peripheral_role)
+{
+    ON_CALL(bondStorage, GetBond(services::Role::central, bond1.address)).WillByDefault(testing::Return(std::optional<services::Bond>{}));
+    ON_CALL(bondStorage, GetBond(services::Role::peripheral, bond1.address)).WillByDefault(testing::Return(std::optional<services::Bond>{ bond1 }));
+    EXPECT_DEATH(bondStorageSynchronizer.AddBond(services::Role::peripheral, bond1), "");
+}
+#endif
 
 TEST_F(BondStorageSynchronizerTestWithConstruction, update_bond_name_is_forwarded_to_bond_storage)
 {

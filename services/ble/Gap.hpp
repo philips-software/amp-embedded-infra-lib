@@ -59,10 +59,8 @@ namespace services
 
     enum class Role : uint8_t
     {
-        unknown = 0,
-        central,
+        central = 0,
         peripheral,
-        both
     };
 
     struct GapConnectionParameters
