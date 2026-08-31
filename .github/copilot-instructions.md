@@ -5,10 +5,12 @@ This repository is a set of C++ libraries and headers that provide heap-less, ST
 ## Build System Conventions
 
 **CMake Presets**: Use CMake presets extensively. Key presets:
+
 - `host` - Host tooling/tests (use for development)
 - `coverage` - Test coverage analysis
 
 **EmIL Patterns**: All CMake uses EmIL conventions:
+
 ```cmake
 emil_build_for(target BOOL EMIL_BUILD_TESTS)
 emil_generate_artifacts(TARGET target HEX MAP)
@@ -16,6 +18,7 @@ emil_exclude_from_clang_format(directory)
 ```
 
 **Target Conditionals**: Build logic heavily uses target conditionals:
+
 ```cmake
 if ("${TARGET_MCU}" STREQUAL stm32wb55)
 if (TARGET_MCU_VENDOR STREQUAL ti)
@@ -28,6 +31,7 @@ if (TARGET_MCU_VENDOR STREQUAL ti)
 **Code Style and Formatting**: MUST follow the `./documents/modules/ROOT/pages/CodingStandard.adoc`. Use `clang-format` for formatting; configured via `.clang-format`.
 
 **Build Commands**:
+
 ```bash
 # List available presets
 cmake --list-presets
@@ -44,9 +48,11 @@ ctest --preset host -R <test_name>
 ```
 
 **Pull Requests and Commits**:
+
 - Follow Conventional Commit style from `.github/CONTRIBUTING.md` when proposing pull request titles and when creating commit messages.
 
 **VS Code Integration**:
+
 - CMake extension manages presets via status bar
 - TestMate C++ for micro tests
 - Gcov Viewer for coverage analysis
@@ -82,7 +88,7 @@ ctest --preset host -R <test_name>
 - Prefer `infra` containers (e.g., `infra::Bounded*`, `infra::Intrusive*`) over standard library containers, except in host applications and tests.
 - When declaring a class with base classes, place the colon and inheritance list on a separate line with proper indentation.
 - Constructors with one parameter must be an explicit constructor.
-- Declare `protected: ~MyBase() = default;` on base classes instead of a public `virtual` destructor. A virtual destructor is only allowed when objects are actually deleted through a base pointer.
+- Declare `protected: ~MyBase() = default;` on base classes instead of a public `virtual` destructor. A virtual destructor is only allowed when objects are actually deleted through a base pointer. As per C++ Core Guideline C.35.
 - No exceptions shall be used in the codebase, except in Host applications and tests.
 - Avoid protected members in classes except test classes; prefer private members with public/protected accessors if needed.
 - Use SFINAE to restrict template parameters if the template is only valid for specific types.
