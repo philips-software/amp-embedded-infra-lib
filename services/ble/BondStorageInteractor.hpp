@@ -19,8 +19,7 @@ namespace services
         void IterateBondedDevices(const infra::Function<void(const services::Bond&)>& onBond);
         uint32_t GetNumberOfBonds() const;
         uint32_t GetMaxNumberOfBonds() const;
-
-    private:
+        bool Full() const;
         void RemoveLeastRecentlyUsedBond();
 
     private:

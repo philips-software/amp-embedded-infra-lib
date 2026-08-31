@@ -13,18 +13,8 @@ namespace services
 
     void BondStorageInteractor::AddBond(const services::Bond& bond)
     {
-        if (bondStorageSynchroniser.GetBond(role, bond.address).has_value())
-            // TODO: Should we update the name in this case?
-            // TODO: This should never occur? Do we care about that?
-            return;
-
-        if (GetNumberOfBonds() >= maxBondsForThisRole)
-            // Note: This will also remove the bond even in the unlikely
-            // scenario where it's currently connected.
-            RemoveLeastRecentlyUsedBond();
-
-        // TODO: Temporary verbose assert
-        really_assert_with_msg(GetNumberOfBonds() < maxBondsForThisRole, "AddBond: %d >= %d", GetNumberOfBonds(), maxBondsForThisRole);
+        really_assert_with_msg(GetNumberOfBonds() < maxBondsForThisRole, "AddBond: %d >= %d", GetNumberOfBonds(), maxBondsForThisRole); // TODO: Temporary verbose assert
+        really_assert(!bondStorageSynchroniser.GetBond(role, bond.address).has_value());
         bondStorageSynchroniser.AddBond(role, bond);
     }
 
@@ -66,6 +56,11 @@ namespace services
     uint32_t BondStorageInteractor::GetMaxNumberOfBonds() const
     {
         return maxBondsForThisRole;
+    }
+
+    bool BondStorageInteractor::Full() const
+    {
+        return GetNumberOfBonds() >= maxBondsForThisRole;
     }
 
     void BondStorageInteractor::RemoveLeastRecentlyUsedBond()
