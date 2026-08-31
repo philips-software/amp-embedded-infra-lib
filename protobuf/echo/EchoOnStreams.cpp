@@ -143,6 +143,9 @@ namespace services
         ReleaseReader();
     }
 
+    void EchoOnStreams::RetainingReader(std::size_t readerAvailable, std::size_t bufferedAvailable, bool readerReferenced, bool deserializing, bool receivingMessage)
+    {}
+
     void EchoOnStreams::TryGrantSend()
     {
         if (!skipNextStream && sendingProxy == nullptr && !sendRequesters.empty())
@@ -218,6 +221,8 @@ namespace services
             bufferedReader.reset();
             readerPtr = nullptr;
         }
+        else if (readerPtr != nullptr)
+            RetainingReader(readerPtr->Available(), bufferedReader->Available(), limitedReaderAccess.Referenced(), methodDeserializer != nullptr, limitedReader != std::nullopt);
     }
 
     void EchoOnStreams::StartReceiveMessage()

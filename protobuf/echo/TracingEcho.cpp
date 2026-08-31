@@ -114,6 +114,13 @@ namespace services
             deserializer = nullptr;
         }
 
+        void TracingEchoOnStreamsDescendantHelper::RetainingReader(std::size_t readerAvailable, std::size_t bufferedAvailable, bool readerReferenced, bool deserializing, bool receivingMessage)
+        {
+            tracer.Trace() << "EchoOnStreams::RetainingReader available: " << readerAvailable << " buffered: " << bufferedAvailable
+                           << " referenced: " << static_cast<uint32_t>(readerReferenced) << " deserializing: " << static_cast<uint32_t>(deserializing)
+                           << " receiving: " << static_cast<uint32_t>(receivingMessage);
+        }
+
         bool TracingEchoOnStreamsDescendantHelper::Serialize(infra::SharedPtr<infra::StreamWriter>&& writer)
         {
             return serializer->Serialize(tracingWriter.Emplace(std::move(writer), *this));
