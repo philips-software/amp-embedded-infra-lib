@@ -88,7 +88,7 @@ ctest --preset host -R <test_name>
 - Prefer `infra` containers (e.g., `infra::Bounded*`, `infra::Intrusive*`) over standard library containers, except in host applications and tests.
 - When declaring a class with base classes, place the colon and inheritance list on a separate line with proper indentation.
 - Constructors with one parameter must be an explicit constructor.
-- Declare `protected: ~MyBase() = default;` on base classes instead of a public `virtual` destructor. A virtual destructor is only allowed when objects are actually deleted through a base pointer. As per C++ Core Guideline C.35.
+- Declare `protected: ~MyBase() = default;` on base classes instead of a public `virtual` destructor. A virtual destructor is only allowed when objects should be deletable through their base pointer. As per C++ Core Guideline C.35.
 - No exceptions shall be used in the codebase, except in Host applications and tests.
 - Avoid protected members in classes except test classes; prefer private members with public/protected accessors if needed.
 - Use SFINAE to restrict template parameters if the template is only valid for specific types.
