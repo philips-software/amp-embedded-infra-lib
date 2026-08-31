@@ -5,12 +5,10 @@ This repository is a set of C++ libraries and headers that provide heap-less, ST
 ## Build System Conventions
 
 **CMake Presets**: Use CMake presets extensively. Key presets:
-
 - `host` - Host tooling/tests (use for development)
 - `coverage` - Test coverage analysis
 
 **EmIL Patterns**: All CMake uses EmIL conventions:
-
 ```cmake
 emil_build_for(target BOOL EMIL_BUILD_TESTS)
 emil_generate_artifacts(TARGET target HEX MAP)
@@ -18,7 +16,6 @@ emil_exclude_from_clang_format(directory)
 ```
 
 **Target Conditionals**: Build logic heavily uses target conditionals:
-
 ```cmake
 if ("${TARGET_MCU}" STREQUAL stm32wb55)
 if (TARGET_MCU_VENDOR STREQUAL ti)
@@ -31,7 +28,6 @@ if (TARGET_MCU_VENDOR STREQUAL ti)
 **Code Style and Formatting**: MUST follow the `./documents/modules/ROOT/pages/CodingStandard.adoc`. Use `clang-format` for formatting; configured via `.clang-format`.
 
 **Build Commands**:
-
 ```bash
 # List available presets
 cmake --list-presets
@@ -48,11 +44,9 @@ ctest --preset host -R <test_name>
 ```
 
 **Pull Requests and Commits**:
-
 - Follow Conventional Commit style from `.github/CONTRIBUTING.md` when proposing pull request titles and when creating commit messages.
 
 **VS Code Integration**:
-
 - CMake extension manages presets via status bar
 - TestMate C++ for micro tests
 - Gcov Viewer for coverage analysis
