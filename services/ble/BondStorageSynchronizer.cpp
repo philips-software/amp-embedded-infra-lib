@@ -11,6 +11,7 @@ namespace services
         bondStorage.BondStorageSynchronizerCreated(*this);
         absoluteBondStorage.BondStorageSynchronizerCreated(*this);
 
+        really_assert(maxNumberOfBonds != 0);
         really_assert(bondStorage.GetMaxNumberOfBonds() >= absoluteBondStorage.GetMaxNumberOfBonds());
 
         SyncBondStorages();

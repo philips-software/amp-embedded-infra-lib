@@ -9,7 +9,9 @@ namespace services
     class BondStorageInteractor
     {
     public:
-        BondStorageInteractor(Role role, BondStorageSynchronizer& bondStorageSynchroniser, uint32_t maxBondsForThisRole = 0);
+        BondStorageInteractor(Role role, BondStorageSynchronizer& bondStorageSynchroniser, uint32_t maxBondsForThisRole);
+        BondStorageInteractor(Role role, BondStorageSynchronizer& bondStorageSynchroniser);
+
         void AddBond(const services::Bond& bond);
         void UpdateBondName(services::GapAddress address, infra::BoundedConstString name);
         void MarkAsRecentlyUsed(services::GapAddress address);

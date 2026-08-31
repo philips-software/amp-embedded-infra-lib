@@ -11,6 +11,11 @@ namespace services
         bondStorageSynchroniser.AllocateInteractableBondStorage(maxBondsForThisRole);
     }
 
+    BondStorageInteractor::BondStorageInteractor(Role role, BondStorageSynchronizer& bondStorageSynchroniser)
+        : BondStorageInteractor(role, bondStorageSynchroniser, bondStorageSynchroniser.GetMaxNumberOfBonds())
+    {
+    }
+
     void BondStorageInteractor::AddBond(const services::Bond& bond)
     {
         really_assert_with_msg(GetNumberOfBonds() < maxBondsForThisRole, "AddBond: %d >= %d", GetNumberOfBonds(), maxBondsForThisRole); // TODO: Temporary verbose assert
