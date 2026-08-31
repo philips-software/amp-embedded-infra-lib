@@ -23,7 +23,8 @@ namespace services
             // scenario where it's currently connected.
             RemoveLeastRecentlyUsedBond();
 
-        really_assert(GetNumberOfBonds() < maxBondsForThisRole);
+        // TODO: Temporary verbose assert
+        really_assert_with_msg(GetNumberOfBonds() < maxBondsForThisRole, "AddBond: %d >= %d", GetNumberOfBonds(), maxBondsForThisRole);
         bondStorageSynchroniser.AddBond(role, bond);
     }
 
