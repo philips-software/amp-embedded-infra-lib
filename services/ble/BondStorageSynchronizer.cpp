@@ -21,6 +21,7 @@ namespace services
 
     void BondStorageSynchronizerImpl::AddBond(Role role, const services::Bond& bond)
     {
+        services::GlobalTracer().Trace() << "=============== Adding bond: " << infra::AsLittleEndianMacAddress(bond.address.address);
         really_assert(!bondStorage.GetBond(services::Role::central, bond.address).has_value());
         really_assert(!bondStorage.GetBond(services::Role::peripheral, bond.address).has_value());
         bondStorage.AddBond(role, bond);
@@ -84,8 +85,23 @@ namespace services
         interactableBondStorage += size;
     }
 
-    void BondStorageSynchronizerImpl::AssertBondStoragesAreInSyncForRole(Role) const
+    void BondStorageSynchronizerImpl::AssertBondStoragesAreInSyncForRole(Role)
     {
+        bondStorage.IterateBondedDevices(Role::central, [this](const services::Bond& bond)
+            {
+                const auto bondIsStored = absoluteBondStorage.IsBondStored(bond.address);
+                really_assert_with_msg(bondIsStored, "Bond not found in absolute storage");
+            });
+
+        absoluteBondStorage.IterateBondedDevices([this](const services::GapAddress& address)
+            {
+                // TODO: This can desync when multiple roles are being updated concurrently
+                const auto bondIsStored =
+                    bondStorage.GetBond(Role::peripheral, address).has_value() ||
+                    bondStorage.GetBond(Role::central, address).has_value();
+                really_assert_with_msg(bondIsStored, "Bond not found in shadow storage");
+            });
+
         // TODO: Do for role specifically.
         services::GlobalTracer().Trace() << "Bonds: shadow " << bondStorage.GetTotalNumberOfBonds() << ", absolute " << absoluteBondStorage.GetNumberOfBonds();
         really_assert_with_msg(bondStorage.GetTotalNumberOfBonds() == absoluteBondStorage.GetNumberOfBonds(),
@@ -98,7 +114,7 @@ namespace services
             {
                 const auto bondIsStored = absoluteBondStorage.IsBondStored(bond.address);
                 if (!bondIsStored)
-                    services::GlobalTracer().Trace() << "Removing bond not stored in absolute storage: " << infra::AsLittleEndianMacAddress(bond.address.address); // TODO: Remove
+                    services::GlobalTracer().Trace() << "================================= Removing bond not stored in absolute storage: " << infra::AsLittleEndianMacAddress(bond.address.address); // TODO: Remove
                 return !bondIsStored;
             });
 
@@ -110,7 +126,7 @@ namespace services
 
                 if (!bondIsStored)
                 {
-                    services::GlobalTracer().Trace() << "Removing bond not stored in shadow storage: " << infra::AsLittleEndianMacAddress(address.address); // TODO: Remove
+                    services::GlobalTracer().Trace() << "================================= Removing bond not stored in shadow storage: " << infra::AsLittleEndianMacAddress(address.address); // TODO: Remove
                     absoluteBondStorage.RemoveBond(address);
                 }
             });
