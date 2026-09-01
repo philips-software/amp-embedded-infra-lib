@@ -1,4 +1,5 @@
 #include "services/ble/BondStorageSynchronizer.hpp"
+#include "hal/interfaces/MacAddress.hpp"
 #include "services/ble/Gap.hpp"
 #include "services/tracer/GlobalTracer.hpp"
 
@@ -95,7 +96,10 @@ namespace services
     {
         bondStorage.RemoveBondIf([this](const services::Bond& bond)
             {
-                return !absoluteBondStorage.IsBondStored(bond.address);
+                const auto bondIsStored = absoluteBondStorage.IsBondStored(bond.address);
+                if (!bondIsStored)
+                    services::GlobalTracer().Trace() << "Removing bond not stored in absolute storage: " << infra::AsLittleEndianMacAddress(bond.address.address); // TODO: Remove
+                return !bondIsStored;
             });
 
         absoluteBondStorage.IterateBondedDevices([this](const services::GapAddress& address)
@@ -105,7 +109,10 @@ namespace services
                     bondStorage.GetBond(Role::peripheral, address).has_value();
 
                 if (!bondIsStored)
+                {
+                    services::GlobalTracer().Trace() << "Removing bond not stored in shadow storage: " << infra::AsLittleEndianMacAddress(address.address); // TODO: Remove
                     absoluteBondStorage.RemoveBond(address);
+                }
             });
     }
 }
