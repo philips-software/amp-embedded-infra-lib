@@ -214,9 +214,8 @@ service GattClientResponse
     rpc OperationComplete(OperationResult) returns (Nothing) { option (method_id) = 10; }
 
     // Triggered by: GattClient.WriteCharacteristicWithoutResponse
-    // Description: Reports whether a write without response command was succesfully sent to the GATT server.
-    //  Success indicates the request was processed by the GATT client,
-    //   but does not guarantee success on the GATT server side.
+    // Description: Reports whether a write without response command was successfully sent to the GATT client.
+    //  Success indicates the request was processed by the GATT client, but does not guarantee success on the GATT server side.
     rpc WriteCharacteristicWithoutResponseComplete(OperationResult) returns (Nothing) { option (method_id) = 13; }
 
     // Triggered by: Remote GATT server sending an indication
