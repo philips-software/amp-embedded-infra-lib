@@ -209,7 +209,7 @@ service GattClientResponse
     // Description: Returns the value read from the descriptor.
     rpc ReadDescriptorResponse(ReadResult) returns (Nothing) { option (method_id) = 9; }
 
-    // Triggered by: GattClient.ReadCharacteristic, GattClient.WriteCharacteristic, GattClient.WriteCharacteristicWithoutResponse, GattClient.ReadDescriptor, GattClient.WriteDescriptor
+    // Triggered by: GattClient.ReadCharacteristic, GattClient.WriteCharacteristic, GattClient.ReadDescriptor, GattClient.WriteDescriptor
     // Description: Reports the outcome of a read or write operation.
     rpc OperationComplete(OperationResult) returns (Nothing) { option (method_id) = 10; }
 
