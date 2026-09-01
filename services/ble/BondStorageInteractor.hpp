@@ -23,6 +23,7 @@ namespace services
         uint32_t GetMaxNumberOfBonds() const;
         bool Full() const;
         void RemoveLeastRecentlyUsedBond();
+        void AssertBondStoragesAreInSync();
 
     private:
         Role role;

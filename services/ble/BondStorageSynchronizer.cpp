@@ -23,7 +23,6 @@ namespace services
         really_assert(!bondStorage.GetBond(services::Role::central, bond.address).has_value());
         really_assert(!bondStorage.GetBond(services::Role::peripheral, bond.address).has_value());
         bondStorage.AddBond(role, bond);
-        AssertNumberOfBonds();
     }
 
     void BondStorageSynchronizerImpl::UpdateBondName(Role role, const services::GapAddress& address, infra::BoundedConstString name)
@@ -45,7 +44,6 @@ namespace services
     {
         absoluteBondStorage.RemoveBond(address);
         bondStorage.RemoveBond(role, address);
-        AssertNumberOfBonds();
     }
 
     void BondStorageSynchronizerImpl::RemoveAllBondsForRole(Role role)
@@ -55,19 +53,16 @@ namespace services
                 absoluteBondStorage.RemoveBond(bond.address);
             });
         bondStorage.RemoveAllBondsForRole(role);
-        AssertNumberOfBonds();
     }
 
     void BondStorageSynchronizerImpl::RemoveAllBonds()
     {
         absoluteBondStorage.RemoveAllBonds();
         bondStorage.RemoveAllBonds();
-        AssertNumberOfBonds();
     }
 
     uint32_t BondStorageSynchronizerImpl::GetNumberOfBondsForRole(Role role) const
     {
-        // AssertNumberOfBonds(); // TODO: Can't do this. The synchroniser doesn't know at which points they should be synced. Expose through interactor?
         return bondStorage.GetNumberOfBondsForRole(role);
     }
 
@@ -88,7 +83,7 @@ namespace services
         interactableBondStorage += size;
     }
 
-    void BondStorageSynchronizerImpl::AssertNumberOfBonds() const
+    void BondStorageSynchronizerImpl::AssertBondStoragesAreInSyncForRole(Role) const
     {
         services::GlobalTracer().Trace() << "Bonds: shadow " << bondStorage.GetTotalNumberOfBonds() << ", absolute " << absoluteBondStorage.GetNumberOfBonds();
         really_assert_with_msg(bondStorage.GetTotalNumberOfBonds() == absoluteBondStorage.GetNumberOfBonds(),

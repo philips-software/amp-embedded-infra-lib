@@ -20,10 +20,10 @@ public:
         EXPECT_CALL(bondStorage, GetMaxNumberOfBonds()).Times(2).WillRepeatedly(testing::Return(maxNumberOfBonds));
     }
 
-    void ExpectAssertNumberOfBonds(uint32_t numberOfBonds = 0)
+    void ExpectAssertBondStoragesAreInSyncForRole(uint32_t numberOfBonds)
     {
-        EXPECT_CALL(bondStorage, GetTotalNumberOfBonds()).WillOnce(testing::Return(numberOfBonds));
-        EXPECT_CALL(absoluteStorage, GetNumberOfBonds()).WillOnce(testing::Return(numberOfBonds));
+        EXPECT_CALL(bondStorage, GetTotalNumberOfBonds()).Times(2).WillRepeatedly(testing::Return(numberOfBonds));
+        EXPECT_CALL(absoluteStorage, GetNumberOfBonds()).Times(2).WillRepeatedly(testing::Return(numberOfBonds));
     }
 
     static services::GapAddress MakeGapAddress(hal::MacAddress address)
@@ -138,7 +138,6 @@ TEST_F(BondStorageSynchronizerTestWithConstruction, add_bond_is_forwarded_to_bon
     EXPECT_CALL(bondStorage, GetBond(services::Role::central, bond1.address)).WillOnce(testing::Return(std::optional<services::Bond>{}));
     EXPECT_CALL(bondStorage, GetBond(services::Role::peripheral, bond1.address)).WillOnce(testing::Return(std::optional<services::Bond>{}));
     EXPECT_CALL(bondStorage, AddBond(services::Role::peripheral, bond1));
-    ExpectAssertNumberOfBonds();
     bondStorageSynchronizer.AddBond(services::Role::peripheral, bond1);
 }
 
@@ -179,7 +178,6 @@ TEST_F(BondStorageSynchronizerTestWithConstruction, remove_bond_is_forwarded_to_
 {
     EXPECT_CALL(absoluteStorage, RemoveBond(gapAddress1));
     EXPECT_CALL(bondStorage, RemoveBond(services::Role::peripheral, gapAddress1));
-    ExpectAssertNumberOfBonds();
     bondStorageSynchronizer.RemoveBond(services::Role::peripheral, gapAddress1);
 }
 
@@ -192,7 +190,6 @@ TEST_F(BondStorageSynchronizerTestWithConstruction, remove_all_bonds_for_role_re
                 onBond(bond1);
             });
     EXPECT_CALL(bondStorage, RemoveAllBondsForRole(services::Role::peripheral));
-    ExpectAssertNumberOfBonds();
     bondStorageSynchronizer.RemoveAllBondsForRole(services::Role::peripheral);
 }
 
@@ -200,7 +197,6 @@ TEST_F(BondStorageSynchronizerTestWithConstruction, remove_all_bonds_is_forwarde
 {
     EXPECT_CALL(absoluteStorage, RemoveAllBonds());
     EXPECT_CALL(bondStorage, RemoveAllBonds());
-    ExpectAssertNumberOfBonds();
     bondStorageSynchronizer.RemoveAllBonds();
 }
 
@@ -218,6 +214,21 @@ TEST_F(BondStorageSynchronizerTestWithConstruction, allocate_interactable_bond_s
 TEST_F(BondStorageSynchronizerTestWithConstruction, allocate_interactable_bond_storage_asserts_when_exceeding_the_maximum)
 {
     EXPECT_DEATH(bondStorageSynchronizer.AllocateInteractableBondStorage(maxNumberOfBonds + 1), "");
+}
+#endif
+
+TEST_F(BondStorageSynchronizerTestWithConstruction, assert_bond_storages_are_in_sync_for_role_passes_when_counts_match)
+{
+    ExpectAssertBondStoragesAreInSyncForRole(2);
+    bondStorageSynchronizer.AssertBondStoragesAreInSyncForRole(services::Role::peripheral);
+}
+
+#ifndef EMIL_MUTATION_TESTING
+TEST_F(BondStorageSynchronizerTestWithConstruction, assert_bond_storages_are_in_sync_for_role_asserts_when_counts_mismatch)
+{
+    ON_CALL(bondStorage, GetTotalNumberOfBonds()).WillByDefault(testing::Return(2));
+    ON_CALL(absoluteStorage, GetNumberOfBonds()).WillByDefault(testing::Return(1));
+    EXPECT_DEATH(bondStorageSynchronizer.AssertBondStoragesAreInSyncForRole(services::Role::peripheral), "");
 }
 #endif
 

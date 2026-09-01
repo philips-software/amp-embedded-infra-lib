@@ -68,6 +68,11 @@ namespace services
         return GetNumberOfBonds() >= maxBondsForThisRole;
     }
 
+    void BondStorageInteractor::AssertBondStoragesAreInSync()
+    {
+        bondStorageSynchroniser.AssertBondStoragesAreInSyncForRole(role);
+    }
+
     void BondStorageInteractor::RemoveLeastRecentlyUsedBond()
     {
         // This removes the least recently used bond.

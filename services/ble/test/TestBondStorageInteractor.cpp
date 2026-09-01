@@ -122,3 +122,9 @@ TEST_F(BondStorageInteractorTest, full_returns_true_when_at_maximum)
     EXPECT_CALL(bondStorageSynchroniser, GetNumberOfBondsForRole(role)).WillOnce(testing::Return(maxNumberOfBonds));
     EXPECT_THAT(interactor.Full(), testing::IsTrue());
 }
+
+TEST_F(BondStorageInteractorTest, assert_bond_storages_are_in_sync_is_forwarded_with_role)
+{
+    EXPECT_CALL(bondStorageSynchroniser, AssertBondStoragesAreInSyncForRole(role));
+    interactor.AssertBondStoragesAreInSync();
+}
