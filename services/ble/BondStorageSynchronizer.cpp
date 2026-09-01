@@ -1,5 +1,6 @@
 #include "services/ble/BondStorageSynchronizer.hpp"
 #include "services/ble/Gap.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -66,6 +67,7 @@ namespace services
 
     uint32_t BondStorageSynchronizerImpl::GetNumberOfBondsForRole(Role role) const
     {
+        // AssertNumberOfBonds(); // TODO: Can't do this. The synchroniser doesn't know at which points they should be synced. Expose through interactor?
         return bondStorage.GetNumberOfBondsForRole(role);
     }
 
@@ -86,9 +88,11 @@ namespace services
         interactableBondStorage += size;
     }
 
-    void BondStorageSynchronizerImpl::AssertNumberOfBonds()
+    void BondStorageSynchronizerImpl::AssertNumberOfBonds() const
     {
-        really_assert(bondStorage.GetTotalNumberOfBonds() == absoluteBondStorage.GetNumberOfBonds());
+        services::GlobalTracer().Trace() << "Bonds: shadow " << bondStorage.GetTotalNumberOfBonds() << ", absolute " << absoluteBondStorage.GetNumberOfBonds();
+        really_assert_with_msg(bondStorage.GetTotalNumberOfBonds() == absoluteBondStorage.GetNumberOfBonds(),
+            "Bond storage desync: shadow %u vs absolute %u", bondStorage.GetTotalNumberOfBonds(), absoluteBondStorage.GetNumberOfBonds());
     }
 
     void BondStorageSynchronizerImpl::SyncBondStorages()

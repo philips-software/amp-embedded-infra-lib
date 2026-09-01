@@ -93,7 +93,7 @@ namespace services
         void AllocateInteractableBondStorage(uint32_t size) override;
 
     private:
-        void AssertNumberOfBonds();
+        void AssertNumberOfBonds() const;
         void SyncBondStorages();
 
     private:
