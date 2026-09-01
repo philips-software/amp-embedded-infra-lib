@@ -47,6 +47,7 @@ namespace services
         virtual void RemoveAllBonds() = 0;
         virtual void RemoveBondIf(const infra::Function<bool(const services::Bond&)>& onBond) = 0;
         virtual uint32_t GetNumberOfBondsForRole(const Role role) const = 0;
+        virtual uint32_t GetTotalNumberOfBonds() const = 0;
         virtual uint32_t GetMaxNumberOfBonds() const = 0;
         virtual std::optional<services::Bond> GetBond(Role role, const services::GapAddress& address) const = 0;
 
@@ -66,6 +67,7 @@ namespace services
         virtual void RemoveBond(const services::GapAddress& address) = 0;
         virtual void RemoveAllBonds() = 0;
         virtual void RemoveBondIf(const infra::Function<bool(const services::GapAddress&)>& onAddress) = 0;
+        virtual uint32_t GetNumberOfBonds() const = 0;
         virtual uint32_t GetMaxNumberOfBonds() const = 0;
         virtual bool IsBondStored(const services::GapAddress& address) const = 0;
         virtual void IterateBondedDevices(const infra::Function<void(const services::GapAddress&)>& onBond) = 0;
@@ -91,6 +93,7 @@ namespace services
         void AllocateInteractableBondStorage(uint32_t size) override;
 
     private:
+        void AssertNumberOfBonds();
         void SyncBondStorages();
 
     private:

@@ -22,6 +22,7 @@ namespace services
         really_assert(!bondStorage.GetBond(services::Role::central, bond.address).has_value());
         really_assert(!bondStorage.GetBond(services::Role::peripheral, bond.address).has_value());
         bondStorage.AddBond(role, bond);
+        AssertNumberOfBonds();
     }
 
     void BondStorageSynchronizerImpl::UpdateBondName(Role role, const services::GapAddress& address, infra::BoundedConstString name)
@@ -43,6 +44,7 @@ namespace services
     {
         absoluteBondStorage.RemoveBond(address);
         bondStorage.RemoveBond(role, address);
+        AssertNumberOfBonds();
     }
 
     void BondStorageSynchronizerImpl::RemoveAllBondsForRole(Role role)
@@ -52,12 +54,14 @@ namespace services
                 absoluteBondStorage.RemoveBond(bond.address);
             });
         bondStorage.RemoveAllBondsForRole(role);
+        AssertNumberOfBonds();
     }
 
     void BondStorageSynchronizerImpl::RemoveAllBonds()
     {
         absoluteBondStorage.RemoveAllBonds();
         bondStorage.RemoveAllBonds();
+        AssertNumberOfBonds();
     }
 
     uint32_t BondStorageSynchronizerImpl::GetNumberOfBondsForRole(Role role) const
@@ -80,6 +84,11 @@ namespace services
         // TODO: This doesn't prevent two interactors of same role from being created. Do we care?
         really_assert(size <= maxNumberOfBonds - interactableBondStorage);
         interactableBondStorage += size;
+    }
+
+    void BondStorageSynchronizerImpl::AssertNumberOfBonds()
+    {
+        really_assert(bondStorage.GetTotalNumberOfBonds() == absoluteBondStorage.GetNumberOfBonds());
     }
 
     void BondStorageSynchronizerImpl::SyncBondStorages()

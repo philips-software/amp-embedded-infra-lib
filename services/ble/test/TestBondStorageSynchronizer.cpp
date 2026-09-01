@@ -20,6 +20,12 @@ public:
         EXPECT_CALL(bondStorage, GetMaxNumberOfBonds()).Times(2).WillRepeatedly(testing::Return(maxNumberOfBonds));
     }
 
+    void ExpectAssertNumberOfBonds(uint32_t numberOfBonds = 0)
+    {
+        EXPECT_CALL(bondStorage, GetTotalNumberOfBonds()).WillOnce(testing::Return(numberOfBonds));
+        EXPECT_CALL(absoluteStorage, GetNumberOfBonds()).WillOnce(testing::Return(numberOfBonds));
+    }
+
     static services::GapAddress MakeGapAddress(hal::MacAddress address)
     {
         return services::GapAddress{ address, services::GapDeviceAddressType::publicAddress };
@@ -132,6 +138,7 @@ TEST_F(BondStorageSynchronizerTestWithConstruction, add_bond_is_forwarded_to_bon
     EXPECT_CALL(bondStorage, GetBond(services::Role::central, bond1.address)).WillOnce(testing::Return(std::optional<services::Bond>{}));
     EXPECT_CALL(bondStorage, GetBond(services::Role::peripheral, bond1.address)).WillOnce(testing::Return(std::optional<services::Bond>{}));
     EXPECT_CALL(bondStorage, AddBond(services::Role::peripheral, bond1));
+    ExpectAssertNumberOfBonds();
     bondStorageSynchronizer.AddBond(services::Role::peripheral, bond1);
 }
 
@@ -172,6 +179,7 @@ TEST_F(BondStorageSynchronizerTestWithConstruction, remove_bond_is_forwarded_to_
 {
     EXPECT_CALL(absoluteStorage, RemoveBond(gapAddress1));
     EXPECT_CALL(bondStorage, RemoveBond(services::Role::peripheral, gapAddress1));
+    ExpectAssertNumberOfBonds();
     bondStorageSynchronizer.RemoveBond(services::Role::peripheral, gapAddress1);
 }
 
@@ -184,6 +192,7 @@ TEST_F(BondStorageSynchronizerTestWithConstruction, remove_all_bonds_for_role_re
                 onBond(bond1);
             });
     EXPECT_CALL(bondStorage, RemoveAllBondsForRole(services::Role::peripheral));
+    ExpectAssertNumberOfBonds();
     bondStorageSynchronizer.RemoveAllBondsForRole(services::Role::peripheral);
 }
 
@@ -191,6 +200,7 @@ TEST_F(BondStorageSynchronizerTestWithConstruction, remove_all_bonds_is_forwarde
 {
     EXPECT_CALL(absoluteStorage, RemoveAllBonds());
     EXPECT_CALL(bondStorage, RemoveAllBonds());
+    ExpectAssertNumberOfBonds();
     bondStorageSynchronizer.RemoveAllBonds();
 }
 
