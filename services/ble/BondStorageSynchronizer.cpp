@@ -85,6 +85,7 @@ namespace services
 
     void BondStorageSynchronizerImpl::AssertBondStoragesAreInSyncForRole(Role) const
     {
+        // TODO: Do for role specifically.
         services::GlobalTracer().Trace() << "Bonds: shadow " << bondStorage.GetTotalNumberOfBonds() << ", absolute " << absoluteBondStorage.GetNumberOfBonds();
         really_assert_with_msg(bondStorage.GetTotalNumberOfBonds() == absoluteBondStorage.GetNumberOfBonds(),
             "Bond storage desync: shadow %u vs absolute %u", bondStorage.GetTotalNumberOfBonds(), absoluteBondStorage.GetNumberOfBonds());
