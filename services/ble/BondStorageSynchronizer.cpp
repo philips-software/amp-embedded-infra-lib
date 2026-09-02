@@ -1,5 +1,6 @@
 #include "services/ble/BondStorageSynchronizer.hpp"
 #include "hal/interfaces/MacAddress.hpp"
+#include "infra/stream/StringOutputStream.hpp"
 #include "services/ble/Gap.hpp"
 #include "services/tracer/GlobalTracer.hpp"
 
@@ -87,19 +88,31 @@ namespace services
 
     void BondStorageSynchronizerImpl::AssertBondStoragesAreInSyncForRole(Role)
     {
+        // TODO: How expansive should this be? Very verbose is useful for development
+
         bondStorage.IterateBondedDevices(Role::central, [this](const services::Bond& bond)
             {
+                infra::StringOutputStream::WithStorage<32> stream;
+                stream << infra::AsLittleEndianMacAddress(bond.address.address);
+
                 const auto bondIsStored = absoluteBondStorage.IsBondStored(bond.address);
-                really_assert_with_msg(bondIsStored, "Bond not found in absolute storage");
+                really_assert_with_msg(bondIsStored, "Bond not found in absolute storage: %.*s",
+                    static_cast<int>(stream.Storage().size()),
+                    stream.Storage().data());
             });
 
         absoluteBondStorage.IterateBondedDevices([this](const services::GapAddress& address)
             {
+                infra::StringOutputStream::WithStorage<32> stream;
+                stream << infra::AsLittleEndianMacAddress(address.address);
+
                 // TODO: This can desync when multiple roles are being updated concurrently
                 const auto bondIsStored =
                     bondStorage.GetBond(Role::peripheral, address).has_value() ||
                     bondStorage.GetBond(Role::central, address).has_value();
-                really_assert_with_msg(bondIsStored, "Bond not found in shadow storage");
+                really_assert_with_msg(bondIsStored, "Bond not found in shadow storage: %.*s",
+                    static_cast<int>(stream.Storage().size()),
+                    stream.Storage().data());
             });
 
         // TODO: Do for role specifically.
