@@ -24,7 +24,16 @@ namespace services
 
     void TracingSesameWindowed::ForwardingReceivedMessage(infra::StreamReaderWithRewinding& reader)
     {
-        tracer.Trace() << "SesameWindowed::ForwardingReceivedMessage size: " << reader.Available();
+        tracer.Trace() << "SesameWindowed::ForwardingReceivedMessage ";
+
+        std::size_t index = 0;
+
+        while (index != reader.Available())
+        {
+            auto range = reader.PeekContiguousRange(index);
+            tracer.Continue() << infra::AsHex(range);
+            index += range.size();
+        }
     }
 
     void TracingSesameWindowed::SendingInit(uint16_t newWindow)
