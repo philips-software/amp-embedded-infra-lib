@@ -54,6 +54,6 @@ namespace services
             tracer.Continue() << *requestedSize;
         else
             tracer.Continue() << "none";
-        tracer.Continue() << " releasedWindow: " << releasedWindow << " otherWindow " << otherWindow << " windowAvailableToOther " << WindowAvailableToOther();
+        tracer.Continue() << " releasedWindow: " << releasedWindow << " otherWindow " << otherWindow;
     }
 }

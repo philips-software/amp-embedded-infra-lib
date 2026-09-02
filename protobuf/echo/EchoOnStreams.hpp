@@ -45,7 +45,6 @@ namespace services
         virtual void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader);
         virtual void ReleaseDeserializer();
         virtual void ResetReading();
-        virtual void RetainingReader(std::size_t readerAvailable, std::size_t bufferedAvailable, bool readerReferenced, bool deserializing, bool receivingMessage);
 
     private:
         void TryGrantSend();

@@ -85,6 +85,59 @@ TEST_F(EchoInstantiationSecuredSymmetricKeyTest, send_multiple_messages)
     ExecuteAllActions();
 }
 
+class EchoInstantiationSecuredSymmetricKeySlicedTest
+    : public testing::Test
+    , public infra::ClockFixture
+    , public EchoInstantiationSecuredSymmetricKey<128, 128>
+{
+public:
+    EchoInstantiationSecuredSymmetricKeySlicedTest()
+    {
+        payload.resize(payload.max_size());
+    }
+
+    void SendSlicedMessage(services::ServiceStubProxy& proxy)
+    {
+        proxy.RequestSend([this, &proxy]()
+            {
+                proxy.MethodBytes(infra::MakeRange(payload));
+            });
+    }
+
+    infra::BoundedVector<uint8_t>::WithMaxSize<64> payload;
+    std::array<services::ServiceStubProxy, 4> slicedMessageProxies{ services::ServiceStubProxy{ leftEcho.echo }, services::ServiceStubProxy{ leftEcho.echo },
+        services::ServiceStubProxy{ leftEcho.echo }, services::ServiceStubProxy{ leftEcho.echo } };
+};
+
+TEST_F(EchoInstantiationSecuredSymmetricKeySlicedTest, sliced_messages_are_received_while_a_method_is_still_executing)
+{
+    bool methodNoParameterInvoked = false;
+    EXPECT_CALL(service, MethodNoParameter()).WillOnce(testing::Invoke([&methodNoParameterInvoked]()
+        {
+            methodNoParameterInvoked = true;
+        }));
+    EXPECT_CALL(service, MethodBytes(testing::_)).Times(slicedMessageProxies.size()).WillRepeatedly(testing::Invoke([this](const infra::BoundedVector<uint8_t>& value)
+        {
+            EXPECT_EQ(payload, value);
+            service.MethodDone();
+        }));
+
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.MethodNoParameter();
+        });
+    for (auto& proxy : slicedMessageProxies)
+        SendSlicedMessage(proxy);
+
+    ExecuteAllActions();
+    ASSERT_TRUE(methodNoParameterInvoked);
+
+    // MethodNoParameter() completes only now, so the first slice of the next message has been
+    // received while the deserializer was still busy
+    service.MethodDone();
+    ExecuteAllActions();
+}
+
 namespace
 {
     template<std::size_t LeftSize, std::size_t RightSize>

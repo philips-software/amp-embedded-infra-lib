@@ -91,7 +91,6 @@ namespace services
             infra::SharedPtr<MethodSerializer> GrantSend(const infra::SharedPtr<MethodSerializer>& serializer);
             infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, infra::SharedPtr<MethodDeserializer>&& deserializer);
             void ReleaseDeserializer();
-            void RetainingReader(std::size_t readerAvailable, std::size_t bufferedAvailable, bool readerReferenced, bool deserializing, bool receivingMessage);
 
         private:
             // Implementation of MethodSerializer
@@ -190,7 +189,6 @@ namespace services
         infra::SharedPtr<MethodSerializer> GrantSend(services::ServiceProxy& proxy) override;
         infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, infra::SharedPtr<MethodDeserializer>&& deserializer) override;
         void ReleaseDeserializer() override;
-        void RetainingReader(std::size_t readerAvailable, std::size_t bufferedAvailable, bool readerReferenced, bool deserializing, bool receivingMessage) override;
 
     private:
         detail::TracingEchoOnStreamsDescendantHelper helper;
@@ -234,12 +232,6 @@ namespace services
     {
         EchoOnStreams::ReleaseDeserializer();
         helper.ReleaseDeserializer();
-    }
-
-    template<class Descendant>
-    void TracingEchoOnStreamsDescendant<Descendant>::RetainingReader(std::size_t readerAvailable, std::size_t bufferedAvailable, bool readerReferenced, bool deserializing, bool receivingMessage)
-    {
-        helper.RetainingReader(readerAvailable, bufferedAvailable, readerReferenced, deserializing, receivingMessage);
     }
 }
 
