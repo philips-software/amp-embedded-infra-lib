@@ -102,7 +102,9 @@ enum CccdSetting
 //  Unless otherwise specified, all methods require an active connection.
 // Callback constraints:
 //  Unless otherwise specified, methods do not by default result in any callbacks on the response service.
-//  Unless otherwise specified, when callbacks are specified for a method, another call of any method is not allowed until the final callback has been received.
+//  An operation is in progress from its invocation until its listed "Expected response" has been received.
+//  At most one operation may be in progress at any time, with the exception of WriteCharacteristicWithoutResponse,
+//  which may overlap with any other in-progress operation except itself.
 //  Non-conformance will result in an assertion.
 // Discovery constraints:
 //  Discovery must follow the sequence: Service -> Characteristic -> Descriptor.
@@ -153,7 +155,6 @@ service GattClient
     // Expected response: GattClientResponse.WriteCharacteristicWithoutResponseComplete
     // Description: Writes the value of a characteristic to the GATT server without requiring a response.
     //   This method does not guarantee that the server has received the value.
-    //   May be called while awaiting a response of another method.
     rpc WriteCharacteristicWithoutResponse(AttributeData) returns (Nothing) { option (method_id) = 7; }
 
     // Expected response: GattClientResponse.OperationComplete
