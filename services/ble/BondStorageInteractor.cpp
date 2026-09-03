@@ -75,7 +75,6 @@ namespace services
 
     void BondStorageInteractor::RemoveLeastRecentlyUsedBond()
     {
-        // This removes the least recently used bond.
         std::optional<services::Bond> oldestBond;
         bondStorageSynchroniser.IterateBondedDevices(role, [&oldestBond](const services::Bond& bond)
             {
