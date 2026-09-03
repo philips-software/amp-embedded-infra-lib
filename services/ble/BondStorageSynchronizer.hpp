@@ -35,6 +35,7 @@ namespace services
     {
     protected:
         BondStorage() = default;
+        ~BondStorage() = default;
         BondStorage(const BondStorage& other) = delete;
         BondStorage& operator=(const BondStorage& other) = delete;
 
@@ -60,6 +61,7 @@ namespace services
     {
     protected:
         BondStorageAbsolute() = default;
+        ~BondStorageAbsolute() = default;
         BondStorageAbsolute(const BondStorageAbsolute& other) = delete;
         BondStorageAbsolute& operator=(const BondStorageAbsolute& other) = delete;
 

@@ -128,3 +128,21 @@ TEST_F(BondStorageInteractorTest, assert_bond_storages_are_in_sync_is_forwarded_
     EXPECT_CALL(bondStorageSynchroniser, AssertBondStoragesAreInSyncForRole(role));
     interactor.AssertBondStoragesAreInSync();
 }
+
+TEST_F(BondStorageInteractorTest, remove_least_recently_used_bond_removes_nothing_when_no_bonds_are_stored)
+{
+    EXPECT_CALL(bondStorageSynchroniser, IterateBondedDevices(role, testing::_));
+    interactor.RemoveLeastRecentlyUsedBond();
+}
+
+TEST_F(BondStorageInteractorTest, remove_least_recently_used_bond_removes_first_bond_of_iteration)
+{
+    EXPECT_CALL(bondStorageSynchroniser, IterateBondedDevices(role, testing::_))
+        .WillOnce([this](services::Role, const infra::Function<void(const services::Bond&)>& onBond)
+            {
+                onBond(bond1);
+                onBond(bond2);
+            });
+    EXPECT_CALL(bondStorageSynchroniser, RemoveBond(role, gapAddress1));
+    interactor.RemoveLeastRecentlyUsedBond();
+}
