@@ -22,6 +22,8 @@ public:
 
     void ExpectAssertBondStoragesAreInSyncForRole(uint32_t numberOfBonds)
     {
+        EXPECT_CALL(bondStorage, IterateBondedDevices(services::Role::central, testing::_));
+        EXPECT_CALL(absoluteStorage, IterateBondedDevices(testing::_));
         EXPECT_CALL(bondStorage, GetTotalNumberOfBonds()).Times(2).WillRepeatedly(testing::Return(numberOfBonds));
         EXPECT_CALL(absoluteStorage, GetNumberOfBonds()).Times(2).WillRepeatedly(testing::Return(numberOfBonds));
     }
@@ -57,7 +59,7 @@ public:
 TEST_F(BondStorageSynchronizerTest, construction_synchronises_empty_bond_storages)
 {
     EXPECT_CALL(bondStorage, RemoveBondIf(testing::_));
-    EXPECT_CALL(absoluteStorage, IterateBondedDevices(testing::_));
+    EXPECT_CALL(absoluteStorage, RemoveBondIf(testing::_));
 
     services::BondStorageSynchronizerImpl bondStorageSynchronizer(absoluteStorage, bondStorage);
 }
@@ -74,7 +76,7 @@ TEST_F(BondStorageSynchronizerTest, construction_removes_bond_from_bond_storage_
                 EXPECT_THAT(onBond(bond2), testing::IsFalse());
             });
 
-    EXPECT_CALL(absoluteStorage, IterateBondedDevices(testing::_));
+    EXPECT_CALL(absoluteStorage, RemoveBondIf(testing::_));
 
     services::BondStorageSynchronizerImpl bondStorageSynchronizer(absoluteStorage, bondStorage);
 }
@@ -83,15 +85,14 @@ TEST_F(BondStorageSynchronizerTest, construction_removes_bond_from_absolute_stor
 {
     EXPECT_CALL(bondStorage, RemoveBondIf(testing::_));
 
-    EXPECT_CALL(absoluteStorage, IterateBondedDevices(testing::_))
-        .WillOnce([this](const infra::Function<void(const services::GapAddress&)>& onAddress)
+    EXPECT_CALL(absoluteStorage, RemoveBondIf(testing::_))
+        .WillOnce([this](const infra::Function<bool(const services::GapAddress&)>& onAddress)
             {
                 EXPECT_CALL(bondStorage, GetBond(services::Role::central, gapAddress1))
                     .WillOnce(testing::Return(std::optional<services::Bond>{}));
                 EXPECT_CALL(bondStorage, GetBond(services::Role::peripheral, gapAddress1))
                     .WillOnce(testing::Return(std::optional<services::Bond>{}));
-                EXPECT_CALL(absoluteStorage, RemoveBond(gapAddress1));
-                onAddress(gapAddress1);
+                EXPECT_THAT(onAddress(gapAddress1), testing::IsTrue());
             });
 
     services::BondStorageSynchronizerImpl bondStorageSynchronizer(absoluteStorage, bondStorage);
@@ -101,12 +102,12 @@ TEST_F(BondStorageSynchronizerTest, construction_keeps_bond_in_absolute_storage_
 {
     EXPECT_CALL(bondStorage, RemoveBondIf(testing::_));
 
-    EXPECT_CALL(absoluteStorage, IterateBondedDevices(testing::_))
-        .WillOnce([this](const infra::Function<void(const services::GapAddress&)>& onAddress)
+    EXPECT_CALL(absoluteStorage, RemoveBondIf(testing::_))
+        .WillOnce([this](const infra::Function<bool(const services::GapAddress&)>& onAddress)
             {
                 EXPECT_CALL(bondStorage, GetBond(services::Role::central, gapAddress1))
                     .WillOnce(testing::Return(std::optional<services::Bond>{ bond1 }));
-                onAddress(gapAddress1);
+                EXPECT_THAT(onAddress(gapAddress1), testing::IsFalse());
             });
 
     services::BondStorageSynchronizerImpl bondStorageSynchronizer(absoluteStorage, bondStorage);
@@ -119,7 +120,7 @@ public:
     void ExpectSyncBondStorages()
     {
         EXPECT_CALL(bondStorage, RemoveBondIf(testing::_));
-        EXPECT_CALL(absoluteStorage, IterateBondedDevices(testing::_));
+        EXPECT_CALL(absoluteStorage, RemoveBondIf(testing::_));
     }
 
     infra::Execute execute{ [this]()
@@ -226,9 +227,36 @@ TEST_F(BondStorageSynchronizerTestWithConstruction, assert_bond_storages_are_in_
 #ifndef EMIL_MUTATION_TESTING
 TEST_F(BondStorageSynchronizerTestWithConstruction, assert_bond_storages_are_in_sync_for_role_asserts_when_counts_mismatch)
 {
+    EXPECT_CALL(bondStorage, IterateBondedDevices(services::Role::central, testing::_)).Times(testing::AnyNumber());
+    EXPECT_CALL(absoluteStorage, IterateBondedDevices(testing::_)).Times(testing::AnyNumber());
     ON_CALL(bondStorage, GetTotalNumberOfBonds()).WillByDefault(testing::Return(2));
     ON_CALL(absoluteStorage, GetNumberOfBonds()).WillByDefault(testing::Return(1));
     EXPECT_DEATH(bondStorageSynchronizer.AssertBondStoragesAreInSyncForRole(services::Role::peripheral), "");
+}
+
+TEST_F(BondStorageSynchronizerTestWithConstruction, assert_bond_storages_are_in_sync_for_role_asserts_when_bond_is_missing_in_absolute_storage)
+{
+    EXPECT_CALL(bondStorage, IterateBondedDevices(services::Role::central, testing::_))
+        .Times(testing::AnyNumber())
+        .WillRepeatedly([this](services::Role, const infra::Function<void(const services::Bond&)>& onBond)
+            {
+                onBond(bond1);
+            });
+    ON_CALL(absoluteStorage, IsBondStored(gapAddress1)).WillByDefault(testing::Return(false));
+    EXPECT_DEATH(bondStorageSynchronizer.AssertBondStoragesAreInSyncForRole(services::Role::central), "");
+}
+
+TEST_F(BondStorageSynchronizerTestWithConstruction, assert_bond_storages_are_in_sync_for_role_asserts_when_bond_is_missing_in_bond_storage)
+{
+    EXPECT_CALL(bondStorage, IterateBondedDevices(services::Role::central, testing::_)).Times(testing::AnyNumber());
+    EXPECT_CALL(absoluteStorage, IterateBondedDevices(testing::_))
+        .Times(testing::AnyNumber())
+        .WillRepeatedly([this](const infra::Function<void(const services::GapAddress&)>& onAddress)
+            {
+                onAddress(gapAddress1);
+            });
+    ON_CALL(bondStorage, GetBond(testing::_, gapAddress1)).WillByDefault(testing::Return(std::optional<services::Bond>{}));
+    EXPECT_DEATH(bondStorageSynchronizer.AssertBondStoragesAreInSyncForRole(services::Role::central), "");
 }
 #endif
 

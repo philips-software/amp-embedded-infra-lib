@@ -125,23 +125,13 @@ namespace services
     {
         bondStorage.RemoveBondIf([this](const services::Bond& bond)
             {
-                const auto bondIsStored = absoluteBondStorage.IsBondStored(bond.address);
-                if (!bondIsStored)
-                    services::GlobalTracer().Trace() << "================================= Removing bond not stored in absolute storage: " << infra::AsLittleEndianMacAddress(bond.address.address); // TODO: Remove
-                return !bondIsStored;
+                return !absoluteBondStorage.IsBondStored(bond.address);
             });
 
-        absoluteBondStorage.IterateBondedDevices([this](const services::GapAddress& address)
+        absoluteBondStorage.RemoveBondIf([this](const services::GapAddress& address)
             {
-                const auto bondIsStored =
-                    bondStorage.GetBond(Role::central, address).has_value() ||
-                    bondStorage.GetBond(Role::peripheral, address).has_value();
-
-                if (!bondIsStored)
-                {
-                    services::GlobalTracer().Trace() << "================================= Removing bond not stored in shadow storage: " << infra::AsLittleEndianMacAddress(address.address); // TODO: Remove
-                    absoluteBondStorage.RemoveBond(address);
-                }
+                return !bondStorage.GetBond(Role::central, address).has_value() &&
+                       !bondStorage.GetBond(Role::peripheral, address).has_value();
             });
     }
 }
