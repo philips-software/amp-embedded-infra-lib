@@ -216,7 +216,7 @@ service GattClientResponse
     //  Success indicates the request was processed by the GATT client, but does not guarantee success on the GATT server side.
     rpc WriteCharacteristicWithoutResponseComplete(OperationResult) returns (Nothing) { option (method_id) = 10; }
 
-    // Triggered by: GattClient.ReadCharacteristic, GattClient.WriteCharacteristic, GattClient.ReadDescriptor, GattClient.WriteDescriptor
+    // Triggered by: GattClient.MtuSizeExchangeRequest, GattClient.ReadCharacteristic, GattClient.WriteCharacteristic, GattClient.ReadDescriptor, GattClient.WriteDescriptor
     // Description: Reports the outcome of a read or write operation.
     rpc OperationComplete(OperationResult) returns (Nothing) { option (method_id) = 11; }
 
