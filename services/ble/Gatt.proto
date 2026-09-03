@@ -111,8 +111,8 @@ enum CccdSetting
 //  Each step must complete (indicated by the corresponding *Complete response) before initiating the next.
 //  The maximum number of items returned depends on the configuration.
 // Connection loss:
-//  Any pending discovery or read/write operation is implicitly cancelled.
-//  For any pending operation, a corresponding response with an error status is guaranteed.
+//  Any pending operation (discovery, MTU exchange, or read/write) is implicitly cancelled.
+//  For any pending operation, the listed "Expected response" is guaranteed to be delivered with an error status.
 // ==================================================
 service GattClient
 {
