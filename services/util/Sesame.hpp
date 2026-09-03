@@ -12,8 +12,8 @@ namespace services
 {
     enum class SesameChannel : uint8_t
     {
-        red = 4,
-        blue = 5
+        red = 0,
+        blue = 1
     };
 
     class Sesame;

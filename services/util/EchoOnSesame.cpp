@@ -3,6 +3,35 @@
 
 namespace services
 {
+    namespace
+    {
+        SesameChannel ToSesameChannel(EchoChannel channel)
+        {
+            switch (channel)
+            {
+                case EchoChannel::red:
+                    return SesameChannel::red;
+                case EchoChannel::blue:
+                    return SesameChannel::blue;
+            }
+
+            std::abort();
+        }
+
+        EchoChannel ToEchoChannel(SesameChannel channel)
+        {
+            switch (channel)
+            {
+                case SesameChannel::red:
+                    return EchoChannel::red;
+                case SesameChannel::blue:
+                    return EchoChannel::blue;
+            }
+
+            std::abort();
+        }
+    }
+
     EchoOnSesame::EchoOnSesame(Sesame& subject, services::MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy)
         : EchoOnStreams(serializerFactory, errorPolicy)
         , SesameObserver(subject)
@@ -39,9 +68,8 @@ namespace services
             RequestSendStream(*std::exchange(requestedSize, std::nullopt));
     }
 
-    void EchoOnSesame::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer, SesameChannel channel)
+    void EchoOnSesame::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer, [[maybe_unused]] SesameChannel channel)
     {
-        static_cast<void>(channel);
         EchoOnStreams::SendStreamAvailable(std::move(writer));
     }
 
@@ -53,9 +81,6 @@ namespace services
 
     void EchoOnSesame::RequestSendStream(std::size_t size)
     {
-        requestedChannel = sendingProxy == nullptr
-                               ? SesameChannel::red
-                               : static_cast<SesameChannel>(sendingProxy->Channel());
         if (initialized)
             SesameObserver::Subject().RequestSendMessage(std::min(size, SesameObserver::Subject().MaxSendMessageSize()), requestedChannel);
         else
@@ -72,6 +97,7 @@ namespace services
     void EchoOnSesame::SendingProxySelected(ServiceProxy& proxy)
     {
         sendingProxy = &proxy;
+        requestedChannel = ToSesameChannel(proxy.Channel());
     }
 
     bool EchoOnSesame::ReceiveOnConfiguredChannel(infra::StreamReaderWithRewinding& reader, SesameChannel channel)
@@ -86,18 +112,19 @@ namespace services
         if (stream.Failed() || formatErrorPolicy.Failed())
             return true;
 
-        EchoChannel configuredChannel = EchoChannel::red;
-        static_cast<services::Echo&>(*this).NotifyObservers([serviceId, &configuredChannel](auto& service)
+        Service* configuredService = nullptr;
+        static_cast<services::Echo&>(*this).NotifyObservers([serviceId, &configuredService](auto& service)
             {
                 if (service.AcceptsService(serviceId))
                 {
-                    configuredChannel = service.Channel();
+                    configuredService = &service;
                     return true;
                 }
 
                 return false;
             });
 
-        return static_cast<SesameChannel>(configuredChannel) == channel;
+        auto configuredChannel = configuredService == nullptr ? EchoChannel::red : configuredService->Channel();
+        return configuredChannel == ToEchoChannel(channel);
     }
 }

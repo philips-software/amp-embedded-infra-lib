@@ -54,6 +54,32 @@ namespace services
 
         const char ExtraCharacterReader::character = '\x4';
 
+        uint8_t ToMessageOperation(SesameChannel channel)
+        {
+            switch (channel)
+            {
+                case SesameChannel::red:
+                    return 4;
+                case SesameChannel::blue:
+                    return 5;
+            }
+
+            std::abort();
+        }
+
+        SesameChannel ToChannel(uint8_t operation)
+        {
+            switch (operation)
+            {
+                case 4:
+                    return SesameChannel::red;
+                case 5:
+                    return SesameChannel::blue;
+                default:
+                    std::abort();
+            }
+        }
+
     }
 
     SesameWindowed::SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, uint8_t splitBuffers, SesameEncoded& delegate, SesameInitializer& sesameInitializer)
@@ -131,7 +157,7 @@ namespace services
     void SesameWindowed::SendingReleaseWindow(uint16_t deltaWindow)
     {}
 
-    void SesameWindowed::SendingMessage(infra::StreamWriter& writer, SesameChannel channel)
+    void SesameWindowed::SendingMessage([[maybe_unused]] infra::StreamWriter& writer, [[maybe_unused]] SesameChannel channel)
     {}
 
     void SesameWindowed::SettingOperational(std::optional<std::size_t> requestedSize, uint16_t releasedWindow, uint16_t otherWindow)
@@ -155,7 +181,8 @@ namespace services
     void SesameWindowed::ReceivedMessage(infra::StreamReaderWithRewinding& reader, std::size_t encodedSize)
     {
         infra::DataInputStream::WithErrorPolicy stream(reader, infra::noFail);
-        switch (stream.Extract<Operation>())
+        auto operation = stream.Extract<Operation>();
+        switch (operation)
         {
             case Operation::init:
             {
@@ -193,16 +220,10 @@ namespace services
                 }
                 break;
             case Operation::messageRed:
-                if (initialized)
-                {
-                    currentReceiveMessageChannel = SesameChannel::red;
-                    SaveReceivedMessage(reader);
-                }
-                break;
             case Operation::messageBlue:
                 if (initialized)
                 {
-                    currentReceiveMessageChannel = SesameChannel::blue;
+                    currentReceiveMessageChannel = ToChannel(static_cast<uint8_t>(operation));
                     SaveReceivedMessage(reader);
                 }
                 break;
@@ -393,7 +414,7 @@ namespace services
     {
         communication.SendingMessage(*writer, channel);
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
-        stream << (channel == SesameChannel::red ? Operation::messageRed : Operation::messageBlue);
+        stream << static_cast<Operation>(ToMessageOperation(channel));
 
         communication.requestedSendMessageSize.reset();
         communication.GetObserver().SendMessageStreamAvailable(std::move(writer), channel);

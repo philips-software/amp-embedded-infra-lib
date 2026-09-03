@@ -23,8 +23,8 @@ namespace services
             init = 1,
             initResponse,
             releaseWindow,
-            messageRed = static_cast<uint8_t>(SesameChannel::red),
-            messageBlue = static_cast<uint8_t>(SesameChannel::blue)
+            messageRed = 4,
+            messageBlue = 5
         };
 
         struct PacketInit

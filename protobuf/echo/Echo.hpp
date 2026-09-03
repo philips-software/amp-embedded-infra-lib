@@ -12,8 +12,8 @@ namespace services
 {
     enum class EchoChannel : uint8_t
     {
-        red = 4,
-        blue = 5
+        red = 0,
+        blue = 1
     };
 
     class Echo;
@@ -45,8 +45,7 @@ namespace services
         : public infra::IntrusiveList<ServiceProxy>::NodeType
     {
     public:
-        ServiceProxy(Echo& echo, uint32_t maxMessageSize);
-        ServiceProxy(Echo& echo, uint32_t maxMessageSize, uint32_t serviceId);
+        ServiceProxy(Echo& echo, uint32_t maxMessageSize, uint32_t serviceId = 0);
 
         Echo& Rpc();
         virtual void RequestSend(infra::Function<void()> onGranted);
