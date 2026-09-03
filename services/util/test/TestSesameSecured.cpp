@@ -42,8 +42,9 @@ public:
 
     void ExpectReceivedMessage(infra::BoundedConstString expected)
     {
-        EXPECT_CALL(upper, ReceivedMessage(testing::_)).WillOnce(testing::Invoke([expected](infra::SharedPtr<infra::StreamReader>&& reader)
+        EXPECT_CALL(upper, ReceivedMessage(testing::_, services::SesameChannel::red)).WillOnce(testing::Invoke([expected](infra::SharedPtr<infra::StreamReader>&& reader, services::SesameChannel channel)
             {
+                static_cast<void>(channel);
                 infra::TextInputStream::WithErrorPolicy stream(*reader);
                 EXPECT_EQ(expected.size(), stream.Available());
                 infra::BoundedString::WithStorage<256> s;
@@ -55,8 +56,9 @@ public:
 
     void ExpectSendMessageStreamAvailable(infra::BoundedConstString message)
     {
-        EXPECT_CALL(upper, SendMessageStreamAvailable(testing::_)).WillOnce(testing::Invoke([message](infra::SharedPtr<infra::StreamWriter>&& writer)
+        EXPECT_CALL(upper, SendMessageStreamAvailable(testing::_, services::SesameChannel::red)).WillOnce(testing::Invoke([message](infra::SharedPtr<infra::StreamWriter>&& writer, services::SesameChannel channel)
             {
+                static_cast<void>(channel);
                 infra::TextOutputStream::WithErrorPolicy stream(*writer);
                 EXPECT_EQ(message.size(), stream.Available());
                 stream << message;
@@ -66,7 +68,7 @@ public:
     void Send(infra::BoundedConstString message)
     {
         EXPECT_CALL(lower, MaxSendMessageSize()).WillOnce(testing::Return(100));
-        EXPECT_CALL(lower, RequestSendMessage(16 + message.size()));
+        EXPECT_CALL(lower, RequestSendMessage(16 + message.size(), services::SesameChannel::red));
 
         upper.Subject().RequestSendMessage(message.size());
         ExpectSendMessageStreamAvailable(message);
@@ -179,7 +181,7 @@ TEST_F(SesameSecuredTest, damaged_message_does_not_propagate)
 
     sentData[7] = 7;
 
-    EXPECT_CALL(upper, ReceivedMessage(testing::_)).Times(0);
+    EXPECT_CALL(upper, ReceivedMessage(testing::_, services::SesameChannel::red)).Times(0);
     ReceivedMessage(sentData);
 
     Send("efgh");
@@ -205,7 +207,7 @@ TEST_F(SesameSecuredTest, truncated_message_followed_by_init_is_not_reported)
 
     sentData.resize(sentData.size() - 1);
 
-    EXPECT_CALL(upper, ReceivedMessage(testing::_)).Times(0);
+    EXPECT_CALL(upper, ReceivedMessage(testing::_, services::SesameChannel::red)).Times(0);
     ReceivedMessage(sentData);
 
     EXPECT_CALL(upper, Initialized());
@@ -222,7 +224,7 @@ TEST_F(SesameSecuredTest, short_message_does_not_propagate)
 
     sentData.resize(3);
 
-    EXPECT_CALL(upper, ReceivedMessage(testing::_)).Times(0);
+    EXPECT_CALL(upper, ReceivedMessage(testing::_, services::SesameChannel::red)).Times(0);
     ReceivedMessage(sentData);
 }
 
@@ -284,8 +286,9 @@ TEST_F(SesameSecuredStandaloneTest, received_message_includes_non_zero_finish_ou
             return finishOutput.size();
         }));
 
-    EXPECT_CALL(upper, ReceivedMessage(testing::_)).WillOnce(testing::Invoke([](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+    EXPECT_CALL(upper, ReceivedMessage(testing::_, services::SesameChannel::red)).WillOnce(testing::Invoke([](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, services::SesameChannel channel)
         {
+            static_cast<void>(channel);
             infra::TextInputStream::WithErrorPolicy stream(*reader);
             EXPECT_EQ(5, stream.Available());
             infra::BoundedString::WithStorage<8> s;

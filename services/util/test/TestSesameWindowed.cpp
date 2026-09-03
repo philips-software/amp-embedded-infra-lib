@@ -93,13 +93,18 @@ public:
         ReceivePacket(infra::ConstructBin().Value<uint8_t>(3).Value<infra::LittleEndian<uint16_t>>(availableWindow).Vector());
     }
 
-    void ReceiveMessage(const std::string& text)
+    void ReceiveMessageOnChannel(services::SesameChannel channel, const std::string& text)
     {
         EXPECT_CALL(base, MessageSize(testing::_)).WillOnce([](infra::StreamReader&& reader)
             {
                 return reader.Available() + reader.Available() / 254 + 2;
             });
-        ReceivePacket(infra::ConstructBin()(4)(text).Vector());
+        ReceivePacket(infra::ConstructBin()(channel == services::SesameChannel::red ? 4 : 5)(text).Vector());
+    }
+
+    void ReceiveMessage(const std::string& text)
+    {
+        ReceiveMessageOnChannel(services::SesameChannel::red, text);
     }
 
     void PretendReceiveMessage(const std::string& text)
@@ -131,18 +136,19 @@ public:
             });
     }
 
-    void ExpectRequestSendMessageForMessage(uint16_t size, const std::vector<uint8_t>& expected)
+    void ExpectRequestSendMessageForMessage(uint16_t size, const std::vector<uint8_t>& expected, services::SesameChannel channel = services::SesameChannel::red)
     {
-        EXPECT_CALL(base, RequestSendMessage(size)).WillOnce([this, expected](uint16_t size)
+        EXPECT_CALL(base, RequestSendMessage(size)).WillOnce([this, expected, channel](uint16_t size)
             {
-                SendMessageStreamAvailableWithWriter(infra::ConstructBin().Value<uint8_t>(4)(expected).Vector());
+                SendMessageStreamAvailableWithWriter(infra::ConstructBin().Value<uint8_t>(channel == services::SesameChannel::red ? 4 : 5)(expected).Vector());
             });
     }
 
     void ExpectSendMessageStreamAvailable(const std::vector<uint8_t>& data)
     {
-        EXPECT_CALL(observer, SendMessageStreamAvailable(testing::_)).WillOnce([data](infra::SharedPtr<infra::StreamWriter>&& writer)
+        EXPECT_CALL(observer, SendMessageStreamAvailable(testing::_, services::SesameChannel::red)).WillOnce([data](infra::SharedPtr<infra::StreamWriter>&& writer, services::SesameChannel channel)
             {
+                static_cast<void>(channel);
                 infra::DataOutputStream::WithErrorPolicy stream(*writer);
                 stream << infra::MakeRange(data);
             });
@@ -150,13 +156,14 @@ public:
 
     void ExpectSendMessageStreamAvailableAndSaveWriter()
     {
-        EXPECT_CALL(observer, SendMessageStreamAvailable(testing::_)).WillOnce(testing::SaveArg<0>(&savedWriter));
+        EXPECT_CALL(observer, SendMessageStreamAvailable(testing::_, services::SesameChannel::red)).WillOnce(testing::SaveArg<0>(&savedWriter));
     }
 
     void ExpectReceivedMessage(const std::string& expected)
     {
-        EXPECT_CALL(observer, ReceivedMessage(testing::_)).WillOnce([expected](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+        EXPECT_CALL(observer, ReceivedMessage(testing::_, services::SesameChannel::red)).WillOnce([expected](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, services::SesameChannel channel)
             {
+                static_cast<void>(channel);
                 infra::DataInputStream::WithErrorPolicy stream(*reader);
                 std::string text(stream.Available(), 0);
                 stream >> infra::ByteRange(reinterpret_cast<uint8_t*>(text.data()), reinterpret_cast<uint8_t*>(text.data() + text.size()));
@@ -167,7 +174,7 @@ public:
 
     void ExpectReceivedMessageAndSaveReader(const std::string& expected)
     {
-        EXPECT_CALL(observer, ReceivedMessage(testing::_)).WillOnce(testing::SaveArg<0>(&savedReader));
+        EXPECT_CALL(observer, ReceivedMessage(testing::_, services::SesameChannel::red)).WillOnce(testing::SaveArg<0>(&savedReader));
     }
 
     testing::StrictMock<services::SesameEncodedMock> base;
@@ -208,6 +215,21 @@ TEST_F(SesameWindowedTestDouble, send_message_after_initialized)
     ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 });
     ExpectSendMessageStreamAvailable({ 1, 2, 3, 4 });
     communication->RequestSendMessage(4);
+}
+
+TEST_F(SesameWindowedTestDouble, send_blue_message_after_initialized)
+{
+    ReceiveInitResponse(24);
+
+    ExpectRequestSendMessageForMessage(5, { 1, 2, 3, 4 }, services::SesameChannel::blue);
+    EXPECT_CALL(observer, SendMessageStreamAvailable(testing::_, services::SesameChannel::blue)).WillOnce([](infra::SharedPtr<infra::StreamWriter>&& writer, services::SesameChannel channel)
+        {
+            static_cast<void>(channel);
+            infra::DataOutputStream::WithErrorPolicy stream(*writer);
+            const std::vector<uint8_t>& data = { 1, 2, 3, 4 };
+            stream << infra::MakeRange(data);
+        });
+    communication->RequestSendMessage(4, services::SesameChannel::blue);
 }
 
 TEST_F(SesameWindowedTestDouble, message_waits_until_window_is_freed)
@@ -273,8 +295,9 @@ TEST_F(SesameWindowedTestDouble, request_sending_new_message_while_previous_is_s
     EXPECT_CALL(base, RequestSendMessage(5));
     communication->RequestSendMessage(4);
 
-    EXPECT_CALL(observer, SendMessageStreamAvailable(testing::_)).WillOnce([this](infra::SharedPtr<infra::StreamWriter>&& writer)
+    EXPECT_CALL(observer, SendMessageStreamAvailable(testing::_, services::SesameChannel::red)).WillOnce([this](infra::SharedPtr<infra::StreamWriter>&& writer, services::SesameChannel channel)
         {
+            static_cast<void>(channel);
             infra::DataOutputStream::WithErrorPolicy stream(*writer);
             const std::vector<uint8_t>& data = { 1, 2, 3, 4 };
             stream << infra::MakeRange(data);
@@ -297,6 +320,22 @@ TEST_F(SesameWindowedTestDouble, receive_message_after_initialized)
     ExpectReceivedMessage("abcd");
     ExpectRequestSendMessageForReleaseWindow(14);
     ReceiveMessage("abcd");
+}
+
+TEST_F(SesameWindowedTestDouble, receive_blue_message_after_initialized)
+{
+    ReceiveInitResponse(26);
+
+    EXPECT_CALL(observer, ReceivedMessage(testing::_, services::SesameChannel::blue)).WillOnce([](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, services::SesameChannel channel)
+        {
+            static_cast<void>(channel);
+            infra::DataInputStream::WithErrorPolicy stream(*reader);
+            std::string text(stream.Available(), 0);
+            stream >> infra::ByteRange(reinterpret_cast<uint8_t*>(text.data()), reinterpret_cast<uint8_t*>(text.data() + text.size()));
+            EXPECT_THAT(text, testing::Eq("abcd"));
+        });
+    ExpectRequestSendMessageForReleaseWindow(14);
+    ReceiveMessageOnChannel(services::SesameChannel::blue, "abcd");
 }
 
 TEST_F(SesameWindowedTestDouble, release_window_packet_waits_for_window_available)

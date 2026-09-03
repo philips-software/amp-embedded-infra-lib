@@ -36,13 +36,13 @@ public:
         EXPECT_CALL(lowerLeft, MaxSendMessageSize()).WillRepeatedly(testing::Return(10000));
         EXPECT_CALL(lowerRight, MaxSendMessageSize()).WillRepeatedly(testing::Return(10000));
 
-        EXPECT_CALL(lowerLeft, RequestSendMessage(testing::_)).WillRepeatedly(testing::Invoke([this]()
+        EXPECT_CALL(lowerLeft, RequestSendMessage(testing::_, testing::_)).WillRepeatedly(testing::Invoke([this]()
             {
                 assert(!lowerLeftRequest);
                 lowerLeftRequest = true;
             }));
 
-        EXPECT_CALL(lowerRight, RequestSendMessage(testing::_)).WillRepeatedly(testing::Invoke([this]()
+        EXPECT_CALL(lowerRight, RequestSendMessage(testing::_, testing::_)).WillRepeatedly(testing::Invoke([this]()
             {
                 assert(!lowerRightRequest);
                 lowerRightRequest = true;

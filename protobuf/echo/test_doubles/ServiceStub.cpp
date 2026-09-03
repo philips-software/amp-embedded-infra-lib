@@ -85,7 +85,7 @@ namespace services
     }
 
     ServiceStubProxy::ServiceStubProxy(services::Echo& echo)
-        : services::ServiceProxy(echo, maxMessageSize)
+        : services::ServiceProxy(echo, maxMessageSize, serviceId)
     {}
 
     void ServiceStubProxy::Method(uint32_t value)

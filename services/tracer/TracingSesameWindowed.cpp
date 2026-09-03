@@ -51,9 +51,9 @@ namespace services
         tracer.Trace() << "SesameWindowed::SendingReleaseWindow deltaWindow: " << deltaWindow;
     }
 
-    void TracingSesameWindowed::SendingMessage(infra::StreamWriter& writer)
+    void TracingSesameWindowed::SendingMessage(infra::StreamWriter& writer, SesameChannel channel)
     {
-        tracer.Trace() << "SesameWindowed::SendingMessage";
+        tracer.Trace() << "SesameWindowed::SendingMessage channel: " << (channel == SesameChannel::red ? "red" : "blue");
     }
 
     void TracingSesameWindowed::SettingOperational(std::optional<std::size_t> requestedSize, uint16_t releasedWindow, uint16_t otherWindow)

@@ -53,6 +53,7 @@ namespace services
         };
 
         const char ExtraCharacterReader::character = '\x4';
+
     }
 
     SesameWindowed::SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, uint8_t splitBuffers, SesameEncoded& delegate, SesameInitializer& sesameInitializer)
@@ -67,10 +68,10 @@ namespace services
         state->Request();
     }
 
-    void SesameWindowed::RequestSendMessage(std::size_t size)
+    void SesameWindowed::RequestSendMessage(std::size_t size, SesameChannel channel)
     {
         assert(size <= MaxSendMessageSize());
-        state->RequestSendMessage(size);
+        state->RequestSendMessage(size, channel);
     }
 
     std::size_t SesameWindowed::MaxSendMessageSize() const
@@ -93,6 +94,8 @@ namespace services
         sendInitResponse = false;
         sending = false;
         requestedSendMessageSize.reset();
+        requestedSendMessageChannel = SesameChannel::red;
+        currentReceiveMessageChannel = SesameChannel::red;
         // Now wait for an init message to be received; use state Operational for this
         state.Emplace<StateOperational>(*this);
     }
@@ -128,7 +131,7 @@ namespace services
     void SesameWindowed::SendingReleaseWindow(uint16_t deltaWindow)
     {}
 
-    void SesameWindowed::SendingMessage(infra::StreamWriter& writer)
+    void SesameWindowed::SendingMessage(infra::StreamWriter& writer, SesameChannel channel)
     {}
 
     void SesameWindowed::SettingOperational(std::optional<std::size_t> requestedSize, uint16_t releasedWindow, uint16_t otherWindow)
@@ -189,9 +192,19 @@ namespace services
                     ReceivedReleaseWindow(oldOtherAvailableWindow, otherAvailableWindow);
                 }
                 break;
-            case Operation::message:
+            case Operation::messageRed:
                 if (initialized)
+                {
+                    currentReceiveMessageChannel = SesameChannel::red;
                     SaveReceivedMessage(reader);
+                }
+                break;
+            case Operation::messageBlue:
+                if (initialized)
+                {
+                    currentReceiveMessageChannel = SesameChannel::blue;
+                    SaveReceivedMessage(reader);
+                }
                 break;
         }
 
@@ -232,6 +245,7 @@ namespace services
 
     void SesameWindowed::ForwardReceivedMessage(uint16_t encodedSize)
     {
+        auto channel = currentReceiveMessageChannel;
         readerAccess.SetAction([this, encodedSize]()
             {
                 releasedWindow += encodedSize;
@@ -242,7 +256,7 @@ namespace services
             });
 
         ForwardingReceivedMessage(*currentReceiveMessageReader);
-        GetObserver().ReceivedMessage(readerAccess.MakeShared(*currentReceiveMessageReader));
+        GetObserver().ReceivedMessage(readerAccess.MakeShared(*currentReceiveMessageReader), channel);
     }
 
     void SesameWindowed::SetNextState()
@@ -284,9 +298,10 @@ namespace services
         std::abort();
     }
 
-    void SesameWindowed::State::RequestSendMessage(std::size_t size)
+    void SesameWindowed::State::RequestSendMessage(std::size_t size, SesameChannel channel)
     {
         communication.requestedSendMessageSize = size;
+        communication.requestedSendMessageChannel = channel;
     }
 
     void SesameWindowed::State::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
@@ -354,15 +369,17 @@ namespace services
         communication.SettingOperational(communication.requestedSendMessageSize, communication.releasedWindow, communication.otherAvailableWindow);
     }
 
-    void SesameWindowed::StateOperational::RequestSendMessage(std::size_t size)
+    void SesameWindowed::StateOperational::RequestSendMessage(std::size_t size, SesameChannel channel)
     {
         communication.requestedSendMessageSize = size;
+        communication.requestedSendMessageChannel = channel;
         communication.SetNextState();
     }
 
     SesameWindowed::StateSendingMessage::StateSendingMessage(SesameWindowed& communication)
         : State(communication)
         , requestedSize(*communication.requestedSendMessageSize + 1)
+        , channel(communication.requestedSendMessageChannel)
     {
         communication.sending = true;
     }
@@ -374,12 +391,12 @@ namespace services
 
     void SesameWindowed::StateSendingMessage::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
-        communication.SendingMessage(*writer);
+        communication.SendingMessage(*writer, channel);
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
-        stream << Operation::message;
+        stream << (channel == SesameChannel::red ? Operation::messageRed : Operation::messageBlue);
 
         communication.requestedSendMessageSize.reset();
-        communication.GetObserver().SendMessageStreamAvailable(std::move(writer));
+        communication.GetObserver().SendMessageStreamAvailable(std::move(writer), channel);
     }
 
     void SesameWindowed::StateSendingMessage::MessageSent(std::size_t encodedSize)

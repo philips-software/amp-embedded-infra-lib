@@ -83,11 +83,11 @@ namespace services
         GetObserver().Initialized();
     }
 
-    void SesameSecured::RequestSendMessage(std::size_t size)
+    void SesameSecured::RequestSendMessage(std::size_t size, SesameChannel channel)
     {
         really_assert(size <= MaxSendMessageSize());
         requestedSendSize = size;
-        SesameObserver::Subject().RequestSendMessage(size + blockSize);
+        SesameObserver::Subject().RequestSendMessage(size + blockSize, channel);
     }
 
     std::size_t SesameSecured::MaxSendMessageSize() const
@@ -105,14 +105,15 @@ namespace services
         SesameObserver::Subject().ResetReading();
     }
 
-    void SesameSecured::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+    void SesameSecured::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer, SesameChannel channel)
     {
         sendWriter = std::move(writer);
-        GetObserver().SendMessageStreamAvailable(sendBufferWriter.Emplace(std::in_place, sendBuffer, requestedSendSize));
+        GetObserver().SendMessageStreamAvailable(sendBufferWriter.Emplace(std::in_place, sendBuffer, requestedSendSize), channel);
     }
 
-    void SesameSecured::ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+    void SesameSecured::ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, SesameChannel channel)
     {
+        receiveChannel = channel;
         if (integrityCheckFailed)
         {
             // If a message with a failed integrity check is followed by another message instead of a reset,
@@ -171,7 +172,7 @@ namespace services
 
         IncreaseIv(receiveIv);
 
-        Sesame::GetObserver().ReceivedMessage(receiveBufferReader.Emplace(receiveBuffer, reader));
+        Sesame::GetObserver().ReceivedMessage(receiveBufferReader.Emplace(receiveBuffer, reader), receiveChannel);
     }
 
     void SesameSecured::SendMessageStreamReleased()

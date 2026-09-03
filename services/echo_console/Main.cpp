@@ -36,8 +36,8 @@ public:
 private:
     // Implementation of SesameObserver
     void Initialized() override;
-    void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-    void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
+    void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer, services::SesameChannel channel) override;
+    void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, services::SesameChannel channel) override;
 
 private:
     void CheckDataToBeSent();
@@ -92,8 +92,9 @@ void ConsoleClientUart::Initialized()
         });
 }
 
-void ConsoleClientUart::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+void ConsoleClientUart::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer, services::SesameChannel channel)
 {
+    static_cast<void>(channel);
     infra::DataOutputStream::WithErrorPolicy stream(*writer);
     stream << infra::StringAsByteRange(infra::BoundedConstString(messagesToBeSent.front()));
     writer = nullptr;
@@ -104,8 +105,9 @@ void ConsoleClientUart::SendMessageStreamAvailable(infra::SharedPtr<infra::Strea
     CheckDataToBeSent();
 }
 
-void ConsoleClientUart::ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+void ConsoleClientUart::ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, services::SesameChannel channel)
 {
+    static_cast<void>(channel);
     ConsoleObserver::Subject().DataReceived(*reader);
 }
 

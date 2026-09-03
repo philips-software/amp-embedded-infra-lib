@@ -33,6 +33,7 @@ namespace services
     {
     public:
         ServiceProxy(Echo& echo, uint32_t maxMessageSize);
+        ServiceProxy(Echo& echo, uint32_t maxMessageSize, uint32_t serviceId);
 
         Echo& Rpc();
         virtual void RequestSend(infra::Function<void()> onGranted);
@@ -41,6 +42,7 @@ namespace services
         void CancelRequestSend();
         uint32_t MaxMessageSize() const;
         uint32_t CurrentRequestedSize() const;
+        uint32_t ServiceId() const;
         void SetSerializer(const infra::SharedPtr<MethodSerializer>& serializer);
 
     protected:
@@ -49,6 +51,7 @@ namespace services
     private:
         Echo& echo;
         uint32_t maxMessageSize;
+        uint32_t serviceId;
         infra::AutoResetFunction<void()> onGranted;
         uint32_t currentRequestedSize = 0;
         infra::SharedPtr<MethodSerializer> methodSerializer;

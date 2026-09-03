@@ -14,8 +14,13 @@ namespace services
     }
 
     ServiceProxy::ServiceProxy(Echo& echo, uint32_t maxMessageSize)
+        : ServiceProxy(echo, maxMessageSize, 0)
+    {}
+
+    ServiceProxy::ServiceProxy(Echo& echo, uint32_t maxMessageSize, uint32_t serviceId)
         : echo(echo)
         , maxMessageSize(maxMessageSize)
+        , serviceId(serviceId)
     {}
 
     ServiceProxy::~ServiceProxy()
@@ -63,6 +68,11 @@ namespace services
     uint32_t ServiceProxy::CurrentRequestedSize() const
     {
         return currentRequestedSize;
+    }
+
+    uint32_t ServiceProxy::ServiceId() const
+    {
+        return serviceId;
     }
 
     void ServiceProxy::SetSerializer(const infra::SharedPtr<MethodSerializer>& serializer)
