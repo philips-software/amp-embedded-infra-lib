@@ -62,7 +62,7 @@ message Characteristic
     uint32 properties = 4;
 }
 
-//'Descriptor' keyword is not allowed by Echo code generator
+// 'Descriptor' keyword is not allowed by Echo code generator
 message Descriptr
 {
     bytes uuid = 1 [(bytes_size) = 16];
