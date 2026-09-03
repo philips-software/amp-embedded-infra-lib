@@ -1,0 +1,40 @@
+sequenceDiagram
+    title GATT Read/Write Example: Reading PLX Features and Enabling Notifications
+
+    participant Product as Product<br>[implements GattClientResponse]
+    participant CN as CN<br>[implements GattClient]
+
+    note over Product, CN: Precondition: connected, GATT discovery complete.<br>PLX service handles 64..69 are known.
+
+    rect rgb(230, 230, 240)
+        note over Product, CN: Read PLX Features characteristic
+        Product->>CN: ReadCharacteristic(69)
+        CN-->>Product: ReadCharacteristicResponse(<br>data={handle=69, data=0x0700})
+        CN-->>Product: OperationComplete(success)
+
+        note over Product: 0x0700 = supported features bitmask.<br>Bits indicate: SpO2, pulse rate, measurement status.
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, CN: Enable notifications on PLX Continuous Measurement
+        Product->>CN: WriteDescriptor(handle=67, data=0x0100)
+        CN-->>Product: OperationComplete(success)
+
+        note over Product: Wrote 0x0100 to CCCD (handle 67).<br>Notifications are now enabled for value handle 66.
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, CN: Write without response (fire-and-forget)
+        Product->>CN: WriteCharacteristicWithoutResponse(<br>handle=69, data=0x01)
+
+        note over Product: No OperationComplete for WriteWithoutResponse.<br>Next operation can be issued immediately.
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, CN: Sequential operations
+        Product->>CN: ReadDescriptor(67)
+        CN-->>Product: ReadDescriptorResponse(<br>data={handle=67, data=0x0100})
+        CN-->>Product: OperationComplete(success)
+
+        note over Product: CCCD reads back 0x0100, confirming notifications are enabled.
+    end

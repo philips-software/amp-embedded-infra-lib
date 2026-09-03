@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant Product as Product<br>[implements GattClientResponse]
+    participant CN as CN<br>[implements GattClient]
+
+    Note over Product, CN: Operations are sequential: wait for OperationComplete
+
+    Product->>CN: GattClient.ReadCharacteristic(0x0025)
+    CN-->>Product: GattClientResponse.ReadCharacteristicResponse(<br>data={handle=0x0025, data=0x64})
+    CN-->>Product: GattClientResponse.OperationComplete(success)
+
+    Product->>CN: GattClient.WriteCharacteristic(handle=0x0025, data=0x01)
+    CN-->>Product: GattClientResponse.OperationComplete(success)
+
+    Product->>CN: GattClient.WriteCharacteristicWithoutResponse(<br>handle=0x0027, data=0x11 0x22 0x33)
+    Note right of CN: Fire-and-forget, no OperationComplete
+
+    Product->>CN: GattClient.ReadDescriptor(0x0026)
+    CN-->>Product: GattClientResponse.ReadDescriptorResponse(<br>data={handle=0x0026, data=0x0000})
+    CN-->>Product: GattClientResponse.OperationComplete(success)
+
+    Product->>CN: GattClient.WriteDescriptor(<br>handle=0x0026, data=0x0100)
+    Note right of Product: 0x0100 = notifications enabled (CCCD)
+    CN-->>Product: GattClientResponse.OperationComplete(success)

@@ -1,0 +1,6 @@
+sequenceDiagram
+    participant Product as Product<br>[implements BinaryPipeSendResponse]
+    participant CN as CN<br>[implements BinaryPipeSend]
+    Product->>CN: BinaryPipeSend.SendData(<br>subchannel=1, data=256 bytes)
+    Note right of CN: Max 512 bytes per call
+    CN-->>Product: BinaryPipeSendResponse.SendCompleted()

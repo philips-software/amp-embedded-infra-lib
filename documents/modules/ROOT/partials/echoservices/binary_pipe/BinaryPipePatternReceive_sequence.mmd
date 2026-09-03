@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant Product as Product<br>[implements BinaryPipePatternReceiveResponse]
+    participant CN as CN<br>[implements BinaryPipePatternReceive]
+
+    Product->>CN: BinaryPipePatternReceive.ReceiveData(<br>subchannel=1, sizeBytes=1024, pattern=0xA5)
+
+    alt Data matches pattern
+        CN-->>Product: BinaryPipePatternReceiveResponse.ReceiveSuccess(ms=125)
+    else Data or channel error
+        CN-->>Product: BinaryPipePatternReceiveResponse.ReceiveError(type=Data)
+        Note right of Product: ErrorType.Data means data-related error<br>(e.g. pattern mismatch). Channel means channel error.
+    end

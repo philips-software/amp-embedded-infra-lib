@@ -1,0 +1,11 @@
+classDiagram
+    class BinaryPipePatternReceive {
+        <<service id=113>>
+        +ReceiveData()
+    }
+    class BinaryPipePatternReceiveResponse {
+        <<service id=114>>
+        +ReceiveSuccess()
+        +ReceiveError()
+    }
+    BinaryPipePatternReceive --> BinaryPipePatternReceiveResponse : responses

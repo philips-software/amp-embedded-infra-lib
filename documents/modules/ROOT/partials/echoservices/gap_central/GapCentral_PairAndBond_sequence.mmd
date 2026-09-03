@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant Product as Product<br>[implements GapCentralResponse]
+    participant CN as CN<br>[implements GapCentral]
+
+    Product->>CN: GapCentral.PairAndBond()
+
+    alt Successful pairing with new bond
+        CN-->>Product: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+        Note right of Product: User responds via NumericComparisonConfirm / PasskeyEntry
+        CN-->>Product: GapCentralResponse.NumberOfBondsChanged(1)
+        CN-->>Product: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+    else Successful re-encryption with existing bond
+        CN-->>Product: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+    else Pairing failure
+        CN-->>Product: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+        CN-->>Product: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=numericComparisonFailed)
+    else Peer-initiated disconnect during pairing
+        CN-->>Product: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=unknown)
+        CN-->>Product: GapCentralResponse.CurrentState(standby)
+    end

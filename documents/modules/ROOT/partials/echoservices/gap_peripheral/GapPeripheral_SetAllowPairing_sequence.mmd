@@ -1,0 +1,5 @@
+sequenceDiagram
+    participant Product as Product<br>[implements GapPeripheralResponse]
+    participant CN as CN<br>[implements GapPeripheral]
+    Product->>CN: GapPeripheral.SetAllowPairing(true)
+    Note right of CN: Fire-and-forget, no response

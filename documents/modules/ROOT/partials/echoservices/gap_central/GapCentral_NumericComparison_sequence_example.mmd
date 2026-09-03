@@ -1,0 +1,24 @@
+sequenceDiagram
+    title Numeric Comparison Pairing Example
+
+    participant Product as Product<br>[implements GapCentralResponse]
+    participant CN as CN<br>[implements GapCentral]
+
+    note over Product, CN: Precondition: connected.<br>IoCapabilities set to displayYesNo.
+
+    rect rgb(230, 230, 240)
+        note over Product, CN: Initiate pairing
+        Product->>CN: PairAndBond()
+        CN-->>Product: AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+
+        note over Product: Display "485923" to the user.<br>User verifies the same number appears on the peripheral.
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, CN: User confirms match
+        Product->>CN: NumericComparisonConfirm(true)
+        CN-->>Product: NumberOfBondsChanged(1)
+        CN-->>Product: PairingResult(pairedSuccessfully=true)
+
+        note over Product: Bond stored. Keys (LTK, IRK) exchanged.<br>Future reconnections use encryption without re-pairing.
+    end

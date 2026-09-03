@@ -1,0 +1,36 @@
+sequenceDiagram
+    title BinaryPipe Lifecycle: Available, Transfer, Unavailable
+
+    participant Product as Product
+    participant CN as CN<br>[implements BinaryPipeSend,<br>BinaryPipeReceive]
+
+    rect rgb(230, 230, 240)
+        note over Product, CN: 1. Connection available
+        CN-->>Product: BinaryPipeConnection.Available()
+
+        Note over Product: BinaryPipe is ready for data transfer.<br>Send/Receive operations can now be used.
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, CN: 2. Send data
+        Product->>CN: BinaryPipeSend.SendData(<br>subchannel=1, data=256 bytes)
+        CN-->>Product: BinaryPipeSendResponse.SendCompleted()
+
+        Product->>CN: BinaryPipeSend.SendData(<br>subchannel=1, data=256 bytes)
+        CN-->>Product: BinaryPipeSendResponse.SendCompleted()
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, CN: 3. Receive data
+        Product->>CN: BinaryPipeReceive.ReceiveData(<br>subchannel=1, report=true)
+        CN-->>Product: BinaryPipeReceiveResponse.DataReceived(<br>subchannel=1, data=256 bytes)
+        CN-->>Product: BinaryPipeReceiveResponse.DataReceived(<br>subchannel=1, data=256 bytes)
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, CN: 4. Connection lost
+        CN-->>Product: BinaryPipeConnection.Unavailable()
+        CN-->>Product: GapCentralResponse.CurrentState(standby)
+
+        Note over Product: No further Send/Receive operations until<br>a new connection and Available() is received.
+    end

@@ -1,0 +1,29 @@
+sequenceDiagram
+    title BinaryPipe Back-to-Back Send Example: Streaming Sensor Data
+
+    participant Product as Product<br>[implements BinaryPipeSendResponse]
+    participant CN as CN<br>[implements BinaryPipeSend]
+
+    note over Product, CN: Precondition: BLE connected,<br>BinaryPipeConnection.Available received.
+
+    rect rgb(230, 230, 240)
+        note over Product, CN: Send first chunk (512 bytes)
+        Product->>CN: SendData(<br>subchannel=0, data=0xAA0102...FF [512 bytes])
+        CN-->>Product: SendCompleted()
+
+        note over Product: Must wait for SendCompleted<br>before sending the next chunk.
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, CN: Send second chunk
+        Product->>CN: SendData(<br>subchannel=0, data=0xBB0304...FF [512 bytes])
+        CN-->>Product: SendCompleted()
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, CN: Send third chunk
+        Product->>CN: SendData(<br>subchannel=0, data=0xCC0506...FF [256 bytes])
+        CN-->>Product: SendCompleted()
+
+        note over Product: All 1280 bytes sent across 3 chunks.<br>Subchannel 0 used throughout for the same logical stream.
+    end

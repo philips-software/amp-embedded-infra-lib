@@ -1,0 +1,21 @@
+sequenceDiagram
+    participant Product as Product<br>[implements GapCentralResponse]
+    participant CN as CN<br>[implements GapCentral]
+
+    Note over Product, CN: Scanning for peripherals using resolvable private addresses
+
+    Product->>CN: GapCentral.StartDeviceDiscovery()
+    CN-->>Product: GapCentralResponse.CurrentState(scanning)
+    CN-->>Product: GapCentralResponse.DeviceDiscovered(<br>addressWithType={address=6C:8B:2F:3A:9D:41, addressType=randomAddress},<br>rssi=-42)
+
+    Note over Product: Check if this RPA belongs to a known bonded device
+
+    Product->>CN: GapCentral.ResolvePrivateAddress(6C:8B:2F:3A:9D:41)
+
+    alt Device is bonded
+        CN-->>Product: GapCentralResponse.ResolvePrivateAddressResult(<br>success=true, identityAddress=C4:AB:12:34:56:78)
+        Note over Product: Known device, proceed with connection
+    else Device is not bonded
+        CN-->>Product: GapCentralResponse.ResolvePrivateAddressResult(<br>success=false)
+        Note over Product: Unknown device
+    end

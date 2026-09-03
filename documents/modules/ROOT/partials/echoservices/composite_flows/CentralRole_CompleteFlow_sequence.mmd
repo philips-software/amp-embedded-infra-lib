@@ -1,0 +1,84 @@
+sequenceDiagram
+    title BLE Central Complete Flow: Scan, Connect, Pair, Discover, Notify
+
+    participant Product as Product
+    participant CN as CN<br>[implements GapCentral,<br>GattClient]
+    participant Peripheral as BLE Peripheral
+
+    rect rgb(230, 230, 240)
+        note over Product, Peripheral: 1. Configuration
+        Product->>CN: GapCentral.SetSecurityMode(<br>mode=mode1, level=authenticatedPairing)
+        Product->>CN: GapCentral.SetIoCapabilities(displayYesNo)
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, Peripheral: 2. Discovery
+        Product->>CN: GapCentral.SetDeviceDiscoveryFilter(<br>filter=address, data=C4:AB:12:34:56:78)
+        Product->>CN: GapCentral.StartDeviceDiscovery()
+        CN-->>Product: GapCentralResponse.CurrentState(scanning)
+
+        loop Until target peripheral is found
+            Peripheral-->>CN: Advertisement / scan response
+            CN-->>Product: GapCentralResponse.DeviceDiscovered(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>rssi=-38, advertisingReportType=advInd)
+        end
+
+        Product->>CN: GapCentral.Standby()
+        CN-->>Product: GapCentralResponse.CurrentState(standby)
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, Peripheral: 3. Connection
+        Product->>CN: GapCentral.Connect(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
+        CN-->>Product: GapCentralResponse.CurrentState(initiating)
+        CN->>Peripheral: BLE connection request
+        Peripheral-->>CN: Connection accepted
+        CN-->>Product: GapCentralResponse.CurrentState(connected)
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, Peripheral: 4. Pairing and bonding
+        Product->>CN: GapCentral.PairAndBond()
+        CN-->>Product: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+
+        Note over Product: User confirms numeric comparison or enters passkey
+
+        Product->>CN: GapCentral.NumericComparisonConfirm(true)
+        CN-->>Product: GapCentralResponse.NumberOfBondsChanged(1)
+        CN-->>Product: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, Peripheral: 5. GATT service discovery
+        Product->>CN: GattClient.StartServiceDiscovery()
+        loop For each service
+            CN-->>Product: GattClientResponse.ServiceDiscovered(<br>uuid=0x180F, handles={startHandle=0x0020, endHandle=0x0028})
+        end
+        CN-->>Product: GattClientResponse.ServiceDiscoveryComplete()
+
+        Product->>CN: GattClient.StartCharacteristicDiscovery(<br>startHandle=0x0020, endHandle=0x0028)
+        loop For each characteristic
+            CN-->>Product: GattClientResponse.CharacteristicDiscovered(<br>uuid=0x2A19, handle=0x0024, valueHandle=0x0025, properties=0x12)
+        end
+        CN-->>Product: GattClientResponse.CharacteristicDiscoveryComplete()
+
+        Product->>CN: GattClient.StartDescriptorDiscovery(<br>startHandle=0x0026, endHandle=0x0028)
+        loop For each descriptor
+            CN-->>Product: GattClientResponse.DescriptorDiscovered(<br>uuid=0x2902, handle=0x0026)
+        end
+        CN-->>Product: GattClientResponse.DescriptorDiscoveryComplete()
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, Peripheral: 6. Enable notifications
+        Product->>CN: GattClient.WriteDescriptor(<br>handle=0x0026, data=0x0100)
+        Note right of Product: 0x0100 = notifications enabled (CCCD)
+        CN-->>Product: GattClientResponse.OperationComplete(success)
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, Peripheral: 7. Runtime data
+        Peripheral->>CN: Notification on characteristic
+        CN-->>Product: GattClientResponse.NotificationReceived(<br>handle=0x0025, data=0x64)
+        Peripheral->>CN: Notification on characteristic
+        CN-->>Product: GattClientResponse.NotificationReceived(<br>handle=0x0025, data=0x63)
+    end

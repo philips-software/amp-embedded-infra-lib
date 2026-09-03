@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant Product as Product
+    participant CN as CN<br>[implements GapCentral]
+    participant Peripheral as BLE Peripheral
+
+    rect rgb(230, 230, 240)
+        note over Product, Peripheral: Connect without pairing
+        Product->>CN: GapCentral.Connect(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
+        CN-->>Product: GapCentralResponse.CurrentState(initiating)
+        CN-->>Product: GapCentralResponse.CurrentState(connected)
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, Peripheral: Condor initialization fails
+        Note over Product: Attempt to initialize Condor service<br>on unencrypted connection.
+
+        Note over Product, Peripheral: Condor requires an encrypted link.<br>Without PairAndBond, the Condor service<br>will not respond or will reject requests.
+
+        Note over Product: Resolution: call GapCentral.PairAndBond()<br>before initializing Condor.
+    end

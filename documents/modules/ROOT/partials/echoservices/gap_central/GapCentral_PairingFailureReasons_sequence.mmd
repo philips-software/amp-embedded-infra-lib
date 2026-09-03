@@ -1,0 +1,32 @@
+sequenceDiagram
+    participant Product as Product<br>[implements GapCentralResponse]
+    participant CN as CN<br>[implements GapCentral]
+
+    Note over Product, CN: Pairing failure with specific PairingFailedReason
+
+    rect rgb(230, 230, 240)
+        note over Product, CN: Authentication requirements mismatch
+        Product->>CN: GapCentral.PairAndBond()
+        CN-->>Product: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false,<br>reason=authenticationRequirementsNotMet)
+
+        Note over Product: Peer requires higher security level<br>than our IoCapabilities can provide.
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, CN: Encryption failed after SMP
+        Product->>CN: GapCentral.PairAndBond()
+        CN-->>Product: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+        Product->>CN: GapCentral.NumericComparisonConfirm(true)
+        CN-->>Product: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false,<br>reason=encryptionFailed)
+
+        Note over Product: SMP key exchange succeeded but link-layer<br>encryption setup failed. Connection may drop.
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, CN: Re-encryption with stale bond
+        Product->>CN: GapCentral.PairAndBond()
+        CN-->>Product: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false,<br>reason=keyRejected)
+        CN-->>Product: GapCentralResponse.CurrentState(standby)
+
+        Note over Product: Stored bond keys no longer accepted by peer.<br>Remove bond and re-pair from scratch.
+    end

@@ -1,0 +1,35 @@
+sequenceDiagram
+    participant Product as Product<br>[implements GapPeripheralResponse]
+    participant CN as CN<br>[implements GapPeripheral]
+    participant Central as BLE Central
+
+    rect rgb(230, 230, 240)
+        note over Product, Central: 1. Initial bond established
+        Product->>CN: GapPeripheral.Advertise(type=advInd, advertisingInterval=160)
+        CN-->>Product: GapPeripheralResponse.CurrentState(advertising)
+        Central->>CN: Connect + Pair
+        CN-->>Product: GapPeripheralResponse.CurrentState(connected)
+        CN-->>Product: GapPeripheralResponse.NumberOfBondsChanged(1)
+        CN-->>Product: GapPeripheralResponse.PairingResult(pairedSuccessfully=true)
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, Central: 2. Central disconnects and removes its bond
+        Central--xCN: Disconnect
+        CN-->>Product: GapPeripheralResponse.CurrentState(standby)
+
+        Note over Product: Central has removed its bond locally.<br>Peripheral still has the bond stored.
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, Central: 3. Central reconnects - bond mismatch
+        Product->>CN: GapPeripheral.Advertise(type=advInd, advertisingInterval=160)
+        CN-->>Product: GapPeripheralResponse.CurrentState(advertising)
+        Central->>CN: Connect (no bond on central side)
+        CN-->>Product: GapPeripheralResponse.CurrentState(connected)
+
+        Note over Product: Central initiates new pairing.<br>Peripheral accepts and replaces the old bond.
+
+        CN-->>Product: GapPeripheralResponse.NumberOfBondsChanged(1)
+        CN-->>Product: GapPeripheralResponse.PairingResult(pairedSuccessfully=true)
+    end

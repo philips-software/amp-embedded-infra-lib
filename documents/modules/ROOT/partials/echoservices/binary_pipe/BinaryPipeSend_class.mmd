@@ -1,0 +1,10 @@
+classDiagram
+    class BinaryPipeSend {
+        <<service id=115>>
+        +SendData()
+    }
+    class BinaryPipeSendResponse {
+        <<service id=116>>
+        +SendCompleted()
+    }
+    BinaryPipeSend --> BinaryPipeSendResponse : responses

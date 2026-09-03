@@ -1,0 +1,29 @@
+sequenceDiagram
+    participant Product as Product<br>[implements GattClientResponse]
+    participant CN as CN<br>[implements GattClient]
+
+    Product->>CN: GattClient.MtuSizeExchangeRequest()
+    CN-->>Product: GattClientResponse.MtuSizeExchangeComplete(247)
+
+    Product->>CN: GattClient.StartServiceDiscovery()
+    loop 0..n services
+        CN-->>Product: GattClientResponse.ServiceDiscovered(<br>uuid=0x180F, handles={startHandle=0x0020, endHandle=0x0028})
+    end
+    CN-->>Product: GattClientResponse.ServiceDiscoveryComplete()
+
+    loop For each Service
+        Product->>CN: GattClient.StartCharacteristicDiscovery(<br>startHandle=0x0020, endHandle=0x0028)
+        loop 0..n characteristics
+            CN-->>Product: GattClientResponse.CharacteristicDiscovered(<br>uuid=0x2A19, handle=0x0024,<br>valueHandle=0x0025, properties=0x12)
+            Note right of Product: properties bitfield: 0x02=read, 0x10=notify<br>0x12 = read + notify
+        end
+        CN-->>Product: GattClientResponse.CharacteristicDiscoveryComplete()
+    end
+
+    loop For each Characteristic
+        Product->>CN: GattClient.StartDescriptorDiscovery(<br>startHandle=0x0026, endHandle=0x0028)
+        loop 0..n descriptors
+            CN-->>Product: GattClientResponse.DescriptorDiscovered(<br>uuid=0x2902, handle=0x0026)
+        end
+        CN-->>Product: GattClientResponse.DescriptorDiscoveryComplete()
+    end

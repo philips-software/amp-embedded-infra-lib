@@ -1,0 +1,5 @@
+sequenceDiagram
+    participant Product as Product<br>[implements BinaryPipePatternSendResponse]
+    participant CN as CN<br>[implements BinaryPipePatternSend]
+    Product->>CN: BinaryPipePatternSend.SendData(<br>subchannel=1, sizeBytes=1024, pattern=0xA5)
+    CN-->>Product: BinaryPipePatternSendResponse.SendCompleted()

@@ -1,0 +1,6 @@
+sequenceDiagram
+    participant Product as Product<br>[implements GapPeripheralResponse]
+    participant CN as CN<br>[implements GapPeripheral]
+    Product->>CN: GapPeripheral.Advertise(type=advInd, advertisingInterval=160)
+    Note right of Product: advertisingInterval is in units of 0.625 ms<br>160 * 0.625 ms = 100 ms
+    CN-->>Product: GapPeripheralResponse.CurrentState(advertising)

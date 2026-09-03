@@ -1,0 +1,25 @@
+sequenceDiagram
+    participant Product as Product<br>[implements GapCentralResponse]
+    participant CN as CN<br>[implements GapCentral]
+
+    Note over Product, CN: Precondition: standby
+
+    Product->>CN: GapCentral.SetIdentityAddress(<br>address=00:1A:7D:DA:71:13, addressType=publicAddress)
+    Product->>CN: GapCentral.SetPrivacyMode(true)
+
+    Note over Product, CN: Central now uses resolvable private addresses
+
+    Product->>CN: GapCentral.StartDeviceDiscovery()
+    CN-->>Product: GapCentralResponse.CurrentState(scanning)
+    CN-->>Product: GapCentralResponse.DeviceDiscovered(<br>addressWithType={address=6C:8B:2F:3A:9D:41, addressType=randomAddress},<br>rssi=-42)
+
+    Note over Product: Peer advertising with resolvable private address (RPA)
+
+    Product->>CN: GapCentral.Standby()
+    CN-->>Product: GapCentralResponse.CurrentState(standby)
+
+    Product->>CN: GapCentral.Connect(<br>addressWithType={address=6C:8B:2F:3A:9D:41, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
+    CN-->>Product: GapCentralResponse.CurrentState(initiating)
+    CN-->>Product: GapCentralResponse.CurrentState(connected)
+
+    Note over Product, CN: Controller resolves peer RPA automatically using stored IRK

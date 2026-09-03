@@ -1,0 +1,21 @@
+sequenceDiagram
+    participant Product as Product<br>[implements GapCentralResponse]
+    participant CN as CN<br>[implements GapCentral]
+
+    Note over Product, CN: Precondition: connected, IoCapabilities set to displayYesNo or keyboardDisplay
+
+    Product->>CN: GapCentral.PairAndBond()
+    CN-->>Product: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+
+    Note over Product: Display passkey, user confirms match
+
+    alt User confirms
+        Product->>CN: GapCentral.NumericComparisonConfirm(true)
+        CN-->>Product: GapCentralResponse.NumberOfBondsChanged(1)
+        CN-->>Product: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+    else User rejects
+        Product->>CN: GapCentral.NumericComparisonConfirm(false)
+        CN-->>Product: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=numericComparisonFailed)
+    else Timeout (30s SMP timeout)
+        CN-->>Product: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=timeout)
+    end

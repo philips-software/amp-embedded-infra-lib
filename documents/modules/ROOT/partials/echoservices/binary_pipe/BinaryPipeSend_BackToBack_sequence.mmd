@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant Product as Product<br>[implements BinaryPipeSendResponse]
+    participant CN as CN<br>[implements BinaryPipeSend]
+
+    Note over Product, CN: Precondition: BinaryPipeConnection.Available received
+
+    Product->>CN: BinaryPipeSend.SendData(<br>subchannel=1, data=256 bytes)
+    Note right of Product: Must wait for SendCompleted before next send
+    CN-->>Product: BinaryPipeSendResponse.SendCompleted()
+
+    Product->>CN: BinaryPipeSend.SendData(<br>subchannel=1, data=256 bytes)
+    CN-->>Product: BinaryPipeSendResponse.SendCompleted()
+
+    Product->>CN: BinaryPipeSend.SendData(<br>subchannel=1, data=256 bytes)
+    CN-->>Product: BinaryPipeSendResponse.SendCompleted()

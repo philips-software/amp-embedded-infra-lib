@@ -1,0 +1,10 @@
+sequenceDiagram
+    participant Product as Product<br>[implements GattClientResponse]
+    participant CN as CN<br>[implements GattClient]
+
+    CN-->>Product: GattClientResponse.NotificationReceived(<br>handle=0x0025, data=0x64)
+    Note right of Product: No acknowledgement needed
+
+    CN-->>Product: GattClientResponse.IndicationReceived(<br>handle=0x0025, data=0x64)
+    Product->>CN: GattClient.IndicationDone()
+    Note right of Product: Must be called for every IndicationReceived

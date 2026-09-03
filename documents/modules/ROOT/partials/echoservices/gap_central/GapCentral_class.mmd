@@ -1,0 +1,31 @@
+classDiagram
+    class GapCentral {
+        <<service id=33>>
+        +GetState()
+        +SetDeviceDiscoveryFilter()
+        +StartDeviceDiscovery()
+        +Connect()
+        +Standby()
+        +PairAndBond()
+        +SetSecurityMode()
+        +SetIoCapabilities()
+        +AuthenticateWithPasskey()
+        +NumericComparisonConfirm()
+        +RemoveAllBonds()
+        +RemoveBondWithAddress()
+        +ResolvePrivateAddress()
+        +GetBondList()
+        +SetIdentityAddress()
+        +SetPrivacyMode()
+    }
+    class GapCentralResponse {
+        <<service id=35>>
+        +CurrentState()
+        +DeviceDiscovered()
+        +AuthenticationRequired()
+        +PairingResult()
+        +ResolvePrivateAddressResult()
+        +NumberOfBondsChanged()
+        +BondListReceived()
+    }
+    GapCentral --> GapCentralResponse : responses
