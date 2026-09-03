@@ -528,9 +528,9 @@ So even though both parameters start with typename, the first parameter takes a 
 
 *Rationale 16.* The rules of the C++ language are documented in the C++ standard. In addition to these standard rules, vendors’ hallucinations about what might be unsafe are stacked on top of this, in the form of warnings that change with platform and version, and for which the cure may be worse than the disease. While warnings exist that really help improving quality, many warnings are just white noise. Examples of the latter category are warnings about unused parameters (GCC), and warnings about the use of the standard function `std::copy` (MSVC), with the unhelpful suggestion to use the non-portable and thus unusable `make_checked_array_iterator` extension.
 
-When intentionally keeping a parameter or local variable unused, prefer `[[maybe_unused]]` over `static_cast<void>(value)`.
-
 When in doubt, disable each warning that pops up, because our unit tests are far better suited at communicating whether your code is correct or not.
+
+When intentionally keeping a parameter or local variable unused, prefer `[[maybe_unused]]` over `static_cast<void>(value)`.
 
 [NOTE]
 Platform software such as CMSIS often produces warnings out-of-the-box. Since this code is most often written in C, and since we usually do not write code in C, consider disabling all warnings for the C language.
