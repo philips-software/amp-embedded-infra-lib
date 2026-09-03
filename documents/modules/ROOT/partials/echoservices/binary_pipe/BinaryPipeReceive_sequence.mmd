@@ -1,6 +1,0 @@
-sequenceDiagram
-    participant Product as Product<br>[implements BinaryPipeReceiveResponse]
-    participant CN as CN<br>[implements BinaryPipeReceive]
-    Product->>CN: BinaryPipeReceive.ReceiveData(<br>subchannel=1, report=true)
-    Note right of CN: report=true enables DataReceived callbacks
-    CN-->>Product: BinaryPipeReceiveResponse.DataReceived(<br>subchannel=1, data=256 bytes)
