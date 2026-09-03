@@ -104,7 +104,7 @@ namespace services
     void CertificatesMbedTls::WritePrivateKey(infra::BoundedString& outputBuffer)
     {
         psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
-        really_assert(mbedtls_pk_get_psa_attributes(&privateKey, PSA_KEY_USAGE_SIGN_HASH, &attributes) == 0);
+        really_assert(mbedtls_pk_get_psa_attributes(&privateKey, PSA_KEY_USAGE_SIGN_HASH | PSA_KEY_USAGE_EXPORT, &attributes) == 0);
 
         mbedtls_svc_key_id_t keyId = MBEDTLS_SVC_KEY_ID_INIT;
         really_assert(mbedtls_pk_import_into_psa(&privateKey, &attributes, &keyId) == 0);
