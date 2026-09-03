@@ -127,7 +127,7 @@ service GattClient
 
     // Expected response: GattClientResponse.ServiceDiscoveryComplete
     // Additional responses: zero or more GattClientResponse.ServiceDiscovered
-    // Description: Discovers all services on the remote device.
+    // Description: Discovers all services.
     rpc StartServiceDiscovery(Nothing) returns (Nothing) { option (method_id) = 2; }
 
     // Expected response: GattClientResponse.CharacteristicDiscoveryComplete
