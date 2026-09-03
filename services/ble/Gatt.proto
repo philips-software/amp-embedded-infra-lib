@@ -118,7 +118,8 @@ service GattClient
 {
     option (service_id) = 134;
 
-    // Expected response: GattClientResponse.MtuSizeExchangeComplete
+    // Expected response: GattClientResponse.OperationComplete
+    // Additional responses: GattClientResponse.MtuSizeExchangeComplete
     // Description: Requests the MTU size to be increased from the default, for better throughput.
     //   May only be called once per connection.
     //   The effective MTU size is implementation defined.
