@@ -6,9 +6,16 @@
 #include "infra/util/Observer.hpp"
 #include "protobuf/echo/EchoErrorPolicy.hpp"
 #include "protobuf/echo/Serialization.hpp"
+#include <cstdint>
 
 namespace services
 {
+    enum class EchoChannel : uint8_t
+    {
+        red = 4,
+        blue = 5
+    };
+
     class Echo;
     class Service;
     class ServiceProxy;
@@ -18,14 +25,20 @@ namespace services
     {
     public:
         using infra::Observer<Service, Echo>::Observer;
+        Service(Echo& echo, EchoChannel channel = EchoChannel::red);
 
         virtual bool AcceptsService(uint32_t id) const = 0;
+        EchoChannel Channel() const;
+        void SetChannel(EchoChannel channel);
 
         void MethodDone();
         virtual infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy) = 0;
 
     protected:
         Echo& Rpc();
+
+    private:
+        EchoChannel channel = EchoChannel::red;
     };
 
     class ServiceProxy
@@ -43,6 +56,8 @@ namespace services
         uint32_t MaxMessageSize() const;
         uint32_t CurrentRequestedSize() const;
         uint32_t ServiceId() const;
+        EchoChannel Channel() const;
+        void SetChannel(EchoChannel channel);
         void SetSerializer(const infra::SharedPtr<MethodSerializer>& serializer);
 
     protected:
@@ -52,6 +67,7 @@ namespace services
         Echo& echo;
         uint32_t maxMessageSize;
         uint32_t serviceId;
+        EchoChannel channel = EchoChannel::red;
         infra::AutoResetFunction<void()> onGranted;
         uint32_t currentRequestedSize = 0;
         infra::SharedPtr<MethodSerializer> methodSerializer;

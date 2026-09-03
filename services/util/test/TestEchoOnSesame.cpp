@@ -69,7 +69,7 @@ TEST_F(EchoOnSesameTest, invoke_service_proxy_method)
 
 TEST_F(EchoOnSesameTest, invoke_service_proxy_method_on_blue_channel_when_mapped)
 {
-    echo.SetServiceChannel(services::ServiceStubProxy::serviceId, services::SesameChannel::blue);
+    serviceProxy.SetChannel(services::EchoChannel::blue);
     EXPECT_CALL(sesame, ResetReading());
     sesame.GetObserver().Initialized();
 
@@ -170,7 +170,7 @@ TEST_F(EchoOnSesameTest, service_method_is_invoked)
 
 TEST_F(EchoOnSesameTest, service_method_is_invoked_only_on_configured_channel)
 {
-    echo.SetServiceChannel(services::ServiceStub::serviceId, services::SesameChannel::blue);
+    service.SetChannel(services::EchoChannel::blue);
 
     EXPECT_CALL(service, Method(5)).WillOnce(testing::Invoke([this]()
         {

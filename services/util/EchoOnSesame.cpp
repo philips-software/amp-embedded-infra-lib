@@ -1,6 +1,5 @@
 #include "services/util/EchoOnSesame.hpp"
 #include "infra/syntax/ProtoParser.hpp"
-#include "infra/util/ReallyAssert.hpp"
 
 namespace services
 {
@@ -40,28 +39,6 @@ namespace services
             RequestSendStream(*std::exchange(requestedSize, std::nullopt));
     }
 
-    void EchoOnSesame::SetServiceChannel(uint32_t serviceId, SesameChannel channel)
-    {
-        for (std::size_t i = 0; i != numberOfMappedServices; ++i)
-            if (serviceChannels[i].first == serviceId)
-            {
-                serviceChannels[i].second = channel;
-                return;
-            }
-
-        really_assert(numberOfMappedServices != serviceChannels.size());
-        serviceChannels[numberOfMappedServices++] = { serviceId, channel };
-    }
-
-    SesameChannel EchoOnSesame::ServiceChannel(uint32_t serviceId) const
-    {
-        for (std::size_t i = 0; i != numberOfMappedServices; ++i)
-            if (serviceChannels[i].first == serviceId)
-                return serviceChannels[i].second;
-
-        return SesameChannel::red;
-    }
-
     void EchoOnSesame::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer, SesameChannel channel)
     {
         static_cast<void>(channel);
@@ -76,7 +53,9 @@ namespace services
 
     void EchoOnSesame::RequestSendStream(std::size_t size)
     {
-        requestedChannel = sendingProxy == nullptr ? SesameChannel::red : ServiceChannel(sendingProxy->ServiceId());
+        requestedChannel = sendingProxy == nullptr
+                               ? SesameChannel::red
+                               : static_cast<SesameChannel>(sendingProxy->Channel());
         if (initialized)
             SesameObserver::Subject().RequestSendMessage(std::min(size, SesameObserver::Subject().MaxSendMessageSize()), requestedChannel);
         else
@@ -95,7 +74,7 @@ namespace services
         sendingProxy = &proxy;
     }
 
-    bool EchoOnSesame::ReceiveOnConfiguredChannel(infra::StreamReaderWithRewinding& reader, SesameChannel channel) const
+    bool EchoOnSesame::ReceiveOnConfiguredChannel(infra::StreamReaderWithRewinding& reader, SesameChannel channel)
     {
         auto marker = reader.ConstructSaveMarker();
         infra::DataInputStream::WithErrorPolicy stream(reader, infra::softFail);
@@ -107,6 +86,18 @@ namespace services
         if (stream.Failed() || formatErrorPolicy.Failed())
             return true;
 
-        return ServiceChannel(serviceId) == channel;
+        EchoChannel configuredChannel = EchoChannel::red;
+        static_cast<services::Echo&>(*this).NotifyObservers([serviceId, &configuredChannel](auto& service)
+            {
+                if (service.AcceptsService(serviceId))
+                {
+                    configuredChannel = service.Channel();
+                    return true;
+                }
+
+                return false;
+            });
+
+        return static_cast<SesameChannel>(configuredChannel) == channel;
     }
 }

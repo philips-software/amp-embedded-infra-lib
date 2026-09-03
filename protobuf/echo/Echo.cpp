@@ -8,6 +8,21 @@ namespace services
         Rpc().ServiceDone();
     }
 
+    Service::Service(Echo& echo, EchoChannel channel)
+        : infra::Observer<Service, Echo>(echo)
+        , channel(channel)
+    {}
+
+    EchoChannel Service::Channel() const
+    {
+        return channel;
+    }
+
+    void Service::SetChannel(EchoChannel channel)
+    {
+        this->channel = channel;
+    }
+
     Echo& Service::Rpc()
     {
         return Subject();
@@ -73,6 +88,16 @@ namespace services
     uint32_t ServiceProxy::ServiceId() const
     {
         return serviceId;
+    }
+
+    EchoChannel ServiceProxy::Channel() const
+    {
+        return channel;
+    }
+
+    void ServiceProxy::SetChannel(EchoChannel channel)
+    {
+        this->channel = channel;
     }
 
     void ServiceProxy::SetSerializer(const infra::SharedPtr<MethodSerializer>& serializer)
