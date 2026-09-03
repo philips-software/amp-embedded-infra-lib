@@ -41,6 +41,15 @@ TEST_F(BondStorageInteractorTest, construction_allocates_interactable_bond_stora
 {
 }
 
+TEST_F(BondStorageInteractorTest, construction_without_maximum_allocates_all_bonds_of_the_synchroniser)
+{
+    EXPECT_CALL(bondStorageSynchroniser, GetMaxNumberOfBonds()).WillOnce(testing::Return(5));
+    EXPECT_CALL(bondStorageSynchroniser, AllocateInteractableBondStorage(5));
+    services::BondStorageInteractor interactorWithoutMaximum{ services::Role::central, bondStorageSynchroniser };
+
+    EXPECT_THAT(interactorWithoutMaximum.GetMaxNumberOfBonds(), testing::Eq(5u));
+}
+
 TEST_F(BondStorageInteractorTest, add_bond_is_forwarded_with_role)
 {
     EXPECT_CALL(bondStorageSynchroniser, GetNumberOfBondsForRole(role)).WillOnce(testing::Return(1));

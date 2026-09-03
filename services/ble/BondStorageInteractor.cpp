@@ -18,7 +18,7 @@ namespace services
 
     void BondStorageInteractor::AddBond(const services::Bond& bond)
     {
-        really_assert_with_msg(GetNumberOfBonds() < maxBondsForThisRole, "AddBond: %d >= %d", GetNumberOfBonds(), maxBondsForThisRole); // TODO: Temporary verbose assert
+        really_assert(GetNumberOfBonds() < maxBondsForThisRole);
         really_assert(!bondStorageSynchroniser.GetBond(role, bond.address).has_value());
         bondStorageSynchroniser.AddBond(role, bond);
     }
