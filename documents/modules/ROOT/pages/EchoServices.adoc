@@ -1,0 +1,43 @@
+= Echo Services
+:source-highlighter: highlight.js
+:highlightjs-languages: protobuf
+
+This section documents the concrete Echo services that ship with the Embedded Infrastructure Library and closely related products. The xref:Echo.adoc[Echo] page describes the underlying protocol, encoding rules, and message conventions; the pages below describe individual services — their responsibilities, allowed states, message flows, and typical interaction patterns.
+
+Each service is defined in a `.proto` file, exposes a set of RPC methods, and is paired with a matching response service that carries the asynchronous callbacks.
+
+== Service Structure
+
+An Echo service definition consists of:
+
+* A request service (e.g. `GapCentral`) that lists the RPC methods a caller can invoke.
+* A response service (e.g. `GapCentralResponse`) that lists the asynchronous callbacks the caller receives.
+* Optionally a readiness service used during startup handshakes.
+
+Every service has a unique `service_id`, and every RPC method within a service has a unique `method_id`. Both are encoded on the wire as described in xref:Echo.adoc[Echo].
+
+Each service page documents:
+
+* The interface (class diagram).
+* State constraints, callback constraints, and startup handshake.
+* One sequence diagram per RPC method.
+* Cross-service and end-to-end sequences that illustrate typical flows.
+* Concrete examples with real values where useful.
+
+== Available Services
+
+* xref:EchoServices/GapPeripheral.adoc[GapPeripheral] — BLE peripheral GAP role.
+* xref:EchoServices/GapCentral.adoc[GapCentral] — BLE central GAP role.
+* xref:EchoServices/GattClient.adoc[GattClient] — GATT client (discovery, read, write, notify, indicate) and the companion `GattServerDisService`.
+* xref:EchoServices/BinaryPipe.adoc[BinaryPipe] — Arbitrary and pattern-based binary data transfer over Echo.
+* xref:EchoServices/EndToEndFlows.adoc[End-to-End Flows] — Cross-service composite flows and protocol-stack overview.
+
+== Conventions
+
+Unless a service's page overrides them, the following conventions apply:
+
+* All methods are asynchronous. Callbacks are delivered on the paired response service.
+* A service is only available after its startup handshake completes (typically the first `CurrentState` callback).
+* Calling a method outside its allowed states results in an assertion.
+* When a callback is specified for a method, another call of the same method is not allowed until the callback has been received.
+* Deprecated methods and services are marked as such and will be removed in a future release.

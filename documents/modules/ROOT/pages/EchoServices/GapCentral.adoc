@@ -1,0 +1,169 @@
+= GapCentral
+:source-highlighter: highlight.js
+:highlightjs-languages: protobuf
+
+`GapCentral` implements the BLE GAP central role: scanning, connecting, pairing/bonding, security configuration, and identity/privacy management. All asynchronous callbacks are delivered on `GapCentralResponse`.
+
+== State Constraints
+
+After startup this service is only available after `GapCentralResponse.CurrentState(standby)` has been received. Unless a method's documentation specifies otherwise, all methods are allowed in all link-layer states.
+
+== Interface
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_class.mmd[]
+....
+
+== State Diagram
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_state.mmd[]
+....
+
+== Per-Method Sequence Diagrams
+
+=== GetState
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_GetState_sequence.mmd[]
+....
+
+=== Standby
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_Standby_sequence.mmd[]
+....
+
+=== StartDeviceDiscovery
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_StartDeviceDiscovery_sequence.mmd[]
+....
+
+=== Connect
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_Connect_sequence.mmd[]
+....
+
+=== PairAndBond
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_PairAndBond_sequence.mmd[]
+....
+
+=== NumericComparison Authentication
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_NumericComparison_sequence.mmd[]
+....
+
+=== Passkey Authentication
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_PasskeyAuthentication_sequence.mmd[]
+....
+
+=== ResolvePrivateAddress
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_ResolvePrivateAddress_sequence.mmd[]
+....
+
+=== GetBondList
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_GetBondList_sequence.mmd[]
+....
+
+=== RemoveAllBonds
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_RemoveAllBonds_sequence.mmd[]
+....
+
+=== RemoveBondWithAddress
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_RemoveBondWithAddress_sequence.mmd[]
+....
+
+== Cross-Service Sequence Diagrams
+
+=== Discovery and Connection
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_DiscoveryAndConnection_sequence.mmd[]
+....
+
+=== Discovery Timeout
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_DiscoveryTimeout_sequence.mmd[]
+....
+
+=== Enable Privacy
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_EnablePrivacy_sequence.mmd[]
+....
+
+=== Identify Bonded Device
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_IdentifyBondedDevice_sequence.mmd[]
+....
+
+=== Selective Bond Removal
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_SelectiveBondRemoval_sequence.mmd[]
+....
+
+=== Pairing Failure Reasons
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_PairingFailureReasons_sequence.mmd[]
+....
+
+=== Condor Without Security
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_CondorWithoutSecurity_sequence.mmd[]
+....
+
+== Examples
+
+=== Discovery and Connection
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_DiscoveryAndConnection_sequence_example.mmd[]
+....
+
+=== Numeric Comparison Pairing
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_NumericComparison_sequence_example.mmd[]
+....
