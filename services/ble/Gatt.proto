@@ -211,20 +211,20 @@ service GattClientResponse
     // Description: Returns the value read from the descriptor.
     rpc ReadDescriptorResponse(ReadResult) returns (Nothing) { option (method_id) = 9; }
 
-    // Triggered by: GattClient.WriteCharacteristicWithoutResponse
-    // Description: Reports whether a write without response command was successfully queued by the GATT client for transmission to the GATT server.
-    //  Success indicates the request was processed by the GATT client, but does not guarantee success on the GATT server side.
-    rpc WriteCharacteristicWithoutResponseComplete(OperationResult) returns (Nothing) { option (method_id) = 10; }
-
     // Triggered by: GattClient.MtuSizeExchangeRequest, GattClient.ReadCharacteristic, GattClient.WriteCharacteristic, GattClient.ReadDescriptor, GattClient.WriteDescriptor
     // Description: Reports the outcome of a read or write operation.
-    rpc OperationComplete(OperationResult) returns (Nothing) { option (method_id) = 11; }
+    rpc OperationComplete(OperationResult) returns (Nothing) { option (method_id) = 10; }
 
     // Triggered by: Remote GATT server sending an indication
     // Description: Indicates that an attribute value has changed on the GATT server, and must be acknowledged by the client.
-    rpc IndicationReceived(AttributeData) returns (Nothing) { option (method_id) = 12; }
+    rpc IndicationReceived(AttributeData) returns (Nothing) { option (method_id) = 11; }
 
     // Triggered by: Remote GATT server sending a notification
     // Description: Notifies that an attribute value has changed on the GATT server.
-    rpc NotificationReceived(AttributeData) returns (Nothing) { option (method_id) = 13; }
+    rpc NotificationReceived(AttributeData) returns (Nothing) { option (method_id) = 12; }
+
+    // Triggered by: GattClient.WriteCharacteristicWithoutResponse
+    // Description: Reports whether a write without response command was successfully queued by the GATT client for transmission to the GATT server.
+    //  Success indicates the request was processed by the GATT client, but does not guarantee success on the GATT server side.
+    rpc WriteCharacteristicWithoutResponseComplete(OperationResult) returns (Nothing) { option (method_id) = 13; }
 }
