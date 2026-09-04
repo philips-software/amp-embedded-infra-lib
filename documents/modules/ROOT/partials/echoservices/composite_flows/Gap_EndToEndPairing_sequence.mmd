@@ -1,0 +1,43 @@
+sequenceDiagram
+    participant Product as Product
+    participant CNp as CN Peripheral<br>[implements GapPeripheral]
+    participant CNc as CN Central<br>[implements GapCentral]
+
+    Note over Product, CNc: Initialization (both sides, in standby)
+
+    Product->>CNp: GapPeripheral.SetSecurityPreferences(<br>secureConnections=enforced, mitm=enforced,<br>ioCapabilities=displayYesNo)
+    Product->>CNc: GapCentral.SetSecurityMode(<br>mode=mode1, level=authenticatedPairing)
+    Product->>CNc: GapCentral.SetIoCapabilities(displayYesNo)
+
+    Note over Product, CNc: Connection establishment
+
+    Product->>CNp: GapPeripheral.SetAdvertisementData(<br>data=0x0A 0x09 'N''o''n''i''n''3''1''5''0' 0x03 0x03 0x22 0x18)
+    Product->>CNp: GapPeripheral.Advertise(type=advInd, advertisingInterval=160)
+    CNp-->>Product: GapPeripheralResponse.CurrentState(advertising)
+
+    Product->>CNc: GapCentral.SetDeviceDiscoveryFilter(<br>filter=address, data=C4:AB:12:34:56:78)
+    Product->>CNc: GapCentral.StartDeviceDiscovery()
+    CNc-->>Product: GapCentralResponse.CurrentState(scanning)
+    CNc-->>Product: GapCentralResponse.DeviceDiscovered(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>rssi=-38, advertisingReportType=advInd)
+    Product->>CNc: GapCentral.Standby()
+    CNc-->>Product: GapCentralResponse.CurrentState(standby)
+
+    Product->>CNc: GapCentral.Connect(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
+    CNc-->>Product: GapCentralResponse.CurrentState(initiating)
+    CNc-->>Product: GapCentralResponse.CurrentState(connected)
+    CNp-->>Product: GapPeripheralResponse.CurrentState(connected)
+
+    Note over Product, CNc: Pairing and bonding
+
+    Product->>CNc: GapCentral.PairAndBond()
+    CNc-->>Product: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+    CNp-->>Product: GapPeripheralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+
+    Note over Product, CNc: User confirms on both sides
+
+    Product->>CNc: GapCentral.NumericComparisonConfirm(true)
+    Product->>CNp: GapPeripheral.NumericComparisonConfirm(true)
+    CNc-->>Product: GapCentralResponse.NumberOfBondsChanged(1)
+    CNc-->>Product: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+    CNp-->>Product: GapPeripheralResponse.NumberOfBondsChanged(1)
+    CNp-->>Product: GapPeripheralResponse.PairingResult(pairedSuccessfully=true)

@@ -1,0 +1,48 @@
+sequenceDiagram
+    title BLE Central Discovery and Connection using GapCentral RPCs
+
+    participant Product as Product<br>[implements GapCentralResponse]
+    participant CN as CN<br>[implements GapCentral]
+    participant Peripheral as BLE Peripheral
+
+    rect rgb(230, 230, 240)
+        note over Product, Peripheral: Startup / readiness
+        Product->>CN: GapCentral.GetState()
+        CN-->>Product: GapCentralResponse.CurrentState(standby)
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, Peripheral: Discovery
+        opt Optional discovery filter
+            Product->>CN: GapCentral.SetDeviceDiscoveryFilter(<br>filter=address, data=C4:AB:12:34:56:78)
+        end
+        Product->>CN: GapCentral.StartDeviceDiscovery()
+        CN-->>Product: GapCentralResponse.CurrentState(scanning)
+
+        loop Until target peripheral is found
+            Peripheral-->>CN: Advertisement / scan response
+            CN-->>Product: GapCentralResponse.DeviceDiscovered(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>data=<AD bytes>, rssi=-38, advertisingReportType=advInd)
+        end
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, Peripheral: Stop scanning before connecting
+        Product->>CN: GapCentral.Standby()
+        CN-->>Product: GapCentralResponse.CurrentState(standby)
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, Peripheral: Connect
+        Product->>CN: GapCentral.Connect(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
+        CN-->>Product: GapCentralResponse.CurrentState(initiating)
+
+        alt Connection successful
+            CN->>Peripheral: BLE connection request
+            Peripheral-->>CN: Connection accepted
+            CN-->>Product: GapCentralResponse.CurrentState(connected)
+        else Connection failed / timeout
+            CN->>Peripheral: BLE connection request
+            Peripheral--xCN: No response / reject / timeout
+            CN-->>Product: GapCentralResponse.CurrentState(standby)
+        end
+    end

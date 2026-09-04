@@ -1,0 +1,47 @@
+sequenceDiagram
+    title BLE Central Bonded Reconnection: Re-encrypt and Resume
+
+    participant Product as Product
+    participant CN as CN<br>[implements GapCentral,<br>GattClient]
+    participant Peripheral as BLE Peripheral
+
+    rect rgb(230, 230, 240)
+        note over Product, Peripheral: 1. Scan for known bonded device
+        Product->>CN: GapCentral.StartDeviceDiscovery()
+        CN-->>Product: GapCentralResponse.CurrentState(scanning)
+        CN-->>Product: GapCentralResponse.DeviceDiscovered(<br>addressWithType={address=6C:8B:2F:3A:9D:41, addressType=randomAddress},<br>rssi=-42)
+
+        Product->>CN: GapCentral.ResolvePrivateAddress(6C:8B:2F:3A:9D:41)
+        CN-->>Product: GapCentralResponse.ResolvePrivateAddressResult(<br>success=true, identityAddress=C4:AB:12:34:56:78)
+
+        Note over Product: RPA resolved to known bonded identity address.
+
+        Product->>CN: GapCentral.Standby()
+        CN-->>Product: GapCentralResponse.CurrentState(standby)
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, Peripheral: 2. Reconnect
+        Product->>CN: GapCentral.Connect(<br>addressWithType={address=6C:8B:2F:3A:9D:41, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
+        CN-->>Product: GapCentralResponse.CurrentState(initiating)
+        CN->>Peripheral: BLE connection request
+        Peripheral-->>CN: Connection accepted
+        CN-->>Product: GapCentralResponse.CurrentState(connected)
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, Peripheral: 3. Re-encryption (no user interaction)
+        Product->>CN: GapCentral.PairAndBond()
+        CN-->>Product: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+
+        Note over Product: Existing bond used for re-encryption.<br>No AuthenticationRequired, no user confirmation needed.
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, Peripheral: 4. Resume GATT operations
+        Product->>CN: GattClient.ReadCharacteristic(0x0025)
+        CN-->>Product: GattClientResponse.ReadCharacteristicResponse(<br>data={handle=0x0025, data=0x64})
+        CN-->>Product: GattClientResponse.OperationComplete(success)
+
+        Note over Product: Full GATT access restored without re-discovery<br>if handles are cached from previous session.
+    end

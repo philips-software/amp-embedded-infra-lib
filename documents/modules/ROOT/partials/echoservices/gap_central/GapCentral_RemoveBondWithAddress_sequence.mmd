@@ -1,0 +1,5 @@
+sequenceDiagram
+    participant Product as Product<br>[implements GapCentralResponse]
+    participant CN as CN<br>[implements GapCentral]
+    Product->>CN: GapCentral.RemoveBondWithAddress(<br>address=C4:AB:12:34:56:78, addressType=randomAddress)
+    CN-->>Product: GapCentralResponse.NumberOfBondsChanged(0)

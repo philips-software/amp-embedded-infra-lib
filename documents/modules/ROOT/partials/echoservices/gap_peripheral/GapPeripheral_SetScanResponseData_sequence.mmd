@@ -1,0 +1,6 @@
+sequenceDiagram
+    participant Product as Product<br>[implements GapPeripheralResponse]
+    participant CN as CN<br>[implements GapPeripheral]
+    Product->>CN: GapPeripheral.SetScanResponseData(<br>data=0x0A 0x08 'N''o''n''i''n''3''1''5''0')
+    Note right of Product: 0x0A = AD length (1 type + 9 name bytes),<br>0x08 = 'Shortened Local Name' AD type.<br>See Core Spec v6.3, Vol 3, Part C, Section 11
+    Note right of CN: Fire-and-forget, no response

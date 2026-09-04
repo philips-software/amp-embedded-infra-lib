@@ -1,0 +1,16 @@
+sequenceDiagram
+    participant Product as Product<br>[implements GapCentralResponse]
+    participant CN as CN<br>[implements GapCentral]
+
+    Product->>CN: GapCentral.SetDeviceDiscoveryFilter(<br>filter=address, data=C4:AB:12:34:56:78)
+    Product->>CN: GapCentral.StartDeviceDiscovery()
+    CN-->>Product: GapCentralResponse.CurrentState(scanning)
+
+    Note over Product, CN: No matching devices found.<br>DeviceDiscovered is never received.
+
+    Note over Product: Product-side timeout expires (e.g. 10 s).<br>Stop scanning and handle the failure.
+
+    Product->>CN: GapCentral.Standby()
+    CN-->>Product: GapCentralResponse.CurrentState(standby)
+
+    Note over Product: Discovery timeout is managed by the Product.<br>The CN will scan indefinitely until Standby() is called.

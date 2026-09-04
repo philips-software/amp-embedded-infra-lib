@@ -1,0 +1,55 @@
+= End-to-End Flows
+:source-highlighter: highlight.js
+:highlightjs-languages: protobuf
+
+Cross-service flows that combine multiple services to illustrate typical user journeys.
+
+== Protocol Stack
+
+[mermaid]
+....
+include::partial$echoservices/Multinode_ProtocolStack_component.mmd[]
+....
+
+== BLE Central Complete Flow
+
+Scan, connect, pair, GATT discovery, enable notifications.
+
+[mermaid]
+....
+include::partial$echoservices/composite_flows/CentralRole_CompleteFlow_sequence.mmd[]
+....
+
+== BLE Peripheral Complete Flow
+
+Configure, advertise, accept connection, pair, bond.
+
+[mermaid]
+....
+include::partial$echoservices/composite_flows/PeripheralRole_CompleteFlow_sequence.mmd[]
+....
+
+== GAP End-to-End Pairing
+
+Both roles from the perspective of a single Product controlling both a central and a peripheral CN.
+
+[mermaid]
+....
+include::partial$echoservices/composite_flows/Gap_EndToEndPairing_sequence.mmd[]
+....
+
+=== Example
+
+[mermaid]
+....
+include::partial$echoservices/composite_flows/Gap_EndToEndPairing_sequence_example.mmd[]
+....
+
+== BLE Central Bonded Reconnection
+
+Scan a resolvable private address, resolve, reconnect, re-encrypt, resume GATT operations.
+
+[mermaid]
+....
+include::partial$echoservices/composite_flows/CentralRole_BondedReconnection_sequence.mmd[]
+....

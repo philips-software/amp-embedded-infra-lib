@@ -1,0 +1,49 @@
+graph TD
+    KE["Key Exchange<br>(DiffieHellmanKeyEstablishment)"]
+    FI["Flash Interface<br>(Flash)"]
+    CO["Condor<br>(CondorRequest)"]
+    BCGap["Ble Central Gap<br>(GapCentral)"]
+    BCGatt["Ble Central Gatt<br>(GattClient)"]
+    BPGap["Ble Peripheral Gap<br>(GapPeripheral)"]
+    BPBin["Ble P. Binarypipe<br>(BinaryPipeSendResponse)"]
+
+    KE <--> ECHO
+    FI <--> ECHO
+    CO <--> ECHO
+    BCGap <--> ECHO
+    BCGatt <--> ECHO
+    BPGap <--> ECHO
+    BPBin <--> ECHO
+
+    ECHO["ECHO"]
+
+    subgraph sesame ["Sesame"]
+        Secure
+        Windowing
+        COBS
+    end
+
+    ECHO <--> sesame
+    Secure <--> Windowing <--> COBS
+
+    COBS <--> UART["UART"]
+
+    classDef darkPurple fill:#4a148c,stroke:#4a148c,color:#fff
+    classDef navyBlue fill:#0d1b4a,stroke:#0d1b4a,color:#fff
+    classDef darkBlue fill:#1565c0,stroke:#1565c0,color:#fff
+    classDef blue fill:#1e88e5,stroke:#1e88e5,color:#fff
+    classDef lightBlue fill:#64b5f6,stroke:#64b5f6,color:#000
+    classDef echoBox fill:#2e7d32,stroke:#2e7d32,color:#fff
+    classDef sesameSub fill:#66bb6a,stroke:#66bb6a,color:#000
+    classDef uartBox fill:#2e7d32,stroke:#2e7d32,color:#fff
+
+    class KE darkPurple
+    class FI navyBlue
+    class CO darkBlue
+    class BCGap,BCGatt blue
+    class BPGap,BPBin lightBlue
+    class ECHO echoBox
+    class Secure,Windowing,COBS sesameSub
+    class UART uartBox
+
+    style sesame fill:#2e7d32,stroke:#2e7d32,color:#fff

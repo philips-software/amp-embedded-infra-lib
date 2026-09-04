@@ -1,0 +1,50 @@
+sequenceDiagram
+    title BLE Peripheral Complete Flow: Advertise, Connect, Pair, Bond
+
+    participant Product as Product
+    participant CN as CN<br>[implements GapPeripheral]
+    participant Central as BLE Central
+
+    rect rgb(230, 230, 240)
+        note over Product, Central: 1. Configuration
+        Product->>CN: GapPeripheral.SetSecurityPreferences(<br>secureConnections=enforced, mitm=enforced,<br>ioCapabilities=displayYesNo)
+        Product->>CN: GapPeripheral.SetAdvertisementData(<br>data=0x0A 0x09 'N''o''n''i''n''3''1''5''0' 0x03 0x03 0x22 0x18)
+        Product->>CN: GapPeripheral.SetScanResponseData(<br>data=0x03 0x03 0x22 0x18)
+        Product->>CN: GapPeripheral.SetAllowPairing(true)
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, Central: 2. Start advertising
+        Product->>CN: GapPeripheral.Advertise(type=advInd, advertisingInterval=160)
+        Note right of Product: advertisingInterval=160 -> 100 ms<br>(units of 0.625 ms)
+        CN-->>Product: GapPeripheralResponse.CurrentState(advertising)
+
+        Note over Product, Central: CN is now visible to BLE centrals
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, Central: 3. Central connects
+        Central->>CN: BLE connection request
+        CN-->>Product: GapPeripheralResponse.CurrentState(connected)
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, Central: 4. Pairing (initiated by central)
+        CN-->>Product: GapPeripheralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+
+        Note over Product: User confirms numeric comparison on peripheral side
+
+        Product->>CN: GapPeripheral.NumericComparisonConfirm(true)
+        CN-->>Product: GapPeripheralResponse.NumberOfBondsChanged(1)
+        CN-->>Product: GapPeripheralResponse.PairingResult(pairedSuccessfully=true)
+
+        Note over Product: Bond stored. Peripheral is now bonded with the central.
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, Central: 5. Disconnection
+        Central--xCN: Peer disconnects
+        CN-->>Product: GapPeripheralResponse.CurrentState(standby)
+
+        Note over Product: Can re-advertise to accept new connections.
+    end

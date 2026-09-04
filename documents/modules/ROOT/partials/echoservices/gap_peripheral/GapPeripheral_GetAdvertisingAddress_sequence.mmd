@@ -1,0 +1,5 @@
+sequenceDiagram
+    participant Product as Product<br>[implements GapPeripheralResponse]
+    participant CN as CN<br>[implements GapPeripheral]
+    Product->>CN: GapPeripheral.GetAdvertisingAddress()
+    CN-->>Product: GapPeripheralResponse.AdvertisingAddress(<br>address=C4:AB:12:34:56:78, addressType=randomAddress)

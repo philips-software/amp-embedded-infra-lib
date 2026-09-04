@@ -1,0 +1,43 @@
+sequenceDiagram
+    title BLE Central Discovery and Connection Example: Pulse Oximeter
+
+    participant Product as Product<br>[implements GapCentralResponse]
+    participant CN as CN<br>[implements GapCentral]
+    participant Peripheral as Pulse Oximeter<br>BLE Peripheral
+
+    rect rgb(230, 230, 240)
+        note over Product, Peripheral: Startup / readiness
+        Product->>CN: GapCentral.GetState()
+        CN-->>Product: GapCentralResponse.CurrentState(standby)
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, Peripheral: Discovery
+        Product->>CN: GapCentral.SetDeviceDiscoveryFilter(filter=none)
+        Note right of Product: DeviceDiscoveryFilter only supports address / manufacturerSpecificData.<br>Name filtering ("Nonin3150") is applied Product-side after DeviceDiscovered.
+        Product->>CN: GapCentral.StartDeviceDiscovery()
+        CN-->>Product: GapCentralResponse.CurrentState(scanning)
+
+        Peripheral-->>CN: Advertisement
+        CN-->>Product: GapCentralResponse.DeviceDiscovered(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>data=0x0A 0x09 'N''o''n''i''n''3''1''5''0' 0x03 0x03 0x22 0x18,<br>rssi=-42, advertisingReportType=advInd)
+
+        note over Product: Device name matches "Nonin3150".<br>Address type is random (may be a resolvable private address).
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, Peripheral: Stop scanning before connecting
+        Product->>CN: GapCentral.Standby()
+        CN-->>Product: GapCentralResponse.CurrentState(standby)
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, Peripheral: Connect
+        Product->>CN: GapCentral.Connect(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
+        CN-->>Product: GapCentralResponse.CurrentState(initiating)
+
+        CN->>Peripheral: BLE connection request
+        Peripheral-->>CN: Connection accepted
+        CN-->>Product: GapCentralResponse.CurrentState(connected)
+
+        note over Product: Connection established.<br>Proceed with GATT service discovery.
+    end

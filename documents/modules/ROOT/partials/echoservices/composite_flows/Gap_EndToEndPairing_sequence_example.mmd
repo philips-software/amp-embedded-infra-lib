@@ -1,0 +1,56 @@
+sequenceDiagram
+    title End-to-End BLE Pairing Example: Pulse Oximeter with Numeric Comparison
+
+    participant Product as Product
+    participant GP as GapPeripheral<br>(on CN peripheral)
+    participant GPR as GapPeripheralResponse
+    participant GC as GapCentral<br>(on CN central)
+    participant GCR as GapCentralResponse
+
+    rect rgb(230, 230, 240)
+        note over Product, GCR: Initialization
+        Product->>GP: SetSecurityPreferences(<br>secureConnections=enforced, mitm=enforced,<br>ioCapabilities=displayYesNo)
+        Product->>GC: SetSecurityMode(<br>mode=mode1, level=authenticatedPairingWithLE)
+        Product->>GC: SetIoCapabilities(displayYesNo)
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, GCR: Connection establishment
+        Product->>GP: SetAdvertisementData(<br>data=0x0A 0x09 'N''o''n''i''n''3''1''5''0' 0x03 0x03 0x22 0x18)
+        Note right of Product: Encodes Complete Local Name "Nonin3150"<br>and Complete List of 16-bit Service UUIDs=0x1822 (PLX)
+        Product->>GP: Advertise(type=advInd, advertisingInterval=160)
+        GP-->>GPR: CurrentState(advertising)
+
+        Product->>GC: SetDeviceDiscoveryFilter(filter=none)
+        Note right of Product: DeviceDiscoveryFilter only supports address /<br>manufacturerSpecificData. Name filtering is done Product-side.
+        Product->>GC: StartDeviceDiscovery()
+        GC-->>GCR: CurrentState(scanning)
+        GC-->>GCR: DeviceDiscovered(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>data=0x0A 0x09 'N''o''n''i''n''3''1''5''0' 0x03 0x03 0x22 0x18,<br>rssi=-38, advertisingReportType=advInd)
+
+        Product->>GC: Standby()
+        GC-->>GCR: CurrentState(standby)
+
+        Product->>GC: Connect(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
+        GC-->>GCR: CurrentState(initiating)
+        GC-->>GCR: CurrentState(connected)
+        GP-->>GPR: CurrentState(connected)
+    end
+
+    rect rgb(230, 230, 240)
+        note over Product, GCR: Pairing and bonding (numeric comparison)
+        Product->>GC: PairAndBond()
+        GC-->>GCR: AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+        GP-->>GPR: AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+
+        note over Product: Both sides display 485923.<br>User confirms the numbers match.
+
+        Product->>GC: NumericComparisonConfirm(true)
+        Product->>GP: NumericComparisonConfirm(true)
+
+        GC-->>GCR: NumberOfBondsChanged(1)
+        GC-->>GCR: PairingResult(pairedSuccessfully=true)
+        GP-->>GPR: NumberOfBondsChanged(1)
+        GP-->>GPR: PairingResult(pairedSuccessfully=true)
+
+        note over Product: Pairing complete. IRKs and LTKs exchanged.<br>Both devices are now bonded.
+    end

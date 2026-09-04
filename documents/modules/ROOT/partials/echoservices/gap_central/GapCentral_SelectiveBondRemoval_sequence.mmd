@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant Product as Product<br>[implements GapCentralResponse]
+    participant CN as CN<br>[implements GapCentral]
+
+    Note over Product, CN: Precondition: standby
+
+    Product->>CN: GapCentral.GetBondList()
+    CN-->>Product: GapCentralResponse.BondListReceived(bonds=[<br>{addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress}, deviceName="Nonin3150"},<br>{addressWithType={address=00:1A:7D:DA:71:13, addressType=publicAddress}, deviceName="SensorX"}<br>])
+
+    Note over Product: Select specific bond to remove by identity address
+
+    Product->>CN: GapCentral.RemoveBondWithAddress(<br>address=C4:AB:12:34:56:78, addressType=randomAddress)
+    CN-->>Product: GapCentralResponse.NumberOfBondsChanged(1)
+
+    Note over Product: Verify remaining bonds
+
+    Product->>CN: GapCentral.GetBondList()
+    CN-->>Product: GapCentralResponse.BondListReceived(bonds=[<br>{addressWithType={address=00:1A:7D:DA:71:13, addressType=publicAddress}, deviceName="SensorX"}<br>])

@@ -1,0 +1,115 @@
+= GapPeripheral
+:source-highlighter: highlight.js
+:highlightjs-languages: protobuf
+
+`GapPeripheral` implements the BLE GAP peripheral role. It exposes advertising, connection state, pairing/bonding, and identity address management. All asynchronous callbacks are delivered on `GapPeripheralResponse`.
+
+== State Constraints
+
+After startup this service is only available after `GapPeripheralResponse.CurrentState(standby)` has been received. Unless a method's documentation specifies otherwise, all methods are allowed in all link-layer states. Non-conformance results in an assertion.
+
+== Startup
+
+The first `CurrentState(standby)` message signals that the service is initialized and ready to accept method calls. No `GapPeripheral` methods may be called before this initial callback.
+
+== Interface
+
+[mermaid]
+....
+include::partial$echoservices/gap_peripheral/GapPeripheral_class.mmd[]
+....
+
+== State Diagram
+
+[mermaid]
+....
+include::partial$echoservices/gap_peripheral/GapPeripheral_state.mmd[]
+....
+
+== Per-Method Sequence Diagrams
+
+=== GetState
+
+[mermaid]
+....
+include::partial$echoservices/gap_peripheral/GapPeripheral_GetState_sequence.mmd[]
+....
+
+=== Standby
+
+[mermaid]
+....
+include::partial$echoservices/gap_peripheral/GapPeripheral_Standby_sequence.mmd[]
+....
+
+=== Advertise
+
+[mermaid]
+....
+include::partial$echoservices/gap_peripheral/GapPeripheral_Advertise_sequence.mmd[]
+....
+
+=== SetAllowPairing
+
+[mermaid]
+....
+include::partial$echoservices/gap_peripheral/GapPeripheral_SetAllowPairing_sequence.mmd[]
+....
+
+=== SetScanResponseData
+
+[mermaid]
+....
+include::partial$echoservices/gap_peripheral/GapPeripheral_SetScanResponseData_sequence.mmd[]
+....
+
+=== GetAdvertisingAddress
+
+[mermaid]
+....
+include::partial$echoservices/gap_peripheral/GapPeripheral_GetAdvertisingAddress_sequence.mmd[]
+....
+
+=== GetIdentityAddress
+
+[mermaid]
+....
+include::partial$echoservices/gap_peripheral/GapPeripheral_GetIdentityAddress_sequence.mmd[]
+....
+
+=== GetBondInformation
+
+[mermaid]
+....
+include::partial$echoservices/gap_peripheral/GapPeripheral_GetBondInformation_sequence.mmd[]
+....
+
+=== RemoveAllBonds
+
+[mermaid]
+....
+include::partial$echoservices/gap_peripheral/GapPeripheral_RemoveAllBonds_sequence.mmd[]
+....
+
+=== RemoveOldestBond
+
+[mermaid]
+....
+include::partial$echoservices/gap_peripheral/GapPeripheral_RemoveOldestBond_sequence.mmd[]
+....
+
+== Cross-Service Sequence Diagrams
+
+=== Allow Pairing Rejection
+
+[mermaid]
+....
+include::partial$echoservices/gap_peripheral/GapPeripheral_AllowPairingRejection_sequence.mmd[]
+....
+
+=== Re-bond After Bond Removal
+
+[mermaid]
+....
+include::partial$echoservices/gap_peripheral/GapPeripheral_ReBondAfterBondRemoval_sequence.mmd[]
+....

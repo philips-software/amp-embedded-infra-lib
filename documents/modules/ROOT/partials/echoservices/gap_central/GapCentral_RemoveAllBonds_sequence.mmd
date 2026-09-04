@@ -1,0 +1,5 @@
+sequenceDiagram
+    participant Product as Product<br>[implements GapCentralResponse]
+    participant CN as CN<br>[implements GapCentral]
+    Product->>CN: GapCentral.RemoveAllBonds()
+    CN-->>Product: GapCentralResponse.NumberOfBondsChanged(0)

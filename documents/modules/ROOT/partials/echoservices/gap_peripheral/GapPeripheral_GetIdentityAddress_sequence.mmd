@@ -1,0 +1,5 @@
+sequenceDiagram
+    participant Product as Product<br>[implements GapPeripheralResponse]
+    participant CN as CN<br>[implements GapPeripheral]
+    Product->>CN: GapPeripheral.GetIdentityAddress()
+    CN-->>Product: GapPeripheralResponse.IdentityAddress(<br>address=00:1A:7D:DA:71:13, addressType=publicAddress)
