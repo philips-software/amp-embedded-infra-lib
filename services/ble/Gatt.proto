@@ -167,9 +167,9 @@ service GattClient
     // Description: Writes the value of a descriptor to the GATT server.
     rpc WriteDescriptor(AttributeData) returns (Nothing) { option (method_id) = 9; }
 
-    // Description: Must be called for every GattClientResponse.IndicationReceived to acknowledge the indication.
-    //   May be called while other operations are in progresss.
-    rpc IndicationDone(Nothing) returns (Nothing) { option (method_id) = 10; }
+// Description: Must be called for every GattClientResponse.IndicationReceived to acknowledge the indication.
+//   May be called while other operations are in progress.
+rpc IndicationDone(Nothing) returns (Nothing) { option (method_id) = 10; }
 }
 
 service GattClientResponse
@@ -213,7 +213,7 @@ service GattClientResponse
     rpc ReadDescriptorResponse(ReadResult) returns (Nothing) { option (method_id) = 9; }
 
     // Triggered by: GattClient.MtuSizeExchangeRequest, GattClient.ReadCharacteristic, GattClient.WriteCharacteristic, GattClient.ReadDescriptor, GattClient.WriteDescriptor
-    // Description: Reports the outcome of a read or write operation.
+// Description: Reports the outcome of an MTU exchange, read, or write operation.
     rpc OperationComplete(OperationResult) returns (Nothing) { option (method_id) = 10; }
 
     // Triggered by: Remote GATT server sending an indication
