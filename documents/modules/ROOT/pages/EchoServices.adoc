@@ -2,7 +2,7 @@
 :source-highlighter: highlight.js
 :highlightjs-languages: protobuf
 
-This section documents the concrete Echo services that ship with the Embedded Infrastructure Library and closely related products. The xref:Echo.adoc[Echo] page describes the underlying protocol, encoding rules, and message conventions; the pages below describe individual services — their responsibilities, allowed states, message flows, and typical interaction patterns.
+This section documents the concrete Echo services that ship with the Embedded Infrastructure Library and closely related products. The xref:Echo.adoc[Echo] page describes the underlying protocol, encoding rules, and message conventions; the pages below describe individual services, their responsibilities, allowed states, message flows, and typical interaction patterns.
 
 Each service is defined in a `.proto` file, exposes a set of RPC methods, and is paired with a matching response service that carries the asynchronous callbacks.
 
