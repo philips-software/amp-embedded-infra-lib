@@ -10,24 +10,51 @@ namespace services
         : public BondStorage
     {
     public:
-        MOCK_METHOD1(BondStorageSynchronizerCreated, void(BondStorageSynchronizer& manager));
-        MOCK_METHOD1(UpdateBondedDevice, void(hal::MacAddress address));
-        MOCK_METHOD1(RemoveBond, void(hal::MacAddress address));
-        MOCK_METHOD0(RemoveAllBonds, void());
-        MOCK_METHOD1(RemoveBondIf, void(const infra::Function<bool(hal::MacAddress)>& onAddress));
-        MOCK_CONST_METHOD0(GetMaxNumberOfBonds, uint32_t());
-        MOCK_CONST_METHOD1(IsBondStored, bool(hal::MacAddress address));
-        MOCK_METHOD1(IterateBondedDevices, void(const infra::Function<void(hal::MacAddress)>& onAddress));
+        MOCK_METHOD(void, BondStorageSynchronizerCreated, (BondStorageSynchronizer & manager), (override));
+        MOCK_METHOD(void, AddBond, (Role role, const services::Bond& bond), (override));
+        MOCK_METHOD(void, UpdateBondName, (Role role, const services::GapAddress& address, infra::BoundedConstString name), (override));
+        MOCK_METHOD(void, MarkAsRecentlyUsed, (Role role, const services::GapAddress& address), (override));
+        MOCK_METHOD(void, RemoveBond, (Role role, const services::GapAddress& address), (override));
+        MOCK_METHOD(void, RemoveAllBondsForRole, (Role role), (override));
+        MOCK_METHOD(void, RemoveAllBonds, (), (override));
+        MOCK_METHOD(void, RemoveBondIf, (const infra::Function<bool(const services::Bond&)>& onAddress), (override));
+        MOCK_METHOD(uint32_t, GetNumberOfBondsForRole, (Role role), (const, override));
+        MOCK_METHOD(uint32_t, GetTotalNumberOfBonds, (), (const, override));
+        MOCK_METHOD(uint32_t, GetMaxNumberOfBonds, (), (const, override));
+        MOCK_METHOD(std::optional<services::Bond>, GetBond, (Role role, const services::GapAddress& address), (const, override));
+        MOCK_METHOD(void, IterateBondedDevices, (Role role, const infra::Function<void(const services::Bond&)>& onBond), (override));
+    };
+
+    class BondStorageAbsoluteMock
+        : public BondStorageAbsolute
+    {
+    public:
+        MOCK_METHOD(void, BondStorageSynchronizerCreated, (BondStorageSynchronizer & manager), (override));
+        MOCK_METHOD(void, RemoveBond, (const services::GapAddress& address), (override));
+        MOCK_METHOD(void, RemoveAllBonds, (), (override));
+        MOCK_METHOD(void, RemoveBondIf, (const infra::Function<bool(const services::GapAddress&)>& onAddress), (override));
+        MOCK_METHOD(uint32_t, GetNumberOfBonds, (), (const, override));
+        MOCK_METHOD(uint32_t, GetMaxNumberOfBonds, (), (const, override));
+        MOCK_METHOD(bool, IsBondStored, (const services::GapAddress& address), (const, override));
+        MOCK_METHOD(void, IterateBondedDevices, (const infra::Function<void(const services::GapAddress&)>& onBond), (override));
     };
 
     class BondStorageSynchronizerMock
         : public BondStorageSynchronizer
     {
     public:
-        MOCK_METHOD1(UpdateBondedDevice, void(hal::MacAddress address));
-        MOCK_METHOD1(RemoveBond, void(hal::MacAddress address));
-        MOCK_METHOD0(RemoveAllBonds, void());
-        MOCK_CONST_METHOD0(GetMaxNumberOfBonds, uint32_t());
+        MOCK_METHOD(void, AddBond, (Role role, const services::Bond& bond), (override));
+        MOCK_METHOD(void, UpdateBondName, (Role role, const services::GapAddress& address, infra::BoundedConstString name), (override));
+        MOCK_METHOD(void, MarkAsRecentlyUsed, (Role role, const services::GapAddress& address), (override));
+        MOCK_METHOD(std::optional<services::Bond>, GetBond, (Role role, const services::GapAddress& address), (const, override));
+        MOCK_METHOD(void, RemoveBond, (Role role, const services::GapAddress& address), (override));
+        MOCK_METHOD(void, RemoveAllBondsForRole, (Role role), (override));
+        MOCK_METHOD(void, RemoveAllBonds, (), (override));
+        MOCK_METHOD(uint32_t, GetNumberOfBondsForRole, (Role role), (const, override));
+        MOCK_METHOD(uint32_t, GetMaxNumberOfBonds, (), (const, override));
+        MOCK_METHOD(void, AllocateInteractableBondStorage, (uint32_t size), (override));
+        MOCK_METHOD(void, AssertBondStoragesAreInSyncForRole, (Role role), (override));
+        MOCK_METHOD(void, IterateBondedDevices, (Role role, const infra::Function<void(const services::Bond&)>& onBond), (override));
     };
 }
 

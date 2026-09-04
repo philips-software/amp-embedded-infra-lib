@@ -1,37 +1,72 @@
 #include "services/ble/BondStorageSynchronizer.hpp"
+#include "hal/interfaces/MacAddress.hpp"
+#include "infra/stream/StringOutputStream.hpp"
+#include "services/ble/Gap.hpp"
+#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
-    BondStorageSynchronizerImpl::BondStorageSynchronizerImpl(BondStorage& referenceBondStorage, BondStorage& otherBondStorage)
-        : referenceBondStorage(referenceBondStorage)
-        , otherBondStorage(otherBondStorage)
-        , maxNumberOfBonds(referenceBondStorage.GetMaxNumberOfBonds())
+    BondStorageSynchronizerImpl::BondStorageSynchronizerImpl(BondStorageAbsolute& absoluteBondStorage, BondStorage& bondStorage)
+        : absoluteBondStorage(absoluteBondStorage)
+        , bondStorage(bondStorage)
+        , maxNumberOfBonds(std::min(absoluteBondStorage.GetMaxNumberOfBonds(), bondStorage.GetMaxNumberOfBonds()))
     {
-        otherBondStorage.BondStorageSynchronizerCreated(*this);
-        referenceBondStorage.BondStorageSynchronizerCreated(*this);
+        bondStorage.BondStorageSynchronizerCreated(*this);
+        absoluteBondStorage.BondStorageSynchronizerCreated(*this);
 
-        if (otherBondStorage.GetMaxNumberOfBonds() < maxNumberOfBonds)
-            std::abort();
+        really_assert(maxNumberOfBonds != 0);
+        really_assert(bondStorage.GetMaxNumberOfBonds() >= absoluteBondStorage.GetMaxNumberOfBonds());
 
         SyncBondStorages();
     }
 
-    void BondStorageSynchronizerImpl::UpdateBondedDevice(hal::MacAddress address)
+    void BondStorageSynchronizerImpl::AddBond(Role role, const services::Bond& bond)
     {
-        referenceBondStorage.UpdateBondedDevice(address);
-        otherBondStorage.UpdateBondedDevice(address);
+        services::GlobalTracer().Trace() << "=============== Adding bond: " << infra::AsLittleEndianMacAddress(bond.address.address);
+        really_assert(!bondStorage.GetBond(services::Role::central, bond.address).has_value());
+        really_assert(!bondStorage.GetBond(services::Role::peripheral, bond.address).has_value());
+        bondStorage.AddBond(role, bond);
     }
 
-    void BondStorageSynchronizerImpl::RemoveBond(hal::MacAddress address)
+    void BondStorageSynchronizerImpl::UpdateBondName(Role role, const services::GapAddress& address, infra::BoundedConstString name)
     {
-        referenceBondStorage.RemoveBond(address);
-        otherBondStorage.RemoveBond(address);
+        bondStorage.UpdateBondName(role, address, name);
+    }
+
+    void BondStorageSynchronizerImpl::MarkAsRecentlyUsed(Role role, const services::GapAddress& address)
+    {
+        bondStorage.MarkAsRecentlyUsed(role, address);
+    }
+
+    std::optional<services::Bond> BondStorageSynchronizerImpl::GetBond(Role role, const services::GapAddress& address) const
+    {
+        return bondStorage.GetBond(role, address);
+    }
+
+    void BondStorageSynchronizerImpl::RemoveBond(Role role, const services::GapAddress& address)
+    {
+        absoluteBondStorage.RemoveBond(address);
+        bondStorage.RemoveBond(role, address);
+    }
+
+    void BondStorageSynchronizerImpl::RemoveAllBondsForRole(Role role)
+    {
+        bondStorage.IterateBondedDevices(role, [this](const services::Bond& bond)
+            {
+                absoluteBondStorage.RemoveBond(bond.address);
+            });
+        bondStorage.RemoveAllBondsForRole(role);
     }
 
     void BondStorageSynchronizerImpl::RemoveAllBonds()
     {
-        referenceBondStorage.RemoveAllBonds();
-        otherBondStorage.RemoveAllBonds();
+        absoluteBondStorage.RemoveAllBonds();
+        bondStorage.RemoveAllBonds();
+    }
+
+    uint32_t BondStorageSynchronizerImpl::GetNumberOfBondsForRole(Role role) const
+    {
+        return bondStorage.GetNumberOfBondsForRole(role);
     }
 
     uint32_t BondStorageSynchronizerImpl::GetMaxNumberOfBonds() const
@@ -39,17 +74,64 @@ namespace services
         return maxNumberOfBonds;
     }
 
-    void BondStorageSynchronizerImpl::SyncBondStorages()
+    void BondStorageSynchronizerImpl::IterateBondedDevices(Role role, const infra::Function<void(const services::Bond&)>& onBond)
     {
-        otherBondStorage.RemoveBondIf([this](hal::MacAddress address)
+        bondStorage.IterateBondedDevices(role, onBond);
+    }
+
+    void BondStorageSynchronizerImpl::AllocateInteractableBondStorage(uint32_t size)
+    {
+        // TODO: This doesn't prevent two interactors of same role from being created. Do we care?
+        really_assert(size <= maxNumberOfBonds - interactableBondStorage);
+        interactableBondStorage += size;
+    }
+
+    void BondStorageSynchronizerImpl::AssertBondStoragesAreInSyncForRole(Role)
+    {
+        // TODO: How expansive should this be? Very verbose is useful for development
+
+        bondStorage.IterateBondedDevices(Role::central, [this](const services::Bond& bond)
             {
-                return !referenceBondStorage.IsBondStored(address);
+                infra::StringOutputStream::WithStorage<32> stream;
+                stream << infra::AsLittleEndianMacAddress(bond.address.address);
+
+                const auto bondIsStored = absoluteBondStorage.IsBondStored(bond.address);
+                really_assert_with_msg(bondIsStored, "Bond not found in absolute storage: %.*s",
+                    static_cast<int>(stream.Storage().size()),
+                    stream.Storage().data());
             });
 
-        referenceBondStorage.IterateBondedDevices([this](hal::MacAddress address)
+        absoluteBondStorage.IterateBondedDevices([this](const services::GapAddress& address)
             {
-                if (!otherBondStorage.IsBondStored(address))
-                    otherBondStorage.UpdateBondedDevice(address);
+                infra::StringOutputStream::WithStorage<32> stream;
+                stream << infra::AsLittleEndianMacAddress(address.address);
+
+                // TODO: This can desync when multiple roles are being updated concurrently
+                const auto bondIsStored =
+                    bondStorage.GetBond(Role::peripheral, address).has_value() ||
+                    bondStorage.GetBond(Role::central, address).has_value();
+                really_assert_with_msg(bondIsStored, "Bond not found in shadow storage: %.*s",
+                    static_cast<int>(stream.Storage().size()),
+                    stream.Storage().data());
+            });
+
+        // TODO: Do for role specifically.
+        services::GlobalTracer().Trace() << "Bonds: shadow " << bondStorage.GetTotalNumberOfBonds() << ", absolute " << absoluteBondStorage.GetNumberOfBonds();
+        really_assert_with_msg(bondStorage.GetTotalNumberOfBonds() == absoluteBondStorage.GetNumberOfBonds(),
+            "Bond storage desync: shadow %u vs absolute %u", bondStorage.GetTotalNumberOfBonds(), absoluteBondStorage.GetNumberOfBonds());
+    }
+
+    void BondStorageSynchronizerImpl::SyncBondStorages()
+    {
+        bondStorage.RemoveBondIf([this](const services::Bond& bond)
+            {
+                return !absoluteBondStorage.IsBondStored(bond.address);
+            });
+
+        absoluteBondStorage.RemoveBondIf([this](const services::GapAddress& address)
+            {
+                return !bondStorage.GetBond(Role::central, address).has_value() &&
+                       !bondStorage.GetBond(Role::peripheral, address).has_value();
             });
     }
 }
