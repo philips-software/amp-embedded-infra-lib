@@ -2,7 +2,6 @@
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/util/ReallyAssert.hpp"
-#include "mbedtls/oid.h"
 #include "mbedtls/pk.h"
 #include "mbedtls/version.h"
 #include "services/util/MbedTlsRandomDataGeneratorWrapper.hpp"
@@ -31,6 +30,8 @@ namespace services
         mbedtls_x509_crt_init(&caCertificates);
         mbedtls_x509_crt_init(&ownCertificate);
         mbedtls_pk_init(&privateKey);
+
+        really_assert(psa_crypto_init() == PSA_SUCCESS);
     }
 
     CertificatesMbedTls::~CertificatesMbedTls()
@@ -102,28 +103,23 @@ namespace services
 
     void CertificatesMbedTls::WritePrivateKey(infra::BoundedString& outputBuffer)
     {
-        infra::ByteOutputStream::WithStorage<2048> contentsStream;
-        infra::Asn1Formatter formatter(contentsStream);
-        {
-            auto sequence = formatter.StartSequence();
+        psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
+        really_assert(mbedtls_pk_get_psa_attributes(&privateKey, PSA_KEY_USAGE_SIGN_HASH, &attributes) == 0);
+        really_assert(mbedtls_pk_get_type(&privateKey) == MBEDTLS_PK_RSA);
 
-            mbedtls_rsa_context& rsaContext = *mbedtls_pk_rsa(privateKey);
+        mbedtls_svc_key_id_t keyId = MBEDTLS_SVC_KEY_ID_INIT;
+        really_assert(mbedtls_pk_import_into_psa(&privateKey, &attributes, &keyId) == 0);
 
-            sequence.Add(uint8_t(rsaContext.MBEDTLS_PRIVATE(ver)));
-            sequence.AddBigNumber(MakeByteRange(rsaContext.MBEDTLS_PRIVATE(N)));
-            sequence.AddBigNumber(MakeByteRange(rsaContext.MBEDTLS_PRIVATE(E)));
-            sequence.AddBigNumber(MakeByteRange(rsaContext.MBEDTLS_PRIVATE(D)));
-            sequence.AddBigNumber(MakeByteRange(rsaContext.MBEDTLS_PRIVATE(P)));
-            sequence.AddBigNumber(MakeByteRange(rsaContext.MBEDTLS_PRIVATE(Q)));
-            sequence.AddBigNumber(MakeByteRange(rsaContext.MBEDTLS_PRIVATE(DP)));
-            sequence.AddBigNumber(MakeByteRange(rsaContext.MBEDTLS_PRIVATE(DQ)));
-            sequence.AddBigNumber(MakeByteRange(rsaContext.MBEDTLS_PRIVATE(QP)));
-        }
+        unsigned char contents[PSA_EXPORT_KEY_PAIR_MAX_SIZE];
+        std::size_t contentsSize = 0;
+        auto status = psa_export_key(keyId, contents, sizeof(contents), &contentsSize);
+        psa_destroy_key(keyId);
+        really_assert(status == PSA_SUCCESS);
 
         outputBuffer.clear();
         infra::StringOutputStream stream(outputBuffer);
         stream << "-----BEGIN RSA PRIVATE KEY-----\r\n";
-        stream << infra::AsBase64(contentsStream.Writer().Processed());
+        stream << infra::AsBase64(infra::ConstByteRange(contents, contents + contentsSize));
         stream << "-----END RSA PRIVATE KEY-----\r\n";
         stream << '\0';
     }
@@ -176,24 +172,14 @@ namespace services
 
                     // PublicKeyInfo
                     {
-                        auto publicKeyInfoSequence = tbsSequence.StartSequence();
-                        mbedtls_x509_buf pk_oid;
+                        // AlgorithmIdentifier (SEQUENCE 2 + OID 11 + NULL 2 = 15) + BIT STRING header 4 + unused-bits byte 1 + outer SEQUENCE header 4.
+                        constexpr std::size_t subjectPublicKeyInfoOverhead = 24;
+                        unsigned char spki[PSA_EXPORT_PUBLIC_KEY_MAX_SIZE + subjectPublicKeyInfoOverhead];
 
-                        mbedtls_oid_get_oid_by_pk_alg(mbedtls_pk_get_type(&privateKey), const_cast<const char**>(reinterpret_cast<char**>(&pk_oid.p)), &pk_oid.len);
+                        auto length = mbedtls_pk_write_pubkey_der(&privateKey, spki, sizeof(spki));
+                        really_assert(length > 0);
 
-                        X509AddAlgorithm(publicKeyInfoSequence, pk_oid);
-
-                        {
-                            auto publicKeyBitString = publicKeyInfoSequence.StartBitString();
-                            {
-                                auto rsaPublicKeySequence = publicKeyBitString.StartSequence();
-                                mbedtls_rsa_context* rsaContext = mbedtls_pk_rsa(privateKey);
-                                really_assert(rsaContext != nullptr);
-
-                                rsaPublicKeySequence.AddBigNumber(MakeByteRange(rsaContext->MBEDTLS_PRIVATE(N)));
-                                rsaPublicKeySequence.AddBigNumber(MakeByteRange(rsaContext->MBEDTLS_PRIVATE(E)));
-                            }
-                        }
+                        tbsSequence.AddConstructed(infra::ConstByteRange(spki + sizeof(spki) - length, spki + sizeof(spki)));
                     }
 
                     //  v3 Extensions
