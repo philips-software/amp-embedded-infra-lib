@@ -104,12 +104,13 @@ namespace services
     void CertificatesMbedTls::WritePrivateKey(infra::BoundedString& outputBuffer)
     {
         psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
-        really_assert(mbedtls_pk_get_psa_attributes(&privateKey, PSA_KEY_USAGE_SIGN_HASH | PSA_KEY_USAGE_EXPORT, &attributes) == 0);
+        really_assert(mbedtls_pk_get_psa_attributes(&privateKey, PSA_KEY_USAGE_SIGN_HASH, &attributes) == 0);
+        really_assert(mbedtls_pk_get_type(&privateKey) == MBEDTLS_PK_RSA);
 
         mbedtls_svc_key_id_t keyId = MBEDTLS_SVC_KEY_ID_INIT;
         really_assert(mbedtls_pk_import_into_psa(&privateKey, &attributes, &keyId) == 0);
 
-        unsigned char contents[2048];
+        unsigned char contents[PSA_EXPORT_KEY_PAIR_MAX_SIZE];
         std::size_t contentsSize = 0;
         auto status = psa_export_key(keyId, contents, sizeof(contents), &contentsSize);
         psa_destroy_key(keyId);
@@ -178,7 +179,7 @@ namespace services
                         auto length = mbedtls_pk_write_pubkey_der(&privateKey, spki, sizeof(spki));
                         really_assert(length > 0);
 
-                        tbsSequence.AddDer(infra::ConstByteRange(spki + sizeof(spki) - length, spki + sizeof(spki)));
+                        tbsSequence.AddConstructed(infra::ConstByteRange(spki + sizeof(spki) - length, spki + sizeof(spki)));
                     }
 
                     //  v3 Extensions

@@ -130,9 +130,10 @@ namespace infra
         stream << infra::text << 'Z';
     }
 
-    void Asn1Formatter::AddDer(infra::ConstByteRange der)
+    void Asn1Formatter::AddConstructed(infra::ConstByteRange constructed)
     {
-        stream << der;
+        really_assert(!constructed.empty() && (constructed.front() & Tag::Constructed) != 0);
+        stream << constructed;
     }
 
     Asn1ContainerFormatter Asn1Formatter::StartSequence()
