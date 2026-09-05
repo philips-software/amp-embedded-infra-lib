@@ -171,7 +171,16 @@ namespace services
 
         IncreaseIv(receiveIv);
 
-        Sesame::GetObserver().ReceivedMessage(receiveBufferReader.Emplace(receiveBuffer, reader));
+        receivedReader = std::move(reader);
+        Sesame::GetObserver().ReceivedMessage(receiveBufferReader.Emplace(receiveBuffer));
+    }
+
+    void SesameSecured::ReleaseReceivedReader()
+    {
+        // Releasing the reader lets the lower layer forward the next message into receiveBufferReader.
+        // Move it out first, so that a re-entrant ReceivedMessage() assigns to an empty receivedReader
+        // instead of having its assignment overwritten while this SharedPtr is being reset.
+        auto reader = std::move(receivedReader);
     }
 
     void SesameSecured::SendMessageStreamReleased()
@@ -203,11 +212,6 @@ namespace services
                 observer.IntegrityCheckFailed();
             });
     }
-
-    SesameSecured::ReceiveBufferReader::ReceiveBufferReader(const infra::BoundedVector<uint8_t>& buffer, const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader)
-        : infra::BoundedVectorInputStreamReader(buffer)
-        , reader(reader)
-    {}
 
 #ifdef EMIL_USE_MBEDTLS
     SesameSecured::WithCryptoMbedTls::WithCryptoMbedTls(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const KeyMaterial& keyMaterial)
