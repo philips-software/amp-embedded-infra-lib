@@ -6,9 +6,16 @@
 #include "infra/util/Function.hpp"
 #include "infra/util/Observer.hpp"
 #include "infra/util/SharedPtr.hpp"
+#include <cstdint>
 
 namespace services
 {
+    enum class SesameChannel : uint8_t
+    {
+        red = 0,
+        blue = 1
+    };
+
     class Sesame;
     class SesameEncoded;
 
@@ -19,15 +26,15 @@ namespace services
         using infra::SingleObserver<SesameObserver, Sesame>::SingleObserver;
 
         virtual void Initialized() = 0;
-        virtual void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) = 0;
-        virtual void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) = 0;
+        virtual void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer, SesameChannel channel = SesameChannel::red) = 0;
+        virtual void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, SesameChannel channel = SesameChannel::red) = 0;
     };
 
     class Sesame
         : public infra::Subject<SesameObserver>
     {
     public:
-        virtual void RequestSendMessage(std::size_t size) = 0;
+        virtual void RequestSendMessage(std::size_t size, SesameChannel channel = SesameChannel::red) = 0;
         virtual std::size_t MaxSendMessageSize() const = 0;
         virtual void Reset() = 0;
         virtual void ResetReading() = 0;

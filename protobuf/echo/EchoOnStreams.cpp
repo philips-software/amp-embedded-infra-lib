@@ -152,6 +152,7 @@ namespace services
                                + 2 * infra::MaxVarIntSize(std::numeric_limits<uint64_t>::max()); // echo framing overhead (service and method id)
 
             sendRequesters.pop_front();
+            SendingProxySelected(*sendingProxy);
             RequestSendStream(sendingProxySize);
         }
     }
@@ -159,6 +160,11 @@ namespace services
     infra::SharedPtr<MethodSerializer> EchoOnStreams::GrantSend(ServiceProxy& proxy)
     {
         return proxy.GrantSend();
+    }
+
+    void EchoOnStreams::SendingProxySelected(ServiceProxy& proxy)
+    {
+        static_cast<void>(proxy);
     }
 
     infra::SharedPtr<MethodDeserializer> EchoOnStreams::StartingMethod(uint32_t serviceId, uint32_t methodId, infra::SharedPtr<MethodDeserializer>&& deserializer)

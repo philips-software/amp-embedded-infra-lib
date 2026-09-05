@@ -70,15 +70,15 @@ namespace services
 
         // Implementation of Sesame
         void Initialized() override;
-        void RequestSendMessage(std::size_t size) override;
+        void RequestSendMessage(std::size_t size, SesameChannel channel = SesameChannel::red) override;
         std::size_t MaxSendMessageSize() const override;
         void Reset() override;
         void ResetReading() override;
 
     private:
         // Implementation of SesameObserver
-        void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-        void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
+        void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer, SesameChannel channel) override;
+        void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, SesameChannel channel) override;
 
         void ActivateSendKey();
         void SendMessageStreamReleased();
@@ -115,6 +115,7 @@ namespace services
         std::array<uint8_t, ivSize> initialReceiveIv;
         std::array<uint8_t, ivSize> receiveIv;
         infra::SharedOptional<ReceiveBufferReader> receiveBufferReader;
+        SesameChannel receiveChannel = SesameChannel::red;
         bool integrityCheckFailed = false;
         infra::TimerSingleShot integrityCheckFailedTimer;
     };

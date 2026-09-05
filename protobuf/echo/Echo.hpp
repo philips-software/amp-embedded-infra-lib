@@ -6,9 +6,16 @@
 #include "infra/util/Observer.hpp"
 #include "protobuf/echo/EchoErrorPolicy.hpp"
 #include "protobuf/echo/Serialization.hpp"
+#include <cstdint>
 
 namespace services
 {
+    enum class EchoChannel : uint8_t
+    {
+        red = 0,
+        blue = 1
+    };
+
     class Echo;
     class Service;
     class ServiceProxy;
@@ -18,21 +25,27 @@ namespace services
     {
     public:
         using infra::Observer<Service, Echo>::Observer;
+        Service(Echo& echo, EchoChannel channel = EchoChannel::red);
 
         virtual bool AcceptsService(uint32_t id) const = 0;
+        EchoChannel Channel() const;
+        void SetChannel(EchoChannel channel);
 
         void MethodDone();
         virtual infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy) = 0;
 
     protected:
         Echo& Rpc();
+
+    private:
+        EchoChannel channel = EchoChannel::red;
     };
 
     class ServiceProxy
         : public infra::IntrusiveList<ServiceProxy>::NodeType
     {
     public:
-        ServiceProxy(Echo& echo, uint32_t maxMessageSize);
+        ServiceProxy(Echo& echo, uint32_t maxMessageSize, uint32_t serviceId = 0);
 
         Echo& Rpc();
         virtual void RequestSend(infra::Function<void()> onGranted);
@@ -41,6 +54,9 @@ namespace services
         void CancelRequestSend();
         uint32_t MaxMessageSize() const;
         uint32_t CurrentRequestedSize() const;
+        uint32_t ServiceId() const;
+        EchoChannel Channel() const;
+        void SetChannel(EchoChannel channel);
         void SetSerializer(const infra::SharedPtr<MethodSerializer>& serializer);
 
     protected:
@@ -49,6 +65,8 @@ namespace services
     private:
         Echo& echo;
         uint32_t maxMessageSize;
+        uint32_t serviceId;
+        EchoChannel channel = EchoChannel::red;
         infra::AutoResetFunction<void()> onGranted;
         uint32_t currentRequestedSize = 0;
         infra::SharedPtr<MethodSerializer> methodSerializer;

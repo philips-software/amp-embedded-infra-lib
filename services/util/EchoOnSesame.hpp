@@ -18,20 +18,24 @@ namespace services
 
         // Implementation of SesameObserver
         void Initialized() override;
-        void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-        void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
+        void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer, SesameChannel channel) override;
+        void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, SesameChannel channel) override;
 
     protected:
         // Implementation of EchoOnStreams
         void RequestSendStream(std::size_t size) override;
         void ResetReading() override;
+        void SendingProxySelected(ServiceProxy& proxy) override;
 
     private:
+        bool ReceiveOnConfiguredChannel(infra::StreamReaderWithRewinding& reader, SesameChannel channel);
         void ProcessMessage();
 
     private:
         std::optional<std::size_t> requestedSize;
+        SesameChannel requestedChannel = SesameChannel::red;
         bool initialized = false;
+        ServiceProxy* sendingProxy = nullptr;
     };
 }
 

@@ -23,7 +23,8 @@ namespace services
             init = 1,
             initResponse,
             releaseWindow,
-            message
+            messageRed = 4,
+            messageBlue = 5
         };
 
         struct PacketInit
@@ -63,7 +64,7 @@ namespace services
         SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, uint8_t splitBuffers, SesameEncoded& delegate, SesameInitializer& sesameInitializer = immediatelyGranted);
 
         // Implementation of Sesame
-        void RequestSendMessage(std::size_t size) override;
+        void RequestSendMessage(std::size_t size, SesameChannel channel = SesameChannel::red) override;
         std::size_t MaxSendMessageSize() const override;
         void Reset() override;
         void ResetReading() override;
@@ -76,7 +77,7 @@ namespace services
         virtual void SendingInit(uint16_t newWindow);
         virtual void SendingInitResponse(uint16_t newWindow);
         virtual void SendingReleaseWindow(uint16_t deltaWindow);
-        virtual void SendingMessage(infra::StreamWriter& writer);
+        virtual void SendingMessage(infra::StreamWriter& writer, SesameChannel channel);
         virtual void SettingOperational(std::optional<std::size_t> requestedSize, uint16_t releasedWindow, uint16_t otherWindow);
 
     private:
@@ -101,7 +102,7 @@ namespace services
             virtual ~State() = default;
 
             virtual void Request();
-            virtual void RequestSendMessage(std::size_t size);
+            virtual void RequestSendMessage(std::size_t size, SesameChannel channel);
             virtual void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer);
             virtual void MessageSent(std::size_t encodedSize);
 
@@ -136,7 +137,7 @@ namespace services
         public:
             explicit StateOperational(SesameWindowed& communication);
 
-            void RequestSendMessage(std::size_t size) override;
+            void RequestSendMessage(std::size_t size, SesameChannel channel) override;
         };
 
         class StateSendingMessage
@@ -151,6 +152,7 @@ namespace services
 
         private:
             std::size_t requestedSize;
+            SesameChannel channel{ SesameChannel::red };
         };
 
         class StateSendingReleaseWindow
@@ -181,6 +183,8 @@ namespace services
         bool sendInitResponse{ false };
         bool sending{ false };
         std::optional<std::size_t> requestedSendMessageSize;
+        SesameChannel requestedSendMessageChannel{ SesameChannel::red };
+        SesameChannel currentReceiveMessageChannel{ SesameChannel::red };
         infra::PolymorphicVariant<State, StateSendingInit, StateSendingInitResponse, StateOperational, StateSendingMessage, StateSendingReleaseWindow> state;
     };
 

@@ -8,14 +8,30 @@ namespace services
         Rpc().ServiceDone();
     }
 
+    Service::Service(Echo& echo, EchoChannel channel)
+        : infra::Observer<Service, Echo>(echo)
+        , channel(channel)
+    {}
+
+    EchoChannel Service::Channel() const
+    {
+        return channel;
+    }
+
+    void Service::SetChannel(EchoChannel channel)
+    {
+        this->channel = channel;
+    }
+
     Echo& Service::Rpc()
     {
         return Subject();
     }
 
-    ServiceProxy::ServiceProxy(Echo& echo, uint32_t maxMessageSize)
+    ServiceProxy::ServiceProxy(Echo& echo, uint32_t maxMessageSize, uint32_t serviceId)
         : echo(echo)
         , maxMessageSize(maxMessageSize)
+        , serviceId(serviceId)
     {}
 
     ServiceProxy::~ServiceProxy()
@@ -63,6 +79,21 @@ namespace services
     uint32_t ServiceProxy::CurrentRequestedSize() const
     {
         return currentRequestedSize;
+    }
+
+    uint32_t ServiceProxy::ServiceId() const
+    {
+        return serviceId;
+    }
+
+    EchoChannel ServiceProxy::Channel() const
+    {
+        return channel;
+    }
+
+    void ServiceProxy::SetChannel(EchoChannel channel)
+    {
+        this->channel = channel;
     }
 
     void ServiceProxy::SetSerializer(const infra::SharedPtr<MethodSerializer>& serializer)
