@@ -118,7 +118,7 @@ TEST_F(EchoInstantiationSecuredSymmetricKeySlicedTest, sliced_messages_are_recei
         }));
     EXPECT_CALL(service, MethodBytes(testing::_)).Times(slicedMessageProxies.size()).WillRepeatedly(testing::Invoke([this](const infra::BoundedVector<uint8_t>& value)
         {
-            EXPECT_EQ(payload, value);
+            EXPECT_THAT(value, testing::ElementsAreArray(payload.begin(), payload.end()));
             service.MethodDone();
         }));
 
@@ -132,8 +132,6 @@ TEST_F(EchoInstantiationSecuredSymmetricKeySlicedTest, sliced_messages_are_recei
     ExecuteAllActions();
     ASSERT_TRUE(methodNoParameterInvoked);
 
-    // MethodNoParameter() completes only now, so the first slice of the next message has been
-    // received while the deserializer was still busy
     service.MethodDone();
     ExecuteAllActions();
 }
