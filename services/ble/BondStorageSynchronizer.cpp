@@ -6,16 +6,16 @@
 
 namespace services
 {
-    BondStorageSynchronizerImpl::BondStorageSynchronizerImpl(BondStorageAbsolute& absoluteBondStorage, BondStorage& bondStorage)
-        : absoluteBondStorage(absoluteBondStorage)
+    BondStorageSynchronizerImpl::BondStorageSynchronizerImpl(AuthoritativeBondStorage& authoritativeBondStorage, BondStorage& bondStorage)
+        : authoritativeBondStorage(authoritativeBondStorage)
         , bondStorage(bondStorage)
-        , maxNumberOfBonds(std::min(absoluteBondStorage.GetMaxNumberOfBonds(), bondStorage.GetMaxNumberOfBonds()))
+        , maxNumberOfBonds(std::min(authoritativeBondStorage.GetMaxNumberOfBonds(), bondStorage.GetMaxNumberOfBonds()))
     {
         bondStorage.BondStorageSynchronizerCreated(*this);
-        absoluteBondStorage.BondStorageSynchronizerCreated(*this);
+        authoritativeBondStorage.BondStorageSynchronizerCreated(*this);
 
         really_assert(maxNumberOfBonds != 0);
-        really_assert(bondStorage.GetMaxNumberOfBonds() >= absoluteBondStorage.GetMaxNumberOfBonds());
+        really_assert(bondStorage.GetMaxNumberOfBonds() >= authoritativeBondStorage.GetMaxNumberOfBonds());
 
         SyncBondStorages();
     }
@@ -45,7 +45,7 @@ namespace services
 
     void BondStorageSynchronizerImpl::RemoveBond(Role role, const services::GapAddress& address)
     {
-        absoluteBondStorage.RemoveBond(address);
+        authoritativeBondStorage.RemoveBond(address);
         bondStorage.RemoveBond(role, address);
     }
 
@@ -53,14 +53,14 @@ namespace services
     {
         bondStorage.IterateBondedDevices(role, [this](const services::Bond& bond)
             {
-                absoluteBondStorage.RemoveBond(bond.address);
+                authoritativeBondStorage.RemoveBond(bond.address);
             });
         bondStorage.RemoveAllBondsForRole(role);
     }
 
     void BondStorageSynchronizerImpl::RemoveAllBonds()
     {
-        absoluteBondStorage.RemoveAllBonds();
+        authoritativeBondStorage.RemoveAllBonds();
         bondStorage.RemoveAllBonds();
     }
 
@@ -95,13 +95,13 @@ namespace services
                 infra::StringOutputStream::WithStorage<32> stream;
                 stream << infra::AsLittleEndianMacAddress(bond.address.address);
 
-                const auto bondIsStored = absoluteBondStorage.IsBondStored(bond.address);
+                const auto bondIsStored = authoritativeBondStorage.IsBondStored(bond.address);
                 really_assert_with_msg(bondIsStored, "Bond not found in absolute storage: %.*s",
                     static_cast<int>(stream.Storage().size()),
                     stream.Storage().data());
             });
 
-        absoluteBondStorage.IterateBondedDevices([this](const services::GapAddress& address)
+        authoritativeBondStorage.IterateBondedDevices([this](const services::GapAddress& address)
             {
                 infra::StringOutputStream::WithStorage<32> stream;
                 stream << infra::AsLittleEndianMacAddress(address.address);
@@ -116,19 +116,19 @@ namespace services
             });
 
         // TODO: Do for role specifically.
-        services::GlobalTracer().Trace() << "Bonds: shadow " << bondStorage.GetTotalNumberOfBonds() << ", absolute " << absoluteBondStorage.GetNumberOfBonds();
-        really_assert_with_msg(bondStorage.GetTotalNumberOfBonds() == absoluteBondStorage.GetNumberOfBonds(),
-            "Bond storage desync: shadow %u vs absolute %u", bondStorage.GetTotalNumberOfBonds(), absoluteBondStorage.GetNumberOfBonds());
+        services::GlobalTracer().Trace() << "Bonds: shadow " << bondStorage.GetTotalNumberOfBonds() << ", absolute " << authoritativeBondStorage.GetNumberOfBonds();
+        really_assert_with_msg(bondStorage.GetTotalNumberOfBonds() == authoritativeBondStorage.GetNumberOfBonds(),
+            "Bond storage desync: shadow %u vs absolute %u", bondStorage.GetTotalNumberOfBonds(), authoritativeBondStorage.GetNumberOfBonds());
     }
 
     void BondStorageSynchronizerImpl::SyncBondStorages()
     {
         bondStorage.RemoveBondIf([this](const services::Bond& bond)
             {
-                return !absoluteBondStorage.IsBondStored(bond.address);
+                return !authoritativeBondStorage.IsBondStored(bond.address);
             });
 
-        absoluteBondStorage.RemoveBondIf([this](const services::GapAddress& address)
+        authoritativeBondStorage.RemoveBondIf([this](const services::GapAddress& address)
             {
                 return !bondStorage.GetBond(Role::central, address).has_value() &&
                        !bondStorage.GetBond(Role::peripheral, address).has_value();

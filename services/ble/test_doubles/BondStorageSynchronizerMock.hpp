@@ -25,8 +25,8 @@ namespace services
         MOCK_METHOD(void, IterateBondedDevices, (Role role, const infra::Function<void(const services::Bond&)>& onBond), (override));
     };
 
-    class BondStorageAbsoluteMock
-        : public BondStorageAbsolute
+    class AuthoritativeBondStorageMock
+        : public AuthoritativeBondStorage
     {
     public:
         MOCK_METHOD(void, BondStorageSynchronizerCreated, (BondStorageSynchronizer & manager), (override));
