@@ -6,8 +6,8 @@
 
 namespace services
 {
-    class BondStorageMock
-        : public BondStorage
+    class EnrichedBondStorageMock
+        : public EnrichedBondStorage
     {
     public:
         MOCK_METHOD(void, BondStorageSynchronizerCreated, (BondStorageSynchronizer & manager), (override));

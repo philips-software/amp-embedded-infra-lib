@@ -31,13 +31,13 @@ namespace services
         virtual void IterateBondedDevices(Role role, const infra::Function<void(const services::Bond&)>& onBond) = 0;
     };
 
-    class BondStorage
+    class EnrichedBondStorage
     {
     protected:
-        BondStorage() = default;
-        ~BondStorage() = default;
-        BondStorage(const BondStorage& other) = delete;
-        BondStorage& operator=(const BondStorage& other) = delete;
+        EnrichedBondStorage() = default;
+        ~EnrichedBondStorage() = default;
+        EnrichedBondStorage(const EnrichedBondStorage& other) = delete;
+        EnrichedBondStorage& operator=(const EnrichedBondStorage& other) = delete;
 
     public:
         virtual void BondStorageSynchronizerCreated(BondStorageSynchronizer& manager) = 0;
@@ -80,7 +80,7 @@ namespace services
         : public BondStorageSynchronizer
     {
     public:
-        BondStorageSynchronizerImpl(AuthoritativeBondStorage& authoritativeBondStorage, BondStorage& bondStorage);
+        BondStorageSynchronizerImpl(AuthoritativeBondStorage& authoritativeBondStorage, EnrichedBondStorage& bondStorage);
 
         // Implementation of BondStorageSynchronizer
         void AddBond(Role role, const services::Bond& bond) override;
@@ -101,7 +101,7 @@ namespace services
 
     private:
         AuthoritativeBondStorage& authoritativeBondStorage;
-        BondStorage& bondStorage;
+        EnrichedBondStorage& enrichedBondStorage;
 
         uint32_t maxNumberOfBonds;
         uint32_t interactableBondStorage = 0;
