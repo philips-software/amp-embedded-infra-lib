@@ -84,19 +84,9 @@ namespace services
 
         void ActivateSendKey();
         void SendMessageStreamReleased();
+        void ReleaseReceivedReader();
         void IncreaseIv(infra::ByteRange iv) const;
         void ReportIntegrityCheckFailed();
-
-    private:
-        class ReceiveBufferReader
-            : public infra::BoundedVectorInputStreamReader
-        {
-        public:
-            ReceiveBufferReader(const infra::BoundedVector<uint8_t>& buffer, const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader);
-
-        private:
-            infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
-        };
 
     private:
         AesGcmEncryption& sendEncryption;
@@ -116,7 +106,11 @@ namespace services
         std::array<uint8_t, keySize> initialReceiveKey;
         std::array<uint8_t, ivSize> initialReceiveIv;
         std::array<uint8_t, ivSize> receiveIv;
-        infra::SharedOptional<ReceiveBufferReader> receiveBufferReader;
+        infra::SharedPtr<infra::StreamReaderWithRewinding> receivedReader;
+        infra::NotifyingSharedOptional<infra::BoundedVectorInputStreamReader> receiveBufferReader{ [this]()
+            {
+                ReleaseReceivedReader();
+            } };
         bool integrityCheckFailed = false;
         infra::TimerSingleShot integrityCheckFailedTimer;
     };
