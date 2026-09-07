@@ -20,12 +20,9 @@ public:
         EXPECT_CALL(enrichedBondStorage, GetMaxNumberOfBonds()).Times(2).WillRepeatedly(testing::Return(maxNumberOfBonds));
     }
 
-    void ExpectAssertBondStoragesAreInSyncForRole(uint32_t numberOfBonds)
+    void ExpectAssertBondStoragesAreInSyncForRole(services::Role role)
     {
-        EXPECT_CALL(enrichedBondStorage, IterateBondedDevices(services::Role::central, testing::_));
-        EXPECT_CALL(authoritativeBondStorage, IterateBondedDevices(testing::_));
-        EXPECT_CALL(enrichedBondStorage, GetTotalNumberOfBonds()).Times(2).WillRepeatedly(testing::Return(numberOfBonds));
-        EXPECT_CALL(authoritativeBondStorage, GetNumberOfBonds()).Times(2).WillRepeatedly(testing::Return(numberOfBonds));
+        EXPECT_CALL(enrichedBondStorage, IterateBondedDevices(role, testing::_));
     }
 
     static services::GapAddress MakeGapAddress(hal::MacAddress address)
@@ -218,23 +215,14 @@ TEST_F(BondStorageSynchronizerTestWithConstruction, allocate_interactable_bond_s
 }
 #endif
 
-TEST_F(BondStorageSynchronizerTestWithConstruction, assert_bond_storages_are_in_sync_for_role_passes_when_counts_match)
+TEST_F(BondStorageSynchronizerTestWithConstruction, assert_bond_storages_are_in_sync_for_role_only_checks_bonds_of_that_role)
 {
-    ExpectAssertBondStoragesAreInSyncForRole(2);
+    ExpectAssertBondStoragesAreInSyncForRole(services::Role::peripheral);
     bondStorageSynchronizer.AssertBondStoragesAreInSyncForRole(services::Role::peripheral);
 }
 
 #ifndef EMIL_MUTATION_TESTING
-TEST_F(BondStorageSynchronizerTestWithConstruction, assert_bond_storages_are_in_sync_for_role_asserts_when_counts_mismatch)
-{
-    EXPECT_CALL(enrichedBondStorage, IterateBondedDevices(services::Role::central, testing::_)).Times(testing::AnyNumber());
-    EXPECT_CALL(authoritativeBondStorage, IterateBondedDevices(testing::_)).Times(testing::AnyNumber());
-    ON_CALL(enrichedBondStorage, GetTotalNumberOfBonds()).WillByDefault(testing::Return(2));
-    ON_CALL(authoritativeBondStorage, GetNumberOfBonds()).WillByDefault(testing::Return(1));
-    EXPECT_DEATH(bondStorageSynchronizer.AssertBondStoragesAreInSyncForRole(services::Role::peripheral), "");
-}
-
-TEST_F(BondStorageSynchronizerTestWithConstruction, assert_bond_storages_are_in_sync_for_role_asserts_when_bond_is_missing_in_absolute_storage)
+TEST_F(BondStorageSynchronizerTestWithConstruction, assert_bond_storages_are_in_sync_for_role_asserts_when_bond_is_missing_in_authoritative_storage)
 {
     EXPECT_CALL(enrichedBondStorage, IterateBondedDevices(services::Role::central, testing::_))
         .Times(testing::AnyNumber())
@@ -243,19 +231,6 @@ TEST_F(BondStorageSynchronizerTestWithConstruction, assert_bond_storages_are_in_
                 onBond(bond1);
             });
     ON_CALL(authoritativeBondStorage, IsBondStored(gapAddress1)).WillByDefault(testing::Return(false));
-    EXPECT_DEATH(bondStorageSynchronizer.AssertBondStoragesAreInSyncForRole(services::Role::central), "");
-}
-
-TEST_F(BondStorageSynchronizerTestWithConstruction, assert_bond_storages_are_in_sync_for_role_asserts_when_bond_is_missing_in_bond_storage)
-{
-    EXPECT_CALL(enrichedBondStorage, IterateBondedDevices(services::Role::central, testing::_)).Times(testing::AnyNumber());
-    EXPECT_CALL(authoritativeBondStorage, IterateBondedDevices(testing::_))
-        .Times(testing::AnyNumber())
-        .WillRepeatedly([this](const infra::Function<void(const services::GapAddress&)>& onAddress)
-            {
-                onAddress(gapAddress1);
-            });
-    ON_CALL(enrichedBondStorage, GetBond(testing::_, gapAddress1)).WillByDefault(testing::Return(std::optional<services::Bond>{}));
     EXPECT_DEATH(bondStorageSynchronizer.AssertBondStoragesAreInSyncForRole(services::Role::central), "");
 }
 #endif

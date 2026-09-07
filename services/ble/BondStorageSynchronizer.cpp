@@ -86,39 +86,18 @@ namespace services
         interactableBondStorage += size;
     }
 
-    void BondStorageSynchronizerImpl::AssertBondStoragesAreInSyncForRole(Role)
+    void BondStorageSynchronizerImpl::AssertBondStoragesAreInSyncForRole(Role role)
     {
-        // TODO: How expansive should this be? Very verbose is useful for development
-
-        enrichedBondStorage.IterateBondedDevices(Role::central, [this](const services::Bond& bond)
+        enrichedBondStorage.IterateBondedDevices(role, [this](const services::Bond& bond)
             {
-                infra::StringOutputStream::WithStorage<32> stream;
-                stream << infra::AsLittleEndianMacAddress(bond.address.address);
-
                 const auto bondIsStored = authoritativeBondStorage.IsBondStored(bond.address);
-                really_assert_with_msg(bondIsStored, "Bond not found in absolute storage: %.*s",
-                    static_cast<int>(stream.Storage().size()),
-                    stream.Storage().data());
+                really_assert_with_msg(bondIsStored, "Bond not found in authoritative storage: %X%X%X%X%X%X",
+                    bond.address.address[5], bond.address.address[4], bond.address.address[3],
+                    bond.address.address[2], bond.address.address[1], bond.address.address[0]);
             });
 
-        authoritativeBondStorage.IterateBondedDevices([this](const services::GapAddress& address)
-            {
-                infra::StringOutputStream::WithStorage<32> stream;
-                stream << infra::AsLittleEndianMacAddress(address.address);
-
-                // TODO: This can desync when multiple roles are being updated concurrently
-                const auto bondIsStored =
-                    enrichedBondStorage.GetBond(Role::peripheral, address).has_value() ||
-                    enrichedBondStorage.GetBond(Role::central, address).has_value();
-                really_assert_with_msg(bondIsStored, "Bond not found in shadow storage: %.*s",
-                    static_cast<int>(stream.Storage().size()),
-                    stream.Storage().data());
-            });
-
-        // TODO: Do for role specifically.
-        services::GlobalTracer().Trace() << "Bonds: shadow " << enrichedBondStorage.GetTotalNumberOfBonds() << ", absolute " << authoritativeBondStorage.GetNumberOfBonds();
-        really_assert_with_msg(enrichedBondStorage.GetTotalNumberOfBonds() == authoritativeBondStorage.GetNumberOfBonds(),
-            "Bond storage desync: shadow %u vs absolute %u", enrichedBondStorage.GetTotalNumberOfBonds(), authoritativeBondStorage.GetNumberOfBonds());
+        // Note: cannot verify authoritive storage because it may contain desyncs for the other role,
+        // because we can't know the state of the other role's bonds at this point.
     }
 
     void BondStorageSynchronizerImpl::SyncBondStorages()
