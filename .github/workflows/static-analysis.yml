@@ -18,13 +18,13 @@ jobs:
   sonar:
     name: SonarCloud
     runs-on: ubuntu-latest
-    container: ghcr.io/philips-software/amp-devcontainer-cpp:8.1.0@sha256:740110a1a70c336d5b4a2770f84b9d856839ca90a04fec8f0300828e98cb9518 # 8.1.0
+    container: ghcr.io/philips-software/amp-devcontainer-cpp:8.1.1@sha256:bbc38d4ba64f20cbeca7ef344fe0978422e61dee5715614afcaafa5f4dd2f044 # 8.1.1
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0 # Disable shallow clone to enable blame information
           persist-credentials: false
-      - uses: hendrikmuhs/ccache-action@d62db5f07c26379fc4b4e0916f098a92573c3b03 # v1.2.23
+      - uses: hendrikmuhs/ccache-action@f09c25b45002a07be2955cbe52e8cee55643f89d # v1.2.24
         with:
           key: ${{ github.job }}
           max-size: 2G
@@ -74,14 +74,14 @@ jobs:
   codeql:
     name: CodeQL
     runs-on: ubuntu-latest
-    container: ghcr.io/philips-software/amp-devcontainer-cpp:8.1.0@sha256:740110a1a70c336d5b4a2770f84b9d856839ca90a04fec8f0300828e98cb9518 # 8.1.0
+    container: ghcr.io/philips-software/amp-devcontainer-cpp:8.1.1@sha256:bbc38d4ba64f20cbeca7ef344fe0978422e61dee5715614afcaafa5f4dd2f044 # 8.1.1
     permissions:
       security-events: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: hendrikmuhs/ccache-action@d62db5f07c26379fc4b4e0916f098a92573c3b03 # v1.2.23
+      - uses: hendrikmuhs/ccache-action@f09c25b45002a07be2955cbe52e8cee55643f89d # v1.2.24
         with:
           key: ${{ github.job }}
       - uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
