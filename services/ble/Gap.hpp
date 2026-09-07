@@ -59,7 +59,7 @@ namespace services
 
     enum class Role : uint8_t
     {
-        central = 0,
+        central,
         peripheral,
     };
 
