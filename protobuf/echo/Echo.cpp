@@ -81,11 +81,6 @@ namespace services
         return currentRequestedSize;
     }
 
-    uint32_t ServiceProxy::ServiceId() const
-    {
-        return serviceId;
-    }
-
     EchoChannel ServiceProxy::Channel() const
     {
         return channel;

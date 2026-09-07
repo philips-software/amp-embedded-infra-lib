@@ -54,7 +54,6 @@ namespace services
         void CancelRequestSend();
         uint32_t MaxMessageSize() const;
         uint32_t CurrentRequestedSize() const;
-        uint32_t ServiceId() const;
         EchoChannel Channel() const;
         void SetChannel(EchoChannel channel);
         void SetSerializer(const infra::SharedPtr<MethodSerializer>& serializer);
