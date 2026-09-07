@@ -112,9 +112,8 @@ namespace services
 
         unsigned char contents[PSA_EXPORT_KEY_PAIR_MAX_SIZE];
         std::size_t contentsSize = 0;
-        auto status = psa_export_key(keyId, contents, sizeof(contents), &contentsSize);
-        psa_destroy_key(keyId);
-        really_assert(status == PSA_SUCCESS);
+        really_assert(psa_export_key(keyId, contents, sizeof(contents), &contentsSize) == PSA_SUCCESS);
+        really_assert(psa_destroy_key(keyId) == PSA_SUCCESS);
 
         outputBuffer.clear();
         infra::StringOutputStream stream(outputBuffer);
