@@ -88,16 +88,16 @@ namespace services
         void ReceivedMessage(infra::StreamReaderWithRewinding& reader, std::size_t encodedSize) override;
 
     private:
-        class ChannelAdministration;
+        class Channel;
 
     private:
         void ReceivedInitialize();
-        ChannelAdministration& ChannelAdministrationFor(SesameChannel channel);
-        const ChannelAdministration& ChannelAdministrationFor(SesameChannel channel) const;
+        Channel& ChannelFor(SesameChannel channel);
+        const Channel& ChannelFor(SesameChannel channel) const;
         uint16_t ReleasedWindow() const;
-        void SaveReceivedMessage(infra::StreamReader& reader, ChannelAdministration& channelAdministration);
-        void TryForwardReceivedMessage(ChannelAdministration& channelAdministration, SesameChannel channel);
-        void ForwardReceivedMessage(ChannelAdministration& channelAdministration, SesameChannel channel, uint16_t encodedSize);
+        void SaveReceivedMessage(infra::StreamReader& reader, Channel& channelAdministration);
+        void TryForwardReceivedMessage(Channel& channelAdministration, SesameChannel channel);
+        void ForwardReceivedMessage(Channel& channelAdministration, SesameChannel channel, uint16_t encodedSize);
         bool HasReceivingChannels() const;
         std::optional<SesameChannel> RequestedSendMessageChannel() const;
         std::optional<std::size_t> RequestedSendMessageSize(SesameChannel channel) const;
@@ -105,10 +105,10 @@ namespace services
         void SetNextState();
 
     private:
-        class ChannelAdministration
+        class Channel
         {
         public:
-            explicit ChannelAdministration(infra::BoundedDeque<uint8_t>& receivedMessage);
+            explicit Channel(infra::BoundedDeque<uint8_t>& receivedMessage);
 
             void Reset();
             void ResetReading();
@@ -131,7 +131,7 @@ namespace services
             virtual ~State() = default;
 
             virtual void Request();
-            virtual void RequestSendMessage(std::size_t size, SesameChannel channel);
+            virtual void RequestSendMessage(std::size_t size);
             virtual void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer);
             virtual void MessageSent(std::size_t encodedSize);
 
@@ -166,21 +166,21 @@ namespace services
         public:
             explicit StateOperational(SesameWindowed& communication);
 
-            void RequestSendMessage(std::size_t size, SesameChannel channel) override;
+            void RequestSendMessage(std::size_t size) override;
         };
 
         class StateSendingMessage
             : public State
         {
         public:
-            explicit StateSendingMessage(SesameWindowed& communication);
+            StateSendingMessage(SesameWindowed& communication, SesameChannel channel);
 
             void Request() override;
             void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
             void MessageSent(std::size_t encodedSize) override;
 
         private:
-            SesameChannel channel{ SesameChannel::red };
+            SesameChannel channel;
             std::size_t requestedSize;
         };
 
@@ -195,8 +195,8 @@ namespace services
         };
 
     private:
-        ChannelAdministration redChannelAdministration;
-        ChannelAdministration blueChannelAdministration;
+        Channel redChannel;
+        Channel blueChannel;
         uint8_t splitBuffers;
         SesameInitializer& sesameInitializer;
         const uint16_t ownBufferSize;
