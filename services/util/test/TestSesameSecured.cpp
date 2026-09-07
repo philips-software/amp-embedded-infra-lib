@@ -44,7 +44,7 @@ public:
     {
         EXPECT_CALL(upper, ReceivedMessage(testing::_, services::SesameChannel::red)).WillOnce(testing::Invoke([expected](infra::SharedPtr<infra::StreamReader>&& reader, [[maybe_unused]] services::SesameChannel channel)
             {
-                        infra::TextInputStream::WithErrorPolicy stream(*reader);
+                infra::TextInputStream::WithErrorPolicy stream(*reader);
                 EXPECT_EQ(expected.size(), stream.Available());
                 infra::BoundedString::WithStorage<256> s;
                 s.resize(stream.Available());
@@ -57,7 +57,7 @@ public:
     {
         EXPECT_CALL(upper, SendMessageStreamAvailable(testing::_, services::SesameChannel::red)).WillOnce(testing::Invoke([message](infra::SharedPtr<infra::StreamWriter>&& writer, [[maybe_unused]] services::SesameChannel channel)
             {
-                        infra::TextOutputStream::WithErrorPolicy stream(*writer);
+                infra::TextOutputStream::WithErrorPolicy stream(*writer);
                 EXPECT_EQ(message.size(), stream.Available());
                 stream << message;
             }));
@@ -286,7 +286,7 @@ TEST_F(SesameSecuredStandaloneTest, received_message_includes_non_zero_finish_ou
 
     EXPECT_CALL(upper, ReceivedMessage(testing::_, services::SesameChannel::red)).WillOnce(testing::Invoke([](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, [[maybe_unused]] services::SesameChannel channel)
         {
-                infra::TextInputStream::WithErrorPolicy stream(*reader);
+            infra::TextInputStream::WithErrorPolicy stream(*reader);
             EXPECT_EQ(5, stream.Available());
             infra::BoundedString::WithStorage<8> s;
             s.resize(stream.Available());
