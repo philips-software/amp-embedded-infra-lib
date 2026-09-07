@@ -25,7 +25,7 @@ namespace services
         virtual uint32_t GetNumberOfBondsForRole(Role role) const = 0;
         virtual uint32_t GetMaxNumberOfBonds() const = 0;
         virtual void AllocateInteractableBondStorage(uint32_t size) = 0;
-        virtual void AssertBondStoragesAreInSyncForRole(Role role) = 0; // TODO: const?
+        virtual void AssertBondStoragesAreInSyncForRole(Role role) = 0;
 
         // Iteration is in least recently used order, i.e. the first bond returned is the least recently used one.
         virtual void IterateBondedDevices(Role role, const infra::Function<void(const services::Bond&)>& onBond) = 0;

@@ -1,8 +1,6 @@
 #include "services/ble/BondStorageSynchronizer.hpp"
 #include "hal/interfaces/MacAddress.hpp"
-#include "infra/stream/StringOutputStream.hpp"
 #include "services/ble/Gap.hpp"
-#include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
@@ -22,7 +20,6 @@ namespace services
 
     void BondStorageSynchronizerImpl::AddBond(Role role, const services::Bond& bond)
     {
-        services::GlobalTracer().Trace() << "=============== Adding bond: " << infra::AsLittleEndianMacAddress(bond.address.address);
         really_assert(!enrichedBondStorage.GetBond(services::Role::central, bond.address).has_value());
         really_assert(!enrichedBondStorage.GetBond(services::Role::peripheral, bond.address).has_value());
         enrichedBondStorage.AddBond(role, bond);
@@ -81,7 +78,6 @@ namespace services
 
     void BondStorageSynchronizerImpl::AllocateInteractableBondStorage(uint32_t size)
     {
-        // TODO: This doesn't prevent two interactors of same role from being created. Do we care?
         really_assert(size <= maxNumberOfBonds - interactableBondStorage);
         interactableBondStorage += size;
     }
