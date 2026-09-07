@@ -22,7 +22,7 @@ namespace services
         uint32_t GetNumberOfBonds() const;
         uint32_t GetMaxNumberOfBonds() const;
         bool Full() const;
-        void RemoveLeastRecentlyUsedBond();
+        std::optional<const services::Bond> GetLeastRecentlyUsedBond();
         void AssertBondStoragesAreInSync();
 
     private:

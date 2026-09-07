@@ -73,7 +73,7 @@ namespace services
         bondStorageSynchroniser.AssertBondStoragesAreInSyncForRole(role);
     }
 
-    void BondStorageInteractor::RemoveLeastRecentlyUsedBond()
+    std::optional<const services::Bond> BondStorageInteractor::GetLeastRecentlyUsedBond()
     {
         std::optional<services::Bond> oldestBond;
         bondStorageSynchroniser.IterateBondedDevices(role, [&oldestBond](const services::Bond& bond)
@@ -82,7 +82,6 @@ namespace services
                     oldestBond = bond;
             });
 
-        if (oldestBond.has_value())
-            bondStorageSynchroniser.RemoveBond(role, oldestBond->address);
+        return oldestBond;
     }
 }
