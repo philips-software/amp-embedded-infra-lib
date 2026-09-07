@@ -41,6 +41,8 @@ namespace services
         , private SesameObserver
     {
     public:
+        using Sesame::RequestSendMessage;
+
         static constexpr std::size_t keySize = 16;
         static constexpr std::size_t blockSize = 16;
         static constexpr std::size_t ivSize = 12;
@@ -70,7 +72,7 @@ namespace services
 
         // Implementation of Sesame
         void Initialized() override;
-        void RequestSendMessage(std::size_t size, SesameChannel channel = SesameChannel::red) override;
+        void RequestSendMessage(std::size_t size, SesameChannel channel) override;
         std::size_t MaxSendMessageSize() const override;
         void Reset() override;
         void ResetReading() override;
@@ -115,7 +117,6 @@ namespace services
         std::array<uint8_t, ivSize> initialReceiveIv;
         std::array<uint8_t, ivSize> receiveIv;
         infra::SharedOptional<ReceiveBufferReader> receiveBufferReader;
-        SesameChannel receiveChannel = SesameChannel::red;
         bool integrityCheckFailed = false;
         infra::TimerSingleShot integrityCheckFailedTimer;
     };

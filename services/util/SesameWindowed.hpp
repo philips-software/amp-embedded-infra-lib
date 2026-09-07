@@ -52,6 +52,8 @@ namespace services
         };
 
     public:
+        using Sesame::RequestSendMessage;
+
         template<std::size_t MaxMessageSize, template<std::size_t> class MessageSize>
         static constexpr std::size_t bufferSizeForMessage = MessageSize<sizeof(Operation) + MaxMessageSize>::size;
 
@@ -64,7 +66,7 @@ namespace services
         SesameWindowed(infra::BoundedDeque<uint8_t>& redReceivedMessage, infra::BoundedDeque<uint8_t>& blueReceivedMessage, uint8_t splitBuffers, SesameEncoded& delegate, SesameInitializer& sesameInitializer = immediatelyGranted);
 
         // Implementation of Sesame
-        void RequestSendMessage(std::size_t size, SesameChannel channel = SesameChannel::red) override;
+        void RequestSendMessage(std::size_t size, SesameChannel channel) override;
         std::size_t MaxSendMessageSize() const override;
         void Reset() override;
         void ResetReading() override;
@@ -92,6 +94,8 @@ namespace services
 
     private:
         void ReceivedInitialize();
+        static Operation ToMessageOperation(SesameChannel channel);
+        static SesameChannel ToChannel(Operation operation);
         Channel& ChannelFor(SesameChannel channel);
         const Channel& ChannelFor(SesameChannel channel) const;
         uint16_t ReleasedWindow() const;

@@ -11,6 +11,8 @@ namespace services
         : public Sesame
     {
     public:
+        using Sesame::RequestSendMessage;
+
         MOCK_METHOD(void, RequestSendMessage, (std::size_t size, SesameChannel channel), (override));
         MOCK_METHOD(std::size_t, MaxSendMessageSize, (), (const, override));
         MOCK_METHOD(void, Reset, (), (override));
@@ -22,6 +24,8 @@ namespace services
     {
     public:
         using SesameObserver::SesameObserver;
+        using SesameObserver::SendMessageStreamAvailable;
+        using SesameObserver::ReceivedMessage;
 
         MOCK_METHOD(void, Initialized, (), (override));
         MOCK_METHOD(void, SendMessageStreamAvailable, (infra::SharedPtr<infra::StreamWriter> && writer, SesameChannel channel), (override));

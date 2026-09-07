@@ -113,7 +113,6 @@ namespace services
 
     void SesameSecured::ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, SesameChannel channel)
     {
-        receiveChannel = channel;
         if (integrityCheckFailed)
         {
             // If a message with a failed integrity check is followed by another message instead of a reset,
@@ -172,7 +171,7 @@ namespace services
 
         IncreaseIv(receiveIv);
 
-        Sesame::GetObserver().ReceivedMessage(receiveBufferReader.Emplace(receiveBuffer, reader), receiveChannel);
+        Sesame::GetObserver().ReceivedMessage(receiveBufferReader.Emplace(receiveBuffer, reader), channel);
     }
 
     void SesameSecured::SendMessageStreamReleased()

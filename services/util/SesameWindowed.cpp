@@ -54,32 +54,6 @@ namespace services
 
         const char ExtraCharacterReader::character = '\x4';
 
-        uint8_t ToMessageOperation(SesameChannel channel)
-        {
-            switch (channel)
-            {
-                case SesameChannel::red:
-                    return 4;
-                case SesameChannel::blue:
-                    return 5;
-            }
-
-            std::abort();
-        }
-
-        SesameChannel ToChannel(uint8_t operation)
-        {
-            switch (operation)
-            {
-                case 4:
-                    return SesameChannel::red;
-                case 5:
-                    return SesameChannel::blue;
-                default:
-                    std::abort();
-            }
-        }
-
     }
 
     SesameWindowed::SesameWindowed(infra::BoundedDeque<uint8_t>& redReceivedMessage, infra::BoundedDeque<uint8_t>& blueReceivedMessage, uint8_t splitBuffers, SesameEncoded& delegate, SesameInitializer& sesameInitializer)
@@ -100,6 +74,22 @@ namespace services
         assert(size <= MaxSendMessageSize());
         requestedSendMessageChannel = channel;
         state->RequestSendMessage(size);
+    }
+
+    SesameWindowed::Operation SesameWindowed::ToMessageOperation(SesameChannel channel)
+    {
+        static_assert(static_cast<uint8_t>(SesameChannel::red) == 0);
+        static_assert(static_cast<uint8_t>(SesameChannel::blue) == 1);
+        static_assert(static_cast<uint8_t>(Operation::messageRed) + 1 == static_cast<uint8_t>(Operation::messageBlue));
+        return static_cast<Operation>(static_cast<uint8_t>(Operation::messageRed) + static_cast<uint8_t>(channel));
+    }
+
+    SesameChannel SesameWindowed::ToChannel(Operation operation)
+    {
+        static_assert(static_cast<uint8_t>(SesameChannel::red) == 0);
+        static_assert(static_cast<uint8_t>(SesameChannel::blue) == 1);
+        static_assert(static_cast<uint8_t>(Operation::messageRed) + 1 == static_cast<uint8_t>(Operation::messageBlue));
+        return static_cast<SesameChannel>(static_cast<uint8_t>(operation) - static_cast<uint8_t>(Operation::messageRed));
     }
 
     SesameWindowed::Channel::Channel(infra::BoundedDeque<uint8_t>& receivedMessage)
@@ -255,7 +245,7 @@ namespace services
             case Operation::messageBlue:
                 if (initialized)
                 {
-                    auto channel = ToChannel(static_cast<uint8_t>(operation));
+                    auto channel = ToChannel(operation);
                     auto& channelAdministration = ChannelFor(channel);
                     SaveReceivedMessage(reader, channelAdministration);
                     TryForwardReceivedMessage(channelAdministration, channel);
@@ -496,7 +486,7 @@ namespace services
     {
         communication.SendingMessage(*writer, channel);
         infra::DataOutputStream::WithErrorPolicy stream(*writer);
-        stream << static_cast<Operation>(ToMessageOperation(channel));
+        stream << ToMessageOperation(channel);
 
         communication.ResetRequestedSendMessage(channel);
         communication.GetObserver().SendMessageStreamAvailable(std::move(writer), channel);

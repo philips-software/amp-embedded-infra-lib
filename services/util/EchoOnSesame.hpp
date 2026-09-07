@@ -35,7 +35,6 @@ namespace services
         std::optional<std::size_t> requestedSize;
         SesameChannel requestedChannel = SesameChannel::red;
         bool initialized = false;
-        ServiceProxy* sendingProxy = nullptr;
     };
 }
 

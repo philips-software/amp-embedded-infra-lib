@@ -7,28 +7,16 @@ namespace services
     {
         SesameChannel ToSesameChannel(EchoChannel channel)
         {
-            switch (channel)
-            {
-                case EchoChannel::red:
-                    return SesameChannel::red;
-                case EchoChannel::blue:
-                    return SesameChannel::blue;
-            }
-
-            std::abort();
+            static_assert(static_cast<uint8_t>(EchoChannel::red) == static_cast<uint8_t>(SesameChannel::red));
+            static_assert(static_cast<uint8_t>(EchoChannel::blue) == static_cast<uint8_t>(SesameChannel::blue));
+            return static_cast<SesameChannel>(channel);
         }
 
         EchoChannel ToEchoChannel(SesameChannel channel)
         {
-            switch (channel)
-            {
-                case SesameChannel::red:
-                    return EchoChannel::red;
-                case SesameChannel::blue:
-                    return EchoChannel::blue;
-            }
-
-            std::abort();
+            static_assert(static_cast<uint8_t>(SesameChannel::red) == static_cast<uint8_t>(EchoChannel::red));
+            static_assert(static_cast<uint8_t>(SesameChannel::blue) == static_cast<uint8_t>(EchoChannel::blue));
+            return static_cast<EchoChannel>(channel);
         }
     }
 
@@ -43,7 +31,6 @@ namespace services
         initialized = false;
         requestedSize.reset();
         requestedChannel = SesameChannel::red;
-        sendingProxy = nullptr;
 
         infra::Subject<EchoInitializationObserver>::NotifyObservers([](auto& observer)
             {
@@ -96,7 +83,6 @@ namespace services
 
     void EchoOnSesame::SendingProxySelected(ServiceProxy& proxy)
     {
-        sendingProxy = &proxy;
         requestedChannel = ToSesameChannel(proxy.Channel());
     }
 
