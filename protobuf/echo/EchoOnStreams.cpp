@@ -162,9 +162,8 @@ namespace services
         return proxy.GrantSend();
     }
 
-    void EchoOnStreams::SendingProxySelected(ServiceProxy& proxy)
+    void EchoOnStreams::SendingProxySelected([[maybe_unused]] ServiceProxy& proxy)
     {
-        static_cast<void>(proxy);
     }
 
     infra::SharedPtr<MethodDeserializer> EchoOnStreams::StartingMethod(uint32_t serviceId, uint32_t methodId, infra::SharedPtr<MethodDeserializer>&& deserializer)

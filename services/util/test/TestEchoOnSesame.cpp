@@ -180,6 +180,30 @@ TEST_F(EchoOnSesameTest, service_method_is_invoked_only_on_configured_channel)
     ReceiveMessageOnChannel(infra::ConstructBin()({ 1, (1 << 3) | 2, 2, 8, 5 }).Range(), services::SesameChannel::blue);
 }
 
+TEST_F(EchoOnSesameTest, red_channel_congestion_does_not_block_blue_channel_receive_and_later_recovers)
+{
+    EXPECT_CALL(sesame, ResetReading());
+    sesame.GetObserver().Initialized();
+
+    EXPECT_CALL(sesame, MaxSendMessageSize()).WillOnce(testing::Return(1000));
+    EXPECT_CALL(sesame, RequestSendMessage(98, services::SesameChannel::red));
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.Method(6);
+        });
+
+    service.SetChannel(services::EchoChannel::blue);
+    EXPECT_CALL(service, Method(5)).WillOnce(testing::Invoke([this]()
+        {
+            service.MethodDone();
+        }));
+    ReceiveMessageOnChannel(infra::ConstructBin()({ 1, (1 << 3) | 2, 2, 8, 5 }).Range(), services::SesameChannel::blue);
+
+    infra::ByteOutputStreamWriter::WithStorage<128> writer;
+    sesame.GetObserver().SendMessageStreamAvailable(infra::UnOwnedSharedPtr(writer), services::SesameChannel::red);
+    EXPECT_THAT(std::vector<uint8_t>(writer.Processed().begin(), writer.Processed().end()), testing::ElementsAreArray(std::vector<uint8_t>{ 1, (1 << 3) | 2, 2, 8, 6 }));
+}
+
 TEST_F(EchoOnSesameTest, service_method_bytes_is_invoked)
 {
     EXPECT_CALL(service, MethodBytes(testing::_)).WillOnce(testing::Invoke([this](const infra::BoundedVector<uint8_t>& v)
