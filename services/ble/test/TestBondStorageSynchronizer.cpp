@@ -191,10 +191,19 @@ TEST_F(BondStorageSynchronizerTestWithConstruction, get_bond_is_forwarded_to_bon
 
 TEST_F(BondStorageSynchronizerTestWithConstruction, remove_bond_is_forwarded_to_both_storages)
 {
+    EXPECT_CALL(enrichedBondStorage, GetBond(services::Role::central, gapAddress1)).WillOnce(testing::Return(std::optional<services::Bond>{}));
     EXPECT_CALL(authoritativeBondStorage, RemoveBond(gapAddress1));
     EXPECT_CALL(enrichedBondStorage, RemoveBond(services::Role::peripheral, gapAddress1));
     bondStorageSynchronizer.RemoveBond(services::Role::peripheral, gapAddress1);
 }
+
+#ifndef EMIL_MUTATION_TESTING
+TEST_F(BondStorageSynchronizerTestWithConstruction, remove_bond_asserts_when_bond_exists_for_the_opposite_role)
+{
+    ON_CALL(enrichedBondStorage, GetBond(services::Role::central, gapAddress1)).WillByDefault(testing::Return(std::optional<services::Bond>{ bond1 }));
+    EXPECT_DEATH(bondStorageSynchronizer.RemoveBond(services::Role::peripheral, gapAddress1), "");
+}
+#endif
 
 TEST_F(BondStorageSynchronizerTestWithConstruction, remove_all_bonds_for_role_removes_matching_bonds_from_absolute_storage)
 {
