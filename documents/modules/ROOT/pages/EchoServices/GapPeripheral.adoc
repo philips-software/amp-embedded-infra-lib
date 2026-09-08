@@ -113,3 +113,10 @@ include::partial$echoservices/gap_peripheral/GapPeripheral_AllowPairingRejection
 ....
 include::partial$echoservices/gap_peripheral/GapPeripheral_ReBondAfterBondRemoval_sequence.mmd[]
 ....
+
+== Appendix: Gap.proto
+
+[source,protobuf]
+----
+include::example$Gap.proto[]
+----
