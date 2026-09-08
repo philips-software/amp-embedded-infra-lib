@@ -47,7 +47,7 @@ include::partial$echoservices/composite_flows/Gap_EndToEndPairing_sequence_examp
 
 == BLE Central Bonded Reconnection
 
-Scan a resolvable private address, resolve, reconnect, re-encrypt, resume GATT operations.
+Scan for a bonded peripheral, reconnect, and re-encrypt using stored keys (no SMP pairing).
 
 [mermaid]
 ....

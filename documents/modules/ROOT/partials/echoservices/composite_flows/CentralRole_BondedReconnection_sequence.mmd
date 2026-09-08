@@ -1,23 +1,21 @@
 sequenceDiagram
-    title BLE Central Bonded Reconnection: Re-encrypt and Resume
+    title BLE Central Bonded Reconnection: Re-encrypt with Stored Keys
 
     participant Product as Product
-    participant CN as CN<br>[implements GapCentral,<br>GattClient]
+    participant CN as CN<br>[implements GapCentral]
     participant Peripheral as BLE Peripheral
 
     rect rgb(230, 230, 240)
-        note over Product, Peripheral: 1. Scan for known bonded device
-        Product->>CN: GapCentral.StartDeviceDiscovery()
-        CN-->>Product: GapCentralResponse.CurrentState(scanning)
-        CN-->>Product: GapCentralResponse.DeviceDiscovered(<br>addressWithType={address=6C:8B:2F:3A:9D:41, addressType=randomAddress},<br>rssi=-42)
+        note over Product, Peripheral: 1. Locate the bonded peripheral (optional)
+        opt Product does not already know the target and scans first
+            Product->>CN: GapCentral.StartDeviceDiscovery()
+            CN-->>Product: GapCentralResponse.CurrentState(scanning)
+            CN-->>Product: GapCentralResponse.DeviceDiscovered(<br>addressWithType={address=6C:8B:2F:3A:9D:41, addressType=randomAddress},<br>rssi=-42)
+            Product->>CN: GapCentral.Standby()
+            CN-->>Product: GapCentralResponse.CurrentState(standby)
+        end
 
-        Product->>CN: GapCentral.ResolvePrivateAddress(6C:8B:2F:3A:9D:41)
-        CN-->>Product: GapCentralResponse.ResolvePrivateAddressResult(<br>success=true, identityAddress=C4:AB:12:34:56:78)
-
-        Note over Product: RPA resolved to known bonded identity address.
-
-        Product->>CN: GapCentral.Standby()
-        CN-->>Product: GapCentralResponse.CurrentState(standby)
+        Note over Product: Alternatively, Connect(bond.identityAddress) directly.<br>The controller matches incoming/observed RPAs via the LL resolving list<br>(populated with the peer's IRK at bond time).
     end
 
     rect rgb(230, 230, 240)
@@ -30,18 +28,10 @@ sequenceDiagram
     end
 
     rect rgb(230, 230, 240)
-        note over Product, Peripheral: 3. Re-encryption (no user interaction)
+        note over Product, Peripheral: 3. Re-encryption
         Product->>CN: GapCentral.PairAndBond()
+        CN-->>Product: GapCentralResponse.NumberOfBondsChanged(1)
         CN-->>Product: GapCentralResponse.PairingResult(pairedSuccessfully=true)
 
-        Note over Product: Existing bond used for re-encryption.<br>No AuthenticationRequired, no user confirmation needed.
-    end
-
-    rect rgb(230, 230, 240)
-        note over Product, Peripheral: 4. Resume GATT operations
-        Product->>CN: GattClient.ReadCharacteristic(0x0025)
-        CN-->>Product: GattClientResponse.ReadCharacteristicResponse(<br>data={handle=0x0025, data=0x64})
-        CN-->>Product: GattClientResponse.OperationComplete(success)
-
-        Note over Product: Full GATT access restored without re-discovery<br>if handles are cached from previous session.
+        Note over Product: PairAndBond is required. Without it the link stays unencrypted.<br>Existing bond is reused, so no SMP user interaction (no AuthenticationRequired).<br>NumberOfBondsChanged signals the LRU aging update — the bond count is unchanged.
     end
