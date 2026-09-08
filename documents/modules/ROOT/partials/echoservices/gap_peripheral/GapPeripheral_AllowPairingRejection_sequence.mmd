@@ -3,26 +3,18 @@ sequenceDiagram
     participant CN as CN Peripheral<br>[implements GapPeripheral]
     participant Central as BLE Central
 
-    rect rgb(230, 230, 240)
-        note over Product, Central: Pairing disallowed - no existing bond
-        Product->>CN: GapPeripheral.SetAllowPairing(false)
-        Product->>CN: GapPeripheral.Advertise(type=advInd, advertisingInterval=160)
-        CN-->>Product: GapPeripheralResponse.CurrentState(advertising)
+    Product->>CN: GapPeripheral.SetAllowPairing(false)
+    Product->>CN: GapPeripheral.Advertise(type=advInd, advertisingInterval=160)
+    CN-->>Product: GapPeripheralResponse.CurrentState(advertising)
 
-        Central->>CN: BLE connection request
+    Note over Product, Central: SetAllowPairing(false) blocks new pairings.<br>Bonded centrals can still reconnect and re-encrypt.
+
+    alt Connecting central has no bond
+        Central->>CN: BLE connection request (no existing bond)
         CN--xCentral: Connection rejected
-
-        Note over Product: No bond exists and pairing is disallowed.<br>Central cannot connect.
-    end
-
-    rect rgb(230, 230, 240)
-        note over Product, Central: Pairing disallowed - existing bond allows re-encryption
-        Product->>CN: GapPeripheral.SetAllowPairing(false)
-        Product->>CN: GapPeripheral.Advertise(type=advInd, advertisingInterval=160)
-        CN-->>Product: GapPeripheralResponse.CurrentState(advertising)
-
+        Note over Product: No CurrentState(connected) callback fires.<br>Peripheral stays in advertising.
+    else Connecting central is already bonded
         Central->>CN: BLE connection request (bonded central)
         CN-->>Product: GapPeripheralResponse.CurrentState(connected)
-
-        Note over Product: Bonded central can still connect and re-encrypt.<br>Only new pairing is blocked.
+        Note over Product: Link re-encrypted using existing bond keys.<br>No new SMP procedure and no AuthenticationRequired.
     end

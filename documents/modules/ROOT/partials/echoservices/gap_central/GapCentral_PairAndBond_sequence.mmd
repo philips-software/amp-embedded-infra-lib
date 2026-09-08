@@ -12,7 +12,7 @@ sequenceDiagram
     else Successful re-encryption with existing bond
         CN-->>Product: GapCentralResponse.NumberOfBondsChanged(N)
         CN-->>Product: GapCentralResponse.PairingResult(pairedSuccessfully=true)
-        Note over Product: NumberOfBondsChanged fires as a bond-aging (LRU) signal;<br>the reported N equals the current bond count and is unchanged.
+        Note over Product: NumberOfBondsChanged fires as a bond-aging (LRU) signal.<br>The reported N equals the current bond count and is unchanged.
     else Pairing failure
         CN-->>Product: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
         CN-->>Product: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=numericComparisonFailed)

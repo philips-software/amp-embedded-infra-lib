@@ -2,7 +2,7 @@ sequenceDiagram
     participant Product as Product<br>[implements GapCentralResponse]
     participant CN as CN Central<br>[implements GapCentral]
 
-    Note over Product, CN: Precondition: connected, IoCapabilities set to displayYesNo or keyboardDisplay
+    Note over Product, CN: Precondition: connected,<br>IoCapabilities set to displayYesNo or keyboardDisplay
 
     Product->>CN: GapCentral.PairAndBond()
     CN-->>Product: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
