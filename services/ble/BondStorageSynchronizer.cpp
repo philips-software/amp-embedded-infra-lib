@@ -61,8 +61,6 @@ namespace services
 
     void BondStorageSynchronizerImpl::RemoveBond(Role role, const services::GapAddress& address)
     {
-        really_assert_with_msg(!enrichedBondStorage.GetBond(OppositeRole(role), address).has_value(),
-            "Bond exists for the opposite role %d", static_cast<int>(OppositeRole(role)));
         authoritativeBondStorage.RemoveBond(address);
         enrichedBondStorage.RemoveBond(role, address);
     }
