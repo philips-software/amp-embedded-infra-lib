@@ -408,6 +408,36 @@ TEST(BoundedVectorTest, TestSwapSmallerWithLarger)
     EXPECT_EQ(expectedVector2, vector2);
 }
 
+TEST(BoundedVectorTest, TestSwapTwoFullVectors)
+{
+    int range1[3] = { 0, 1, 2 };
+    infra::BoundedVector<int>::WithMaxSize<3> vector1(range1, range1 + 3);
+    int range2[3] = { 3, 4, 5 };
+    infra::BoundedVector<int>::WithMaxSize<3> vector2(range2, range2 + 3);
+
+    infra::swap(vector1, vector2);
+
+    infra::BoundedVector<int>::WithMaxSize<3> expectedVector1(range2, range2 + 3);
+    infra::BoundedVector<int>::WithMaxSize<3> expectedVector2(range1, range1 + 3);
+    EXPECT_EQ(expectedVector1, vector1);
+    EXPECT_EQ(expectedVector2, vector2);
+}
+
+TEST(BoundedVectorTest, TestSwapWithFullVector)
+{
+    int range1[1] = { 0 };
+    infra::BoundedVector<int>::WithMaxSize<3> vector1(range1, range1 + 1);
+    int range2[3] = { 1, 2, 3 };
+    infra::BoundedVector<int>::WithMaxSize<3> vector2(range2, range2 + 3);
+
+    infra::swap(vector1, vector2);
+
+    infra::BoundedVector<int>::WithMaxSize<3> expectedVector1(range2, range2 + 3);
+    infra::BoundedVector<int>::WithMaxSize<3> expectedVector2(range1, range1 + 1);
+    EXPECT_EQ(expectedVector1, vector1);
+    EXPECT_EQ(expectedVector2, vector2);
+}
+
 TEST(BoundedVectorTest, TestClear)
 {
     infra::BoundedVector<int>::WithMaxSize<5> vector(std::size_t(2), 4);
