@@ -1,21 +1,33 @@
 sequenceDiagram
     participant Product as Product<br>[implements GapCentralResponse]
-    participant CN as CN<br>[implements GapCentral]
+    participant CN as CN Central<br>[implements GapCentral]
 
-    Note over Product, CN: Precondition: connected, IoCapabilities set to keyboard or keyboardDisplay
+    Note over Product, CN: Precondition: connected, IoCapabilities set for passkey entry (display and/or keyboard).
 
     Product->>CN: GapCentral.PairAndBond()
-    CN-->>Product: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=false, passkey=485923)
 
-    Note over Product: User enters displayed passkey
+    alt CN displays passkey, user enters it on peer
+        CN-->>Product: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=false, passkey=485923)
+        Note over Product: Display 485923. User reads it and types it on the peer device.<br>No AuthenticateWithPasskey call is required on our side.
 
-    Product->>CN: GapCentral.AuthenticateWithPasskey(485923)
+        alt Peer accepts the correct passkey
+            CN-->>Product: GapCentralResponse.NumberOfBondsChanged(1)
+            CN-->>Product: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+        else Peer enters wrong passkey
+            CN-->>Product: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=passkeyEntryFailed)
+        end
+    else Peer displays passkey, user enters it on us
+        CN-->>Product: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=false)
+        Note over Product: passkey field is unused in this variant.<br>User reads the passkey shown on the peer and types it into the Product UI.
 
-    alt Correct passkey
-        CN-->>Product: GapCentralResponse.NumberOfBondsChanged(1)
-        CN-->>Product: GapCentralResponse.PairingResult(pairedSuccessfully=true)
-    else Wrong passkey
-        CN-->>Product: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=passkeyEntryFailed)
-    else Timeout (30s SMP timeout)
-        CN-->>Product: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=timeout)
+        Product->>CN: GapCentral.AuthenticateWithPasskey(485923)
+
+        alt Correct passkey
+            CN-->>Product: GapCentralResponse.NumberOfBondsChanged(1)
+            CN-->>Product: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+        else Wrong passkey
+            CN-->>Product: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=passkeyEntryFailed)
+        end
     end
+
+    Note over Product, CN: In both variants, no response within the 30 s SMP timeout results in<br>PairingResult(pairedSuccessfully=false, reason=timeout).

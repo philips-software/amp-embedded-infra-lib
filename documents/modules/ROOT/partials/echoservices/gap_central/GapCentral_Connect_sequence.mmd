@@ -1,6 +1,6 @@
 sequenceDiagram
     participant Product as Product<br>[implements GapCentralResponse]
-    participant CN as CN<br>[implements GapCentral]
+    participant CN as CN Central<br>[implements GapCentral]
 
     Product->>CN: GapCentral.Connect(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
 

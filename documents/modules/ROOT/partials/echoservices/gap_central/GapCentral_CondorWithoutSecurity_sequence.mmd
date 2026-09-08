@@ -1,6 +1,6 @@
 sequenceDiagram
     participant Product as Product
-    participant CN as CN<br>[implements GapCentral]
+    participant CN as CN Central<br>[implements GapCentral]
     participant Peripheral as BLE Peripheral
 
     rect rgb(230, 230, 240)
@@ -10,11 +10,20 @@ sequenceDiagram
         CN-->>Product: GapCentralResponse.CurrentState(connected)
     end
 
-    rect rgb(230, 230, 240)
-        note over Product, Peripheral: Condor initialization fails
-        Note over Product: Attempt to initialize Condor service<br>on unencrypted connection.
-
-        Note over Product, Peripheral: Condor requires an encrypted link.<br>Without PairAndBond, the Condor service<br>will not respond or will reject requests.
-
-        Note over Product: Resolution: call GapCentral.PairAndBond()<br>before initializing Condor.
+    alt Product forgets PairAndBond (unencrypted link)
+        rect rgb(230, 230, 240)
+            note over Product, Peripheral: Attempt Condor initialization
+            Product->>Peripheral: Condor request (unencrypted)
+            Note over Product, Peripheral: Condor requires an encrypted link.<br>Peer will not respond or will reject.
+            Note over Product: Result: no useful data exchanged.
+        end
+    else Product calls PairAndBond first
+        rect rgb(230, 230, 240)
+            note over Product, Peripheral: Secure the link before using Condor
+            Product->>CN: GapCentral.PairAndBond()
+            CN-->>Product: GapCentralResponse.NumberOfBondsChanged(1)
+            CN-->>Product: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+            Product->>Peripheral: Condor request (encrypted)
+            Peripheral-->>Product: Condor response
+        end
     end

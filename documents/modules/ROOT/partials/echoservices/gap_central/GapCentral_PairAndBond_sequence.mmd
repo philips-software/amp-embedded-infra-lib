@@ -1,6 +1,6 @@
 sequenceDiagram
     participant Product as Product<br>[implements GapCentralResponse]
-    participant CN as CN<br>[implements GapCentral]
+    participant CN as CN Central<br>[implements GapCentral]
 
     Product->>CN: GapCentral.PairAndBond()
 
@@ -10,7 +10,9 @@ sequenceDiagram
         CN-->>Product: GapCentralResponse.NumberOfBondsChanged(1)
         CN-->>Product: GapCentralResponse.PairingResult(pairedSuccessfully=true)
     else Successful re-encryption with existing bond
+        CN-->>Product: GapCentralResponse.NumberOfBondsChanged(N)
         CN-->>Product: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+        Note over Product: NumberOfBondsChanged fires as a bond-aging (LRU) signal;<br>the reported N equals the current bond count and is unchanged.
     else Pairing failure
         CN-->>Product: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
         CN-->>Product: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=numericComparisonFailed)

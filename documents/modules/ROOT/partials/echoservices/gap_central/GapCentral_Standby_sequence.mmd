@@ -1,5 +1,6 @@
 sequenceDiagram
     participant Product as Product<br>[implements GapCentralResponse]
-    participant CN as CN<br>[implements GapCentral]
+    participant CN as CN Central<br>[implements GapCentral]
+    Note over Product, CN: Standby() is allowed from scanning, connected or initiating.<br>It terminates the current activity and returns the CN to standby.
     Product->>CN: GapCentral.Standby()
     CN-->>Product: GapCentralResponse.CurrentState(standby)

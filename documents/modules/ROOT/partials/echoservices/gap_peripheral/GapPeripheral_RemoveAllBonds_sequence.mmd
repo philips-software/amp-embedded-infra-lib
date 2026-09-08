@@ -1,5 +1,6 @@
 sequenceDiagram
     participant Product as Product<br>[implements GapPeripheralResponse]
-    participant CN as CN<br>[implements GapPeripheral]
+    participant CN as CN Peripheral<br>[implements GapPeripheral]
     Product->>CN: GapPeripheral.RemoveAllBonds()
     CN-->>Product: GapPeripheralResponse.NumberOfBondsChanged(0)
+    Note over Product: Removes all stored bonds. The callback always reports 0<br>as the final bond count, regardless of the previous state.

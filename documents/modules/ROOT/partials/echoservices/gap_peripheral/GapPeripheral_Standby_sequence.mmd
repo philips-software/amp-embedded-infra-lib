@@ -1,5 +1,6 @@
 sequenceDiagram
     participant Product as Product<br>[implements GapPeripheralResponse]
-    participant CN as CN<br>[implements GapPeripheral]
+    participant CN as CN Peripheral<br>[implements GapPeripheral]
+    Note over Product, CN: Standby() is allowed from advertising or connected.<br>It terminates advertising or disconnects the peer, returning the CN to standby.
     Product->>CN: GapPeripheral.Standby()
     CN-->>Product: GapPeripheralResponse.CurrentState(standby)
