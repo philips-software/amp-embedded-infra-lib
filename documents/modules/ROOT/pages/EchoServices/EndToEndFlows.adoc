@@ -31,13 +31,6 @@ Both roles from the perspective of a single Product controlling both a central a
 include::partial$echoservices/composite_flows/Gap_EndToEndPairing_sequence.mmd[]
 ....
 
-=== Example
-
-[mermaid]
-....
-include::partial$echoservices/composite_flows/Gap_EndToEndPairing_sequence_example.mmd[]
-....
-
 == BLE Central Bonded Reconnection
 
 Scan for a bonded peripheral, reconnect, and re-encrypt using stored keys (no SMP pairing).
