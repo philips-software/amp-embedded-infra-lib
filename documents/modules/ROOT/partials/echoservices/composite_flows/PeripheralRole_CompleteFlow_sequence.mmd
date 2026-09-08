@@ -2,15 +2,19 @@ sequenceDiagram
     title BLE Peripheral Complete Flow: Advertise, Connect, Pair, Bond
 
     participant Product as Product
-    participant CN as CN<br>[implements GapPeripheral]
+    participant CN as CN Peripheral<br>[implements GapPeripheral]
     participant Central as BLE Central
 
     rect rgb(230, 230, 240)
-        note over Product, Central: 1. Configuration
-        Product->>CN: GapPeripheral.SetSecurityPreferences(<br>secureConnections=enforced, mitm=enforced,<br>ioCapabilities=displayYesNo)
-        Product->>CN: GapPeripheral.SetAdvertisementData(<br>data=0x0A 0x09 'N''o''n''i''n''3''1''5''0' 0x03 0x03 0x22 0x18)
-        Product->>CN: GapPeripheral.SetScanResponseData(<br>data=0x03 0x03 0x22 0x18)
-        Product->>CN: GapPeripheral.SetAllowPairing(true)
+        note over Product, Central: 1. Configuration (optional)
+        opt Product overrides the default security profile
+            Product->>CN: GapPeripheral.SetSecurityPreferences(<br>secureConnections=enforced, mitm=enforced,<br>ioCapabilities=displayYesNo)
+        end
+        opt Product overrides the default advertisement payload
+            Product->>CN: GapPeripheral.SetAdvertisementData(<br>data=0x0A 0x09 'N''o''n''i''n''3''1''5''0' 0x03 0x03 0x22 0x18)
+            Product->>CN: GapPeripheral.SetScanResponseData(<br>data=0x03 0x03 0x22 0x18)
+        end
+        Note over Product: If skipped, defaults apply. Without SetAdvertisementData the CN<br>advertises only the flags AD field (no device name, no service UUIDs).<br>Pairing is allowed by default, so SetAllowPairing(true) is not needed.
     end
 
     rect rgb(230, 230, 240)
