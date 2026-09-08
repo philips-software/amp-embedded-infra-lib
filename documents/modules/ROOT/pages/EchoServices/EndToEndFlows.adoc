@@ -28,7 +28,7 @@ When a single Product controls both a peripheral and a central CN, pairing requi
 
 [mermaid]
 ....
-include::partial$echoservices/composite_flows/Gap_EndToEndPairing_sequence.mmd[]
+include::partial$echoservices/composite_flows/Gap_DualRolePairingCorrelation_sequence.mmd[]
 ....
 
 == BLE Central Bonded Reconnection
