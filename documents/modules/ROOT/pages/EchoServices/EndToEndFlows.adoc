@@ -22,9 +22,9 @@ Configure, advertise, accept connection, pair, bond.
 include::partial$echoservices/composite_flows/PeripheralRole_CompleteFlow_sequence.mmd[]
 ....
 
-== GAP End-to-End Pairing
+== GAP Dual-Role Pairing Correlation
 
-Both roles from the perspective of a single Product controlling both a central and a peripheral CN.
+When a single Product controls both a peripheral and a central CN, pairing requires the Product to confirm on *both* services. This flow highlights that dual-confirm requirement and shows both callback streams in one view.
 
 [mermaid]
 ....
