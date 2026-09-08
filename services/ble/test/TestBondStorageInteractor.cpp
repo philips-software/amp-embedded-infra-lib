@@ -141,7 +141,7 @@ TEST_F(BondStorageInteractorTest, assert_bond_storages_are_in_sync_is_forwarded_
 TEST_F(BondStorageInteractorTest, get_least_recently_used_bond_returns_nothing_when_no_bonds_are_stored)
 {
     EXPECT_CALL(bondStorageSynchroniser, IterateBondedDevices(role, testing::_));
-    EXPECT_THAT(interactor.GetLeastRecentlyUsedBond(), testing::Eq(std::optional<const services::Bond>{}));
+    EXPECT_THAT(interactor.GetLeastRecentlyUsedBond(), testing::Eq(std::optional<services::Bond>{}));
 }
 
 TEST_F(BondStorageInteractorTest, get_least_recently_used_bond_returns_first_bond_of_iteration)
@@ -152,5 +152,5 @@ TEST_F(BondStorageInteractorTest, get_least_recently_used_bond_returns_first_bon
                 onBond(bond1);
                 onBond(bond2);
             });
-    EXPECT_THAT(interactor.GetLeastRecentlyUsedBond(), testing::Eq(std::optional<const services::Bond>{ bond1 }));
+    EXPECT_THAT(interactor.GetLeastRecentlyUsedBond(), testing::Eq(std::optional<services::Bond>{ bond1 }));
 }

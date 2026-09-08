@@ -110,6 +110,23 @@ TEST_F(BondStorageSynchronizerTest, construction_keeps_bond_in_absolute_storage_
     services::BondStorageSynchronizerImpl bondStorageSynchronizer(authoritativeBondStorage, enrichedBondStorage);
 }
 
+TEST_F(BondStorageSynchronizerTest, construction_keeps_bond_in_absolute_storage_when_only_present_for_peripheral_role)
+{
+    EXPECT_CALL(enrichedBondStorage, RemoveBondIf(testing::_));
+
+    EXPECT_CALL(authoritativeBondStorage, RemoveBondIf(testing::_))
+        .WillOnce([this](const infra::Function<bool(const services::GapAddress&)>& onAddress)
+            {
+                EXPECT_CALL(enrichedBondStorage, GetBond(services::Role::central, gapAddress1))
+                    .WillOnce(testing::Return(std::optional<services::Bond>{}));
+                EXPECT_CALL(enrichedBondStorage, GetBond(services::Role::peripheral, gapAddress1))
+                    .WillOnce(testing::Return(std::optional<services::Bond>{ bond1 }));
+                EXPECT_THAT(onAddress(gapAddress1), testing::IsFalse());
+            });
+
+    services::BondStorageSynchronizerImpl bondStorageSynchronizer(authoritativeBondStorage, enrichedBondStorage);
+}
+
 class BondStorageSynchronizerTestWithConstruction
     : public BondStorageSynchronizerTest
 {

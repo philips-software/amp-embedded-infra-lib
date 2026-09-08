@@ -1,6 +1,23 @@
 #include "services/ble/BondStorageSynchronizer.hpp"
 #include "hal/interfaces/MacAddress.hpp"
+#include "infra/util/LogAndAbort.hpp"
 #include "services/ble/Gap.hpp"
+
+namespace
+{
+    services::Role OppositeRole(services::Role role)
+    {
+        switch (role)
+        {
+            case services::Role::central:
+                return services::Role::peripheral;
+            case services::Role::peripheral:
+                return services::Role::central;
+            default:
+                LOG_AND_ABORT_ENUM(role);
+        }
+    }
+}
 
 namespace services
 {
@@ -20,8 +37,10 @@ namespace services
 
     void BondStorageSynchronizerImpl::AddBond(Role role, const services::Bond& bond)
     {
-        really_assert(!enrichedBondStorage.GetBond(services::Role::central, bond.address).has_value());
-        really_assert(!enrichedBondStorage.GetBond(services::Role::peripheral, bond.address).has_value());
+        really_assert_with_msg(!enrichedBondStorage.GetBond(services::Role::central, bond.address).has_value(),
+            "Bond already exists for role (%d)", services::Role::central);
+        really_assert_with_msg(!enrichedBondStorage.GetBond(services::Role::peripheral, bond.address).has_value(),
+            "Bond already exists for role (%d)", services::Role::peripheral);
         enrichedBondStorage.AddBond(role, bond);
     }
 
@@ -42,6 +61,8 @@ namespace services
 
     void BondStorageSynchronizerImpl::RemoveBond(Role role, const services::GapAddress& address)
     {
+        really_assert_with_msg(!enrichedBondStorage.GetBond(OppositeRole(role), address).has_value(),
+            "Bond exists for the opposite role (%d)", OppositeRole(role));
         authoritativeBondStorage.RemoveBond(address);
         enrichedBondStorage.RemoveBond(role, address);
     }
@@ -87,12 +108,12 @@ namespace services
         enrichedBondStorage.IterateBondedDevices(role, [this](const services::Bond& bond)
             {
                 const auto bondIsStored = authoritativeBondStorage.IsBondStored(bond.address);
-                really_assert_with_msg(bondIsStored, "Bond not found in authoritative storage: %X%X%X%X%X%X",
-                    bond.address.address[5], bond.address.address[4], bond.address.address[3],
-                    bond.address.address[2], bond.address.address[1], bond.address.address[0]);
+                really_assert_with_msg(bondIsStored, "Bond not found in authoritative storage: %02X:%02X:%02X:%02X:%02X:%02X",
+                    static_cast<unsigned int>(bond.address.address[5]), static_cast<unsigned int>(bond.address.address[4]), static_cast<unsigned int>(bond.address.address[3]),
+                    static_cast<unsigned int>(bond.address.address[2]), static_cast<unsigned int>(bond.address.address[1]), static_cast<unsigned int>(bond.address.address[0]));
             });
 
-        // Note: cannot verify authoritive storage because it may contain desyncs for the other role,
+        // Note: cannot verify authoritative storage because it may contain desyncs for the other role,
         // because we can't know the state of the other role's bonds at this point.
     }
 
