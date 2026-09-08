@@ -4,13 +4,6 @@
 
 Cross-service flows that combine multiple services to illustrate typical user journeys.
 
-== Protocol Stack
-
-[mermaid]
-....
-include::partial$echoservices/Multinode_ProtocolStack_component.mmd[]
-....
-
 == BLE Central Complete Flow
 
 Scan, connect, pair, GATT discovery, enable notifications.
