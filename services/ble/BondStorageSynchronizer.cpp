@@ -38,9 +38,9 @@ namespace services
     void BondStorageSynchronizerImpl::AddBond(Role role, const services::Bond& bond)
     {
         really_assert_with_msg(!enrichedBondStorage.GetBond(services::Role::central, bond.address).has_value(),
-            "Bond already exists for role (%d)", services::Role::central);
+            "Bond already exists for role %d", static_cast<int>(services::Role::central));
         really_assert_with_msg(!enrichedBondStorage.GetBond(services::Role::peripheral, bond.address).has_value(),
-            "Bond already exists for role (%d)", services::Role::peripheral);
+            "Bond already exists for role %d", static_cast<int>(services::Role::peripheral));
         enrichedBondStorage.AddBond(role, bond);
     }
 
@@ -62,7 +62,7 @@ namespace services
     void BondStorageSynchronizerImpl::RemoveBond(Role role, const services::GapAddress& address)
     {
         really_assert_with_msg(!enrichedBondStorage.GetBond(OppositeRole(role), address).has_value(),
-            "Bond exists for the opposite role (%d)", OppositeRole(role));
+            "Bond exists for the opposite role %d", static_cast<int>(OppositeRole(role)));
         authoritativeBondStorage.RemoveBond(address);
         enrichedBondStorage.RemoveBond(role, address);
     }
