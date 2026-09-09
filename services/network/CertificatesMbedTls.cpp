@@ -2,8 +2,8 @@
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/util/ReallyAssert.hpp"
+#include "mbedtls/build_info.h"
 #include "mbedtls/pk.h"
-#include "mbedtls/version.h"
 #include "services/util/MbedTlsRandomDataGeneratorWrapper.hpp"
 
 #if MBEDTLS_VERSION_MAJOR < 3
@@ -121,6 +121,8 @@ namespace services
         stream << infra::AsBase64(infra::ConstByteRange(contents, contents + contentsSize));
         stream << "-----END RSA PRIVATE KEY-----\r\n";
         stream << '\0';
+
+        mbedtls_platform_zeroize(contents, sizeof(contents));
     }
 
     void CertificatesMbedTls::WriteOwnCertificate(infra::BoundedString& outputBuffer, hal::SynchronousRandomDataGenerator& randomDataGenerator)
