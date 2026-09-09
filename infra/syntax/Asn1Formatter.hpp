@@ -27,6 +27,7 @@ namespace infra
         void AddUtcTime(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t min, uint8_t sec);
         void AddGeneralizedTime(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t min, uint8_t sec);
         void AddTime(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t min, uint8_t sec);
+        void AddDer(infra::ConstByteRange der);
 
         template<typename T>
         void AddOptional(std::optional<T> value);
