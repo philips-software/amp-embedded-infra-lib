@@ -225,6 +225,28 @@ TEST(Asn1ObjectFormatter, add_non_empty_optional)
     ASSERT_THAT(stream.Storage(), testing::ElementsAre(0x02, 0x01, 0xAB));
 }
 
+TEST(Asn1ObjectFormatter, add_constructed)
+{
+    infra::ByteOutputStream::WithStorage<10> stream;
+    infra::Asn1Formatter formatter(stream);
+
+    // Example DER array
+    auto constructed_der = std::array<uint8_t, 10>{ 0x20, 0x08, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02, 0x02, 0x01 };
+    formatter.AddConstructed(constructed_der);
+
+    EXPECT_EQ(constructed_der, stream.Storage());
+}
+
+TEST(Asn1ObjectFormatter, add_constructed_unintentional)
+{
+    infra::ByteOutputStream::WithStorage<2> stream;
+    infra::Asn1Formatter formatter(stream);
+
+    auto constructed_unintentional = std::array<uint8_t, 10>{ 0x00, 0x08, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02, 0x02, 0x01 };
+
+    EXPECT_DEATH(formatter.AddConstructed(constructed_unintentional), ".*");
+}
+
 TEST(Asn1ObjectFormatter, start_sequence)
 {
     infra::ByteOutputStream::WithStorage<8> stream;
