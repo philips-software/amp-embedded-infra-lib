@@ -93,16 +93,25 @@ namespace services
 
     IPv4Address LightweightIp::GetIPv4Address() const
     {
+        if (netif_default == nullptr)
+            return {};
+
         return Convert(netif_default->ip_addr.u_addr.ip4);
     }
 
     IPv4InterfaceAddresses LightweightIp::GetIPv4InterfaceAddresses() const
     {
+        if (netif_default == nullptr)
+            return {};
+
         return { Convert(netif_default->ip_addr.u_addr.ip4), Convert(netif_default->netmask.u_addr.ip4), Convert(netif_default->gw.u_addr.ip4) };
     }
 
     IPv6Address LightweightIp::LinkLocalAddress() const
     {
+        if (netif_default == nullptr)
+            return {};
+
         for (s8_t i = 0; i < LWIP_IPV6_NUM_ADDRESSES; ++i)
             if (ip6_addr_isvalid(netif_ip6_addr_state(netif_default, i)) &&
                 ip6_addr_islinklocal(netif_ip6_addr(netif_default, i)))
