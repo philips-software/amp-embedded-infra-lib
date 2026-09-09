@@ -230,22 +230,23 @@ TEST(Asn1ObjectFormatter, add_constructed)
     infra::ByteOutputStream::WithStorage<10> stream;
     infra::Asn1Formatter formatter(stream);
 
-    // Example DER array
-    auto constructed_der = std::array<uint8_t, 10>{ 0x20, 0x08, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02, 0x02, 0x01 };
-    formatter.AddConstructed(constructed_der);
+    auto constructedDer = std::array<uint8_t, 10>{ 0x30, 0x08, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02, 0x05, 0x00 };
+    formatter.AddConstructed(constructedDer);
 
-    EXPECT_EQ(constructed_der, stream.Storage());
+    EXPECT_THAT(stream.Storage(), testing::ElementsAreArray(constructedDer));
 }
 
+#ifndef EMIL_MUTATION_TESTING
 TEST(Asn1ObjectFormatter, add_constructed_unintentional)
 {
-    infra::ByteOutputStream::WithStorage<2> stream;
+    infra::ByteOutputStream::WithStorage<3> stream;
     infra::Asn1Formatter formatter(stream);
 
-    auto constructed_unintentional = std::array<uint8_t, 10>{ 0x00, 0x08, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02, 0x02, 0x01 };
+    auto primitiveDer = std::array<uint8_t, 3>{ 0x02, 0x01, 0x01 };
 
-    EXPECT_DEATH(formatter.AddConstructed(constructed_unintentional), ".*");
+    EXPECT_DEATH(formatter.AddConstructed(primitiveDer), ".*");
 }
+#endif
 
 TEST(Asn1ObjectFormatter, start_sequence)
 {
