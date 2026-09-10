@@ -7,7 +7,7 @@ sequenceDiagram
     App->>Node: GapCentral.GetBondList()
     Node-->>App: GapCentralResponse.BondListReceived(bonds=[<br>{addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress}, deviceName="Nonin3150"},<br>{addressWithType={address=00:1A:7D:DA:71:13, addressType=publicAddress}, deviceName="SensorX"}<br>])
 
-    Note over App: Select specific bond to remove by identity address
+    Note over App: Select specific bond to remove by identity address or device name 
 
     App->>Node: GapCentral.RemoveBondWithAddress(<br>address=C4:AB:12:34:56:78, addressType=randomAddress)
     Node-->>App: GapCentralResponse.NumberOfBondsChanged(1)
