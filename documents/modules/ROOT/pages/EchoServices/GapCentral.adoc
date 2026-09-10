@@ -168,9 +168,15 @@ include::partial$echoservices/gap_central/GapCentral_DiscoveryAndConnection_sequ
 include::partial$echoservices/gap_central/GapCentral_NumericComparison_sequence_example.mmd[]
 ....
 
-== Appendix: Gap.proto
+== Reference
 
+Service definition: link:{page-origin-url}/blob/{page-origin-refname}/services/ble/Gap.proto[services/ble/Gap.proto].
+
+.View Gap.proto inline
+[%collapsible]
+====
 [source,protobuf]
 ----
 include::example$Gap.proto[]
 ----
+====

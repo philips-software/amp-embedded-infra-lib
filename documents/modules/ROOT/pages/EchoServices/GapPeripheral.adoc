@@ -114,9 +114,15 @@ include::partial$echoservices/gap_peripheral/GapPeripheral_AllowPairingRejection
 include::partial$echoservices/gap_peripheral/GapPeripheral_ReBondAfterBondRemoval_sequence.mmd[]
 ....
 
-== Appendix: Gap.proto
+== Reference
 
+Service definition: link:{page-origin-url}/blob/{page-origin-refname}/services/ble/Gap.proto[services/ble/Gap.proto].
+
+.View Gap.proto inline
+[%collapsible]
+====
 [source,protobuf]
 ----
 include::example$Gap.proto[]
 ----
+====
