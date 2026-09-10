@@ -19,5 +19,13 @@ sequenceDiagram
     else Connecting central is already bonded
         Central-)Node: CONNECT_IND
         Node-->>App: GapPeripheralResponse.CurrentState(connected)
+        rect rgb(245, 240, 230)
+            Note over Node, Central: LL encryption using the stored LTK (no SMP)
+            Central-)Node: LL_ENC_REQ (Rand, EDIV, SKD_M, IV_M)
+            Node-)Central: LL_ENC_RSP (SKD_S, IV_S)
+            Node-)Central: LL_START_ENC_REQ (encrypted)
+            Central-)Node: LL_START_ENC_RSP (encrypted)
+            Node-)Central: LL_START_ENC_RSP (encrypted)
+        end
         Note over App: Link re-encrypted using existing bond keys.<br>No new SMP procedure and no AuthenticationRequired.
     end

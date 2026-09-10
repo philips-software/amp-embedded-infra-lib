@@ -39,6 +39,14 @@ sequenceDiagram
         App->>Node: GapCentral.Connect(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
         Node-->>App: GapCentralResponse.CurrentState(initiating)
         Node-)Peripheral: CONNECT_IND (unacknowledged)
+        rect rgb(245, 240, 230)
+            Note over Node, Peripheral: Typical first LL activity after CONNECT_IND
+            Node-)Peripheral: LL_FEATURE_REQ
+            Peripheral-)Node: LL_FEATURE_RSP
+            Node-)Peripheral: LL_VERSION_IND
+            Peripheral-)Node: LL_VERSION_IND
+            Note over Node, Peripheral: Empty data PDUs (M -> S and S -> M) establish<br>the first bidirectional connection event.
+        end
         Note over Node, Peripheral: Central enters the connection state on send.<br>Link is confirmed by the first bidirectional data exchange in a connection event.
         Node-->>App: GapCentralResponse.CurrentState(connected)
     end
@@ -46,11 +54,35 @@ sequenceDiagram
     rect rgb(230, 230, 240)
         note over App, Peripheral: 4. Pairing and bonding
         App->>Node: GapCentral.PairAndBond()
+        rect rgb(245, 240, 230)
+            Note over Node, Peripheral: SMP starts (LESC with MITM)
+            Node-)Peripheral: Pairing_Request (MITM requested)
+            Peripheral-)Node: Pairing_Response (MITM requested)
+            Node-)Peripheral: Pairing_Public_Key
+            Peripheral-)Node: Pairing_Public_Key
+            Peripheral-)Node: Pairing_Confirm
+            Node-)Peripheral: Pairing_Random
+            Peripheral-)Node: Pairing_Random
+        end
         Node-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
 
         Note over App: User confirms numeric comparison or enters passkey
 
         App->>Node: GapCentral.NumericComparisonConfirm(true)
+        rect rgb(245, 240, 230)
+            Note over Node, Peripheral: SMP completes and link is encrypted
+            Node-)Peripheral: Pairing_DHKey_Check
+            Peripheral-)Node: Pairing_DHKey_Check
+            Node-)Peripheral: LL_ENC_REQ
+            Peripheral-)Node: LL_ENC_RSP
+            Peripheral-)Node: LL_START_ENC_REQ (encrypted)
+            Node-)Peripheral: LL_START_ENC_RSP (encrypted)
+            Peripheral-)Node: LL_START_ENC_RSP (encrypted)
+            Note over Node, Peripheral: Key distribution (encrypted)
+            Peripheral-)Node: Identity_Information (IRK)
+            Peripheral-)Node: Identity_Address_Information
+            Peripheral-)Node: Signing_Information (CSRK)
+        end
         Node-->>App: GapCentralResponse.NumberOfBondsChanged(1)
         Node-->>App: GapCentralResponse.PairingResult(pairedSuccessfully=true)
     end

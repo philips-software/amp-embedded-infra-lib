@@ -8,8 +8,27 @@ sequenceDiagram
         App->>Node: GapPeripheral.Advertise(type=advInd, advertisingInterval=160)
         Node-->>App: GapPeripheralResponse.CurrentState(advertising)
         Central-)Node: CONNECT_IND
-        Central-)Node: Pairing_Request (SMP)
         Node-->>App: GapPeripheralResponse.CurrentState(connected)
+        rect rgb(245, 240, 230)
+            Note over Node, Central: LESC Just Works SMP + LL encryption + key distribution
+            Central-)Node: Pairing_Request
+            Node-)Central: Pairing_Response
+            Central-)Node: Pairing_Public_Key
+            Node-)Central: Pairing_Public_Key
+            Node-)Central: Pairing_Confirm
+            Central-)Node: Pairing_Random
+            Node-)Central: Pairing_Random
+            Central-)Node: Pairing_DHKey_Check
+            Node-)Central: Pairing_DHKey_Check
+            Central-)Node: LL_ENC_REQ
+            Node-)Central: LL_ENC_RSP
+            Node-)Central: LL_START_ENC_REQ (encrypted)
+            Central-)Node: LL_START_ENC_RSP (encrypted)
+            Node-)Central: LL_START_ENC_RSP (encrypted)
+            Node-)Central: Identity_Information (IRK)
+            Node-)Central: Identity_Address_Information
+            Node-)Central: Signing_Information (CSRK)
+        end
         Node-->>App: GapPeripheralResponse.NumberOfBondsChanged(1)
         Node-->>App: GapPeripheralResponse.PairingResult(pairedSuccessfully=true)
     end
@@ -28,8 +47,26 @@ sequenceDiagram
         Node-->>App: GapPeripheralResponse.CurrentState(advertising)
         Central-)Node: CONNECT_IND (no bond on central side)
         Node-->>App: GapPeripheralResponse.CurrentState(connected)
-
-        Central-)Node: Pairing_Request (SMP)
+        rect rgb(245, 240, 230)
+            Note over Node, Central: LESC Just Works SMP + LL encryption + key distribution
+            Central-)Node: Pairing_Request
+            Node-)Central: Pairing_Response
+            Central-)Node: Pairing_Public_Key
+            Node-)Central: Pairing_Public_Key
+            Node-)Central: Pairing_Confirm
+            Central-)Node: Pairing_Random
+            Node-)Central: Pairing_Random
+            Central-)Node: Pairing_DHKey_Check
+            Node-)Central: Pairing_DHKey_Check
+            Central-)Node: LL_ENC_REQ
+            Node-)Central: LL_ENC_RSP
+            Node-)Central: LL_START_ENC_REQ (encrypted)
+            Central-)Node: LL_START_ENC_RSP (encrypted)
+            Node-)Central: LL_START_ENC_RSP (encrypted)
+            Node-)Central: Identity_Information (IRK)
+            Node-)Central: Identity_Address_Information
+            Node-)Central: Signing_Information (CSRK)
+        end
         Note over App: Peripheral accepts and replaces the old bond.
 
         Node-->>App: GapPeripheralResponse.NumberOfBondsChanged(1)

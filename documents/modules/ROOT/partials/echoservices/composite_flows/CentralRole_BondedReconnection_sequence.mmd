@@ -34,6 +34,14 @@ sequenceDiagram
     rect rgb(230, 230, 240)
         note over App, Peripheral: 3. Re-encryption
         App->>Node: GapCentral.PairAndBond()
+        rect rgb(245, 240, 230)
+            Note over Node, Peripheral: LL encryption using the stored LTK (no SMP)
+            Node-)Peripheral: LL_ENC_REQ (Rand, EDIV, SKD_M, IV_M)
+            Peripheral-)Node: LL_ENC_RSP (SKD_S, IV_S)
+            Peripheral-)Node: LL_START_ENC_REQ (encrypted)
+            Node-)Peripheral: LL_START_ENC_RSP (encrypted)
+            Peripheral-)Node: LL_START_ENC_RSP (encrypted)
+        end
         Node-->>App: GapCentralResponse.NumberOfBondsChanged(1)
         Node-->>App: GapCentralResponse.PairingResult(pairedSuccessfully=true)
 

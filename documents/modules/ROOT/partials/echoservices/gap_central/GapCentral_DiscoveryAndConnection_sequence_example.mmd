@@ -38,6 +38,14 @@ sequenceDiagram
         Node-->>App: GapCentralResponse.CurrentState(initiating)
 
         Node-)Peripheral: CONNECT_IND (unacknowledged)
+        rect rgb(245, 240, 230)
+            Note over Node, Peripheral: Typical first LL activity after CONNECT_IND
+            Node-)Peripheral: LL_FEATURE_REQ
+            Peripheral-)Node: LL_FEATURE_RSP
+            Node-)Peripheral: LL_VERSION_IND
+            Peripheral-)Node: LL_VERSION_IND
+            Note over Node, Peripheral: Empty data PDUs (M -> S and S -> M) establish<br>the first bidirectional connection event.
+        end
         Note over Node, Peripheral: Central assumes the connection has started once CONNECT_IND is sent.<br>Link is confirmed by the first bidirectional data exchange in a connection event.
         Node-->>App: GapCentralResponse.CurrentState(connected)
 
