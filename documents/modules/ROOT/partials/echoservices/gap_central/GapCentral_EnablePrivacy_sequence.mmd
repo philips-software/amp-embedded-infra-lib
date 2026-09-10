@@ -22,4 +22,4 @@ sequenceDiagram
     Node-->>App: GapCentralResponse.CurrentState(initiating)
     Node-->>App: GapCentralResponse.CurrentState(connected)
 
-    Note over App, Node: Controller resolves peer RPA automatically using stored IRK
+    Note over App, Node: SetPrivacyMode(true) makes the central use its own resolvable private address<br>generated from the local IRK. Peer identification via the LL resolving list requires<br>a prior bond with the peer (see the Bonded Reconnection flow).
