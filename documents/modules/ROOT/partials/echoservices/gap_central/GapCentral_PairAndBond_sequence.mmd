@@ -4,9 +4,13 @@ sequenceDiagram
 
     App->>Node: GapCentral.PairAndBond()
 
-    alt Successful pairing with new bond
+    alt Just Works - new bond (no user interaction)
+        Note over App, Node: Negotiated when MITM protection is not required<br>or IoCapabilities do not support authentication.
+        Node-->>App: GapCentralResponse.NumberOfBondsChanged(1)
+        Node-->>App: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+    else Numeric Comparison / Passkey Entry - new bond
         Node-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
-        Note right of App: User responds via NumericComparisonConfirm / PasskeyEntry
+        Note right of App: User responds via NumericComparisonConfirm / AuthenticateWithPasskey
         Node-->>App: GapCentralResponse.NumberOfBondsChanged(1)
         Node-->>App: GapCentralResponse.PairingResult(pairedSuccessfully=true)
     else Successful re-encryption with existing bond
@@ -14,7 +18,9 @@ sequenceDiagram
         Node-->>App: GapCentralResponse.PairingResult(pairedSuccessfully=true)
         Note over App: NumberOfBondsChanged fires as a bond-aging (LRU) signal.<br>The reported N equals the current bond count and is unchanged.
     else Pairing failure
-        Node-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+        opt Authenticated method
+            Node-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+        end
         Node-->>App: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=numericComparisonFailed)
     else Peer-initiated disconnect during pairing
         Node-->>App: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=unknown)
