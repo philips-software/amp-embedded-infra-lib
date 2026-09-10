@@ -7,7 +7,8 @@ sequenceDiagram
         note over App, Central: 1. Initial bond established
         App->>Node: GapPeripheral.Advertise(type=advInd, advertisingInterval=160)
         Node-->>App: GapPeripheralResponse.CurrentState(advertising)
-        Central->>Node: Connect + Pair
+        Central-)Node: CONNECT_IND
+        Central-)Node: Pairing_Request (SMP)
         Node-->>App: GapPeripheralResponse.CurrentState(connected)
         Node-->>App: GapPeripheralResponse.NumberOfBondsChanged(1)
         Node-->>App: GapPeripheralResponse.PairingResult(pairedSuccessfully=true)
@@ -25,10 +26,11 @@ sequenceDiagram
         note over App, Central: 3. Central reconnects - bond mismatch
         App->>Node: GapPeripheral.Advertise(type=advInd, advertisingInterval=160)
         Node-->>App: GapPeripheralResponse.CurrentState(advertising)
-        Central->>Node: Connect (no bond on central side)
+        Central-)Node: CONNECT_IND (no bond on central side)
         Node-->>App: GapPeripheralResponse.CurrentState(connected)
 
-        Note over App: Central initiates new pairing.<br>Peripheral accepts and replaces the old bond.
+        Central-)Node: Pairing_Request (SMP)
+        Note over App: Peripheral accepts and replaces the old bond.
 
         Node-->>App: GapPeripheralResponse.NumberOfBondsChanged(1)
         Node-->>App: GapPeripheralResponse.PairingResult(pairedSuccessfully=true)
