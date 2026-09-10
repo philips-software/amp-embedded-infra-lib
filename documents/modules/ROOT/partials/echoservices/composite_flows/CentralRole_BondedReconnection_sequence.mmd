@@ -1,37 +1,37 @@
 sequenceDiagram
     title BLE Central Bonded Reconnection: Re-encrypt with Stored Keys
 
-    participant Product as Product
-    participant CN as CN Central<br>[implements GapCentral]
+    participant App as App
+    participant Node as Node<br>[implements GapCentral]
     participant Peripheral as BLE Peripheral
 
     rect rgb(230, 230, 240)
-        note over Product, Peripheral: 1. Locate the bonded peripheral (optional)
-        opt Product does not already know the target and scans first
-            Product->>CN: GapCentral.StartDeviceDiscovery()
-            CN-->>Product: GapCentralResponse.CurrentState(scanning)
-            CN-->>Product: GapCentralResponse.DeviceDiscovered(<br>addressWithType={address=6C:8B:2F:3A:9D:41, addressType=randomAddress},<br>rssi=-42)
-            Product->>CN: GapCentral.Standby()
-            CN-->>Product: GapCentralResponse.CurrentState(standby)
+        note over App, Peripheral: 1. Locate the bonded peripheral (optional)
+        opt App does not already know the target and scans first
+            App->>Node: GapCentral.StartDeviceDiscovery()
+            Node-->>App: GapCentralResponse.CurrentState(scanning)
+            Node-->>App: GapCentralResponse.DeviceDiscovered(<br>addressWithType={address=6C:8B:2F:3A:9D:41, addressType=randomAddress},<br>rssi=-42)
+            App->>Node: GapCentral.Standby()
+            Node-->>App: GapCentralResponse.CurrentState(standby)
         end
 
-        Note over Product: Alternatively, Connect(bond.identityAddress) directly.<br>The controller matches incoming/observed RPAs via the LL resolving list<br>(populated with the peer's IRK at bond time).
+        Note over App: Alternatively, Connect(bond.identityAddress) directly.<br>The controller matches incoming/observed RPAs via the LL resolving list<br>(populated with the peer's IRK at bond time).
     end
 
     rect rgb(230, 230, 240)
-        note over Product, Peripheral: 2. Reconnect
-        Product->>CN: GapCentral.Connect(<br>addressWithType={address=6C:8B:2F:3A:9D:41, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
-        CN-->>Product: GapCentralResponse.CurrentState(initiating)
-        CN->>Peripheral: BLE connection request
-        Peripheral-->>CN: Connection accepted
-        CN-->>Product: GapCentralResponse.CurrentState(connected)
+        note over App, Peripheral: 2. Reconnect
+        App->>Node: GapCentral.Connect(<br>addressWithType={address=6C:8B:2F:3A:9D:41, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
+        Node-->>App: GapCentralResponse.CurrentState(initiating)
+        Node->>Peripheral: BLE connection request
+        Peripheral-->>Node: Connection accepted
+        Node-->>App: GapCentralResponse.CurrentState(connected)
     end
 
     rect rgb(230, 230, 240)
-        note over Product, Peripheral: 3. Re-encryption
-        Product->>CN: GapCentral.PairAndBond()
-        CN-->>Product: GapCentralResponse.NumberOfBondsChanged(1)
-        CN-->>Product: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+        note over App, Peripheral: 3. Re-encryption
+        App->>Node: GapCentral.PairAndBond()
+        Node-->>App: GapCentralResponse.NumberOfBondsChanged(1)
+        Node-->>App: GapCentralResponse.PairingResult(pairedSuccessfully=true)
 
-        Note over Product: PairAndBond is required. Without it the link stays unencrypted.<br>Existing bond is reused, so no SMP user interaction (no AuthenticationRequired).<br>NumberOfBondsChanged signals the LRU aging update — the bond count is unchanged.
+        Note over App: PairAndBond is required. Without it the link stays unencrypted.<br>Existing bond is reused, so no SMP user interaction (no AuthenticationRequired).<br>NumberOfBondsChanged signals the LRU aging update — the bond count is unchanged.
     end

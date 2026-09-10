@@ -1,24 +1,24 @@
 sequenceDiagram
     title Numeric Comparison Pairing Example
 
-    participant Product as Product<br>[implements GapCentralResponse]
-    participant CN as CN Central<br>[implements GapCentral]
+    participant App as App<br>[implements GapCentralResponse]
+    participant Node as Node<br>[implements GapCentral]
 
-    note over Product, CN: Precondition: connected.<br>IoCapabilities set to displayYesNo.
+    note over App, Node: Precondition: connected.<br>IoCapabilities set to displayYesNo.
 
     rect rgb(230, 230, 240)
-        note over Product, CN: Initiate pairing
-        Product->>CN: PairAndBond()
-        CN-->>Product: AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+        note over App, Node: Initiate pairing
+        App->>Node: PairAndBond()
+        Node-->>App: AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
 
-        note over Product: Display "485923" to the user.<br>User verifies the same number appears on the peripheral.
+        note over App: Display "485923" to the user.<br>User verifies the same number appears on the peripheral.
     end
 
     rect rgb(230, 230, 240)
-        note over Product, CN: User confirms match
-        Product->>CN: NumericComparisonConfirm(true)
-        CN-->>Product: NumberOfBondsChanged(1)
-        CN-->>Product: PairingResult(pairedSuccessfully=true)
+        note over App, Node: User confirms match
+        App->>Node: NumericComparisonConfirm(true)
+        Node-->>App: NumberOfBondsChanged(1)
+        Node-->>App: PairingResult(pairedSuccessfully=true)
 
-        note over Product: Bond stored. Keys (LTK, IRK) exchanged.<br>Future reconnections use encryption without re-pairing.
+        note over App: Bond stored. Keys (LTK, IRK) exchanged.<br>Future reconnections use encryption without re-pairing.
     end

@@ -1,48 +1,48 @@
 sequenceDiagram
     title BLE Central Discovery and Connection using GapCentral RPCs
 
-    participant Product as Product<br>[implements GapCentralResponse]
-    participant CN as CN Central<br>[implements GapCentral]
+    participant App as App<br>[implements GapCentralResponse]
+    participant Node as Node<br>[implements GapCentral]
     participant Peripheral as BLE Peripheral
 
     rect rgb(230, 230, 240)
-        note over Product, Peripheral: Startup / readiness
-        Product->>CN: GapCentral.GetState()
-        CN-->>Product: GapCentralResponse.CurrentState(standby)
+        note over App, Peripheral: Startup / readiness
+        App->>Node: GapCentral.GetState()
+        Node-->>App: GapCentralResponse.CurrentState(standby)
     end
 
     rect rgb(230, 230, 240)
-        note over Product, Peripheral: Discovery
+        note over App, Peripheral: Discovery
         opt Optional discovery filter
-            Product->>CN: GapCentral.SetDeviceDiscoveryFilter(<br>filter=address, data=C4:AB:12:34:56:78)
+            App->>Node: GapCentral.SetDeviceDiscoveryFilter(<br>filter=address, data=C4:AB:12:34:56:78)
         end
-        Product->>CN: GapCentral.StartDeviceDiscovery()
-        CN-->>Product: GapCentralResponse.CurrentState(scanning)
+        App->>Node: GapCentral.StartDeviceDiscovery()
+        Node-->>App: GapCentralResponse.CurrentState(scanning)
 
         loop Until target peripheral is found
-            Peripheral-->>CN: Advertisement / scan response
-            CN-->>Product: GapCentralResponse.DeviceDiscovered(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>data=<AD bytes>, rssi=-38, advertisingReportType=advInd)
+            Peripheral-->>Node: Advertisement / scan response
+            Node-->>App: GapCentralResponse.DeviceDiscovered(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>data=<AD bytes>, rssi=-38, advertisingReportType=advInd)
         end
     end
 
     rect rgb(230, 230, 240)
-        note over Product, Peripheral: Stop scanning before connecting
-        Product->>CN: GapCentral.Standby()
-        CN-->>Product: GapCentralResponse.CurrentState(standby)
+        note over App, Peripheral: Stop scanning before connecting
+        App->>Node: GapCentral.Standby()
+        Node-->>App: GapCentralResponse.CurrentState(standby)
     end
 
     rect rgb(230, 230, 240)
-        note over Product, Peripheral: Connect
-        Product->>CN: GapCentral.Connect(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
-        CN-->>Product: GapCentralResponse.CurrentState(initiating)
+        note over App, Peripheral: Connect
+        App->>Node: GapCentral.Connect(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
+        Node-->>App: GapCentralResponse.CurrentState(initiating)
 
         alt Connection successful
-            CN->>Peripheral: BLE connection request
-            Peripheral-->>CN: Connection accepted
-            CN-->>Product: GapCentralResponse.CurrentState(connected)
+            Node->>Peripheral: BLE connection request
+            Peripheral-->>Node: Connection accepted
+            Node-->>App: GapCentralResponse.CurrentState(connected)
         else Connection failed / timeout
-            CN->>Peripheral: BLE connection request
-            Peripheral--xCN: No response / reject / timeout
-            CN-->>Product: GapCentralResponse.CurrentState(standby)
+            Node->>Peripheral: BLE connection request
+            Peripheral--xNode: No response / reject / timeout
+            Node-->>App: GapCentralResponse.CurrentState(standby)
         end
     end

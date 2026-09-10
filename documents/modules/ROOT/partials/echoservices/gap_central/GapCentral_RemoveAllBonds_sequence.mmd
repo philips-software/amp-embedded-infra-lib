@@ -1,6 +1,6 @@
 sequenceDiagram
-    participant Product as Product<br>[implements GapCentralResponse]
-    participant CN as CN Central<br>[implements GapCentral]
-    Product->>CN: GapCentral.RemoveAllBonds()
-    CN-->>Product: GapCentralResponse.NumberOfBondsChanged(0)
-    Note over Product: Removes all stored bonds. The callback always reports 0<br>as the final bond count, regardless of the previous state.
+    participant App as App<br>[implements GapCentralResponse]
+    participant Node as Node<br>[implements GapCentral]
+    App->>Node: GapCentral.RemoveAllBonds()
+    Node-->>App: GapCentralResponse.NumberOfBondsChanged(0)
+    Note over App: Removes all stored bonds. The callback always reports 0<br>as the final bond count, regardless of the previous state.

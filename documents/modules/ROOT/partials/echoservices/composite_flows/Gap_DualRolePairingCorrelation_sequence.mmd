@@ -1,23 +1,23 @@
 sequenceDiagram
-    title Dual-Role Pairing Correlation: One Product Confirms on Both CNs
+    title Dual-Role Pairing Correlation: One App Confirms on Both Nodes
 
-    participant Product as Product
-    participant CNp as CN Peripheral<br>[implements GapPeripheral]
-    participant CNc as CN Central<br>[implements GapCentral]
+    participant App as App
+    participant PeripheralNode as Peripheral Node<br>[implements GapPeripheral]
+    participant CentralNode as Central Node<br>[implements GapCentral]
 
-    Note over Product, CNc: Precondition: both CNs configured, link established (state = connected on both).
+    Note over App, CentralNode: Precondition: both Nodes configured, link established (state = connected on both).
 
-    Product->>CNc: GapCentral.PairAndBond()
+    App->>CentralNode: GapCentral.PairAndBond()
 
-    CNc-->>Product: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
-    CNp-->>Product: GapPeripheralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+    CentralNode-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+    PeripheralNode-->>App: GapPeripheralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
 
-    Note over Product: Same passkey on both sides.<br>Product must confirm on BOTH services.
+    Note over App: Same passkey on both sides.<br>App must confirm on BOTH services.
 
-    Product->>CNc: GapCentral.NumericComparisonConfirm(true)
-    Product->>CNp: GapPeripheral.NumericComparisonConfirm(true)
+    App->>CentralNode: GapCentral.NumericComparisonConfirm(true)
+    App->>PeripheralNode: GapPeripheral.NumericComparisonConfirm(true)
 
-    CNc-->>Product: GapCentralResponse.NumberOfBondsChanged(1)
-    CNc-->>Product: GapCentralResponse.PairingResult(pairedSuccessfully=true)
-    CNp-->>Product: GapPeripheralResponse.NumberOfBondsChanged(1)
-    CNp-->>Product: GapPeripheralResponse.PairingResult(pairedSuccessfully=true)
+    CentralNode-->>App: GapCentralResponse.NumberOfBondsChanged(1)
+    CentralNode-->>App: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+    PeripheralNode-->>App: GapPeripheralResponse.NumberOfBondsChanged(1)
+    PeripheralNode-->>App: GapPeripheralResponse.PairingResult(pairedSuccessfully=true)

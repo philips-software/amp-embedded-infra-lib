@@ -1,54 +1,54 @@
 sequenceDiagram
     title BLE Peripheral Complete Flow: Advertise, Connect, Pair, Bond
 
-    participant Product as Product
-    participant CN as CN Peripheral<br>[implements GapPeripheral]
+    participant App as App
+    participant Node as Node<br>[implements GapPeripheral]
     participant Central as BLE Central
 
     rect rgb(230, 230, 240)
-        note over Product, Central: 1. Configuration (optional)
-        opt Product overrides the default security profile
-            Product->>CN: GapPeripheral.SetSecurityPreferences(<br>secureConnections=enforced, mitm=enforced,<br>ioCapabilities=displayYesNo)
+        note over App, Central: 1. Configuration (optional)
+        opt App overrides the default security profile
+            App->>Node: GapPeripheral.SetSecurityPreferences(<br>secureConnections=enforced, mitm=enforced,<br>ioCapabilities=displayYesNo)
         end
-        opt Product overrides the default advertisement payload
-            Product->>CN: GapPeripheral.SetAdvertisementData(<br>data=0x0A 0x09 'N''o''n''i''n''3''1''5''0' 0x03 0x03 0x22 0x18)
-            Product->>CN: GapPeripheral.SetScanResponseData(<br>data=0x03 0x03 0x22 0x18)
+        opt App overrides the default advertisement payload
+            App->>Node: GapPeripheral.SetAdvertisementData(<br>data=0x0A 0x09 'N''o''n''i''n''3''1''5''0' 0x03 0x03 0x22 0x18)
+            App->>Node: GapPeripheral.SetScanResponseData(<br>data=0x03 0x03 0x22 0x18)
         end
-        Note over Product: If skipped, defaults apply. Without SetAdvertisementData the CN<br>advertises only the flags AD field (no device name, no service UUIDs).<br>Pairing is allowed by default, so SetAllowPairing(true) is not needed.
+        Note over App: If skipped, defaults apply. Without SetAdvertisementData the Node<br>advertises only the flags AD field (no device name, no service UUIDs).<br>Pairing is allowed by default, so SetAllowPairing(true) is not needed.
     end
 
     rect rgb(230, 230, 240)
-        note over Product, Central: 2. Start advertising
-        Product->>CN: GapPeripheral.Advertise(type=advInd, advertisingInterval=160)
-        Note right of Product: advertisingInterval=160 -> 100 ms<br>(units of 0.625 ms)
-        CN-->>Product: GapPeripheralResponse.CurrentState(advertising)
+        note over App, Central: 2. Start advertising
+        App->>Node: GapPeripheral.Advertise(type=advInd, advertisingInterval=160)
+        Note right of App: advertisingInterval=160 -> 100 ms<br>(units of 0.625 ms)
+        Node-->>App: GapPeripheralResponse.CurrentState(advertising)
 
-        Note over Product, Central: CN is now visible to BLE centrals
+        Note over App, Central: Node is now visible to BLE centrals
     end
 
     rect rgb(230, 230, 240)
-        note over Product, Central: 3. Central connects
-        Central->>CN: BLE connection request
-        CN-->>Product: GapPeripheralResponse.CurrentState(connected)
+        note over App, Central: 3. Central connects
+        Central->>Node: BLE connection request
+        Node-->>App: GapPeripheralResponse.CurrentState(connected)
     end
 
     rect rgb(230, 230, 240)
-        note over Product, Central: 4. Pairing (initiated by central)
-        CN-->>Product: GapPeripheralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+        note over App, Central: 4. Pairing (initiated by central)
+        Node-->>App: GapPeripheralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
 
-        Note over Product: User confirms numeric comparison on peripheral side
+        Note over App: User confirms numeric comparison on peripheral side
 
-        Product->>CN: GapPeripheral.NumericComparisonConfirm(true)
-        CN-->>Product: GapPeripheralResponse.NumberOfBondsChanged(1)
-        CN-->>Product: GapPeripheralResponse.PairingResult(pairedSuccessfully=true)
+        App->>Node: GapPeripheral.NumericComparisonConfirm(true)
+        Node-->>App: GapPeripheralResponse.NumberOfBondsChanged(1)
+        Node-->>App: GapPeripheralResponse.PairingResult(pairedSuccessfully=true)
 
-        Note over Product: Bond stored. Peripheral is now bonded with the central.
+        Note over App: Bond stored. Peripheral is now bonded with the central.
     end
 
     rect rgb(230, 230, 240)
-        note over Product, Central: 5. Disconnection
-        Central--xCN: Peer disconnects
-        CN-->>Product: GapPeripheralResponse.CurrentState(standby)
+        note over App, Central: 5. Disconnection
+        Central--xNode: Peer disconnects
+        Node-->>App: GapPeripheralResponse.CurrentState(standby)
 
-        Note over Product: Can re-advertise to accept new connections.
+        Note over App: Can re-advertise to accept new connections.
     end

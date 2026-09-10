@@ -1,29 +1,29 @@
 sequenceDiagram
-    participant Product as Product
-    participant CN as CN Central<br>[implements GapCentral]
+    participant App as App
+    participant Node as Node<br>[implements GapCentral]
     participant Peripheral as BLE Peripheral
 
     rect rgb(230, 230, 240)
-        note over Product, Peripheral: Connect without pairing
-        Product->>CN: GapCentral.Connect(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
-        CN-->>Product: GapCentralResponse.CurrentState(initiating)
-        CN-->>Product: GapCentralResponse.CurrentState(connected)
+        note over App, Peripheral: Connect without pairing
+        App->>Node: GapCentral.Connect(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
+        Node-->>App: GapCentralResponse.CurrentState(initiating)
+        Node-->>App: GapCentralResponse.CurrentState(connected)
     end
 
-    alt Product forgets PairAndBond (unencrypted link)
+    alt App forgets PairAndBond (unencrypted link)
         rect rgb(230, 230, 240)
-            note over Product, Peripheral: Attempt Condor initialization
-            Product->>Peripheral: Condor request (unencrypted)
-            Note over Product, Peripheral: Condor requires an encrypted link.<br>Peer will not respond or will reject.
-            Note over Product: Result: no useful data exchanged.
+            note over App, Peripheral: Attempt Condor initialization
+            App->>Peripheral: Condor request (unencrypted)
+            Note over App, Peripheral: Condor requires an encrypted link.<br>Peer will not respond or will reject.
+            Note over App: Result: no useful data exchanged.
         end
-    else Product calls PairAndBond first
+    else App calls PairAndBond first
         rect rgb(230, 230, 240)
-            note over Product, Peripheral: Secure the link before using Condor
-            Product->>CN: GapCentral.PairAndBond()
-            CN-->>Product: GapCentralResponse.NumberOfBondsChanged(1)
-            CN-->>Product: GapCentralResponse.PairingResult(pairedSuccessfully=true)
-            Product->>Peripheral: Condor request (encrypted)
-            Peripheral-->>Product: Condor response
+            note over App, Peripheral: Secure the link before using Condor
+            App->>Node: GapCentral.PairAndBond()
+            Node-->>App: GapCentralResponse.NumberOfBondsChanged(1)
+            Node-->>App: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+            App->>Peripheral: Condor request (encrypted)
+            Peripheral-->>App: Condor response
         end
     end

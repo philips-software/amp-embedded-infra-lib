@@ -6,6 +6,12 @@ This section documents the concrete Echo services that ship with the Embedded In
 
 Each service is defined in a `.proto` file, exposes a set of RPC methods, and is paired with a matching response service that carries the asynchronous callbacks.
 
+[NOTE]
+====
+In the diagrams throughout this section, *App* is the application code that invokes Echo methods and *Node* is the endpoint that implements them. In dual-role diagrams both endpoints appear as *Peripheral Node* and *Central Node*. Peer BLE devices, when they appear, are drawn as separate lifelines labelled *BLE Peripheral* or *BLE Central*.
+====
+
+
 == Service Structure
 
 An Echo service definition consists of:

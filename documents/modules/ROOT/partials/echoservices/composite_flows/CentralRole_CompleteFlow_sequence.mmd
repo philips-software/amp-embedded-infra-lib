@@ -1,92 +1,92 @@
 sequenceDiagram
     title BLE Central Complete Flow: Scan, Connect, Pair, Discover, Notify
 
-    participant Product as Product
-    participant CN as CN Central<br>[implements GapCentral,<br>GattClient]
+    participant App as App
+    participant Node as Node<br>[implements GapCentral,<br>GattClient]
     participant Peripheral as BLE Peripheral
 
     rect rgb(230, 230, 240)
-        note over Product, Peripheral: 1. Configuration (optional)
-        opt Product overrides the default security profile
-            Product->>CN: GapCentral.SetSecurityMode(<br>mode=mode1, level=authenticatedPairing)
-            Product->>CN: GapCentral.SetIoCapabilities(displayYesNo)
+        note over App, Peripheral: 1. Configuration (optional)
+        opt App overrides the default security profile
+            App->>Node: GapCentral.SetSecurityMode(<br>mode=mode1, level=authenticatedPairing)
+            App->>Node: GapCentral.SetIoCapabilities(displayYesNo)
         end
-        Note over Product: If skipped, the CN uses the platform defaults configured at build time.
+        Note over App: If skipped, the Node uses the platform defaults configured at build time.
     end
 
     rect rgb(230, 230, 240)
-        note over Product, Peripheral: 2. Discovery
-        opt Product narrows the scan
-            Product->>CN: GapCentral.SetDeviceDiscoveryFilter(<br>filter=address, data=C4:AB:12:34:56:78)
+        note over App, Peripheral: 2. Discovery
+        opt App narrows the scan
+            App->>Node: GapCentral.SetDeviceDiscoveryFilter(<br>filter=address, data=C4:AB:12:34:56:78)
         end
-        Product->>CN: GapCentral.StartDeviceDiscovery()
-        CN-->>Product: GapCentralResponse.CurrentState(scanning)
+        App->>Node: GapCentral.StartDeviceDiscovery()
+        Node-->>App: GapCentralResponse.CurrentState(scanning)
 
         loop Until target peripheral is found
-            Peripheral-->>CN: Advertisement / scan response
-            CN-->>Product: GapCentralResponse.DeviceDiscovered(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>rssi=-38, advertisingReportType=advInd)
+            Peripheral-->>Node: Advertisement / scan response
+            Node-->>App: GapCentralResponse.DeviceDiscovered(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>rssi=-38, advertisingReportType=advInd)
         end
 
-        Product->>CN: GapCentral.Standby()
-        CN-->>Product: GapCentralResponse.CurrentState(standby)
+        App->>Node: GapCentral.Standby()
+        Node-->>App: GapCentralResponse.CurrentState(standby)
     end
 
     rect rgb(230, 230, 240)
-        note over Product, Peripheral: 3. Connection
-        Product->>CN: GapCentral.Connect(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
-        CN-->>Product: GapCentralResponse.CurrentState(initiating)
-        CN->>Peripheral: BLE connection request
-        Peripheral-->>CN: Connection accepted
-        CN-->>Product: GapCentralResponse.CurrentState(connected)
+        note over App, Peripheral: 3. Connection
+        App->>Node: GapCentral.Connect(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
+        Node-->>App: GapCentralResponse.CurrentState(initiating)
+        Node->>Peripheral: BLE connection request
+        Peripheral-->>Node: Connection accepted
+        Node-->>App: GapCentralResponse.CurrentState(connected)
     end
 
     rect rgb(230, 230, 240)
-        note over Product, Peripheral: 4. Pairing and bonding
-        Product->>CN: GapCentral.PairAndBond()
-        CN-->>Product: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+        note over App, Peripheral: 4. Pairing and bonding
+        App->>Node: GapCentral.PairAndBond()
+        Node-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
 
-        Note over Product: User confirms numeric comparison or enters passkey
+        Note over App: User confirms numeric comparison or enters passkey
 
-        Product->>CN: GapCentral.NumericComparisonConfirm(true)
-        CN-->>Product: GapCentralResponse.NumberOfBondsChanged(1)
-        CN-->>Product: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+        App->>Node: GapCentral.NumericComparisonConfirm(true)
+        Node-->>App: GapCentralResponse.NumberOfBondsChanged(1)
+        Node-->>App: GapCentralResponse.PairingResult(pairedSuccessfully=true)
     end
 
     rect rgb(230, 230, 240)
-        note over Product, Peripheral: 5. GATT service discovery
-        Product->>CN: GattClient.StartServiceDiscovery()
+        note over App, Peripheral: 5. GATT service discovery
+        App->>Node: GattClient.StartServiceDiscovery()
         loop For each service
-            CN-->>Product: GattClientResponse.ServiceDiscovered(<br>uuid=0x180F, handles={startHandle=0x0020, endHandle=0x0028})
+            Node-->>App: GattClientResponse.ServiceDiscovered(<br>uuid=0x180F, handles={startHandle=0x0020, endHandle=0x0028})
         end
-        CN-->>Product: GattClientResponse.ServiceDiscoveryComplete()
+        Node-->>App: GattClientResponse.ServiceDiscoveryComplete()
 
-        Product->>CN: GattClient.StartCharacteristicDiscovery(<br>startHandle=0x0020, endHandle=0x0028)
+        App->>Node: GattClient.StartCharacteristicDiscovery(<br>startHandle=0x0020, endHandle=0x0028)
         loop For each characteristic
-            CN-->>Product: GattClientResponse.CharacteristicDiscovered(<br>uuid=0x2A19, handle=0x0024, valueHandle=0x0025, properties=0x12)
+            Node-->>App: GattClientResponse.CharacteristicDiscovered(<br>uuid=0x2A19, handle=0x0024, valueHandle=0x0025, properties=0x12)
         end
-        CN-->>Product: GattClientResponse.CharacteristicDiscoveryComplete()
+        Node-->>App: GattClientResponse.CharacteristicDiscoveryComplete()
 
-        opt Product does not already know the descriptor layout
-            Product->>CN: GattClient.StartDescriptorDiscovery(<br>startHandle=0x0026, endHandle=0x0028)
+        opt App does not already know the descriptor layout
+            App->>Node: GattClient.StartDescriptorDiscovery(<br>startHandle=0x0026, endHandle=0x0028)
             loop For each descriptor
-                CN-->>Product: GattClientResponse.DescriptorDiscovered(<br>uuid=0x2902, handle=0x0026)
+                Node-->>App: GattClientResponse.DescriptorDiscovered(<br>uuid=0x2902, handle=0x0026)
             end
-            CN-->>Product: GattClientResponse.DescriptorDiscoveryComplete()
+            Node-->>App: GattClientResponse.DescriptorDiscoveryComplete()
         end
-        Note over Product: The CCCD (0x2902) is conventionally at valueHandle+1, so descriptor discovery can often be skipped.
+        Note over App: The CCCD (0x2902) is conventionally at valueHandle+1, so descriptor discovery can often be skipped.
     end
 
     rect rgb(230, 230, 240)
-        note over Product, Peripheral: 6. Enable notifications
-        Product->>CN: GattClient.WriteDescriptor(<br>handle=0x0026, data=0x0100)
-        Note right of Product: 0x0100 = notifications enabled (CCCD)
-        CN-->>Product: GattClientResponse.OperationComplete(success)
+        note over App, Peripheral: 6. Enable notifications
+        App->>Node: GattClient.WriteDescriptor(<br>handle=0x0026, data=0x0100)
+        Note right of App: 0x0100 = notifications enabled (CCCD)
+        Node-->>App: GattClientResponse.OperationComplete(success)
     end
 
     rect rgb(230, 230, 240)
-        note over Product, Peripheral: 7. Runtime data
-        Peripheral->>CN: Notification on characteristic
-        CN-->>Product: GattClientResponse.NotificationReceived(<br>handle=0x0025, data=0x64)
-        Peripheral->>CN: Notification on characteristic
-        CN-->>Product: GattClientResponse.NotificationReceived(<br>handle=0x0025, data=0x63)
+        note over App, Peripheral: 7. Runtime data
+        Peripheral->>Node: Notification on characteristic
+        Node-->>App: GattClientResponse.NotificationReceived(<br>handle=0x0025, data=0x64)
+        Peripheral->>Node: Notification on characteristic
+        Node-->>App: GattClientResponse.NotificationReceived(<br>handle=0x0025, data=0x63)
     end

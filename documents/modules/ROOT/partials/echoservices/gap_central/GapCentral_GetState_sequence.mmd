@@ -1,5 +1,5 @@
 sequenceDiagram
-    participant Product as Product<br>[implements GapCentralResponse]
-    participant CN as CN Central<br>[implements GapCentral]
-    Product->>CN: GapCentral.GetState()
-    CN-->>Product: GapCentralResponse.CurrentState(standby)
+    participant App as App<br>[implements GapCentralResponse]
+    participant Node as Node<br>[implements GapCentral]
+    App->>Node: GapCentral.GetState()
+    Node-->>App: GapCentralResponse.CurrentState(standby)

@@ -1,25 +1,25 @@
 sequenceDiagram
-    participant Product as Product<br>[implements GapCentralResponse]
-    participant CN as CN Central<br>[implements GapCentral]
+    participant App as App<br>[implements GapCentralResponse]
+    participant Node as Node<br>[implements GapCentral]
 
-    Note over Product, CN: Precondition: standby
+    Note over App, Node: Precondition: standby
 
-    Product->>CN: GapCentral.SetIdentityAddress(<br>address=00:1A:7D:DA:71:13, addressType=publicAddress)
-    Product->>CN: GapCentral.SetPrivacyMode(true)
+    App->>Node: GapCentral.SetIdentityAddress(<br>address=00:1A:7D:DA:71:13, addressType=publicAddress)
+    App->>Node: GapCentral.SetPrivacyMode(true)
 
-    Note over Product, CN: Central now uses resolvable private addresses
+    Note over App, Node: Central now uses resolvable private addresses
 
-    Product->>CN: GapCentral.StartDeviceDiscovery()
-    CN-->>Product: GapCentralResponse.CurrentState(scanning)
-    CN-->>Product: GapCentralResponse.DeviceDiscovered(<br>addressWithType={address=6C:8B:2F:3A:9D:41, addressType=randomAddress},<br>rssi=-42)
+    App->>Node: GapCentral.StartDeviceDiscovery()
+    Node-->>App: GapCentralResponse.CurrentState(scanning)
+    Node-->>App: GapCentralResponse.DeviceDiscovered(<br>addressWithType={address=6C:8B:2F:3A:9D:41, addressType=randomAddress},<br>rssi=-42)
 
-    Note over Product: Peer advertising with resolvable private address (RPA)
+    Note over App: Peer advertising with resolvable private address (RPA)
 
-    Product->>CN: GapCentral.Standby()
-    CN-->>Product: GapCentralResponse.CurrentState(standby)
+    App->>Node: GapCentral.Standby()
+    Node-->>App: GapCentralResponse.CurrentState(standby)
 
-    Product->>CN: GapCentral.Connect(<br>addressWithType={address=6C:8B:2F:3A:9D:41, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
-    CN-->>Product: GapCentralResponse.CurrentState(initiating)
-    CN-->>Product: GapCentralResponse.CurrentState(connected)
+    App->>Node: GapCentral.Connect(<br>addressWithType={address=6C:8B:2F:3A:9D:41, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
+    Node-->>App: GapCentralResponse.CurrentState(initiating)
+    Node-->>App: GapCentralResponse.CurrentState(connected)
 
-    Note over Product, CN: Controller resolves peer RPA automatically using stored IRK
+    Note over App, Node: Controller resolves peer RPA automatically using stored IRK

@@ -1,20 +1,20 @@
 sequenceDiagram
-    participant Product as Product<br>[implements GapPeripheralResponse]
-    participant CN as CN Peripheral<br>[implements GapPeripheral]
+    participant App as App<br>[implements GapPeripheralResponse]
+    participant Node as Node<br>[implements GapPeripheral]
     participant Central as BLE Central
 
-    Product->>CN: GapPeripheral.SetAllowPairing(false)
-    Product->>CN: GapPeripheral.Advertise(type=advInd, advertisingInterval=160)
-    CN-->>Product: GapPeripheralResponse.CurrentState(advertising)
+    App->>Node: GapPeripheral.SetAllowPairing(false)
+    App->>Node: GapPeripheral.Advertise(type=advInd, advertisingInterval=160)
+    Node-->>App: GapPeripheralResponse.CurrentState(advertising)
 
-    Note over Product, Central: SetAllowPairing(false) blocks new pairings.<br>Bonded centrals can still reconnect and re-encrypt.
+    Note over App, Central: SetAllowPairing(false) blocks new pairings.<br>Bonded centrals can still reconnect and re-encrypt.
 
     alt Connecting central has no bond
-        Central->>CN: BLE connection request (no existing bond)
-        CN--xCentral: Connection rejected
-        Note over Product: No CurrentState(connected) callback fires.<br>Peripheral stays in advertising.
+        Central->>Node: BLE connection request (no existing bond)
+        Node--xCentral: Connection rejected
+        Note over App: No CurrentState(connected) callback fires.<br>Peripheral stays in advertising.
     else Connecting central is already bonded
-        Central->>CN: BLE connection request (bonded central)
-        CN-->>Product: GapPeripheralResponse.CurrentState(connected)
-        Note over Product: Link re-encrypted using existing bond keys.<br>No new SMP procedure and no AuthenticationRequired.
+        Central->>Node: BLE connection request (bonded central)
+        Node-->>App: GapPeripheralResponse.CurrentState(connected)
+        Note over App: Link re-encrypted using existing bond keys.<br>No new SMP procedure and no AuthenticationRequired.
     end
