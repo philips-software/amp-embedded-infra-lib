@@ -7,6 +7,8 @@ target_link_libraries(protobuf.test_doubles PUBLIC
 )
 
 target_sources(protobuf.test_doubles PRIVATE
+    DeferredSendEchoPolicy.cpp
+    DeferredSendEchoPolicy.hpp
     EchoSingleLoopback.cpp
     EchoSingleLoopback.hpp
     EchoMock.hpp

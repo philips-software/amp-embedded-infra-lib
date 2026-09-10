@@ -168,7 +168,8 @@ namespace services
 
     void HttpClientCachedConnection::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
-        Observer().SendStreamAvailable(std::move(writer));
+        if (HttpClient::IsAttached())
+            Observer().SendStreamAvailable(std::move(writer));
     }
 
     void HttpClientCachedConnection::FillContent(infra::StreamWriter& writer) const
