@@ -7,7 +7,7 @@ sequenceDiagram
     App->>Node: GapPeripheral.Advertise(type=advInd, advertisingInterval=160)
     Node-->>App: GapPeripheralResponse.CurrentState(advertising)
 
-    Note over App, Central: SetAllowPairing(false) blocks new pairings.<br>Bonded centrals can still reconnect and re-encrypt.
+    Note over App, Central: With SetAllowPairing(false), non-bonded peers cannot connect at all.<br>Only already-bonded centrals may reconnect (and re-encrypt using the stored keys).
 
     alt Connecting central has no bond
         Central-)Node: CONNECT_IND
