@@ -36,6 +36,20 @@ Each service page documents:
 * xref:EchoServices/GapCentral.adoc[GapCentral] — BLE central GAP role.
 * xref:EchoServices/EndToEndFlows.adoc[End-to-End Flows] — Cross-service composite flows and protocol-stack overview.
 
+If you are new to these docs, start with xref:EchoServices/EndToEndFlows.adoc[End-to-End Flows] to see how the pieces fit together. For a specific API, jump straight to the matching service page above.
+
+== Contract vs. configuration
+
+Each service's `.proto` file codifies a stack-agnostic contract, derived from the underlying standard (the Bluetooth Core Specification for BLE services). The contract fixes what must happen: which methods exist, what messages they carry, in what order responses arrive, and which states each is valid in.
+
+Concrete implementations of the contract live in the vendor-specific stacks (ST, TI, Nordic, ESP32, and so on). Each stack satisfies the contract independently. Where these docs say a behaviour is "stack-dependent", for example the exact moment `CurrentState(connected)` fires, that is not a hedge but a deliberate reflection of the architecture: the contract guarantees the outcome, the stack chooses the timing.
+
+Read the diagrams with this split in mind:
+
+* Arrows between `App` and `Node` are the Echo API contract. Every implementation must honour these.
+* Arrows between `Node` and the peer BLE device are protocol events required by the standard, and are contract-level too.
+* Prose notes flag where implementations legitimately differ within that contract.
+
 == Conventions
 
 Unless a service's page overrides them, the following conventions apply:
