@@ -59,7 +59,7 @@ namespace services
         return id == serviceId;
     }
 
-    infra::SharedPtr<MethodDeserializer> ServiceStub::StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const services::EchoErrorPolicy& errorPolicy)
+    infra::SharedPtr<MethodDeserializer> ServiceStub::StartMethodImpl(uint32_t serviceId, uint32_t methodId, uint32_t size, const services::EchoErrorPolicy& errorPolicy)
     {
         switch (methodId)
         {
