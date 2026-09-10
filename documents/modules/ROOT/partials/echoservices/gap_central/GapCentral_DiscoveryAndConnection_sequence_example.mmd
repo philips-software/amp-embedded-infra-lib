@@ -5,6 +5,8 @@ sequenceDiagram
     participant Node as Node<br>[implements GapCentral]
     participant Peripheral as Pulse Oximeter<br>BLE Peripheral
 
+    Note over Node, Peripheral: Messages between Node and BLE Peripheral are link-layer events, not driven by the App.<br>The App only observes them through Echo callbacks (e.g. CurrentState).
+
     rect rgb(230, 230, 240)
         note over App, Peripheral: Startup / readiness
         App->>Node: GapCentral.GetState()

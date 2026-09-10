@@ -5,6 +5,9 @@ sequenceDiagram
     participant Node as Node<br>[implements GapPeripheral]
     participant Central as BLE Central
 
+
+    Note over Node, Central: Messages between Node and BLE Central are link-layer events, not driven by the App.<br>The App only observes them through Echo callbacks (e.g. CurrentState).
+
     rect rgb(230, 230, 240)
         note over App, Central: 1. Configuration (optional)
         opt App overrides the default security profile
