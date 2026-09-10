@@ -10,11 +10,11 @@ sequenceDiagram
     Note over App, Central: SetAllowPairing(false) blocks new pairings.<br>Bonded centrals can still reconnect and re-encrypt.
 
     alt Connecting central has no bond
-        Central->>Node: BLE connection request (no existing bond)
-        Node--xCentral: Connection rejected
-        Note over App: No CurrentState(connected) callback fires.<br>Peripheral stays in advertising.
+        Central-)Node: CONNECT_IND
+        Note over App, Central: With SetAllowPairing(false) and no bond, the peripheral either<br>filters the advertisement (never accepts CONNECT_IND) or accepts the LL<br>connection and disconnects at a higher layer. Behavior is stack-dependent.
+        Note over App: No CurrentState(connected) callback fires.<br>Node stays in advertising.
     else Connecting central is already bonded
-        Central->>Node: BLE connection request (bonded central)
+        Central-)Node: CONNECT_IND
         Node-->>App: GapPeripheralResponse.CurrentState(connected)
         Note over App: Link re-encrypted using existing bond keys.<br>No new SMP procedure and no AuthenticationRequired.
     end

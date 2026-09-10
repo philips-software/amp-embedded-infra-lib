@@ -36,13 +36,13 @@ sequenceDiagram
         App->>Node: GapCentral.Connect(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
         Node-->>App: GapCentralResponse.CurrentState(initiating)
 
-        alt Connection successful
-            Node->>Peripheral: BLE connection request
-            Peripheral-->>Node: Connection accepted
+        Node-)Peripheral: CONNECT_IND (unacknowledged)
+        Note over Node, Peripheral: Central assumes the connection has started once CONNECT_IND is sent.<br>Actual link status is confirmed only by bidirectional data exchange in a connection event.
+
+        alt Data exchange succeeds within initiatingTimeoutInMs
             Node-->>App: GapCentralResponse.CurrentState(connected)
-        else Connection failed / timeout
-            Node->>Peripheral: BLE connection request
-            Peripheral--xNode: No response / reject / timeout
+        else No data exchange within initiatingTimeoutInMs
             Node-->>App: GapCentralResponse.CurrentState(standby)
+            Note over App: initiatingTimeoutInMs bounds how long the Node stays in initiating<br>before failure is reported. The moment of detection is stack-dependent.
         end
     end

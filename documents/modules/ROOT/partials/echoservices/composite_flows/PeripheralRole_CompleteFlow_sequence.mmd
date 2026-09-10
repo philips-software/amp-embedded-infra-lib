@@ -28,7 +28,8 @@ sequenceDiagram
 
     rect rgb(230, 230, 240)
         note over App, Central: 3. Central connects
-        Central->>Node: BLE connection request
+        Central-)Node: CONNECT_IND
+        Note over Node, Central: Peripheral enters the connection state on receiving CONNECT_IND.<br>Link is confirmed by the first bidirectional data exchange in a connection event.
         Node-->>App: GapPeripheralResponse.CurrentState(connected)
     end
 

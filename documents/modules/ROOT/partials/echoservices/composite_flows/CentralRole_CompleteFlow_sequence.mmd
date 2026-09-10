@@ -35,8 +35,8 @@ sequenceDiagram
         note over App, Peripheral: 3. Connection
         App->>Node: GapCentral.Connect(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
         Node-->>App: GapCentralResponse.CurrentState(initiating)
-        Node->>Peripheral: BLE connection request
-        Peripheral-->>Node: Connection accepted
+        Node-)Peripheral: CONNECT_IND (unacknowledged)
+        Note over Node, Peripheral: Central enters the connection state on send.<br>Link is confirmed by the first bidirectional data exchange in a connection event.
         Node-->>App: GapCentralResponse.CurrentState(connected)
     end
 
