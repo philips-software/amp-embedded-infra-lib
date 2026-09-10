@@ -6,11 +6,16 @@ sequenceDiagram
     App->>Node: GapCentral.StartDeviceDiscovery()
     Node-->>App: GapCentralResponse.CurrentState(scanning)
 
-    Note over App, Node: No matching devices found.<br>DeviceDiscovered is never received.
+    Note over App, Node: No matching devices found. DeviceDiscovered is never received.
 
-    Note over App: App-side timeout expires (e.g. 10 s).<br>Stop scanning and handle the failure.
+    alt App-managed timeout
+        Note over App: App-side timeout expires (e.g. 10 s).
+        App->>Node: GapCentral.Standby()
+        Node-->>App: GapCentralResponse.CurrentState(standby)
+    else Stack-managed timeout (stack-dependent)
+        Note over Node: Some BLE stacks auto-terminate<br>the discovery procedure after<br>a stack-defined maximum.
+        Node-->>App: GapCentralResponse.CurrentState(standby)
+        Note over App: App receives an unsolicited CurrentState(standby).<br>The App must handle this without a matching Standby() call.
+    end
 
-    App->>Node: GapCentral.Standby()
-    Node-->>App: GapCentralResponse.CurrentState(standby)
-
-    Note over App: Discovery timeout is managed by the App.<br>The Node will scan indefinitely until Standby() is called.
+    Note over App, Node: GapCentral does not expose a scan timeout in its API. The App is<br>responsible for its own scan-timeout policy. Whether the underlying stack<br>additionally imposes its own maximum is stack-dependent.
