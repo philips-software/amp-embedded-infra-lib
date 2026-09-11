@@ -102,6 +102,9 @@ namespace services
 
     bool ArpMacResolverLwIp::IsOnSubnet(const IPv4Address& address) const
     {
+        if (netif_default == nullptr)
+            return false;
+
         ip4_addr_t target;
         IP4_ADDR(&target, address[0], address[1], address[2], address[3]);
         return ip4_addr_netcmp(&target, netif_ip4_addr(netif_default), netif_ip4_netmask(netif_default));
@@ -160,6 +163,9 @@ namespace services
 
     bool Nd6MacResolverLwIp::IsOnLink(const IPv6Address& address) const
     {
+        if (netif_default == nullptr)
+            return false;
+
         auto target = ToLwipIp6(address);
         for (int i = 0; i < LWIP_IPV6_NUM_ADDRESSES; ++i)
         {

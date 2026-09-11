@@ -13,7 +13,7 @@ extern "C"
     }
 #endif
 
-    int mbedtls_hardware_poll(void* data, unsigned char* output, size_t len, size_t* olen)
+    __weak int mbedtls_hardware_poll(void* data, unsigned char* output, size_t len, size_t* olen)
     {
         really_assert(services::MbedTlsAdapter::InstanceSet());
         services::MbedTlsAdapter::Instance().RandomDataGenerator().GenerateRandomData(infra::ByteRange(output, output + len));
