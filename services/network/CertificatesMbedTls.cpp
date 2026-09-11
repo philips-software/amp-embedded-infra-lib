@@ -2,8 +2,8 @@
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/util/ReallyAssert.hpp"
-#include "mbedtls/build_info.h"
 #include "mbedtls/pk.h"
+#include "mbedtls/version.h"
 #include "services/util/MbedTlsRandomDataGeneratorWrapper.hpp"
 
 #if MBEDTLS_VERSION_MAJOR < 3
