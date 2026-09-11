@@ -49,6 +49,20 @@ include::partial$echoservices/gap_peripheral/GapPeripheral_Standby_sequence.mmd[
 include::partial$echoservices/gap_peripheral/GapPeripheral_Advertise_sequence.mmd[]
 ....
 
+=== SetAdvertisementData
+
+[mermaid]
+....
+include::partial$echoservices/gap_peripheral/GapPeripheral_SetAdvertisementData_sequence.mmd[]
+....
+
+=== SetSecurityPreferences
+
+[mermaid]
+....
+include::partial$echoservices/gap_peripheral/GapPeripheral_SetSecurityPreferences_sequence.mmd[]
+....
+
 === SetAllowPairing
 
 [mermaid]
@@ -96,6 +110,13 @@ include::partial$echoservices/gap_peripheral/GapPeripheral_RemoveAllBonds_sequen
 [mermaid]
 ....
 include::partial$echoservices/gap_peripheral/GapPeripheral_RemoveOldestBond_sequence.mmd[]
+....
+
+=== NumericComparisonConfirm
+
+[mermaid]
+....
+include::partial$echoservices/gap_peripheral/GapPeripheral_NumericComparisonConfirm_sequence.mmd[]
 ....
 
 == Cross-Service Sequence Diagrams

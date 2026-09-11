@@ -38,6 +38,13 @@ include::partial$echoservices/gap_central/GapCentral_GetState_sequence.mmd[]
 include::partial$echoservices/gap_central/GapCentral_Standby_sequence.mmd[]
 ....
 
+=== SetDeviceDiscoveryFilter
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_SetDeviceDiscoveryFilter_sequence.mmd[]
+....
+
 === StartDeviceDiscovery
 
 [mermaid]
@@ -57,6 +64,34 @@ include::partial$echoservices/gap_central/GapCentral_Connect_sequence.mmd[]
 [mermaid]
 ....
 include::partial$echoservices/gap_central/GapCentral_PairAndBond_sequence.mmd[]
+....
+
+=== SetSecurityMode
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_SetSecurityMode_sequence.mmd[]
+....
+
+=== SetIoCapabilities
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_SetIoCapabilities_sequence.mmd[]
+....
+
+=== NumericComparisonConfirm
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_NumericComparisonConfirm_sequence.mmd[]
+....
+
+=== AuthenticateWithPasskey
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_AuthenticateWithPasskey_sequence.mmd[]
 ....
 
 === NumericComparison Authentication
@@ -99,6 +134,27 @@ include::partial$echoservices/gap_central/GapCentral_RemoveAllBonds_sequence.mmd
 [mermaid]
 ....
 include::partial$echoservices/gap_central/GapCentral_RemoveBondWithAddress_sequence.mmd[]
+....
+
+=== SetIdentityAddress
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_SetIdentityAddress_sequence.mmd[]
+....
+
+=== SetPrivacyMode
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_SetPrivacyMode_sequence.mmd[]
+....
+
+=== IsDeviceBonded
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_IsDeviceBonded_sequence.mmd[]
 ....
 
 == Cross-Service Sequence Diagrams

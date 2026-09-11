@@ -1,0 +1,9 @@
+sequenceDiagram
+    participant App as App<br>[implements GapCentralResponse]
+    participant Node as Node<br>[implements GapCentral]
+
+    Note over App, Node: Allowed states: standby. Fire-and-forget, no response callback.<br>Should be called once during initialization before any pairing takes place.
+
+    App->>Node: GapCentral.SetIoCapabilities(displayYesNo)
+
+    Note over App: Selected capability drives the pairing method during PairAndBond<br>(Just Works, Passkey Entry, or Numeric Comparison).

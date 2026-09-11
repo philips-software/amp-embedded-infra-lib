@@ -1,0 +1,7 @@
+sequenceDiagram
+    participant App as App<br>[implements GapCentralResponse]
+    participant Node as Node<br>[implements GapCentral]
+
+    Note over App, Node: Allowed states: standby. Fire-and-forget, no response callback.<br>Used when privacy mode is disabled. Does not set a resolvable private<br>address (that is controller-generated when privacy is enabled).
+
+    App->>Node: GapCentral.SetIdentityAddress(<br>addressWithType={address=DE:AD:BE:EF:00:01,<br>addressType=publicAddress})

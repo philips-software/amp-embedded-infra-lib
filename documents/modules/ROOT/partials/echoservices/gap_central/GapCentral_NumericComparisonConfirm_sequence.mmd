@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant App as App<br>[implements GapCentralResponse]
+    participant Node as Node<br>[implements GapCentral]
+
+    Note over App, Node: Allowed states: connected.<br>Only valid when AuthenticationRequired.isNumericComparison is true.<br>Must be called within the 30s SMP timeout<br>(Core Spec v6.3, Vol 3, Part H, Section 3.4).
+
+    alt User confirms match
+        App->>Node: GapCentral.NumericComparisonConfirm(true)
+    else User rejects
+        App->>Node: GapCentral.NumericComparisonConfirm(false)
+    end
+
+    Note over App: Result surfaces on the outstanding PairAndBond's PairingResult callback.<br>See "NumericComparison Authentication" for the full flow.
