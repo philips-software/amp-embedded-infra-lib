@@ -34,11 +34,12 @@ sequenceDiagram
         Note over App, Node: LTK is derived from the ECDH shared secret, not distributed.
         Node-->>App: GapCentralResponse.NumberOfBondsChanged(1)
         Node-->>App: GapCentralResponse.PairingResult(pairedSuccessfully=true)
-    else Numeric Comparison / Passkey Entry - new bond
+    else Numeric Comparison - new bond
         Node-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
-        Note right of App: User responds via NumericComparisonConfirm / AuthenticateWithPasskey
+        Note right of App: User compares the 6-digit passkey<br>with the peer's display.
+        App->>Node: GapCentral.NumericComparisonConfirm(true)
         rect rgb(245, 240, 230)
-            Note over Node, Peripheral: LESC SMP with user interaction
+            Note over Node, Peripheral: LESC SMP stage 1 (Numeric Comparison)
             Node-)Peripheral: Pairing_Request (MITM requested)
             Peripheral-)Node: Pairing_Response (MITM requested)
             Node-)Peripheral: Pairing_Public_Key
@@ -46,7 +47,6 @@ sequenceDiagram
             Peripheral-)Node: Pairing_Confirm
             Node-)Peripheral: Pairing_Random
             Peripheral-)Node: Pairing_Random
-            Note over App: For NC the user compares the derived 6-digit passkey<br>For PE the user enters the peer's 6-digit passkey (drives 20 Confirm / Random rounds)
             Node-)Peripheral: Pairing_DHKey_Check
             Peripheral-)Node: Pairing_DHKey_Check
             Node-)Peripheral: LL_ENC_REQ
@@ -60,6 +60,7 @@ sequenceDiagram
         end
         Node-->>App: GapCentralResponse.NumberOfBondsChanged(1)
         Node-->>App: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+        Note over App: For Passkey Entry the callback carries<br>isNumericComparison=false and the App responds via<br>AuthenticateWithPasskey. SMP stage 1 then runs 20<br>Confirm / Random rounds (one per passkey bit).<br>See "Passkey Authentication" for the full flow.
     else Successful re-encryption with existing bond
         rect rgb(245, 240, 230)
             Note over Node, Peripheral: LL encryption using the stored LTK (no SMP)
@@ -74,20 +75,26 @@ sequenceDiagram
         Note over App: NumberOfBondsChanged fires as a bond-aging (LRU) signal.<br>The reported N equals the current bond count and is unchanged.
     else Pairing failure
         opt Authenticated method
-            Node-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+            alt Numeric Comparison
+                Node-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+                App->>Node: GapCentral.NumericComparisonConfirm(false)
+            else Passkey Entry
+                Node-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=false, passkey=485923)
+                App->>Node: GapCentral.AuthenticateWithPasskey(999999)
+            end
         end
         rect rgb(245, 240, 230)
             Node-)Peripheral: Pairing_Request
             Peripheral-)Node: Pairing_Response
             Peripheral-)Node: Pairing_Failed (reason)
         end
-        Node-->>App: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=numericComparisonFailed)
-        Note over App, Node: Common causes: confirm mismatch, user rejection (NC),<br>DHKey_Check failure (LESC), or LL encryption failure after SMP.
+        Node-->>App: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=<method-specific>)
+        Note over App, Node: Reason field is method-specific:<br>numericComparisonFailed (NC) or passkeyEntryFailed (PE).<br>Other common causes: confirmValueFailed,<br>dhkeyCheckFailed (LESC), encryptionFailed (LL setup).
     else Peer-initiated disconnect during pairing
         rect rgb(245, 240, 230)
             Peripheral-)Node: LL_TERMINATE_IND
         end
         Node-->>App: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=unknown)
         Node-->>App: GapCentralResponse.CurrentState(standby)
-        Note over App, Node: PairingResult delivery relative to CurrentState(standby)<br>is stack-dependent when they race.
+        Note over App, Node: PairingResult is delivered before CurrentState(standby)<br>per the proto's guaranteed response sequence for this case.
     end

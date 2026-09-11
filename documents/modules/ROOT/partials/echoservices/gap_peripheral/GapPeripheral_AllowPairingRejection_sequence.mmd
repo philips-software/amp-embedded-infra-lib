@@ -13,9 +13,20 @@ sequenceDiagram
     Note over App, Central: With SetAllowPairing(false), non-bonded peers cannot connect at all.<br>Only already-bonded centrals may reconnect<br>(and re-encrypt using the stored keys).
 
     alt Connecting central has no bond
-        Central-)Node: CONNECT_IND
-        Note over App, Central: With SetAllowPairing(false) and no bond, the peripheral either<br>filters the advertisement (never accepts CONNECT_IND) or accepts the LL<br>connection and disconnects at a higher layer. Behavior is stack-dependent.
-        Note over App: No CurrentState(connected) callback fires.<br>Node stays in advertising.
+        alt Peripheral rejects at LL (advertisement filtering)
+            Central-)Node: CONNECT_IND
+            Note over App, Central: Peripheral never accepts CONNECT_IND.<br>No LL connection is established.
+            Note over App: No CurrentState callback fires.<br>Node continues advertising.
+        else Peripheral accepts LL, then disconnects at higher layer
+            Central-)Node: CONNECT_IND
+            Node-->>App: GapPeripheralResponse.CurrentState(connected)
+            rect rgb(245, 230, 230)
+                Node-)Central: LL_TERMINATE_IND
+            end
+            Node-->>App: GapPeripheralResponse.CurrentState(standby)
+            Note over App: App observes a brief connected transition,<br>then standby. App may call Advertise() again.
+        end
+        Note over App, Central: Which of these two paths occurs is stack-dependent.
     else Connecting central is already bonded
         Central-)Node: CONNECT_IND
         Node-->>App: GapPeripheralResponse.CurrentState(connected)

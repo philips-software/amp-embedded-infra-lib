@@ -93,20 +93,20 @@ sequenceDiagram
         loop For each service
             Node-->>App: GattClientResponse.ServiceDiscovered(<br>uuid=0x180F, handles={startHandle=0x0020, endHandle=0x0028})
         end
-        Node-->>App: GattClientResponse.ServiceDiscoveryComplete()
+        Node-->>App: GattClientResponse.ServiceDiscoveryComplete(success)
 
         App->>Node: GattClient.StartCharacteristicDiscovery(<br>startHandle=0x0020, endHandle=0x0028)
         loop For each characteristic
             Node-->>App: GattClientResponse.CharacteristicDiscovered(<br>uuid=0x2A19, handle=0x0024, valueHandle=0x0025, properties=0x12)
         end
-        Node-->>App: GattClientResponse.CharacteristicDiscoveryComplete()
+        Node-->>App: GattClientResponse.CharacteristicDiscoveryComplete(success)
 
         opt App does not already know the descriptor layout
-            App->>Node: GattClient.StartDescriptorDiscovery(<br>startHandle=0x0026, endHandle=0x0028)
+            App->>Node: GattClient.StartDescriptorDiscovery(<br>startHandle=0x0025, endHandle=0x0028)
             loop For each descriptor
                 Node-->>App: GattClientResponse.DescriptorDiscovered(<br>uuid=0x2902, handle=0x0026)
             end
-            Node-->>App: GattClientResponse.DescriptorDiscoveryComplete()
+            Node-->>App: GattClientResponse.DescriptorDiscoveryComplete(success)
         end
         Note over App: The CCCD (0x2902) is conventionally at valueHandle+1,<br>so descriptor discovery can often be skipped.
     end
