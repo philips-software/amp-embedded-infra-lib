@@ -225,6 +225,29 @@ TEST(Asn1ObjectFormatter, add_non_empty_optional)
     ASSERT_THAT(stream.Storage(), testing::ElementsAre(0x02, 0x01, 0xAB));
 }
 
+TEST(Asn1ObjectFormatter, add_constructed)
+{
+    infra::ByteOutputStream::WithStorage<10> stream;
+    infra::Asn1Formatter formatter(stream);
+
+    auto constructedDer = std::array<uint8_t, 10>{ 0x30, 0x08, 0x02, 0x01, 0x01, 0x02, 0x01, 0x02, 0x05, 0x00 };
+    formatter.AddConstructed(constructedDer);
+
+    EXPECT_THAT(stream.Storage(), testing::ElementsAreArray(constructedDer));
+}
+
+#ifndef EMIL_MUTATION_TESTING
+TEST(Asn1ObjectFormatter, add_constructed_unintentional)
+{
+    infra::ByteOutputStream::WithStorage<3> stream;
+    infra::Asn1Formatter formatter(stream);
+
+    auto primitiveDer = std::array<uint8_t, 3>{ 0x02, 0x01, 0x01 };
+
+    EXPECT_DEATH(formatter.AddConstructed(primitiveDer), ".*");
+}
+#endif
+
 TEST(Asn1ObjectFormatter, start_sequence)
 {
     infra::ByteOutputStream::WithStorage<8> stream;
