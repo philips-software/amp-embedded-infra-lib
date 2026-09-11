@@ -47,7 +47,7 @@ sequenceDiagram
             Peripheral-)Node: LL_VERSION_IND
             Note over Node, Peripheral: Empty data PDUs (M -> S and S -> M) establish<br>the first bidirectional connection event.
         end
-        Note over Node, Peripheral: Central enters the connection state on send.<br>Link is confirmed by the first bidirectional data exchange<br>in a connection event.
+        Note over Node, Peripheral: Central enters the connection state<br>on send.<br>Link is confirmed by the first<br>bidirectional data exchange<br>in a connection event.
         Node-->>App: GapCentralResponse.CurrentState(connected)
     end
 

@@ -18,4 +18,4 @@ sequenceDiagram
         Note over App: App receives an unsolicited CurrentState(standby).<br>The App must handle this without a matching Standby() call.
     end
 
-    Note over App, Node: GapCentral does not expose a scan timeout in its API. The App is<br>responsible for its own scan-timeout policy. Whether the underlying stack<br>additionally imposes its own maximum is stack-dependent.
+    Note over App, Node: GapCentral does not expose a scan timeout in its API.<br>The App is responsible for its own scan-timeout policy.<br>Whether the underlying stack additionally imposes<br>its own maximum is stack-dependent.
