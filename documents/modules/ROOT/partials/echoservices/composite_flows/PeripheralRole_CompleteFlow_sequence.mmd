@@ -6,7 +6,7 @@ sequenceDiagram
     participant Central as BLE Central
 
 
-    Note over Node, Central: Messages between Node and BLE Central are link-layer events, not driven by the App.<br>The App only observes them through Echo callbacks (e.g. CurrentState).
+    Note over Node, Central: Messages between Node and BLE Central are link-layer events,<br>not driven by the App. The App only observes them through Echo<br>callbacks (e.g. CurrentState).
 
     rect rgb(230, 230, 240)
         note over App, Central: 1. Configuration (optional)
@@ -40,7 +40,7 @@ sequenceDiagram
             Node-)Central: LL_VERSION_IND
             Note over Node, Central: Empty data PDUs (M -> S and S -> M) establish<br>the first bidirectional connection event.
         end
-        Note over Node, Central: Peripheral enters the connection state on receiving CONNECT_IND.<br>Link is confirmed by the first bidirectional data exchange in a connection event.
+        Note over Node, Central: Peripheral enters the connection state on receiving CONNECT_IND.<br>Link is confirmed by the first bidirectional data exchange<br>in a connection event.
         Node-->>App: GapPeripheralResponse.CurrentState(connected)
     end
 

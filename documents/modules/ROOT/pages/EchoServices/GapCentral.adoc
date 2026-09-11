@@ -145,13 +145,6 @@ include::partial$echoservices/gap_central/GapCentral_SelectiveBondRemoval_sequen
 include::partial$echoservices/gap_central/GapCentral_PairingFailureReasons_sequence.mmd[]
 ....
 
-=== Condor Without Security
-
-[mermaid]
-....
-include::partial$echoservices/gap_central/GapCentral_CondorWithoutSecurity_sequence.mmd[]
-....
-
 == Examples
 
 === Discovery and Connection

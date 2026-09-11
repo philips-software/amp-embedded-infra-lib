@@ -4,13 +4,13 @@ sequenceDiagram
     participant Central as BLE Central
 
 
-    Note over Node, Central: Messages between Node and BLE Central are link-layer events, not driven by the App.<br>The App only observes them through Echo callbacks (e.g. CurrentState).
+    Note over Node, Central: Messages between Node and BLE Central are link-layer events,<br>not driven by the App. The App only observes them through Echo<br>callbacks (e.g. CurrentState).
 
     App->>Node: GapPeripheral.SetAllowPairing(false)
     App->>Node: GapPeripheral.Advertise(type=advInd, advertisingInterval=160)
     Node-->>App: GapPeripheralResponse.CurrentState(advertising)
 
-    Note over App, Central: With SetAllowPairing(false), non-bonded peers cannot connect at all.<br>Only already-bonded centrals may reconnect (and re-encrypt using the stored keys).
+    Note over App, Central: With SetAllowPairing(false), non-bonded peers cannot connect at all.<br>Only already-bonded centrals may reconnect<br>(and re-encrypt using the stored keys).
 
     alt Connecting central has no bond
         Central-)Node: CONNECT_IND

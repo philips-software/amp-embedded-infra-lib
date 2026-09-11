@@ -3,7 +3,7 @@ sequenceDiagram
     participant Node as Node<br>[implements GapCentral]
     participant Peripheral as BLE Peripheral
 
-    Note over Node, Peripheral: Messages between Node and BLE Peripheral are link-layer events, not driven by the App.<br>The App only observes them through Echo callbacks (e.g. CurrentState).
+    Note over Node, Peripheral: Messages between Node and BLE Peripheral are link-layer events,<br>not driven by the App. The App only observes them through Echo<br>callbacks (e.g. CurrentState).
 
     App->>Node: GapCentral.PairAndBond()
 
@@ -82,12 +82,12 @@ sequenceDiagram
             Peripheral-)Node: Pairing_Failed (reason)
         end
         Node-->>App: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=numericComparisonFailed)
-        Note over App, Node: Common causes -- confirm mismatch, user rejection (NC), DHKey_Check failure (LESC), or LL encryption failure after SMP.
+        Note over App, Node: Common causes: confirm mismatch, user rejection (NC),<br>DHKey_Check failure (LESC), or LL encryption failure after SMP.
     else Peer-initiated disconnect during pairing
         rect rgb(245, 240, 230)
             Peripheral-)Node: LL_TERMINATE_IND
         end
         Node-->>App: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=unknown)
         Node-->>App: GapCentralResponse.CurrentState(standby)
-        Note over App, Node: PairingResult delivery relative to CurrentState(standby) is stack-dependent when they race.
+        Note over App, Node: PairingResult delivery relative to CurrentState(standby)<br>is stack-dependent when they race.
     end

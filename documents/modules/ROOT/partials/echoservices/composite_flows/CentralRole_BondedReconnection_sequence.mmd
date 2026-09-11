@@ -6,7 +6,7 @@ sequenceDiagram
     participant Peripheral as BLE Peripheral
 
 
-    Note over Node, Peripheral: Messages between Node and BLE Peripheral are link-layer events, not driven by the App.<br>The App only observes them through Echo callbacks (e.g. CurrentState).
+    Note over Node, Peripheral: Messages between Node and BLE Peripheral are link-layer events,<br>not driven by the App. The App only observes them through Echo<br>callbacks (e.g. CurrentState).
 
     rect rgb(230, 230, 240)
         note over App, Peripheral: 1. Locate the bonded peripheral (optional)
@@ -26,9 +26,9 @@ sequenceDiagram
         App->>Node: GapCentral.Connect(<br>addressWithType={address=6C:8B:2F:3A:9D:41, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
         Node-->>App: GapCentralResponse.CurrentState(initiating)
         Node-)Peripheral: CONNECT_IND (unacknowledged)
-        Note over Node, Peripheral: Central assumes the connection has started once CONNECT_IND is sent.<br>The link is confirmed only by the first bidirectional data exchange in a connection event.<br>For a bonded peer, the LL resolves the RPA via the stored IRK before sending CONNECT_IND.
+        Note over Node, Peripheral: Central assumes the connection has started once CONNECT_IND is sent.<br>The link is confirmed only by the first bidirectional data exchange<br>in a connection event. For a bonded peer, the LL resolves the RPA<br>via the stored IRK before sending CONNECT_IND.
         Node-->>App: GapCentralResponse.CurrentState(connected)
-        Note over App, Node: The exact moment CurrentState(connected) fires is stack-dependent —<br>some stacks emit it on CONNECT_IND transmit, others wait for the first successful data exchange.
+        Note over App, Node: The exact moment CurrentState(connected) fires is stack-dependent:<br>some stacks emit it on CONNECT_IND transmit,<br>others wait for the first successful data exchange.
     end
 
     rect rgb(230, 230, 240)
@@ -45,5 +45,5 @@ sequenceDiagram
         Node-->>App: GapCentralResponse.NumberOfBondsChanged(1)
         Node-->>App: GapCentralResponse.PairingResult(pairedSuccessfully=true)
 
-        Note over App: PairAndBond is required. Without it the link stays unencrypted.<br>Existing bond is reused, so no SMP user interaction (no AuthenticationRequired).<br>NumberOfBondsChanged signals the LRU aging update — the bond count is unchanged.
+        Note over App: PairAndBond is required. Without it the link stays unencrypted.<br>Existing bond is reused, so no SMP user interaction<br>(no AuthenticationRequired). NumberOfBondsChanged signals the LRU<br>aging update: the bond count is unchanged.
     end

@@ -6,8 +6,8 @@ sequenceDiagram
 
     alt Disable pairing (reject new pairings)
         App->>Node: GapPeripheral.SetAllowPairing(false)
-        Note over App, Node: New pairings blocked. Bonded centrals can still connect and re-encrypt.
+        Note over App, Node: New pairings blocked.<br>Bonded centrals can still connect and re-encrypt.
     else Re-enable pairing (default)
         App->>Node: GapPeripheral.SetAllowPairing(true)
-        Note over App, Node: Redundant if never changed. Restores the default after a previous SetAllowPairing(false).
+        Note over App, Node: Redundant if never changed.<br>Restores the default after a previous SetAllowPairing(false).
     end

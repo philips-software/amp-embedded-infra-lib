@@ -5,7 +5,7 @@ sequenceDiagram
     participant Node as Node<br>[implements GapCentral]
     participant Peripheral as Pulse Oximeter<br>BLE Peripheral
 
-    Note over Node, Peripheral: Messages between Node and BLE Peripheral are link-layer events, not driven by the App.<br>The App only observes them through Echo callbacks (e.g. CurrentState).
+    Note over Node, Peripheral: Messages between Node and BLE Peripheral are link-layer events,<br>not driven by the App. The App only observes them through Echo<br>callbacks (e.g. CurrentState).
 
     rect rgb(230, 230, 240)
         note over App, Peripheral: Startup / readiness
@@ -46,7 +46,7 @@ sequenceDiagram
             Peripheral-)Node: LL_VERSION_IND
             Note over Node, Peripheral: Empty data PDUs (M -> S and S -> M) establish<br>the first bidirectional connection event.
         end
-        Note over Node, Peripheral: Central assumes the connection has started once CONNECT_IND is sent.<br>Link is confirmed by the first bidirectional data exchange in a connection event.
+        Note over Node, Peripheral: Central assumes the connection has started once CONNECT_IND is sent.<br>Link is confirmed by the first bidirectional data exchange<br>in a connection event.
         Node-->>App: GapCentralResponse.CurrentState(connected)
 
         note over App: Connection established.<br>Proceed with GATT service discovery.

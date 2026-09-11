@@ -22,15 +22,6 @@ Configure, advertise, accept connection, pair, bond.
 include::partial$echoservices/composite_flows/PeripheralRole_CompleteFlow_sequence.mmd[]
 ....
 
-== GAP Dual-Role Pairing Correlation
-
-When a single Product controls both a peripheral and a central CN, pairing requires the Product to confirm on *both* services. This flow highlights that dual-confirm requirement and shows both callback streams in one view.
-
-[mermaid]
-....
-include::partial$echoservices/composite_flows/Gap_DualRolePairingCorrelation_sequence.mmd[]
-....
-
 == BLE Central Bonded Reconnection
 
 Scan for a bonded peripheral, reconnect, and re-encrypt using stored keys (no SMP pairing).
