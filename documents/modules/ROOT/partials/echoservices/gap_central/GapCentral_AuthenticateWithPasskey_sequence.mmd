@@ -1,0 +1,9 @@
+sequenceDiagram
+    participant App as App<br>[implements GapCentralResponse]
+    participant Node as Node<br>[implements GapCentral]
+
+    Note over App, Node: Allowed states: connected.<br>Only valid when<br>AuthenticationRequired.isNumericComparison is false<br>(Passkey Entry method).<br>Must be called within the 30s SMP timeout<br>(Core Spec v6.3, Vol 3, Part H, Section 3.4).
+
+    App->>Node: GapCentral.AuthenticateWithPasskey(485923)
+
+    Note over App: Passkey delivered to the SMP procedure.<br>Result surfaces on the outstanding<br>PairAndBond's PairingResult callback.<br>See "Passkey Authentication" for the full flow.

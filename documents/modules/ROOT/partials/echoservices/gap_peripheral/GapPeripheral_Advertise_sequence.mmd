@@ -1,0 +1,6 @@
+sequenceDiagram
+    participant App as App<br>[implements GapPeripheralResponse]
+    participant Node as Node<br>[implements GapPeripheral]
+    App->>Node: GapPeripheral.Advertise(type=advInd, advertisingInterval=160)
+    Note right of App: advertisingInterval is in units of 0.625 ms<br>160 * 0.625 ms = 100 ms
+    Node-->>App: GapPeripheralResponse.CurrentState(advertising)

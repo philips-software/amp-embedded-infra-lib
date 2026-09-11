@@ -1,0 +1,7 @@
+stateDiagram-v2
+    standby --> scanning : StartDeviceDiscovery
+    standby --> initiating : Connect
+    initiating --> connected : Connect (success)
+    initiating --> standby : Connect (failure) / Standby
+    scanning --> standby : Standby
+    connected --> standby : Standby / BLE stack (peer disconnects)

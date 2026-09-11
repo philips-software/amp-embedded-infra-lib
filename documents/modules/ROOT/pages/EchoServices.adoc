@@ -1,0 +1,61 @@
+= Echo Services
+:source-highlighter: highlight.js
+:highlightjs-languages: protobuf
+
+This section documents the concrete Echo services that ship with the Embedded Infrastructure Library and closely related products. The xref:EchoProtocol.adoc[Echo Protocol] page describes the underlying protocol, encoding rules, and message conventions; the pages below describe individual services, their responsibilities, allowed states, message flows, and typical interaction patterns.
+
+Each service is defined in a `.proto` file, exposes a set of RPC methods, and is paired with a matching response service that carries the asynchronous callbacks.
+
+[NOTE]
+====
+In the diagrams throughout this section, *App* is the application code that invokes Echo methods and *Node* is the endpoint that implements them. In dual-role diagrams both endpoints appear as *Peripheral Node* and *Central Node*. Peer BLE devices, when they appear, are drawn as separate lifelines labelled *BLE Peripheral* or *BLE Central*.
+====
+
+
+== Service Structure
+
+An Echo service definition consists of:
+
+* A request service (e.g. `GapCentral`) that lists the RPC methods a caller can invoke.
+* A response service (e.g. `GapCentralResponse`) that lists the asynchronous callbacks the caller receives.
+* Optionally a readiness service used during startup handshakes.
+
+Every service has a unique `service_id`, and every RPC method within a service has a unique `method_id`. Both are encoded on the wire as described in xref:EchoProtocol.adoc[Echo Protocol].
+
+Each service page documents:
+
+* The interface (class diagram).
+* State constraints, callback constraints, and startup handshake.
+* One sequence diagram per RPC method.
+* Cross-service and end-to-end sequences that illustrate typical flows.
+* Concrete examples with real values where useful.
+
+== Available Services
+
+* xref:EchoServices/GapPeripheral.adoc[GapPeripheral] - BLE peripheral GAP role.
+* xref:EchoServices/GapCentral.adoc[GapCentral] - BLE central GAP role.
+* xref:EchoServices/EndToEndFlows.adoc[End-to-End Flows] - Cross-service composite flows and protocol-stack overview.
+
+If you are new to these docs, start with xref:EchoServices/EndToEndFlows.adoc[End-to-End Flows] to see how the pieces fit together. For a specific API, jump straight to the matching service page above.
+
+== Contract vs. configuration
+
+Each service's `.proto` file codifies a stack-agnostic contract, derived from the underlying standard (the Bluetooth Core Specification for BLE services). The contract fixes what must happen: which methods exist, what messages they carry, in what order responses arrive, and which states each is valid in.
+
+Concrete implementations of the contract live in the vendor-specific stacks (ST, TI, Nordic, ESP32, and so on). Each stack satisfies the contract independently. Where these docs say a behaviour is "stack-dependent", for example the exact moment `CurrentState(connected)` fires, that is not a hedge but a deliberate reflection of the architecture: the contract guarantees the outcome, the stack chooses the timing.
+
+Read the diagrams with this split in mind:
+
+* Arrows between `App` and `Node` are the Echo API contract. Every implementation must honour these.
+* Arrows between `Node` and the peer BLE device are protocol events required by the standard, and are contract-level too.
+* Prose notes flag where implementations legitimately differ within that contract.
+
+== Conventions
+
+Unless a service's page overrides them, the following conventions apply:
+
+* All methods are asynchronous. Callbacks are delivered on the paired response service.
+* A service is only available after its startup handshake completes (typically the first `CurrentState` callback).
+* Calling a method outside its allowed states results in an assertion.
+* When a callback is specified for a method, another call of the same method is not allowed until the callback has been received.
+* Deprecated methods and services are marked as such and will be removed in a future release.

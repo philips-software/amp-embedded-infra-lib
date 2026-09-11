@@ -1,0 +1,32 @@
+sequenceDiagram
+    participant App as App<br>[implements GapCentralResponse]
+    participant Node as Node<br>[implements GapCentral]
+
+    Note over App, Node: Pairing failure with specific PairingFailedReason
+
+    rect rgb(230, 230, 240)
+        note over App, Node: Authentication requirements mismatch
+        App->>Node: GapCentral.PairAndBond()
+        Node-->>App: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false,<br>reason=authenticationRequirementsNotMet)
+
+        Note over App: Peer requires higher security level<br>than our IoCapabilities can provide.
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Node: Encryption failed after SMP
+        App->>Node: GapCentral.PairAndBond()
+        Node-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+        App->>Node: GapCentral.NumericComparisonConfirm(true)
+        Node-->>App: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false,<br>reason=encryptionFailed)
+
+        Note over App: SMP key exchange succeeded but link-layer<br>encryption setup failed. Connection may drop.
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Node: Re-encryption with stale bond
+        App->>Node: GapCentral.PairAndBond()
+        Node-->>App: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false,<br>reason=keyRejected)
+        Node-->>App: GapCentralResponse.CurrentState(standby)
+
+        Note over App: Stored bond keys no longer accepted by peer.<br>Remove bond and re-pair from scratch.
+    end

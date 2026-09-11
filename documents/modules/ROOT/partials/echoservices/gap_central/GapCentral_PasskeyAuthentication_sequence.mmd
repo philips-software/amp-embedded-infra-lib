@@ -1,0 +1,33 @@
+sequenceDiagram
+    participant App as App<br>[implements GapCentralResponse]
+    participant Node as Node<br>[implements GapCentral]
+
+    Note over App, Node: Precondition: connected,<br>IoCapabilities set for passkey entry<br>(display and/or keyboard).
+
+    App->>Node: GapCentral.PairAndBond()
+
+    alt Node displays passkey, user enters it on peer
+        Node-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=false, passkey=485923)
+        Note over App: Display 485923. User reads it and types it on the peer device.<br>No AuthenticateWithPasskey call is required on our side.
+
+        alt Peer accepts the correct passkey
+            Node-->>App: GapCentralResponse.NumberOfBondsChanged(1)
+            Node-->>App: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+        else Peer enters wrong passkey
+            Node-->>App: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=passkeyEntryFailed)
+        end
+    else Peer displays passkey, user enters it on us
+        Node-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=false)
+        Note over App: passkey field is unused in this variant.<br>User reads the passkey shown on the peer and types it into the App UI.
+
+        App->>Node: GapCentral.AuthenticateWithPasskey(485923)
+
+        alt Correct passkey
+            Node-->>App: GapCentralResponse.NumberOfBondsChanged(1)
+            Node-->>App: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+        else Wrong passkey
+            Node-->>App: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=passkeyEntryFailed)
+        end
+    end
+
+    Note over App, Node: In both variants, no response within the 30 s SMP timeout results in<br>PairingResult(pairedSuccessfully=false, reason=timeout).

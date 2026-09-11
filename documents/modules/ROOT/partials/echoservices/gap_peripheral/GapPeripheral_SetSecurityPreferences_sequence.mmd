@@ -1,0 +1,9 @@
+sequenceDiagram
+    participant App as App<br>[implements GapPeripheralResponse]
+    participant Node as Node<br>[implements GapPeripheral]
+
+    Note over App, Node: Allowed states: standby.<br>Fire-and-forget, no response callback.<br>Should be called once during initialization<br>before advertising or connecting.
+
+    App->>Node: GapPeripheral.SetSecurityPreferences(<br>secureConnections=enforced, mitm=enforced,<br>ioCapabilities=displayYesNo)
+
+    Note over App: A SecurityPreference not supported by the configuration<br>results in an assertion.

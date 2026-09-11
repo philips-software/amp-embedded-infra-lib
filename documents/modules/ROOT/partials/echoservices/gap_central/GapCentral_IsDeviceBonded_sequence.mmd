@@ -1,0 +1,8 @@
+sequenceDiagram
+    participant App as App<br>[implements GapCentralResponse]
+    participant Node as Node<br>[implements GapCentral]
+
+    Note over App, Node: DEPRECATED.<br>Will be removed in a future release.<br>Prefer ResolvePrivateAddress or GetBondList<br>for bond queries.
+
+    App->>Node: GapCentral.IsDeviceBonded(<br>addressWithType={address=6C:8B:2F:3A:9D:41,<br>addressType=randomAddress})
+    Node-->>App: GapCentralResponse.DeviceBonded(bonded=true)

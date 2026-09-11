@@ -1,0 +1,32 @@
+= End-to-End Flows
+:source-highlighter: highlight.js
+:highlightjs-languages: protobuf
+
+Cross-service flows that combine multiple services to illustrate typical user journeys.
+
+== BLE Central Complete Flow
+
+Scan, connect, pair, GATT discovery, enable notifications.
+
+[mermaid]
+....
+include::partial$echoservices/composite_flows/CentralRole_CompleteFlow_sequence.mmd[]
+....
+
+== BLE Peripheral Complete Flow
+
+Configure, advertise, accept connection, pair, bond.
+
+[mermaid]
+....
+include::partial$echoservices/composite_flows/PeripheralRole_CompleteFlow_sequence.mmd[]
+....
+
+== BLE Central Bonded Reconnection
+
+Scan for a bonded peripheral, reconnect, and re-encrypt using stored keys (no SMP pairing).
+
+[mermaid]
+....
+include::partial$echoservices/composite_flows/CentralRole_BondedReconnection_sequence.mmd[]
+....

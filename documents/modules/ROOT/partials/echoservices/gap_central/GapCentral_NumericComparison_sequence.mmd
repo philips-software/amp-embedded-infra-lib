@@ -1,0 +1,21 @@
+sequenceDiagram
+    participant App as App<br>[implements GapCentralResponse]
+    participant Node as Node<br>[implements GapCentral]
+
+    Note over App, Node: Precondition: connected,<br>IoCapabilities set to displayYesNo or keyboardDisplay
+
+    App->>Node: GapCentral.PairAndBond()
+    Node-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+
+    Note over App: Display passkey, user confirms match
+
+    alt User confirms
+        App->>Node: GapCentral.NumericComparisonConfirm(true)
+        Node-->>App: GapCentralResponse.NumberOfBondsChanged(1)
+        Node-->>App: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+    else User rejects
+        App->>Node: GapCentral.NumericComparisonConfirm(false)
+        Node-->>App: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=numericComparisonFailed)
+    else Timeout (30s SMP timeout)
+        Node-->>App: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=timeout)
+    end

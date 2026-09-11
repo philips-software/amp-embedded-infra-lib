@@ -1,0 +1,5 @@
+stateDiagram-v2
+    standby --> advertising : Advertise
+    advertising --> standby : Standby
+    connected --> standby : Standby / BLE stack (peer disconnects)
+    advertising --> connected : BLE stack (peer connects)

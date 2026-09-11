@@ -1,0 +1,127 @@
+sequenceDiagram
+    title BLE Central Complete Flow: Scan, Connect, Pair, Discover, Notify
+
+    participant App as App
+    participant Node as Node<br>[implements GapCentral,<br>GattClient]
+    participant Peripheral as BLE Peripheral
+
+
+    Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. CurrentState).
+
+    rect rgb(230, 230, 240)
+        note over App, Peripheral: 1. Configuration (optional)
+        opt App overrides the default security profile
+            App->>Node: GapCentral.SetSecurityMode(<br>mode=mode1, level=authenticatedPairing)
+            App->>Node: GapCentral.SetIoCapabilities(displayYesNo)
+        end
+        Note over App: If skipped, the Node uses the platform defaults configured at build time.
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Peripheral: 2. Discovery
+        opt App narrows the scan
+            App->>Node: GapCentral.SetDeviceDiscoveryFilter(<br>filter=address, data=C4:AB:12:34:56:78)
+        end
+        App->>Node: GapCentral.StartDeviceDiscovery()
+        Node-->>App: GapCentralResponse.CurrentState(scanning)
+
+        loop Until target peripheral is found
+            Peripheral-)Node: Advertisement / scan response
+            Node-->>App: GapCentralResponse.DeviceDiscovered(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>rssi=-38, advertisingReportType=advInd)
+        end
+
+        App->>Node: GapCentral.Standby()
+        Node-->>App: GapCentralResponse.CurrentState(standby)
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Peripheral: 3. Connection
+        App->>Node: GapCentral.Connect(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
+        Node-->>App: GapCentralResponse.CurrentState(initiating)
+        Node-)Peripheral: CONNECT_IND (unacknowledged)
+        rect rgb(245, 240, 230)
+            Note over Node, Peripheral: Typical first LL activity after CONNECT_IND
+            Node-)Peripheral: LL_FEATURE_REQ
+            Peripheral-)Node: LL_FEATURE_RSP
+            Node-)Peripheral: LL_VERSION_IND
+            Peripheral-)Node: LL_VERSION_IND
+            Note over Node, Peripheral: Empty data PDUs (M -> S and S -> M) establish<br>the first bidirectional connection event.
+        end
+        Note over Node, Peripheral: Central enters the connection state<br>on send.<br>Link is confirmed by the first<br>bidirectional data exchange<br>in a connection event.
+        Node-->>App: GapCentralResponse.CurrentState(connected)
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Peripheral: 4. Pairing and bonding
+        App->>Node: GapCentral.PairAndBond()
+        rect rgb(245, 240, 230)
+            Note over Node, Peripheral: SMP starts (LESC with MITM)
+            Node-)Peripheral: Pairing_Request (MITM requested)
+            Peripheral-)Node: Pairing_Response (MITM requested)
+            Node-)Peripheral: Pairing_Public_Key
+            Peripheral-)Node: Pairing_Public_Key
+            Peripheral-)Node: Pairing_Confirm
+            Node-)Peripheral: Pairing_Random
+            Peripheral-)Node: Pairing_Random
+        end
+        Node-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+
+        Note over App: User confirms numeric comparison or enters passkey
+
+        App->>Node: GapCentral.NumericComparisonConfirm(true)
+        rect rgb(245, 240, 230)
+            Note over Node, Peripheral: SMP completes and link is encrypted
+            Node-)Peripheral: Pairing_DHKey_Check
+            Peripheral-)Node: Pairing_DHKey_Check
+            Node-)Peripheral: LL_ENC_REQ
+            Peripheral-)Node: LL_ENC_RSP
+            Peripheral-)Node: LL_START_ENC_REQ (encrypted)
+            Node-)Peripheral: LL_START_ENC_RSP (encrypted)
+            Peripheral-)Node: LL_START_ENC_RSP (encrypted)
+            Note over Node, Peripheral: Key distribution (encrypted)
+            Peripheral-)Node: Identity_Information (IRK)
+            Peripheral-)Node: Identity_Address_Information
+            Peripheral-)Node: Signing_Information (CSRK)
+        end
+        Node-->>App: GapCentralResponse.NumberOfBondsChanged(1)
+        Node-->>App: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Peripheral: 5. GATT service discovery
+        App->>Node: GattClient.StartServiceDiscovery()
+        loop For each service
+            Node-->>App: GattClientResponse.ServiceDiscovered(<br>uuid=0x180F, handles={startHandle=0x0020, endHandle=0x0028})
+        end
+        Node-->>App: GattClientResponse.ServiceDiscoveryComplete(success)
+
+        App->>Node: GattClient.StartCharacteristicDiscovery(<br>startHandle=0x0020, endHandle=0x0028)
+        loop For each characteristic
+            Node-->>App: GattClientResponse.CharacteristicDiscovered(<br>uuid=0x2A19, handle=0x0024, valueHandle=0x0025, properties=0x12)
+        end
+        Node-->>App: GattClientResponse.CharacteristicDiscoveryComplete(success)
+
+        opt App does not already know the descriptor layout
+            App->>Node: GattClient.StartDescriptorDiscovery(<br>startHandle=0x0025, endHandle=0x0028)
+            loop For each descriptor
+                Node-->>App: GattClientResponse.DescriptorDiscovered(<br>uuid=0x2902, handle=0x0026)
+            end
+            Node-->>App: GattClientResponse.DescriptorDiscoveryComplete(success)
+        end
+        Note over App: The CCCD (0x2902) is conventionally at valueHandle+1,<br>so descriptor discovery can often be skipped.
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Peripheral: 6. Enable notifications
+        App->>Node: GattClient.WriteDescriptor(<br>handle=0x0026, data=0x0100)
+        Note right of App: 0x0100 = notifications enabled (CCCD)
+        Node-->>App: GattClientResponse.OperationComplete(success)
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Peripheral: 7. Runtime data
+        Peripheral-)Node: ATT_HANDLE_VALUE_NTF
+        Node-->>App: GattClientResponse.NotificationReceived(<br>handle=0x0025, data=0x64)
+        Peripheral-)Node: ATT_HANDLE_VALUE_NTF
+        Node-->>App: GattClientResponse.NotificationReceived(<br>handle=0x0025, data=0x63)
+    end

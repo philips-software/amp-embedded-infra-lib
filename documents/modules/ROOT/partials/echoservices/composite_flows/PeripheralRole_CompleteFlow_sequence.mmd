@@ -1,0 +1,92 @@
+sequenceDiagram
+    title BLE Peripheral Complete Flow: Advertise, Connect, Pair, Bond
+
+    participant App as App
+    participant Node as Node<br>[implements GapPeripheral]
+    participant Central as BLE Central
+
+
+    Note over Node, Central: Messages between Node and BLE Central<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. CurrentState).
+
+    rect rgb(230, 230, 240)
+        note over App, Central: 1. Configuration (optional)
+        opt App overrides the default security profile
+            App->>Node: GapPeripheral.SetSecurityPreferences(<br>secureConnections=enforced, mitm=enforced,<br>ioCapabilities=displayYesNo)
+        end
+        opt App overrides the default advertisement payload
+            App->>Node: GapPeripheral.SetAdvertisementData(<br>data=0x0A 0x09 'N''o''n''i''n''3''1''5''0' 0x03 0x03 0x22 0x18)
+            App->>Node: GapPeripheral.SetScanResponseData(<br>data=0x03 0x03 0x22 0x18)
+        end
+        Note over App: If skipped, defaults apply. Without SetAdvertisementData the Node<br>advertises only the flags AD field (no device name, no service UUIDs).<br>Pairing is allowed by default, so SetAllowPairing(true) is not needed.
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Central: 2. Start advertising
+        App->>Node: GapPeripheral.Advertise(type=advInd, advertisingInterval=160)
+        Note right of App: advertisingInterval=160 -> 100 ms<br>(units of 0.625 ms)
+        Node-->>App: GapPeripheralResponse.CurrentState(advertising)
+
+        Note over App, Central: Node is now visible to BLE centrals
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Central: 3. Central connects
+        Central-)Node: CONNECT_IND
+        rect rgb(245, 240, 230)
+            Note over Node, Central: Typical first LL activity after CONNECT_IND
+            Central-)Node: LL_FEATURE_REQ
+            Node-)Central: LL_FEATURE_RSP
+            Central-)Node: LL_VERSION_IND
+            Node-)Central: LL_VERSION_IND
+            Note over Node, Central: Empty data PDUs (M -> S and S -> M) establish<br>the first bidirectional connection event.
+        end
+        Note over Node, Central: Peripheral enters the connection state<br>on receiving CONNECT_IND.<br>Link is confirmed by the first<br>bidirectional data exchange<br>in a connection event.
+        Node-->>App: GapPeripheralResponse.CurrentState(connected)
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Central: 4. Pairing (initiated by central)
+        rect rgb(245, 240, 230)
+            Note over Node, Central: SMP starts (LESC with MITM, requested by peer)
+            Central-)Node: Pairing_Request (MITM requested)
+            Node-)Central: Pairing_Response (MITM requested)
+            Central-)Node: Pairing_Public_Key
+            Node-)Central: Pairing_Public_Key
+            Node-)Central: Pairing_Confirm
+            Central-)Node: Pairing_Random
+            Node-)Central: Pairing_Random
+        end
+        Node-->>App: GapPeripheralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+
+        Note over App: User confirms numeric comparison on peripheral side
+
+        App->>Node: GapPeripheral.NumericComparisonConfirm(true)
+        rect rgb(245, 240, 230)
+            Note over Node, Central: SMP completes and link is encrypted
+            Central-)Node: Pairing_DHKey_Check
+            Node-)Central: Pairing_DHKey_Check
+            Central-)Node: LL_ENC_REQ
+            Node-)Central: LL_ENC_RSP
+            Node-)Central: LL_START_ENC_REQ (encrypted)
+            Central-)Node: LL_START_ENC_RSP (encrypted)
+            Node-)Central: LL_START_ENC_RSP (encrypted)
+            Note over Node, Central: Key distribution (encrypted)
+            Node-)Central: Identity_Information (IRK)
+            Node-)Central: Identity_Address_Information
+            Node-)Central: Signing_Information (CSRK)
+        end
+        Node-->>App: GapPeripheralResponse.NumberOfBondsChanged(1)
+        Node-->>App: GapPeripheralResponse.PairingResult(pairedSuccessfully=true)
+
+        Note over App: Bond stored. Peripheral is now bonded with the central.
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Central: 5. Disconnection
+        rect rgb(245, 230, 230)
+            Central-)Node: LL_TERMINATE_IND
+        end
+        Node-->>App: GapPeripheralResponse.CurrentState(standby)
+
+        Note over App: Can re-advertise to accept new connections.
+    end

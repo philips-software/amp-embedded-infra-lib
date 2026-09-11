@@ -1,0 +1,53 @@
+sequenceDiagram
+    title BLE Central Discovery and Connection Example: Pulse Oximeter
+
+    participant App as App<br>[implements GapCentralResponse]
+    participant Node as Node<br>[implements GapCentral]
+    participant Peripheral as Pulse Oximeter<br>BLE Peripheral
+
+    Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. CurrentState).
+
+    rect rgb(230, 230, 240)
+        note over App, Peripheral: Startup / readiness
+        App->>Node: GapCentral.GetState()
+        Node-->>App: GapCentralResponse.CurrentState(standby)
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Peripheral: Discovery
+        App->>Node: GapCentral.SetDeviceDiscoveryFilter(filter=none)
+        Note right of App: DeviceDiscoveryFilter only supports address / manufacturerSpecificData.<br>Name filtering ("Nonin3150") is applied App-side after DeviceDiscovered.
+        App->>Node: GapCentral.StartDeviceDiscovery()
+        Node-->>App: GapCentralResponse.CurrentState(scanning)
+
+        Peripheral-)Node: Advertisement
+        Node-->>App: GapCentralResponse.DeviceDiscovered(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>data=0x0A 0x09 'N''o''n''i''n''3''1''5''0' 0x03 0x03 0x22 0x18,<br>rssi=-42, advertisingReportType=advInd)
+
+        note over App: Device name matches "Nonin3150".<br>Address type is random (may be a resolvable private address).
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Peripheral: Stop scanning before connecting
+        App->>Node: GapCentral.Standby()
+        Node-->>App: GapCentralResponse.CurrentState(standby)
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Peripheral: Connect
+        App->>Node: GapCentral.Connect(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
+        Node-->>App: GapCentralResponse.CurrentState(initiating)
+
+        Node-)Peripheral: CONNECT_IND (unacknowledged)
+        rect rgb(245, 240, 230)
+            Note over Node, Peripheral: Typical first LL activity after CONNECT_IND
+            Node-)Peripheral: LL_FEATURE_REQ
+            Peripheral-)Node: LL_FEATURE_RSP
+            Node-)Peripheral: LL_VERSION_IND
+            Peripheral-)Node: LL_VERSION_IND
+            Note over Node, Peripheral: Empty data PDUs (M -> S and S -> M) establish<br>the first bidirectional connection event.
+        end
+        Note over Node, Peripheral: Central assumes the connection has started<br>once CONNECT_IND is sent.<br>Link is confirmed by the first<br>bidirectional data exchange<br>in a connection event.
+        Node-->>App: GapCentralResponse.CurrentState(connected)
+
+        note over App: Connection established.<br>Proceed with GATT service discovery.
+    end

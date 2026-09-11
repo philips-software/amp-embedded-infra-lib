@@ -1,0 +1,6 @@
+sequenceDiagram
+    participant App as App<br>[implements GapPeripheralResponse]
+    participant Node as Node<br>[implements GapPeripheral]
+    Note over App, Node: Allowed states:<br>standby, advertising, connected.<br>Terminates advertising<br>or the peer connection.<br>Returns the Node to standby.<br>From standby: still yields<br>CurrentState(standby).
+    App->>Node: GapPeripheral.Standby()
+    Node-->>App: GapPeripheralResponse.CurrentState(standby)

@@ -1,0 +1,30 @@
+sequenceDiagram
+    participant App as App<br>[implements GapPeripheralResponse]
+    participant Node as Node<br>[implements GapPeripheral]
+    participant Central as BLE Central
+
+    Note over Node, Central: Messages between Node and BLE Central<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. CurrentState).
+
+    Note over App, Node: Precondition: connected,<br>SecurityPreference requests MITM<br>with displayYesNo IoCapabilities.
+
+    Central-)Node: Pairing_Request (MITM requested)
+    Node-->>App: GapPeripheralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+
+    Note over App: Display passkey. User compares with the central's display.
+
+    alt User confirms match
+        App->>Node: GapPeripheral.NumericComparisonConfirm(true)
+        Node-->>App: GapPeripheralResponse.NumberOfBondsChanged(1)
+        Node-->>App: GapPeripheralResponse.PairingResult(pairedSuccessfully=true)
+    else User rejects
+        App->>Node: GapPeripheral.NumericComparisonConfirm(false)
+        Node-->>App: GapPeripheralResponse.PairingResult(<br>pairedSuccessfully=false, reason=numericComparisonFailed)
+    else Timeout (30s SMP timeout, no confirm)
+        Node-->>App: GapPeripheralResponse.PairingResult(<br>pairedSuccessfully=false, reason=timeout)
+    else Peer disconnects before confirm
+        rect rgb(245, 230, 230)
+            Central-)Node: LL_TERMINATE_IND
+        end
+        Node-->>App: GapPeripheralResponse.CurrentState(standby)
+        Note over App, Node: PairingResult may or may not fire<br>in this case (per proto).
+    end

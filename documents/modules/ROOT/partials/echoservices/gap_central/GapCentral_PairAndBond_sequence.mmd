@@ -1,0 +1,100 @@
+sequenceDiagram
+    participant App as App<br>[implements GapCentralResponse]
+    participant Node as Node<br>[implements GapCentral]
+    participant Peripheral as BLE Peripheral
+
+    Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. CurrentState).
+
+    App->>Node: GapCentral.PairAndBond()
+
+    alt Just Works - new bond (no user interaction)
+        Note over App, Node: Negotiated when MITM protection is not required<br>or IoCapabilities do not support authentication.
+        rect rgb(245, 240, 230)
+            Note over Node, Peripheral: LESC SMP over L2CAP
+            Node-)Peripheral: Pairing_Request
+            Peripheral-)Node: Pairing_Response
+            Node-)Peripheral: Pairing_Public_Key
+            Peripheral-)Node: Pairing_Public_Key
+            Peripheral-)Node: Pairing_Confirm
+            Node-)Peripheral: Pairing_Random
+            Peripheral-)Node: Pairing_Random
+            Node-)Peripheral: Pairing_DHKey_Check
+            Peripheral-)Node: Pairing_DHKey_Check
+            Note over Node, Peripheral: LL encryption setup
+            Node-)Peripheral: LL_ENC_REQ
+            Peripheral-)Node: LL_ENC_RSP
+            Peripheral-)Node: LL_START_ENC_REQ (encrypted)
+            Node-)Peripheral: LL_START_ENC_RSP (encrypted)
+            Peripheral-)Node: LL_START_ENC_RSP (encrypted)
+            Note over Node, Peripheral: Key distribution (encrypted)
+            Peripheral-)Node: Identity_Information (IRK)
+            Peripheral-)Node: Identity_Address_Information
+            Peripheral-)Node: Signing_Information (CSRK)
+        end
+        Note over App, Node: LTK is derived from the ECDH shared secret, not distributed.
+        Node-->>App: GapCentralResponse.NumberOfBondsChanged(1)
+        Node-->>App: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+    else Numeric Comparison - new bond
+        Node-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+        Note right of App: User compares the 6-digit passkey<br>with the peer's display.
+        App->>Node: GapCentral.NumericComparisonConfirm(true)
+        rect rgb(245, 240, 230)
+            Note over Node, Peripheral: LESC SMP stage 1 (Numeric Comparison)
+            Node-)Peripheral: Pairing_Request (MITM requested)
+            Peripheral-)Node: Pairing_Response (MITM requested)
+            Node-)Peripheral: Pairing_Public_Key
+            Peripheral-)Node: Pairing_Public_Key
+            Peripheral-)Node: Pairing_Confirm
+            Node-)Peripheral: Pairing_Random
+            Peripheral-)Node: Pairing_Random
+            Node-)Peripheral: Pairing_DHKey_Check
+            Peripheral-)Node: Pairing_DHKey_Check
+            Node-)Peripheral: LL_ENC_REQ
+            Peripheral-)Node: LL_ENC_RSP
+            Peripheral-)Node: LL_START_ENC_REQ (encrypted)
+            Node-)Peripheral: LL_START_ENC_RSP (encrypted)
+            Peripheral-)Node: LL_START_ENC_RSP (encrypted)
+            Peripheral-)Node: Identity_Information (IRK)
+            Peripheral-)Node: Identity_Address_Information
+            Peripheral-)Node: Signing_Information (CSRK)
+        end
+        Node-->>App: GapCentralResponse.NumberOfBondsChanged(1)
+        Node-->>App: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+        Note over App: For Passkey Entry the callback carries<br>isNumericComparison=false and the App responds via<br>AuthenticateWithPasskey. SMP stage 1 then runs 20<br>Confirm / Random rounds (one per passkey bit).<br>See "Passkey Authentication" for the full flow.
+    else Successful re-encryption with existing bond
+        rect rgb(245, 240, 230)
+            Note over Node, Peripheral: LL encryption using the stored LTK (no SMP)
+            Node-)Peripheral: LL_ENC_REQ (Rand, EDIV, SKD_M, IV_M)
+            Peripheral-)Node: LL_ENC_RSP (SKD_S, IV_S)
+            Peripheral-)Node: LL_START_ENC_REQ (encrypted)
+            Node-)Peripheral: LL_START_ENC_RSP (encrypted)
+            Peripheral-)Node: LL_START_ENC_RSP (encrypted)
+        end
+        Node-->>App: GapCentralResponse.NumberOfBondsChanged(N)
+        Node-->>App: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+        Note over App: NumberOfBondsChanged fires as a bond-aging (LRU) signal.<br>The reported N equals the current bond count and is unchanged.
+    else Pairing failure
+        opt Authenticated method
+            alt Numeric Comparison
+                Node-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+                App->>Node: GapCentral.NumericComparisonConfirm(false)
+            else Passkey Entry
+                Node-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=false, passkey=485923)
+                App->>Node: GapCentral.AuthenticateWithPasskey(999999)
+            end
+        end
+        rect rgb(245, 240, 230)
+            Node-)Peripheral: Pairing_Request
+            Peripheral-)Node: Pairing_Response
+            Peripheral-)Node: Pairing_Failed (reason)
+        end
+        Node-->>App: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=<method-specific>)
+        Note over App, Node: Reason field is method-specific:<br>numericComparisonFailed (NC) or passkeyEntryFailed (PE).<br>Other common causes: confirmValueFailed,<br>dhkeyCheckFailed (LESC), encryptionFailed (LL setup).
+    else Peer-initiated disconnect during pairing
+        rect rgb(245, 240, 230)
+            Peripheral-)Node: LL_TERMINATE_IND
+        end
+        Node-->>App: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=unknown)
+        Node-->>App: GapCentralResponse.CurrentState(standby)
+        Note over App, Node: PairingResult is delivered before CurrentState(standby)<br>per the proto's guaranteed response sequence for this case.
+    end

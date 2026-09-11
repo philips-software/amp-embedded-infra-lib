@@ -1,0 +1,6 @@
+sequenceDiagram
+    participant App as App<br>[implements GapCentralResponse]
+    participant Node as Node<br>[implements GapCentral]
+    Note over App, Node: Allowed states: standby, scanning,<br>initiating, connected.<br>Terminates the current activity.<br>Returns the Node to standby.<br>From standby: still yields<br>CurrentState(standby).
+    App->>Node: GapCentral.Standby()
+    Node-->>App: GapCentralResponse.CurrentState(standby)

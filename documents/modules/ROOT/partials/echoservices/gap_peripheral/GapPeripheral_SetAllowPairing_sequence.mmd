@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant App as App<br>[implements GapPeripheralResponse]
+    participant Node as Node<br>[implements GapPeripheral]
+
+    Note over App, Node: Pairing is allowed by default.<br>SetAllowPairing has no response callback.
+
+    alt Disable pairing (reject new pairings)
+        App->>Node: GapPeripheral.SetAllowPairing(false)
+        Note over App, Node: New pairings blocked.<br>Bonded centrals can still connect and re-encrypt.
+    else Re-enable pairing (default)
+        App->>Node: GapPeripheral.SetAllowPairing(true)
+        Note over App, Node: Redundant if never changed.<br>Restores the default after a previous<br>SetAllowPairing(false).
+    end

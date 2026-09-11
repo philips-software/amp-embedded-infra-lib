@@ -1,0 +1,6 @@
+sequenceDiagram
+    participant App as App<br>[implements GapPeripheralResponse]
+    participant Node as Node<br>[implements GapPeripheral]
+    App->>Node: GapPeripheral.SetAdvertisementData(<br>data=0x03 0x03 0x22 0x18)
+    Note right of App: 0x03 = AD length (1 type + 2 UUID bytes).<br>0x03 = 'Complete List of 16-bit Service UUIDs'<br>AD type.<br>0x22 0x18 = 0x1822 (Pulse Oximeter Service,<br>little-endian).<br>See Core Spec v6.3, Vol 3, Part C, Section 11
+    Note right of Node: Fire-and-forget, no response.<br>Takes effect on the next<br>GapPeripheral.Advertise().<br>Server auto-inserts the AD Flags field.

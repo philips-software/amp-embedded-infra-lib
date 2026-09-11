@@ -1,0 +1,49 @@
+sequenceDiagram
+    title BLE Central Bonded Reconnection: Re-encrypt with Stored Keys
+
+    participant App as App
+    participant Node as Node<br>[implements GapCentral]
+    participant Peripheral as BLE Peripheral
+
+
+    Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. CurrentState).
+
+    rect rgb(230, 230, 240)
+        note over App, Peripheral: 1. Locate the bonded peripheral (optional)
+        opt App does not already know the target and scans first
+            App->>Node: GapCentral.StartDeviceDiscovery()
+            Node-->>App: GapCentralResponse.CurrentState(scanning)
+            Node-->>App: GapCentralResponse.DeviceDiscovered(<br>addressWithType={address=6C:8B:2F:3A:9D:41, addressType=randomAddress},<br>rssi=-42)
+            App->>Node: GapCentral.Standby()
+            Node-->>App: GapCentralResponse.CurrentState(standby)
+        end
+
+        Note over App: Alternatively, Connect(bond.identityAddress) directly.<br>The controller matches incoming/observed RPAs via the LL resolving list<br>(populated with the peer's IRK at bond time).
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Peripheral: 2. Reconnect
+        App->>Node: GapCentral.Connect(<br>addressWithType={address=6C:8B:2F:3A:9D:41, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
+        Node-->>App: GapCentralResponse.CurrentState(initiating)
+        Node-)Peripheral: CONNECT_IND (unacknowledged)
+        Note over Node, Peripheral: Central assumes the connection has started<br>once CONNECT_IND is sent.<br>The link is confirmed only by the first<br>bidirectional data exchange in a connection event.<br>For a bonded peer, the LL resolves the RPA<br>via the stored IRK before sending CONNECT_IND.
+        Node-->>App: GapCentralResponse.CurrentState(connected)
+        Note over App, Node: The exact moment CurrentState(connected) fires is stack-dependent:<br>some stacks emit it on CONNECT_IND transmit,<br>others wait for the first successful data exchange.
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Peripheral: 3. Re-encryption
+        App->>Node: GapCentral.PairAndBond()
+        rect rgb(245, 240, 230)
+            Note over Node, Peripheral: LL encryption using the stored LTK (no SMP)
+            Node-)Peripheral: LL_ENC_REQ (Rand, EDIV, SKD_M, IV_M)
+            Peripheral-)Node: LL_ENC_RSP (SKD_S, IV_S)
+            Peripheral-)Node: LL_START_ENC_REQ (encrypted)
+            Node-)Peripheral: LL_START_ENC_RSP (encrypted)
+            Peripheral-)Node: LL_START_ENC_RSP (encrypted)
+        end
+        Node-->>App: GapCentralResponse.NumberOfBondsChanged(1)
+        Node-->>App: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+
+        Note over App: PairAndBond is required. Without it the link stays unencrypted.<br>Existing bond is reused, so no SMP user interaction<br>(no AuthenticationRequired). NumberOfBondsChanged signals the LRU<br>aging update: the bond count is unchanged.
+    end

@@ -1,0 +1,25 @@
+sequenceDiagram
+    participant App as App<br>[implements GapCentralResponse]
+    participant Node as Node<br>[implements GapCentral]
+
+    Note over App, Node: Precondition: standby
+
+    App->>Node: GapCentral.SetIdentityAddress(<br>address=00:1A:7D:DA:71:13, addressType=publicAddress)
+    App->>Node: GapCentral.SetPrivacyMode(true)
+
+    Note over App, Node: Central now uses resolvable private addresses
+
+    App->>Node: GapCentral.StartDeviceDiscovery()
+    Node-->>App: GapCentralResponse.CurrentState(scanning)
+    Node-->>App: GapCentralResponse.DeviceDiscovered(<br>addressWithType={address=6C:8B:2F:3A:9D:41, addressType=randomAddress},<br>rssi=-42)
+
+    Note over App: Peer advertising with resolvable private address (RPA)
+
+    App->>Node: GapCentral.Standby()
+    Node-->>App: GapCentralResponse.CurrentState(standby)
+
+    App->>Node: GapCentral.Connect(<br>addressWithType={address=6C:8B:2F:3A:9D:41, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
+    Node-->>App: GapCentralResponse.CurrentState(initiating)
+    Node-->>App: GapCentralResponse.CurrentState(connected)
+
+    Note over App, Node: SetPrivacyMode(true) makes the central use its own resolvable private address<br>generated from the local IRK. Peer identification via the LL resolving list requires<br>a prior bond with the peer (see the Bonded Reconnection flow).
