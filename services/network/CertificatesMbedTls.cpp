@@ -3,6 +3,7 @@
 #include "infra/stream/StringOutputStream.hpp"
 #include "infra/util/ReallyAssert.hpp"
 #include "mbedtls/pk.h"
+#include "mbedtls/platform_util.h"
 #include "mbedtls/version.h"
 #include "services/util/MbedTlsRandomDataGeneratorWrapper.hpp"
 
