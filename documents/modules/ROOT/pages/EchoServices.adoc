@@ -32,9 +32,9 @@ Each service page documents:
 
 == Available Services
 
-* xref:EchoServices/GapPeripheral.adoc[GapPeripheral] — BLE peripheral GAP role.
-* xref:EchoServices/GapCentral.adoc[GapCentral] — BLE central GAP role.
-* xref:EchoServices/EndToEndFlows.adoc[End-to-End Flows] — Cross-service composite flows and protocol-stack overview.
+* xref:EchoServices/GapPeripheral.adoc[GapPeripheral] - BLE peripheral GAP role.
+* xref:EchoServices/GapCentral.adoc[GapCentral] - BLE central GAP role.
+* xref:EchoServices/EndToEndFlows.adoc[End-to-End Flows] - Cross-service composite flows and protocol-stack overview.
 
 If you are new to these docs, start with xref:EchoServices/EndToEndFlows.adoc[End-to-End Flows] to see how the pieces fit together. For a specific API, jump straight to the matching service page above.
 
