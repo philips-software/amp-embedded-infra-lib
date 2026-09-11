@@ -7,4 +7,4 @@ sequenceDiagram
     App->>Node: GapPeripheral.RemoveOldestBond()
     Node-->>App: GapPeripheralResponse.NumberOfBondsChanged(1)
 
-    Note over App: NumberOfBondsChanged reports the current bond count after removal (N-1).<br>Oldest bond = least recently used, per proto.
+    Note over App: NumberOfBondsChanged reports<br>the current bond count after removal (N-1).<br>Oldest bond = least recently used, per proto.

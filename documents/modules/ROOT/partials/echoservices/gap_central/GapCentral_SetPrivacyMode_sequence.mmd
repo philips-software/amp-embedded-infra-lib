@@ -2,11 +2,11 @@ sequenceDiagram
     participant App as App<br>[implements GapCentralResponse]
     participant Node as Node<br>[implements GapCentral]
 
-    Note over App, Node: Allowed states: standby. Fire-and-forget, no response callback.
+    Note over App, Node: Allowed states: standby.<br>Fire-and-forget, no response callback.
 
     alt Enable privacy
         App->>Node: GapCentral.SetPrivacyMode(true)
-        Note over App: The controller generates and rotates a resolvable private address<br>based on the local IRK.
+        Note over App: The controller generates<br>and rotates a resolvable private address<br>based on the local IRK.
     else Disable privacy
         App->>Node: GapCentral.SetPrivacyMode(false)
         Note over App: The central uses its configured identity address<br>(see SetIdentityAddress).

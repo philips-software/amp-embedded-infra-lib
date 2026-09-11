@@ -4,7 +4,7 @@ sequenceDiagram
     participant Central as BLE Central
 
 
-    Note over Node, Central: Messages between Node and BLE Central are link-layer events,<br>not driven by the App. The App only observes them through Echo<br>callbacks (e.g. CurrentState).
+    Note over Node, Central: Messages between Node and BLE Central<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. CurrentState).
 
     App->>Node: GapPeripheral.SetAllowPairing(false)
     App->>Node: GapPeripheral.Advertise(type=advInd, advertisingInterval=160)

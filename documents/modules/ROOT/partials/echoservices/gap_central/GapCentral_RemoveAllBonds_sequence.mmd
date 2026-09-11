@@ -3,4 +3,4 @@ sequenceDiagram
     participant Node as Node<br>[implements GapCentral]
     App->>Node: GapCentral.RemoveAllBonds()
     Node-->>App: GapCentralResponse.NumberOfBondsChanged(0)
-    Note over App: Removes all stored bonds. The callback always reports 0<br>as the final bond count, regardless of the previous state.
+    Note over App: Removes all stored bonds.<br>The callback always reports 0 as the final<br>bond count, regardless of the previous state.

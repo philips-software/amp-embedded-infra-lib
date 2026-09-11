@@ -3,9 +3,9 @@ sequenceDiagram
     participant Node as Node<br>[implements GapPeripheral]
     participant Central as BLE Central
 
-    Note over Node, Central: Messages between Node and BLE Central are link-layer events,<br>not driven by the App. The App only observes them through Echo<br>callbacks (e.g. CurrentState).
+    Note over Node, Central: Messages between Node and BLE Central<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. CurrentState).
 
-    Note over App, Node: Precondition: connected,<br>SecurityPreference requests MITM with displayYesNo IoCapabilities.
+    Note over App, Node: Precondition: connected,<br>SecurityPreference requests MITM<br>with displayYesNo IoCapabilities.
 
     Central-)Node: Pairing_Request (MITM requested)
     Node-->>App: GapPeripheralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
@@ -26,5 +26,5 @@ sequenceDiagram
             Central-)Node: LL_TERMINATE_IND
         end
         Node-->>App: GapPeripheralResponse.CurrentState(standby)
-        Note over App, Node: PairingResult may or may not fire in this case (per proto).
+        Note over App, Node: PairingResult may or may not fire<br>in this case (per proto).
     end

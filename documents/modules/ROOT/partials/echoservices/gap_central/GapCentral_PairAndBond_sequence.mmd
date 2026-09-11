@@ -3,7 +3,7 @@ sequenceDiagram
     participant Node as Node<br>[implements GapCentral]
     participant Peripheral as BLE Peripheral
 
-    Note over Node, Peripheral: Messages between Node and BLE Peripheral are link-layer events,<br>not driven by the App. The App only observes them through Echo<br>callbacks (e.g. CurrentState).
+    Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. CurrentState).
 
     App->>Node: GapCentral.PairAndBond()
 

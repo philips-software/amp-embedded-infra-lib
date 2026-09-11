@@ -7,5 +7,5 @@ sequenceDiagram
         Note over App: Returns the identity address.
     else Privacy enabled and Node has advertised at least once
         Node-->>App: GapPeripheralResponse.AdvertisingAddress(<br>address=6C:8B:2F:3A:9D:41, addressType=randomAddress)
-        Note over App: Returns the resolvable private address currently in use.<br>Rotated periodically by the BLE stack.
+        Note over App: Returns the resolvable private address<br>currently in use.<br>Rotated periodically by the BLE stack.
     end
