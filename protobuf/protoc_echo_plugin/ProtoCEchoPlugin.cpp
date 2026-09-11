@@ -1160,7 +1160,12 @@ namespace application
         auto constructor = std::make_shared<Constructor>(service->name, "", 0);
         constructor->Parameter("services::Echo& echo");
         constructor->Initializer("services::Service(echo)");
+        constructors->Add(constructor);
 
+        constructor = std::make_shared<Constructor>(service->name, "", 0);
+        constructor->Parameter("services::Echo& echo");
+        constructor->Parameter("services::EchoChannel channel");
+        constructor->Initializer("services::Service(echo, channel)");
         constructors->Add(constructor);
         serviceFormatter->Add(constructors);
     }
@@ -1171,7 +1176,12 @@ namespace application
         auto constructor = std::make_shared<Constructor>(service->name + "Proxy", "", 0);
         constructor->Parameter("services::Echo& echo");
         constructor->Initializer("services::ServiceProxy(echo, maxMessageSize)");
+        constructors->Add(constructor);
 
+        constructor = std::make_shared<Constructor>(service->name + "Proxy", "", 0);
+        constructor->Parameter("services::Echo& echo");
+        constructor->Parameter("services::EchoChannel channel");
+        constructor->Initializer("services::ServiceProxy(echo, maxMessageSize, channel)");
         constructors->Add(constructor);
         serviceProxyFormatter->Add(constructors);
     }

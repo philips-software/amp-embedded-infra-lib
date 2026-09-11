@@ -45,7 +45,7 @@ namespace services
         : public infra::IntrusiveList<ServiceProxy>::NodeType
     {
     public:
-        ServiceProxy(Echo& echo, uint32_t maxMessageSize);
+        ServiceProxy(Echo& echo, uint32_t maxMessageSize, EchoChannel channel = EchoChannel::red);
 
         Echo& Rpc();
         virtual void RequestSend(infra::Function<void()> onGranted);

@@ -28,9 +28,10 @@ namespace services
         return Subject();
     }
 
-    ServiceProxy::ServiceProxy(Echo& echo, uint32_t maxMessageSize)
+    ServiceProxy::ServiceProxy(Echo& echo, uint32_t maxMessageSize, EchoChannel channel)
         : echo(echo)
         , maxMessageSize(maxMessageSize)
+        , channel(channel)
     {}
 
     ServiceProxy::~ServiceProxy()
