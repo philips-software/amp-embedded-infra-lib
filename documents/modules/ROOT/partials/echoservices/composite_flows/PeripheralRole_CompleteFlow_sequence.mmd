@@ -83,7 +83,9 @@ sequenceDiagram
 
     rect rgb(230, 230, 240)
         note over App, Central: 5. Disconnection
-        Central--xNode: Peer disconnects
+        rect rgb(245, 230, 230)
+            Central-)Node: LL_TERMINATE_IND
+        end
         Node-->>App: GapPeripheralResponse.CurrentState(standby)
 
         Note over App: Can re-advertise to accept new connections.

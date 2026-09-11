@@ -3,6 +3,8 @@ sequenceDiagram
     participant Node as Node<br>[implements GapPeripheral]
     participant Central as BLE Central
 
+    Note over Node, Central: Messages between Node and BLE Central are link-layer events,<br>not driven by the App. The App only observes them through Echo<br>callbacks (e.g. CurrentState).
+
     rect rgb(230, 230, 240)
         note over App, Central: 1. Initial bond established
         App->>Node: GapPeripheral.Advertise(type=advInd, advertisingInterval=160)
@@ -35,7 +37,9 @@ sequenceDiagram
 
     rect rgb(230, 230, 240)
         note over App, Central: 2. Central disconnects and removes its bond
-        Central--xNode: Disconnect
+        rect rgb(245, 230, 230)
+            Central-)Node: LL_TERMINATE_IND
+        end
         Node-->>App: GapPeripheralResponse.CurrentState(standby)
 
         Note over App: Central has removed its bond locally.<br>Peripheral still has the bond stored.

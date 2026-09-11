@@ -26,7 +26,7 @@ sequenceDiagram
         Node-->>App: GapCentralResponse.CurrentState(scanning)
 
         loop Until target peripheral is found
-            Peripheral-->>Node: Advertisement / scan response
+            Peripheral-)Node: Advertisement / scan response
             Node-->>App: GapCentralResponse.DeviceDiscovered(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>rssi=-38, advertisingReportType=advInd)
         end
 
@@ -120,8 +120,8 @@ sequenceDiagram
 
     rect rgb(230, 230, 240)
         note over App, Peripheral: 7. Runtime data
-        Peripheral->>Node: Notification on characteristic
+        Peripheral-)Node: ATT_HANDLE_VALUE_NTF
         Node-->>App: GattClientResponse.NotificationReceived(<br>handle=0x0025, data=0x64)
-        Peripheral->>Node: Notification on characteristic
+        Peripheral-)Node: ATT_HANDLE_VALUE_NTF
         Node-->>App: GattClientResponse.NotificationReceived(<br>handle=0x0025, data=0x63)
     end

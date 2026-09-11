@@ -23,7 +23,7 @@ sequenceDiagram
         Node-->>App: GapCentralResponse.CurrentState(scanning)
 
         loop Until target peripheral is found
-            Peripheral-->>Node: Advertisement / scan response
+            Peripheral-)Node: Advertisement / scan response
             Node-->>App: GapCentralResponse.DeviceDiscovered(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>data=<AD bytes>, rssi=-38, advertisingReportType=advInd)
         end
     end

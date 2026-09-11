@@ -547,7 +547,8 @@ service GapCentral
 
     // Allowed states: connected
     // Expected response: GapCentralResponse.PairingResult
-    // Additional responses: GapCentralResponse.NumberOfBondsChanged if a new bond was created,
+    // Additional responses: GapCentralResponse.NumberOfBondsChanged on any successful pairing or re-encryption
+    //   (new bond adds an entry; re-encryption updates the bond-aging state with the count unchanged),
     //   GapCentralResponse.CurrentState with standby if device disconnected,
     //   GapCentralResponse.AuthenticationRequired if user interaction is required during pairing
     // Description: Secures an existing connection.
@@ -556,7 +557,7 @@ service GapCentral
     //   2. If there is a pre-existing bond, then the connection will be encrypted using the existing keys.
     // Response Sequences:
     //   On successful pairing with new bond: GapCentralResponse.AuthenticationRequired (if applicable) -> GapCentralResponse.NumberOfBondsChanged -> GapCentralResponse.PairingResult 
-    //   On successful re-encryption with existing bond: GapCentralResponse.PairingResult
+    //   On successful re-encryption with existing bond: GapCentralResponse.NumberOfBondsChanged -> GapCentralResponse.PairingResult
     //   On pairing failure: GapCentralResponse.AuthenticationRequired (if applicable) -> GapCentralResponse.PairingResult
     //   On peer-initiated disconnect during pairing: GapCentralResponse.PairingResult -> GapCentralResponse.CurrentState(standby)
     rpc PairAndBond(Nothing) returns (Nothing) { option (method_id) = 6; }
@@ -671,7 +672,10 @@ service GapCentralResponse {
     
     // Expected states: standby, connected
     // Triggered by: GapCentral.RemoveAllBonds, GapCentral.RemoveBondWithAddress, GapCentral.PairAndBond
-    // Description: Reports the updated number of stored bonds after a bond was added or removed.
+    // Description: Reports the current number of stored bonds.
+    //   Fires when a new bond is added, an existing bond is removed, and on successful re-encryption
+    //   of an already-bonded connection. In the re-encryption case the reported count is unchanged;
+    //   the callback carries a bond-aging (LRU) update rather than a change in count.
     rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
 
     // Expected states: standby, scanning, initiating, connected

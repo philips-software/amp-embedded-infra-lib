@@ -1,6 +1,6 @@
 sequenceDiagram
     participant App as App<br>[implements GapPeripheralResponse]
     participant Node as Node<br>[implements GapPeripheral]
-    Note over App, Node: Standby() is allowed from advertising<br>or connected. It terminates advertising or<br>disconnects the peer, returning the Node to standby.
+    Note over App, Node: Standby() is allowed from standby, advertising, or connected.<br>It terminates any advertising or connection, returning the Node to standby.<br>Calling from standby still yields CurrentState(standby).
     App->>Node: GapPeripheral.Standby()
     Node-->>App: GapPeripheralResponse.CurrentState(standby)

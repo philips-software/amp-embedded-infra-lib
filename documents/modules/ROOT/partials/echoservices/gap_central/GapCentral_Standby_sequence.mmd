@@ -1,6 +1,6 @@
 sequenceDiagram
     participant App as App<br>[implements GapCentralResponse]
     participant Node as Node<br>[implements GapCentral]
-    Note over App, Node: Standby() is allowed from scanning,<br>connected or initiating. It terminates the current<br>activity and returns the Node to standby.
+    Note over App, Node: Standby() is allowed from standby, scanning, initiating, or connected.<br>It terminates the current activity and returns the Node to standby.<br>Calling from standby still yields CurrentState(standby).
     App->>Node: GapCentral.Standby()
     Node-->>App: GapCentralResponse.CurrentState(standby)
