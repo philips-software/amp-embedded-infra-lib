@@ -35,6 +35,7 @@ namespace services
     protected:
         void Reset();
         virtual infra::SharedPtr<MethodSerializer> GrantSend(ServiceProxy& proxy);
+        virtual void SendingProxySelected(ServiceProxy& proxy);
         virtual infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, infra::SharedPtr<MethodDeserializer>&& deserializer);
         virtual void RequestSendStream(std::size_t size) = 0;
 

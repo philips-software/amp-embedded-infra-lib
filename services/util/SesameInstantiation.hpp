@@ -15,11 +15,12 @@ namespace main_
         struct CobsStorageBase
         {
             CobsStorageBase(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage,
-                infra::BoundedDeque<uint8_t>& windowedReceivedMessage, uint8_t windowedReceiveBuffers);
+                infra::BoundedDeque<uint8_t>& windowedRedReceivedMessage, infra::BoundedDeque<uint8_t>& windowedBlueReceivedMessage, uint8_t windowedReceiveBuffers);
 
             infra::BoundedVector<uint8_t>& cobsSendStorage;
             infra::BoundedDeque<uint8_t>& cobsReceivedMessage;
-            infra::BoundedDeque<uint8_t>& windowedReceivedMessage;
+            infra::BoundedDeque<uint8_t>& windowedRedReceivedMessage;
+            infra::BoundedDeque<uint8_t>& windowedBlueReceivedMessage;
             uint8_t windowedReceiveBuffers;
         };
 
@@ -32,12 +33,13 @@ namespace main_
             static constexpr std::size_t encodedMessageSize = services::SesameWindowed::bufferSizeForMessage<MessageSize, services::SesameCobs::EncodedMessageSize>;
 
             CobsStorage()
-                : CobsStorageBase(cobsSendStorage, cobsReceivedMessage, windowedReceivedMessage, SplitBuffers)
+                : CobsStorageBase(cobsSendStorage, cobsReceivedMessage, windowedRedReceivedMessage, windowedBlueReceivedMessage, SplitBuffers)
             {}
 
             infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameCobs::sendBufferSize<MessageSize>> cobsSendStorage;
             infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameCobs::receiveBufferSize<encodedMessageSize>> cobsReceivedMessage;
-            infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameWindowed::receiveBufferSize<MessageSize, SplitBuffers>> windowedReceivedMessage;
+            infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameWindowed::receiveBufferSize<MessageSize, SplitBuffers>> windowedRedReceivedMessage;
+            infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameWindowed::receiveBufferSize<MessageSize, SplitBuffers>> windowedBlueReceivedMessage;
         };
 
         Sesame(CobsStorageBase& storage, hal::BufferedSerialCommunication& serialCommunication);

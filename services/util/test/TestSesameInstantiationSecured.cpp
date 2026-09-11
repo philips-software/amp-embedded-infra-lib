@@ -47,7 +47,7 @@ TEST_F(SesameInstantiationSecuredTest, send_big_message_right)
 {
     std::string sentData;
 
-    EXPECT_CALL(leftUpper, SendMessageStreamAvailable(testing::_)).WillOnce(testing::Invoke([this, &sentData](infra::SharedPtr<infra::StreamWriter>&& writer)
+    EXPECT_CALL(leftUpper, SendMessageStreamAvailable(testing::_, services::SesameChannel::red)).WillOnce(testing::Invoke([this, &sentData](infra::SharedPtr<infra::StreamWriter>&& writer, [[maybe_unused]] services::SesameChannel channel)
         {
             infra::TextOutputStream::WithErrorPolicy stream(*writer);
             sentData = std::string(stream.Available(), 'a');
@@ -55,7 +55,7 @@ TEST_F(SesameInstantiationSecuredTest, send_big_message_right)
         }));
     leftUpper.Subject().RequestSendMessage(leftUpper.Subject().MaxSendMessageSize());
 
-    EXPECT_CALL(rightUpper, ReceivedMessage(testing::_)).WillOnce(testing::Invoke([this, &sentData](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+    EXPECT_CALL(rightUpper, ReceivedMessage(testing::_, services::SesameChannel::red)).WillOnce(testing::Invoke([this, &sentData](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, [[maybe_unused]] services::SesameChannel channel)
         {
             infra::TextInputStream::WithErrorPolicy stream(*reader);
             std::string text(stream.Available(), ' ');
@@ -72,7 +72,7 @@ TEST_F(SesameInstantiationSecuredTest, send_big_message_left)
 {
     std::string sentData;
 
-    EXPECT_CALL(rightUpper, SendMessageStreamAvailable(testing::_)).WillOnce(testing::Invoke([this, &sentData](infra::SharedPtr<infra::StreamWriter>&& writer)
+    EXPECT_CALL(rightUpper, SendMessageStreamAvailable(testing::_, services::SesameChannel::red)).WillOnce(testing::Invoke([this, &sentData](infra::SharedPtr<infra::StreamWriter>&& writer, [[maybe_unused]] services::SesameChannel channel)
         {
             infra::TextOutputStream::WithErrorPolicy stream(*writer);
             sentData = std::string(stream.Available(), 'a');
@@ -80,7 +80,7 @@ TEST_F(SesameInstantiationSecuredTest, send_big_message_left)
         }));
     rightUpper.Subject().RequestSendMessage(rightUpper.Subject().MaxSendMessageSize());
 
-    EXPECT_CALL(leftUpper, ReceivedMessage(testing::_)).WillOnce(testing::Invoke([this, &sentData](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+    EXPECT_CALL(leftUpper, ReceivedMessage(testing::_, services::SesameChannel::red)).WillOnce(testing::Invoke([this, &sentData](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, [[maybe_unused]] services::SesameChannel channel)
         {
             infra::TextInputStream::WithErrorPolicy stream(*reader);
             std::string text(stream.Available(), ' ');
@@ -116,7 +116,7 @@ TEST_P(SesameInstantiationSecuredTestMessageSize, send_message_of_size_right)
     std::string sentData1;
     std::string sentData2;
 
-    EXPECT_CALL(leftUpper, SendMessageStreamAvailable(testing::_)).WillOnce(testing::Invoke([this, &sentData1](infra::SharedPtr<infra::StreamWriter>&& writer)
+    EXPECT_CALL(leftUpper, SendMessageStreamAvailable(testing::_, services::SesameChannel::red)).WillOnce(testing::Invoke([this, &sentData1](infra::SharedPtr<infra::StreamWriter>&& writer, [[maybe_unused]] services::SesameChannel channel)
         {
             infra::TextOutputStream::WithErrorPolicy stream(*writer);
             sentData1 = std::string(messageSize, 'a');
@@ -124,7 +124,7 @@ TEST_P(SesameInstantiationSecuredTestMessageSize, send_message_of_size_right)
         }));
     leftUpper.Subject().RequestSendMessage(messageSize);
 
-    EXPECT_CALL(leftUpper, SendMessageStreamAvailable(testing::_)).WillOnce(testing::Invoke([this, &sentData2](infra::SharedPtr<infra::StreamWriter>&& writer)
+    EXPECT_CALL(leftUpper, SendMessageStreamAvailable(testing::_, services::SesameChannel::red)).WillOnce(testing::Invoke([this, &sentData2](infra::SharedPtr<infra::StreamWriter>&& writer, [[maybe_unused]] services::SesameChannel channel)
         {
             infra::TextOutputStream::WithErrorPolicy stream(*writer);
             sentData2 = std::string(messageSize, 0);
@@ -132,8 +132,8 @@ TEST_P(SesameInstantiationSecuredTestMessageSize, send_message_of_size_right)
         }));
     leftUpper.Subject().RequestSendMessage(messageSize);
 
-    EXPECT_CALL(rightUpper, ReceivedMessage(testing::_))
-        .WillOnce(testing::Invoke([this, &sentData1](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+    EXPECT_CALL(rightUpper, ReceivedMessage(testing::_, services::SesameChannel::red))
+        .WillOnce(testing::Invoke([this, &sentData1](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, [[maybe_unused]] services::SesameChannel channel)
             {
                 infra::TextInputStream::WithErrorPolicy stream(*reader);
                 std::string text(stream.Available(), ' ');
@@ -141,7 +141,7 @@ TEST_P(SesameInstantiationSecuredTestMessageSize, send_message_of_size_right)
                 stream >> textString;
                 EXPECT_EQ(sentData1, text);
             }))
-        .WillOnce(testing::Invoke([this, &sentData2](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+        .WillOnce(testing::Invoke([this, &sentData2](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, [[maybe_unused]] services::SesameChannel channel)
             {
                 infra::TextInputStream::WithErrorPolicy stream(*reader);
                 std::string text(stream.Available(), ' ');
