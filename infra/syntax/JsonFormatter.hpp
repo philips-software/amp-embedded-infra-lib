@@ -5,6 +5,7 @@
 #include "infra/syntax/Json.hpp"
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/WithStorage.hpp"
+#include <cstdint>
 #include <optional>
 #include <type_traits>
 
