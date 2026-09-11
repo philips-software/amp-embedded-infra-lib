@@ -1,4 +1,5 @@
 #include "infra/syntax/Asn1Formatter.hpp"
+#include "infra/util/ReallyAssert.hpp"
 
 namespace
 {
