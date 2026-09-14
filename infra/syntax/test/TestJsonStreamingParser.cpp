@@ -3,6 +3,7 @@
 #include "infra/util/test_helper/BoundedStringMatcher.hpp"
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "gmock/gmock.h"
+#include <limits>
 
 namespace
 {
@@ -114,6 +115,33 @@ TEST_F(JsonStreamingObjectParserTest, VisitNumber)
 
     EXPECT_CALL(visitor, VisitNumber("a", 5));
     parser.Feed(R"( "a" : 5.123e-456,)");
+}
+
+TEST_F(JsonStreamingObjectParserTest, VisitNumber_with_the_extremes_of_int64_t)
+{
+    EXPECT_CALL(visitor, VisitNumber("a", std::numeric_limits<int64_t>::max()));
+    parser.Feed(R"({ "a" : 9223372036854775807,)");
+
+    EXPECT_CALL(visitor, VisitNumber("a", std::numeric_limits<int64_t>::min()));
+    parser.Feed(R"( "a" : -9223372036854775808,)");
+}
+
+TEST_F(JsonStreamingObjectParserTest, number_above_int64_t_results_in_ParseError)
+{
+    EXPECT_CALL(visitor, ParseError());
+    parser.Feed(R"({ "a" : 9223372036854775808 )");
+}
+
+TEST_F(JsonStreamingObjectParserTest, number_below_int64_t_results_in_ParseError)
+{
+    EXPECT_CALL(visitor, ParseError());
+    parser.Feed(R"({ "a" : -9223372036854775809 )");
+}
+
+TEST_F(JsonStreamingObjectParserTest, number_of_more_digits_than_int64_t_holds_results_in_ParseError)
+{
+    EXPECT_CALL(visitor, ParseError());
+    parser.Feed(R"({ "a" : 99999999999999999999 )");
 }
 
 TEST_F(JsonStreamingObjectParserTest, unknown_identifier_results_in_ParseError)
@@ -447,6 +475,13 @@ TEST_F(JsonStreamingObjectParserArrayTest, VisitNumber)
 {
     EXPECT_CALL(arrayVisitor, VisitNumber(5));
     parser.Feed(R"(5,)");
+}
+
+TEST_F(JsonStreamingObjectParserArrayTest, number_above_int64_t_results_in_ParseError)
+{
+    EXPECT_CALL(arrayVisitor, ParseError());
+    EXPECT_CALL(visitor, ParseError());
+    parser.Feed(R"(9223372036854775808 )");
 }
 
 TEST_F(JsonStreamingObjectParserArrayTest, close_array)

@@ -1,6 +1,7 @@
 #include "infra/syntax/JsonStreamingParser.hpp"
 #include "infra/util/Function.hpp"
 #include <cctype>
+#include <limits>
 #include <optional>
 
 namespace infra
@@ -96,7 +97,7 @@ namespace infra
             {
                 if (std::isdigit(c))
                 {
-                    tokenNumber = tokenNumber * 10 + c - '0';
+                    AddDigitToTokenNumber(c);
                     data.pop_front();
                 }
                 else if (c == '.')
@@ -105,7 +106,7 @@ namespace infra
                     data.pop_front();
                 }
                 else
-                    FoundToken(Token::number);
+                    FoundNumberToken();
             }
             else if (tokenState == TokenState::numberFractionalOpen)
             {
@@ -117,14 +118,14 @@ namespace infra
                     data.pop_front();
                 }
                 else
-                    FoundToken(Token::number);
+                    FoundNumberToken();
             }
             else if (tokenState == TokenState::numberExponentOpen)
             {
                 if (std::isdigit(c) || c == '+' || c == '-')
                     data.pop_front();
                 else
-                    FoundToken(Token::number);
+                    FoundNumberToken();
             }
             else if (tokenState == TokenState::identifierOpen)
             {
@@ -181,6 +182,7 @@ namespace infra
                                 case '-':
                                     tokenState = TokenState::numberOpen;
                                     tokenNumber = 0;
+                                    tokenNumberOverflow = false;
                                     tokenSign = -1;
                                     break;
                                 default:
@@ -192,8 +194,10 @@ namespace infra
                                     else if (std::isdigit(c))
                                     {
                                         tokenState = TokenState::numberOpen;
-                                        tokenNumber = c - '0';
+                                        tokenNumber = 0;
+                                        tokenNumberOverflow = false;
                                         tokenSign = 1;
+                                        AddDigitToTokenNumber(c);
                                     }
                                     else
                                         FoundToken(Token::error);
@@ -304,6 +308,37 @@ namespace infra
     {
         token = found;
         tokenState = TokenState::done;
+    }
+
+    void JsonSubParser::FoundNumberToken()
+    {
+        FoundToken(tokenNumberOverflow ? Token::numberOverflow : Token::number);
+    }
+
+    void JsonSubParser::AddDigitToTokenNumber(char c)
+    {
+        // A negative number reaches one further from zero than a positive one, so the magnitude a
+        // literal is allowed to grow to depends on the sign already scanned.
+        const uint64_t maxMagnitude = static_cast<uint64_t>(std::numeric_limits<int64_t>::max()) + (tokenSign < 0 ? 1 : 0);
+        const auto digit = static_cast<uint64_t>(c - '0');
+
+        if (tokenNumberOverflow || tokenNumber > (maxMagnitude - digit) / 10)
+            tokenNumberOverflow = true;
+        else
+            tokenNumber = tokenNumber * 10 + digit;
+    }
+
+    int64_t JsonSubParser::SignedTokenNumber() const
+    {
+        if (tokenSign >= 0)
+            return static_cast<int64_t>(tokenNumber);
+
+        // The magnitude of the smallest int64_t has no positive counterpart, so it is the one value
+        // that cannot be negated after the cast.
+        if (tokenNumber == static_cast<uint64_t>(std::numeric_limits<int64_t>::max()) + 1)
+            return std::numeric_limits<int64_t>::min();
+
+        return -static_cast<int64_t>(tokenNumber);
     }
 
     void JsonSubParser::ProcessEscapedData(char c, bool saveValue)
@@ -471,7 +506,7 @@ namespace infra
             else if (state == State::valueExpected && token == Token::number)
             {
                 state = State::closed;
-                visitor->VisitNumber(CopyAndClear(tagBuffer), tokenSign * tokenNumber);
+                visitor->VisitNumber(CopyAndClear(tagBuffer), SignedTokenNumber());
             }
             else if (state == State::valueExpected && token == Token::false_)
             {
@@ -617,7 +652,7 @@ namespace infra
             {
                 state = State::closed;
                 tagBuffer.clear();
-                visitor->VisitNumber(tokenSign * tokenNumber);
+                visitor->VisitNumber(SignedTokenNumber());
             }
             else if ((state == State::initialOpen || state == State::closed) && token == Token::rightBracket)
             {
