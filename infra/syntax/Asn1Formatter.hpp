@@ -4,6 +4,8 @@
 #include "infra/stream/OutputStream.hpp"
 #include "infra/stream/SavedMarkerStream.hpp"
 #include "infra/util/WithStorage.hpp"
+#include <cstdint>
+#include <optional>
 
 namespace infra
 {
