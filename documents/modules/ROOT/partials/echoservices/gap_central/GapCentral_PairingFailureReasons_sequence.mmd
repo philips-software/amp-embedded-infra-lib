@@ -28,5 +28,5 @@ sequenceDiagram
         Node-->>App: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false,<br>reason=keyRejected)
         Node-->>App: GapCentralResponse.CurrentState(standby)
 
-        Note over App: Stored bond keys no longer accepted by peer.<br>Remove bond and re-pair from scratch.
+        Note over App: Stored bond keys no longer accepted by peripheral.<br>Remove bond and re-pair from scratch.
     end

@@ -3,4 +3,5 @@ sequenceDiagram
     participant Node as Node<br>[implements GapPeripheral]
     App->>Node: GapPeripheral.RemoveAllBonds()
     Node-->>App: GapPeripheralResponse.NumberOfBondsChanged(0)
+    Note over App, Node: Allowed states: standby.<br>Calling outside standby asserts on the Node.
     Note over App: Removes all stored bonds.<br>The callback always reports 0 as the final<br>bond count, regardless of the previous state.

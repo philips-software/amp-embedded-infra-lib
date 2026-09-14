@@ -15,8 +15,7 @@ sequenceDiagram
 
     rect rgb(230, 230, 240)
         note over App, Peripheral: Discovery
-        App->>Node: GapCentral.SetDeviceDiscoveryFilter(filter=none)
-        Note right of App: DeviceDiscoveryFilter only supports address / manufacturerSpecificData.<br>Name filtering ("Nonin3150") is applied App-side after DeviceDiscovered.
+        Note right of App: Filter is empty by default and auto-resets when scanning stops.<br>DeviceDiscoveryFilter only supports address / manufacturerSpecificData.<br>Name filtering ("Nonin3150") is applied App-side after DeviceDiscovered.
         App->>Node: GapCentral.StartDeviceDiscovery()
         Node-->>App: GapCentralResponse.CurrentState(scanning)
 

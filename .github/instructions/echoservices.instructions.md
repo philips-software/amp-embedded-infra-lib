@@ -31,7 +31,7 @@ If a service is added, renamed, or removed, also update:
 - Every App-Node arrow must carry the fully qualified method or callback name (e.g. `GapCentral.PairAndBond()`, `GapCentralResponse.PairingResult(...)`). Never use bare method names on arrows.
 - Stack-dependent behavior is described generically in `Note over` blocks. Do not hard-code vendor-specific timing or values (e.g. avoid "ST timeout is 10.24 s" inside diagrams).
 - Do not use `;` inside `Note` text. The Kroki mermaid renderer crashes on semicolons.
-- Do not use em-dashes (`—`) in prose or notes. Use plain hyphens, colons, or split into separate sentences.
+- Do not use em-dashes in prose or notes. Use plain hyphens, colons, or split into separate sentences.
 - Note line length: keep each physical `<br>`-separated line no wider than the diagram's widest arrow label. For simple 1-2 arrow diagrams this typically means under ~45 characters; for composite flows with long RPC signatures it can go up to ~70. When in doubt, split more aggressively - render and inspect visually. Notes wider than the arrow span extrude past the participant boxes and, in `alt`/`opt` blocks, collide with the frame borders.
 - Colour convention for `rect rgb(...)` bands:
   - `rgb(230, 230, 240)` (blue-lavender): major section / step headers.

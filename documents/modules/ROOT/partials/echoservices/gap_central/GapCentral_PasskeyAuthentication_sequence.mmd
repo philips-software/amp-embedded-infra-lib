@@ -6,9 +6,9 @@ sequenceDiagram
 
     App->>Node: GapCentral.PairAndBond()
 
-    alt Node displays passkey, user enters it on peer
+    alt Node displays passkey, user enters it on peripheral
         Node-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=false, passkey=485923)
-        Note over App: Display 485923. User reads it and types it on the peer device.<br>No AuthenticateWithPasskey call is required on our side.
+        Note over App: Display 485923. User reads it and types it on the peripheral.<br>No AuthenticateWithPasskey call is required on our side.
 
         alt Peer accepts the correct passkey
             Node-->>App: GapCentralResponse.NumberOfBondsChanged(1)
@@ -18,7 +18,7 @@ sequenceDiagram
         end
     else Peer displays passkey, user enters it on us
         Node-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=false)
-        Note over App: passkey field is unused in this variant.<br>User reads the passkey shown on the peer and types it into the App UI.
+        Note over App: passkey field is unused in this variant.<br>User reads the passkey shown on the peripheral and types it into the App UI.
 
         App->>Node: GapCentral.AuthenticateWithPasskey(485923)
 

@@ -1,4 +1,4 @@
-= End-to-End Flows
+= BLE End-to-End Flows
 :source-highlighter: highlight.js
 :highlightjs-languages: protobuf
 

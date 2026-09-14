@@ -6,11 +6,15 @@
 
 == State Constraints
 
-After startup this service is only available after `GapPeripheralResponse.CurrentState(standby)` has been received. Unless a method's documentation specifies otherwise, all methods are allowed in all link-layer states. Non-conformance results in an assertion.
+Unless a method's documentation specifies otherwise, all methods are allowed in all link-layer states. Calling a method outside its allowed states results in an assertion.
 
 == Startup
 
 The first `CurrentState(standby)` message signals that the service is initialized and ready to accept method calls. No `GapPeripheral` methods may be called before this initial callback.
+
+*Recognising the Node startup boundary:* on serial transports the Echo channel runs on top of xref:Sesame.adoc[SESAME]. The App must wait for the SESAME `Init` / `InitResponse` handshake to complete before the Echo layer can carry any traffic; only after that does the Node emit its per-service startup callbacks (`CurrentState(standby)` for GapPeripheral / GapCentral, similar readiness callbacks for other services). Practically the recognisable "Node has started" signal from the App's perspective is: (1) the SESAME transport reports the peer window as open (Init exchange complete), followed by (2) the first `CurrentState(standby)` on the service the App wants to drive. On TCP transports (Echo directly over TCP) the analogous boundary is the TCP connection established callback followed by the same `CurrentState(standby)`.
+
+Calling a method before the initial `CurrentState(standby)` callback is a contract violation and results in an assertion on the Node side. This can also happen if the Node resets unexpectedly (e.g. watchdog, power event) while the App is running: the Node re-issues its startup handshake, and any App method call issued before the App observes the new `CurrentState(standby)` will assert. Applications should treat every fresh `CurrentState(standby)` callback as a service-ready boundary and re-drive their initial configuration from that point.
 
 == Interface
 
@@ -37,12 +41,30 @@ include::partial$echoservices/gap_peripheral/GapPeripheral_GetState_sequence.mmd
 
 === Standby
 
+*Allowed states:* standby, advertising, connected.
+
+Terminates advertising or the peer connection and returns the Node to standby. Calling from standby still yields `CurrentState(standby)`.
+
 [mermaid]
 ....
 include::partial$echoservices/gap_peripheral/GapPeripheral_Standby_sequence.mmd[]
 ....
 
 === Advertise
+
+*Allowed states:* standby.
+
+Starts advertising. The Node transitions to `advertising` and remains there until a peer connects or `Standby()` is called.
+
+*Advertising interval:* the `advertisingInterval` parameter is expressed in units of 0.625 ms (per BLE Core Spec v6.3, Vol 4, Part E, Section 7.8.5), so raw value * 0.625 ms = duration. Valid range 0x0020 to 0x4000 (20 ms to 10.24 s).
+
+Typical values:
+
+* *Fast* (20-40 ms, value 32-64): quick discovery, high power. Useful during pairing or when the App expects imminent connection.
+* *Balanced* (100-200 ms, value 160-320): typical default for interactive discovery.
+* *Slow* (1000-5000 ms, value 1600-8000): low-power broadcast mode, slower discovery.
+
+The example uses 160 (100 ms), a common balanced default.
 
 [mermaid]
 ....
@@ -57,6 +79,10 @@ include::partial$echoservices/gap_peripheral/GapPeripheral_SetAdvertisementData_
 ....
 
 === SetSecurityPreferences
+
+*Supported preferences are vendor-dependent and only discovered at runtime.* The proto guarantees that *Just Works* (secure connections enabled, MITM disabled, IO capabilities `none`) is supported on every vendor stack. Any other combination is best-effort: certain stacks may not implement all `SupportEnum` levels for `secureConnections` / `mitm`, and certain IO-capability values may be unavailable in combination with `mitm=enforced`. The proto does not expose a compile-time capability query - if the App requests an unsupported combination, the Node asserts at the point the preference is applied to the stack (during `SetSecurityPreferences`, or lazily during the next connection attempt on some stacks).
+
+*Practical guidance:* start with Just Works for portability; only elevate to authenticated pairing once you have verified on the target hardware that the desired MITM + IO combination is supported. A vendor-specific support matrix could be added in a future revision, but at present the App must discover support empirically via the assertion behaviour.
 
 [mermaid]
 ....
@@ -114,6 +140,8 @@ include::partial$echoservices/gap_peripheral/GapPeripheral_RemoveOldestBond_sequ
 
 === NumericComparisonConfirm
 
+*Peer disconnect during the confirmation pause:* while the App is waiting on the user to compare the derived passkey, the SMP procedure is paused waiting on the local `NumericComparisonConfirm` call. If the peer disconnects during that pause (LL_TERMINATE_IND, LL supervision timeout, HCI-level disconnect), the App may or may not observe `PairingResult(pairedSuccessfully=false)` before `CurrentState(standby)` fires. This is not a proto imprecision - it reflects a real limitation at the BLE-stack layer: an actively-running SMP procedure typically surfaces a cancellation on disconnect, but a paused procedure has no canonical cancellation event because the stack was waiting on the local device (not the peer) when the disconnect arrived. Practical guidance: treat `CurrentState(standby)` as terminal for the ongoing pairing procedure, and do not block on `PairingResult` after receiving it.
+
 [mermaid]
 ....
 include::partial$echoservices/gap_peripheral/GapPeripheral_NumericComparisonConfirm_sequence.mmd[]
@@ -129,6 +157,10 @@ include::partial$echoservices/gap_peripheral/GapPeripheral_AllowPairingRejection
 ....
 
 === Re-bond After Bond Removal
+
+Illustrates what happens when the central removes its bond locally (e.g. user deletes the pairing on the phone) and later reconnects. The peripheral still holds the old bond, but the central's SMP request kicks off a fresh pairing procedure, and the peripheral replaces the old bond entry with the new one.
+
+The example shows LESC *Just Works* on the re-bond, not Numeric Comparison as in the initial pairing. This is intentional: the SMP pairing method is renegotiated at the start of every pairing procedure based on the *current* SecurityPreferences and IoCapabilities on both sides at that moment. In the diagram we assume the App has not (re)configured MITM protection on the re-bond attempt, so both sides fall back to Just Works. If the App wants the re-bond to use the same authenticated method as the initial pairing, it must ensure the same SecurityPreferences are in effect before accepting the reconnection.
 
 [mermaid]
 ....

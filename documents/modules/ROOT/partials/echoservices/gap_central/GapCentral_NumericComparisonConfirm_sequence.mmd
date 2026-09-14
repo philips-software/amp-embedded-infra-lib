@@ -2,7 +2,7 @@ sequenceDiagram
     participant App as App<br>[implements GapCentralResponse]
     participant Node as Node<br>[implements GapCentral]
 
-    Note over App, Node: Allowed states: connected.<br>Only valid when<br>AuthenticationRequired.isNumericComparison is true.<br>Must be called within the 30s SMP timeout<br>(Core Spec v6.3, Vol 3, Part H, Section 3.4).
+    Note over App, Node: Allowed states: connected.<br>Calling outside connected asserts on the Node.<br>Pre-conditions: prior AuthenticationRequired(isNumericComparison=true).<br>Must be called within the 30s SMP timeout<br>(Core Spec v6.3, Vol 3, Part H, Section 3.4).
 
     alt User confirms match
         App->>Node: GapCentral.NumericComparisonConfirm(true)
@@ -11,3 +11,4 @@ sequenceDiagram
     end
 
     Note over App: Result surfaces on the outstanding<br>PairAndBond's PairingResult callback.<br>See "NumericComparison Authentication"<br>for the full flow.
+    Note over App, Node: If the peer disconnects before the App confirms,<br>PairingResult may or may not fire before CurrentState(standby).<br>Reason: SMP is paused waiting on the local user response,<br>so the stack has no canonical cancellation event to raise.<br>Treat CurrentState(standby) as terminal.

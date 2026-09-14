@@ -4,6 +4,7 @@ sequenceDiagram
     participant Peripheral as BLE Peripheral
 
     Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. CurrentState).
+    Note over App, Node: Allowed states: connected.<br>Calling outside connected asserts on the Node.<br>Pre-conditions: optional SetSecurityMode and SetIoCapabilities<br>(consumed at SMP start to select the pairing method).
 
     App->>Node: GapCentral.PairAndBond()
 
@@ -36,7 +37,7 @@ sequenceDiagram
         Node-->>App: GapCentralResponse.PairingResult(pairedSuccessfully=true)
     else Numeric Comparison - new bond
         Node-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
-        Note right of App: User compares the 6-digit passkey<br>with the peer's display.
+        Note right of App: User compares the 6-digit passkey<br>with the peripheral's display.
         App->>Node: GapCentral.NumericComparisonConfirm(true)
         rect rgb(245, 240, 230)
             Note over Node, Peripheral: LESC SMP stage 1 (Numeric Comparison)
