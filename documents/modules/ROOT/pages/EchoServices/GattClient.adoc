@@ -175,7 +175,7 @@ include::partial$echoservices/gatt_client/GattClient_WriteDescriptor_sequence.mm
 
 === IndicationDone
 
-*Allowed states:* connected. Pre-conditions: indications enabled on the target characteristic (`WriteDescriptor(handle=<CCCD>, data=0x0200)`).
+*Allowed states:* connected. Pre-conditions: a prior `IndicationReceived` callback, and indications enabled on the target characteristic (`WriteDescriptor(handle=<CCCD>, data=0x0200)`).
 
 Must be called exactly once for every `IndicationReceived`, otherwise the peer stalls waiting for `ATT_HANDLE_VALUE_CFM`. May be called while another operation is in progress. `IndicationDone` has no `Expected response` callback of its own - the App issues it and continues.
 
