@@ -42,6 +42,7 @@ Each service page documents:
 
 * xref:EchoServices/GapPeripheral.adoc[GapPeripheral] - BLE peripheral GAP role.
 * xref:EchoServices/GapCentral.adoc[GapCentral] - BLE central GAP role.
+* xref:EchoServices/GattClient.adoc[GattClient] - GATT client (discovery, read, write, notify, indicate) and the companion `GattServerDisService`.
 * xref:EchoServices/EndToEndFlows.adoc[BLE End-to-End Flows] - Cross-service composite BLE flows and protocol-stack overview.
 
 If you are new to these docs, start with xref:EchoServices/EndToEndFlows.adoc[BLE End-to-End Flows] to see how the pieces fit together. For a specific API, jump straight to the matching service page above.

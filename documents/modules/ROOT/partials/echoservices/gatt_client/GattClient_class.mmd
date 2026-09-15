@@ -1,0 +1,30 @@
+classDiagram
+    class GattClient {
+        <<service id=134>>
+        +MtuSizeExchangeRequest()
+        +StartServiceDiscovery()
+        +StartCharacteristicDiscovery()
+        +StartDescriptorDiscovery()
+        +ReadCharacteristic()
+        +WriteCharacteristic()
+        +WriteCharacteristicWithoutResponse()
+        +ReadDescriptor()
+        +WriteDescriptor()
+        +IndicationDone()
+    }
+    class GattClientResponse {
+        <<service id=135>>
+        +MtuSizeExchangeComplete()
+        +ServiceDiscovered()
+        +ServiceDiscoveryComplete()
+        +CharacteristicDiscovered()
+        +CharacteristicDiscoveryComplete()
+        +DescriptorDiscovered()
+        +DescriptorDiscoveryComplete()
+        +ReadCharacteristicResponse()
+        +ReadDescriptorResponse()
+        +OperationComplete()
+        +IndicationReceived()
+        +NotificationReceived()
+    }
+    GattClient --> GattClientResponse : responses
