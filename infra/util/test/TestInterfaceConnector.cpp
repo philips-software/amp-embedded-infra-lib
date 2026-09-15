@@ -1,4 +1,5 @@
 #include "infra/util/InterfaceConnector.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 class ITestSingleton
@@ -20,5 +21,32 @@ TEST(InterfaceConnectorTest, TestConstruction)
 {
     TestSingleton t;
 
-    EXPECT_EQ(&t, &ITestSingleton::Instance());
+    EXPECT_THAT(&ITestSingleton::Instance(), testing::Eq(&t));
+}
+
+TEST(InterfaceConnectorTest, InstanceIsOnlySetWhileSingletonIsAlive)
+{
+    EXPECT_THAT(ITestSingleton::InstanceSet(), testing::IsFalse());
+
+    {
+        TestSingleton t;
+
+        EXPECT_THAT(ITestSingleton::InstanceSet(), testing::IsTrue());
+        EXPECT_THAT(&ITestSingleton::Instance(), testing::Eq(&t));
+    }
+
+    EXPECT_THAT(ITestSingleton::InstanceSet(), testing::IsFalse());
+}
+
+TEST(InterfaceConnectorTest, ConstructingSecondSingletonAborts)
+{
+    TestSingleton t;
+
+    EXPECT_DEATH({ TestSingleton second; }, "");
+}
+
+TEST(InterfaceConnectorTest, AccessingInstanceWithoutConstructedSingletonAborts)
+{
+    EXPECT_THAT(ITestSingleton::InstanceSet(), testing::IsFalse());
+    EXPECT_DEATH(ITestSingleton::Instance(), "");
 }
