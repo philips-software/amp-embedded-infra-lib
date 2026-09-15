@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant App as App<br>[implements GattClientResponse]
+    participant Node as Node<br>[implements GattClient]
+    participant Peripheral as BLE Peripheral
+
+    Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. ServiceDiscovered).
+    Note over App, Node: Allowed states: connected.<br>Calling outside connected asserts on the Node.<br>Discovery order: Service -> Characteristic -> Descriptor.<br>Response sequences:<br>- zero or more ServiceDiscovered -> ServiceDiscoveryComplete(success).<br>- ServiceDiscoveryComplete(error) on peer / L2CAP failure.
+
+    App->>Node: GattClient.StartServiceDiscovery()
+    Note over Node, Peripheral: Node issues ATT_READ_BY_GROUP_TYPE_REQ over the<br>primary-service handle range and paginates responses.
+    loop 0..n services
+        Peripheral-)Node: ATT_READ_BY_GROUP_TYPE_RSP entries
+        Node-->>App: GattClientResponse.ServiceDiscovered(<br>uuid=0x180F,<br>handles={startHandle=0x0020, endHandle=0x0028})
+    end
+    Node-->>App: GattClientResponse.ServiceDiscoveryComplete(success)

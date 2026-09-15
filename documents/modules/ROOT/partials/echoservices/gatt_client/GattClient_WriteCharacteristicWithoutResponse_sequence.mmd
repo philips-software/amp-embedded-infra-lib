@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant App as App<br>[implements GattClientResponse]
+    participant Node as Node<br>[implements GattClient]
+    participant Peripheral as BLE Peripheral
+
+    Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. WriteCharacteristicWithoutResponseComplete).
+    Note over App, Node: Allowed states: connected.<br>Pre-conditions: valueHandle known from CharacteristicDiscovered.<br>May be called while another operation is in progress,<br>except while another WriteCharacteristicWithoutResponse<br>is in flight (that would assert).<br>Response sequences:<br>- WriteCharacteristicWithoutResponseComplete(success) when queued<br>  onto the ATT bearer.<br>- WriteCharacteristicWithoutResponseComplete(retry) when the<br>  ATT bearer is momentarily full (App may re-submit the same call).<br>- WriteCharacteristicWithoutResponseComplete(error) on invalid<br>  handle or client-side permission failure.
+
+    App->>Node: GattClient.WriteCharacteristicWithoutResponse(<br>handle=0x0027, data=0x11 0x22 0x33)
+    Node-)Peripheral: ATT_WRITE_CMD (handle=0x0027, value=0x11 0x22 0x33)
+    Node-->>App: GattClientResponse.WriteCharacteristicWithoutResponseComplete(<br>success)
+    Note over App, Node: success only means the command was queued locally.<br>The peer never acknowledges an ATT_WRITE_CMD.

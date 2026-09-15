@@ -1,0 +1,5 @@
+sequenceDiagram
+    participant App as App
+    participant Node as Node<br>[implements GattServerDisService]
+    Note over App, Node: One-shot configuration of the Device Information Service (DIS)<br>attributes exposed by the local GATT server.<br>Fields are fixed-length byte arrays.<br>Unset fields are ignored by remote GATT clients if not populated.<br>Typically called once at startup, before advertising begins.
+    App->>Node: GattServerDisService.SetDisServiceData(<br>manufacturerName=..., modelNumber=...,<br>serialNumber=..., hardwareRevision=...,<br>firmwareRevision=..., softwareRevision=...,<br>systemId=..., pnpId=...)

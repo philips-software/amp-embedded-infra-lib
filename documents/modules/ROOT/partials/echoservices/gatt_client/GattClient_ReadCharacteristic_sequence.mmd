@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant App as App<br>[implements GattClientResponse]
+    participant Node as Node<br>[implements GattClient]
+    participant Peripheral as BLE Peripheral
+
+    Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. ReadCharacteristicResponse).
+    Note over App, Node: Allowed states: connected.<br>Pre-conditions: valueHandle known from CharacteristicDiscovered.<br>Response sequences:<br>- ReadCharacteristicResponse(data) -> OperationComplete(success).<br>- OperationComplete(error) on ATT / permissions failure.<br>- OperationComplete(retry) when the ATT bearer is momentarily busy.
+
+    App->>Node: GattClient.ReadCharacteristic(0x0025)
+
+    alt Successful read
+        Node-)Peripheral: ATT_READ_REQ (handle=0x0025)
+        Peripheral-)Node: ATT_READ_RSP (value)
+        Node-->>App: GattClientResponse.ReadCharacteristicResponse(<br>data={handle=0x0025, data=0x64})
+        Node-->>App: GattClientResponse.OperationComplete(success)
+    else ATT error (e.g. read not permitted)
+        Node-)Peripheral: ATT_READ_REQ (handle=0x0025)
+        Peripheral-)Node: ATT_ERROR_RSP (error code)
+        Node-->>App: GattClientResponse.OperationComplete(error)
+    end

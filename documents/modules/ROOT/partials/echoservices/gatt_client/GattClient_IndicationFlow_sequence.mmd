@@ -1,39 +1,47 @@
 sequenceDiagram
-    title GATT Indication Flow: Enable, Receive, Acknowledge
+    title BLE GATT Indication Flow: Enable, Receive, Acknowledge
 
-    participant Product as Product<br>[implements GattClientResponse]
-    participant CN as CN<br>[implements GattClient]
+    participant App as App<br>[implements GattClientResponse]
+    participant Node as Node<br>[implements GattClient]
     participant Peripheral as BLE Peripheral
 
+    Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer / ATT events, not driven by the App.<br>The App only observes them through Echo callbacks.
+
     rect rgb(230, 230, 240)
-        note over Product, Peripheral: 1. Discover CCCD for target characteristic
-        Product->>CN: GattClient.StartDescriptorDiscovery(<br>startHandle=0x0026, endHandle=0x0028)
-        CN-->>Product: GattClientResponse.DescriptorDiscovered(<br>uuid=0x2902, handle=0x0026)
-        CN-->>Product: GattClientResponse.DescriptorDiscoveryComplete()
+        note over App, Peripheral: 1. Discover CCCD for target characteristic
+        App->>Node: GattClient.StartDescriptorDiscovery(<br>startHandle=0x0026, endHandle=0x0028)
+        Peripheral-)Node: ATT_FIND_INFORMATION_RSP entries
+        Node-->>App: GattClientResponse.DescriptorDiscovered(<br>uuid=0x2902, handle=0x0026)
+        Node-->>App: GattClientResponse.DescriptorDiscoveryComplete(success)
     end
 
     rect rgb(230, 230, 240)
-        note over Product, Peripheral: 2. Enable indications (not notifications)
-        Product->>CN: GattClient.WriteDescriptor(<br>handle=0x0026, data=0x0200)
-        CN-->>Product: GattClientResponse.OperationComplete(success)
-
-        note over Product: 0x0100 = notifications (no ack required)<br>0x0200 = indications (ack required)<br>0x0300 = both enabled
+        note over App, Peripheral: 2. Enable indications (not notifications)
+        App->>Node: GattClient.WriteDescriptor(<br>handle=0x0026, data=0x0200)
+        Node-)Peripheral: ATT_WRITE_REQ (handle=0x0026, value=0x0200)
+        Peripheral-)Node: ATT_WRITE_RSP
+        Node-->>App: GattClientResponse.OperationComplete(success)
+        note over App, Node: CCCD data bytes: 0x0100 = notifications (no ack).<br>0x0200 = indications (ack via IndicationDone).<br>0x0300 = both enabled.
     end
 
     rect rgb(230, 230, 240)
-        note over Product, Peripheral: 3. Receive and acknowledge indications
-        Peripheral->>CN: Indication on characteristic
-        CN-->>Product: GattClientResponse.IndicationReceived(<br>handle=0x0025, data=0x64)
-        Product->>CN: GattClient.IndicationDone()
-        Note right of Product: Must call IndicationDone for every IndicationReceived.<br>Peripheral will not send the next indication until acknowledged.
+        note over App, Peripheral: 3. Receive and acknowledge indications
+        Peripheral-)Node: ATT_HANDLE_VALUE_IND (handle=0x0025, value=0x64)
+        Node-->>App: GattClientResponse.IndicationReceived(<br>handle=0x0025, data=0x64)
+        App->>Node: GattClient.IndicationDone()
+        Node-)Peripheral: ATT_HANDLE_VALUE_CFM
+        Note right of App: The peer will not send the next indication<br>until it receives ATT_HANDLE_VALUE_CFM.
 
-        Peripheral->>CN: Indication on characteristic
-        CN-->>Product: GattClientResponse.IndicationReceived(<br>handle=0x0025, data=0x65)
-        Product->>CN: GattClient.IndicationDone()
+        Peripheral-)Node: ATT_HANDLE_VALUE_IND (handle=0x0025, value=0x65)
+        Node-->>App: GattClientResponse.IndicationReceived(<br>handle=0x0025, data=0x65)
+        App->>Node: GattClient.IndicationDone()
+        Node-)Peripheral: ATT_HANDLE_VALUE_CFM
     end
 
     rect rgb(230, 230, 240)
-        note over Product, Peripheral: 4. Disable indications
-        Product->>CN: GattClient.WriteDescriptor(<br>handle=0x0026, data=0x0000)
-        CN-->>Product: GattClientResponse.OperationComplete(success)
+        note over App, Peripheral: 4. Disable indications
+        App->>Node: GattClient.WriteDescriptor(<br>handle=0x0026, data=0x0000)
+        Node-)Peripheral: ATT_WRITE_REQ (handle=0x0026, value=0x0000)
+        Peripheral-)Node: ATT_WRITE_RSP
+        Node-->>App: GattClientResponse.OperationComplete(success)
     end

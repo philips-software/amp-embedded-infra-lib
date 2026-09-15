@@ -1,25 +1,30 @@
 sequenceDiagram
-    participant Product as Product<br>[implements GattClientResponse]
-    participant CN as CN<br>[implements GattClient]
+    title BLE GATT Operation Failure and Retry
 
-    Note over Product, CN: GATT operation failure and retry
+    participant App as App<br>[implements GattClientResponse]
+    participant Node as Node<br>[implements GattClient]
+    participant Peripheral as BLE Peripheral
+
+    Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer / ATT events, not driven by the App.<br>The App only observes them through Echo callbacks.
 
     rect rgb(230, 230, 240)
-        note over Product, CN: Write rejected (e.g. insufficient authentication)
-        Product->>CN: GattClient.WriteCharacteristic(handle=0x0025, data=0x01)
-        CN-->>Product: GattClientResponse.OperationComplete(error)
-
-        Note over Product: Possible causes: insufficient authentication,<br>write not permitted, invalid handle, invalid offset.
+        note over App, Peripheral: Peer rejects the write (e.g. insufficient authentication)
+        App->>Node: GattClient.WriteCharacteristic(<br>handle=0x0025, data=0x01)
+        Node-)Peripheral: ATT_WRITE_REQ (handle=0x0025, value=0x01)
+        Peripheral-)Node: ATT_ERROR_RSP (0x05 insufficient authentication)
+        Node-->>App: GattClientResponse.OperationComplete(error)
+        Note over App, Node: OperationComplete(error) causes:<br>insufficient authentication, write not permitted,<br>invalid handle, invalid offset,<br>attribute-not-found, application error.
     end
 
     rect rgb(230, 230, 240)
-        note over Product, CN: Retry indicated by server
-        Product->>CN: GattClient.ReadCharacteristic(0x0025)
-        CN-->>Product: GattClientResponse.OperationComplete(retry)
+        note over App, Peripheral: Local ATT bearer momentarily busy (retryable)
+        App->>Node: GattClient.ReadCharacteristic(0x0025)
+        Node-->>App: GattClientResponse.OperationComplete(retry)
+        Note over App, Node: retry signals a transient client-side backpressure condition.<br>Re-submit the same call.<br>No state change on the peer.
 
-        Note over Product: Server is busy. Retry the same operation after a short delay.
-
-        Product->>CN: GattClient.ReadCharacteristic(0x0025)
-        CN-->>Product: GattClientResponse.ReadCharacteristicResponse(<br>data={handle=0x0025, data=0x64})
-        CN-->>Product: GattClientResponse.OperationComplete(success)
+        App->>Node: GattClient.ReadCharacteristic(0x0025)
+        Node-)Peripheral: ATT_READ_REQ (handle=0x0025)
+        Peripheral-)Node: ATT_READ_RSP (value)
+        Node-->>App: GattClientResponse.ReadCharacteristicResponse(<br>data={handle=0x0025, data=0x64})
+        Node-->>App: GattClientResponse.OperationComplete(success)
     end

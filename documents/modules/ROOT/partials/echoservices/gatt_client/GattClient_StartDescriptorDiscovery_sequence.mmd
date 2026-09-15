@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant App as App<br>[implements GattClientResponse]
+    participant Node as Node<br>[implements GattClient]
+    participant Peripheral as BLE Peripheral
+
+    Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. DescriptorDiscovered).
+    Note over App, Node: Allowed states: connected.<br>Pre-conditions: prior CharacteristicDiscoveryComplete has<br>delivered the valueHandle of this characteristic.<br>Range: characteristic.valueHandle + 1 to<br>nextCharacteristic.declarationHandle - 1<br>(or service.handles.endHandle for the last characteristic).<br>Response sequences:<br>- zero or more DescriptorDiscovered -><br>  DescriptorDiscoveryComplete(success).<br>- DescriptorDiscoveryComplete(error) on peer / L2CAP failure.
+
+    App->>Node: GattClient.StartDescriptorDiscovery(<br>startHandle=0x0026, endHandle=0x0028)
+    Note over Node, Peripheral: Node issues ATT_FIND_INFORMATION_REQ across the<br>given range and paginates responses.
+    loop 0..n descriptors
+        Peripheral-)Node: ATT_FIND_INFORMATION_RSP entries
+        Node-->>App: GattClientResponse.DescriptorDiscovered(<br>uuid=0x2902, handle=0x0026)
+    end
+    Node-->>App: GattClientResponse.DescriptorDiscoveryComplete(success)

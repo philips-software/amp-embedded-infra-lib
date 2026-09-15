@@ -1,0 +1,16 @@
+sequenceDiagram
+    participant App as App<br>[implements GattClientResponse]
+    participant Node as Node<br>[implements GattClient]
+    participant Peripheral as BLE Peripheral
+
+    Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. CharacteristicDiscovered).
+    Note over App, Node: Allowed states: connected.<br>Pre-conditions: prior ServiceDiscoveryComplete has<br>delivered the handle range for this service.<br>Must be called once per discovered service.<br>Response sequences:<br>- zero or more CharacteristicDiscovered -><br>  CharacteristicDiscoveryComplete(success).<br>- CharacteristicDiscoveryComplete(error) on peer / L2CAP failure.
+
+    App->>Node: GattClient.StartCharacteristicDiscovery(<br>startHandle=0x0020, endHandle=0x0028)
+    Note over Node, Peripheral: Node issues ATT_READ_BY_TYPE_REQ (characteristic type)<br>across the given range and paginates responses.
+    loop 0..n characteristics
+        Peripheral-)Node: ATT_READ_BY_TYPE_RSP entries
+        Node-->>App: GattClientResponse.CharacteristicDiscovered(<br>uuid=0x2A19, declarationHandle=0x0024,<br>valueHandle=0x0025, properties=0x12)
+        Note right of App: properties bitfield: 0x02=read, 0x10=notify.<br>0x12 = read + notify.
+    end
+    Node-->>App: GattClientResponse.CharacteristicDiscoveryComplete(success)
