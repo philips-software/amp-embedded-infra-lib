@@ -54,7 +54,7 @@ include::partial$echoservices/gap_central/GapCentral_Standby_sequence.mmd[]
 
 *Allowed states:* standby.
 
-Only devices matching the filter are reported via `GapCentralResponse.DeviceDiscovered`. Filters are reset automatically whenever scanning stops (the Node transitions out of `scanning`), so the App normally does not need to clear the filter between scan sessions. An explicit `SetDeviceDiscoveryFilter(filter=none)` is idempotent and useful when a filter was set without ever starting a scan.
+Fire-and-forget, no response callback. Only devices matching the filter are reported via `GapCentralResponse.DeviceDiscovered`. Filters are reset automatically whenever scanning stops (the Node transitions out of `scanning`), so the App normally does not need to clear the filter between scan sessions. An explicit `SetDeviceDiscoveryFilter(filter=none)` is idempotent and useful when a filter was set without ever starting a scan.
 
 [mermaid]
 ....
@@ -62,6 +62,12 @@ include::partial$echoservices/gap_central/GapCentral_SetDeviceDiscoveryFilter_se
 ....
 
 === StartDeviceDiscovery
+
+*Allowed states:* standby.
+
+*Pre-conditions:* optional `SetDeviceDiscoveryFilter` to restrict reported advertisers.
+
+Starts scanning. The Node transitions to `scanning` and reports each matching advertisement via `DeviceDiscovered` until `Standby()` is called.
 
 [mermaid]
 ....
@@ -71,6 +77,8 @@ include::partial$echoservices/gap_central/GapCentral_StartDeviceDiscovery_sequen
 === Connect
 
 *Allowed states:* standby.
+
+*Pre-conditions:* optional `SetIdentityAddress` / `SetPrivacyMode` (own address type used on CONNECT_IND).
 
 Initiates a connection to a peripheral at the specified address. The Node transitions `standby` -> `initiating`. If a bidirectional data exchange completes within `initiatingTimeoutInMs`, the Node transitions to `connected`; otherwise it returns to `standby`.
 
@@ -90,6 +98,8 @@ include::partial$echoservices/gap_central/GapCentral_Connect_sequence.mmd[]
 === PairAndBond
 
 *Allowed states:* connected.
+
+*Pre-conditions:* optional `SetSecurityMode` and `SetIoCapabilities` (consumed at SMP start to select the pairing method).
 
 Secures the connection to the currently connected peripheral. Two paths are possible:
 
@@ -112,6 +122,10 @@ include::partial$echoservices/gap_central/GapCentral_PairAndBond_sequence.mmd[]
 
 === SetSecurityMode
 
+*Allowed states:* standby.
+
+Fire-and-forget, no response callback. Should be called once during initialization before any connections are made.
+
 *Security mode is a pairing-time requirement, not a Connect-time filter.* Setting a required security level does not prevent the underlying `Connect` from succeeding; it prevents *pairing* from completing with peers whose IoCapabilities cannot satisfy the required level. Observable sequence when the peripheral cannot meet the level:
 
 1. `Connect(...)` -> `CurrentState(initiating)` -> `CurrentState(connected)` (the connection is established normally).
@@ -131,12 +145,20 @@ include::partial$echoservices/gap_central/GapCentral_SetSecurityMode_sequence.mm
 
 === SetIoCapabilities
 
+*Allowed states:* standby.
+
+Fire-and-forget, no response callback. Should be called once during initialization before any pairing takes place. The selected capability drives the pairing method during `PairAndBond` (Just Works, Passkey Entry, or Numeric Comparison).
+
 [mermaid]
 ....
 include::partial$echoservices/gap_central/GapCentral_SetIoCapabilities_sequence.mmd[]
 ....
 
 === NumericComparisonConfirm
+
+*Allowed states:* connected.
+
+*Pre-conditions:* prior `AuthenticationRequired(isNumericComparison=true)`. Must be called within the 30s SMP timeout (Core Spec v6.3, Vol 3, Part H, Section 3.4).
 
 *Peer disconnect during the confirmation pause:* while the App is waiting on the user to compare the derived passkey, the SMP procedure is paused waiting on the local `NumericComparisonConfirm` call. If the peer disconnects during that pause (LL_TERMINATE_IND, LL supervision timeout, HCI-level disconnect), the App may or may not observe `PairingResult(pairedSuccessfully=false)` before `CurrentState(standby)` fires. This is not a proto imprecision - it reflects a real limitation at the BLE-stack layer: an actively-running SMP procedure typically surfaces a cancellation on disconnect, but a paused procedure has no canonical cancellation event because the stack was waiting on the local device (not the peer) when the disconnect arrived. Practical guidance: treat `CurrentState(standby)` as terminal for the ongoing pairing procedure, and do not block on `PairingResult` after receiving it.
 
@@ -149,6 +171,10 @@ include::partial$echoservices/gap_central/GapCentral_NumericComparisonConfirm_se
 
 === AuthenticateWithPasskey
 
+*Allowed states:* connected.
+
+*Pre-conditions:* prior `AuthenticationRequired(isNumericComparison=false)` (Passkey Entry method). Must be called within the 30s SMP timeout (Core Spec v6.3, Vol 3, Part H, Section 3.4).
+
 *Peer disconnect during the passkey-entry pause:* same race condition as `NumericComparisonConfirm` above. If the peer disconnects while the App is collecting the passkey from the user, `PairingResult` may or may not fire before `CurrentState(standby)`. Treat `CurrentState(standby)` as terminal.
 
 [mermaid]
@@ -158,12 +184,16 @@ include::partial$echoservices/gap_central/GapCentral_AuthenticateWithPasskey_seq
 
 === NumericComparison Authentication
 
+*Pre-conditions:* connected; `IoCapabilities` set to `displayYesNo` or `keyboardDisplay`.
+
 [mermaid]
 ....
 include::partial$echoservices/gap_central/GapCentral_NumericComparison_sequence.mmd[]
 ....
 
 === Passkey Authentication
+
+*Pre-conditions:* connected; `IoCapabilities` set for passkey entry (display and/or keyboard).
 
 [mermaid]
 ....
@@ -192,12 +222,16 @@ include::partial$echoservices/gap_central/GapCentral_GetBondList_sequence.mmd[]
 
 === RemoveAllBonds
 
+*Allowed states:* standby.
+
 [mermaid]
 ....
 include::partial$echoservices/gap_central/GapCentral_RemoveAllBonds_sequence.mmd[]
 ....
 
 === RemoveBondWithAddress
+
+*Allowed states:* standby.
 
 [mermaid]
 ....
@@ -206,6 +240,10 @@ include::partial$echoservices/gap_central/GapCentral_RemoveBondWithAddress_seque
 
 === SetIdentityAddress
 
+*Allowed states:* standby.
+
+Fire-and-forget, no response callback. Used when privacy mode is disabled. Does not set a resolvable private address (that is controller-generated when privacy is enabled).
+
 [mermaid]
 ....
 include::partial$echoservices/gap_central/GapCentral_SetIdentityAddress_sequence.mmd[]
@@ -213,12 +251,20 @@ include::partial$echoservices/gap_central/GapCentral_SetIdentityAddress_sequence
 
 === SetPrivacyMode
 
+*Allowed states:* standby.
+
+Fire-and-forget, no response callback.
+
+*Pre-conditions:* when enabling, call `SetIdentityAddress` first so future bonds capture the intended identity.
+
 [mermaid]
 ....
 include::partial$echoservices/gap_central/GapCentral_SetPrivacyMode_sequence.mmd[]
 ....
 
 === IsDeviceBonded
+
+*Deprecated.* Will be removed in a future release. Prefer `ResolvePrivateAddress` or `GetBondList` for bond queries.
 
 [mermaid]
 ....
@@ -243,6 +289,8 @@ include::partial$echoservices/gap_central/GapCentral_DiscoveryTimeout_sequence.m
 
 === Enable Privacy
 
+*Pre-conditions:* standby.
+
 Configures the central to use resolvable private addresses (RPAs) for its own advertising / initiating.
 
 Note the order of the two configuration calls: `SetIdentityAddress` first, `SetPrivacyMode(true)` second. Although `SetIdentityAddress`'s doc line "used when privacy mode is disabled" implies the identity address is dormant with privacy on, it is still used during bonding: the identity address is what the central distributes to peers in the SMP `Identity_Address_Information` PDU as part of key distribution. Bonded peers store our IRK against that identity address so that on future reconnections they can resolve our rotating RPAs back to the same identity. If `SetIdentityAddress` is skipped, the identity address defaults to whatever the HAL implementation chose at boot (typically a device-unique random address).
@@ -256,6 +304,8 @@ include::partial$echoservices/gap_central/GapCentral_EnablePrivacy_sequence.mmd[
 
 === Identify Bonded Device
 
+Scan for peripherals using resolvable private addresses (RPAs) and identify which ones are already bonded via `ResolvePrivateAddress`.
+
 [mermaid]
 ....
 include::partial$echoservices/gap_central/GapCentral_IdentifyBondedDevice_sequence.mmd[]
@@ -263,12 +313,18 @@ include::partial$echoservices/gap_central/GapCentral_IdentifyBondedDevice_sequen
 
 === Selective Bond Removal
 
+*Pre-conditions:* standby.
+
+Enumerate stored bonds via `GetBondList` and remove a specific bond by identity address using `RemoveBondWithAddress`.
+
 [mermaid]
 ....
 include::partial$echoservices/gap_central/GapCentral_SelectiveBondRemoval_sequence.mmd[]
 ....
 
 === Pairing Failure Reasons
+
+Illustrates the different `PairingFailedReason` values reported via `PairingResult(pairedSuccessfully=false)` for typical failure paths.
 
 [mermaid]
 ....

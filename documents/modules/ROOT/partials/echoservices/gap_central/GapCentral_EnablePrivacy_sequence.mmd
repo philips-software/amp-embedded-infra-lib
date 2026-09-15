@@ -2,8 +2,6 @@ sequenceDiagram
     participant App as App<br>[implements GapCentralResponse]
     participant Node as Node<br>[implements GapCentral]
 
-    Note over App, Node: Precondition: standby
-
     App->>Node: GapCentral.SetIdentityAddress(<br>address=00:1A:7D:DA:71:13, addressType=publicAddress)
     App->>Node: GapCentral.SetPrivacyMode(true)
 

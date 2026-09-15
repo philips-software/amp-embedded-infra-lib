@@ -2,8 +2,6 @@ sequenceDiagram
     participant App as App<br>[implements GapCentralResponse]
     participant Node as Node<br>[implements GapCentral]
 
-    Note over App, Node: Allowed states: connected.<br>Calling outside connected asserts on the Node.<br>Pre-conditions: prior AuthenticationRequired(isNumericComparison=true).<br>Must be called within the 30s SMP timeout<br>(Core Spec v6.3, Vol 3, Part H, Section 3.4).
-
     alt User confirms match
         App->>Node: GapCentral.NumericComparisonConfirm(true)
     else User rejects

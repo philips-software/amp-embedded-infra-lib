@@ -5,9 +5,6 @@ sequenceDiagram
 
     Note over Node, Central: Messages between Node and BLE Central<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. CurrentState).
 
-    Note over App, Node: Allowed states: standby, connected.<br>Calling outside asserts on the Node.<br>Only valid during active pairing when<br>AuthenticationRequired.isNumericComparison is true.<br>Pre-conditions: prior AuthenticationRequired(isNumericComparison=true).
-    Note over App, Node: Precondition: connected,<br>SecurityPreference requests MITM<br>with displayYesNo IoCapabilities.
-
     Central-)Node: Pairing_Request (MITM requested)
     Node-->>App: GapPeripheralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
 

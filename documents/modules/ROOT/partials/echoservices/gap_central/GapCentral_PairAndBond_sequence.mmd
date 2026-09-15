@@ -4,7 +4,6 @@ sequenceDiagram
     participant Peripheral as BLE Peripheral
 
     Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. CurrentState).
-    Note over App, Node: Allowed states: connected.<br>Calling outside connected asserts on the Node.<br>Pre-conditions: optional SetSecurityMode and SetIoCapabilities<br>(consumed at SMP start to select the pairing method).
 
     App->>Node: GapCentral.PairAndBond()
 

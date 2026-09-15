@@ -2,8 +2,6 @@ sequenceDiagram
     participant App as App<br>[implements GapCentralResponse]
     participant Node as Node<br>[implements GapCentral]
 
-    Note over App, Node: Pairing failure with specific PairingFailedReason
-
     rect rgb(230, 230, 240)
         note over App, Node: Authentication requirements mismatch
         App->>Node: GapCentral.PairAndBond()

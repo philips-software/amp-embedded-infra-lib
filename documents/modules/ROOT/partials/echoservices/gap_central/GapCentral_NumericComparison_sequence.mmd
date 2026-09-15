@@ -2,8 +2,6 @@ sequenceDiagram
     participant App as App<br>[implements GapCentralResponse]
     participant Node as Node<br>[implements GapCentral]
 
-    Note over App, Node: Precondition: connected,<br>IoCapabilities set to displayYesNo or keyboardDisplay
-
     App->>Node: GapCentral.PairAndBond()
     Node-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
 
