@@ -18,11 +18,22 @@ When editing any of the files above, check that these still line up:
 - Sequence diagrams reflect the `Response Sequences`, `Expected response`, and `Additional responses` documented above each proto method.
 - No diagram invokes a method outside its `Allowed states`.
 - When observable behaviour is consistent across independent stack implementations, that behaviour is contract, not stack quirk. If the proto text and the stacks disagree, update the proto text to match the behaviour (do not "fix" the diagram to match a stale comment).
+- Every RPC comment line must start with a known convention keyword prefix (`Allowed states:`, `Description:`, `Pre-conditions:`, `Expected response:`, `Additional responses:`, `Response Sequences:`, `Triggered by:`, `Example:`) or be an indented continuation of one. Lines with no keyword prefix are silently dropped by the convention extractor. If in doubt, put the text under `Description:`.
+- Use `Allowed states:` (short form) rather than `Allowed in link layer states:`. The extractor accepts both, but the short form is preferred for consistency across the proto.
 
 If a service is added, renamed, or removed, also update:
 
 - `documents/modules/ROOT/pages/EchoServices.adoc` (landing page)
 - `documents/modules/ROOT/nav.adoc`
+
+## Convention keywords and the two-carrier pattern
+
+Each RPC's structured facts (allowed states, pre-conditions, expected response, response sequences, description) live in two carriers, and both must state the same fact:
+
+1. The proto RPC comment carries the keyword-labelled form (e.g. `// Allowed states: standby`, `// Pre-conditions: optional SetSecurityMode / SetIoCapabilities`). This feeds `extract_conventions.py`, which surfaces the facts as labelled structured fields to downstream documentation renderers.
+2. The opening `Note over App, Node:` in the matching per-method sequence diagram carries a compact fact-line (e.g. `Allowed states: standby.<br>Calling outside standby asserts on the Node.<br>Pre-conditions: optional SetSecurityMode / SetIoCapabilities.`). This makes the fact visible in the Antora HTML rendering of the diagram image.
+
+The duplication is intentional. Downstream documentation renderers that consume the proto conventions show the fact as a labelled structured field alongside the diagram image; readers of the Antora HTML see the fact drawn into the diagram itself. Both carriers must state the same fact - when updating one, update the other.
 
 ## Diagram conventions - general
 
@@ -47,3 +58,4 @@ If a service is added, renamed, or removed, also update:
 - Peer disconnects: wrap `Central-)Node: LL_TERMINATE_IND` (or `Peripheral-)Node: LL_TERMINATE_IND` when the Node is central) inside a `rect rgb(245, 230, 230)` band, matching the colour convention above.
 - Prefer spec PDU names (`LL_TERMINATE_IND`, `ATT_HANDLE_VALUE_NTF`, `Pairing_Request`, `LL_ENC_REQ`, `CONNECT_IND`) over abstract labels (`Disconnect`, `Notification`, `Pair request`). A reader with a sniffer trace should see the same names on both sides.
 - `Standby()` allowed-states notes must include every state the proto allows, including `standby` itself. Peripheral: `standby, advertising, connected`. Central: `standby, scanning, connected, initiating`. Calling from `standby` still yields `CurrentState(standby)`.
+- SMP pairing failure does not automatically disconnect the link. On failure the middleware fires `PairingResult(pairedSuccessfully=false, reason=...)` and the link stays connected. `CurrentState(standby)` follows only via App-driven `Standby()` or a peer-driven disconnect - do not describe it as an automatic consequence of pairing failure.
