@@ -8,7 +8,7 @@ sequenceDiagram
     Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer / ATT events, not driven by the App.<br>The App only observes them through Echo callbacks.
 
     rect rgb(230, 230, 240)
-        note over App, Peripheral: Peer rejects the write (e.g. insufficient authentication)
+        note over App, Peripheral: Peer rejects the write<br>(e.g. insufficient authentication)
         App->>Node: GattClient.WriteCharacteristic(<br>handle=0x0025, data=0x01)
         Node-)Peripheral: ATT_WRITE_REQ (handle=0x0025, value=0x01)
         Peripheral-)Node: ATT_ERROR_RSP (0x05 insufficient authentication)
@@ -20,7 +20,7 @@ sequenceDiagram
         note over App, Peripheral: Local ATT bearer momentarily busy (retryable)
         App->>Node: GattClient.ReadCharacteristic(0x0025)
         Node-->>App: GattClientResponse.OperationComplete(retry)
-        Note over App, Node: retry signals a transient client-side backpressure condition.<br>Re-submit the same call.<br>No state change on the peer.
+        Note over App, Node: retry signals a transient<br>client-side backpressure condition.<br>Re-submit the same call.<br>No state change on the peer.
 
         App->>Node: GattClient.ReadCharacteristic(0x0025)
         Node-)Peripheral: ATT_READ_REQ (handle=0x0025)

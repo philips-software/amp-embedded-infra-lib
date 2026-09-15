@@ -4,7 +4,7 @@ sequenceDiagram
     participant Peripheral as BLE Peripheral
 
     Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. CharacteristicDiscovered).
-    Note over App, Node: Allowed states: connected.<br>Pre-conditions: prior ServiceDiscovered has<br>delivered the service's handle range.<br>Must be called once per discovered service.<br>Response sequences:<br>- zero or more CharacteristicDiscovered -><br>  CharacteristicDiscoveryComplete(success).<br>- CharacteristicDiscoveryComplete(error) on peer / L2CAP failure.
+    Note over App, Node: Allowed states: connected.<br>Pre-conditions: prior ServiceDiscovered has<br>delivered the service's handle range.<br>Must be called once per discovered service.<br>Response sequences:<br>- Success: zero or more CharacteristicDiscovered<br>  -> CharacteristicDiscoveryComplete(success).<br>- Failure: CharacteristicDiscoveryComplete(error).
 
     App->>Node: GattClient.StartCharacteristicDiscovery(<br>startHandle=0x0020, endHandle=0x0028)
     Note over Node, Peripheral: Node issues ATT_READ_BY_TYPE_REQ (characteristic type)<br>across the given range and paginates responses.

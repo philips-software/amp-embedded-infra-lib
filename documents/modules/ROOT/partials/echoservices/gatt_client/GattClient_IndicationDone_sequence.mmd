@@ -4,7 +4,7 @@ sequenceDiagram
     participant Peripheral as BLE Peripheral
 
     Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. IndicationReceived).
-    Note over App, Node: Allowed states: connected.<br>Pre-conditions: a prior IndicationReceived callback,<br>and indications enabled on the characteristic<br>(WriteDescriptor with data=0x0200 to its CCCD).<br>Must be called exactly once for every IndicationReceived,<br>otherwise the peer stalls waiting for ATT_HANDLE_VALUE_CFM.<br>May be called while another operation is in progress.
+    Note over App, Node: Allowed states: connected.<br>Pre-conditions: a prior IndicationReceived,<br>and indications enabled on the CCCD<br>(WriteDescriptor with data=0x0200).<br>Must be called exactly once for every<br>IndicationReceived, otherwise the peer<br>stalls waiting for ATT_HANDLE_VALUE_CFM.<br>May be called while another operation<br>is in progress.
 
     Peripheral-)Node: ATT_HANDLE_VALUE_IND (handle=0x0025, value=0x64)
     Node-->>App: GattClientResponse.IndicationReceived(<br>handle=0x0025, data=0x64)

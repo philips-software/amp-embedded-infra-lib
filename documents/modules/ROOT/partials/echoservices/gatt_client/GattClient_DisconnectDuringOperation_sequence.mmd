@@ -5,8 +5,8 @@ sequenceDiagram
     participant Node as Node<br>[implements GattClient, GapCentral]
     participant Peripheral as BLE Peripheral
 
-    Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer / ATT events, not driven by the App.<br>The App only observes them through Echo callbacks.
-    Note over App, Node: Any pending GATT operation is implicitly cancelled on<br>connection loss and its "Expected response" is delivered<br>with an error status.
+    Note over Node, Peripheral: Messages between Node and<br>BLE Peripheral are link-layer / ATT<br>events, not driven by the App.<br>The App only observes them<br>through Echo callbacks.
+    Note over App, Node: Any pending GATT operation is<br>implicitly cancelled on connection loss<br>and its "Expected response" is delivered<br>with an error status.
 
     App->>Node: GattClient.ReadCharacteristic(0x0025)
     Node-)Peripheral: ATT_READ_REQ (handle=0x0025)
@@ -17,4 +17,4 @@ sequenceDiagram
 
     Node-->>App: GattClientResponse.OperationComplete(error)
     Node-->>App: GapCentralResponse.CurrentState(standby)
-    Note over App, Node: OperationComplete(error) is delivered before CurrentState(standby).<br>No further GATT callbacks fire until the App re-establishes the link<br>and re-drives discovery from ServiceDiscovery.
+    Note over App, Node: OperationComplete(error) is delivered<br>before CurrentState(standby).<br>No further GATT callbacks fire until the App<br>re-establishes the link and re-drives<br>discovery from ServiceDiscovery.
