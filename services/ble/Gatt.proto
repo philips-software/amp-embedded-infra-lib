@@ -6,6 +6,9 @@ package gatt;
 option java_package = "com.philips.emil.protobufEcho";
 option java_outer_classname = "GattProto";
 
+// Attributes exposed by the Device Information Service (DIS).
+// The DIS is a Bluetooth SIG-adopted service (assigned uuid 0x180A).
+// See Bluetooth SIG Device Information Service specification.
 message DisServiceData
 {
     bytes manufacturerName = 1 [(bytes_size) =  32];
@@ -26,34 +29,56 @@ service GattServerDisService
     rpc SetDisServiceData(DisServiceData) returns(Nothing) { option (method_id) = 1; }
 }
 
+// Attribute MTU size negotiated via the ATT Exchange MTU procedure.
+// See Bluetooth Core Specification v6.3, Vol 3, Part F, Section 3.4.2 and Vol 3, Part G, Section 4.3.
 message MtuSize
 {
     uint32 value = 1;
 }
 
+// ATT attribute handle (16-bit).
+// See Bluetooth Core Specification v6.3, Vol 3, Part F, Section 3.2.2.
 message Handle
 {
     uint32 value = 1;
 }
 
+// A GATT attribute value paired with its handle.
+// See Bluetooth Core Specification v6.3, Vol 3, Part F, Section 3.2.
 message AttributeData
 {
     Handle handle = 1;
     bytes data = 2 [(bytes_size) = 512];
 }
 
+// Inclusive range of ATT attribute handles used by the GATT discovery procedures.
+// See Bluetooth Core Specification v6.3, Vol 3, Part G, Sections 4.4-4.7.
 message HandleRange
 {
     Handle startHandle = 1;
     Handle endHandle = 2;
 }
 
+// GATT service definition: 16 or 128-bit UUID and the inclusive handle range that contains its declarations.
+// See Bluetooth Core Specification v6.3, Vol 3, Part G, Section 3.1.
 message Service
 {
     bytes uuid = 1 [(bytes_size) = 16];
     HandleRange handles = 2;
 }
 
+// GATT characteristic: UUID, declaration and value handles, and the properties bitfield.
+// See Bluetooth Core Specification v6.3, Vol 3, Part G, Section 3.3.
+// The `properties` field encodes the Characteristic Properties bitfield defined in
+// Bluetooth Core Specification v6.3, Vol 3, Part G, Section 3.3.1.1:
+//   0x01 = broadcast
+//   0x02 = read
+//   0x04 = writeWithoutResponse
+//   0x08 = write
+//   0x10 = notify
+//   0x20 = indicate
+//   0x40 = authenticatedSignedWrites
+//   0x80 = extendedProperties
 message Characteristic
 {
     bytes uuid = 1 [(bytes_size) = 16];
@@ -62,7 +87,8 @@ message Characteristic
     uint32 properties = 4;
 }
 
-// 'Descriptor' keyword is not allowed by Echo code generator
+// GATT characteristic descriptor. See Bluetooth Core Specification v6.3, Vol 3, Part G, Section 3.3.3.
+// ('Descriptor' keyword is not allowed by Echo code generator, hence the abbreviated name.)
 message Descriptr
 {
     bytes uuid = 1 [(bytes_size) = 16];
@@ -74,6 +100,9 @@ message ReadResult
     AttributeData data = 1;
 }
 
+// Outcome of a GATT client operation.
+// error typically corresponds to an ATT_ERROR_RSP (Bluetooth Core Specification v6.3, Vol 3, Part F, Section 3.4.1.1)
+// or a client-side rejection before the request reaches the peer.
 enum OperationStatus
 {
     success = 0;
@@ -87,7 +116,10 @@ message OperationResult
     OperationStatus value = 1;
 }
 
-// CCCD (Client Characteristic Configuration Descriptor) bit field values for use with WriteDescriptor
+// CCCD (Client Characteristic Configuration Descriptor) bit field values for use with WriteDescriptor.
+// See Bluetooth Core Specification v6.3, Vol 3, Part G, Section 3.3.3.3:
+//   bit 0 = notifications enabled
+//   bit 1 = indications enabled
 enum CccdSetting
 {
     none = 0;
@@ -112,63 +144,135 @@ enum CccdSetting
 // Connection loss:
 //  Any pending operation (discovery, MTU exchange, or read/write) is implicitly cancelled.
 //  For any pending operation, the listed "Expected response" is guaranteed to be delivered with an error status.
+// Startup:
+//  GattClient has no per-service startup handshake of its own. The service becomes callable
+//  once the paired GAP service reports CurrentState(connected) for the peer of interest.
+//  Calling any GattClient method without an active connection results in an assertion.
+// Reference:
+//  All GATT procedures below map to Bluetooth Core Specification v6.3, Vol 3, Part G
+//  (Generic Attribute Profile). ATT-layer PDUs referenced in Response Sequences are
+//  defined in Vol 3, Part F (Attribute Protocol).
 // ==================================================
 service GattClient
 {
     option (service_id) = 134;
 
+    // Allowed states: connected
     // Expected response: GattClientResponse.OperationComplete
     // Additional responses: GattClientResponse.MtuSizeExchangeComplete
     // Description: Requests the MTU size to be increased from the default, for better throughput.
     //   May only be called once per connection.
     //   The effective MTU size is implementation defined.
+    //   See Bluetooth Core Specification v6.3, Vol 3, Part G, Section 4.3 (Exchange MTU).
+    // Response Sequences:
+    //   On successful exchange: GattClientResponse.MtuSizeExchangeComplete -> GattClientResponse.OperationComplete(success)
+    //   On peer / L2CAP failure: GattClientResponse.OperationComplete(error)
     rpc MtuSizeExchangeRequest(Nothing) returns (Nothing) { option (method_id) = 1; }
 
+    // Allowed states: connected
     // Expected response: GattClientResponse.ServiceDiscoveryComplete
     // Additional responses: zero or more GattClientResponse.ServiceDiscovered
     // Description: Discovers all services.
+    //   First step of the Service -> Characteristic -> Descriptor discovery sequence.
+    //   See Bluetooth Core Specification v6.3, Vol 3, Part G, Section 4.4 (Primary Service Discovery).
+    // Response Sequences:
+    //   On completion: zero or more GattClientResponse.ServiceDiscovered -> GattClientResponse.ServiceDiscoveryComplete(success)
+    //   On peer / L2CAP failure: GattClientResponse.ServiceDiscoveryComplete(error)
     rpc StartServiceDiscovery(Nothing) returns (Nothing) { option (method_id) = 2; }
 
+    // Allowed states: connected
+    // Pre-conditions: Prior GattClientResponse.ServiceDiscovered supplies the service's handle range.
     // Expected response: GattClientResponse.CharacteristicDiscoveryComplete
     // Additional responses: zero or more GattClientResponse.CharacteristicDiscovered
     // Description: Discovers all characteristics within a single service's handle range.
     //   Must be called once per discovered service, after GattClientResponse.ServiceDiscoveryComplete.
     //   The handle range should be the service's start and end handles.
+    //   See Bluetooth Core Specification v6.3, Vol 3, Part G, Section 4.6 (Characteristic Discovery).
+    // Response Sequences:
+    //   On completion: zero or more GattClientResponse.CharacteristicDiscovered -> GattClientResponse.CharacteristicDiscoveryComplete(success)
+    //   On peer / L2CAP failure: GattClientResponse.CharacteristicDiscoveryComplete(error)
     rpc StartCharacteristicDiscovery(HandleRange) returns (Nothing) { option (method_id) = 3; }
 
+    // Allowed states: connected
+    // Pre-conditions: Prior GattClientResponse.CharacteristicDiscovered supplies the characteristic's valueHandle.
     // Expected response: GattClientResponse.DescriptorDiscoveryComplete
     // Additional responses: zero or more GattClientResponse.DescriptorDiscovered
     // Description: Discovers all descriptors within the given handle range of a characteristic.
     //   The handle range spans from the characteristic's value handle to the next characteristic's declaration handle - 1
     //   (or the service's end handle for the last characteristic in a service).
+    //   See Bluetooth Core Specification v6.3, Vol 3, Part G, Section 4.7 (Characteristic Descriptor Discovery).
+    // Response Sequences:
+    //   On completion: zero or more GattClientResponse.DescriptorDiscovered -> GattClientResponse.DescriptorDiscoveryComplete(success)
+    //   On peer / L2CAP failure: GattClientResponse.DescriptorDiscoveryComplete(error)
     rpc StartDescriptorDiscovery(HandleRange) returns (Nothing) { option (method_id) = 4; }
 
+    // Allowed states: connected
+    // Pre-conditions: valueHandle known from a prior GattClientResponse.CharacteristicDiscovered.
     // Expected response: GattClientResponse.OperationComplete
     // Additional responses: GattClientResponse.ReadCharacteristicResponse
     // Description: Reads the value of a characteristic from the GATT server.
+    //   See Bluetooth Core Specification v6.3, Vol 3, Part G, Section 4.8 (Characteristic Value Read).
+    // Response Sequences:
+    //   On successful read: GattClientResponse.ReadCharacteristicResponse -> GattClientResponse.OperationComplete(success)
+    //   On peer-side rejection (permissions, invalid handle, insufficient authentication): GattClientResponse.OperationComplete(error)
+    //   On transient client-side backpressure: GattClientResponse.OperationComplete(retry). The App may re-submit the same call.
     rpc ReadCharacteristic(Handle) returns (Nothing) { option (method_id) = 5; }
 
+    // Allowed states: connected
+    // Pre-conditions: valueHandle known from a prior GattClientResponse.CharacteristicDiscovered.
     // Expected response: GattClientResponse.OperationComplete
     // Description: Writes the value of a characteristic to the GATT server.
+    //   See Bluetooth Core Specification v6.3, Vol 3, Part G, Section 4.9 (Characteristic Value Write).
+    // Response Sequences:
+    //   On successful write: GattClientResponse.OperationComplete(success)
+    //   On peer-side rejection: GattClientResponse.OperationComplete(error)
+    //   On transient client-side backpressure: GattClientResponse.OperationComplete(retry). The App may re-submit the same call.
     rpc WriteCharacteristic(AttributeData) returns (Nothing) { option (method_id) = 6; }
 
+    // Allowed states: connected
+    // Pre-conditions: valueHandle known from a prior GattClientResponse.CharacteristicDiscovered.
     // Expected response: GattClientResponse.WriteCharacteristicWithoutResponseComplete
     // Description: Writes the value of a characteristic to the GATT server without requiring a response.
     //   This method does not guarantee that the server has received the value.
     //   May be called while other operations are in progress, except for another WriteCharacteristicWithoutResponse operation.
+    //   See Bluetooth Core Specification v6.3, Vol 3, Part G, Section 4.9.1 (Write Without Response).
+    // Response Sequences:
+    //   On queued locally: GattClientResponse.WriteCharacteristicWithoutResponseComplete(success). success only means the command was queued locally; the peer never acknowledges an ATT_WRITE_CMD.
+    //   On transient bearer backpressure: GattClientResponse.WriteCharacteristicWithoutResponseComplete(retry). The App may re-submit the same call.
+    //   On client-side rejection (invalid handle, permission failure): GattClientResponse.WriteCharacteristicWithoutResponseComplete(error)
     rpc WriteCharacteristicWithoutResponse(AttributeData) returns (Nothing) { option (method_id) = 7; }
 
+    // Allowed states: connected
+    // Pre-conditions: descriptor handle known from a prior GattClientResponse.DescriptorDiscovered.
     // Expected response: GattClientResponse.OperationComplete
     // Additional responses: GattClientResponse.ReadDescriptorResponse
     // Description: Reads the value of a descriptor from the GATT server.
+    //   See Bluetooth Core Specification v6.3, Vol 3, Part G, Section 4.12.1 (Read Characteristic Descriptor).
+    // Response Sequences:
+    //   On successful read: GattClientResponse.ReadDescriptorResponse -> GattClientResponse.OperationComplete(success)
+    //   On peer-side rejection: GattClientResponse.OperationComplete(error)
+    //   On transient client-side backpressure: GattClientResponse.OperationComplete(retry). The App may re-submit the same call.
     rpc ReadDescriptor(Handle) returns (Nothing) { option (method_id) = 8; }
 
+    // Allowed states: connected
+    // Pre-conditions: descriptor handle known from a prior GattClientResponse.DescriptorDiscovered.
     // Expected response: GattClientResponse.OperationComplete
     // Description: Writes the value of a descriptor to the GATT server.
+    //   For a CCCD (uuid 0x2902), the data bytes select the notification / indication mode:
+    //   0x0000 = disabled, 0x0100 = notifications enabled, 0x0200 = indications enabled, 0x0300 = both enabled.
+    //   See Bluetooth Core Specification v6.3, Vol 3, Part G, Section 4.12.3 (Write Characteristic Descriptor) and Section 3.3.3.3 (CCCD).
+    // Response Sequences:
+    //   On successful write: GattClientResponse.OperationComplete(success)
+    //   On peer-side rejection: GattClientResponse.OperationComplete(error)
+    //   On transient client-side backpressure: GattClientResponse.OperationComplete(retry). The App may re-submit the same call.
     rpc WriteDescriptor(AttributeData) returns (Nothing) { option (method_id) = 9; }
 
+    // Allowed states: connected
+    // Pre-conditions: A prior GattClientResponse.IndicationReceived callback. Indications must be enabled on the target characteristic (WriteDescriptor with data=0x0200 to its CCCD).
     // Description: Must be called for every GattClientResponse.IndicationReceived to acknowledge the indication.
+    //   Otherwise the peer stalls waiting for ATT_HANDLE_VALUE_CFM.
     //   May be called while other operations are in progress.
+    //   See Bluetooth Core Specification v6.3, Vol 3, Part G, Section 4.11 (Characteristic Value Indications) and Vol 3, Part F, Section 3.4.7.3 (Handle Value Confirmation).
     rpc IndicationDone(Nothing) returns (Nothing) { option (method_id) = 10; }
 }
 
