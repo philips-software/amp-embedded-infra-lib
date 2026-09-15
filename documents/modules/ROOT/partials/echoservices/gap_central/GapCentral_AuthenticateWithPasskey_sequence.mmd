@@ -5,4 +5,4 @@ sequenceDiagram
     App->>Node: GapCentral.AuthenticateWithPasskey(485923)
 
     Note over App: Passkey delivered to the SMP procedure.<br>Result surfaces on the outstanding<br>PairAndBond's PairingResult callback.<br>See "Passkey Authentication" for the full flow.
-    Note over App, Node: If the peer disconnects before the App enters the passkey,<br>PairingResult may or may not fire before CurrentState(standby).<br>Reason: SMP is paused waiting on the local user response,<br>so the stack has no canonical cancellation event to raise.<br>Treat CurrentState(standby) as terminal.
+    Note over App, Node: If the peripheral disconnects before the App enters the passkey,<br>PairingResult may or may not fire before CurrentState(standby).<br>Reason: SMP is paused waiting on the local user response,<br>so the stack has no canonical cancellation event to raise.<br>Treat CurrentState(standby) as terminal.

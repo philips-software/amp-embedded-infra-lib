@@ -19,10 +19,10 @@ sequenceDiagram
         Node-->>App: GapPeripheralResponse.PairingResult(<br>pairedSuccessfully=false, reason=numericComparisonFailed)
     else Timeout (30s SMP timeout, no confirm)
         Node-->>App: GapPeripheralResponse.PairingResult(<br>pairedSuccessfully=false, reason=timeout)
-    else Peer disconnects before confirm
+    else Central disconnects before confirm
         rect rgb(245, 230, 230)
             Central-)Node: LL_TERMINATE_IND
         end
         Node-->>App: GapPeripheralResponse.CurrentState(standby)
-        Note over App, Node: If the peer disconnects before the App confirms,<br>PairingResult may or may not fire before CurrentState(standby).<br>Reason: SMP is paused waiting on the local user response,<br>so the stack has no canonical cancellation event to raise.<br>Treat CurrentState(standby) as terminal.
+        Note over App, Node: If the central disconnects before the App confirms,<br>PairingResult may or may not fire before CurrentState(standby).<br>Reason: SMP is paused waiting on the local user response,<br>so the stack has no canonical cancellation event to raise.<br>Treat CurrentState(standby) as terminal.
     end

@@ -113,7 +113,7 @@ If the peripheral sends a security request first, this procedure runs automatica
 * Successful pairing with new bond: `AuthenticationRequired` (if applicable) -> `NumberOfBondsChanged` -> `PairingResult`.
 * Successful re-encryption with existing bond: `NumberOfBondsChanged` -> `PairingResult`.
 * Pairing failure: `AuthenticationRequired` (if applicable) -> `PairingResult(pairedSuccessfully=false)`.
-* Peer-initiated disconnect during pairing: `PairingResult(pairedSuccessfully=false)` -> `CurrentState(standby)`.
+* Peripheral-initiated disconnect during pairing: `PairingResult(pairedSuccessfully=false)` -> `CurrentState(standby)`.
 
 [mermaid]
 ....
@@ -126,17 +126,17 @@ include::partial$echoservices/gap_central/GapCentral_PairAndBond_sequence.mmd[]
 
 Fire-and-forget, no response callback. Should be called once during initialization before any connections are made.
 
-*Security mode is a pairing-time requirement, not a Connect-time filter.* Setting a required security level does not prevent the underlying `Connect` from succeeding; it prevents *pairing* from completing with peers whose IoCapabilities cannot satisfy the required level. Observable sequence when the peripheral cannot meet the level:
+*Security mode is a pairing-time requirement, not a Connect-time filter.* Setting a required security level does not prevent the underlying `Connect` from succeeding; it prevents *pairing* from completing with peripherals whose IoCapabilities cannot satisfy the required level. Observable sequence when the peripheral cannot meet the level:
 
 1. `Connect(...)` -> `CurrentState(initiating)` -> `CurrentState(connected)` (the connection is established normally).
-2. `PairAndBond()` (or a peer-initiated security request that auto-triggers PairAndBond) starts SMP negotiation.
-3. Central detects the peer's IoCapabilities cannot satisfy the required MITM level.
+2. `PairAndBond()` (or a peripheral-initiated security request that auto-triggers PairAndBond) starts SMP negotiation.
+3. Central detects the peripheral's IoCapabilities cannot satisfy the required MITM level.
 4. `PairingResult(pairedSuccessfully=false, reason=authenticationRequirementsNotMet)`.
-5. The link stays connected on SMP failure. The App typically calls `Standby()` (or the peer disconnects voluntarily on receiving the SMP Pairing Failed PDU), producing `CurrentState(standby)` via one of those paths - not automatic on pairing failure per se.
+5. The link stays connected on SMP failure. The App typically calls `Standby()` (or the peripheral disconnects voluntarily on receiving the SMP Pairing Failed PDU), producing `CurrentState(standby)` via one of those paths - not automatic on pairing failure per se.
 
 Verified across the vendor stacks: each surfaces an SMP-layer authentication-requirement failure that the Echo layer maps to `PairingResult(pairedSuccessfully=false, reason=authenticationRequirementsNotMet)`. `SetSecurityMode` configures the SMP authentication requirement only and takes effect during the pairing procedure, not at Connect time.
 
-If the App wants to reject connections to capability-mismatched peers up-front, it must decide before calling `Connect` (e.g. by inspecting scan-response data or a prior bond entry). The Node cannot pre-empt the connection based on security mode.
+If the App wants to reject connections to capability-mismatched peripherals up-front, it must decide before calling `Connect` (e.g. by inspecting scan-response data or a prior bond entry). The Node cannot pre-empt the connection based on security mode.
 
 [mermaid]
 ....
@@ -160,7 +160,7 @@ include::partial$echoservices/gap_central/GapCentral_SetIoCapabilities_sequence.
 
 *Pre-conditions:* prior `AuthenticationRequired(isNumericComparison=true)`. Must be called within the 30s SMP timeout (Core Spec v6.3, Vol 3, Part H, Section 3.4).
 
-*Peer disconnect during the confirmation pause:* while the App is waiting on the user to compare the derived passkey, the SMP procedure is paused waiting on the local `NumericComparisonConfirm` call. If the peer disconnects during that pause (LL_TERMINATE_IND, LL supervision timeout, HCI-level disconnect), the App may or may not observe `PairingResult(pairedSuccessfully=false)` before `CurrentState(standby)` fires. This is not a proto imprecision - it reflects a real limitation at the BLE-stack layer: an actively-running SMP procedure typically surfaces a cancellation on disconnect, but a paused procedure has no canonical cancellation event because the stack was waiting on the local device (not the peer) when the disconnect arrived. Practical guidance: treat `CurrentState(standby)` as terminal for the ongoing pairing procedure, and do not block on `PairingResult` after receiving it.
+*Peripheral disconnect during the confirmation pause:* while the App is waiting on the user to compare the derived passkey, the SMP procedure is paused waiting on the local `NumericComparisonConfirm` call. If the peripheral disconnects during that pause (LL_TERMINATE_IND, LL supervision timeout, HCI-level disconnect), the App may or may not observe `PairingResult(pairedSuccessfully=false)` before `CurrentState(standby)` fires. This is not a proto imprecision - it reflects a real limitation at the BLE-stack layer: an actively-running SMP procedure typically surfaces a cancellation on disconnect, but a paused procedure has no canonical cancellation event because the stack was waiting on the local device (not the peripheral) when the disconnect arrived. Practical guidance: treat `CurrentState(standby)` as terminal for the ongoing pairing procedure, and do not block on `PairingResult` after receiving it.
 
 The same behaviour applies to `AuthenticateWithPasskey` during Passkey Entry (see below).
 
@@ -175,7 +175,7 @@ include::partial$echoservices/gap_central/GapCentral_NumericComparisonConfirm_se
 
 *Pre-conditions:* prior `AuthenticationRequired(isNumericComparison=false)` (Passkey Entry method). Must be called within the 30s SMP timeout (Core Spec v6.3, Vol 3, Part H, Section 3.4).
 
-*Peer disconnect during the passkey-entry pause:* same race condition as `NumericComparisonConfirm` above. If the peer disconnects while the App is collecting the passkey from the user, `PairingResult` may or may not fire before `CurrentState(standby)`. Treat `CurrentState(standby)` as terminal.
+*Peripheral disconnect during the passkey-entry pause:* same race condition as `NumericComparisonConfirm` above. If the peripheral disconnects while the App is collecting the passkey from the user, `PairingResult` may or may not fire before `CurrentState(standby)`. Treat `CurrentState(standby)` as terminal.
 
 [mermaid]
 ....
@@ -293,7 +293,7 @@ include::partial$echoservices/gap_central/GapCentral_DiscoveryTimeout_sequence.m
 
 Configures the central to use resolvable private addresses (RPAs) for its own advertising / initiating.
 
-Note the order of the two configuration calls: `SetIdentityAddress` first, `SetPrivacyMode(true)` second. Although `SetIdentityAddress`'s doc line "used when privacy mode is disabled" implies the identity address is dormant with privacy on, it is still used during bonding: the identity address is what the central distributes to peers in the SMP `Identity_Address_Information` PDU as part of key distribution. Bonded peers store our IRK against that identity address so that on future reconnections they can resolve our rotating RPAs back to the same identity. If `SetIdentityAddress` is skipped, the identity address defaults to whatever the HAL implementation chose at boot (typically a device-unique random address).
+Note the order of the two configuration calls: `SetIdentityAddress` first, `SetPrivacyMode(true)` second. Although `SetIdentityAddress`'s doc line "used when privacy mode is disabled" implies the identity address is dormant with privacy on, it is still used during bonding: the identity address is what the central distributes to peripherals in the SMP `Identity_Address_Information` PDU as part of key distribution. Bonded peripherals store our IRK against that identity address so that on future reconnections they can resolve our rotating RPAs back to the same identity. If `SetIdentityAddress` is skipped, the identity address defaults to whatever the HAL implementation chose at boot (typically a device-unique random address).
 
 *Order rationale:* set the identity you want to be bonded under **before** enabling privacy so that any bond created afterwards captures the intended identity address, not the boot default.
 

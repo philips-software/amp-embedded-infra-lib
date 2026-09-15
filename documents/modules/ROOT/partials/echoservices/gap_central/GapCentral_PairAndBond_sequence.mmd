@@ -90,7 +90,7 @@ sequenceDiagram
         end
         Node-->>App: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=<method-specific>)
         Note over App, Node: Reason field is method-specific:<br>numericComparisonFailed (NC) or passkeyEntryFailed (PE).<br>Other common causes: confirmValueFailed,<br>dhkeyCheckFailed (LESC), encryptionFailed (LL setup).
-    else Peer-initiated disconnect during pairing
+    else Peripheral-initiated disconnect during pairing
         rect rgb(245, 240, 230)
             Peripheral-)Node: LL_TERMINATE_IND
         end
