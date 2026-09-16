@@ -38,6 +38,7 @@ TEST(InterfaceConnectorTest, InstanceIsOnlySetWhileSingletonIsAlive)
     EXPECT_THAT(ITestSingleton::InstanceSet(), testing::IsFalse());
 }
 
+#ifndef EMIL_MUTATION_TESTING
 TEST(InterfaceConnectorTest, ConstructingSecondSingletonAborts)
 {
     TestSingleton t;
@@ -45,7 +46,6 @@ TEST(InterfaceConnectorTest, ConstructingSecondSingletonAborts)
     EXPECT_DEATH({ TestSingleton second; }, "");
 }
 
-#ifndef EMIL_MUTATION_TESTING
 TEST(InterfaceConnectorTest, AccessingInstanceWithoutConstructedSingletonAborts)
 {
     EXPECT_THAT(ITestSingleton::InstanceSet(), testing::IsFalse());
