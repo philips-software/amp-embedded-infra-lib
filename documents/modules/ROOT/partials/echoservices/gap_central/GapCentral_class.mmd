@@ -1,0 +1,35 @@
+classDiagram
+    class GapCentral {
+        <<service id=33>>
+        +GetState()
+        +SetDeviceDiscoveryFilter()
+        +StartDeviceDiscovery()
+        +Connect()
+        +Standby()
+        +PairAndBond()
+        +SetSecurityMode()
+        +SetIoCapabilities()
+        +AuthenticateWithPasskey()
+        +NumericComparisonConfirm()
+        +RemoveAllBonds()
+        +RemoveBondWithAddress()
+        +ResolvePrivateAddress()
+        +GetBondList()
+        +SetIdentityAddress()
+        +SetPrivacyMode()
+        +IsDeviceBonded()
+    }
+    class GapCentralResponse {
+        <<service id=35>>
+        +CurrentState()
+        +DeviceDiscovered()
+        +AuthenticationRequired()
+        +PairingResult()
+        +ResolvePrivateAddressResult()
+        +NumberOfBondsChanged()
+        +BondListReceived()
+        +DeviceBonded()
+    }
+    GapCentral --> GapCentralResponse : responses
+    note for GapCentral "IsDeviceBonded() is deprecated and will be removed in a future release."
+    note for GapCentralResponse "DeviceBonded() is deprecated and will be removed in a future release."

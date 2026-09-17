@@ -1,0 +1,5 @@
+sequenceDiagram
+    participant App as App<br>[implements GapCentralResponse]
+    participant Node as Node<br>[implements GapCentral]
+
+    App->>Node: GapCentral.SetIdentityAddress(<br>addressWithType={address=DE:AD:BE:EF:00:01,<br>addressType=publicAddress})
