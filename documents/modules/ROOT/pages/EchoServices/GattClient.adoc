@@ -22,6 +22,19 @@ Discovery must follow the sequence *Service* -> *Characteristic* -> *Descriptor*
 
 Any pending `GattClient` operation is implicitly cancelled on connection loss. For each pending operation, its listed *Expected response* is guaranteed to be delivered with an error status before the paired GAP service reports `CurrentState(standby)`. The App must re-drive discovery from `StartServiceDiscovery` on the next connection - handles from the previous session are not guaranteed to be valid.
 
+== Typical usage
+
+A typical GATT session against a bonded peripheral runs the steps below in order. Each bullet points to the diagram that shows the mechanic in detail; the composite xref:EchoServices/EndToEndFlows.adoc#central-gatt-session[BLE Central GATT Session] wires all of them together.
+
+. Wait for `GapCentralResponse.CurrentState(connected)` from the paired GAP service.
+. Call `MtuSizeExchangeRequest` once, before any discovery. The negotiated MTU is used by subsequent read / write PDUs and by paginated discovery responses (`ATT_READ_BY_GROUP_TYPE_RSP`, `ATT_READ_BY_TYPE_RSP`), so widening the bearer up-front reduces the number of ATT round-trips discovery needs.
+. Walk the discovery sequence: `StartServiceDiscovery` -> `StartCharacteristicDiscovery` (once per discovered service) -> `StartDescriptorDiscovery` (once per characteristic that owns descriptors). See <<_discovery_flow,Discovery Flow>>.
+. Subscribe by writing to the target characteristic's CCCD: `0x0100` for notifications, `0x0200` for indications (each `IndicationReceived` must be acknowledged with `IndicationDone`). See <<_indication_flow,Indication Flow>>.
+. On `OperationComplete(retry)`, re-submit the exact same call. `retry` is a client-side backpressure signal (the local ATT bearer was momentarily busy); the peripheral has not seen the request, so no state has changed on its side and an immediate re-submit is normally sufficient. See <<_operation_failure_and_retry,Operation Failure and Retry>>.
+. On disconnect, expect the pending operation's `Expected response` to fire with an error status before `CurrentState(standby)`, then re-run the entire session from `MtuSizeExchangeRequest` on the next `CurrentState(connected)`. Handles from the previous session are not guaranteed to be valid. See <<_disconnect_during_operation,Disconnect During Operation>>.
+
+`GattServerDisService.SetDisServiceData` is a server-side companion service, independent of `GattClient`. Call it once during startup, before advertising begins (or before starting device discovery when running a client on the same Node), so remote GATT clients read the intended DIS attributes on their first `ReadCharacteristic`. Re-invocation after DIS attributes have been read is outside the documented contract.
+
 == Interface
 
 [mermaid]
