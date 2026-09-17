@@ -27,7 +27,7 @@ namespace services
                 return std::make_pair(Convert(std::get<Udpv6Socket>(socket).first), std::get<Udpv6Socket>(socket).second);
         }
 
-        u_int8_t DefaultNetifZone()
+        u8_t DefaultNetifZone()
         {
             return netif_default != nullptr ? netif_default->ip6_addr->u_addr.ip6.zone : IP6_NO_ZONE;
         }
