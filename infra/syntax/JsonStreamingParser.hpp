@@ -5,6 +5,7 @@
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/PolymorphicVariant.hpp"
 #include "infra/util/WithStorage.hpp"
+#include <cstdint>
 
 namespace infra
 {

@@ -2,6 +2,7 @@
 #define INFRA_ASN1_HPP
 
 #include "infra/util/ByteRange.hpp"
+#include <cstdint>
 #include <utility>
 
 namespace infra
