@@ -5,14 +5,14 @@ sequenceDiagram
 
     Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. OperationComplete).
 
-    App->>Node: GattClient.WriteCharacteristic(<br>handle=0x0025, data=0x01)
+    App->>Node: GattClient.WriteCharacteristic(<br>handle=0x0045, data=0x01)
 
     alt Successful write
-        Node-)Peripheral: ATT_WRITE_REQ (handle=0x0025, value=0x01)
+        Node-)Peripheral: ATT_WRITE_REQ (handle=0x0045, value=0x01)
         Peripheral-)Node: ATT_WRITE_RSP
         Node-->>App: GattClientResponse.OperationComplete(success)
     else ATT error (e.g. write not permitted)
-        Node-)Peripheral: ATT_WRITE_REQ (handle=0x0025, value=0x01)
+        Node-)Peripheral: ATT_WRITE_REQ (handle=0x0045, value=0x01)
         Peripheral-)Node: ATT_ERROR_RSP (error code)
         Node-->>App: GattClientResponse.OperationComplete(error)
     end

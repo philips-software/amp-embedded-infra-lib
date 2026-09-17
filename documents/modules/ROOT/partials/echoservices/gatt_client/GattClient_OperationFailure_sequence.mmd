@@ -9,8 +9,8 @@ sequenceDiagram
 
     rect rgb(230, 230, 240)
         note over App, Peripheral: Peripheral rejects the write<br>(e.g. insufficient authentication)
-        App->>Node: GattClient.WriteCharacteristic(<br>handle=0x0025, data=0x01)
-        Node-)Peripheral: ATT_WRITE_REQ (handle=0x0025, value=0x01)
+        App->>Node: GattClient.WriteCharacteristic(<br>handle=0x0045, data=0x01)
+        Node-)Peripheral: ATT_WRITE_REQ (handle=0x0045, value=0x01)
         Peripheral-)Node: ATT_ERROR_RSP (0x05 insufficient authentication)
         Node-->>App: GattClientResponse.OperationComplete(error)
         Note over App, Node: OperationComplete(error) causes:<br>insufficient authentication, write not permitted,<br>invalid handle, invalid offset,<br>attribute-not-found, application error.

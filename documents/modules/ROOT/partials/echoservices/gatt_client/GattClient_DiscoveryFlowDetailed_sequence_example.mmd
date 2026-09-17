@@ -62,8 +62,8 @@ sequenceDiagram
         Peripheral-)Node: ATT_HANDLE_VALUE_NTF (handle=66, value=<PLX bytes>)
         Node-->>App: GattClientResponse.NotificationReceived(<br>handle=66,<br>data=1fff07ff07ff07ff07ff07ff070020282000ff07)
 
-        note over App: Decoded PLX Continuous Measurement:<br>spo2=2047, pulse_rate=2047,<br>spo2_fast=2047, pulse_rate_fast=2047,<br>spo2_slow=2047, pulse_rate_slow=2047,<br>measurement_status=8192,<br>device_and_sensor_status=8252,<br>pulse_amplitude_index=2047.
+        note over App: Decoded PLX Continuous Measurement:<br>spo2=2047, pulse_rate=2047,<br>spo2_fast=2047, pulse_rate_fast=2047,<br>spo2_slow=2047, pulse_rate_slow=2047,<br>measurement_status=8192,<br>device_and_sensor_status=8232,<br>pulse_amplitude_index=2047.
 
         Peripheral-)Node: ATT_HANDLE_VALUE_NTF (handle=66, value=<PLX bytes>)
-        Node-->>App: GattClientResponse.NotificationReceived(<br>handle=66,<br>data=1fff07ff07ff07ff07ff070020280000ff07)
+        Node-->>App: GattClientResponse.NotificationReceived(<br>handle=66,<br>data=1fff07ff07ff07ff07ff07ff070020280000ff07)
     end

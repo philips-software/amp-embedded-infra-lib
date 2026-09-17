@@ -11,11 +11,11 @@ sequenceDiagram
         note over App, Peripheral: Read PLX Features characteristic
         App->>Node: GattClient.ReadCharacteristic(69)
         Node-)Peripheral: ATT_READ_REQ (handle=69)
-        Peripheral-)Node: ATT_READ_RSP (0x0700)
-        Node-->>App: GattClientResponse.ReadCharacteristicResponse(<br>data={handle=69, data=0x0700})
+        Peripheral-)Node: ATT_READ_RSP (0x0073)
+        Node-->>App: GattClientResponse.ReadCharacteristicResponse(<br>data={handle=69, data=0x0073})
         Node-->>App: GattClientResponse.OperationComplete(success)
 
-        note over App: 0x0700 = supported features bitmask.<br>Bits indicate SpO2, pulse rate, measurement status.
+        note over App: PLX Features = 0x0073.<br>Bits 0, 1, 4, 5, 6 = Measurement Status support,<br>Device and Sensor Status support, SpO2PR-Fast,<br>SpO2PR-Slow, and Pulse Amplitude Index<br>(PLX Service Spec 1.0.1, Section 3.4.1).
     end
 
     rect rgb(230, 230, 240)
@@ -26,15 +26,6 @@ sequenceDiagram
         Node-->>App: GattClientResponse.OperationComplete(success)
 
         note over App: Wrote 0x0100 to CCCD (handle 67).<br>Notifications are now enabled for value handle 66.
-    end
-
-    rect rgb(230, 230, 240)
-        note over App, Peripheral: Write without response (fire-and-forget)
-        App->>Node: GattClient.WriteCharacteristicWithoutResponse(<br>handle=69, data=0x01)
-        Node-)Peripheral: ATT_WRITE_CMD (handle=69, value=0x01)
-        Node-->>App: GattClientResponse.WriteCharacteristicWithoutResponseComplete(success)
-
-        note over App: success only means the command was queued locally.<br>The peripheral never acknowledges an ATT_WRITE_CMD.
     end
 
     rect rgb(230, 230, 240)

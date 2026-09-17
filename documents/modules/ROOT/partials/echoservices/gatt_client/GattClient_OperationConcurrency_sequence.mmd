@@ -6,7 +6,7 @@ sequenceDiagram
 
     rect rgb(230, 230, 240)
         note over App, Node: Sequential acknowledged operations
-        App->>Node: GattClient.WriteCharacteristic(<br>handle=0x0025, data=0x01)
+        App->>Node: GattClient.WriteCharacteristic(<br>handle=0x0045, data=0x01)
         Note right of App: Wait for OperationComplete before the next call.
         Node-->>App: GattClientResponse.OperationComplete(success)
 
@@ -20,7 +20,7 @@ sequenceDiagram
         App->>Node: GattClient.WriteCharacteristicWithoutResponse(<br>handle=0x0027, data=0x11)
         Node-->>App: GattClientResponse.WriteCharacteristicWithoutResponseComplete(success)
 
-        App->>Node: GattClient.WriteCharacteristic(<br>handle=0x0025, data=0x33)
+        App->>Node: GattClient.WriteCharacteristic(<br>handle=0x0045, data=0x33)
         App->>Node: GattClient.WriteCharacteristicWithoutResponse(<br>handle=0x0027, data=0x22)
         Node-->>App: GattClientResponse.WriteCharacteristicWithoutResponseComplete(success)
         Node-->>App: GattClientResponse.OperationComplete(success)
