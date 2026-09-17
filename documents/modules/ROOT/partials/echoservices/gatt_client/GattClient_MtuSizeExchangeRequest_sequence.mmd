@@ -4,11 +4,9 @@ sequenceDiagram
     participant Peripheral as BLE Peripheral
 
     Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. MtuSizeExchangeComplete).
-    Note over App, Node: Allowed states: connected.<br>Calling outside connected asserts on the Node.<br>May only be called once per connection.<br>Response sequences:<br>- Success: MtuSizeExchangeComplete(value)<br>  -> OperationComplete(success).<br>- Failure: OperationComplete(error).
 
     App->>Node: GattClient.MtuSizeExchangeRequest()
     Node-)Peripheral: ATT_EXCHANGE_MTU_REQ (client rx MTU)
     Peripheral-)Node: ATT_EXCHANGE_MTU_RSP (server rx MTU)
     Node-->>App: GattClientResponse.MtuSizeExchangeComplete(value=247)
     Node-->>App: GattClientResponse.OperationComplete(success)
-    Note over App, Node: The effective MTU is min(client rx MTU, server rx MTU)<br>and is implementation-defined.

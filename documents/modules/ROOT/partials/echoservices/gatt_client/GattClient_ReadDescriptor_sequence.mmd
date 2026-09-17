@@ -4,7 +4,6 @@ sequenceDiagram
     participant Peripheral as BLE Peripheral
 
     Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. ReadDescriptorResponse).
-    Note over App, Node: Allowed states: connected.<br>Pre-conditions: descriptor handle known from<br>DescriptorDiscovered.<br>Response sequences:<br>- Success: ReadDescriptorResponse(data)<br>  -> OperationComplete(success).<br>- Error: OperationComplete(error) on<br>  ATT / permissions failure.<br>- Retry: OperationComplete(retry) when the<br>  ATT bearer is momentarily busy.
 
     App->>Node: GattClient.ReadDescriptor(0x0026)
 

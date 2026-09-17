@@ -6,7 +6,6 @@ sequenceDiagram
     participant Peripheral as Pulse Oximeter<br>BLE Peripheral
 
     Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer / ATT events, not driven by the App.<br>The App only observes them through Echo callbacks.
-    Note over App, Node: Pre-conditions: connected, GATT discovery complete.<br>PLX service handles 64..69 are known.
 
     rect rgb(230, 230, 240)
         note over App, Peripheral: Read PLX Features characteristic
@@ -35,7 +34,7 @@ sequenceDiagram
         Node-)Peripheral: ATT_WRITE_CMD (handle=69, value=0x01)
         Node-->>App: GattClientResponse.WriteCharacteristicWithoutResponseComplete(success)
 
-        note over App: success only means the command was queued locally.<br>The peer never acknowledges an ATT_WRITE_CMD.
+        note over App: success only means the command was queued locally.<br>The peripheral never acknowledges an ATT_WRITE_CMD.
     end
 
     rect rgb(230, 230, 240)

@@ -6,7 +6,6 @@ sequenceDiagram
     participant Peripheral as BLE Peripheral
 
     Note over Node, Peripheral: Messages between Node and<br>BLE Peripheral are link-layer / ATT<br>events, not driven by the App.<br>The App only observes them<br>through Echo callbacks.
-    Note over App, Node: Any pending GATT operation is<br>implicitly cancelled on connection loss<br>and its "Expected response" is delivered<br>with an error status.
 
     App->>Node: GattClient.ReadCharacteristic(0x0025)
     Node-)Peripheral: ATT_READ_REQ (handle=0x0025)

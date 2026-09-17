@@ -21,7 +21,6 @@ sequenceDiagram
         Node-)Peripheral: ATT_WRITE_REQ (handle=0x0026, value=0x0200)
         Peripheral-)Node: ATT_WRITE_RSP
         Node-->>App: GattClientResponse.OperationComplete(success)
-        note over App, Node: CCCD data bytes: 0x0100 = notifications (no ack).<br>0x0200 = indications (ack via IndicationDone).<br>0x0300 = both enabled.
     end
 
     rect rgb(230, 230, 240)
@@ -30,7 +29,7 @@ sequenceDiagram
         Node-->>App: GattClientResponse.IndicationReceived(<br>handle=0x0025, data=0x64)
         App->>Node: GattClient.IndicationDone()
         Node-)Peripheral: ATT_HANDLE_VALUE_CFM
-        Note right of App: The peer will not send the next indication<br>until it receives ATT_HANDLE_VALUE_CFM.
+        Note right of App: The peripheral will not send the next indication<br>until it receives ATT_HANDLE_VALUE_CFM.
 
         Peripheral-)Node: ATT_HANDLE_VALUE_IND (handle=0x0025, value=0x65)
         Node-->>App: GattClientResponse.IndicationReceived(<br>handle=0x0025, data=0x65)

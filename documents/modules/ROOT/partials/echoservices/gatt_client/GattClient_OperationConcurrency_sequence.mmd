@@ -4,8 +4,6 @@ sequenceDiagram
     participant App as App<br>[implements GattClientResponse]
     participant Node as Node<br>[implements GattClient]
 
-    Note over App, Node: Only one acknowledged operation may be in flight at a time.<br>Concurrent WriteCharacteristicWithoutResponse and IndicationDone<br>calls are allowed alongside an in-flight acknowledged operation<br>(but not alongside another WriteCharacteristicWithoutResponse).
-
     rect rgb(230, 230, 240)
         note over App, Node: Sequential acknowledged operations
         App->>Node: GattClient.WriteCharacteristic(<br>handle=0x0025, data=0x01)

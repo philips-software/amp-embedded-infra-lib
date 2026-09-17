@@ -4,7 +4,6 @@ sequenceDiagram
     participant Peripheral as BLE Peripheral
 
     Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. ServiceDiscovered).
-    Note over App, Node: Allowed states: connected.<br>Calling outside connected asserts on the Node.<br>Discovery order:<br>Service -> Characteristic -> Descriptor.<br>Response sequences:<br>- Success: zero or more ServiceDiscovered<br>  -> ServiceDiscoveryComplete(success).<br>- Failure: ServiceDiscoveryComplete(error).
 
     App->>Node: GattClient.StartServiceDiscovery()
     Note over Node, Peripheral: Node issues ATT_READ_BY_GROUP_TYPE_REQ over the<br>primary-service handle range and paginates responses.

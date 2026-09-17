@@ -4,7 +4,6 @@ sequenceDiagram
     participant Peripheral as BLE Peripheral
 
     Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. OperationComplete).
-    Note over App, Node: Allowed states: connected.<br>Pre-conditions: descriptor handle known from<br>DescriptorDiscovered.<br>Response sequences:<br>- Success: OperationComplete(success)<br>  after ATT_WRITE_RSP.<br>- Error: OperationComplete(error) on<br>  ATT / permissions failure.<br>- Retry: OperationComplete(retry) when the<br>  ATT bearer is momentarily busy.<br>CCCD data bytes (uuid 0x2902):<br>- 0x0000 = disabled.<br>- 0x0100 = notifications enabled.<br>- 0x0200 = indications enabled<br>  (ack via IndicationDone).<br>- 0x0300 = notifications + indications.
 
     App->>Node: GattClient.WriteDescriptor(<br>handle=0x0026, data=0x0100)
 
