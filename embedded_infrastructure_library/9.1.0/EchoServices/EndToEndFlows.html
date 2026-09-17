@@ -3,16 +3,16 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>ClaimableResource :: Embedded Infrastructure Library</title>
-    <link rel="canonical" href="https://philips-software.github.io/amp-embedded-infra-lib/embedded_infrastructure_library/9.1.0/ClaimableResource.html">
+    <title>BLE End-to-End Flows :: Embedded Infrastructure Library</title>
+    <link rel="canonical" href="https://philips-software.github.io/amp-embedded-infra-lib/embedded_infrastructure_library/9.1.0/EchoServices/EndToEndFlows.html">
     <meta name="generator" content="Antora 3.1.15">
-    <link rel="stylesheet" href="../../_/css/centralesans.css">
-    <link rel="stylesheet" href="../../_/css/site.css">
-    <link rel="stylesheet" href="../../_/css/site-extra.css">
-    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="../../../_/css/centralesans.css">
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/site-extra.css">
+    <link rel="icon" href="../../../favicon.svg" type="image/svg+xml">
 
-    <link rel="stylesheet" href="../../_/css/site-extra.css">
-    <link rel="stylesheet" href="../../_/css/centralesans.css">
+    <link rel="stylesheet" href="../../../_/css/site-extra.css">
+    <link rel="stylesheet" href="../../../_/css/centralesans.css">
 
       </head>
   <body class="article">
@@ -22,7 +22,7 @@
             <nav class="navbar">
                 <div class="navbar-brand">
                     <a class="navbar-brand">
-                        <img class="scale-down"  src="../../philips-logo.png" alt="Philips"/>
+                        <img class="scale-down"  src="../../../philips-logo.png" alt="Philips"/>
                     </a>
                     <a class="navbar-item" href="https://philips-software.github.io/amp-embedded-infra-lib">Embedded Infrastructure Library</a>
                     <button class="navbar-burger" data-target="topbar-nav">
@@ -51,14 +51,15 @@
 <div class="toolbar toolbar-wrap">
   <div class="toolbar" role="navigation">
   <button class="nav-toggle"></button>
-    <a href="index.html" class="home-link"></a>
+    <a href="../index.html" class="home-link"></a>
   <nav class="breadcrumbs" aria-label="breadcrumbs">
   <ul>
-    <li><a href="index.html">Embedded Infrastructure Library documentation</a></li>
-    <li><a href="ClaimableResource.html">ClaimableResource</a></li>
+    <li><a href="../index.html">Embedded Infrastructure Library documentation</a></li>
+    <li><a href="../EchoServices.html">Echo Services</a></li>
+    <li><a href="EndToEndFlows.html">BLE End-to-End Flows</a></li>
   </ul>
 </nav>
-      <div class="edit-this-page"><a href="file:///home/runner/work/amp-embedded-infra-lib/amp-embedded-infra-lib/documents/modules/ROOT/pages/ClaimableResource.adoc">Edit this page</a></div>
+      <div class="edit-this-page"><a href="file:///home/runner/work/amp-embedded-infra-lib/amp-embedded-infra-lib/documents/modules/ROOT/pages/EchoServices/EndToEndFlows.adoc">Edit this page</a></div>
   </div>
 </div>
   <div class="content">
@@ -68,51 +69,51 @@
 <div class="nav-panel-menu is-active" data-panel="menu">
   <nav class="nav-menu">
     <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
-    <h3 class="title"><a href="index.html">Embedded Infrastructure Library documentation</a></h3>
+    <h3 class="title"><a href="../index.html">Embedded Infrastructure Library documentation</a></h3>
 <ul class="nav-list">
   <li class="nav-item" data-depth="0">
 <ul class="nav-list">
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="ExecutionModel.html">Execution Model</a>
+    <a class="nav-link" href="../ExecutionModel.html">Execution Model</a>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="EventDispatcher.html">Event Dispatcher</a>
-  </li>
-  <li class="nav-item is-current-page" data-depth="1">
-    <a class="nav-link" href="ClaimableResource.html">ClaimableResource</a>
+    <a class="nav-link" href="../EventDispatcher.html">Event Dispatcher</a>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="MemoryRange.html">MemoryRange</a>
+    <a class="nav-link" href="../ClaimableResource.html">ClaimableResource</a>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="Containers.html">Containers</a>
+    <a class="nav-link" href="../MemoryRange.html">MemoryRange</a>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="EchoProtocol.html">Echo Protocol</a>
+    <a class="nav-link" href="../Containers.html">Containers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../EchoProtocol.html">Echo Protocol</a>
   </li>
   <li class="nav-item" data-depth="1">
     <button class="nav-item-toggle"></button>
-    <a class="nav-link" href="EchoServices.html">Echo Services</a>
+    <a class="nav-link" href="../EchoServices.html">Echo Services</a>
 <ul class="nav-list">
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="EchoServices/GapPeripheral.html">GapPeripheral</a>
+    <a class="nav-link" href="GapPeripheral.html">GapPeripheral</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="EchoServices/GapCentral.html">GapCentral</a>
+    <a class="nav-link" href="GapCentral.html">GapCentral</a>
   </li>
-  <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="EchoServices/EndToEndFlows.html">BLE End-to-End Flows</a>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="EndToEndFlows.html">BLE End-to-End Flows</a>
   </li>
 </ul>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="Sesame.html">Sesame</a>
+    <a class="nav-link" href="../Sesame.html">Sesame</a>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="NetworkConnections.html">NetworkConnections</a>
+    <a class="nav-link" href="../NetworkConnections.html">NetworkConnections</a>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="CodingStandard.html">Coding Standard</a>
+    <a class="nav-link" href="../CodingStandard.html">Coding Standard</a>
   </li>
 </ul>
   </li>
@@ -127,54 +128,50 @@
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<h1 class="page">ClaimableResource</h1>
-<div class="sect1">
-<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<h1 class="page">BLE End-to-End Flows</h1>
+<div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p><code>infra::ClaimableResource</code> queues claimers until the resource can be granted.
-This is useful for serialized access, but it introduces ordering and lifetime subtleties.</p>
+<p>Cross-service flows that combine multiple services to illustrate typical user journeys.</p>
 </div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_ble_central_complete_flow"><a class="anchor" href="#_ble_central_complete_flow"></a>BLE Central Complete Flow</h2>
+<div class="sectionbody">
 <div class="paragraph">
-<p>For broader dispatcher usage and lifetime patterns, see <a href="EventDispatcher.html" class="xref page">Event Dispatcher</a>.</p>
+<p>Scan, connect, pair, bond.</p>
 </div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-7d6c0ad6e831a40e9d698d6d8cd6b222e32ce134.svg" alt="Diagram">
 </div>
-</div>
-<div class="sect1">
-<h2 id="_common_pitfalls"><a class="anchor" href="#_common_pitfalls"></a>Common pitfalls</h2>
-<div class="sectionbody">
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Do not assume a fixed timing model for <code>Claim()</code>. A claim can be granted very soon (next dispatcher turn) or later,
-depending on current ownership and queue state.</p>
-</li>
-<li>
-<p>Do not assume there are no scheduled claim-related callbacks after releasing interest.</p>
-</li>
-<li>
-<p>Do not destroy objects while it is still possible that claim handling is queued.</p>
-</li>
-</ol>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_recommended_solutions"><a class="anchor" href="#_recommended_solutions"></a>Recommended solutions</h2>
+<h2 id="_ble_peripheral_complete_flow"><a class="anchor" href="#_ble_peripheral_complete_flow"></a>BLE Peripheral Complete Flow</h2>
 <div class="sectionbody">
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Design claim callbacks so they are safe regardless of whether execution is effectively immediate or delayed.</p>
-</li>
-<li>
-<p>Explicitly release claimers during shutdown.</p>
-</li>
-<li>
-<p>If it is not certain that no claim-related work is scheduled anymore, implement an asynchronous stop phase with
-<code>services::Stoppable</code> and wait for stop completion before destruction.</p>
-</li>
-</ol>
+<div class="paragraph">
+<p>Configure, advertise, accept connection, pair, bond.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-86a1bf06aa871db3e7c4bbc2f3b49387be72aba3.svg" alt="Diagram">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_ble_central_bonded_reconnection"><a class="anchor" href="#_ble_central_bonded_reconnection"></a>BLE Central Bonded Reconnection</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Scan for a bonded peripheral, reconnect, and re-encrypt using stored keys (no SMP pairing).</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-b9221d26e019b7de4d347daa14db4a5ffe92092d.svg" alt="Diagram">
+</div>
 </div>
 </div>
 </div>
@@ -186,17 +183,17 @@ depending on current ownership and queue state.</p>
   <p>© Koninklijke Philips N.V., 2022. All rights reserved.</p>
 </footer>
 
-<script type="text/javascript" src="../../_/js/medium-zoom.min.js"></script>
+<script type="text/javascript" src="../../../_/js/medium-zoom.min.js"></script>
 <script type="text/javascript">
 mediumZoom('.data-zoomable img', {
   margin: 50,
   background: '#FFFFFFA1',
 })
 </script>
-<script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
-<script async src="../../_/js/vendor/highlight.js"></script>
-<script src="../../_/js/vendor/lunr.js"></script>
-<script src="../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../.." data-snippet-length="100" data-stylesheet="../../_/css/search.css"></script>
-<script async src="../../search-index.js"></script>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/lunr.js"></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css"></script>
+<script async src="../../../search-index.js"></script>
   </body>
 </html>

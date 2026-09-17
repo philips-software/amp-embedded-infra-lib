@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>GapCentral :: Embedded Infrastructure Library</title>
+    <link rel="canonical" href="https://philips-software.github.io/amp-embedded-infra-lib/embedded_infrastructure_library/9.1.0/EchoServices/GapCentral.html">
+    <meta name="generator" content="Antora 3.1.15">
+    <link rel="stylesheet" href="../../../_/css/centralesans.css">
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/site-extra.css">
+    <link rel="icon" href="../../../favicon.svg" type="image/svg+xml">
+
+    <link rel="stylesheet" href="../../../_/css/site-extra.css">
+    <link rel="stylesheet" href="../../../_/css/centralesans.css">
+
+      </head>
+  <body class="article">
+<header class="header" role="banner">
+    <div class="header-top-row">
+        <div class="container">
+            <nav class="navbar">
+                <div class="navbar-brand">
+                    <a class="navbar-brand">
+                        <img class="scale-down"  src="../../../philips-logo.png" alt="Philips"/>
+                    </a>
+                    <a class="navbar-item" href="https://philips-software.github.io/amp-embedded-infra-lib">Embedded Infrastructure Library</a>
+                    <button class="navbar-burger" data-target="topbar-nav">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                </div>
+                <div id="topbar-nav" class="navbar-menu">
+                    <div class="navbar-end">
+                        <a class="navbar-item" href="https://github.com/philips-software/amp-embedded-infra-lib">
+                            <span class="icon">
+                                <svg aria-labelledby="simpleicons-github-icon" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <title id="simpleicons-github-icon">GitHub</title>
+                                <path fill="#f5f5f5" d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                            </span>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </div>
+</header>
+<div class="body">
+<main class="article">
+<div class="toolbar toolbar-wrap">
+  <div class="toolbar" role="navigation">
+  <button class="nav-toggle"></button>
+    <a href="../index.html" class="home-link"></a>
+  <nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Embedded Infrastructure Library documentation</a></li>
+    <li><a href="../EchoServices.html">Echo Services</a></li>
+    <li><a href="GapCentral.html">GapCentral</a></li>
+  </ul>
+</nav>
+      <div class="edit-this-page"><a href="file:///home/runner/work/amp-embedded-infra-lib/amp-embedded-infra-lib/documents/modules/ROOT/pages/EchoServices/GapCentral.adoc">Edit this page</a></div>
+  </div>
+</div>
+  <div class="content">
+<div class="nav-container" data-component="embedded_infrastructure_library" data-version="9.1.0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../index.html">Embedded Infrastructure Library documentation</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../ExecutionModel.html">Execution Model</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../EventDispatcher.html">Event Dispatcher</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../ClaimableResource.html">ClaimableResource</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../MemoryRange.html">MemoryRange</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../Containers.html">Containers</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../EchoProtocol.html">Echo Protocol</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../EchoServices.html">Echo Services</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="GapPeripheral.html">GapPeripheral</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="GapCentral.html">GapCentral</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="EndToEndFlows.html">BLE End-to-End Flows</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../Sesame.html">Sesame</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../NetworkConnections.html">NetworkConnections</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../CodingStandard.html">Coding Standard</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div></div>
+    </div>
+  </aside>
+</div>
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">GapCentral</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p><code>GapCentral</code> implements the BLE GAP central role: scanning, connecting, pairing/bonding, security configuration, and identity/privacy management. All asynchronous callbacks are delivered on <code>GapCentralResponse</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_state_constraints"><a class="anchor" href="#_state_constraints"></a>State Constraints</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Unless a method&#8217;s documentation specifies otherwise, all methods are allowed in all link-layer states. Calling a method outside its allowed states results in an assertion.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_startup"><a class="anchor" href="#_startup"></a>Startup</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The first <code>CurrentState(standby)</code> message signals that the service is initialized and ready to accept method calls. No <code>GapCentral</code> methods may be called before this initial callback.</p>
+</div>
+<div class="paragraph">
+<p><strong>Recognising the Node startup boundary:</strong> on serial transports the App recognizes the Node as "started" once (1) the SESAME <code>Init</code> / <code>InitResponse</code> handshake completes (peer window open) and (2) the first <code>CurrentState(standby)</code> fires. On TCP transports the analogous boundary is TCP connection established followed by the same <code>CurrentState(standby)</code>. See <a href="../Sesame.html" class="xref page">SESAME</a> for details of the transport handshake.</p>
+</div>
+<div class="paragraph">
+<p>Calling a method before the initial <code>CurrentState(standby)</code> callback is a contract violation and results in an assertion on the Node side. This can also happen if the Node resets unexpectedly (e.g. watchdog, power event) while the App is running: the Node re-issues its startup handshake, and any App method call issued before the App observes the new <code>CurrentState(standby)</code> will assert. Applications should treat every fresh <code>CurrentState(standby)</code> callback as a service-ready boundary and re-drive their initial configuration from that point.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_interface"><a class="anchor" href="#_interface"></a>Interface</h2>
+<div class="sectionbody">
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-a9cb8cd5f7bbea929d0e45c11e22cab537e80c5c.svg" alt="Diagram">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_state_diagram"><a class="anchor" href="#_state_diagram"></a>State Diagram</h2>
+<div class="sectionbody">
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-534340b194368a86cbd0b129377525a1aedf069d.svg" alt="Diagram">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_per_method_sequence_diagrams"><a class="anchor" href="#_per_method_sequence_diagrams"></a>Per-Method Sequence Diagrams</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_getstate"><a class="anchor" href="#_getstate"></a>GetState</h3>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-29aa752a809932c3d9f3bd471feb6d77a90be920.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_standby"><a class="anchor" href="#_standby"></a>Standby</h3>
+<div class="paragraph">
+<p><strong>Allowed states:</strong> standby, scanning, initiating, connected.</p>
+</div>
+<div class="paragraph">
+<p>Terminates the current activity (scan, initiating connection, or connected link) and returns the Node to standby. Calling from standby still yields <code>CurrentState(standby)</code>.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-04f7fbbcc2825161ef090a403b20c506503ab9a2.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_setdevicediscoveryfilter"><a class="anchor" href="#_setdevicediscoveryfilter"></a>SetDeviceDiscoveryFilter</h3>
+<div class="paragraph">
+<p><strong>Allowed states:</strong> standby.</p>
+</div>
+<div class="paragraph">
+<p>Fire-and-forget, no response callback. Only devices matching the filter are reported via <code>GapCentralResponse.DeviceDiscovered</code>. The filter is scan-scoped by design (it configures the current scan session, not a persistent policy), so it self-clears when the Node transitions out of <code>scanning</code>, and the App normally does not need to clear it between scan sessions. An explicit <code>SetDeviceDiscoveryFilter(filter=none)</code> is idempotent and useful when a filter was set without ever starting a scan.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-552cdf3cdee71eff9da5f1f8a7cfb35a350d5d1f.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_startdevicediscovery"><a class="anchor" href="#_startdevicediscovery"></a>StartDeviceDiscovery</h3>
+<div class="paragraph">
+<p><strong>Allowed states:</strong> standby.</p>
+</div>
+<div class="paragraph">
+<p><strong>Pre-conditions:</strong> optional <code>SetDeviceDiscoveryFilter</code> to restrict reported advertisers.</p>
+</div>
+<div class="paragraph">
+<p>Starts scanning. The Node transitions to <code>scanning</code> and reports each matching advertisement via <code>DeviceDiscovered</code> until <code>Standby()</code> is called.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-01bebbb5288e813a39101166496a7b9b6eb80706.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_connect"><a class="anchor" href="#_connect"></a>Connect</h3>
+<div class="paragraph">
+<p><strong>Allowed states:</strong> standby.</p>
+</div>
+<div class="paragraph">
+<p><strong>Pre-conditions:</strong> optional <code>SetIdentityAddress</code> / <code>SetPrivacyMode</code> (own address type used on CONNECT_IND).</p>
+</div>
+<div class="paragraph">
+<p>Initiates a connection to a peripheral at the specified address. The Node transitions <code>standby</code> &#8594; <code>initiating</code>. If a bidirectional data exchange completes within <code>initiatingTimeoutInMs</code>, the Node transitions to <code>connected</code>. Otherwise it returns to <code>standby</code>.</p>
+</div>
+<div class="paragraph">
+<p><strong><code>initiatingTimeoutInMs</code> guidance:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Zero means wait indefinitely (per proto).</p>
+</li>
+<li>
+<p>Minimum practical value: several multiples of the peripheral&#8217;s advertising interval, giving the connection setup one or two connection events to complete after <code>CONNECT_IND</code>. For a peripheral advertising at 100 ms, at least 300-500 ms.</p>
+</li>
+<li>
+<p>Recommended: 3000-10000 ms for interactive use cases (App is waiting on user input, so a timely failure is preferable to hanging).</p>
+</li>
+<li>
+<p>Long-running / power-sensitive: 30000 ms and above, or zero, for cases where the App is content to wait for the peripheral to come into range.</p>
+</li>
+<li>
+<p>Example uses 5000 ms.</p>
+</li>
+</ul>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-cdb3bc3578739549125bcfc5184148757330e9d6.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_pairandbond"><a class="anchor" href="#_pairandbond"></a>PairAndBond</h3>
+<div class="paragraph">
+<p><strong>Allowed states:</strong> connected.</p>
+</div>
+<div class="paragraph">
+<p><strong>Pre-conditions:</strong> optional <code>SetSecurityMode</code> and <code>SetIoCapabilities</code> (consumed at SMP start to select the pairing method).</p>
+</div>
+<div class="paragraph">
+<p>Secures the connection to the currently connected peripheral. Two paths are possible:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>No pre-existing bond</strong> - runs the LESC SMP procedure (Just Works, Numeric Comparison, or Passkey Entry depending on IoCapabilities negotiation), enables LL encryption, and stores the resulting keys as a bond.</p>
+</li>
+<li>
+<p><strong>Pre-existing bond</strong> - skips SMP and re-encrypts the link using the stored LTK.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If the peripheral sends a security request first, this procedure runs automatically without an explicit App call.</p>
+</div>
+<div class="paragraph">
+<p><strong>Response sequences</strong>:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Successful pairing with new bond: <code>AuthenticationRequired</code> (if applicable) &#8594; <code>NumberOfBondsChanged</code> &#8594; <code>PairingResult</code>.</p>
+</li>
+<li>
+<p>Successful re-encryption with existing bond: <code>NumberOfBondsChanged</code> &#8594; <code>PairingResult</code>.</p>
+</li>
+<li>
+<p>Pairing failure: <code>AuthenticationRequired</code> (if applicable) &#8594; <code>PairingResult(pairedSuccessfully=false)</code>.</p>
+</li>
+<li>
+<p>Peripheral-initiated disconnect during pairing: <code>PairingResult(pairedSuccessfully=false)</code> &#8594; <code>CurrentState(standby)</code>.</p>
+</li>
+</ul>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-8818bd7380499d9d0f87c50702f41d6ace467144.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_setsecuritymode"><a class="anchor" href="#_setsecuritymode"></a>SetSecurityMode</h3>
+<div class="paragraph">
+<p><strong>Allowed states:</strong> standby.</p>
+</div>
+<div class="paragraph">
+<p>Fire-and-forget, no response callback. Should be called once during initialization before any connections are made.</p>
+</div>
+<div class="paragraph">
+<p><strong>Security mode is a pairing-time requirement, not a Connect-time filter.</strong> Setting a required security level does not prevent the underlying <code>Connect</code> from succeeding. It prevents <strong>pairing</strong> from completing with peripherals whose IoCapabilities cannot satisfy the required level. Observable sequence when the peripheral cannot meet the level:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><code>Connect(&#8230;&#8203;)</code> &#8594; <code>CurrentState(initiating)</code> &#8594; <code>CurrentState(connected)</code> (the connection is established normally).</p>
+</li>
+<li>
+<p><code>PairAndBond()</code> (or a peripheral-initiated security request that auto-triggers PairAndBond) starts SMP negotiation.</p>
+</li>
+<li>
+<p>Central detects the peripheral&#8217;s IoCapabilities cannot satisfy the required MITM level.</p>
+</li>
+<li>
+<p><code>PairingResult(pairedSuccessfully=false, reason=authenticationRequirementsNotMet)</code>.</p>
+</li>
+<li>
+<p>The link stays connected on SMP failure. The App typically calls <code>Standby()</code> (or the peripheral disconnects voluntarily on receiving the SMP Pairing Failed PDU), producing <code>CurrentState(standby)</code> via one of those paths, not automatic on pairing failure per se.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>If the App wants to reject connections to capability-mismatched peripherals up-front, it must decide before calling <code>Connect</code> (e.g. by inspecting scan-response data or a prior bond entry). The Node cannot pre-empt the connection based on security mode.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-4b9498be0716a83c095242290f510751b8c32a60.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_setiocapabilities"><a class="anchor" href="#_setiocapabilities"></a>SetIoCapabilities</h3>
+<div class="paragraph">
+<p><strong>Allowed states:</strong> standby.</p>
+</div>
+<div class="paragraph">
+<p>Fire-and-forget, no response callback. Should be called once during initialization before any pairing takes place. The selected capability drives the pairing method during <code>PairAndBond</code> (Just Works, Passkey Entry, or Numeric Comparison).</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-a0024c40c0000b442a6bf4b9952b9f2228f52105.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_numericcomparisonconfirm"><a class="anchor" href="#_numericcomparisonconfirm"></a>NumericComparisonConfirm</h3>
+<div class="paragraph">
+<p><strong>Allowed states:</strong> connected.</p>
+</div>
+<div class="paragraph">
+<p><strong>Pre-conditions:</strong> prior <code>AuthenticationRequired(isNumericComparison=true)</code>. Must be called within the 30s SMP timeout (Core Spec v6.3, Vol 3, Part H, Section 3.4).</p>
+</div>
+<div class="paragraph">
+<p><strong>Peripheral disconnect during the confirmation pause:</strong> while the App is waiting on the user to compare the derived passkey, the SMP procedure is paused waiting on the local <code>NumericComparisonConfirm</code> call. If the peripheral disconnects during that pause (LL_TERMINATE_IND, LL supervision timeout, HCI-level disconnect), the App may or may not observe <code>PairingResult(pairedSuccessfully=false)</code> before <code>CurrentState(standby)</code> fires. This is not a proto imprecision. It reflects a real limitation at the BLE-stack layer: an actively-running SMP procedure typically surfaces a cancellation on disconnect, but a paused procedure has no canonical cancellation event because the stack was waiting on the local device (not the peripheral) when the disconnect arrived. Practical guidance: treat <code>CurrentState(standby)</code> as terminal for the ongoing pairing procedure, and do not block on <code>PairingResult</code> after receiving it.</p>
+</div>
+<div class="paragraph">
+<p>The same behaviour applies to <code>AuthenticateWithPasskey</code> during Passkey Entry (see below).</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-487ccf3f805a0a9a22e9e890994450075fbecbf7.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_authenticatewithpasskey"><a class="anchor" href="#_authenticatewithpasskey"></a>AuthenticateWithPasskey</h3>
+<div class="paragraph">
+<p><strong>Allowed states:</strong> connected.</p>
+</div>
+<div class="paragraph">
+<p><strong>Pre-conditions:</strong> prior <code>AuthenticationRequired(isNumericComparison=false)</code> (Passkey Entry method). Must be called within the 30s SMP timeout (Core Spec v6.3, Vol 3, Part H, Section 3.4).</p>
+</div>
+<div class="paragraph">
+<p><strong>Peripheral disconnect during the passkey-entry pause:</strong> same race condition as <code>NumericComparisonConfirm</code> above. If the peripheral disconnects while the App is collecting the passkey from the user, <code>PairingResult</code> may or may not fire before <code>CurrentState(standby)</code>. Treat <code>CurrentState(standby)</code> as terminal.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-faed6934dd0aa54ae44c6e1ed353500ed220c0f7.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_numericcomparison_authentication"><a class="anchor" href="#_numericcomparison_authentication"></a>NumericComparison Authentication</h3>
+<div class="paragraph">
+<p><strong>Pre-conditions:</strong> connected; <code>IoCapabilities</code> set to <code>displayYesNo</code> or <code>keyboardDisplay</code>.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-c5e1f1c235e7adfa670223190dcf9c292766020d.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_passkey_authentication"><a class="anchor" href="#_passkey_authentication"></a>Passkey Authentication</h3>
+<div class="paragraph">
+<p><strong>Pre-conditions:</strong> connected; <code>IoCapabilities</code> set for passkey entry (display and/or keyboard).</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-9329279217e463221864fb9a9b70e1456311f0f7.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolveprivateaddress"><a class="anchor" href="#_resolveprivateaddress"></a>ResolvePrivateAddress</h3>
+<div class="paragraph">
+<p><strong>Allowed states:</strong> standby, scanning, connected, initiating.</p>
+</div>
+<div class="paragraph">
+<p>Given a resolvable private address (RPA), returns the identity address of the bonded peripheral whose IRK produces that RPA, or reports failure if the address is not an RPA or does not match any stored bond. <strong>Works against the entire bond list without requiring an active connection</strong> to the peripheral.</p>
+</div>
+<div class="paragraph">
+<p><strong>Typical use case:</strong> Identify whether a device seen while scanning (which may advertise using a rotating RPA rather than its identity address) is already known / bonded, so the App can decide whether to reconnect via <code>Connect(bond.identityAddress)</code> or ignore the discovery. See also the <strong>Identify Bonded Device</strong> cross-service flow, which uses this method to fold RPA resolution into a discovery sweep. Since <code>IsDeviceBonded</code> is deprecated, <code>ResolvePrivateAddress</code> is the recommended way to answer "is this scanned device already bonded?" without initiating a connection.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-366344f8d4f52442a545d81ed9b87594ea5018e4.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_getbondlist"><a class="anchor" href="#_getbondlist"></a>GetBondList</h3>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-a05866e3b344411273ae7266a27fff43c74ec10b.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_removeallbonds"><a class="anchor" href="#_removeallbonds"></a>RemoveAllBonds</h3>
+<div class="paragraph">
+<p><strong>Allowed states:</strong> standby.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-b0e5892c7130a2de0cfe1487119a034781d90021.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_removebondwithaddress"><a class="anchor" href="#_removebondwithaddress"></a>RemoveBondWithAddress</h3>
+<div class="paragraph">
+<p><strong>Allowed states:</strong> standby.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-76a58f1775eacf5d26407cc358567b4d6cfce714.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_setidentityaddress"><a class="anchor" href="#_setidentityaddress"></a>SetIdentityAddress</h3>
+<div class="paragraph">
+<p><strong>Allowed states:</strong> standby.</p>
+</div>
+<div class="paragraph">
+<p>Fire-and-forget, no response callback. Sets the address the central presents as its identity. With privacy disabled the controller uses this address directly on the air. With privacy enabled the controller generates and rotates a resolvable private address on the air, but the identity address is still distributed to bonded peripherals via the SMP <code>Identity_Address_Information</code> PDU (Core Spec v6.3, Vol 3, Part H, Section 3.6.1) so future RPAs resolve back to the same identity.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-1c4d3a80a675d27fc4706af429e51470f38ce344.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_setprivacymode"><a class="anchor" href="#_setprivacymode"></a>SetPrivacyMode</h3>
+<div class="paragraph">
+<p><strong>Allowed states:</strong> standby.</p>
+</div>
+<div class="paragraph">
+<p>Fire-and-forget, no response callback.</p>
+</div>
+<div class="paragraph">
+<p><strong>Pre-conditions:</strong> when enabling, call <code>SetIdentityAddress</code> first so future bonds capture the intended identity.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-e0820302166217614d39239c90bf879560d81106.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_isdevicebonded"><a class="anchor" href="#_isdevicebonded"></a>IsDeviceBonded</h3>
+<div class="paragraph">
+<p><strong>Deprecated.</strong> Will be removed in a future release. Prefer <code>ResolvePrivateAddress</code> or <code>GetBondList</code> for bond queries.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-61eee9740a1a5306fb8ac65d9561f4d7e5b9bec5.svg" alt="Diagram">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_cross_service_sequence_diagrams"><a class="anchor" href="#_cross_service_sequence_diagrams"></a>Cross-Service Sequence Diagrams</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_discovery_and_connection"><a class="anchor" href="#_discovery_and_connection"></a>Discovery and Connection</h3>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-2b592749be5958ad1c71800a4acd60e977fdbfb5.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_discovery_timeout"><a class="anchor" href="#_discovery_timeout"></a>Discovery Timeout</h3>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-ee3f8b8ec3f6adb596ab10283b623da0f0ab1d1f.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_enable_privacy"><a class="anchor" href="#_enable_privacy"></a>Enable Privacy</h3>
+<div class="paragraph">
+<p><strong>Pre-conditions:</strong> standby.</p>
+</div>
+<div class="paragraph">
+<p>Configures the central to use resolvable private addresses (RPAs) for its own advertising / initiating.</p>
+</div>
+<div class="paragraph">
+<p>Note the order of the two configuration calls: <code>SetIdentityAddress</code> first, <code>SetPrivacyMode(true)</code> second. The <code>SetIdentityAddress</code> section explains why the identity address is still relevant with privacy on: it is what the central distributes to bonded peripherals so future RPAs resolve back to a consistent identity. If <code>SetIdentityAddress</code> is skipped, the identity address defaults to whatever the HAL implementation chose at boot (typically a device-unique random address).</p>
+</div>
+<div class="paragraph">
+<p><strong>Order rationale:</strong> set the identity you want to be bonded under <strong>before</strong> enabling privacy so that any bond created afterwards captures the intended identity address, not the boot default.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-5cf470a8a5378f8fbf0cc519f8e54937ad96552a.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_identify_bonded_device"><a class="anchor" href="#_identify_bonded_device"></a>Identify Bonded Device</h3>
+<div class="paragraph">
+<p>Scan for peripherals using resolvable private addresses (RPAs) and identify which ones are already bonded via <code>ResolvePrivateAddress</code>.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-b4c331104c41910bb7afd63f70888eecbe5069d0.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_selective_bond_removal"><a class="anchor" href="#_selective_bond_removal"></a>Selective Bond Removal</h3>
+<div class="paragraph">
+<p><strong>Pre-conditions:</strong> standby.</p>
+</div>
+<div class="paragraph">
+<p>Enumerate stored bonds via <code>GetBondList</code> and remove a specific bond by identity address using <code>RemoveBondWithAddress</code>.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-267b9380b0ee08520ef44828e1dae8e261cbc0f4.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_pairing_failure_reasons"><a class="anchor" href="#_pairing_failure_reasons"></a>Pairing Failure Reasons</h3>
+<div class="paragraph">
+<p>Illustrates the different <code>PairingFailedReason</code> values reported via <code>PairingResult(pairedSuccessfully=false)</code> for typical failure paths.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-9db7920daca946e1f4cd59f8e2591b0384ea54ca.svg" alt="Diagram">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_examples"><a class="anchor" href="#_examples"></a>Examples</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_discovery_and_connection_2"><a class="anchor" href="#_discovery_and_connection_2"></a>Discovery and Connection</h3>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-55ddba96aba225dcaa625e1e7dea1c0030f2719d.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_numeric_comparison_pairing"><a class="anchor" href="#_numeric_comparison_pairing"></a>Numeric Comparison Pairing</h3>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-c9adcaad61a0a63278c0e4f0cbc0b6f40fa2dda9.svg" alt="Diagram">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_reference"><a class="anchor" href="#_reference"></a>Reference</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Service definition: <a href="https://github.com/philips-software/amp-embedded-infra-lib/blob/main/services/ble/Gap.proto">services/ble/Gap.proto</a>.</p>
+</div>
+<details>
+<summary class="title">View Gap.proto inline</summary>
+<div class="content">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-protobuf hljs" data-lang="protobuf">syntax = "proto3";
+
+import "EchoAttributes.proto";
+
+package gap;
+option java_package = "com.philips.emil.protobufEcho";
+option java_outer_classname = "GapProto";
+
+// ==================================================
+// GAP COMMON
+// ==================================================
+
+message Address
+{
+    // A 48-bit Bluetooth device address, as defined in Bluetooth Core Specification v6.3, Vol 6, Part B, Section 1.3
+    // Encoded as a 6-byte Bluetooth device address in least-significant-octet-first order.
+    // Example: "AA:BB:CC:DD:EE:FF" is represented as { 0xFF, 0xEE, 0xDD, 0xCC, 0xBB, 0xAA }.
+    bytes address = 1 [(bytes_size) = 6];
+}
+
+message BoolValue
+{
+    bool value = 1;
+}
+
+message UInt32Value
+{
+    uint32 value = 1;
+}
+
+// Link layer states of a device in a Peripheral or Central role
+// Peripheral role states are standby, connected and advertising.
+// Central role states are standby, scanning, connected and initiating.
+// Allowed transitions are as follows.
+// 1. Every state can go to standby.
+// 2. Every state can be entered from standby except the connected state.
+// 3. Connected state can only be entered from advertising and initiating states.
+// For further details refer to Bluetooth Core Specification v6.3, Vol 6, Part B, Section 1.1
+message State
+{
+    enum Event
+    {
+        standby = 0;
+        scanning = 1;
+        connected = 2;
+        advertising = 3;
+        initiating = 4;
+    }
+    Event value = 1;
+}
+
+// Based on Bluetooth Core Specification v6.3, Vol 3, Part H, Section 2.3.2
+message IoCapabilities
+{
+    enum IoCapabilitiesEnum
+    {
+        none = 0;
+        display = 1;
+        displayYesNo = 2;
+        keyboard = 3;
+        keyboardDisplay = 4;
+    }
+
+    IoCapabilitiesEnum ioCaps = 1;
+}
+
+// Based on Bluetooth Core Specification v6.3, Vol 3, Part C, Section 10.2
+message SecurityLevel
+{
+    enum SecurityLevelEnum
+    {
+        none = 0;
+        unauthenticatedPairing = 1;
+        authenticatedPairing = 2;
+        authenticatedPairingWithLE = 3;
+    }
+
+    SecurityLevelEnum level = 1;
+}
+
+// Based on Bluetooth Core Specification v6.3, Vol 6, Part B, Section 1.3
+message AddressType
+{
+    enum AddressTypeEnum
+    {
+        publicAddress = 0;
+
+        // Random addresses can be either static random or private (resolvable or non-resolvable).
+        // The subtype is encoded in the two most significant bits of the address (bits 47-46):
+        //   00 - Non-resolvable private: rotated periodically, cannot be resolved.
+        //   01 - Resolvable private (RPA): rotated periodically, can be resolved using the peer's IRK (Identity Resolving Key).
+        //   11 - Static random: fixed for the lifetime of the device or until a power cycle.
+        // See Bluetooth Core Specification v6.3, Vol 6, Part B, Section 1.3.2.
+        randomAddress = 1;
+    }
+
+    AddressTypeEnum type = 1;
+}
+
+// A Bluetooth device address and its type.
+// The interpretation of 'address' depends on 'addressType':
+//   - publicAddress: a fixed IEEE 802-assigned address.
+//   - randomAddress: a random or private address (see AddressTypeEnum.randomAddress).
+message AddressWithType
+{
+    Address address = 1;
+    AddressType addressType = 2;
+}
+
+message PairingFailedReason
+{
+    enum PairingFailedReasonEnum
+    {
+        // SMP Pairing Failed reason codes as defined in Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.5.5.
+        // Note: enum numeric values are an internal representation and are not guaranteed to match the spec's assigned error code values.
+        passkeyEntryFailed = 0;                         // The user input of passkey failed, for example, the user cancelled the operation.
+        oobNotAvailable = 1;
+        authenticationRequirementsNotMet = 2;           // The pairing procedure cannot be performed as authentication requirements cannot be met due to IO capabilities of one or both devices.
+        confirmValueFailed = 3;                         // The confirm value does not match the calculated compare value.
+        pairingNotSupported = 4;
+        insufficientEncryptionKeySize = 5;              // The resultant encryption key size is not long enough for the security requirements of this device.
+        commandNotSupported = 6;                        // The SMP command received is not supported on this device.
+        unspecifiedReason = 7;                          // Pairing failed due to an unspecified reason.
+        repeatedAttempts = 8;                           // Pairing or authentication procedure is disallowed because too little time has elapsed since last pairing request or security request.
+        invalidParameters = 9;                          // The Invalid Parameters error code indicates that the command length is invalid or that a parameter is outside of the specified range.
+        dhkeyCheckFailed = 10;                          // Indicates to the remote device that the DHKey Check value received doesn’t match the one calculated by the local device.
+        numericComparisonFailed = 11;                   // The numeric comparison of the passkey failed.
+        brEdrPairingInProgress = 12;                    // Indicates that the pairing over the LE transport failed due to a Pairing Request sent over the BR/EDR transport in progress.
+        crossTransportKeyDerivationNotAllowed = 13;     // Indicates that the BR/EDR Link Key generated on the BR/EDR transport cannot be used to derive and distribute keys for the LE transport or the LE LTK generated on the LE transport cannot be used to derive a key for the BR/EDR transport.
+        keyRejected = 14;                               // Indicates that the device chose not to accept a distributed key.
+
+        // The following values are not SMP Pairing Failed reason codes.
+        // They represent other failure outcomes of the overall PairAndBond procedure.
+
+        // The SMP pairing procedure did not complete within the protocol timeout.
+        timeout = 15;           // Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4
+
+        // SMP pairing completed successfully, but enabling link-layer encryption failed afterwards.
+        encryptionFailed = 16;
+
+        // If the failure reason does not fit any of the above categories, this value will be used
+        unknown = 17;
+    }
+
+    PairingFailedReasonEnum reason = 1;
+}
+
+message PairingStatus
+{
+    bool pairedSuccessfully = 1;    // If false then 'reason' will indicate the failure reason.
+    PairingFailedReason reason = 2;
+}
+
+message BondsStatus
+{
+    uint32 currentBonds = 1;
+    uint32 maxBonds = 2;
+}
+
+// Based on Bluetooth Core Specification v6.3, Vol 3, Part H, Sections 2.3.5.3 and 2.3.5.6
+message AuthenticationRequest
+{
+    // Indicates whether this is a Numeric Comparison (LE Secure Connections) or Passkey Entry pairing.
+    // If true: display the passkey to the user for confirmation and respond with NumericComparisonConfirm.
+    // If false: display or enter the passkey and respond with AuthenticateWithPasskey.
+    bool isNumericComparison = 1;
+
+    // The passkey to be displayed to the user.
+    // If isNumericComparison is true: the user confirms this value matches the one displayed on the peer device.
+    // If isNumericComparison is false: the user either reads this value to enter on the peer device, or is prompted to enter the passkey shown on the peer device (in which case this field is not used).
+    uint32 passkey = 2;
+}
+
+// ==================================================
+// GAP PERIPHERAL
+// ==================================================
+
+message AdvertisementType
+{
+    // Types defined in Bluetooth Core Specification v6.3, Vol 6, Part B, Section 2.3.1
+    enum AdvertisementTypeEnum
+    {
+        advInd = 0;             // Connectable and scannable undirected advertising
+        advNonconnInd = 1;      // Non-connectable and non-scannable undirected advertising
+    }
+
+    AdvertisementTypeEnum type = 1;
+}
+
+message AdvertisementMode
+{
+    AdvertisementType type = 1;
+
+    // Advertising interval in units of 0.625 ms, as defined by the Bluetooth Core Specification.
+    // This value is used for both the minimum and maximum advertising interval, resulting in a fixed interval.
+    // Valid range: 0x0020 to 0x4000 (20 ms to 10.24 s).
+    // See Bluetooth Core Specification v6.3, Vol 4, Part E, Section 7.8.5.
+    uint32 advertisingInterval = 2;
+}
+
+// Data layout as per Bluetooth Core Specification v6.3, Vol 3, Part C, Section 11
+message AdvertisementData
+{
+    bytes data = 1 [(bytes_size) = 28]; 
+}
+
+// Data layout as per Bluetooth Core Specification v6.3, Vol 3, Part C, Section 11
+message ScanResponseData
+{
+    bytes data = 1 [(bytes_size) = 13]; 
+}
+
+// Configures pairing preferences: LE Secure Connections support, MITM protection, and I/O capabilities.
+// Should be set once during initialization before advertising or connecting.
+message SecurityPreference
+{
+    // Based on Bluetooth Core Specification v6.3, Vol 3, Part H, Sections 2.3.1 and 2.3.5.1
+    enum SupportEnum
+    {
+        disabled = 0;
+        supported = 1;
+        enforced = 2;
+    }
+
+    // Based on Bluetooth Core Specification v6.3, Vol 3, Part H, Section 2.3.2
+    enum IoCapabilitiesEnum
+    {   
+        none = 0;
+        display = 1;
+        displayYesNo = 2;
+        keyboard = 3;
+        keyboardDisplay = 4;
+    }
+
+    SupportEnum secureConnections = 1;
+    SupportEnum mitm = 2;
+    IoCapabilitiesEnum ioCapabilities = 3;
+}
+
+// ==================================================
+// GAP PERIPHERAL SERVICE DEFINITION
+// ==================================================
+// State constraints:
+//  After startup this service is only available after GapPeripheralResponse.CurrentState with state standby is received.
+//  Unless otherwise specified, all methods are allowed in all link layer states.
+//  Non-conformance will result in an assertion.
+// Callback constraints:
+//  Unless otherwise specified, methods do not by default result in any callbacks on the response service
+//  When a callback is specified for a method and only for that method, another call of the same method is not allowed until the callback has been received.
+//  When a callback is specified for more than one method, any of the associated method calls is not allowed until the callback for the previous call has been received
+//  Non-conformance will result in an assertion.
+// Startup:
+//  On startup, the first CurrentState(standby) message signals that the GapPeripheral service
+//  is initialized and ready to accept method calls. No GapPeripheral methods shall be called
+//  before this initial CurrentState(standby) is received.
+// ==================================================
+service GapPeripheral
+{
+    option (service_id) = 32;
+
+    // Allowed states: standby, advertising, connected
+    // Expected response: GapPeripheralResponse.CurrentState with current state
+    rpc GetState(Nothing) returns (Nothing) { option (method_id) = 1; }
+
+    // Allowed states: standby
+    // Expected response: GapPeripheralResponse.CurrentState with state advertising
+    // Pre-conditions: Optional SetAdvertisementData (payload), SetScanResponseData (scannable modes), SetSecurityPreferences and SetAllowPairing (pairing posture) before Advertise. Omitting any uses the HAL default.
+    // Description: If an advertisement mode is not supported by a configuration then it results in an assertion.
+    rpc Advertise(AdvertisementMode) returns (Nothing) { option (method_id) = 2; }
+
+    // Allowed states: standby, advertising, connected
+    // Expected response: GapPeripheralResponse.CurrentState with state standby
+    rpc Standby(Nothing) returns (Nothing) { option (method_id) = 3; }
+
+    // Description: Changes take effect on the next GapPeripheral.Advertise call.
+    //   Maximum advertisement data length for this method is 28 bytes. Server reserves an additional 3 bytes for flags data with the flag bits 'LE General Discoverable Mode' and 'BR/EDR Not Supported' enabled.
+    //   See Core Specification Supplement, Part A, Section 1.3
+    //   Server will not check validity of the advertisement data and only maximum length of each field will be passed to BLE stack
+    //   If set, the advertisement data remains in effect until it is overwritten or the device is rebooted.
+    //   If not set by this method, server will have as advertisement data only flags field.
+    rpc SetAdvertisementData(AdvertisementData) returns (Nothing) { option (method_id) = 4; }
+
+    // Description: Changes take effect on the next GapPeripheral.Advertise call.
+    //   Maximum scan response length for this method is 13 bytes. Server reserves 18 bytes for streaming service uuids. Scan Response is only possible with scannable advertisements
+    //   Server will not check validity of the scan response data and only maximum length of each field will be passed to BLE stack
+    //   If set, the scan response data remains in effect until it is overwritten or the device is rebooted.
+    //   If not set by this method, server will have as scan response data only service uuids.
+    rpc SetScanResponseData(ScanResponseData) returns (Nothing) { option (method_id) = 5; }
+    
+    // Allowed states: standby, advertising, connected
+    // Expected response: GapPeripheralResponse.AdvertisingAddress
+    // Description: When privacy is disabled, it matches the identity address; when privacy is enabled, it returns the resolvable private address generated by the BLE stack
+    //   If GapPeripheral.Advertise was never called and the device is in standby, always returns the identity address.
+    //   Once advertised it will return the latest advertising address
+    rpc GetAdvertisingAddress(Nothing) returns (Nothing) { option (method_id) = 6; }
+
+    // Allowed states: standby, advertising, connected
+    // Expected response: GapPeripheralResponse.IdentityAddress
+    // Description: The address type (public or random) is determined by the HAL implementation and is not configurable via the service.
+    rpc GetIdentityAddress(Nothing) returns (Nothing) { option (method_id) = 7; }
+
+    // Allowed states: standby
+    // Description: When a SecurityPreference is not supported by the configuration it results in an assertion
+    rpc SetSecurityPreferences(SecurityPreference) returns (Nothing) { option (method_id) = 8; }
+
+    // Allowed states: standby
+    // Description: Default is to allow pairing.
+    //   When enabled, connection requests from all peers are accepted; when disabled, connection requests from non-bonded peers are rejected.
+    rpc SetAllowPairing(BoolValue) returns (Nothing) { option (method_id) = 9; }
+
+    // Allowed states: standby
+    // Expected response: GapPeripheralResponse.NumberOfBondsChanged
+    rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 11; }
+
+    // Allowed states: standby
+    // Expected response: GapPeripheralResponse.NumberOfBondsChanged
+    // Description: Oldest bond means the least recently used, i.e. connected, bonded peer.
+    rpc RemoveOldestBond(Nothing) returns (Nothing) { option (method_id) = 12; }
+
+    // Allowed states: standby, advertising, connected
+    // Expected response: GapPeripheralResponse.BondInformation
+    rpc GetBondInformation(Nothing) returns (Nothing) { option (method_id) = 13; }
+
+    // Allowed states: standby, connected
+    // Pre-conditions: A prior GapPeripheralResponse.AuthenticationRequired callback with isNumericComparison=true.
+    // Description: Confirms or rejects the numeric comparison in response to GapPeripheralResponse.AuthenticationRequired.
+    //   Only valid when AuthenticationRequest.isNumericComparison is true.
+    //   Must be called within the SMP protocol timeout (30 seconds, Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4)
+    //   of receiving AuthenticationRequired, otherwise pairing will fail.
+    //   If peer disconnects before NumericComparisonConfirm, state becomes standby. PairingResult may or may not be generated
+    rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 14; }
+}
+
+service GapPeripheralResponse 
+{
+    option(service_id) = 34;
+
+    // Expected states: standby, advertising, connected
+    // Description: CurrentState is triggered as a response to a method and/or invoked by BLE stack events
+    // Example: if GetState() is called while the device is in the connected state and the peer disconnects concurrently,
+    //   both actions will result in a CurrentState response, however the last received CurrentState is the latest state
+    rpc CurrentState(State) returns(Nothing) { option(method_id) = 2; }
+
+    // Expected states: standby, advertising, connected
+    // Triggered by: GapPeripheral.GetAdvertisingAddress
+    rpc AdvertisingAddress(AddressWithType) returns(Nothing) { option(method_id) = 3; }
+
+    // Expected states: standby, advertising, connected
+    // Triggered by: GapPeripheral.GetIdentityAddress
+    rpc IdentityAddress(AddressWithType) returns(Nothing) { option(method_id) = 4; }
+
+    // Expected states: connected
+    // Description: Sent when a pairing/bonding procedure completes or fails.
+    rpc PairingResult(PairingStatus) returns (Nothing) { option (method_id) = 5; }
+
+    // Expected states: standby, connected
+    // Description: Triggered when a new bond is created, an existing bond is removed, or re-bonding occurs with an already bonded peer.
+    rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 6; }
+    
+    // Expected states: standby, advertising, connected
+    // Triggered by: GapPeripheral.GetBondInformation
+    rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 7; }
+
+    // Expected states: connected
+    // Description: Sent during an active pairing/bonding procedure when user interaction is required to complete pairing.
+    //   This will only be triggered when the negotiated pairing method requires it, which is determined by the
+    //   I/O capabilities configured via GapPeripheral.SetSecurityPreferences
+    //   Not all pairing methods require user interaction (e.g. Just Works will never trigger this).
+    //   Must be responded to with GapPeripheral.NumericComparisonConfirm when AuthenticationRequest.isNumericComparison is true.
+    rpc AuthenticationRequired(AuthenticationRequest) returns (Nothing) { option (method_id) = 8; }
+}
+
+// DEPRECATED: Will be removed in the near future. Instead wait for CurrentState(standby) after startup
+service GapPeripheralReadiness {
+    option(service_id) = 36;
+
+    rpc DeviceStarted(Nothing) returns(Nothing) { option(method_id) = 1; }
+}
+
+// ==================================================
+// GAP CENTRAL
+// ==================================================
+
+// Based on Bluetooth Core Specification v6.3, Vol 3, Part C, Section 10.2
+message SecurityModeAndLevel
+{
+    enum SecurityLevelEnum
+    {
+        none = 0;
+        unauthenticatedPairing = 1;
+        authenticatedPairing = 2;
+        authenticatedPairingWithLE = 3;
+    }
+
+    enum SecurityModeEnum
+    {
+        mode1 = 0;
+        mode2 = 1;
+    }
+
+    SecurityModeEnum mode = 1;
+    SecurityLevelEnum level = 2;
+}
+
+message ConnectionParameters
+{
+    // The address of the peripheral to connect to, as discovered during scanning (e.g. from DiscoveredDevice).
+    AddressWithType addressWithType = 1;
+
+    // How long the central will wait for the peripheral to respond to the connection request, in milliseconds.
+    // After the central sends the connection request, the peripheral may take time to process and confirm it.
+    // If the peripheral does not respond within this timeout, the connection attempt is aborted.
+    // A value of zero waits indefinitely.
+    // Recommended: set to at least several multiples of the peripheral's advertising interval.
+    uint32 initiatingTimeoutInMs = 2;
+}
+
+message AdvertisingReportType
+{
+    // Types defined in Bluetooth Core Specification v6.3, Vol 4, Part E, Section 7.7.65.2
+    enum AdvertisingReportTypeEnum
+    {
+        advInd = 0;         // Connectable and scannable undirected advertising
+        advDirectInd = 1;   // Connectable directed advertising
+        advScanInd = 2;     // Scannable undirected advertising
+        advNonconnInd = 3;  // Non-connectable undirected advertising
+        scanResponse = 4;   // Scan response 
+    }
+
+    AdvertisingReportTypeEnum type = 1;
+}
+
+message DiscoveredDevice
+{
+    // The address as received in the advertising packet. Use this address directly when connecting via ConnectionParameters.
+    // If the peripheral uses a resolvable private address (RPA), the controller will resolve it automatically
+    // after a bond has been established and the peer's IRK is stored.
+    AddressWithType addressWithType = 1;
+
+    // Raw advertisement data as received from the controller.
+    // Layout of data defined in Bluetooth Core Specification v6.3, Vol 3, Part C, Section 11
+    bytes data = 2 [(bytes_size) = 32];
+
+    int32 rssi = 3;
+    AdvertisingReportType advertisingReportType = 4;
+}
+
+message DeviceDiscoveryFilter
+{
+    enum Filter
+    {
+        // Resets any set filters
+        none = 0;
+
+        // Filters on the device address (public or random). Passes if the address matches exactly.
+        // data: the device address to match (see Address).
+        address = 1;
+
+        // Filters on the full contents of the Manufacturer Specific Data field in the advertising or scan response data.
+        // Passes if the manufacturer specific data matches exactly.
+        // data: the manufacturer specific data to match, including the 2-byte manufacturer ID.
+        manufacturerSpecificData = 2;
+
+        // TODO: Add filter for Service UUID to allow filtering on device type/profile.
+    }
+
+    Filter filter = 1;
+    // The filter value to match against, interpreted according to the selected filter.
+    bytes data = 2 [(bytes_size) = 32];
+}
+
+message ResolvedPrivateAddress
+{
+    bool success = 1; // True if the address was successfully resolved to a bond, false otherwise.
+    Address identityAddress = 2; // The resolved identity address
+}
+
+message Bond
+{
+    // Identity address of the peer
+    AddressWithType addressWithType = 1;
+    
+    // Device Name from GAP (Generic Access) service.
+    // Read from the peer on bond created and on every successful encryption change.
+    // Not unique; truncated to 32 bytes.
+    // Can be empty if device has an empty name, or has not been read yet.
+    bytes deviceName = 2 [(bytes_size) = 32];
+}
+
+message BondList
+{    
+    // Sorted by least recently used (LRU): least recently used -&gt; most recently used.
+    repeated Bond bonds = 1 [(array_size) = 32];
+}
+
+// ==================================================
+// GAP CENTRAL SERVICE DEFINITION
+// ==================================================
+// State constraints:
+//  After startup this service is only available after GapCentralResponse.CurrentState with state standby is received.
+//  Unless otherwise specified, all methods are allowed in all link layer states.
+//  Non-conformance will result in an assertion.
+// Callback constraints:
+//  Unless otherwise specified, methods do not by default result in any callbacks on the response service
+//  When a callback is specified for a method and only for that method, another call of the same method is not allowed until the callback has been received.
+//  When a callback is specified for more than one method, any of the associated method calls is not allowed until the callback for the previous call has been received
+//  Non-conformance will result in an assertion.
+// Startup:
+//  On startup, the first CurrentState(standby) message signals that the GapCentral service
+//  is initialized and ready to accept method calls. No GapCentral methods shall be called
+//  before this initial CurrentState(standby) is received.
+// ==================================================
+service GapCentral
+{
+    option (service_id) = 33;
+
+    // Allowed states: standby, scanning, connected, initiating
+    // Expected response: GapCentralResponse.CurrentState with current state
+    rpc GetState(Nothing) returns (Nothing) { option (method_id) = 1; }
+
+    // Allowed states: standby
+    // Description: Only devices matching the filter will be reported via GapCentralResponse.DeviceDiscovered.
+    //   Filters are reset automatically when scanning stops.
+    //   An explicit SetDeviceDiscoveryFilter(filter=none) is idempotent and can be used to clear a filter that was set without ever starting a scan.
+    rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 2; }
+
+    // Allowed states: standby
+    // Expected response: GapCentralResponse.CurrentState with state scanning
+    // Additional responses: GapCentralResponse.DeviceDiscovered for each matching device
+    // Pre-conditions: Optional SetDeviceDiscoveryFilter to restrict which advertisers are reported.
+    // Description: Starts scanning for advertising peripheral devices until Standby is called.
+    //   It's recommended to add a DeviceDiscoveryFilter, otherwise devices might be missed due to too many being discovered.
+    //   All configurations use a fixed scan window and scan interval of 500 ms.
+    //   See Bluetooth Core Specification v6.3, Vol 4, Part E, Section 7.8.10
+    rpc StartDeviceDiscovery(Nothing) returns (Nothing) { option (method_id) = 3; }
+
+    // Allowed states: standby
+    // Expected response: GapCentralResponse.CurrentState
+    // Pre-conditions: Optional SetIdentityAddress and/or SetPrivacyMode to control the own address type used on the CONNECT_IND.
+    // Description: Initiates a connection to a peripheral device with the given address.
+    // Response Sequences:
+    //   On successful connection establishment: standby -&gt; initiating -&gt; connected
+    //   On failed connection establishment: standby -&gt; initiating -&gt; standby
+    rpc Connect(ConnectionParameters) returns (Nothing) { option (method_id) = 4; }
+
+    // Allowed states: standby, scanning, connected, initiating
+    // Expected response: GapCentralResponse.CurrentState with state standby
+    // Description: Terminates the current (or initiating) connection.
+    //   If called while PairAndBond is in progress, GapCentralResponse.PairingResult is not guaranteed. GapCentralResponse.CurrentState(standby) is the terminal callback.
+    //   If called while already in standby, results in GapCentralResponse.CurrentState(standby).
+    rpc Standby(Nothing) returns (Nothing) { option (method_id) = 5; }
+
+    // Allowed states: connected
+    // Expected response: GapCentralResponse.PairingResult
+    // Additional responses: GapCentralResponse.NumberOfBondsChanged on any successful pairing or re-encryption
+    //   (new bond adds an entry; re-encryption updates the bond-aging state with the count unchanged),
+    //   GapCentralResponse.CurrentState with standby if device disconnected,
+    //   GapCentralResponse.AuthenticationRequired if user interaction is required during pairing
+    // Description: Secures an existing connection.
+    //   If the peripheral sends a security request, this procedure is triggered automatically.
+    //   1. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
+    //   2. If there is a pre-existing bond, then the connection will be encrypted using the existing keys.
+    // Pre-conditions: Optional SetSecurityMode and SetIoCapabilities (both consumed at SMP start to select the pairing method).
+    // Response Sequences:
+    //   On successful pairing with new bond: GapCentralResponse.AuthenticationRequired (if applicable) -&gt; GapCentralResponse.NumberOfBondsChanged -&gt; GapCentralResponse.PairingResult 
+    //   On successful re-encryption with existing bond: GapCentralResponse.NumberOfBondsChanged -&gt; GapCentralResponse.PairingResult
+    //   On pairing failure: GapCentralResponse.AuthenticationRequired (if applicable) -&gt; GapCentralResponse.PairingResult
+    //   On peer-initiated disconnect during pairing: GapCentralResponse.PairingResult -&gt; GapCentralResponse.CurrentState(standby)
+    rpc PairAndBond(Nothing) returns (Nothing) { option (method_id) = 6; }
+
+    // Allowed states: standby
+    // Description: Configures the minimum security mode and level required for connections.
+    //   Should be called once during initialization before any connections are made.
+    //   If the connected peripheral does not meet the required security level, the PairAndBond procedure fails with PairingResult(pairedSuccessfully=false, reason=authenticationRequirementsNotMet).
+    //   The link stays connected on SMP failure; the App must call Standby (or wait for the peer to disconnect) to reach CurrentState(standby).
+    //   The Connect procedure itself is unaffected: the link reaches CurrentState(connected) regardless of capability match.
+    //   Security mode is a pairing-time requirement, not a Connect-time filter.
+    rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 7; }
+
+    // Allowed in link layer states: standby
+    // Configures the I/O capabilities of this device, used to determine the pairing method during PairAndBond.
+    // Should be called once during initialization before any pairing takes place.
+    // The selected capabilities influence which pairing method is chosen (e.g. Just Works, Passkey Entry, or Numeric Comparison).
+    rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 8; }
+
+    // Allowed states: connected
+    // Pre-conditions: A prior GapCentralResponse.AuthenticationRequired callback with isNumericComparison=false (Passkey Entry method).
+    // Description: Provides the passkey entered by the user in response to GapCentralResponse.AuthenticationRequired.
+    //   Only valid when AuthenticationRequest.isNumericComparison is false.
+    //   Must be called within the SMP protocol timeout (30 seconds, Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4) 
+    //   of receiving AuthenticationRequired, otherwise pairing will fail with PairingFailedReason.timeout
+    //   Influences GapCentralResponse.PairingResult response of PairAndBond.
+    //   If peer disconnects before AuthenticateWithPasskey is called, state becomes standby. GapCentralResponse.PairingResult may or may not be generated in that case.
+    rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 9; }
+
+    // Allowed states: connected
+    // Pre-conditions: A prior GapCentralResponse.AuthenticationRequired callback with isNumericComparison=true.
+    // Description: Confirms or rejects the numeric comparison in response to GapCentralResponse.AuthenticationRequired.
+    //   Only valid when AuthenticationRequest.isNumericComparison is true.
+    //   Must be called within the SMP protocol timeout (30 seconds, Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4) 
+    //   of receiving AuthenticationRequired, otherwise pairing will fail with PairingFailedReason.timeout
+    //   Influences GapCentralResponse.PairingResult response of PairAndBond.
+    //   If peer disconnects before NumericComparisonConfirm is called, state becomes standby. GapCentralResponse.PairingResult may or may not be generated in that case.
+    rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 10; }
+
+    // Allowed states: standby
+    // Expected response: GapCentralResponse.NumberOfBondsChanged
+    // Description: Removes all stored bonds.
+    rpc RemoveAllBonds(Nothing) returns (Nothing) { option (method_id) = 11; }
+
+    // Allowed states: standby
+    // Expected response: GapCentralResponse.NumberOfBondsChanged
+    // Description: Removes the bond associated with the given identity address.
+    rpc RemoveBondWithAddress(AddressWithType) returns (Nothing) { option (method_id) = 12; }
+
+    // Allowed states: standby, scanning, connected, initiating
+    // Expected response: GapCentralResponse.ResolvePrivateAddressResult
+    // Description: Resolves a resolvable private address to the identity address of an already bonded device.
+    //   Will only succeed if the address is a resolvable private address and the device is bonded.
+    //   Useful to identify whether a device seen during scanning is already bonded, without needing to connect first.
+    rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; }
+
+    // Allowed states: standby, scanning, connected, initiating
+    // Expected response: GapCentralResponse.BondListReceived
+    // Description: Returns the list of bonded devices.
+    rpc GetBondList(Nothing) returns (Nothing) { option (method_id) = 14; }
+
+    // Allowed states: standby
+    // Description: Sets the local identity address used by the central.
+    //   The address type may be public or random.
+    //   When privacy mode is disabled the controller uses this identity address directly on the air.
+    //   When privacy mode is enabled the controller generates and rotates a resolvable private address on the air, but the identity address is still distributed to bonded peers via the SMP Identity Address Information PDU (Core Spec v6.3, Vol 3, Part H, Section 3.6.1) so future RPAs resolve back to the same identity.
+    //   Call SetIdentityAddress before enabling privacy or creating new bonds so bonded peers store the intended identity.
+    rpc SetIdentityAddress(AddressWithType) returns (Nothing) { option (method_id) = 15; }
+
+    // Allowed states: standby
+    // Pre-conditions: When enabling, call SetIdentityAddress first so future bonds capture the intended identity.
+    // Description: Enables or disables use of a resolvable private address for the central.
+    //   When enabled, the controller generates and rotates the private address automatically based on the local IRK.
+    //   When disabled, the central uses its configured identity address.
+    rpc SetPrivacyMode(BoolValue) returns (Nothing) { option (method_id) = 16; }
+
+    // DEPRECATED: Will be removed in the near future.
+    // Expected response: GapCentralResponse.DeviceBonded
+    rpc IsDeviceBonded(AddressWithType) returns (Nothing) { option (method_id) = 17; }
+}
+
+service GapCentralResponse {
+    option(service_id) = 35;
+
+    // Expected states: standby, scanning, initiating, connected
+    // Triggered by: GapCentral.GetState, GapCentral.StartDeviceDiscovery, GapCentral.Connect, GapCentral.Standby, GapCentral.PairAndBond, BLE stack events (e.g. peer-initiated disconnect)
+    // Description: CurrentState is triggered as a response to a method and/or invoked by BLE stack events
+    // Example: if GetState() is called while the device is in the connected state and the peer disconnects concurrently,
+    //   both actions will result in a CurrentState response, however the last received CurrentState is the latest state
+    rpc CurrentState(State) returns (Nothing) { option (method_id) = 1; }
+    
+    // Expected states: scanning
+    // Triggered by: GapCentral.StartDeviceDiscovery (continuously, for each matching device)
+    // Description: Reports a discovered advertising device. Only devices matching the configured DeviceDiscoveryFilter are reported.
+    //   If device is put in Standby, DeviceDiscovered will always arrive before CurrentState(standby)
+    rpc DeviceDiscovered(DiscoveredDevice) returns (Nothing) { option (method_id) = 2; }
+
+    // Expected states: connected
+    // Triggered by: GapCentral.PairAndBond (during pairing, when negotiated pairing method requires user interaction)
+    // Description: Requests user interaction during an active pairing procedure.
+    //   This will only be triggered when the negotiated pairing method requires it, which is determined by the I/O capabilities configured via GapCentral.SetIoCapabilities
+    //   Not all pairing methods require user interaction (e.g. Just Works will never trigger this).
+    //   Must be responded to with GapCentral.NumericComparisonConfirm when AuthenticationRequest.isNumericComparison is true,
+    //   or GapCentral.AuthenticateWithPasskey when AuthenticationRequest.isNumericComparison is false.
+    rpc AuthenticationRequired(AuthenticationRequest) returns (Nothing) { option (method_id) = 3; }
+
+    // Expected states: connected, standby
+    // Triggered by: GapCentral.PairAndBond (on completion or failure of the pairing procedure)
+    // Description: Reports the outcome of a PairAndBond procedure.
+    //   If PairingStatus.pairedSuccessfully is false, PairingFailedReason indicates the cause.
+    //   PairingResult is always emitted before CurrentState(standby) when a peer-initiated disconnect occurs during pairing.
+    //   If Standby() is called during pairing, PairingResult may not be emitted.
+    rpc PairingResult(PairingStatus) returns (Nothing) { option (method_id) =  4; }
+
+    // Expected states: standby, scanning, initiating, connected
+    // Triggered by: GapCentral.ResolvePrivateAddress
+    // Description: Returns the result of a private address resolution attempt.
+    //   If successful, contains the resolved identity address of the bonded device.
+    rpc ResolvePrivateAddressResult(ResolvedPrivateAddress) returns (Nothing) { option (method_id) = 5; }
+    
+    // Expected states: standby, connected
+    // Triggered by: GapCentral.RemoveAllBonds, GapCentral.RemoveBondWithAddress, GapCentral.PairAndBond
+    // Description: Reports the current number of stored bonds.
+    //   Fires when a new bond is added, an existing bond is removed, and on successful re-encryption
+    //   of an already-bonded connection. In the re-encryption case the reported count is unchanged;
+    //   the callback carries a bond-aging (LRU) update rather than a change in count.
+    rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
+
+    // Expected states: standby, scanning, initiating, connected
+    // Triggered by: GapCentral.GetBondList
+    // Description: Returns the list of bonded devices.
+    rpc BondListReceived(BondList) returns (Nothing) { option(method_id) = 7; }
+
+    // DEPRECATED: Will be removed in the near future.
+    rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 8; }
+}</code></pre>
+</div>
+</div>
+</div>
+</details>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>© Koninklijke Philips N.V., 2022. All rights reserved.</p>
+</footer>
+
+<script type="text/javascript" src="../../../_/js/medium-zoom.min.js"></script>
+<script type="text/javascript">
+mediumZoom('.data-zoomable img', {
+  margin: 50,
+  background: '#FFFFFFA1',
+})
+</script>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/lunr.js"></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css"></script>
+<script async src="../../../search-index.js"></script>
+  </body>
+</html>
