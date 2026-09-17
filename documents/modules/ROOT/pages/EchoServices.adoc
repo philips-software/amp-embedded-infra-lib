@@ -2,7 +2,7 @@
 :source-highlighter: highlight.js
 :highlightjs-languages: protobuf
 
-This section documents the concrete Echo services that ship with the Embedded Infrastructure Library and closely related products. The xref:EchoProtocol.adoc[Echo Protocol] page describes the underlying protocol, encoding rules, and message conventions; the pages below describe individual services, their responsibilities, allowed states, message flows, and typical interaction patterns.
+This section documents the concrete Echo services that ship with the Embedded Infrastructure Library and closely related products. The xref:EchoProtocol.adoc[Echo Protocol] page describes the underlying protocol, encoding rules, and message conventions. The pages below describe individual services, their responsibilities, allowed states, message flows, and typical interaction patterns.
 
 Each service is defined in a `.proto` file, exposes a set of RPC methods, and is paired with a matching response service that carries the asynchronous callbacks.
 
@@ -11,10 +11,10 @@ Each service is defined in a `.proto` file, exposes a set of RPC methods, and is
 Vocabulary used consistently throughout this section, on all pages and in every sequence diagram.
 
 *App*::
-The application code that consumes the Echo API by invoking methods and observing callbacks. On offloaded configurations this is the *Reference Product MCU*, a phone, or another host running the Echo client; on integrated configurations this is a higher-level component within the same MCU as the Node. xref:Sesame.adoc[SESAME] documentation calls this same actor "App".
+The application code that consumes the Echo API by invoking methods and observing callbacks. The App runs on a phone, another MCU, or another host, and communicates with the Node over the Echo transport.
 
 *Node*::
-The endpoint that implements the Echo service on the device side. This is the component that talks BLE (or another transport) with the peer, exposes the Echo methods over the RPC surface, and emits the asynchronous callbacks. In role-agnostic diagrams the participant is labelled *Node*; in dual-role diagrams both endpoints appear as *Peripheral Node* and *Central Node* to distinguish them.
+The endpoint that implements the Echo service on the device side. This is the component that talks BLE (or another transport) with the peer, exposes the Echo methods over the RPC surface, and emits the asynchronous callbacks. In role-agnostic diagrams the participant is labelled *Node*. In dual-role diagrams both endpoints appear as *Peripheral Node* and *Central Node* to distinguish them.
 
 *BLE Peripheral / BLE Central*::
 Peer BLE devices the Node interacts with. These are drawn as separate lifelines on diagrams that make link-layer events explicit. They are **not** something the App drives directly - the App observes their effects only through Echo callbacks (typically `CurrentState`, `DeviceDiscovered`, `PairingResult`, etc.).

@@ -2,8 +2,6 @@ sequenceDiagram
     participant App as App<br>[implements GapPeripheralResponse]
     participant Node as Node<br>[implements GapPeripheral]
 
-    Note over App, Node: Allowed states: standby.<br>Calling outside standby asserts on the Node.<br>Fire-and-forget, no response callback.<br>Should be called once during initialization<br>before advertising or connecting.
-
     App->>Node: GapPeripheral.SetSecurityPreferences(<br>secureConnections=enforced, mitm=enforced,<br>ioCapabilities=displayYesNo)
 
     Note over App: Support depends on the vendor stack.<br>Just Works (secureConnections=supported,<br>mitm=disabled, ioCapabilities=none) is always supported.<br>Certain MITM + IO capability combinations may not be<br>supported on all stacks and will assert at runtime<br>(no compile-time discoverability).

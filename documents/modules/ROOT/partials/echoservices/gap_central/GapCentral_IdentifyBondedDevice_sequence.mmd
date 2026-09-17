@@ -2,8 +2,6 @@ sequenceDiagram
     participant App as App<br>[implements GapCentralResponse]
     participant Node as Node<br>[implements GapCentral]
 
-    Note over App, Node: Scanning for peripherals using resolvable private addresses
-
     App->>Node: GapCentral.StartDeviceDiscovery()
     Node-->>App: GapCentralResponse.CurrentState(scanning)
     Node-->>App: GapCentralResponse.DeviceDiscovered(<br>addressWithType={address=6C:8B:2F:3A:9D:41, addressType=randomAddress},<br>rssi=-42)

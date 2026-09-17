@@ -4,7 +4,6 @@ sequenceDiagram
     participant Peripheral as BLE Peripheral
 
     Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. CurrentState).
-    Note over App, Node: Allowed states: standby.<br>Calling outside standby asserts on the Node.<br>Pre-conditions: optional SetIdentityAddress / SetPrivacyMode<br>(own address type used on CONNECT_IND).
 
     App->>Node: GapCentral.Connect(<br>addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress},<br>initiatingTimeoutInMs=5000)
     Node-->>App: GapCentralResponse.CurrentState(initiating)

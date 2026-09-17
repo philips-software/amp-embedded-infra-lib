@@ -2,14 +2,12 @@ sequenceDiagram
     participant App as App<br>[implements GapCentralResponse]
     participant Node as Node<br>[implements GapCentral]
 
-    Note over App, Node: Pairing failure with specific PairingFailedReason
-
     rect rgb(230, 230, 240)
         note over App, Node: Authentication requirements mismatch
         App->>Node: GapCentral.PairAndBond()
         Node-->>App: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false,<br>reason=authenticationRequirementsNotMet)
 
-        Note over App: Peer requires higher security level<br>than our IoCapabilities can provide.
+        Note over App: Peripheral requires higher security level<br>than our IoCapabilities can provide.
     end
 
     rect rgb(230, 230, 240)

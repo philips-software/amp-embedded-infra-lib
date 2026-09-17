@@ -1,7 +1,6 @@
 sequenceDiagram
     participant App as App<br>[implements GapCentralResponse]
     participant Node as Node<br>[implements GapCentral]
-    Note over App, Node: Allowed states: standby.<br>Calling outside standby asserts on the Node.<br>Starts scanning and transitions to scanning state.<br>Pre-conditions: optional SetDeviceDiscoveryFilter to restrict reported advertisers.
     App->>Node: GapCentral.StartDeviceDiscovery()
     Node-->>App: GapCentralResponse.CurrentState(scanning)
     loop For each matching advertisement (continuous until Standby)

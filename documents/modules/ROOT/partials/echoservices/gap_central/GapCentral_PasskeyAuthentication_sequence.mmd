@@ -2,21 +2,19 @@ sequenceDiagram
     participant App as App<br>[implements GapCentralResponse]
     participant Node as Node<br>[implements GapCentral]
 
-    Note over App, Node: Precondition: connected,<br>IoCapabilities set for passkey entry<br>(display and/or keyboard).
-
     App->>Node: GapCentral.PairAndBond()
 
     alt Node displays passkey, user enters it on peripheral
         Node-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=false, passkey=485923)
         Note over App: Display 485923. User reads it and types it on the peripheral.<br>No AuthenticateWithPasskey call is required on our side.
 
-        alt Peer accepts the correct passkey
+        alt Peripheral accepts the correct passkey
             Node-->>App: GapCentralResponse.NumberOfBondsChanged(1)
             Node-->>App: GapCentralResponse.PairingResult(pairedSuccessfully=true)
-        else Peer enters wrong passkey
+        else Peripheral enters wrong passkey
             Node-->>App: GapCentralResponse.PairingResult(<br>pairedSuccessfully=false, reason=passkeyEntryFailed)
         end
-    else Peer displays passkey, user enters it on us
+    else Peripheral displays passkey, user enters it on us
         Node-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=false)
         Note over App: passkey field is unused in this variant.<br>User reads the passkey shown on the peripheral and types it into the App UI.
 

@@ -2,8 +2,6 @@ sequenceDiagram
     participant App as App<br>[implements GapCentralResponse]
     participant Node as Node<br>[implements GapCentral]
 
-    Note over App, Node: Allowed states: standby.<br>Calling outside standby asserts on the Node.<br>Fire-and-forget, no response callback.<br>Pre-conditions: when enabling, call SetIdentityAddress first<br>so future bonds capture the intended identity.
-
     alt Enable privacy
         App->>Node: GapCentral.SetPrivacyMode(true)
         Note over App: The controller generates<br>and rotates a resolvable private address<br>based on the local IRK.

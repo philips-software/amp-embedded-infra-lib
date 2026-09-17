@@ -47,7 +47,7 @@ sequenceDiagram
     rect rgb(230, 230, 240)
         note over App, Central: 4. Pairing (initiated by central)
         rect rgb(245, 240, 230)
-            Note over Node, Central: SMP starts (LESC with MITM, requested by peer)
+            Note over Node, Central: SMP starts (LESC with MITM, requested by central)
             Central-)Node: Pairing_Request (MITM requested)
             Node-)Central: Pairing_Response (MITM requested)
             Central-)Node: Pairing_Public_Key
