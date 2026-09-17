@@ -4,4 +4,4 @@ sequenceDiagram
 
     App->>Node: GapCentral.SetSecurityMode(<br>mode=mode1, level=authenticatedPairing)
 
-    Note over App: If the connected peripheral does not meet the required level,<br>PairAndBond fails with reason=authenticationRequirementsNotMet.<br>The link stays connected on SMP failure. The App must call Standby<br>(or wait for the peripheral to disconnect) to reach CurrentState(standby).<br>The Connect procedure itself is unaffected: the link reaches<br>CurrentState(connected) regardless of capability match.<br>Security mode is a pairing-time requirement, not a Connect-time filter.
+    Note over App: Pairing-time requirement, not a Connect-time filter.<br>See page prose for the observable sequence when a peripheral<br>cannot meet the required level.

@@ -12,7 +12,7 @@ Unless a method's documentation specifies otherwise, all methods are allowed in 
 
 The first `CurrentState(standby)` message signals that the service is initialized and ready to accept method calls. No `GapCentral` methods may be called before this initial callback.
 
-*Recognising the Node startup boundary:* on serial transports the Echo channel runs on top of xref:Sesame.adoc[SESAME]. The App must wait for the SESAME `Init` / `InitResponse` handshake to complete before the Echo layer can carry any traffic; only after that does the Node emit its per-service startup callbacks (`CurrentState(standby)` for GapPeripheral / GapCentral, similar readiness callbacks for other services). Practically the recognisable "Node has started" signal from the App's perspective is: (1) the SESAME transport reports the peer window as open (Init exchange complete), followed by (2) the first `CurrentState(standby)` on the service the App wants to drive. On TCP transports (Echo directly over TCP) the analogous boundary is the TCP connection established callback followed by the same `CurrentState(standby)`.
+*Recognising the Node startup boundary:* on serial transports the App recognizes the Node as "started" once (1) the SESAME `Init` / `InitResponse` handshake completes (peer window open) and (2) the first `CurrentState(standby)` fires. On TCP transports the analogous boundary is TCP connection established followed by the same `CurrentState(standby)`. See xref:Sesame.adoc[SESAME] for details of the transport handshake.
 
 Calling a method before the initial `CurrentState(standby)` callback is a contract violation and results in an assertion on the Node side. This can also happen if the Node resets unexpectedly (e.g. watchdog, power event) while the App is running: the Node re-issues its startup handshake, and any App method call issued before the App observes the new `CurrentState(standby)` will assert. Applications should treat every fresh `CurrentState(standby)` callback as a service-ready boundary and re-drive their initial configuration from that point.
 
@@ -54,7 +54,7 @@ include::partial$echoservices/gap_central/GapCentral_Standby_sequence.mmd[]
 
 *Allowed states:* standby.
 
-Fire-and-forget, no response callback. Only devices matching the filter are reported via `GapCentralResponse.DeviceDiscovered`. Filters are reset automatically whenever scanning stops (the Node transitions out of `scanning`), so the App normally does not need to clear the filter between scan sessions. An explicit `SetDeviceDiscoveryFilter(filter=none)` is idempotent and useful when a filter was set without ever starting a scan.
+Fire-and-forget, no response callback. Only devices matching the filter are reported via `GapCentralResponse.DeviceDiscovered`. The filter is scan-scoped by design (it configures the current scan session, not a persistent policy), so it self-clears when the Node transitions out of `scanning`, and the App normally does not need to clear it between scan sessions. An explicit `SetDeviceDiscoveryFilter(filter=none)` is idempotent and useful when a filter was set without ever starting a scan.
 
 [mermaid]
 ....
@@ -80,12 +80,12 @@ include::partial$echoservices/gap_central/GapCentral_StartDeviceDiscovery_sequen
 
 *Pre-conditions:* optional `SetIdentityAddress` / `SetPrivacyMode` (own address type used on CONNECT_IND).
 
-Initiates a connection to a peripheral at the specified address. The Node transitions `standby` -> `initiating`. If a bidirectional data exchange completes within `initiatingTimeoutInMs`, the Node transitions to `connected`; otherwise it returns to `standby`.
+Initiates a connection to a peripheral at the specified address. The Node transitions `standby` -> `initiating`. If a bidirectional data exchange completes within `initiatingTimeoutInMs`, the Node transitions to `connected`. Otherwise it returns to `standby`.
 
 *`initiatingTimeoutInMs` guidance:*
 
 * Zero means wait indefinitely (per proto).
-* Minimum practical value: a few times the peripheral's advertising interval, so the central can plausibly overhear a CONNECT_IND slot. For a peripheral advertising at 100 ms, at least 300-500 ms.
+* Minimum practical value: several multiples of the peripheral's advertising interval, giving the connection setup one or two connection events to complete after `CONNECT_IND`. For a peripheral advertising at 100 ms, at least 300-500 ms.
 * Recommended: 3000-10000 ms for interactive use cases (App is waiting on user input, so a timely failure is preferable to hanging).
 * Long-running / power-sensitive: 30000 ms and above, or zero, for cases where the App is content to wait for the peripheral to come into range.
 * Example uses 5000 ms.
@@ -108,7 +108,7 @@ Secures the connection to the currently connected peripheral. Two paths are poss
 
 If the peripheral sends a security request first, this procedure runs automatically without an explicit App call.
 
-*Response sequences* (matching `Gap.proto` PairAndBond doc):
+*Response sequences*:
 
 * Successful pairing with new bond: `AuthenticationRequired` (if applicable) -> `NumberOfBondsChanged` -> `PairingResult`.
 * Successful re-encryption with existing bond: `NumberOfBondsChanged` -> `PairingResult`.
@@ -126,15 +126,13 @@ include::partial$echoservices/gap_central/GapCentral_PairAndBond_sequence.mmd[]
 
 Fire-and-forget, no response callback. Should be called once during initialization before any connections are made.
 
-*Security mode is a pairing-time requirement, not a Connect-time filter.* Setting a required security level does not prevent the underlying `Connect` from succeeding; it prevents *pairing* from completing with peripherals whose IoCapabilities cannot satisfy the required level. Observable sequence when the peripheral cannot meet the level:
+*Security mode is a pairing-time requirement, not a Connect-time filter.* Setting a required security level does not prevent the underlying `Connect` from succeeding. It prevents *pairing* from completing with peripherals whose IoCapabilities cannot satisfy the required level. Observable sequence when the peripheral cannot meet the level:
 
 1. `Connect(...)` -> `CurrentState(initiating)` -> `CurrentState(connected)` (the connection is established normally).
 2. `PairAndBond()` (or a peripheral-initiated security request that auto-triggers PairAndBond) starts SMP negotiation.
 3. Central detects the peripheral's IoCapabilities cannot satisfy the required MITM level.
 4. `PairingResult(pairedSuccessfully=false, reason=authenticationRequirementsNotMet)`.
-5. The link stays connected on SMP failure. The App typically calls `Standby()` (or the peripheral disconnects voluntarily on receiving the SMP Pairing Failed PDU), producing `CurrentState(standby)` via one of those paths - not automatic on pairing failure per se.
-
-Verified across the vendor stacks: each surfaces an SMP-layer authentication-requirement failure that the Echo layer maps to `PairingResult(pairedSuccessfully=false, reason=authenticationRequirementsNotMet)`. `SetSecurityMode` configures the SMP authentication requirement only and takes effect during the pairing procedure, not at Connect time.
+5. The link stays connected on SMP failure. The App typically calls `Standby()` (or the peripheral disconnects voluntarily on receiving the SMP Pairing Failed PDU), producing `CurrentState(standby)` via one of those paths, not automatic on pairing failure per se.
 
 If the App wants to reject connections to capability-mismatched peripherals up-front, it must decide before calling `Connect` (e.g. by inspecting scan-response data or a prior bond entry). The Node cannot pre-empt the connection based on security mode.
 
@@ -160,7 +158,7 @@ include::partial$echoservices/gap_central/GapCentral_SetIoCapabilities_sequence.
 
 *Pre-conditions:* prior `AuthenticationRequired(isNumericComparison=true)`. Must be called within the 30s SMP timeout (Core Spec v6.3, Vol 3, Part H, Section 3.4).
 
-*Peripheral disconnect during the confirmation pause:* while the App is waiting on the user to compare the derived passkey, the SMP procedure is paused waiting on the local `NumericComparisonConfirm` call. If the peripheral disconnects during that pause (LL_TERMINATE_IND, LL supervision timeout, HCI-level disconnect), the App may or may not observe `PairingResult(pairedSuccessfully=false)` before `CurrentState(standby)` fires. This is not a proto imprecision - it reflects a real limitation at the BLE-stack layer: an actively-running SMP procedure typically surfaces a cancellation on disconnect, but a paused procedure has no canonical cancellation event because the stack was waiting on the local device (not the peripheral) when the disconnect arrived. Practical guidance: treat `CurrentState(standby)` as terminal for the ongoing pairing procedure, and do not block on `PairingResult` after receiving it.
+*Peripheral disconnect during the confirmation pause:* while the App is waiting on the user to compare the derived passkey, the SMP procedure is paused waiting on the local `NumericComparisonConfirm` call. If the peripheral disconnects during that pause (LL_TERMINATE_IND, LL supervision timeout, HCI-level disconnect), the App may or may not observe `PairingResult(pairedSuccessfully=false)` before `CurrentState(standby)` fires. This is not a proto imprecision. It reflects a real limitation at the BLE-stack layer: an actively-running SMP procedure typically surfaces a cancellation on disconnect, but a paused procedure has no canonical cancellation event because the stack was waiting on the local device (not the peripheral) when the disconnect arrived. Practical guidance: treat `CurrentState(standby)` as terminal for the ongoing pairing procedure, and do not block on `PairingResult` after receiving it.
 
 The same behaviour applies to `AuthenticateWithPasskey` during Passkey Entry (see below).
 
@@ -242,7 +240,7 @@ include::partial$echoservices/gap_central/GapCentral_RemoveBondWithAddress_seque
 
 *Allowed states:* standby.
 
-Fire-and-forget, no response callback. Used when privacy mode is disabled. Does not set a resolvable private address (that is controller-generated when privacy is enabled).
+Fire-and-forget, no response callback. Sets the address the central presents as its identity. With privacy disabled the controller uses this address directly on the air. With privacy enabled the controller generates and rotates a resolvable private address on the air, but the identity address is still distributed to bonded peripherals via the SMP `Identity_Address_Information` PDU (Core Spec v6.3, Vol 3, Part H, Section 3.6.1) so future RPAs resolve back to the same identity.
 
 [mermaid]
 ....
@@ -293,7 +291,7 @@ include::partial$echoservices/gap_central/GapCentral_DiscoveryTimeout_sequence.m
 
 Configures the central to use resolvable private addresses (RPAs) for its own advertising / initiating.
 
-Note the order of the two configuration calls: `SetIdentityAddress` first, `SetPrivacyMode(true)` second. Although `SetIdentityAddress`'s doc line "used when privacy mode is disabled" implies the identity address is dormant with privacy on, it is still used during bonding: the identity address is what the central distributes to peripherals in the SMP `Identity_Address_Information` PDU as part of key distribution. Bonded peripherals store our IRK against that identity address so that on future reconnections they can resolve our rotating RPAs back to the same identity. If `SetIdentityAddress` is skipped, the identity address defaults to whatever the HAL implementation chose at boot (typically a device-unique random address).
+Note the order of the two configuration calls: `SetIdentityAddress` first, `SetPrivacyMode(true)` second. The `SetIdentityAddress` section explains why the identity address is still relevant with privacy on: it is what the central distributes to bonded peripherals so future RPAs resolve back to a consistent identity. If `SetIdentityAddress` is skipped, the identity address defaults to whatever the HAL implementation chose at boot (typically a device-unique random address).
 
 *Order rationale:* set the identity you want to be bonded under **before** enabling privacy so that any bond created afterwards captures the intended identity address, not the boot default.
 
