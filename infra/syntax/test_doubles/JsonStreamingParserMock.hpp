@@ -21,6 +21,7 @@ namespace infra
         MOCK_METHOD0(ParseError, void());
         MOCK_METHOD0(SemanticError, void());
         MOCK_METHOD0(StringOverflow, void());
+        MOCK_METHOD0(NumberOverflow, void());
     };
 
     class JsonArrayVisitorMock
@@ -37,6 +38,7 @@ namespace infra
         MOCK_METHOD0(ParseError, void());
         MOCK_METHOD0(SemanticError, void());
         MOCK_METHOD0(StringOverflow, void());
+        MOCK_METHOD0(NumberOverflow, void());
     };
 }
 

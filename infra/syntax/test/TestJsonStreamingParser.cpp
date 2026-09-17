@@ -126,22 +126,30 @@ TEST_F(JsonStreamingObjectParserTest, VisitNumber_with_the_extremes_of_int64_t)
     parser.Feed(R"( "a" : -9223372036854775808,)");
 }
 
-TEST_F(JsonStreamingObjectParserTest, number_above_int64_t_results_in_ParseError)
+TEST_F(JsonStreamingObjectParserTest, number_above_int64_t_results_in_NumberOverflow)
 {
-    EXPECT_CALL(visitor, ParseError());
+    EXPECT_CALL(visitor, NumberOverflow());
     parser.Feed(R"({ "a" : 9223372036854775808 )");
 }
 
-TEST_F(JsonStreamingObjectParserTest, number_below_int64_t_results_in_ParseError)
+TEST_F(JsonStreamingObjectParserTest, number_below_int64_t_results_in_NumberOverflow)
 {
-    EXPECT_CALL(visitor, ParseError());
+    EXPECT_CALL(visitor, NumberOverflow());
     parser.Feed(R"({ "a" : -9223372036854775809 )");
 }
 
-TEST_F(JsonStreamingObjectParserTest, number_of_more_digits_than_int64_t_holds_results_in_ParseError)
+TEST_F(JsonStreamingObjectParserTest, number_of_more_digits_than_int64_t_holds_results_in_NumberOverflow)
 {
-    EXPECT_CALL(visitor, ParseError());
+    EXPECT_CALL(visitor, NumberOverflow());
     parser.Feed(R"({ "a" : 99999999999999999999 )");
+}
+
+TEST_F(JsonStreamingObjectParserTest, parsing_continues_after_NumberOverflow)
+{
+    EXPECT_CALL(visitor, NumberOverflow());
+    EXPECT_CALL(visitor, VisitNumber("b", 5));
+    EXPECT_CALL(visitor, Close());
+    parser.Feed(R"({ "a" : 9223372036854775808, "b" : 5 })");
 }
 
 TEST_F(JsonStreamingObjectParserTest, unknown_identifier_results_in_ParseError)
@@ -477,10 +485,9 @@ TEST_F(JsonStreamingObjectParserArrayTest, VisitNumber)
     parser.Feed(R"(5,)");
 }
 
-TEST_F(JsonStreamingObjectParserArrayTest, number_above_int64_t_results_in_ParseError)
+TEST_F(JsonStreamingObjectParserArrayTest, number_above_int64_t_results_in_NumberOverflow)
 {
-    EXPECT_CALL(arrayVisitor, ParseError());
-    EXPECT_CALL(visitor, ParseError());
+    EXPECT_CALL(arrayVisitor, NumberOverflow());
     parser.Feed(R"(9223372036854775808 )");
 }
 

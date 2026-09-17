@@ -40,6 +40,9 @@ namespace infra
     void JsonObjectVisitor::StringOverflow()
     {}
 
+    void JsonObjectVisitor::NumberOverflow()
+    {}
+
     void JsonArrayVisitor::VisitString(infra::BoundedConstString value)
     {}
 
@@ -72,6 +75,9 @@ namespace infra
     {}
 
     void JsonArrayVisitor::StringOverflow()
+    {}
+
+    void JsonArrayVisitor::NumberOverflow()
     {}
 
     JsonSubParser::JsonSubParser(infra::BoundedString tagBuffer, infra::BoundedString valueBuffer,
@@ -442,6 +448,12 @@ namespace infra
                 tagBuffer.clear();
                 visitor->StringOverflow();
             }
+            else if (state == State::valueExpected && token == Token::numberOverflow)
+            {
+                state = State::closed;
+                tagBuffer.clear();
+                visitor->NumberOverflow();
+            }
             else if (state == State::closed && token == Token::comma)
                 state = State::open;
             else if (state == State::init)
@@ -632,6 +644,12 @@ namespace infra
             {
                 state = State::closed;
                 visitor->StringOverflow();
+            }
+            else if ((state == State::initialOpen || state == State::open) && token == Token::numberOverflow)
+            {
+                state = State::closed;
+                tagBuffer.clear();
+                visitor->NumberOverflow();
             }
             else if ((state == State::initialOpen || state == State::open) && token == Token::false_)
             {
@@ -862,5 +880,10 @@ namespace infra
     void JsonObjectVisitorDecorator::StringOverflow()
     {
         decorated.StringOverflow();
+    }
+
+    void JsonObjectVisitorDecorator::NumberOverflow()
+    {
+        decorated.NumberOverflow();
     }
 }

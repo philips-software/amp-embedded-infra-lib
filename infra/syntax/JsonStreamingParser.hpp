@@ -25,6 +25,7 @@ namespace infra
         virtual void ParseError() = 0;
         virtual void SemanticError() = 0;
         virtual void StringOverflow() = 0;
+        virtual void NumberOverflow() = 0;
     };
 
     class JsonArrayVisitor;
@@ -44,6 +45,7 @@ namespace infra
         void ParseError() override;
         void SemanticError() override;
         void StringOverflow() override;
+        void NumberOverflow() override;
     };
 
     class JsonArrayVisitor
@@ -67,6 +69,7 @@ namespace infra
         void ParseError() override;
         void SemanticError() override;
         void StringOverflow() override;
+        void NumberOverflow() override;
     };
 
     class JsonSubParser
@@ -289,6 +292,7 @@ namespace infra
         void ParseError() override;
         void SemanticError() override;
         void StringOverflow() override;
+        void NumberOverflow() override;
 
     private:
         JsonObjectVisitor& decorated;
