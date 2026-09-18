@@ -7,6 +7,7 @@
 * xref:EchoServices.adoc[Echo Services]
 ** xref:EchoServices/GapPeripheral.adoc[GapPeripheral]
 ** xref:EchoServices/GapCentral.adoc[GapCentral]
+** xref:EchoServices/GattClient.adoc[GattClient]
 ** xref:EchoServices/EndToEndFlows.adoc[BLE End-to-End Flows]
 * xref:Sesame.adoc[Sesame]
 * xref:NetworkConnections.adoc[NetworkConnections]

@@ -6,7 +6,7 @@ Cross-service flows that combine multiple services to illustrate typical user jo
 
 == BLE Central Complete Flow
 
-Scan, connect, pair, bond.
+Scan, connect, pair, bond. Once `CurrentState(connected)` has fired, the natural continuation is <<central-gatt-session,BLE Central GATT Session>> below, which exercises the xref:EchoServices/GattClient.adoc[GattClient] service.
 
 [mermaid]
 ....
@@ -24,9 +24,19 @@ include::partial$echoservices/composite_flows/PeripheralRole_CompleteFlow_sequen
 
 == BLE Central Bonded Reconnection
 
-Scan for a bonded peripheral, reconnect, and re-encrypt using stored keys (no SMP pairing).
+Scan for a bonded peripheral, reconnect, and re-encrypt using stored keys (no SMP pairing). After re-encryption completes, continue with <<central-gatt-session,BLE Central GATT Session>>.
 
 [mermaid]
 ....
 include::partial$echoservices/composite_flows/CentralRole_BondedReconnection_sequence.mmd[]
+....
+
+[[central-gatt-session]]
+== BLE Central GATT Session
+
+Picks up after the *BLE Central Complete Flow* (or *BLE Central Bonded Reconnection*) has produced `CurrentState(connected)`. Widens the ATT bearer via MTU exchange, walks the Service / Characteristic / Descriptor discovery sequence, subscribes to notifications on the target characteristic, and tears the subscription down again. See xref:EchoServices/GattClient.adoc[GattClient] for per-method contracts.
+
+[mermaid]
+....
+include::partial$echoservices/composite_flows/CentralRole_GattSession_sequence.mmd[]
 ....

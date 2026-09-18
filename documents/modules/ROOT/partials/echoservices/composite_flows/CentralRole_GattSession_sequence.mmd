@@ -1,0 +1,73 @@
+sequenceDiagram
+    title BLE Central GATT Session: MTU Exchange, Discovery, Subscribe, Notifications
+
+    participant App as App<br>[implements GattClientResponse, GapCentralResponse]
+    participant Node as Node<br>[implements GattClient, GapCentral]
+    participant Peripheral as Pulse Oximeter<br>BLE Peripheral
+
+    Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer / ATT events, not driven by the App.<br>The App only observes them through Echo callbacks.
+    Note over App, Node: Precondition: connected and bonded<br>(picks up after CentralRole_CompleteFlow<br>or CentralRole_BondedReconnection).
+
+    rect rgb(230, 230, 240)
+        note over App, Peripheral: 1. MTU Exchange (widen the ATT bearer before discovery)
+        App->>Node: GattClient.MtuSizeExchangeRequest()
+        Node-)Peripheral: ATT_EXCHANGE_MTU_REQ (client rx MTU)
+        Peripheral-)Node: ATT_EXCHANGE_MTU_RSP (server rx MTU)
+        Node-->>App: GattClientResponse.MtuSizeExchangeComplete(247)
+        Node-->>App: GattClientResponse.OperationComplete(success)
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Peripheral: 2. Service Discovery
+        App->>Node: GattClient.StartServiceDiscovery()
+        Node-->>App: GattClientResponse.ServiceDiscovered(uuid=0x1800)
+        Node-->>App: GattClientResponse.ServiceDiscovered(uuid=0x1801)
+        Node-->>App: GattClientResponse.ServiceDiscovered(uuid=0x180A)
+        Node-->>App: GattClientResponse.ServiceDiscovered(<br>uuid=0x1822,<br>handles={startHandle=64, endHandle=69})
+        Node-->>App: GattClientResponse.ServiceDiscovered(uuid=0x180F)
+        Node-->>App: GattClientResponse.ServiceDiscovered(uuid=0x180D)
+        Node-->>App: GattClientResponse.ServiceDiscoveryComplete(success)
+        note over App: 0x1822 is the Pulse Oximeter Service.
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Peripheral: 3. Characteristic Discovery for the Pulse Oximeter Service
+        App->>Node: GattClient.StartCharacteristicDiscovery(<br>startHandle=64, endHandle=69)
+        Node-->>App: GattClientResponse.CharacteristicDiscovered(<br>uuid=0x2A5F, declarationHandle=65, valueHandle=66, properties=0x10)
+        Node-->>App: GattClientResponse.CharacteristicDiscovered(<br>uuid=0x2A60, declarationHandle=68, valueHandle=69, properties=0x02)
+        Node-->>App: GattClientResponse.CharacteristicDiscoveryComplete(success)
+        note over App: 0x2A5F PLX Continuous Measurement (notify).<br>0x2A60 PLX Features (read).
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Peripheral: 4. Descriptor Discovery for PLX Continuous Measurement
+        App->>Node: GattClient.StartDescriptorDiscovery(<br>startHandle=66, endHandle=67)
+        Node-->>App: GattClientResponse.DescriptorDiscovered(<br>uuid=0x2902, handle=67)
+        Node-->>App: GattClientResponse.DescriptorDiscoveryComplete(success)
+        note over App: CCCD at handle 67 controls notify / indicate<br>for value handle 66.
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Peripheral: 5. Subscribe: enable notifications on PLX Continuous Measurement
+        App->>Node: GattClient.WriteDescriptor(<br>handle=67, data=0x0100)
+        Node-)Peripheral: ATT_WRITE_REQ (handle=67, value=0x0100)
+        Peripheral-)Node: ATT_WRITE_RSP
+        Node-->>App: GattClientResponse.OperationComplete(success)
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Peripheral: 6. Runtime notifications
+        Peripheral-)Node: ATT_HANDLE_VALUE_NTF (handle=66, value=<PLX bytes>)
+        Node-->>App: GattClientResponse.NotificationReceived(<br>handle=66,<br>data=1fff07ff07ff07ff07ff07ff070020282000ff07)
+
+        Peripheral-)Node: ATT_HANDLE_VALUE_NTF (handle=66, value=<PLX bytes>)
+        Node-->>App: GattClientResponse.NotificationReceived(<br>handle=66,<br>data=1fff07ff07ff07ff07ff07ff070020280000ff07)
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Peripheral: 7. Teardown: disable notifications
+        App->>Node: GattClient.WriteDescriptor(<br>handle=67, data=0x0000)
+        Node-)Peripheral: ATT_WRITE_REQ (handle=67, value=0x0000)
+        Peripheral-)Node: ATT_WRITE_RSP
+        Node-->>App: GattClientResponse.OperationComplete(success)
+    end
