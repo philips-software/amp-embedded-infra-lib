@@ -48,12 +48,10 @@ include::partial$echoservices/gatt_client/GattClient_class.mmd[]
 
 *Allowed states:* connected. May only be called once per connection.
 
-*Response sequences* (matching `Gatt.proto` `MtuSizeExchangeRequest` doc):
+*Response sequences*:
 
 * Successful exchange: `MtuSizeExchangeComplete(value)` -> `OperationComplete(success)`.
 * Peripheral / L2CAP failure: `OperationComplete(error)`.
-
-The effective MTU is `min(client rx MTU, server rx MTU)` and is implementation-defined.
 
 [mermaid]
 ....
@@ -64,7 +62,7 @@ include::partial$echoservices/gatt_client/GattClient_MtuSizeExchangeRequest_sequ
 
 *Allowed states:* connected. First step of the *Service -> Characteristic -> Descriptor* discovery sequence.
 
-*Response sequences* (matching `Gatt.proto` `StartServiceDiscovery` doc):
+*Response sequences*:
 
 * Zero or more `ServiceDiscovered(uuid, handles)` -> `ServiceDiscoveryComplete(success)`.
 * Peripheral / L2CAP failure: `ServiceDiscoveryComplete(error)`.
@@ -78,7 +76,7 @@ include::partial$echoservices/gatt_client/GattClient_StartServiceDiscovery_seque
 
 *Allowed states:* connected. Pre-conditions: the service's handle range is known from a prior `ServiceDiscovered` callback. Must be called once per discovered service.
 
-*Response sequences* (matching `Gatt.proto` `StartCharacteristicDiscovery` doc):
+*Response sequences*:
 
 * Zero or more `CharacteristicDiscovered(uuid, declarationHandle, valueHandle, properties)` -> `CharacteristicDiscoveryComplete(success)`.
 * Peripheral / L2CAP failure: `CharacteristicDiscoveryComplete(error)`.
@@ -92,7 +90,7 @@ include::partial$echoservices/gatt_client/GattClient_StartCharacteristicDiscover
 
 *Allowed states:* connected. Pre-conditions: the characteristic's `valueHandle` is known from a prior `CharacteristicDiscovered` callback. The descriptor range for a characteristic spans `valueHandle + 1` to `nextCharacteristic.declarationHandle - 1` (or `service.handles.endHandle` for the last characteristic in a service).
 
-*Response sequences* (matching `Gatt.proto` `StartDescriptorDiscovery` doc):
+*Response sequences*:
 
 * Zero or more `DescriptorDiscovered(uuid, handle)` -> `DescriptorDiscoveryComplete(success)`.
 * Peripheral / L2CAP failure: `DescriptorDiscoveryComplete(error)`.
@@ -106,7 +104,7 @@ include::partial$echoservices/gatt_client/GattClient_StartDescriptorDiscovery_se
 
 *Allowed states:* connected. Pre-conditions: `valueHandle` known from `CharacteristicDiscovered`.
 
-*Response sequences* (matching `Gatt.proto` `ReadCharacteristic` doc):
+*Response sequences*:
 
 * Successful read: `ReadCharacteristicResponse(data)` -> `OperationComplete(success)`.
 * Peripheral-side rejection (permissions, invalid handle, insufficient authentication, etc.): `OperationComplete(error)`.
@@ -121,7 +119,7 @@ include::partial$echoservices/gatt_client/GattClient_ReadCharacteristic_sequence
 
 *Allowed states:* connected. Pre-conditions: `valueHandle` known from `CharacteristicDiscovered`.
 
-*Response sequences* (matching `Gatt.proto` `WriteCharacteristic` doc):
+*Response sequences*:
 
 * Successful write: `OperationComplete(success)` after `ATT_WRITE_RSP`.
 * Peripheral-side rejection: `OperationComplete(error)`.
@@ -136,7 +134,7 @@ include::partial$echoservices/gatt_client/GattClient_WriteCharacteristic_sequenc
 
 *Allowed states:* connected. May be called while another operation is in progress, except while another `WriteCharacteristicWithoutResponse` is in flight.
 
-*Response sequences* (matching `Gatt.proto` `WriteCharacteristicWithoutResponse` doc):
+*Response sequences*:
 
 * Queued locally: `WriteCharacteristicWithoutResponseComplete(success)`.
 * Local bearer full: `WriteCharacteristicWithoutResponseComplete(retry)`. Re-submit the same call.
@@ -153,7 +151,7 @@ include::partial$echoservices/gatt_client/GattClient_WriteCharacteristicWithoutR
 
 *Allowed states:* connected. Pre-conditions: descriptor `handle` known from `DescriptorDiscovered`.
 
-*Response sequences* (matching `Gatt.proto` `ReadDescriptor` doc):
+*Response sequences*:
 
 * Successful read: `ReadDescriptorResponse(data)` -> `OperationComplete(success)`.
 * Peripheral-side rejection: `OperationComplete(error)`.
@@ -168,7 +166,7 @@ include::partial$echoservices/gatt_client/GattClient_ReadDescriptor_sequence.mmd
 
 *Allowed states:* connected. Pre-conditions: descriptor `handle` known from `DescriptorDiscovered`.
 
-*Response sequences* (matching `Gatt.proto` `WriteDescriptor` doc):
+*Response sequences*:
 
 * Successful write: `OperationComplete(success)` after `ATT_WRITE_RSP`.
 * Peripheral-side rejection: `OperationComplete(error)`.
@@ -248,7 +246,7 @@ include::partial$echoservices/gatt_client/GattClient_DisconnectDuringOperation_s
 
 === Discovery Flow (Pulse Oximeter)
 
-Concrete discovery example against a Nonin 3150 pulse oximeter, walking through services, the PLX Continuous Measurement characteristic, its CCCD, and the runtime notifications that follow after subscription.
+Concrete discovery example against a fictional AcmeOx 200 pulse oximeter, walking through services, the PLX Continuous Measurement characteristic, its CCCD, and the runtime notifications that follow after subscription.
 
 [mermaid]
 ....
