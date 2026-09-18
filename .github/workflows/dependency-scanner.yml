@@ -11,6 +11,8 @@ permissions:
 
 jobs:
   dependency-submission:
+    # the dependency graph needs contents:write, which a fork PR's token does not carry
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
