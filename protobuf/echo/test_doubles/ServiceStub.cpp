@@ -50,8 +50,8 @@ namespace services
         return value;
     }
 
-    ServiceStub::ServiceStub(Echo& echo)
-        : Service(echo)
+    ServiceStub::ServiceStub(Echo& echo, EchoChannel channel)
+        : Service(echo, channel)
     {}
 
     bool ServiceStub::AcceptsService(uint32_t id) const
@@ -84,8 +84,8 @@ namespace services
         }
     }
 
-    ServiceStubProxy::ServiceStubProxy(services::Echo& echo)
-        : services::ServiceProxy(echo, maxMessageSize)
+    ServiceStubProxy::ServiceStubProxy(services::Echo& echo, EchoChannel channel)
+        : services::ServiceProxy(echo, maxMessageSize, channel)
     {}
 
     void ServiceStubProxy::Method(uint32_t value)
