@@ -2,9 +2,12 @@
 #define INFRA_XML_OBJECT_NAVIGATOR_HPP
 
 #include "pugixml.hpp"
+#include <cstdint>
 #include <functional>
 #include <optional>
 #include <stdexcept>
+#include <string>
+#include <vector>
 
 namespace infra
 {

@@ -264,6 +264,7 @@ service GapPeripheral
 
     // Allowed states: standby
     // Expected response: GapPeripheralResponse.CurrentState with state advertising
+    // Pre-conditions: Optional SetAdvertisementData (payload), SetScanResponseData (scannable modes), SetSecurityPreferences and SetAllowPairing (pairing posture) before Advertise. Omitting any uses the HAL default.
     // Description: If an advertisement mode is not supported by a configuration then it results in an assertion.
     rpc Advertise(AdvertisementMode) returns (Nothing) { option (method_id) = 2; }
 
@@ -321,6 +322,7 @@ service GapPeripheral
     rpc GetBondInformation(Nothing) returns (Nothing) { option (method_id) = 13; }
 
     // Allowed states: standby, connected
+    // Pre-conditions: A prior GapPeripheralResponse.AuthenticationRequired callback with isNumericComparison=true.
     // Description: Confirms or rejects the numeric comparison in response to GapPeripheralResponse.AuthenticationRequired.
     //   Only valid when AuthenticationRequest.isNumericComparison is true.
     //   Must be called within the SMP protocol timeout (30 seconds, Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4)
@@ -517,13 +519,15 @@ service GapCentral
     rpc GetState(Nothing) returns (Nothing) { option (method_id) = 1; }
 
     // Allowed states: standby
-    // Description: Only devices matching the filter will be reported via GapCentralResponse.DeviceDiscovered
-    //   Filters are reset when scanning is stopped.
+    // Description: Only devices matching the filter will be reported via GapCentralResponse.DeviceDiscovered.
+    //   Filters are reset automatically when scanning stops.
+    //   An explicit SetDeviceDiscoveryFilter(filter=none) is idempotent and can be used to clear a filter that was set without ever starting a scan.
     rpc SetDeviceDiscoveryFilter(DeviceDiscoveryFilter) returns (Nothing) { option (method_id) = 2; }
 
     // Allowed states: standby
     // Expected response: GapCentralResponse.CurrentState with state scanning
     // Additional responses: GapCentralResponse.DeviceDiscovered for each matching device
+    // Pre-conditions: Optional SetDeviceDiscoveryFilter to restrict which advertisers are reported.
     // Description: Starts scanning for advertising peripheral devices until Standby is called.
     //   It's recommended to add a DeviceDiscoveryFilter, otherwise devices might be missed due to too many being discovered.
     //   All configurations use a fixed scan window and scan interval of 500 ms.
@@ -532,6 +536,7 @@ service GapCentral
 
     // Allowed states: standby
     // Expected response: GapCentralResponse.CurrentState
+    // Pre-conditions: Optional SetIdentityAddress and/or SetPrivacyMode to control the own address type used on the CONNECT_IND.
     // Description: Initiates a connection to a peripheral device with the given address.
     // Response Sequences:
     //   On successful connection establishment: standby -> initiating -> connected
@@ -547,24 +552,29 @@ service GapCentral
 
     // Allowed states: connected
     // Expected response: GapCentralResponse.PairingResult
-    // Additional responses: GapCentralResponse.NumberOfBondsChanged if a new bond was created,
+    // Additional responses: GapCentralResponse.NumberOfBondsChanged on any successful pairing or re-encryption
+    //   (new bond adds an entry; re-encryption updates the bond-aging state with the count unchanged),
     //   GapCentralResponse.CurrentState with standby if device disconnected,
     //   GapCentralResponse.AuthenticationRequired if user interaction is required during pairing
     // Description: Secures an existing connection.
     //   If the peripheral sends a security request, this procedure is triggered automatically.
     //   1. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
     //   2. If there is a pre-existing bond, then the connection will be encrypted using the existing keys.
+    // Pre-conditions: Optional SetSecurityMode and SetIoCapabilities (both consumed at SMP start to select the pairing method).
     // Response Sequences:
     //   On successful pairing with new bond: GapCentralResponse.AuthenticationRequired (if applicable) -> GapCentralResponse.NumberOfBondsChanged -> GapCentralResponse.PairingResult 
-    //   On successful re-encryption with existing bond: GapCentralResponse.PairingResult
+    //   On successful re-encryption with existing bond: GapCentralResponse.NumberOfBondsChanged -> GapCentralResponse.PairingResult
     //   On pairing failure: GapCentralResponse.AuthenticationRequired (if applicable) -> GapCentralResponse.PairingResult
     //   On peer-initiated disconnect during pairing: GapCentralResponse.PairingResult -> GapCentralResponse.CurrentState(standby)
     rpc PairAndBond(Nothing) returns (Nothing) { option (method_id) = 6; }
 
-    // Allowed in link layer states: standby
-    // Configures the minimum security mode and level required for connections.
-    // Should be called once during initialization before any connections are made.
-    // If a connected peer does not meet the required security level, the connection will be rejected.
+    // Allowed states: standby
+    // Description: Configures the minimum security mode and level required for connections.
+    //   Should be called once during initialization before any connections are made.
+    //   If the connected peripheral does not meet the required security level, the PairAndBond procedure fails with PairingResult(pairedSuccessfully=false, reason=authenticationRequirementsNotMet).
+    //   The link stays connected on SMP failure; the App must call Standby (or wait for the peer to disconnect) to reach CurrentState(standby).
+    //   The Connect procedure itself is unaffected: the link reaches CurrentState(connected) regardless of capability match.
+    //   Security mode is a pairing-time requirement, not a Connect-time filter.
     rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 7; }
 
     // Allowed in link layer states: standby
@@ -574,6 +584,7 @@ service GapCentral
     rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 8; }
 
     // Allowed states: connected
+    // Pre-conditions: A prior GapCentralResponse.AuthenticationRequired callback with isNumericComparison=false (Passkey Entry method).
     // Description: Provides the passkey entered by the user in response to GapCentralResponse.AuthenticationRequired.
     //   Only valid when AuthenticationRequest.isNumericComparison is false.
     //   Must be called within the SMP protocol timeout (30 seconds, Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4) 
@@ -583,6 +594,7 @@ service GapCentral
     rpc AuthenticateWithPasskey(UInt32Value) returns (Nothing) { option (method_id) = 9; }
 
     // Allowed states: connected
+    // Pre-conditions: A prior GapCentralResponse.AuthenticationRequired callback with isNumericComparison=true.
     // Description: Confirms or rejects the numeric comparison in response to GapCentralResponse.AuthenticationRequired.
     //   Only valid when AuthenticationRequest.isNumericComparison is true.
     //   Must be called within the SMP protocol timeout (30 seconds, Bluetooth Core Specification v6.3, Vol 3, Part H, Section 3.4) 
@@ -614,12 +626,15 @@ service GapCentral
     rpc GetBondList(Nothing) returns (Nothing) { option (method_id) = 14; }
 
     // Allowed states: standby
-    // Description: Sets the local identity address used by the central when privacy mode is disabled.
+    // Description: Sets the local identity address used by the central.
     //   The address type may be public or random.
-    //   This does not set a resolvable private address; when privacy mode is enabled, the controller generates and rotates resolvable private addresses automatically.
+    //   When privacy mode is disabled the controller uses this identity address directly on the air.
+    //   When privacy mode is enabled the controller generates and rotates a resolvable private address on the air, but the identity address is still distributed to bonded peers via the SMP Identity Address Information PDU (Core Spec v6.3, Vol 3, Part H, Section 3.6.1) so future RPAs resolve back to the same identity.
+    //   Call SetIdentityAddress before enabling privacy or creating new bonds so bonded peers store the intended identity.
     rpc SetIdentityAddress(AddressWithType) returns (Nothing) { option (method_id) = 15; }
 
     // Allowed states: standby
+    // Pre-conditions: When enabling, call SetIdentityAddress first so future bonds capture the intended identity.
     // Description: Enables or disables use of a resolvable private address for the central.
     //   When enabled, the controller generates and rotates the private address automatically based on the local IRK.
     //   When disabled, the central uses its configured identity address.
@@ -671,7 +686,10 @@ service GapCentralResponse {
     
     // Expected states: standby, connected
     // Triggered by: GapCentral.RemoveAllBonds, GapCentral.RemoveBondWithAddress, GapCentral.PairAndBond
-    // Description: Reports the updated number of stored bonds after a bond was added or removed.
+    // Description: Reports the current number of stored bonds.
+    //   Fires when a new bond is added, an existing bond is removed, and on successful re-encryption
+    //   of an already-bonded connection. In the re-encryption case the reported count is unchanged;
+    //   the callback carries a bond-aging (LRU) update rather than a change in count.
     rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
 
     // Expected states: standby, scanning, initiating, connected
