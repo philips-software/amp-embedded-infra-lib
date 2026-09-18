@@ -6,7 +6,14 @@ sequenceDiagram
     Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. MtuSizeExchangeComplete).
 
     App->>Node: GattClient.MtuSizeExchangeRequest()
-    Node-)Peripheral: ATT_EXCHANGE_MTU_REQ (client rx MTU)
-    Peripheral-)Node: ATT_EXCHANGE_MTU_RSP (server rx MTU)
-    Node-->>App: GattClientResponse.MtuSizeExchangeComplete(value=247)
-    Node-->>App: GattClientResponse.OperationComplete(success)
+
+    alt Successful exchange
+        Node-)Peripheral: ATT_EXCHANGE_MTU_REQ (client rx MTU)
+        Peripheral-)Node: ATT_EXCHANGE_MTU_RSP (server rx MTU)
+        Node-->>App: GattClientResponse.MtuSizeExchangeComplete(247)
+        Node-->>App: GattClientResponse.OperationComplete(success)
+    else Peripheral / L2CAP failure
+        Node-)Peripheral: ATT_EXCHANGE_MTU_REQ (client rx MTU)
+        Peripheral-)Node: ATT_ERROR_RSP (error code)
+        Node-->>App: GattClientResponse.OperationComplete(error)
+    end

@@ -13,7 +13,7 @@ sequenceDiagram
         App->>Node: GattClient.MtuSizeExchangeRequest()
         Node-)Peripheral: ATT_EXCHANGE_MTU_REQ (client rx MTU)
         Peripheral-)Node: ATT_EXCHANGE_MTU_RSP (server rx MTU)
-        Node-->>App: GattClientResponse.MtuSizeExchangeComplete(value=247)
+        Node-->>App: GattClientResponse.MtuSizeExchangeComplete(247)
         Node-->>App: GattClientResponse.OperationComplete(success)
     end
 
@@ -41,7 +41,7 @@ sequenceDiagram
 
     rect rgb(230, 230, 240)
         note over App, Peripheral: 4. Descriptor Discovery for PLX Continuous Measurement
-        App->>Node: GattClient.StartDescriptorDiscovery(<br>startHandle=67, endHandle=67)
+        App->>Node: GattClient.StartDescriptorDiscovery(<br>startHandle=66, endHandle=67)
         Node-->>App: GattClientResponse.DescriptorDiscovered(<br>uuid=0x2902, handle=67)
         Node-->>App: GattClientResponse.DescriptorDiscoveryComplete(success)
         note over App: CCCD at handle 67 controls notify / indicate<br>for value handle 66.

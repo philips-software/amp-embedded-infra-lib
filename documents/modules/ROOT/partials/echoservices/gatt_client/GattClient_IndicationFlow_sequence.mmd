@@ -9,7 +9,7 @@ sequenceDiagram
 
     rect rgb(230, 230, 240)
         note over App, Peripheral: 1. Discover CCCD for target characteristic
-        App->>Node: GattClient.StartDescriptorDiscovery(<br>startHandle=0x0036, endHandle=0x0038)
+        App->>Node: GattClient.StartDescriptorDiscovery(<br>startHandle=0x0035, endHandle=0x0038)
         Peripheral-)Node: ATT_FIND_INFORMATION_RSP entries
         Node-->>App: GattClientResponse.DescriptorDiscovered(<br>uuid=0x2902, handle=0x0036)
         Node-->>App: GattClientResponse.DescriptorDiscoveryComplete(success)

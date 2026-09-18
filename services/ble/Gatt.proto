@@ -215,7 +215,6 @@ service GattClient
     // Response Sequences:
     //   On successful read: GattClientResponse.ReadCharacteristicResponse -> GattClientResponse.OperationComplete(success)
     //   On peer-side rejection (permissions, invalid handle, insufficient authentication): GattClientResponse.OperationComplete(error)
-    //   On transient client-side backpressure: GattClientResponse.OperationComplete(retry). The App may re-submit the same call.
     rpc ReadCharacteristic(Handle) returns (Nothing) { option (method_id) = 5; }
 
     // Allowed states: connected
@@ -226,7 +225,6 @@ service GattClient
     // Response Sequences:
     //   On successful write: GattClientResponse.OperationComplete(success)
     //   On peer-side rejection: GattClientResponse.OperationComplete(error)
-    //   On transient client-side backpressure: GattClientResponse.OperationComplete(retry). The App may re-submit the same call.
     rpc WriteCharacteristic(AttributeData) returns (Nothing) { option (method_id) = 6; }
 
     // Allowed states: connected
@@ -251,7 +249,6 @@ service GattClient
     // Response Sequences:
     //   On successful read: GattClientResponse.ReadDescriptorResponse -> GattClientResponse.OperationComplete(success)
     //   On peer-side rejection: GattClientResponse.OperationComplete(error)
-    //   On transient client-side backpressure: GattClientResponse.OperationComplete(retry). The App may re-submit the same call.
     rpc ReadDescriptor(Handle) returns (Nothing) { option (method_id) = 8; }
 
     // Allowed states: connected
@@ -264,7 +261,6 @@ service GattClient
     // Response Sequences:
     //   On successful write: GattClientResponse.OperationComplete(success)
     //   On peer-side rejection: GattClientResponse.OperationComplete(error)
-    //   On transient client-side backpressure: GattClientResponse.OperationComplete(retry). The App may re-submit the same call.
     rpc WriteDescriptor(AttributeData) returns (Nothing) { option (method_id) = 9; }
 
     // Allowed states: connected

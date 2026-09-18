@@ -30,7 +30,7 @@ A typical GATT session against a bonded peripheral runs the steps below in order
 . Call `MtuSizeExchangeRequest` once, before any discovery. The negotiated MTU is used by subsequent read / write PDUs and by paginated discovery responses (`ATT_READ_BY_GROUP_TYPE_RSP`, `ATT_READ_BY_TYPE_RSP`), so widening the bearer up-front reduces the number of ATT round-trips discovery needs.
 . Walk the discovery sequence: `StartServiceDiscovery` -> `StartCharacteristicDiscovery` (once per discovered service) -> `StartDescriptorDiscovery` (once per characteristic that owns descriptors). See <<_discovery_flow,Discovery Flow>>.
 . Subscribe by writing to the target characteristic's CCCD: `0x0100` for notifications, `0x0200` for indications (each `IndicationReceived` must be acknowledged with `IndicationDone`). See <<_indication_flow,Indication Flow>>.
-. On `OperationComplete(retry)`, re-submit the exact same call. `retry` is a client-side backpressure signal (the local ATT bearer was momentarily busy); the peripheral has not seen the request, so no state has changed on its side and an immediate re-submit is normally sufficient. See <<_operation_failure_and_retry,Operation Failure and Retry>>.
+. On `WriteCharacteristicWithoutResponseComplete(retry)`, re-submit the exact same call. `retry` is a client-side backpressure signal (the local ATT bearer was momentarily full); the peripheral has not seen the request, so no state has changed on its side and an immediate re-submit is normally sufficient. Only `WriteCharacteristicWithoutResponse` currently reports `retry`; acknowledged reads and writes only report `success` or `error`. See <<_operation_failure_and_retry,Operation Failure and Retry>>.
 . On disconnect, expect the pending operation's `Expected response` to fire with an error status before `CurrentState(standby)`, then re-run the entire session from `MtuSizeExchangeRequest` on the next `CurrentState(connected)`. Handles from the previous session are not guaranteed to be valid. See <<_disconnect_during_operation,Disconnect During Operation>>.
 
 `GattServerDisService.SetDisServiceData` is a server-side companion service, independent of `GattClient`. Call it once during startup, before advertising begins (or before starting device discovery when running a client on the same Node), so remote GATT clients read the intended DIS attributes on their first `ReadCharacteristic`. Re-invocation after DIS attributes have been read is outside the documented contract.
@@ -88,7 +88,7 @@ include::partial$echoservices/gatt_client/GattClient_StartCharacteristicDiscover
 
 === StartDescriptorDiscovery
 
-*Allowed states:* connected. Pre-conditions: the characteristic's `valueHandle` is known from a prior `CharacteristicDiscovered` callback. The descriptor range for a characteristic spans `valueHandle + 1` to `nextCharacteristic.declarationHandle - 1` (or `service.handles.endHandle` for the last characteristic in a service).
+*Allowed states:* connected. Pre-conditions: the characteristic's `valueHandle` is known from a prior `CharacteristicDiscovered` callback. The descriptor range for a characteristic spans `valueHandle` to `nextCharacteristic.declarationHandle - 1` (or `service.handles.endHandle` for the last characteristic in a service).
 
 *Response sequences*:
 
@@ -108,7 +108,6 @@ include::partial$echoservices/gatt_client/GattClient_StartDescriptorDiscovery_se
 
 * Successful read: `ReadCharacteristicResponse(data)` -> `OperationComplete(success)`.
 * Peripheral-side rejection (permissions, invalid handle, insufficient authentication, etc.): `OperationComplete(error)`.
-* Local bearer momentarily busy: `OperationComplete(retry)`. Re-submit the same call after a short delay.
 
 [mermaid]
 ....
@@ -123,7 +122,6 @@ include::partial$echoservices/gatt_client/GattClient_ReadCharacteristic_sequence
 
 * Successful write: `OperationComplete(success)` after `ATT_WRITE_RSP`.
 * Peripheral-side rejection: `OperationComplete(error)`.
-* Local bearer momentarily busy: `OperationComplete(retry)`.
 
 [mermaid]
 ....
@@ -155,7 +153,6 @@ include::partial$echoservices/gatt_client/GattClient_WriteCharacteristicWithoutR
 
 * Successful read: `ReadDescriptorResponse(data)` -> `OperationComplete(success)`.
 * Peripheral-side rejection: `OperationComplete(error)`.
-* Local bearer momentarily busy: `OperationComplete(retry)`.
 
 [mermaid]
 ....
@@ -170,7 +167,6 @@ include::partial$echoservices/gatt_client/GattClient_ReadDescriptor_sequence.mmd
 
 * Successful write: `OperationComplete(success)` after `ATT_WRITE_RSP`.
 * Peripheral-side rejection: `OperationComplete(error)`.
-* Local bearer momentarily busy: `OperationComplete(retry)`.
 
 *CCCD values* (descriptor uuid 0x2902), written as little-endian bytes:
 
@@ -226,7 +222,7 @@ include::partial$echoservices/gatt_client/GattClient_OperationConcurrency_sequen
 
 === Operation Failure and Retry
 
-Shows the peripheral-side rejection path (`OperationComplete(error)`) and the local backpressure path (`OperationComplete(retry)`) and how the App handles each.
+Shows the peripheral-side rejection path on an acknowledged write (`OperationComplete(error)`) and the local backpressure path on `WriteCharacteristicWithoutResponse` (`WriteCharacteristicWithoutResponseComplete(retry)`) and how the App handles each.
 
 [mermaid]
 ....
@@ -257,7 +253,7 @@ include::partial$echoservices/gatt_client/GattClient_DiscoveryFlowDetailed_seque
 
 *Pre-conditions:* connected, GATT discovery complete. In this example the PLX service occupies handles 64..69.
 
-Concrete read / write example against the same pulse oximeter: read the PLX Features characteristic, enable notifications via the CCCD, issue a `WriteCharacteristicWithoutResponse`, and read back the CCCD to confirm.
+Concrete read / write example against the same pulse oximeter: read the PLX Features characteristic, enable notifications via the CCCD, and read back the CCCD to confirm.
 
 [mermaid]
 ....
@@ -277,7 +273,7 @@ include::partial$echoservices/gatt_client/GattServerDisService_class.mmd[]
 
 === SetDisServiceData
 
-Typically called once at startup, before advertising begins. Fields are fixed-length byte arrays; unset fields are simply not populated in the exposed DIS attributes. No response callback - the call returns `Nothing` and there is no paired response service.
+Typically called once at startup, before advertising begins. Each field is a variable-length byte array capped by the `bytes_size` upper limit declared in `Gatt.proto` (see xref:EchoProtocol.adoc[Echo Protocol]); shorter values, including empty, are valid, and empty fields are not populated in the exposed DIS attributes. No response callback - the call returns `Nothing` and there is no paired response service.
 
 [mermaid]
 ....

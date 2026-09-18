@@ -37,9 +37,9 @@ sequenceDiagram
     rect rgb(230, 230, 240)
         note over App, Peripheral: Descriptor Discovery for PLX Continuous Measurement
 
-        note over App: For characteristic with valueHandle=66,<br>the descriptor range is 67..67<br>(next declarationHandle=68 minus 1).
+        note over App: For characteristic with valueHandle=66,<br>the descriptor range is 66..67<br>(next declarationHandle=68 minus 1).
 
-        App->>Node: GattClient.StartDescriptorDiscovery(<br>startHandle=67, endHandle=67)
+        App->>Node: GattClient.StartDescriptorDiscovery(<br>startHandle=66, endHandle=67)
 
         Node-->>App: GattClientResponse.DescriptorDiscovered(<br>uuid=0x2902, handle=67)
         Node-->>App: GattClientResponse.DescriptorDiscoveryComplete(success)

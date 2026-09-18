@@ -1,4 +1,4 @@
 sequenceDiagram
     participant App as App
     participant Node as Node<br>[implements GattServerDisService]
-    App->>Node: GattServerDisService.SetDisServiceData(<br>manufacturerName=..., modelNumber=...,<br>serialNumber=..., hardwareRevision=...,<br>firmwareRevision=..., softwareRevision=...,<br>systemId=..., pnpId=...)
+    App->>Node: GattServerDisService.SetDisServiceData(<br>manufacturerName=..., modelNumber=...,<br>serialNumber=..., hardwareRevision=...,<br>firmwareRevision=..., softwareRevision=...,<br>systemId=..., ieeeRegulatoryCertificationDataList=...,<br>pnpId=...)

@@ -32,9 +32,9 @@ sequenceDiagram
 
     rect rgb(230, 230, 240)
         note over App, Peripheral: 3. Descriptor Discovery (once per characteristic)
-        note left of App: Descriptor range for a characteristic:<br>startHandle = characteristic.valueHandle + 1<br>endHandle = nextCharacteristic.declarationHandle - 1<br>(or service.handles.endHandle for the last characteristic).
+        note left of App: Descriptor range for a characteristic:<br>startHandle = characteristic.valueHandle<br>endHandle = nextCharacteristic.declarationHandle - 1<br>(or service.handles.endHandle for the last characteristic).
         loop For each characteristic
-            App->>Node: GattClient.StartDescriptorDiscovery(<br>startHandle=0x0026, endHandle=0x0028)
+            App->>Node: GattClient.StartDescriptorDiscovery(<br>startHandle=0x0025, endHandle=0x0028)
             loop 0..n descriptors
                 Peripheral-)Node: ATT_FIND_INFORMATION_RSP entries
                 Node-->>App: GattClientResponse.DescriptorDiscovered(<br>uuid=0x2902, handle=0x0026)

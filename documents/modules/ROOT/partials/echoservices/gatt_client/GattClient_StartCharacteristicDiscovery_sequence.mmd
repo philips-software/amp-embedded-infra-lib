@@ -7,9 +7,15 @@ sequenceDiagram
 
     App->>Node: GattClient.StartCharacteristicDiscovery(<br>startHandle=0x0020, endHandle=0x0028)
     Note over Node, Peripheral: Node issues ATT_READ_BY_TYPE_REQ (characteristic type)<br>across the given range and paginates responses.
-    loop 0..n characteristics
-        Peripheral-)Node: ATT_READ_BY_TYPE_RSP entries
-        Node-->>App: GattClientResponse.CharacteristicDiscovered(<br>uuid=0x2A19, declarationHandle=0x0024,<br>valueHandle=0x0025, properties=0x12)
-        Note right of App: properties bitfield: 0x02=read, 0x10=notify.<br>0x12 = read + notify.
+
+    alt Successful discovery
+        loop 0..n characteristics
+            Peripheral-)Node: ATT_READ_BY_TYPE_RSP entries
+            Node-->>App: GattClientResponse.CharacteristicDiscovered(<br>uuid=0x2A19, declarationHandle=0x0024,<br>valueHandle=0x0025, properties=0x12)
+            Note right of App: properties bitfield: 0x02=read, 0x10=notify.<br>0x12 = read + notify.
+        end
+        Node-->>App: GattClientResponse.CharacteristicDiscoveryComplete(success)
+    else Peripheral / L2CAP failure
+        Peripheral-)Node: ATT_ERROR_RSP (error code)
+        Node-->>App: GattClientResponse.CharacteristicDiscoveryComplete(error)
     end
-    Node-->>App: GattClientResponse.CharacteristicDiscoveryComplete(success)

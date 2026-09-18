@@ -18,13 +18,11 @@ sequenceDiagram
 
     rect rgb(230, 230, 240)
         note over App, Peripheral: Local ATT bearer momentarily busy (retryable)
-        App->>Node: GattClient.ReadCharacteristic(0x0025)
-        Node-->>App: GattClientResponse.OperationComplete(retry)
+        App->>Node: GattClient.WriteCharacteristicWithoutResponse(<br>handle=0x0027, data=0x11)
+        Node-->>App: GattClientResponse.WriteCharacteristicWithoutResponseComplete(retry)
         Note over App, Node: retry signals a transient<br>client-side backpressure condition.<br>Re-submit the same call.<br>No state change on the peripheral.
 
-        App->>Node: GattClient.ReadCharacteristic(0x0025)
-        Node-)Peripheral: ATT_READ_REQ (handle=0x0025)
-        Peripheral-)Node: ATT_READ_RSP (value)
-        Node-->>App: GattClientResponse.ReadCharacteristicResponse(<br>data={handle=0x0025, data=0x64})
-        Node-->>App: GattClientResponse.OperationComplete(success)
+        App->>Node: GattClient.WriteCharacteristicWithoutResponse(<br>handle=0x0027, data=0x11)
+        Node-)Peripheral: ATT_WRITE_CMD (handle=0x0027, value=0x11)
+        Node-->>App: GattClientResponse.WriteCharacteristicWithoutResponseComplete(success)
     end
