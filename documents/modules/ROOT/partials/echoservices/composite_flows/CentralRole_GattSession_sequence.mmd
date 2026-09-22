@@ -3,7 +3,7 @@ sequenceDiagram
 
     participant App as App<br>[implements GattClientResponse, GapCentralResponse]
     participant Node as Node<br>[implements GattClient, GapCentral]
-    participant Peripheral as Pulse Oximeter<br>BLE Peripheral
+    participant Peripheral as BLE Peripheral
 
     Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer / ATT events, not driven by the App.<br>The App only observes them through Echo callbacks.
     Note over App, Node: Precondition: connected and bonded<br>(picks up after CentralRole_CompleteFlow<br>or CentralRole_BondedReconnection).
@@ -23,24 +23,24 @@ sequenceDiagram
         Node-->>App: GattClientResponse.ServiceDiscovered(uuid=0x1800)
         Node-->>App: GattClientResponse.ServiceDiscovered(uuid=0x1801)
         Node-->>App: GattClientResponse.ServiceDiscovered(uuid=0x180A)
-        Node-->>App: GattClientResponse.ServiceDiscovered(<br>uuid=0x1822,<br>handles={startHandle=64, endHandle=69})
+        Node-->>App: GattClientResponse.ServiceDiscovered(<br>uuid=0xFFF0,<br>handles={startHandle=64, endHandle=69})
         Node-->>App: GattClientResponse.ServiceDiscovered(uuid=0x180F)
         Node-->>App: GattClientResponse.ServiceDiscovered(uuid=0x180D)
         Node-->>App: GattClientResponse.ServiceDiscoveryComplete(success)
-        note over App: 0x1822 is the Pulse Oximeter Service.
+        note over App: 0xFFF0 is the vendor-defined target service.
     end
 
     rect rgb(230, 230, 240)
-        note over App, Peripheral: 3. Characteristic Discovery for the Pulse Oximeter Service
+        note over App, Peripheral: 3. Characteristic Discovery for the target service
         App->>Node: GattClient.StartCharacteristicDiscovery(<br>startHandle=64, endHandle=69)
-        Node-->>App: GattClientResponse.CharacteristicDiscovered(<br>uuid=0x2A5F, declarationHandle=65, valueHandle=66, properties=0x10)
-        Node-->>App: GattClientResponse.CharacteristicDiscovered(<br>uuid=0x2A60, declarationHandle=68, valueHandle=69, properties=0x02)
+        Node-->>App: GattClientResponse.CharacteristicDiscovered(<br>uuid=0xFFF1, declarationHandle=65, valueHandle=66, properties=0x10)
+        Node-->>App: GattClientResponse.CharacteristicDiscovered(<br>uuid=0xFFF2, declarationHandle=68, valueHandle=69, properties=0x02)
         Node-->>App: GattClientResponse.CharacteristicDiscoveryComplete(success)
-        note over App: 0x2A5F PLX Continuous Measurement (notify).<br>0x2A60 PLX Features (read).
+        note over App: 0xFFF1 is a notify characteristic.<br>0xFFF2 is a read characteristic.
     end
 
     rect rgb(230, 230, 240)
-        note over App, Peripheral: 4. Descriptor Discovery for PLX Continuous Measurement
+        note over App, Peripheral: 4. Descriptor Discovery for the notify characteristic
         App->>Node: GattClient.StartDescriptorDiscovery(<br>startHandle=66, endHandle=67)
         Node-->>App: GattClientResponse.DescriptorDiscovered(<br>uuid=0x2902, handle=67)
         Node-->>App: GattClientResponse.DescriptorDiscoveryComplete(success)
@@ -48,7 +48,7 @@ sequenceDiagram
     end
 
     rect rgb(230, 230, 240)
-        note over App, Peripheral: 5. Subscribe: enable notifications on PLX Continuous Measurement
+        note over App, Peripheral: 5. Subscribe: enable notifications on the notify characteristic
         App->>Node: GattClient.WriteDescriptor(<br>handle=67, data=0x0100)
         Node-)Peripheral: ATT_WRITE_REQ (handle=67, value=0x0100)
         Peripheral-)Node: ATT_WRITE_RSP
@@ -57,10 +57,10 @@ sequenceDiagram
 
     rect rgb(230, 230, 240)
         note over App, Peripheral: 6. Runtime notifications
-        Peripheral-)Node: ATT_HANDLE_VALUE_NTF (handle=66, value=<PLX bytes>)
+        Peripheral-)Node: ATT_HANDLE_VALUE_NTF (handle=66, value=<vendor bytes>)
         Node-->>App: GattClientResponse.NotificationReceived(<br>handle=66,<br>data=1fff07ff07ff07ff07ff07ff070020282000ff07)
 
-        Peripheral-)Node: ATT_HANDLE_VALUE_NTF (handle=66, value=<PLX bytes>)
+        Peripheral-)Node: ATT_HANDLE_VALUE_NTF (handle=66, value=<vendor bytes>)
         Node-->>App: GattClientResponse.NotificationReceived(<br>handle=66,<br>data=1fff07ff07ff07ff07ff07ff070020280000ff07)
     end
 

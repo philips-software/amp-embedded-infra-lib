@@ -1,9 +1,9 @@
 sequenceDiagram
-    title BLE GATT Discovery and Notification Enable Example: Pulse Oximeter
+    title BLE GATT Discovery and Notification Enable Example
 
     participant App as App<br>[implements GattClientResponse]
     participant Node as Node<br>[implements GattClient]
-    participant Peripheral as Pulse Oximeter<br>BLE Peripheral
+    participant Peripheral as BLE Peripheral
 
     Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer / ATT events, not driven by the App.<br>The App only observes them through Echo callbacks.
 
@@ -15,27 +15,27 @@ sequenceDiagram
         Node-->>App: GattClientResponse.ServiceDiscovered(uuid=0x1800)
         Node-->>App: GattClientResponse.ServiceDiscovered(uuid=0x180A)
         Node-->>App: GattClientResponse.ServiceDiscovered(<br>uuid=1bc5d5a502005e8be2115f0de070a946)
-        Node-->>App: GattClientResponse.ServiceDiscovered(<br>uuid=0x1822,<br>handles={startHandle=64, endHandle=69})
+        Node-->>App: GattClientResponse.ServiceDiscovered(<br>uuid=0xFFF0,<br>handles={startHandle=64, endHandle=69})
         Node-->>App: GattClientResponse.ServiceDiscovered(uuid=0x180F)
         Node-->>App: GattClientResponse.ServiceDiscovered(uuid=0x180D)
         Node-->>App: GattClientResponse.ServiceDiscoveryComplete(success)
 
-        note over App: uuid=0x1822 is the Pulse Oximeter Service.<br>Interpreted as Bluetooth 16-bit UUID.
+        note over App: uuid=0xFFF0 is the vendor-defined target service.<br>Interpreted as Bluetooth 16-bit UUID.
     end
 
     rect rgb(230, 230, 240)
-        note over App, Peripheral: Characteristic Discovery for Pulse Oximeter Service
+        note over App, Peripheral: Characteristic Discovery for the target service
         App->>Node: GattClient.StartCharacteristicDiscovery(<br>startHandle=64, endHandle=69)
 
-        Node-->>App: GattClientResponse.CharacteristicDiscovered(<br>uuid=0x2A5F, declarationHandle=65, valueHandle=66, properties=0x10)
-        Node-->>App: GattClientResponse.CharacteristicDiscovered(<br>uuid=0x2A60, declarationHandle=68, valueHandle=69, properties=0x02)
+        Node-->>App: GattClientResponse.CharacteristicDiscovered(<br>uuid=0xFFF1, declarationHandle=65, valueHandle=66, properties=0x10)
+        Node-->>App: GattClientResponse.CharacteristicDiscovered(<br>uuid=0xFFF2, declarationHandle=68, valueHandle=69, properties=0x02)
         Node-->>App: GattClientResponse.CharacteristicDiscoveryComplete(success)
 
-        note over App: uuid=0x2A5F PLX Continuous Measurement (notify).<br>uuid=0x2A60 PLX Features (read).
+        note over App: uuid=0xFFF1 is a notify characteristic.<br>uuid=0xFFF2 is a read characteristic.
     end
 
     rect rgb(230, 230, 240)
-        note over App, Peripheral: Descriptor Discovery for PLX Continuous Measurement
+        note over App, Peripheral: Descriptor Discovery for the notify characteristic
 
         note over App: For characteristic with valueHandle=66,<br>the descriptor range is 66..67<br>(next declarationHandle=68 minus 1).
 
@@ -48,7 +48,7 @@ sequenceDiagram
     end
 
     rect rgb(230, 230, 240)
-        note over App, Peripheral: Enable Pulse Oximeter Notifications
+        note over App, Peripheral: Enable Notifications
         App->>Node: GattClient.WriteDescriptor(<br>handle=67, data=0x0100)
         Node-)Peripheral: ATT_WRITE_REQ (handle=67, value=0x0100)
         Peripheral-)Node: ATT_WRITE_RSP
@@ -59,11 +59,11 @@ sequenceDiagram
 
     rect rgb(230, 230, 240)
         note over App, Peripheral: Runtime Notifications
-        Peripheral-)Node: ATT_HANDLE_VALUE_NTF (handle=66, value=<PLX bytes>)
+        Peripheral-)Node: ATT_HANDLE_VALUE_NTF (handle=66, value=<vendor bytes>)
         Node-->>App: GattClientResponse.NotificationReceived(<br>handle=66,<br>data=1fff07ff07ff07ff07ff07ff070020282000ff07)
 
-        note over App: Decoded PLX Continuous Measurement:<br>spo2=2047, pulse_rate=2047,<br>spo2_fast=2047, pulse_rate_fast=2047,<br>spo2_slow=2047, pulse_rate_slow=2047,<br>measurement_status=8192,<br>device_and_sensor_status=8232,<br>pulse_amplitude_index=2047.
+        note over App: Payload decoded per the vendor characteristic definition.<br>The App is responsible for parsing the notification bytes according<br>to the target service's specification.
 
-        Peripheral-)Node: ATT_HANDLE_VALUE_NTF (handle=66, value=<PLX bytes>)
+        Peripheral-)Node: ATT_HANDLE_VALUE_NTF (handle=66, value=<vendor bytes>)
         Node-->>App: GattClientResponse.NotificationReceived(<br>handle=66,<br>data=1fff07ff07ff07ff07ff07ff070020280000ff07)
     end

@@ -240,20 +240,20 @@ include::partial$echoservices/gatt_client/GattClient_DisconnectDuringOperation_s
 
 == Examples
 
-=== Discovery Flow (Pulse Oximeter)
+=== Discovery Flow
 
-Concrete discovery example against a fictional AcmeOx 200 pulse oximeter, walking through services, the PLX Continuous Measurement characteristic, its CCCD, and the runtime notifications that follow after subscription.
+Concrete discovery example against a fictional BLE peripheral device, walking through services, a notify characteristic, its CCCD, and the runtime notifications that follow after subscription.
 
 [mermaid]
 ....
 include::partial$echoservices/gatt_client/GattClient_DiscoveryFlowDetailed_sequence_example.mmd[]
 ....
 
-=== Read and Write (Pulse Oximeter)
+=== Read and Write
 
-*Pre-conditions:* connected, GATT discovery complete. In this example the PLX service occupies handles 64..69.
+*Pre-conditions:* connected, GATT discovery complete. In this example the target vendor service occupies handles 64..69.
 
-Concrete read / write example against the same pulse oximeter: read the PLX Features characteristic, enable notifications via the CCCD, and read back the CCCD to confirm.
+Concrete read / write example against the same peripheral: read the vendor read characteristic, enable notifications via the CCCD, and read back the CCCD to confirm.
 
 [mermaid]
 ....

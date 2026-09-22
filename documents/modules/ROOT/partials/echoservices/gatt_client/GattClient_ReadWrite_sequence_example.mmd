@@ -1,25 +1,25 @@
 sequenceDiagram
-    title BLE GATT Read/Write Example: Pulse Oximeter Features and Notifications
+    title BLE GATT Read/Write Example
 
     participant App as App<br>[implements GattClientResponse]
     participant Node as Node<br>[implements GattClient]
-    participant Peripheral as Pulse Oximeter<br>BLE Peripheral
+    participant Peripheral as BLE Peripheral
 
     Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer / ATT events, not driven by the App.<br>The App only observes them through Echo callbacks.
 
     rect rgb(230, 230, 240)
-        note over App, Peripheral: Read PLX Features characteristic
+        note over App, Peripheral: Read the vendor read characteristic (handle=69)
         App->>Node: GattClient.ReadCharacteristic(69)
         Node-)Peripheral: ATT_READ_REQ (handle=69)
         Peripheral-)Node: ATT_READ_RSP (0x0073)
         Node-->>App: GattClientResponse.ReadCharacteristicResponse(<br>data={handle=69, data=0x0073})
         Node-->>App: GattClientResponse.OperationComplete(success)
 
-        note over App: PLX Features = 0x0073.<br>Bits 0, 1, 4, 5, 6 = Measurement Status support,<br>Device and Sensor Status support, SpO2PR-Fast,<br>SpO2PR-Slow, and Pulse Amplitude Index<br>(PLX Service Spec 1.0.1, Section 3.4.1).
+        note over App: Value = 0x0073, a two-byte bitmap.<br>The App decodes the bits according to the target<br>service's characteristic definition.
     end
 
     rect rgb(230, 230, 240)
-        note over App, Peripheral: Enable notifications on PLX Continuous Measurement
+        note over App, Peripheral: Enable notifications on the vendor notify characteristic
         App->>Node: GattClient.WriteDescriptor(<br>handle=67, data=0x0100)
         Node-)Peripheral: ATT_WRITE_REQ (handle=67, value=0x0100)
         Peripheral-)Node: ATT_WRITE_RSP
