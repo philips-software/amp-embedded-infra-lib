@@ -1,0 +1,7 @@
+sequenceDiagram
+    participant App as App<br>[implements GapCentralResponse]
+    participant Node as Node<br>[implements GapCentral]
+
+    App->>Node: GapCentral.SetIoCapabilities(displayYesNo)
+
+    Note over App: Selected capability drives<br>the pairing method during PairAndBond<br>(Just Works, Passkey Entry,<br>or Numeric Comparison).

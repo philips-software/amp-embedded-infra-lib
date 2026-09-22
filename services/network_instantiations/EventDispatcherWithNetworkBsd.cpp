@@ -93,16 +93,14 @@ namespace services
 
     infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Listen(DatagramExchangeObserver& observer, uint16_t port, IPVersions versions)
     {
-        assert(versions != IPVersions::ipv6);
-        auto result = infra::MakeSharedOnHeap<DatagramBsd>(port, observer);
+        auto result = infra::MakeSharedOnHeap<DatagramBsd>(port, observer, versions);
         RegisterDatagram(result);
         return result;
     }
 
     infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Listen(DatagramExchangeObserver& observer, IPVersions versions)
     {
-        assert(versions != IPVersions::ipv6);
-        auto result = infra::MakeSharedOnHeap<DatagramBsd>(observer);
+        auto result = infra::MakeSharedOnHeap<DatagramBsd>(observer, versions);
         RegisterDatagram(result);
         return result;
     }
@@ -139,12 +137,18 @@ namespace services
 
     void EventDispatcherWithNetwork::JoinMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv6Address multicastAddress)
     {
-        std::abort();
+        auto datagram = std::find(datagrams.begin(), datagrams.end(), datagramExchange);
+
+        if (datagram != datagrams.end())
+            datagram->lock()->JoinMulticastGroup(multicastAddress);
     }
 
     void EventDispatcherWithNetwork::LeaveMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv6Address multicastAddress)
     {
-        std::abort();
+        auto datagram = std::find(datagrams.begin(), datagrams.end(), datagramExchange);
+
+        if (datagram != datagrams.end())
+            datagram->lock()->LeaveMulticastGroup(multicastAddress);
     }
 
     void EventDispatcherWithNetwork::RequestExecution()
@@ -193,8 +197,14 @@ namespace services
             if (infra::SharedPtr<DatagramBsd> datagram = weakDatagram)
             {
                 AddFileDescriptorToSet(datagram->socket, readFileDescriptors);
+                if (datagram->socketAdditional != -1)
+                    AddFileDescriptorToSet(datagram->socketAdditional, readFileDescriptors);
                 if (!datagram->SendBufferEmpty())
+                {
                     AddFileDescriptorToSet(datagram->socket, writeFileDescriptors);
+                    if (datagram->socketAdditional != -1)
+                        AddFileDescriptorToSet(datagram->socketAdditional, writeFileDescriptors);
+                }
             }
         }
 
@@ -250,8 +260,12 @@ namespace services
             if (infra::SharedPtr<DatagramBsd> datagram = weakDatagram)
             {
                 if (FD_ISSET(datagram->socket, &readFileDescriptors))
-                    datagram->Receive();
+                    datagram->Receive(datagram->socket);
+                if (datagram->socketAdditional != -1 && FD_ISSET(datagram->socketAdditional, &readFileDescriptors))
+                    datagram->Receive(datagram->socketAdditional);
                 if (FD_ISSET(datagram->socket, &writeFileDescriptors))
+                    datagram->TrySend();
+                else if (datagram->socketAdditional != -1 && FD_ISSET(datagram->socketAdditional, &writeFileDescriptors))
                     datagram->TrySend();
             }
         }

@@ -13,10 +13,8 @@ namespace services
     class StateGuard
     {
     public:
-        StateGuard() = default;
         StateGuard(const StateGuard& other) = delete;
         StateGuard& operator=(const StateGuard& other) = delete;
-        virtual ~StateGuard() = default;
 
         bool StateIs(std::initializer_list<GapState> states) const
         {
@@ -48,6 +46,9 @@ namespace services
         }
 
     protected:
+        StateGuard() = default;
+        ~StateGuard() = default;
+
         virtual GapState DetermineCurrentState() const = 0;
     };
 } // namespace services

@@ -4,6 +4,8 @@
 #include "infra/stream/OutputStream.hpp"
 #include "infra/stream/SavedMarkerStream.hpp"
 #include "infra/util/WithStorage.hpp"
+#include <cstdint>
+#include <optional>
 
 namespace infra
 {
@@ -27,6 +29,7 @@ namespace infra
         void AddUtcTime(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t min, uint8_t sec);
         void AddGeneralizedTime(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t min, uint8_t sec);
         void AddTime(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t min, uint8_t sec);
+        void AddConstructed(infra::ConstByteRange constructed);
 
         template<typename T>
         void AddOptional(std::optional<T> value);

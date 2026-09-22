@@ -2,7 +2,9 @@
 #define INFRA_CPP_FORMATTER_HPP
 
 #include "google/protobuf/io/printer.h"
+#include <cstdint>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace application
