@@ -14,7 +14,8 @@ extern "C"
     }
 #endif
 
-    [[gnu::weak]] int mbedtls_hardware_poll(void* data, unsigned char* output, size_t len, size_t* olen)
+#if defined(EMIL_MBEDTLS_CUSTOM_ENTROPY) and EMIL_MBEDTLS_CUSTOM_ENTROPY
+    int mbedtls_hardware_poll(void* data, unsigned char* output, size_t len, size_t* olen)
     {
         really_assert(services::MbedTlsAdapter::InstanceSet());
         services::MbedTlsAdapter::Instance().RandomDataGenerator().GenerateRandomData(infra::ByteRange(output, output + len));
@@ -22,6 +23,8 @@ extern "C"
 
         return 0;
     }
+#endif // EMIL_MBEDTLS_CUSTOM_ENTROPY
+
 #endif
 }
 

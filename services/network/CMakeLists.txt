@@ -106,6 +106,15 @@ endif()
 
 if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
     if (NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
+        if (EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
+            target_compile_definitions(services.network PRIVATE
+                EMIL_EXTERNAL_MBEDTLS_TARGET_CONFIGURED=0
+            )
+        else()
+            target_compile_definitions(services.network PRIVATE
+                EMIL_EXTERNAL_MBEDTLS_TARGET_CONFIGURED=1
+            )
+        endif()
         target_link_libraries(services.network PUBLIC
             ${EMIL_EXTERNAL_MBEDTLS_TARGET}
         )
