@@ -317,9 +317,19 @@ service GapPeripheral
     // Description: Oldest bond means the least recently used, i.e. connected, bonded peer.
     rpc RemoveOldestBond(Nothing) returns (Nothing) { option (method_id) = 12; }
 
+    // Allowed states: standby
+    // Expected response: GapPeripheralResponse.NumberOfBondsChanged
+    // Description: Removes the bond associated with the given identity address.
+    rpc RemoveBondWithAddress(AddressWithType) returns (Nothing) { option (method_id) = 16; }
+
     // Allowed states: standby, advertising, connected
     // Expected response: GapPeripheralResponse.BondInformation
     rpc GetBondInformation(Nothing) returns (Nothing) { option (method_id) = 13; }
+
+    // Allowed states: standby, advertising, connected
+    // Expected response: GapPeripheralResponse.BondListReceived
+    // Description: Returns the list of bonded devices.
+    rpc GetBondList(Nothing) returns (Nothing) { option (method_id) = 15; }
 
     // Allowed states: standby, connected
     // Pre-conditions: A prior GapPeripheralResponse.AuthenticationRequired callback with isNumericComparison=true.
@@ -354,12 +364,18 @@ service GapPeripheralResponse
     rpc PairingResult(PairingStatus) returns (Nothing) { option (method_id) = 5; }
 
     // Expected states: standby, connected
+    // Triggered by: GapPeripheral.RemoveAllBonds, GapPeripheral.RemoveOldestBond, GapPeripheral.RemoveBondWithAddress
     // Description: Triggered when a new bond is created, an existing bond is removed, or re-bonding occurs with an already bonded peer.
     rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 6; }
     
     // Expected states: standby, advertising, connected
     // Triggered by: GapPeripheral.GetBondInformation
     rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 7; }
+
+    // Expected states: standby, advertising, connected
+    // Triggered by: GapPeripheral.GetBondList
+    // Description: Returns the list of bonded devices.
+    rpc BondListReceived(BondList) returns (Nothing) { option (method_id) = 9; }
 
     // Expected states: connected
     // Description: Sent during an active pairing/bonding procedure when user interaction is required to complete pairing.
