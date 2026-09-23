@@ -15,6 +15,7 @@ sequenceDiagram
         Peripheral-)Node: ATT_EXCHANGE_MTU_RSP (server rx MTU)
         Node-->>App: GattClientResponse.MtuSizeExchangeComplete(247)
         Node-->>App: GattClientResponse.OperationComplete(success)
+        note over App: 247 = 251 (LL PDU max) - 4 (L2CAP header).<br>Widest ATT MTU that fits in one Link Layer packet<br>with LE Data Length Extension at maximum.
     end
 
     rect rgb(230, 230, 240)
