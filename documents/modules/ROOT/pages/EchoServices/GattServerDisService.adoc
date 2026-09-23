@@ -1,0 +1,40 @@
+= GattServerDisService
+:source-highlighter: highlight.js
+:highlightjs-languages: protobuf
+
+`GattServerDisService` publishes the Device Information Service (DIS) attributes exposed by the local GATT server. It is server-side (peripheral) functionality, independent of xref:EchoServices/GattClient.adoc[GattClient]. The DIS is the Bluetooth SIG-adopted service with assigned uuid `0x180A`; see the Bluetooth SIG Device Information Service specification.
+
+== Startup
+
+Typically called once at startup, before advertising begins, so that remote GATT clients read the intended DIS attributes on their first `ReadCharacteristic`. Re-invocation after DIS attributes have been read is outside the documented contract.
+
+== Interface
+
+[mermaid]
+....
+include::partial$echoservices/gatt_server_dis_service/GattServerDisService_class.mmd[]
+....
+
+== Per-Method Sequence Diagrams
+
+=== SetDisServiceData
+
+Each field is a variable-length byte array capped by the `bytes_size` upper limit declared in `Gatt.proto` (see xref:EchoProtocol.adoc[Echo Protocol]); shorter values, including empty, are valid, and empty fields are not populated in the exposed DIS attributes. No response callback - the call returns `Nothing` and there is no paired response service.
+
+[mermaid]
+....
+include::partial$echoservices/gatt_server_dis_service/GattServerDisService_SetDisServiceData_sequence.mmd[]
+....
+
+== Reference
+
+Service definition: link:{page-origin-url}/blob/{page-origin-refname}/services/ble/Gatt.proto[services/ble/Gatt.proto].
+
+.View Gatt.proto inline
+[%collapsible]
+====
+[source,protobuf]
+----
+include::example$Gatt.proto[]
+----
+====

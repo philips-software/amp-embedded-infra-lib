@@ -4,7 +4,7 @@
 
 `GattClient` implements GATT client operations: MTU exchange, service / characteristic / descriptor discovery, read, write, and notification / indication handling. All asynchronous callbacks are delivered on `GattClientResponse`.
 
-The companion `GattServerDisService` publishes the Device Information Service on the local GATT server; it is documented at the end of this page.
+The companion server-side xref:EchoServices/GattServerDisService.adoc[GattServerDisService] publishes the Device Information Service on the local GATT server.
 
 == State Constraints
 
@@ -33,7 +33,7 @@ A typical GATT session against a bonded peripheral runs the steps below in order
 . On `WriteCharacteristicWithoutResponseComplete(retry)`, re-submit the exact same call. `retry` is a client-side backpressure signal (the local ATT bearer was momentarily full); the peripheral has not seen the request, so no state has changed on its side and an immediate re-submit is normally sufficient. Only `WriteCharacteristicWithoutResponse` currently reports `retry`; acknowledged reads and writes only report `success` or `error`. See <<_operation_failure_and_retry,Operation Failure and Retry>>.
 . On disconnect, expect the pending operation's `Expected response` to fire with an error status before `CurrentState(standby)`, then re-run the entire session from `MtuSizeExchangeRequest` on the next `CurrentState(connected)`. Handles from the previous session are not guaranteed to be valid. See <<_disconnect_during_operation,Disconnect During Operation>>.
 
-`GattServerDisService.SetDisServiceData` is a server-side companion service, independent of `GattClient`. Call it once during startup, before advertising begins (or before starting device discovery when running a client on the same Node), so remote GATT clients read the intended DIS attributes on their first `ReadCharacteristic`. Re-invocation after DIS attributes have been read is outside the documented contract.
+See xref:EchoServices/GattServerDisService.adoc[GattServerDisService] for the companion server-side service that publishes the Device Information Service.
 
 == Interface
 
@@ -90,6 +90,8 @@ include::partial$echoservices/gatt_client/GattClient_StartCharacteristicDiscover
 
 *Allowed states:* connected. Pre-conditions: the characteristic's `valueHandle` is known from a prior `CharacteristicDiscovered` callback. The descriptor range for a characteristic spans `valueHandle` to `nextCharacteristic.declarationHandle - 1` (or `service.handles.endHandle` for the last characteristic in a service).
 
+*Invalid handle range:* providing a range that is syntactically invalid (`endHandle` < `startHandle`) or outside the peripheral's attribute table is stack-dependent. Some stacks report `DescriptorDiscoveryComplete(error)`, others assert on the Node side. The App is responsible for supplying a valid range derived from the previous discovery step.
+
 *Response sequences*:
 
 * Zero or more `DescriptorDiscovered(uuid, handle)` -> `DescriptorDiscoveryComplete(success)`.
@@ -135,7 +137,7 @@ include::partial$echoservices/gatt_client/GattClient_WriteCharacteristic_sequenc
 *Response sequences*:
 
 * Queued locally: `WriteCharacteristicWithoutResponseComplete(success)`.
-* Local bearer full: `WriteCharacteristicWithoutResponseComplete(retry)`. Re-submit the same call.
+* Local bearer full: `WriteCharacteristicWithoutResponseComplete(retry)`. The App should re-submit the same call. The peripheral has not seen the request, so re-submission is safe.
 * Client-side rejection (invalid handle, permission failure): `WriteCharacteristicWithoutResponseComplete(error)`.
 
 `success` only indicates the command was accepted by the local ATT bearer for transmission - the peripheral never acknowledges an `ATT_WRITE_CMD`, so delivery to the server is not confirmed.
@@ -240,44 +242,15 @@ include::partial$echoservices/gatt_client/GattClient_DisconnectDuringOperation_s
 
 == Examples
 
-=== Discovery Flow
-
-Concrete discovery example against a fictional BLE peripheral device, walking through services, a notify characteristic, its CCCD, and the runtime notifications that follow after subscription.
-
-[mermaid]
-....
-include::partial$echoservices/gatt_client/GattClient_DiscoveryFlowDetailed_sequence_example.mmd[]
-....
-
 === Read and Write
 
 *Pre-conditions:* connected, GATT discovery complete. In this example the target vendor service occupies handles 64..69.
 
-Concrete read / write example against the same peripheral: read the vendor read characteristic, enable notifications via the CCCD, and read back the CCCD to confirm.
+Concrete read / write example against a fictional BLE peripheral: read the vendor read characteristic, enable notifications via the CCCD, and read back the CCCD to confirm.
 
 [mermaid]
 ....
 include::partial$echoservices/gatt_client/GattClient_ReadWrite_sequence_example.mmd[]
-....
-
-== GattServerDisService
-
-Companion server-side service that publishes the Device Information Service (DIS) attributes exposed by the local GATT server. Independent of `GattClient`; documented on this page because both services share the `Gatt.proto` service definition.
-
-=== Interface
-
-[mermaid]
-....
-include::partial$echoservices/gatt_client/GattServerDisService_class.mmd[]
-....
-
-=== SetDisServiceData
-
-Typically called once at startup, before advertising begins. Each field is a variable-length byte array capped by the `bytes_size` upper limit declared in `Gatt.proto` (see xref:EchoProtocol.adoc[Echo Protocol]); shorter values, including empty, are valid, and empty fields are not populated in the exposed DIS attributes. No response callback - the call returns `Nothing` and there is no paired response service.
-
-[mermaid]
-....
-include::partial$echoservices/gatt_client/GattServerDisService_SetDisServiceData_sequence.mmd[]
 ....
 
 == Reference

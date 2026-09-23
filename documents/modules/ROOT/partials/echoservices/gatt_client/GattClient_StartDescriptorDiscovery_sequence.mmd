@@ -17,4 +17,7 @@ sequenceDiagram
     else Peripheral / L2CAP failure
         Peripheral-)Node: ATT_ERROR_RSP (error code)
         Node-->>App: GattClientResponse.DescriptorDiscoveryComplete(error)
+    else Invalid handle range (client-side rejection)
+        Note over App, Node: Behaviour is stack-dependent.<br>Some stacks fire DescriptorDiscoveryComplete(error).<br>Others assert on the Node side.<br>The App is responsible for supplying a valid range.
+        Node-->>App: GattClientResponse.DescriptorDiscoveryComplete(error)
     end

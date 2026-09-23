@@ -36,7 +36,7 @@ sequenceDiagram
         Node-->>App: GattClientResponse.CharacteristicDiscovered(<br>uuid=0xFFF1, declarationHandle=65, valueHandle=66, properties=0x10)
         Node-->>App: GattClientResponse.CharacteristicDiscovered(<br>uuid=0xFFF2, declarationHandle=68, valueHandle=69, properties=0x02)
         Node-->>App: GattClientResponse.CharacteristicDiscoveryComplete(success)
-        note over App: 0xFFF1 is a notify characteristic.<br>0xFFF2 is a read characteristic.
+        note over App: 0xFFF1 has properties=0x10 (Notify).<br>0xFFF2 has properties=0x02 (Read).<br>Properties bitfield: Core Spec v6.3, Vol 3, Part G, Section 3.3.1.1.
     end
 
     rect rgb(230, 230, 240)

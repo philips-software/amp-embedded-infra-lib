@@ -15,6 +15,7 @@ sequenceDiagram
         end
     else Transient bearer backpressure
         Node-->>App: GattClientResponse.WriteCharacteristicWithoutResponseComplete(<br>retry)
+        Note over App, Node: retry is a client-side backpressure signal.<br>The peripheral has not seen the request.<br>The App should re-submit the same call.
     else Client-side rejection (invalid handle, permission failure)
         Node-->>App: GattClientResponse.WriteCharacteristicWithoutResponseComplete(<br>error)
     end
