@@ -64,7 +64,7 @@ namespace services
         : public services::Service
     {
     public:
-        ServiceStub(Echo& echo);
+        ServiceStub(Echo& echo, EchoChannel channel = EchoChannel::red);
 
         bool AcceptsService(uint32_t id) const override;
 
@@ -90,7 +90,7 @@ namespace services
         : public services::ServiceProxy
     {
     public:
-        ServiceStubProxy(services::Echo& echo);
+        ServiceStubProxy(services::Echo& echo, EchoChannel channel = EchoChannel::red);
 
     public:
         void Method(uint32_t value);

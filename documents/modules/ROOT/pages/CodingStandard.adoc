@@ -530,6 +530,8 @@ So even though both parameters start with typename, the first parameter takes a 
 
 When in doubt, disable each warning that pops up, because our unit tests are far better suited at communicating whether your code is correct or not.
 
+When intentionally keeping a parameter or local variable unused, prefer `[[maybe_unused]]` over `static_cast<void>(value)`.
+
 [NOTE]
 Platform software such as CMSIS often produces warnings out-of-the-box. Since this code is most often written in C, and since we usually do not write code in C, consider disabling all warnings for the C language.
 
