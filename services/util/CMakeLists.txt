@@ -66,6 +66,7 @@ target_sources(services.util PRIVATE
     MessageCommunicationCobs.hpp
     MessageCommunicationWindowed.cpp
     MessageCommunicationWindowed.hpp
+    MultipurposeSerialCommunicationAdapter.hpp
     RepeatingButton.cpp
     RepeatingButton.hpp
     SerialCommunicationLoopback.cpp
