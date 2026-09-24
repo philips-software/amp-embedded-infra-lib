@@ -101,6 +101,12 @@
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="GapCentral.html">GapCentral</a>
   </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="GattServerDisService.html">GattServerDisService</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="GattClient.html">GattClient</a>
+  </li>
   <li class="nav-item is-current-page" data-depth="2">
     <a class="nav-link" href="EndToEndFlows.html">BLE End-to-End Flows</a>
   </li>
@@ -140,11 +146,11 @@
 <h2 id="_ble_central_complete_flow"><a class="anchor" href="#_ble_central_complete_flow"></a>BLE Central Complete Flow</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Scan, connect, pair, bond.</p>
+<p>Scan, connect, pair, bond. Once <code>CurrentState(connected)</code> has fired, the natural continuation is <a href="#central-gatt-session">BLE Central GATT Session</a> below, which exercises the <a href="GattClient.html" class="xref page">GattClient</a> service.</p>
 </div>
 <div class="imageblock kroki">
 <div class="content">
-<img src="../_images/diag-7d6c0ad6e831a40e9d698d6d8cd6b222e32ce134.svg" alt="Diagram">
+<img src="../_images/diag-79c95efc4d44490509e8a2cddb01b95b3469db64.svg" alt="Diagram">
 </div>
 </div>
 </div>
@@ -157,7 +163,7 @@
 </div>
 <div class="imageblock kroki">
 <div class="content">
-<img src="../_images/diag-86a1bf06aa871db3e7c4bbc2f3b49387be72aba3.svg" alt="Diagram">
+<img src="../_images/diag-c82d8733a18d8a646e143d91ddd70396c835c145.svg" alt="Diagram">
 </div>
 </div>
 </div>
@@ -166,11 +172,24 @@
 <h2 id="_ble_central_bonded_reconnection"><a class="anchor" href="#_ble_central_bonded_reconnection"></a>BLE Central Bonded Reconnection</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Scan for a bonded peripheral, reconnect, and re-encrypt using stored keys (no SMP pairing).</p>
+<p>Scan for a bonded peripheral, reconnect, and re-encrypt using stored keys (no SMP pairing). After re-encryption completes, continue with <a href="#central-gatt-session">BLE Central GATT Session</a>.</p>
 </div>
 <div class="imageblock kroki">
 <div class="content">
-<img src="../_images/diag-b9221d26e019b7de4d347daa14db4a5ffe92092d.svg" alt="Diagram">
+<img src="../_images/diag-c7783195221609e2bac6e386d8a4f7a2d88feaa6.svg" alt="Diagram">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="central-gatt-session"><a class="anchor" href="#central-gatt-session"></a>BLE Central GATT Session</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Picks up after the <strong>BLE Central Complete Flow</strong> (or <strong>BLE Central Bonded Reconnection</strong>) has produced <code>CurrentState(connected)</code>. Widens the ATT bearer via MTU exchange, walks the Service / Characteristic / Descriptor discovery sequence, subscribes to notifications on the target characteristic, and tears the subscription down again. See <a href="GattClient.html" class="xref page">GattClient</a> for per-method contracts.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-7d4b1ccae760eea45377a538fe6291d352835369.svg" alt="Diagram">
 </div>
 </div>
 </div>
