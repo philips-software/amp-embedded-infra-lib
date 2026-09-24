@@ -31,9 +31,11 @@ If a service is added, renamed, or removed, also update:
 Each RPC's structured facts (allowed states, pre-conditions, expected response, response sequences, description) live in two carriers, and both must state the same fact:
 
 1. The proto RPC comment carries the keyword-labelled form (e.g. `// Allowed states: standby`, `// Pre-conditions: optional SetSecurityMode / SetIoCapabilities`). This feeds `extract_conventions.py`, which surfaces the facts as labelled structured fields to downstream documentation renderers.
-2. The opening `Note over App, Node:` in the matching per-method sequence diagram carries a compact fact-line (e.g. `Allowed states: standby.<br>Calling outside standby asserts on the Node.<br>Pre-conditions: optional SetSecurityMode / SetIoCapabilities.`). This makes the fact visible in the Antora HTML rendering of the diagram image.
+2. The adoc prose immediately above the per-method diagram on the service page carries the same fact in readable form. For example, above the diagram the page reads `*Allowed states:*` `standby` and `*Pre-conditions:*` optional `SetSecurityMode` / `SetIoCapabilities`. This makes the fact visible in the Antora HTML rendering, above the diagram image.
 
-The duplication is intentional. Downstream documentation renderers that consume the proto conventions show the fact as a labelled structured field alongside the diagram image; readers of the Antora HTML see the fact drawn into the diagram itself. Both carriers must state the same fact - when updating one, update the other.
+The per-method mermaid diagram itself must NOT repeat these facts. Only the top-of-diagram multi-participant legend note (e.g. `Messages between Node and BLE Peripheral are link-layer events, not driven by the App...`) and mid-flow annotations that comment on specific arrows belong inside the mermaid. Do not add an opening `Note over App, Node:` fact block — the fact belongs above the `[mermaid]` block in the adoc, not inside it.
+
+Both carriers must state the same fact - when updating one, update the other.
 
 ## Diagram conventions - general
 

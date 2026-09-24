@@ -1,0 +1,21 @@
+sequenceDiagram
+    participant App as App<br>[implements GattClientResponse]
+    participant Node as Node<br>[implements GattClient]
+    participant Peripheral as BLE Peripheral
+
+    Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. WriteCharacteristicWithoutResponseComplete).
+
+    App->>Node: GattClient.WriteCharacteristicWithoutResponse(<br>handle=0x0027, data=0x11 0x22 0x33)
+
+    alt Queued locally
+        Node-->>App: GattClientResponse.WriteCharacteristicWithoutResponseComplete(<br>success)
+        Note over App, Node: success only means the command was queued locally.<br>Transmission and delivery to the peripheral<br>are not confirmed to the App.
+        opt Transmission (asynchronous, not observable to the App)
+            Node-)Peripheral: ATT_WRITE_CMD (handle=0x0027, value=0x11 0x22 0x33)
+        end
+    else Transient bearer backpressure
+        Node-->>App: GattClientResponse.WriteCharacteristicWithoutResponseComplete(<br>retry)
+        Note over App, Node: retry is a client-side backpressure signal.<br>The peripheral has not seen the request.<br>The App should re-submit the same call.
+    else Client-side rejection (invalid handle, permission failure)
+        Node-->>App: GattClientResponse.WriteCharacteristicWithoutResponseComplete(<br>error)
+    end
