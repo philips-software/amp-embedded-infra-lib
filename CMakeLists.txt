@@ -122,6 +122,11 @@ endif()
 
 option(EMIL_MBEDTLS_CUSTOM_ENTROPY "Enable custom entropy for MbedTLS" ${EMIL_MBEDTLS_CUSTOM_ENTROPY_DEFAULT})
 
+if (EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "" AND NOT EMIL_MBEDTLS_CUSTOM_ENTROPY)
+    message(FATAL_ERROR
+        "EMIL_MBEDTLS_CUSTOM_ENTROPY must be enabled when using bundled mbedTLS")
+endif()
+
 if (EMIL_ENABLE_DOCKER_TOOLS)
     emil_enable_docker_tools()
 endif()
