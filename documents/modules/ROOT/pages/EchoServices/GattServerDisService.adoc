@@ -6,7 +6,7 @@
 
 == Startup
 
-Typically called once at startup, before advertising begins, so that remote GATT clients read the intended DIS attributes on their first `ReadCharacteristic`. Re-invocation after DIS attributes have been read is outside the documented contract.
+Typically called once at startup, before advertising begins, so that remote GATT clients read the intended DIS attributes on their first `ReadCharacteristic`. May also be called on a live connection to update the exposed values; the update takes effect on the peer's next DIS read.
 
 == Interface
 

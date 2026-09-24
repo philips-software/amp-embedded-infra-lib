@@ -22,6 +22,14 @@ message DisServiceData
     bytes pnpId = 9 [(bytes_size) =  7];
 }
 
+// GATT server-side wrapper for the Bluetooth SIG Device Information Service (DIS, uuid 0x180A).
+// State constraints:
+//  Values may be set in any link-layer state; they update the local GATT database and are surfaced on the peer's next DIS read.
+// Callback constraints:
+//  This service has no response service; methods do not result in any callbacks.
+// Startup:
+//  GattServerDisService has no per-service startup handshake of its own. The service becomes callable
+//  once the paired GapPeripheral service reports CurrentState(standby) after startup.
 service GattServerDisService
 {
     option (service_id) = 132;
@@ -276,54 +284,67 @@ service GattClientResponse
 {
     option (service_id) = 135;
 
+    // Expected states: connected
     // Triggered by: GattClient.MtuSizeExchangeRequest
     // Description: Reports the negotiated MTU size.
     rpc MtuSizeExchangeComplete(MtuSize) returns (Nothing) { option (method_id) = 1; }
 
+    // Expected states: connected
     // Triggered by: GattClient.StartServiceDiscovery (for each discovered service)
     // Description: Reports a single discovered service, including its UUID and handle range.
     rpc ServiceDiscovered(Service) returns (Nothing) { option (method_id) = 2; }
 
+    // Expected states: connected
     // Triggered by: GattClient.StartServiceDiscovery (on completion)
     // Description: Signals that service discovery has finished.
     rpc ServiceDiscoveryComplete(OperationResult) returns (Nothing) { option (method_id) = 3; }
 
+    // Expected states: connected
     // Triggered by: GattClient.StartCharacteristicDiscovery (for each discovered characteristic)
     // Description: Reports a single discovered characteristic, including its UUID, handles, and properties.
     rpc CharacteristicDiscovered(Characteristic) returns (Nothing) { option (method_id) = 4; }
 
+    // Expected states: connected
     // Triggered by: GattClient.StartCharacteristicDiscovery (on completion)
     // Description: Signals that characteristic discovery has finished.
     rpc CharacteristicDiscoveryComplete(OperationResult) returns (Nothing) { option (method_id) = 5; }
 
+    // Expected states: connected
     // Triggered by: GattClient.StartDescriptorDiscovery (for each discovered descriptor)
     // Description: Reports a single discovered descriptor, including its UUID and handle.
     rpc DescriptorDiscovered(Descriptr) returns (Nothing) { option (method_id) = 6; }
 
+    // Expected states: connected
     // Triggered by: GattClient.StartDescriptorDiscovery (on completion)
     // Description: Signals that descriptor discovery has finished.
     rpc DescriptorDiscoveryComplete(OperationResult) returns (Nothing) { option (method_id) = 7; }
 
+    // Expected states: connected
     // Triggered by: GattClient.ReadCharacteristic
     // Description: Returns the value read from the characteristic.
     rpc ReadCharacteristicResponse(ReadResult) returns (Nothing) { option (method_id) = 8; }
 
+    // Expected states: connected
     // Triggered by: GattClient.ReadDescriptor
     // Description: Returns the value read from the descriptor.
     rpc ReadDescriptorResponse(ReadResult) returns (Nothing) { option (method_id) = 9; }
 
+    // Expected states: connected
     // Triggered by: GattClient.MtuSizeExchangeRequest, GattClient.ReadCharacteristic, GattClient.WriteCharacteristic, GattClient.ReadDescriptor, GattClient.WriteDescriptor
     // Description: Reports the outcome of an MTU exchange, read, or write operation.
     rpc OperationComplete(OperationResult) returns (Nothing) { option (method_id) = 10; }
 
+    // Expected states: connected
     // Triggered by: Remote GATT server sending an indication
     // Description: Indicates that an attribute value has changed on the GATT server, and must be acknowledged by the client.
     rpc IndicationReceived(AttributeData) returns (Nothing) { option (method_id) = 11; }
 
+    // Expected states: connected
     // Triggered by: Remote GATT server sending a notification
     // Description: Notifies that an attribute value has changed on the GATT server.
     rpc NotificationReceived(AttributeData) returns (Nothing) { option (method_id) = 12; }
 
+    // Expected states: connected
     // Triggered by: GattClient.WriteCharacteristicWithoutResponse
     // Description: Reports whether a write without response command was successfully queued by the GATT client for transmission to the GATT server.
     //  Success indicates the request was processed by the GATT client, but does not guarantee success on the GATT server side.
