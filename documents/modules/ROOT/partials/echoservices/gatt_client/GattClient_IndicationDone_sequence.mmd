@@ -1,0 +1,11 @@
+sequenceDiagram
+    participant App as App<br>[implements GattClientResponse]
+    participant Node as Node<br>[implements GattClient]
+    participant Peripheral as BLE Peripheral
+
+    Note over Node, Peripheral: Messages between Node and BLE Peripheral<br>are link-layer events, not driven by the App.<br>The App only observes them through<br>Echo callbacks (e.g. IndicationReceived).
+
+    Peripheral-)Node: ATT_HANDLE_VALUE_IND (handle=0x0035, value=0x64)
+    Node-->>App: GattClientResponse.IndicationReceived(<br>handle=0x0035, data=0x64)
+    App->>Node: GattClient.IndicationDone()
+    Node-)Peripheral: ATT_HANDLE_VALUE_CFM

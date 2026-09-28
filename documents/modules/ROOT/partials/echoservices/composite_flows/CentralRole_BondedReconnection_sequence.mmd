@@ -1,7 +1,7 @@
 sequenceDiagram
     title BLE Central Bonded Reconnection: Re-encrypt with Stored Keys
 
-    participant App as App
+    participant App as App<br>[implements GapCentralResponse]
     participant Node as Node<br>[implements GapCentral]
     participant Peripheral as BLE Peripheral
 

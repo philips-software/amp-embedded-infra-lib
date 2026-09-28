@@ -1,0 +1,267 @@
+= GattClient
+:source-highlighter: highlight.js
+:highlightjs-languages: protobuf
+
+`GattClient` implements GATT client operations: MTU exchange, service / characteristic / descriptor discovery, read, write, and notification / indication handling. All asynchronous callbacks are delivered on `GattClientResponse`.
+
+The companion server-side xref:EchoServices/GattServerDisService.adoc[GattServerDisService] publishes the Device Information Service on the local GATT server.
+
+== State Constraints
+
+Unless a method's documentation specifies otherwise, all `GattClient` methods require an active BLE connection (the paired GAP service last reported `CurrentState(connected)` for the target peripheral). Calling any `GattClient` method without an active connection is a contract violation and results in an assertion on the Node side. This applies to calls issued before the first `CurrentState(connected)` and to calls issued after a `CurrentState(standby)` that followed an unexpected disconnect (peripheral-initiated, link supervision timeout, or Node reset). Applications should treat every fresh `CurrentState(connected)` as the service-ready boundary and re-drive discovery from `StartServiceDiscovery`.
+
+Only one acknowledged operation may be in flight at a time. `WriteCharacteristicWithoutResponse` and `IndicationDone` may be issued concurrently alongside an in-flight acknowledged operation, but two `WriteCharacteristicWithoutResponse` calls cannot overlap. Non-conformance results in an assertion on the Node side.
+
+Discovery must follow the sequence *Service* -> *Characteristic* -> *Descriptor*. Each step must complete (indicated by its matching `*Complete` callback) before initiating the next.
+
+== Startup
+
+`GattClient` has no per-service startup handshake of its own. The service becomes callable once the underlying transport is up and the paired GAP service has reported `CurrentState(connected)` for the target remote device. See xref:EchoServices/GapCentral.adoc[GapCentral] (or xref:EchoServices/GapPeripheral.adoc[GapPeripheral]) for the transport / SESAME startup boundary.
+
+== Connection loss
+
+Any pending `GattClient` operation is implicitly cancelled on connection loss. For each pending operation, its listed *Expected response* is guaranteed to be delivered with an error status before the paired GAP service reports `CurrentState(standby)`. The App must re-drive discovery from `StartServiceDiscovery` on the next connection - handles from the previous session are not guaranteed to be valid.
+
+== Typical usage
+
+A typical GATT session against a bonded peripheral runs the steps below in order. Each bullet points to the diagram that shows the mechanic in detail; the composite xref:EchoServices/EndToEndFlows.adoc#central-gatt-session[BLE Central GATT Session] wires all of them together.
+
+. Wait for `GapCentralResponse.CurrentState(connected)` from the paired GAP service.
+. Call `MtuSizeExchangeRequest` once, before any discovery. The negotiated MTU is used by subsequent read / write PDUs and by paginated discovery responses (`ATT_READ_BY_GROUP_TYPE_RSP`, `ATT_READ_BY_TYPE_RSP`), so widening the bearer up-front reduces the number of ATT round-trips discovery needs.
+. Walk the discovery sequence: `StartServiceDiscovery` -> `StartCharacteristicDiscovery` (once per discovered service) -> `StartDescriptorDiscovery` (once per characteristic that owns descriptors). See <<_discovery_flow,Discovery Flow>>.
+. Subscribe by writing to the target characteristic's CCCD: `0x0100` for notifications, `0x0200` for indications (each `IndicationReceived` must be acknowledged with `IndicationDone`). See <<_indication_flow,Indication Flow>>.
+. On `WriteCharacteristicWithoutResponseComplete(retry)`, re-submit the exact same call. `retry` is a client-side backpressure signal (the local ATT bearer was momentarily full); the peripheral has not seen the request, so no state has changed on its side and an immediate re-submit is normally sufficient. Only `WriteCharacteristicWithoutResponse` currently reports `retry`; acknowledged reads and writes only report `success` or `error`. See <<_operation_failure_and_retry,Operation Failure and Retry>>.
+. On disconnect, expect the pending operation's `Expected response` to fire with an error status before `CurrentState(standby)`, then re-run the entire session from `MtuSizeExchangeRequest` on the next `CurrentState(connected)`. Handles from the previous session are not guaranteed to be valid. See <<_disconnect_during_operation,Disconnect During Operation>>.
+
+See xref:EchoServices/GattServerDisService.adoc[GattServerDisService] for the companion server-side service that publishes the Device Information Service.
+
+== Interface
+
+[mermaid]
+....
+include::partial$echoservices/gatt_client/GattClient_class.mmd[]
+....
+
+== Per-Method Sequence Diagrams
+
+=== MtuSizeExchangeRequest
+
+*Allowed states:* connected. May only be called once per connection.
+
+*Response sequences*:
+
+* Successful exchange: `MtuSizeExchangeComplete(value)` -> `OperationComplete(success)`.
+* Peripheral / L2CAP failure: `OperationComplete(error)`.
+
+[mermaid]
+....
+include::partial$echoservices/gatt_client/GattClient_MtuSizeExchangeRequest_sequence.mmd[]
+....
+
+=== StartServiceDiscovery
+
+*Allowed states:* connected. First step of the *Service -> Characteristic -> Descriptor* discovery sequence.
+
+*Response sequences*:
+
+* Zero or more `ServiceDiscovered(uuid, handles)` -> `ServiceDiscoveryComplete(success)`.
+* Peripheral / L2CAP failure: `ServiceDiscoveryComplete(error)`.
+
+[mermaid]
+....
+include::partial$echoservices/gatt_client/GattClient_StartServiceDiscovery_sequence.mmd[]
+....
+
+=== StartCharacteristicDiscovery
+
+*Allowed states:* connected. Pre-conditions: the service's handle range is known from a prior `ServiceDiscovered` callback. Must be called once per discovered service.
+
+*Response sequences*:
+
+* Zero or more `CharacteristicDiscovered(uuid, declarationHandle, valueHandle, properties)` -> `CharacteristicDiscoveryComplete(success)`.
+* Peripheral / L2CAP failure: `CharacteristicDiscoveryComplete(error)`.
+
+[mermaid]
+....
+include::partial$echoservices/gatt_client/GattClient_StartCharacteristicDiscovery_sequence.mmd[]
+....
+
+=== StartDescriptorDiscovery
+
+*Allowed states:* connected. Pre-conditions: the characteristic's `valueHandle` is known from a prior `CharacteristicDiscovered` callback. The descriptor range for a characteristic spans `valueHandle` to `nextCharacteristic.declarationHandle - 1` (or `service.handles.endHandle` for the last characteristic in a service).
+
+*Invalid handle range:* providing a range that is syntactically invalid (`endHandle` < `startHandle`) or outside the peripheral's attribute table is stack-dependent. Some stacks report `DescriptorDiscoveryComplete(error)`, others assert on the Node side. The App is responsible for supplying a valid range derived from the previous discovery step.
+
+*Response sequences*:
+
+* Zero or more `DescriptorDiscovered(uuid, handle)` -> `DescriptorDiscoveryComplete(success)`.
+* Peripheral / L2CAP failure: `DescriptorDiscoveryComplete(error)`.
+
+[mermaid]
+....
+include::partial$echoservices/gatt_client/GattClient_StartDescriptorDiscovery_sequence.mmd[]
+....
+
+=== ReadCharacteristic
+
+*Allowed states:* connected. Pre-conditions: `valueHandle` known from `CharacteristicDiscovered`.
+
+*Response sequences*:
+
+* Successful read: `ReadCharacteristicResponse(data)` -> `OperationComplete(success)`.
+* Peripheral-side rejection (permissions, invalid handle, insufficient authentication, etc.): `OperationComplete(error)`.
+
+[mermaid]
+....
+include::partial$echoservices/gatt_client/GattClient_ReadCharacteristic_sequence.mmd[]
+....
+
+=== WriteCharacteristic
+
+*Allowed states:* connected. Pre-conditions: `valueHandle` known from `CharacteristicDiscovered`.
+
+*Response sequences*:
+
+* Successful write: `OperationComplete(success)` after `ATT_WRITE_RSP`.
+* Peripheral-side rejection: `OperationComplete(error)`.
+
+[mermaid]
+....
+include::partial$echoservices/gatt_client/GattClient_WriteCharacteristic_sequence.mmd[]
+....
+
+=== WriteCharacteristicWithoutResponse
+
+*Allowed states:* connected. May be called while another operation is in progress, except while another `WriteCharacteristicWithoutResponse` is in flight.
+
+*Response sequences*:
+
+* Queued locally: `WriteCharacteristicWithoutResponseComplete(success)`.
+* Local bearer full: `WriteCharacteristicWithoutResponseComplete(retry)`. The App should re-submit the same call. The peripheral has not seen the request, so re-submission is safe.
+* Client-side rejection (invalid handle, permission failure): `WriteCharacteristicWithoutResponseComplete(error)`.
+
+`success` only indicates the command was accepted by the local ATT bearer for transmission - the peripheral never acknowledges an `ATT_WRITE_CMD`, so delivery to the server is not confirmed.
+
+[mermaid]
+....
+include::partial$echoservices/gatt_client/GattClient_WriteCharacteristicWithoutResponse_sequence.mmd[]
+....
+
+=== ReadDescriptor
+
+*Allowed states:* connected. Pre-conditions: descriptor `handle` known from `DescriptorDiscovered`.
+
+*Response sequences*:
+
+* Successful read: `ReadDescriptorResponse(data)` -> `OperationComplete(success)`.
+* Peripheral-side rejection: `OperationComplete(error)`.
+
+[mermaid]
+....
+include::partial$echoservices/gatt_client/GattClient_ReadDescriptor_sequence.mmd[]
+....
+
+=== WriteDescriptor
+
+*Allowed states:* connected. Pre-conditions: descriptor `handle` known from `DescriptorDiscovered`.
+
+*Response sequences*:
+
+* Successful write: `OperationComplete(success)` after `ATT_WRITE_RSP`.
+* Peripheral-side rejection: `OperationComplete(error)`.
+
+*CCCD values* (descriptor uuid 0x2902), written as little-endian bytes:
+
+* `0x0000` - disabled.
+* `0x0100` - notifications enabled (no acknowledgement expected).
+* `0x0200` - indications enabled (each `IndicationReceived` must be acknowledged via `IndicationDone`).
+* `0x0300` - both notifications and indications enabled.
+
+[mermaid]
+....
+include::partial$echoservices/gatt_client/GattClient_WriteDescriptor_sequence.mmd[]
+....
+
+=== IndicationDone
+
+*Allowed states:* connected. Pre-conditions: a prior `IndicationReceived` callback, and indications enabled on the target characteristic (`WriteDescriptor(handle=<CCCD>, data=0x0200)`).
+
+Must be called exactly once for every `IndicationReceived`, otherwise the peripheral stalls waiting for `ATT_HANDLE_VALUE_CFM`. May be called while another operation is in progress. `IndicationDone` has no `Expected response` callback of its own - the App issues it and continues.
+
+[mermaid]
+....
+include::partial$echoservices/gatt_client/GattClient_IndicationDone_sequence.mmd[]
+....
+
+== Cross-Service Sequence Diagrams
+
+=== Discovery Flow
+
+End-to-end discovery of services, characteristics, and descriptors, showing how the three per-method calls compose into a full attribute-table walk.
+
+[mermaid]
+....
+include::partial$echoservices/gatt_client/GattClient_DiscoveryFlow_sequence.mmd[]
+....
+
+=== Indication Flow
+
+Discovering the target characteristic's CCCD, enabling indications, receiving and acknowledging them, and disabling indications afterwards. Notifications follow the same shape except that `IndicationDone` is not required and the CCCD byte pattern is `0x0100`.
+
+[mermaid]
+....
+include::partial$echoservices/gatt_client/GattClient_IndicationFlow_sequence.mmd[]
+....
+
+=== Operation Concurrency
+
+Illustrates the *one acknowledged operation at a time* rule and how `WriteCharacteristicWithoutResponse` interleaves with an in-flight acknowledged operation.
+
+[mermaid]
+....
+include::partial$echoservices/gatt_client/GattClient_OperationConcurrency_sequence.mmd[]
+....
+
+=== Operation Failure and Retry
+
+Shows the peripheral-side rejection path on an acknowledged write (`OperationComplete(error)`) and the local backpressure path on `WriteCharacteristicWithoutResponse` (`WriteCharacteristicWithoutResponseComplete(retry)`) and how the App handles each.
+
+[mermaid]
+....
+include::partial$echoservices/gatt_client/GattClient_OperationFailure_sequence.mmd[]
+....
+
+=== Disconnect During Operation
+
+The peripheral disconnects while a `GattClient` operation is pending. Per the proto's *Connection loss* contract, the pending operation's *Expected response* is guaranteed to be delivered with an error status before `GapCentralResponse.CurrentState(standby)` fires.
+
+[mermaid]
+....
+include::partial$echoservices/gatt_client/GattClient_DisconnectDuringOperation_sequence.mmd[]
+....
+
+== Examples
+
+=== Read and Write
+
+*Pre-conditions:* connected, GATT discovery complete. In this example the target vendor service occupies handles 64..69.
+
+Concrete read / write example against a fictional BLE peripheral: read the vendor read characteristic, enable notifications via the CCCD, and read back the CCCD to confirm.
+
+[mermaid]
+....
+include::partial$echoservices/gatt_client/GattClient_ReadWrite_sequence_example.mmd[]
+....
+
+== Reference
+
+Service definition: link:{page-origin-url}/blob/{page-origin-refname}/services/ble/Gatt.proto[services/ble/Gatt.proto].
+
+.View Gatt.proto inline
+[%collapsible]
+====
+[source,protobuf]
+----
+include::example$Gatt.proto[]
+----
+====

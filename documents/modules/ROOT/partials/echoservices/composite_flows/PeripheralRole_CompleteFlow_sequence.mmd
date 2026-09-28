@@ -1,7 +1,7 @@
 sequenceDiagram
     title BLE Peripheral Complete Flow: Advertise, Connect, Pair, Bond
 
-    participant App as App
+    participant App as App<br>[implements GapPeripheralResponse]
     participant Node as Node<br>[implements GapPeripheral]
     participant Central as BLE Central
 
@@ -14,7 +14,7 @@ sequenceDiagram
             App->>Node: GapPeripheral.SetSecurityPreferences(<br>secureConnections=enforced, mitm=enforced,<br>ioCapabilities=displayYesNo)
         end
         opt App overrides the default advertisement payload
-            App->>Node: GapPeripheral.SetAdvertisementData(<br>data=0x0A 0x09 'N''o''n''i''n''3''1''5''0' 0x03 0x03 0x22 0x18)
+            App->>Node: GapPeripheral.SetAdvertisementData(<br>data=0x0A 0x09 'A''c''m''e''O''x''2''0''0' 0x03 0x03 0x22 0x18)
             App->>Node: GapPeripheral.SetScanResponseData(<br>data=0x03 0x03 0x22 0x18)
         end
         Note over App: If skipped, defaults apply. Without SetAdvertisementData the Node<br>advertises only the flags AD field (no device name, no service UUIDs).<br>Pairing is allowed by default, so SetAllowPairing(true) is not needed.
@@ -38,10 +38,11 @@ sequenceDiagram
             Node-)Central: LL_FEATURE_RSP
             Central-)Node: LL_VERSION_IND
             Node-)Central: LL_VERSION_IND
-            Note over Node, Central: Empty data PDUs (M -> S and S -> M) establish<br>the first bidirectional connection event.
+            Note over Node, Central: Empty data PDUs in both directions establish<br>the first bidirectional connection event.
         end
         Note over Node, Central: Peripheral enters the connection state<br>on receiving CONNECT_IND.<br>Link is confirmed by the first<br>bidirectional data exchange<br>in a connection event.
         Node-->>App: GapPeripheralResponse.CurrentState(connected)
+        Note over App, Node: The exact moment CurrentState(connected) fires is stack-dependent:<br>some stacks emit it on receiving CONNECT_IND,<br>others wait for the first successful data exchange.
     end
 
     rect rgb(230, 230, 240)
