@@ -11,7 +11,6 @@ namespace services
     {
     public:
         MOCK_METHOD(void, RemoveAllBonds, ());
-        MOCK_METHOD(void, RemoveOldestBond, ());
         MOCK_METHOD(void, RemoveBondWithAddress, (GapAddress gapAddress));
         MOCK_METHOD(std::size_t, GetMaxNumberOfBonds, (), (const));
         MOCK_METHOD(std::size_t, GetNumberOfBonds, (), (const));

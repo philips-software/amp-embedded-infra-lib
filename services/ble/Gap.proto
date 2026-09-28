@@ -315,11 +315,6 @@ service GapPeripheral
 
     // Allowed states: standby
     // Expected response: GapPeripheralResponse.NumberOfBondsChanged
-    // Description: Oldest bond means the least recently used, i.e. connected, bonded peer.
-    rpc RemoveOldestBond(Nothing) returns (Nothing) { option (method_id) = 12; }
-
-    // Allowed states: standby
-    // Expected response: GapPeripheralResponse.NumberOfBondsChanged
     // Description: Removes the bond associated with the given identity address.
     rpc RemoveBondWithAddress(AddressWithType) returns (Nothing) { option (method_id) = 16; }
 
@@ -360,7 +355,7 @@ service GapPeripheralResponse
     rpc PairingResult(PairingStatus) returns (Nothing) { option (method_id) = 5; }
 
     // Expected states: standby, connected
-    // Triggered by: GapPeripheral.RemoveAllBonds, GapPeripheral.RemoveOldestBond, GapPeripheral.RemoveBondWithAddress
+    // Triggered by: GapPeripheral.RemoveAllBonds, GapPeripheral.RemoveBondWithAddress
     // Description: Triggered when a new bond is created, an existing bond is removed, or re-bonding occurs with an already bonded peer.
     rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 6; }
     

@@ -35,8 +35,6 @@ namespace services
         EXPECT_CALL(gapBonding, RemoveAllBonds());
         decorator.RemoveAllBonds();
 
-        EXPECT_CALL(gapBonding, RemoveOldestBond());
-        decorator.RemoveOldestBond();
 
         EXPECT_CALL(gapBonding, GetMaxNumberOfBonds()).WillOnce(testing::Return(5));
         EXPECT_EQ(decorator.GetMaxNumberOfBonds(), 5);
