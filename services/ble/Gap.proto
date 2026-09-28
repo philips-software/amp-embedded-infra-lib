@@ -151,6 +151,18 @@ message PairingStatus
     PairingFailedReason reason = 2;
 }
 
+message Bond
+{
+    // Identity address of the peer
+    AddressWithType addressWithType = 1;
+    
+    // Device Name from GAP (Generic Access) service.
+    // Read from the peer on bond created and on every successful encryption change.
+    // Not unique; truncated to 32 bytes.
+    // Can be empty if device has an empty name, or has not been read yet.
+    bytes deviceName = 2 [(bytes_size) = 32];
+}
+
 message BondInformation
 {
     uint32 currentBonds = 1;
@@ -319,7 +331,7 @@ service GapPeripheral
     rpc RemoveBondWithAddress(AddressWithType) returns (Nothing) { option (method_id) = 16; }
 
     // Allowed states: standby, advertising, connected
-    // Expected response: GapPeripheralResponse.BondInformation
+    // Expected response: GapPeripheralResponse.BondInformationReceived
     rpc GetBondInformation(Nothing) returns (Nothing) { option (method_id) = 13; }
 
     // Allowed states: standby, connected
@@ -362,7 +374,7 @@ service GapPeripheralResponse
     // Expected states: standby, advertising, connected
     // Triggered by: GapPeripheral.GetBondInformation
     // Description: Returns the number of bonds and the list of bonded devices.
-    rpc BondInformation(BondInformation) returns(Nothing) { option(method_id) = 7; }
+    rpc BondInformationReceived(BondInformation) returns(Nothing) { option(method_id) = 7; }
 
     // Expected states: connected
     // Description: Sent during an active pairing/bonding procedure when user interaction is required to complete pairing.
@@ -476,18 +488,6 @@ message ResolvedPrivateAddress
 {
     bool success = 1; // True if the address was successfully resolved to a bond, false otherwise.
     Address identityAddress = 2; // The resolved identity address
-}
-
-message Bond
-{
-    // Identity address of the peer
-    AddressWithType addressWithType = 1;
-    
-    // Device Name from GAP (Generic Access) service.
-    // Read from the peer on bond created and on every successful encryption change.
-    // Not unique; truncated to 32 bytes.
-    // Can be empty if device has an empty name, or has not been read yet.
-    bytes deviceName = 2 [(bytes_size) = 32];
 }
 
 // ==================================================
@@ -618,7 +618,7 @@ service GapCentral
     rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; }
 
     // Allowed states: standby, scanning, connected, initiating
-    // Expected response: GapCentralResponse.BondInformation
+    // Expected response: GapCentralResponse.BondInformationReceived
     // Description: Returns the number of bonds and the list of bonded devices.
     rpc GetBondInformation(Nothing) returns (Nothing) { option (method_id) = 14; }
 
@@ -692,7 +692,7 @@ service GapCentralResponse {
     // Expected states: standby, scanning, initiating, connected
     // Triggered by: GapCentral.GetBondInformation
     // Description: Returns the number of bonds and the list of bonded devices.
-    rpc BondInformation(BondInformation) returns (Nothing) { option(method_id) = 7; }
+    rpc BondInformationReceived(BondInformation) returns (Nothing) { option(method_id) = 7; }
 
     // DEPRECATED: Will be removed in the near future.
     rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 8; }
