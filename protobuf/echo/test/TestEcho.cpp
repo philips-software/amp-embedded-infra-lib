@@ -72,3 +72,17 @@ TEST_F(EchoTest, cancel_and_retry_request_send_succeeds)
     serviceProxy.GrantSend();
     EXPECT_TRUE(granted);
 }
+
+TEST_F(EchoTest, service_proxy_channel_is_configurable_via_constructor)
+{
+    services::ServiceStubProxy blueProxy{ echo, services::EchoChannel::blue };
+
+    EXPECT_THAT(blueProxy.Channel(), testing::Eq(services::EchoChannel::blue));
+}
+
+TEST_F(EchoTest, service_channel_is_configurable_via_constructor)
+{
+    testing::StrictMock<services::ServiceStub> blueService{ echo, services::EchoChannel::blue };
+
+    EXPECT_THAT(blueService.Channel(), testing::Eq(services::EchoChannel::blue));
+}

@@ -41,6 +41,8 @@ namespace services
         , private SesameObserver
     {
     public:
+        using Sesame::RequestSendMessage;
+
         static constexpr std::size_t keySize = 16;
         static constexpr std::size_t blockSize = 16;
         static constexpr std::size_t ivSize = 12;
@@ -70,15 +72,15 @@ namespace services
 
         // Implementation of Sesame
         void Initialized() override;
-        void RequestSendMessage(std::size_t size) override;
+        void RequestSendMessage(std::size_t size, SesameChannel channel) override;
         std::size_t MaxSendMessageSize() const override;
         void Reset() override;
         void ResetReading() override;
 
     private:
         // Implementation of SesameObserver
-        void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) override;
-        void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
+        void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer, SesameChannel channel) override;
+        void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, SesameChannel channel) override;
 
         void ActivateSendKey();
         void SendMessageStreamReleased();
