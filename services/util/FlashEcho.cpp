@@ -14,6 +14,13 @@ namespace services
     {
         onStopped = onDone;
 
+        if (busyWithResponse)
+        {
+            flashResult.CancelRequestSend();
+            busyWithResponse = false;
+            MethodDone();
+        }
+
         if (!busyWithFlash)
             onStopped();
     }
@@ -28,7 +35,10 @@ namespace services
                 busyWithFlash = false;
 
                 if (onStopped)
+                {
+                    MethodDone();
                     onStopped();
+                }
                 else
                 {
                     busyWithResponse = true;
@@ -56,7 +66,10 @@ namespace services
                 busyWithFlash = false;
 
                 if (onStopped)
+                {
+                    MethodDone();
                     onStopped();
+                }
                 else
                 {
                     busyWithResponse = true;
@@ -82,7 +95,10 @@ namespace services
             {
                 busyWithFlash = false;
                 if (onStopped)
+                {
+                    MethodDone();
                     onStopped();
+                }
                 else
                 {
                     busyWithResponse = true;
