@@ -5,7 +5,7 @@
 == Introduction
 
 Microcontrollers often communicate with each other using a UART connection.
-Before such a serial connection can be used by the xref:Echo.adoc[ECHO] protocol,
+Before such a serial connection can be used by the xref:EchoProtocol.adoc[ECHO] protocol,
 a mechanism is needed to initialize communication and prevent overflowing buffers
 on the peer. Furthermore, a means to secure the communication is required.
 For these purposes the SESAME protocol stack is developed.

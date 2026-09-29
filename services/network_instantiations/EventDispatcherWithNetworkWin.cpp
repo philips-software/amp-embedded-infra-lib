@@ -83,16 +83,14 @@ namespace services
 
     infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Listen(DatagramExchangeObserver& observer, uint16_t port, IPVersions versions)
     {
-        assert(versions != IPVersions::ipv6);
-        auto result = infra::MakeSharedOnHeap<DatagramWin>(port, observer);
+        auto result = infra::MakeSharedOnHeap<DatagramWin>(port, observer, versions);
         RegisterDatagram(result);
         return result;
     }
 
     infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Listen(DatagramExchangeObserver& observer, IPVersions versions)
     {
-        assert(versions != IPVersions::ipv6);
-        auto result = infra::MakeSharedOnHeap<DatagramWin>(observer);
+        auto result = infra::MakeSharedOnHeap<DatagramWin>(observer, versions);
         RegisterDatagram(result);
         return result;
     }
@@ -121,6 +119,13 @@ namespace services
     infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Listen(DatagramExchangeObserver& observer, IPAddress localAddress, IPVersions versions)
     {
         auto result = infra::MakeSharedOnHeap<DatagramWin>(localAddress, observer);
+        RegisterDatagram(result);
+        return result;
+    }
+
+    infra::SharedPtr<DatagramExchange> EventDispatcherWithNetwork::Listen(DatagramExchangeObserver& observer, IPv6Address localAddress, uint32_t interfaceIndex, uint16_t port)
+    {
+        auto result = infra::MakeSharedOnHeap<DatagramWin>(localAddress, interfaceIndex, port, observer);
         RegisterDatagram(result);
         return result;
     }
@@ -171,12 +176,32 @@ namespace services
 
     void EventDispatcherWithNetwork::JoinMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv6Address multicastAddress)
     {
-        std::abort();
+        auto datagram = std::find(datagrams.begin(), datagrams.end(), datagramExchange);
+
+        if (datagram != datagrams.end())
+            datagram->lock()->JoinMulticastGroup(multicastAddress);
+        else
+        {
+            auto datagram = std::find(datagramsMultiple.begin(), datagramsMultiple.end(), datagramExchange);
+
+            if (datagram != datagramsMultiple.end())
+                datagram->lock()->JoinMulticastGroup(multicastAddress);
+        }
     }
 
     void EventDispatcherWithNetwork::LeaveMulticastGroup(infra::SharedPtr<DatagramExchange> datagramExchange, IPv6Address multicastAddress)
     {
-        std::abort();
+        auto datagram = std::find(datagrams.begin(), datagrams.end(), datagramExchange);
+
+        if (datagram != datagrams.end())
+            datagram->lock()->LeaveMulticastGroup(multicastAddress);
+        else
+        {
+            auto datagram = std::find(datagramsMultiple.begin(), datagramsMultiple.end(), datagramExchange);
+
+            if (datagram != datagramsMultiple.end())
+                datagram->lock()->LeaveMulticastGroup(multicastAddress);
+        }
     }
 
     void EventDispatcherWithNetwork::RequestExecution()
@@ -273,11 +298,29 @@ namespace services
                             WSAEnumNetworkEvents(datagram->socket, datagram->event, &networkEvents);
 
                             if ((networkEvents.lNetworkEvents & FD_READ) != 0)
-                                datagram->Receive();
+                                datagram->Receive(datagram->socket);
                             if ((networkEvents.lNetworkEvents & FD_WRITE) != 0)
                                 datagram->Send();
                         }
                     });
+
+                if (datagram->socketAdditional != INVALID_SOCKET)
+                {
+                    events.push_back(datagram->eventAdditional);
+                    functions.push_back([weakDatagram]()
+                        {
+                            if (infra::SharedPtr<DatagramWin> datagram = weakDatagram)
+                            {
+                                WSANETWORKEVENTS networkEvents;
+                                WSAEnumNetworkEvents(datagram->socketAdditional, datagram->eventAdditional, &networkEvents);
+
+                                if ((networkEvents.lNetworkEvents & FD_READ) != 0)
+                                    datagram->Receive(datagram->socketAdditional);
+                                if ((networkEvents.lNetworkEvents & FD_WRITE) != 0)
+                                    datagram->Send();
+                            }
+                        });
+                }
             }
         }
 

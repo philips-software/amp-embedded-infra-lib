@@ -618,6 +618,14 @@ TEST(BoundedStringTest, TestSwap)
     EXPECT_EQ("abc", string2);
 }
 
+TEST(BoundedStringTest, TestSwapDoesNotExceedCapacity)
+{
+    infra::BoundedString::WithStorage<8> big("abcdefgh");
+    infra::BoundedString::WithStorage<3> small("xy");
+
+    ASSERT_DEATH(small.swap(big), "");
+}
+
 TEST(BoundedStringTest, TestTrimLeft)
 {
     EXPECT_EQ("abc ", infra::TrimLeft(infra::BoundedConstString("abc ")));
