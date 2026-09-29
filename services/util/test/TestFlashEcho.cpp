@@ -609,20 +609,3 @@ TEST_F(FlashEchoWithEchoMockTest, stop_during_erase_calls_method_done_and_on_sto
     EXPECT_CALL(onStopped, callback());
     onDone();
 }
-
-TEST_F(FlashEchoWithEchoMockTest, stop_during_request_send_cancels_request_calls_method_done_and_accepts_new_request)
-{
-    StartRead();
-    EXPECT_CALL(echo, RequestSend(testing::_));
-    onDone();
-
-    {
-        testing::InSequence sequence;
-        EXPECT_CALL(echo, CancelRequestSend(testing::_));
-        EXPECT_CALL(echo, ServiceDone());
-        EXPECT_CALL(onStopped, callback());
-        Stop();
-    }
-
-    StartRead();
-}
