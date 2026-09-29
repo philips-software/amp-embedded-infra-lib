@@ -128,85 +128,6 @@ TEST_F(FlashEchoTest, stop_while_erasing)
     onDone();
 }
 
-class FlashEchoWithEchoMockTest
-    : public testing::Test
-{
-public:
-    testing::StrictMock<services::EchoMock> echo;
-    testing::StrictMock<hal::CleanFlashMock> delegate;
-    services::FlashEcho flash{ echo, delegate };
-    testing::StrictMock<infra::MockCallback<void()>> onStopped;
-
-    const std::array<uint8_t, 4> data{ 5, 8, 2, 3 };
-    infra::Function<void()> onDone;
-
-    void StartRead()
-    {
-        EXPECT_CALL(delegate, ReadBuffer(testing::_, 1234, testing::_)).WillOnce(testing::SaveArg<2>(&onDone));
-        flash.Read(1234, data.size());
-    }
-
-    void Stop()
-    {
-        flash.Stop([this]()
-            {
-                onStopped.callback();
-            });
-    }
-};
-
-TEST_F(FlashEchoWithEchoMockTest, stop_during_read_calls_method_done_and_on_stopped)
-{
-    StartRead();
-    Stop();
-
-    testing::InSequence sequence;
-    EXPECT_CALL(echo, ServiceDone());
-    EXPECT_CALL(onStopped, callback());
-    onDone();
-}
-
-TEST_F(FlashEchoWithEchoMockTest, stop_during_write_calls_method_done_and_on_stopped)
-{
-    EXPECT_CALL(delegate, WriteBuffer(testing::_, 1234, testing::_)).WillOnce(testing::SaveArg<2>(&onDone));
-    flash.Write(1234, data);
-    Stop();
-
-    testing::InSequence sequence;
-    EXPECT_CALL(echo, ServiceDone());
-    EXPECT_CALL(onStopped, callback());
-    onDone();
-}
-
-TEST_F(FlashEchoWithEchoMockTest, stop_during_erase_calls_method_done_and_on_stopped)
-{
-    EXPECT_CALL(delegate, EraseSectors(1234, 1238, testing::_)).WillOnce(testing::SaveArg<2>(&onDone));
-    flash.EraseSectors(1234, 4);
-    Stop();
-
-    testing::InSequence sequence;
-    EXPECT_CALL(echo, ServiceDone());
-    EXPECT_CALL(onStopped, callback());
-    onDone();
-}
-
-TEST_F(FlashEchoWithEchoMockTest, stop_during_request_send_cancels_request_calls_method_done_and_accepts_new_request)
-{
-    StartRead();
-    EXPECT_CALL(echo, RequestSend(testing::_));
-    onDone();
-
-    {
-        testing::InSequence sequence;
-        EXPECT_CALL(echo, CancelRequestSend(testing::_));
-        EXPECT_CALL(echo, ServiceDone());
-        EXPECT_CALL(onStopped, callback());
-        Stop();
-    }
-
-    StartRead();
-}
-
 class FlashProxyTest
     : public testing::Test
 {
@@ -610,26 +531,98 @@ TEST_F(FlashProxyDeathTest, erase_sectors_done_while_idle_aborts)
         "");
 }
 
-class FlashEchoResponseBusyDeathTest
+#endif
+
+class FlashEchoWithEchoMockTest
     : public testing::Test
 {
 public:
-    testing::NiceMock<services::EchoMock> echo;
-    testing::NiceMock<hal::CleanFlashMock> delegate;
+    testing::StrictMock<services::EchoMock> echo;
+    testing::StrictMock<hal::CleanFlashMock> delegate;
     services::FlashEcho flash{ echo, delegate };
+    testing::StrictMock<infra::MockCallback<void()>> onStopped;
 
     const std::array<uint8_t, 4> data{ 5, 8, 2, 3 };
     infra::Function<void()> onDone;
+
+    void StartRead()
+    {
+        EXPECT_CALL(delegate, ReadBuffer(testing::_, 1234, testing::_)).WillOnce(testing::SaveArg<2>(&onDone));
+        flash.Read(1234, data.size());
+    }
+
+    void Stop()
+    {
+        flash.Stop([this]()
+            {
+                onStopped.callback();
+            });
+    }
 };
 
-TEST_F(FlashEchoResponseBusyDeathTest, write_while_busy_with_response_aborts)
+#ifndef EMIL_MUTATION_TESTING
+TEST_F(FlashEchoWithEchoMockTest, write_while_busy_with_response_aborts)
 {
     EXPECT_CALL(delegate, WriteBuffer(testing::_, 1234, testing::_)).WillOnce(testing::SaveArg<2>(&onDone));
     flash.Write(1234, data);
 
+    EXPECT_CALL(echo, RequestSend(testing::_));
     onDone(); // flash done → busyWithResponse = true, response send queued but not dispatched
 
     EXPECT_DEATH(flash.Write(1234, data), "");
+
+    EXPECT_CALL(echo, CancelRequestSend(testing::_));
+}
+#endif
+
+TEST_F(FlashEchoWithEchoMockTest, stop_during_read_calls_method_done_and_on_stopped)
+{
+    StartRead();
+    Stop();
+
+    testing::InSequence sequence;
+    EXPECT_CALL(echo, ServiceDone());
+    EXPECT_CALL(onStopped, callback());
+    onDone();
 }
 
-#endif
+TEST_F(FlashEchoWithEchoMockTest, stop_during_write_calls_method_done_and_on_stopped)
+{
+    EXPECT_CALL(delegate, WriteBuffer(testing::_, 1234, testing::_)).WillOnce(testing::SaveArg<2>(&onDone));
+    flash.Write(1234, data);
+    Stop();
+
+    testing::InSequence sequence;
+    EXPECT_CALL(echo, ServiceDone());
+    EXPECT_CALL(onStopped, callback());
+    onDone();
+}
+
+TEST_F(FlashEchoWithEchoMockTest, stop_during_erase_calls_method_done_and_on_stopped)
+{
+    EXPECT_CALL(delegate, EraseSectors(1234, 1238, testing::_)).WillOnce(testing::SaveArg<2>(&onDone));
+    flash.EraseSectors(1234, 4);
+    Stop();
+
+    testing::InSequence sequence;
+    EXPECT_CALL(echo, ServiceDone());
+    EXPECT_CALL(onStopped, callback());
+    onDone();
+}
+
+TEST_F(FlashEchoWithEchoMockTest, stop_during_request_send_cancels_request_calls_method_done_and_accepts_new_request)
+{
+    StartRead();
+    EXPECT_CALL(echo, RequestSend(testing::_));
+    onDone();
+
+    {
+        testing::InSequence sequence;
+        EXPECT_CALL(echo, CancelRequestSend(testing::_));
+        EXPECT_CALL(echo, ServiceDone());
+        EXPECT_CALL(onStopped, callback());
+        Stop();
+    }
+
+    StartRead();
+}
