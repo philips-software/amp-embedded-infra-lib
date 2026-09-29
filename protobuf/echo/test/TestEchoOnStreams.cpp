@@ -108,6 +108,7 @@ TEST_F(EchoOnStreamsTest, reset_after_grant_with_partly_sent_does_not_crash)
             return echo.InheritedGrantSend(proxy);
         }));
     EXPECT_CALL(echo, RequestSendStream(testing::_)); // partlySent triggers a stream request for the continuation
+    EXPECT_CALL(echo, ReleaseDeserializer());
     echo.SendStreamAvailable(writer.Emplace(data));
 
     // Reset() must not crash even though sendingProxy != nullptr but onGranted == nullptr.
@@ -125,6 +126,7 @@ TEST_F(EchoOnStreamsTest, send_is_operational_after_reset)
             serviceProxy.MethodNoParameter();
         });
 
+    EXPECT_CALL(echo, ReleaseDeserializer());
     echo.Reset();
 
     EXPECT_CALL(echo, RequestSendStream(testing::_));
