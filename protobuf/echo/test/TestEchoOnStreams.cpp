@@ -171,4 +171,15 @@ TEST_F(EchoOnStreamsTest, reset_releases_in_flight_deserializer)
     EXPECT_FALSE(deserializerAccess.Referenced());
     if (deserializerAccess.Referenced())
         echo.InheritedReleaseDeserializer();
+
+    EXPECT_CALL(echo, StartingMethod(1, 1, testing::_)).WillOnce(testing::Invoke([](uint32_t, uint32_t, infra::SharedPtr<services::MethodDeserializer>&& deserializer)
+        {
+            return std::move(deserializer);
+        }));
+    EXPECT_CALL(echo, MethodContents(testing::_)).WillOnce(testing::Invoke([](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+        {
+            while (!reader->Empty())
+                reader->ExtractContiguousRange(reader->Available());
+        }));
+    echo.DataReceived(reader.Emplace(infra::MakeRange(data)));
 }
