@@ -551,12 +551,32 @@ public:
         flash.Read(1234, data.size());
     }
 
+    void StartWrite()
+    {
+        EXPECT_CALL(delegate, WriteBuffer(testing::_, 1234, testing::_)).WillOnce(testing::SaveArg<2>(&onDone));
+        flash.Write(1234, data);
+    }
+
+    void StartErase()
+    {
+        EXPECT_CALL(delegate, EraseSectors(1234, 1238, testing::_)).WillOnce(testing::SaveArg<2>(&onDone));
+        flash.EraseSectors(1234, 4);
+    }
+
     void Stop()
     {
         flash.Stop([this]()
             {
                 onStopped.callback();
             });
+    }
+
+    void ExpectServiceDoneDispatchesBufferedRead()
+    {
+        EXPECT_CALL(echo, ServiceDone()).WillOnce(testing::Invoke([this]()
+            {
+                flash.Read(1234, data.size());
+            }));
     }
 };
 
@@ -572,6 +592,36 @@ TEST_F(FlashEchoWithEchoMockTest, write_while_busy_with_response_aborts)
     EXPECT_DEATH(flash.Write(1234, data), "");
 
     EXPECT_CALL(echo, CancelRequestSend(testing::_));
+}
+
+TEST_F(FlashEchoWithEchoMockTest, buffered_request_after_read_completes_during_stop_aborts)
+{
+    StartRead();
+    Stop();
+
+    EXPECT_DEATH({
+        ExpectServiceDoneDispatchesBufferedRead();
+        onDone(); }, "");
+}
+
+TEST_F(FlashEchoWithEchoMockTest, buffered_request_after_write_completes_during_stop_aborts)
+{
+    StartWrite();
+    Stop();
+
+    EXPECT_DEATH({
+        ExpectServiceDoneDispatchesBufferedRead();
+        onDone(); }, "");
+}
+
+TEST_F(FlashEchoWithEchoMockTest, buffered_request_after_erase_completes_during_stop_aborts)
+{
+    StartErase();
+    Stop();
+
+    EXPECT_DEATH({
+        ExpectServiceDoneDispatchesBufferedRead();
+        onDone(); }, "");
 }
 #endif
 
