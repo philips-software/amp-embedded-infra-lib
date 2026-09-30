@@ -14,6 +14,13 @@ namespace services
     {
         onStopped = onDone;
 
+        if (busyWithResponse)
+        {
+            flashResult.CancelRequestSend();
+            busyWithResponse = false;
+            MethodDone();
+        }
+
         if (!busyWithFlash)
             onStopped();
     }
