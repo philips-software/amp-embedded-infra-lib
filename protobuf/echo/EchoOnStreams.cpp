@@ -36,6 +36,7 @@ namespace services
         countingSentWriter.OnAllocatable(infra::emptyFunction);
         ResetReading();
         ReleaseDeserializer();
+        really_assert(countingSentWriter.Allocatable());
         countingSentWriter.OnAllocatable([this]()
             {
                 StreamWriterDone();
