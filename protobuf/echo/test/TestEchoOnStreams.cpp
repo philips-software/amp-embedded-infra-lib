@@ -171,6 +171,24 @@ TEST_F(EchoOnStreamsTest, reset_releases_in_flight_deserializer)
     EXPECT_THAT(deserializerAccess.Referenced(), testing::IsFalse());
     if (deserializerAccess.Referenced())
         echo.InheritedReleaseDeserializer();
+}
+
+TEST_F(EchoOnStreamsTest, reset_starts_new_method_after_in_flight_method)
+{
+    std::array<uint8_t, 3> data{ 1, (1 << 3) | 2, 64 };
+
+    EXPECT_CALL(echo, StartingMethod(1, 1, testing::_)).WillOnce(testing::Invoke([](uint32_t, uint32_t, infra::SharedPtr<services::MethodDeserializer>&& deserializer)
+        {
+            return std::move(deserializer);
+        }));
+    EXPECT_CALL(echo, MethodContents(testing::_));
+    echo.DataReceived(reader.Emplace(infra::MakeRange(data)));
+
+    EXPECT_CALL(echo, ReleaseDeserializer()).WillOnce(testing::Invoke([this]()
+        {
+            echo.InheritedReleaseDeserializer();
+        }));
+    echo.Reset();
 
     EXPECT_CALL(echo, StartingMethod(1, 1, testing::_)).WillOnce(testing::Invoke([](uint32_t, uint32_t, infra::SharedPtr<services::MethodDeserializer>&& deserializer)
         {
