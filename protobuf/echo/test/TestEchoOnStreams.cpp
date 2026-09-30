@@ -58,14 +58,22 @@ namespace services
         {
             return EchoOnStreams::GrantSend(proxy);
         }
-
-        void InheritedMethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
-        {
-            EchoOnStreams::MethodContents(std::move(reader));
-        }
     };
 
-    using TracingEchoOnStreamsMock = TracingEchoOnStreamsDescendant<EchoOnStreamsMock>;
+    class EchoOnStreamsStub
+        : public EchoOnStreams
+    {
+    public:
+        using EchoOnStreams::DataReceived;
+        using EchoOnStreams::EchoOnStreams;
+        using EchoOnStreams::Reset;
+
+    protected:
+        void RequestSendStream(std::size_t size) override
+        {}
+    };
+
+    using TracingEchoOnStreamsStub = TracingEchoOnStreamsDescendant<EchoOnStreamsStub>;
 }
 
 class EchoOnStreamsTest
@@ -181,22 +189,19 @@ TEST(TracingEchoOnStreamsTest, reset_releases_in_flight_deserializer)
     infra::StringOutputStream::WithStorage<32> trace;
     services::TracerToStream tracer(trace);
     services::MethodSerializerFactory::OnHeap serializerFactory;
-    testing::StrictMock<services::TracingEchoOnStreamsMock> tracingEcho(serializerFactory, services::echoErrorPolicyAbortOnMessageFormatError, tracer);
+    services::TracingEchoOnStreamsStub tracingEcho(serializerFactory, services::echoErrorPolicyAbortOnMessageFormatError, tracer);
     services::MethodDeserializerDummy deserializer(tracingEcho);
     infra::AccessedBySharedPtr releaseAssert{ infra::emptyFunction };
     services::ServiceWithDeserializer service(tracingEcho, releaseAssert.MakeShared(deserializer));
     infra::SharedOptional<infra::ByteInputStreamReader> reader;
     std::array<uint8_t, 3> data{ 1, (1 << 3) | 2, 64 };
 
-    EXPECT_CALL(tracingEcho, MethodContents(testing::_)).WillOnce(testing::Invoke([&tracingEcho](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
-        {
-            tracingEcho.InheritedMethodContents(std::move(reader));
-        }));
     tracingEcho.DataReceived(reader.Emplace(infra::MakeRange(data)));
-    EXPECT_TRUE(releaseAssert.Referenced());
+    ASSERT_TRUE(releaseAssert.Referenced());
 
     tracingEcho.Reset();
 
     EXPECT_FALSE(releaseAssert.Referenced());
-    tracingEcho.ServiceDone();
+    if (releaseAssert.Referenced())
+        tracingEcho.ServiceDone();
 }
