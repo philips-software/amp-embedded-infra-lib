@@ -151,16 +151,16 @@ TEST_F(EchoOnStreamsTest, send_is_operational_after_reset)
 TEST_F(EchoOnStreamsTest, reset_releases_in_flight_deserializer)
 {
     services::MethodDeserializerDummy deserializer(echo);
-    infra::AccessedBySharedPtr releaseAssert{ infra::emptyFunction };
+    infra::AccessedBySharedPtr deserializerAccess{ infra::emptyFunction };
     std::array<uint8_t, 3> data{ 1, (1 << 3) | 2, 64 };
 
-    EXPECT_CALL(echo, StartingMethod(1, 1, testing::_)).WillOnce(testing::Invoke([&releaseAssert, &deserializer](uint32_t, uint32_t, infra::SharedPtr<services::MethodDeserializer>&&)
+    EXPECT_CALL(echo, StartingMethod(1, 1, testing::_)).WillOnce(testing::Invoke([&deserializerAccess, &deserializer](uint32_t, uint32_t, infra::SharedPtr<services::MethodDeserializer>&&)
         {
-            return releaseAssert.MakeShared(deserializer);
+            return deserializerAccess.MakeShared(deserializer);
         }));
     EXPECT_CALL(echo, MethodContents(testing::_));
     echo.DataReceived(reader.Emplace(infra::MakeRange(data)));
-    ASSERT_TRUE(releaseAssert.Referenced());
+    ASSERT_TRUE(deserializerAccess.Referenced());
 
     EXPECT_CALL(echo, ReleaseDeserializer()).WillOnce(testing::Invoke([this]()
         {
@@ -168,7 +168,7 @@ TEST_F(EchoOnStreamsTest, reset_releases_in_flight_deserializer)
         }));
     echo.Reset();
 
-    EXPECT_FALSE(releaseAssert.Referenced());
-    if (releaseAssert.Referenced())
+    EXPECT_FALSE(deserializerAccess.Referenced());
+    if (deserializerAccess.Referenced())
         echo.InheritedReleaseDeserializer();
 }
