@@ -2,7 +2,7 @@
 #define EMIL_SERVICES_UTIL_FLASH_HPP
 
 #include "generated/echo/Flash.pb.hpp"
-#include "hal/interfaces/FlashHomogeneous.hpp"
+#include "hal/interfaces/Flash.hpp"
 #include "infra/util/AutoResetFunction.hpp"
 
 namespace services
@@ -28,7 +28,7 @@ namespace services
 
         bool busyWithFlash = false;
         bool busyWithResponse = false;
-        infra::AutoResetFunction<void()> onStopped;
+        infra::Function<void()> onStopped;
     };
 
     class FlashEchoProxyBase
