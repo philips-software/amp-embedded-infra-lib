@@ -11,7 +11,6 @@ target_sources(protobuf.echo_test PRIVATE
     TestProtoMessageReceiver.cpp
     TestProtoMessageSender.cpp
     TestServiceForwarder.cpp
-    TestTracingEcho.cpp
 )
 
 target_link_libraries(protobuf.echo_test PUBLIC
