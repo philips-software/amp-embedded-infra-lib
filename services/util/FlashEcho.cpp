@@ -17,6 +17,8 @@ namespace services
 
         if (busyWithResponse)
         {
+            // Echo owns cleanup of cancelled sends, including requests deferred by an EchoPolicy.
+            // FlashEcho completes the method here without waiting for the response callback.
             flashResult.CancelRequestSend();
             busyWithResponse = false;
             MethodDone();
