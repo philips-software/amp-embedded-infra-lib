@@ -168,7 +168,7 @@ TEST_F(EchoOnStreamsTest, reset_releases_in_flight_deserializer)
         }));
     echo.Reset();
 
-    EXPECT_FALSE(deserializerAccess.Referenced());
+    EXPECT_THAT(deserializerAccess.Referenced(), testing::IsFalse());
     if (deserializerAccess.Referenced())
         echo.InheritedReleaseDeserializer();
 
