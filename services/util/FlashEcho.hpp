@@ -28,7 +28,8 @@ namespace services
 
         bool busyWithFlash = false;
         bool busyWithResponse = false;
-        infra::Function<void()> onStopped;
+        bool stopRequested = false;
+        infra::AutoResetFunction<void()> onStopped;
     };
 
     class FlashEchoProxyBase
