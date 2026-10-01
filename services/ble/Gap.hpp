@@ -239,7 +239,6 @@ namespace services
     {
     public:
         virtual void RemoveAllBonds() = 0;
-        virtual void RemoveOldestBond() = 0;
         virtual void RemoveBondWithAddress(GapAddress gapAddress) = 0;
 
         virtual std::size_t GetMaxNumberOfBonds() const = 0;
@@ -260,7 +259,6 @@ namespace services
 
         // Implementation of GapBonding
         void RemoveAllBonds() override;
-        void RemoveOldestBond() override;
         void RemoveBondWithAddress(GapAddress gapAddress) override;
 
         std::size_t GetMaxNumberOfBonds() const override;

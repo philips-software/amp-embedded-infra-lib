@@ -129,6 +129,10 @@ include::partial$echoservices/gap_peripheral/GapPeripheral_GetIdentityAddress_se
 
 === GetBondInformation
 
+*Allowed states:* standby, advertising, connected.
+
+*Expected response:* GapPeripheralResponse.BondInformationReceived.
+
 [mermaid]
 ....
 include::partial$echoservices/gap_peripheral/GapPeripheral_GetBondInformation_sequence.mmd[]
@@ -143,13 +147,17 @@ include::partial$echoservices/gap_peripheral/GapPeripheral_GetBondInformation_se
 include::partial$echoservices/gap_peripheral/GapPeripheral_RemoveAllBonds_sequence.mmd[]
 ....
 
-=== RemoveOldestBond
+=== RemoveBondWithAddress
 
 *Allowed states:* standby.
 
+*Expected response:* GapPeripheralResponse.NumberOfBondsChanged.
+
+Removes the bond associated with the given identity address.
+
 [mermaid]
 ....
-include::partial$echoservices/gap_peripheral/GapPeripheral_RemoveOldestBond_sequence.mmd[]
+include::partial$echoservices/gap_peripheral/GapPeripheral_RemoveBondWithAddress_sequence.mmd[]
 ....
 
 === NumericComparisonConfirm
