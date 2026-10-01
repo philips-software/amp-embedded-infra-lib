@@ -108,6 +108,7 @@ namespace services
         if (verifier == std::nullopt || !(*verifier)->Verify(otherPublicKey, signatureR, signatureS))
         {
             KeyExchangeFailed();
+            MethodDone();
             return;
         }
 
