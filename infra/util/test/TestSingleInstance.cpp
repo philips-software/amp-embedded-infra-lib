@@ -40,22 +40,10 @@ TEST(SingleInstanceTest, two_instances_not_allowed)
 }
 #endif
 
-TEST(SingleInstanceTest, is_not_copy_constructible)
+TEST(SingleInstanceTest, is_not_copyable_or_movable)
 {
     static_assert(!std::is_copy_constructible_v<Foo>);
-}
-
-TEST(SingleInstanceTest, is_not_move_constructible)
-{
     static_assert(!std::is_move_constructible_v<Foo>);
-}
-
-TEST(SingleInstanceTest, is_not_copy_assignable)
-{
     static_assert(!std::is_copy_assignable_v<Foo>);
-}
-
-TEST(SingleInstanceTest, is_not_move_assignable)
-{
     static_assert(!std::is_move_assignable_v<Foo>);
 }
