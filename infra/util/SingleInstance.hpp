@@ -1,7 +1,7 @@
 #ifndef INFRA_UTIL_SINGLE_INSTANCE_HPP
 #define INFRA_UTIL_SINGLE_INSTANCE_HPP
 
-#include "infra/util/ReallyAssert.hpp"
+#include "infra/util/LogAndAbort.hpp"
 #include <atomic>
 
 namespace infra
@@ -12,8 +12,8 @@ namespace infra
     public:
         SingleInstance()
         {
-            really_assert_with_msg(!hasInstance, "Only single instance allowed");
-            hasInstance = true;
+            if (hasInstance.exchange(false, std::memory_order_acquire))
+                LOG_AND_ABORT("Only single instance allowed");
         }
 
         SingleInstance(const SingleInstance&) = delete;
@@ -23,13 +23,13 @@ namespace infra
 
         ~SingleInstance()
         {
-            hasInstance = false;
+            hasInstance.store(false, std::memory_order_release);
         }
 
 #ifdef EMIL_HOST_BUILD
         static void ResetSingleInstanceCounter()
         {
-            hasInstance = false;
+            hasInstance.store(false, std::memory_order_release);
         }
 #endif
 
