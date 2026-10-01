@@ -164,6 +164,10 @@ namespace services
                 : helper(tracer)
             {}
 
+        protected:
+            ~TracingEchoOnStreamsDescendantHelperHolder() = default;
+
+        public:
             TracingEchoOnStreamsDescendantHelper helper;
         };
     }
