@@ -7,8 +7,6 @@ namespace infra
 {
     class DestructionGuard
     {
-        bool canSafelyDestruct = false;
-
     public:
         ~DestructionGuard()
         {
@@ -21,6 +19,8 @@ namespace infra
             canSafelyDestruct = true;
         }
 #endif
+    private:
+        bool canSafelyDestruct = false;
     };
 }
 

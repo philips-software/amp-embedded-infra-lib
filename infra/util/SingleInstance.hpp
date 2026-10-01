@@ -8,8 +8,6 @@ namespace infra
     template<class Tag>
     class SingleInstance
     {
-        static int numberOfInstances;
-
     public:
         SingleInstance()
         {
@@ -34,6 +32,9 @@ namespace infra
             numberOfInstances = 0;
         }
 #endif
+
+    private:
+        static int numberOfInstances;
     };
 
     template<class Tag>
