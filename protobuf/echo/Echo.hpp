@@ -22,10 +22,15 @@ namespace services
         virtual bool AcceptsService(uint32_t id) const = 0;
 
         void MethodDone();
-        virtual infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy) = 0;
+        infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy);
 
     protected:
         Echo& Rpc();
+
+        virtual infra::SharedPtr<MethodDeserializer> StartMethodImpl(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy) = 0;
+
+    private:
+        bool executingMethod = false;
     };
 
     class ServiceProxy

@@ -72,3 +72,16 @@ TEST_F(EchoTest, cancel_and_retry_request_send_succeeds)
     serviceProxy.GrantSend();
     EXPECT_TRUE(granted);
 }
+
+#ifndef EMIL_MUTATION_TESTING
+TEST_F(EchoTest, method_done_without_executing_method_aborts)
+{
+    services::ServiceStub service{ echo };
+
+    EXPECT_DEATH(
+        {
+            service.MethodDone();
+        },
+        "");
+}
+#endif
