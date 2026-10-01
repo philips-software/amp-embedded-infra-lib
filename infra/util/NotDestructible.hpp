@@ -5,12 +5,12 @@
 
 namespace infra
 {
-    class NotDestructible
+    class DestructionGuard
     {
         bool canSafelyDestruct = false;
 
     public:
-        ~NotDestructible()
+        ~DestructionGuard()
         {
             really_assert_with_msg(canSafelyDestruct, "Destruction not allowed");
         }

@@ -24,6 +24,7 @@ target_sources(infra.util_test PRIVATE
     TestCrc.cpp
     TestCrcCcittCalculator.cpp
     TestCyclicBuffer.cpp
+    TestDestructionGuard.cpp
     TestEndian.cpp
     TestFixedPoint.cpp
     TestFunction.cpp
@@ -36,7 +37,6 @@ target_sources(infra.util_test PRIVATE
     TestIntrusiveUnorderedSet.cpp
     TestLogAndAbort.cpp
     TestMemoryRange.cpp
-    TestNotDestructible.cpp
     TestObserver.cpp
     TestPolymorphicVariant.cpp
     TestProxyCreator.cpp

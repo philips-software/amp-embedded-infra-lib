@@ -4,7 +4,7 @@
 
 namespace
 {
-    class Foo : public infra::NotDestructible
+    class Foo : public infra::DestructionGuard
     {};
 }
 
