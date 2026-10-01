@@ -16,7 +16,7 @@ namespace infra
         }
 
     public:
-        void MarkAsSafeToDeconstruct()
+        void MarkAsSafeToDestruct()
         {
             canSafelyDestruct = true;
         }
