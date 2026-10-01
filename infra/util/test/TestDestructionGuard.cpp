@@ -16,5 +16,5 @@ TEST(DestructionGuardTest, not_destructible)
 TEST(DestructionGuardTest, destructible_when_allowed)
 {
     Foo foo;
-    foo.AllowDestructionOfNotDestructible();
+    foo.MarkAsSafeToDeconstruct();
 }

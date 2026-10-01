@@ -13,12 +13,11 @@ namespace infra
             really_assert_with_msg(canSafelyDestruct, "Destruction not allowed");
         }
 
-#ifdef EMIL_HOST_BUILD
-        void AllowDestructionOfNotDestructible()
+        void MarkAsSafeToDeconstruct()
         {
             canSafelyDestruct = true;
         }
-#endif
+
     private:
         bool canSafelyDestruct = false;
     };
