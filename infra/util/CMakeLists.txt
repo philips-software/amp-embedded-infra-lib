@@ -39,6 +39,7 @@ target_sources(infra.util PRIVATE
     CyclicBuffer.hpp
     Endian.hpp
     EnumCast.hpp
+    DestructionGuard.hpp
     FixedPoint.hpp
     Function.cpp
     Function.hpp
@@ -74,6 +75,7 @@ target_sources(infra.util PRIVATE
     SharedPtr.cpp
     SharedPtr.hpp
     StaticStorage.hpp
+    SingleInstance.hpp
     Tokenizer.cpp
     Tokenizer.hpp
     Unit.hpp
@@ -98,6 +100,8 @@ set(conditional_compile_definitions
     # Optionally enable logging file paths (or only filenames) upon LOG_AND_ABORT or really_assert
     EMIL_ENABLE_LOGGING_FILE_UPON_ABORT
     EMIL_ENABLE_LOGGING_ONLY_FILENAMES_UPON_ABORT
+
+    EMIL_ENABLE_DESTRUCTION_GUARD
 )
 foreach(var IN LISTS conditional_compile_definitions)
     if (${var})
