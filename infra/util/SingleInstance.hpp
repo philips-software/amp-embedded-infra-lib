@@ -2,6 +2,7 @@
 #define INFRA_UTIL_SINGLE_INSTANCE_HPP
 
 #include "infra/util/ReallyAssert.hpp"
+#include <atomic>
 
 namespace infra
 {
@@ -11,8 +12,8 @@ namespace infra
     public:
         SingleInstance()
         {
-            numberOfInstances++;
-            really_assert_with_msg(numberOfInstances <= 1, "Only single instance allowed");
+            really_assert_with_msg(!hasInstance, "Only single instance allowed");
+            hasInstance = true;
         }
 
         SingleInstance(const SingleInstance&) = delete;
@@ -22,23 +23,22 @@ namespace infra
 
         ~SingleInstance()
         {
-            numberOfInstances--;
-            really_assert(numberOfInstances >= 0);
+            hasInstance = false;
         }
 
 #ifdef EMIL_HOST_BUILD
         static void ResetSingleInstanceCounter()
         {
-            numberOfInstances = 0;
+            hasInstance = false;
         }
 #endif
 
     private:
-        static int numberOfInstances;
+        static std::atomic<bool> hasInstance;
     };
 
     template<class Tag>
-    int SingleInstance<Tag>::numberOfInstances = 0;
+    std::atomic<bool> SingleInstance<Tag>::hasInstance = false;
 }
 
 #endif
