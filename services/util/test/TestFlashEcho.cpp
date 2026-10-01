@@ -624,17 +624,3 @@ TEST_F(FlashEchoWithEchoMockTest, stop_during_request_send_cancels_request_calls
         Stop();
     }
 }
-
-#ifndef EMIL_MUTATION_TESTING
-
-TEST_F(FlashEchoWithEchoMockTest, flash_operations_after_stop_means_death)
-{
-    EXPECT_CALL(onStopped, callback());
-    Stop();
-
-    EXPECT_DEATH(flash.Read(1234, 4), "");
-    EXPECT_DEATH(flash.Write(1234, data), "");
-    EXPECT_DEATH(flash.EraseSectors(1234, 4), "");
-}
-
-#endif

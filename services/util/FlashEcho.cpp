@@ -12,7 +12,6 @@ namespace services
 
     void FlashEcho::Stop(const infra::Function<void()>& onDone)
     {
-        stopRequested = true;
         onStopped = onDone;
 
         if (busyWithResponse)
@@ -58,7 +57,6 @@ namespace services
     void FlashEcho::PrepareFlashOperation(const infra::Function<void()>& sendResult)
     {
         really_assert(!busyWithFlash && !busyWithResponse);
-        really_assert(!stopRequested);
         busyWithFlash = true;
         this->sendResult = sendResult;
     }

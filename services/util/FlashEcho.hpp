@@ -38,7 +38,6 @@ namespace services
                 HandleCompletedFlashOperation();
             } };
 
-        bool stopRequested = false;
         infra::AutoResetFunction<void()> onStopped;
     };
 
