@@ -2,10 +2,10 @@
 #define SERVICES_SERIAL_COMMUNICATION_LOOPBACK_HPP
 
 #include "hal/interfaces/SerialCommunication.hpp"
+#include "infra/util/AutoResetFunction.hpp"
 
 namespace services
 {
-
     class SerialCommunicationLoopback
     {
     public:
@@ -30,7 +30,7 @@ namespace services
             SerialCommunicationLoopbackPeer& other;
 
             infra::ConstByteRange data;
-            infra::Function<void()> actionOnCompletion;
+            infra::AutoResetFunction<void()> actionOnCompletion;
             infra::Function<void(infra::ConstByteRange data)> dataReceived;
         };
 

@@ -14,9 +14,8 @@ namespace services
         struct ClientCharacteristicConfiguration
         {
             static constexpr uint8_t valueHandleOffset = 1;
-            static constexpr uint16_t attributeType = 0x2902;
 
-            enum class CharacteristicValue : uint16_t
+            enum class AttributeValue : uint16_t
             {
                 disable = 0x0000,
                 enableNotification = 0x0001,
@@ -42,6 +41,19 @@ namespace services
 
     namespace uuid
     {
+        // Bluetooth SIG adopted GATT UUIDs for some services and characteristics.
+        // Source: Bluetooth SIG Assigned Numbers: https://www.bluetooth.com/specifications/assigned-numbers/
+
+        // Generic Access Service
+        constexpr inline AttAttribute::Uuid16 gapService{ 0x1800 };
+        constexpr inline AttAttribute::Uuid16 deviceName{ 0x2A00 };
+        constexpr inline AttAttribute::Uuid16 appearance{ 0x2A01 };
+
+        // Generic Attribute Service
+        constexpr inline AttAttribute::Uuid16 genericAttributeService{ 0x1801 };
+        constexpr inline AttAttribute::Uuid16 serviceChanged{ 0x2A05 };
+
+        // Device Information Service
         constexpr inline AttAttribute::Uuid16 deviceInformationService{ 0x180A };
         constexpr inline AttAttribute::Uuid16 systemId{ 0x2A23 };
         constexpr inline AttAttribute::Uuid16 modelNumber{ 0x2A24 };
@@ -52,6 +64,9 @@ namespace services
         constexpr inline AttAttribute::Uuid16 manufacturerName{ 0x2A29 };
         constexpr inline AttAttribute::Uuid16 ieeeCertification{ 0x2A2A };
         constexpr inline AttAttribute::Uuid16 pnpId{ 0x2A50 };
+
+        // Descriptors
+        constexpr inline AttAttribute::Uuid16 clientCharacteristicConfiguration{ 0x2902 };
     }
 
     class GattCharacteristic

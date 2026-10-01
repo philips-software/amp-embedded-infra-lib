@@ -1,6 +1,7 @@
 #include "hal/synchronous_interfaces/test_doubles/SynchronousRandomDataGeneratorMock.hpp"
 #include "infra/stream/StdVectorInputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
+#include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "protobuf/echo/test_doubles/EchoMock.hpp"
 #include "protobuf/echo/test_doubles/ServiceStub.hpp"
@@ -11,6 +12,7 @@
 
 class EchoPolicySymmetricKeyTest
     : public testing::Test
+    , public infra::ClockFixture
 {
 public:
     EchoPolicySymmetricKeyTest()
@@ -22,6 +24,7 @@ public:
 
     void Initialized()
     {
+        EXPECT_CALL(lower, ResetReading());
         EXPECT_CALL(lower, RequestSendMessage(testing::_)).WillOnce(testing::Invoke([this]()
             {
                 ExpectGenerationOfKeyMaterial({ 4 }, { 5 });
@@ -117,6 +120,7 @@ TEST_F(EchoPolicySymmetricKeyTest, send_and_receive_large_message)
 TEST_F(EchoPolicySymmetricKeyTest, send_while_initializing)
 {
     EXPECT_CALL(lower, RequestSendMessage(testing::_));
+    EXPECT_CALL(lower, ResetReading());
     lower.GetObserver().Initialized();
 
     serviceProxy.RequestSend([this]()

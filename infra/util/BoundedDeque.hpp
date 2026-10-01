@@ -650,6 +650,7 @@ namespace infra
     template<class T>
     typename BoundedDeque<T>::iterator BoundedDeque<T>::erase(const const_iterator& first, const const_iterator& last)
     {
+        really_assert(size() >= std::distance(first, last));
         size_type first_index = first - begin();
         size_type last_index = last - begin();
 
@@ -674,6 +675,8 @@ namespace infra
     void BoundedDeque<T>::swap(BoundedDeque& other) noexcept
     {
         using std::swap;
+
+        really_assert(size() <= other.max_size() && other.size() <= max_size());
 
         for (size_type i = 0; i < size() && i < other.size(); ++i)
             swap(*storage[index(i)], *other.storage[other.index(i)]);

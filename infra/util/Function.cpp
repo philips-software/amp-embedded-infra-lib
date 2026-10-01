@@ -1,4 +1,5 @@
 #include "infra/util/Function.hpp"
+#include "infra/util/LogAndAbort.hpp"
 
 namespace infra
 {
@@ -8,7 +9,7 @@ namespace infra
         {
             constexpr auto abortOnExecute = []()
             {
-                std::abort();
+                LOG_AND_ABORT("Aborting on uninitialized function call");
             };
         }
 

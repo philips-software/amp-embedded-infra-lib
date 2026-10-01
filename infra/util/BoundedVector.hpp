@@ -550,7 +550,7 @@ namespace infra
     {
         using std::swap;
 
-        assert(size() <= other.max_size() && other.size() < max_size());
+        assert(size() <= other.max_size() && other.size() <= max_size());
 
         for (size_type i = 0; i < size() && i < other.size(); ++i)
         {

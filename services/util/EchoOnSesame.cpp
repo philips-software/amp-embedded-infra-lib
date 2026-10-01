@@ -9,22 +9,28 @@ namespace services
 
     void EchoOnSesame::Reset()
     {
+        EchoOnStreams::Reset();
         initialized = false;
         requestedSize.reset();
-        ReleaseReader();
+
+        infra::Subject<EchoInitializationObserver>::NotifyObservers([](auto& observer)
+            {
+                observer.Reset();
+            });
+
         SesameObserver::Subject().Reset();
     }
 
     void EchoOnSesame::Initialized()
     {
+        EchoOnStreams::Initialized();
+
         infra::Subject<EchoInitializationObserver>::NotifyObservers([](auto& observer)
             {
                 observer.Initialized();
             });
 
         initialized = true;
-
-        EchoOnStreams::Initialized();
 
         if (requestedSize != std::nullopt)
             RequestSendStream(*std::exchange(requestedSize, std::nullopt));
@@ -47,5 +53,11 @@ namespace services
         else
             // Before initialization, the maximum window advertised is not yet known, so postpone the RequestSendMessage until initialized
             requestedSize = size;
+    }
+
+    void EchoOnSesame::ResetReading()
+    {
+        SesameObserver::Subject().ResetReading();
+        EchoOnStreams::ResetReading();
     }
 }

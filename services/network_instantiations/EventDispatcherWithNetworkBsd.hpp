@@ -9,7 +9,7 @@
 namespace services
 {
     class EventDispatcherWithNetwork
-        : public infra::EventDispatcherWithWeakPtr::WithSize<50>
+        : public infra::EventDispatcherWithWeakPtr::WithSize<1024>
         , public ConnectionFactory
         , public DatagramFactory
         , public Multicast

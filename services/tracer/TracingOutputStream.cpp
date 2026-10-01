@@ -43,7 +43,15 @@ namespace services
         return writer.Overwrite(marker);
     }
 
-    TracingOutputStream::TracingOutputStream(infra::DataOutputStream& stream, services::Tracer& tracer)
-        : infra::DataOutputStream::WithWriter<TracingStreamWriter>(stream.Writer(), tracer)
+    TracingAsciiStreamWriter::TracingAsciiStreamWriter(infra::StreamWriter& writer, services::Tracer& tracer)
+        : TracingStreamWriter(writer, tracer)
+        , writer(writer)
+        , tracer(tracer)
     {}
+
+    void TracingAsciiStreamWriter::Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy)
+    {
+        writer.Insert(range, errorPolicy);
+        tracer.Continue() << infra::AsAscii(range);
+    }
 }

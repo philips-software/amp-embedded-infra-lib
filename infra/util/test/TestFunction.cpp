@@ -1,7 +1,10 @@
 #include "infra/util/Function.hpp"
+#include "infra/util/LogAndAbort.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include <cstdarg>
+#include <cstdio>
 
 TEST(FunctionTest, TestConstructedEmpty)
 {
@@ -19,6 +22,48 @@ TEST(FunctionTest, TestConstructedNotEmpty)
 {
     infra::Function<void()> f([]() {});
     EXPECT_TRUE(static_cast<bool>(f));
+}
+
+TEST(FunctionTest, TestTargetTypeIsNullWhenEmpty)
+{
+    infra::Function<void()> f;
+    EXPECT_EQ(nullptr, f.TargetType());
+}
+
+TEST(FunctionTest, TestTargetTypeIsNotNullWhenAssigned)
+{
+    infra::Function<void()> f([]() {});
+    EXPECT_NE(nullptr, f.TargetType());
+}
+
+TEST(FunctionTest, TestTargetTypeIsStableForSameStoredType)
+{
+    auto callable = []() {};
+    infra::Function<void()> f(callable);
+    infra::Function<void()> g(callable);
+
+    EXPECT_EQ(f.TargetType(), g.TargetType());
+}
+
+TEST(FunctionTest, TestTargetTypeDiffersForDifferentStoredTypes)
+{
+    int x = 0;
+    infra::Function<void()> f([]() {});
+    infra::Function<void()> g([&x]()
+        {
+            ++x;
+        });
+
+    EXPECT_NE(f.TargetType(), g.TargetType());
+}
+
+TEST(FunctionTest, TestTargetTypeIsClearedAfterReset)
+{
+    infra::Function<void()> f([]() {});
+    EXPECT_NE(nullptr, f.TargetType());
+
+    f = nullptr;
+    EXPECT_EQ(nullptr, f.TargetType());
 }
 
 void function()
@@ -333,3 +378,18 @@ TEST(FunctionTest, TestMutable)
     EXPECT_EQ(2, f());
     EXPECT_EQ(3, f());
 }
+
+#ifndef EMIL_MUTATION_TESTING
+TEST(FunctionTest, TestCallingEmptyFunctionCallsLogAndAbortHook)
+{
+    infra::RegisterLogAndAbortHook([]([[maybe_unused]] const char* reason, [[maybe_unused]] const char* file, [[maybe_unused]] int line, const char* format, va_list* args)
+        {
+            std::vfprintf(stderr, format, *args);
+        });
+
+    infra::Function<void()> f;
+    EXPECT_DEATH(f(), "Aborting on uninitialized function call");
+
+    infra::RegisterLogAndAbortHook(nullptr);
+}
+#endif

@@ -17,17 +17,17 @@ namespace infra
         static_assert(ReflectInput == ReflectOutput, "Currently, non-matching ReflectInput and ReflectOutput is not supported");
 
     public:
-        void Update(uint8_t input);
-        void Update(ConstByteRange bytes);
-        CRC_TYPE Result() const;
-        void Reset();
+        constexpr void Update(uint8_t input);
+        constexpr void Update(ConstByteRange bytes);
+        constexpr CRC_TYPE Result() const;
+        constexpr void Reset();
 
     private:
         class Table
         {
         public:
             constexpr Table();
-            CRC_TYPE operator[](int i) const;
+            constexpr CRC_TYPE operator[](int i) const;
 
         private:
             CRC_TYPE table[256];
@@ -69,7 +69,7 @@ namespace infra
     }
 
     template<typename CRC_TYPE, CRC_TYPE Polynomial, CRC_TYPE InitValue, CRC_TYPE FinalXor, bool ReflectInput, bool ReflectOutput>
-    void Crc<CRC_TYPE, Polynomial, InitValue, FinalXor, ReflectInput, ReflectOutput>::Update(uint8_t input)
+    constexpr void Crc<CRC_TYPE, Polynomial, InitValue, FinalXor, ReflectInput, ReflectOutput>::Update(uint8_t input)
     {
         if constexpr (ReflectInput)
         {
@@ -94,20 +94,20 @@ namespace infra
     }
 
     template<typename CRC_TYPE, CRC_TYPE Polynomial, CRC_TYPE InitValue, CRC_TYPE FinalXor, bool ReflectInput, bool ReflectOutput>
-    void Crc<CRC_TYPE, Polynomial, InitValue, FinalXor, ReflectInput, ReflectOutput>::Update(ConstByteRange bytes)
+    constexpr void Crc<CRC_TYPE, Polynomial, InitValue, FinalXor, ReflectInput, ReflectOutput>::Update(ConstByteRange bytes)
     {
         for (auto byte : bytes)
             Update(byte);
     }
 
     template<typename CRC_TYPE, CRC_TYPE Polynomial, CRC_TYPE InitValue, CRC_TYPE FinalXor, bool ReflectInput, bool ReflectOutput>
-    CRC_TYPE Crc<CRC_TYPE, Polynomial, InitValue, FinalXor, ReflectInput, ReflectOutput>::Result() const
+    constexpr CRC_TYPE Crc<CRC_TYPE, Polynomial, InitValue, FinalXor, ReflectInput, ReflectOutput>::Result() const
     {
         return crc ^ FinalXor;
     }
 
     template<typename CRC_TYPE, CRC_TYPE Polynomial, CRC_TYPE InitValue, CRC_TYPE FinalXor, bool ReflectInput, bool ReflectOutput>
-    void Crc<CRC_TYPE, Polynomial, InitValue, FinalXor, ReflectInput, ReflectOutput>::Reset()
+    constexpr void Crc<CRC_TYPE, Polynomial, InitValue, FinalXor, ReflectInput, ReflectOutput>::Reset()
     {
         crc = InitValue;
     }
@@ -159,7 +159,7 @@ namespace infra
     }
 
     template<typename CRC_TYPE, CRC_TYPE Polynomial, CRC_TYPE InitValue, CRC_TYPE FinalXor, bool ReflectInput, bool ReflectOutput>
-    CRC_TYPE Crc<CRC_TYPE, Polynomial, InitValue, FinalXor, ReflectInput, ReflectOutput>::Table::operator[](int i) const
+    constexpr CRC_TYPE Crc<CRC_TYPE, Polynomial, InitValue, FinalXor, ReflectInput, ReflectOutput>::Table::operator[](int i) const
     {
         return table[i];
     }

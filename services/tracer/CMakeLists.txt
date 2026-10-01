@@ -19,6 +19,8 @@ target_sources(services.tracer PRIVATE
     GlobalTracer.hpp
     LogAndAbortTracer.cpp
     LogAndAbortTracer.hpp
+    StreamWriterOnFlushableSerialCommunication.cpp
+    StreamWriterOnFlushableSerialCommunication.hpp
     StreamWriterOnSerialCommunication.cpp
     StreamWriterOnSerialCommunication.hpp
     StreamWriterOnSynchronousSerialCommunication.cpp
@@ -29,6 +31,8 @@ target_sources(services.tracer PRIVATE
     TracerOnIoOutputInfrastructure.hpp
     TracerWithDateTime.cpp
     TracerWithDateTime.hpp
+    TracerWithPrefix.cpp
+    TracerWithPrefix.hpp
     TracerWithTime.cpp
     TracerWithTime.hpp
     TracerAdapterPrintf.cpp

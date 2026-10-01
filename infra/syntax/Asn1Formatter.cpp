@@ -1,4 +1,5 @@
 #include "infra/syntax/Asn1Formatter.hpp"
+#include "infra/util/ReallyAssert.hpp"
 
 namespace
 {
@@ -128,6 +129,12 @@ namespace infra
         stream << infra::text << infra::Width(2, '0') << min;
         stream << infra::text << infra::Width(2, '0') << sec;
         stream << infra::text << 'Z';
+    }
+
+    void Asn1Formatter::AddConstructed(infra::ConstByteRange constructed)
+    {
+        really_assert(!constructed.empty() && (constructed.front() & Tag::Constructed) != 0);
+        stream << constructed;
     }
 
     Asn1ContainerFormatter Asn1Formatter::StartSequence()

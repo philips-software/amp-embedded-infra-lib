@@ -218,6 +218,23 @@ TEST_F(ProtoMessageSenderTest, format_many_repeated_uint32)
     EXPECT_FALSE(stream.Failed());
 }
 
+TEST_F(ProtoMessageSenderTest, format_many_repeated_nested_messages)
+{
+    test_messages::TestNestedRepeatedMessage message;
+    message.message.insert(message.message.end(), 10, static_cast<uint8_t>(5));
+    services::ProtoMessageSender sender{ message };
+
+    infra::ByteOutputStream::WithStorage<8> partialStream(infra::noFail);
+    sender.Fill(partialStream);
+    EXPECT_EQ((std::array<uint8_t, 8>{ (1 << 3) | 2, 2, 1 << 3, 5, (1 << 3) | 2, 2, 1 << 3, 5 }), partialStream.Storage());
+    EXPECT_TRUE(partialStream.Failed());
+
+    infra::StdVectorOutputStream::WithStorage stream;
+    sender.Fill(stream);
+    EXPECT_EQ(infra::ConstructBin().Repeat(8, { (1 << 3) | 2, 2, 1 << 3, 5 }).Vector(), stream.Storage());
+    EXPECT_FALSE(stream.Failed());
+}
+
 TEST_F(ProtoMessageSenderTest, format_many_bytes)
 {
     test_messages::TestBytes message;
@@ -233,4 +250,24 @@ TEST_F(ProtoMessageSenderTest, format_many_bytes)
     sender.Fill(stream);
     EXPECT_EQ((std::vector<uint8_t>{ 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5 }), stream.Storage());
     EXPECT_FALSE(stream.Failed());
+}
+
+TEST_F(ProtoMessageSenderTest, format_repeated_everything)
+{
+    test_messages::TestRepeatedEverything message;
+    services::ProtoMessageSender sender{ message };
+
+    infra::StdVectorOutputStream::WithStorage stream(infra::noFail);
+    sender.Fill(stream);
+    EXPECT_EQ(std::vector<uint8_t>{}, stream.Storage());
+}
+
+TEST_F(ProtoMessageSenderTest, format_unbounded_repeated_everything)
+{
+    test_messages::TestUnboundedRepeatedEverything message;
+    services::ProtoMessageSender sender{ message };
+
+    infra::StdVectorOutputStream::WithStorage stream(infra::noFail);
+    sender.Fill(stream);
+    EXPECT_EQ(std::vector<uint8_t>{}, stream.Storage());
 }

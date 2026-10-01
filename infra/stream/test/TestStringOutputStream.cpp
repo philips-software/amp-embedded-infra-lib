@@ -236,6 +236,14 @@ TEST(StringOutputStreamTest, stream_hex_with_leading_zeroes)
     EXPECT_EQ("001a", stream.Storage());
 }
 
+TEST(StringOutputStreamTest, stream_with_leading_zeroes_followed_by_endl)
+{
+    infra::StringOutputStream::WithStorage<16> stream;
+
+    stream << infra::Width(4, '0') << 12 << "a";
+    EXPECT_EQ("0012a", stream.Storage());
+}
+
 TEST(StringOutputStreamTest, stream_short_bin)
 {
     infra::StringOutputStream::WithStorage<10> stream;
@@ -243,6 +251,42 @@ TEST(StringOutputStreamTest, stream_short_bin)
     stream << infra::bin << uint8_t(1);
 
     EXPECT_EQ("1", stream.Storage());
+}
+
+TEST(StringOutputStreamTest, stream_dec_after_hex)
+{
+    infra::StringOutputStream::WithStorage<10> stream;
+
+    stream << infra::hex << infra::dec << uint8_t(10);
+
+    EXPECT_EQ("10", stream.Storage());
+}
+
+TEST(StringOutputStreamTest, stream_dec_after_bin)
+{
+    infra::StringOutputStream::WithStorage<10> stream;
+
+    stream << infra::bin << infra::dec << uint8_t(10);
+
+    EXPECT_EQ("10", stream.Storage());
+}
+
+TEST(StringOutputStreamTest, stream_dec_is_sticky)
+{
+    infra::StringOutputStream::WithStorage<20> stream;
+
+    stream << infra::dec << uint8_t(10) << uint8_t(255);
+
+    EXPECT_EQ("10255", stream.Storage());
+}
+
+TEST(StringOutputStreamTest, stream_literal_in_dec_stream)
+{
+    infra::StringOutputStream::WithStorage<10> stream;
+
+    stream << infra::dec << "abcd";
+
+    EXPECT_EQ("abcd", stream.Storage());
 }
 
 TEST(StringOutputStreamTest, stream_longer_bin)
@@ -310,6 +354,39 @@ TEST(StringOutputStreamTest, format_simple_string_width)
 
     stream << infra::Width(10) << "simple";
     EXPECT_EQ("    simple", stream.Storage());
+}
+
+TEST(StringOutputStreamTest, stream_bounded_string_with_width)
+{
+    infra::StringOutputStream::WithStorage<64> stream;
+
+    infra::BoundedConstString s = "hi";
+    stream << infra::Width(6) << s;
+    EXPECT_EQ("    hi", stream.Storage());
+}
+
+TEST(StringOutputStreamTest, stream_std_string_with_width)
+{
+    infra::StringOutputStream::WithStorage<64> stream;
+
+    stream << infra::Width(6) << std::string("hi");
+    EXPECT_EQ("    hi", stream.Storage());
+}
+
+TEST(StringOutputStreamTest, stream_char_with_width)
+{
+    infra::StringOutputStream::WithStorage<64> stream;
+
+    stream << infra::Width(4) << 'x';
+    EXPECT_EQ("   x", stream.Storage());
+}
+
+TEST(StringOutputStreamTest, stream_width_is_reset_after_use)
+{
+    infra::StringOutputStream::WithStorage<64> stream;
+
+    stream << infra::Width(4) << 'x' << 'y';
+    EXPECT_EQ("   xy", stream.Storage());
 }
 
 TEST(StringOutputStreamTest, format_string_with_one_parameter)

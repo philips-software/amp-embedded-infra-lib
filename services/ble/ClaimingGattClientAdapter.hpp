@@ -25,6 +25,7 @@ namespace services
     {
     public:
         ClaimingGattClientAdapter(GattClient& gattClient, AttMtuExchange& attMtuExchange, GapCentral& gapCentral);
+        ClaimingGattClientAdapter(infra::ClaimableResource& resource, GattClient& gattClient, AttMtuExchange& attMtuExchange, GapCentral& gapCentral);
 
         // Implementation of GattClientDiscovery
         void StartServiceDiscovery() override;
@@ -32,13 +33,11 @@ namespace services
         void StartDescriptorDiscovery(AttAttribute::Handle handle, AttAttribute::Handle endHandle) override;
 
         // Implementation of GattClientCharacteristicOperations
-        void Read(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone) override;
-        void Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
-        void WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
-        void EnableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
-        void DisableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
-        void EnableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
-        void DisableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone) override;
+        void ReadCharacteristic(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone) override;
+        void WriteCharacteristic(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
+        void WriteCharacteristicWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
+        void ReadDescriptor(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone) override;
+        void WriteDescriptor(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone) override;
 
         // Implementation of GattClientMtuExchange
         virtual void MtuExchange(const infra::Function<void(OperationStatus)>& onDone) override;
@@ -63,9 +62,6 @@ namespace services
         // Implementation of GapCentralObserver
         void DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered) override;
         void StateChanged(GapState state) override;
-
-    private:
-        void PerformDescriptorOperation();
 
     private:
         struct DiscoveredService
@@ -107,15 +103,9 @@ namespace services
             const infra::Function<void(OperationStatus)> onDone;
         };
 
-        struct DescriptorOperation
-        {
-            const infra::Function<void(OperationStatus)> onDone;
-            infra::Function<void(const infra::Function<void(OperationStatus)>&)> operation;
-        };
-
         struct CharacteristicOperation
         {
-            using Operation = std::variant<ReadOperation, WriteOperation, DescriptorOperation>;
+            using Operation = std::variant<ReadOperation, WriteOperation>;
 
             CharacteristicOperation(Operation operation, AttAttribute::Handle handle)
                 : operation(operation)
@@ -126,11 +116,12 @@ namespace services
             AttAttribute::Handle handle;
         };
 
-        std::optional<std::variant<DiscoveredService, DiscoveredCharacteristic, DiscoveredDescriptor, HandleRange>> discoveryContext;
+        std::variant<std::monostate, DiscoveredService, DiscoveredCharacteristic, DiscoveredDescriptor, HandleRange> discoveryContext;
         std::optional<CharacteristicOperation> characteristicOperationContext;
         infra::AutoResetFunction<void(OperationStatus)> mtuExchangeOnDone;
 
-        infra::ClaimableResource resource;
+        std::optional<infra::ClaimableResource> ownedResource;
+        infra::ClaimableResource& resource;
         infra::ClaimableResource::Claimer characteristicOperationsClaimer{ resource };
         infra::ClaimableResource::Claimer discoveryClaimer{ resource };
         infra::ClaimableResource::Claimer attMtuExchangeClaimer{ resource };

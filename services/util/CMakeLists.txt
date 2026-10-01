@@ -21,6 +21,8 @@ target_sources(services.util PRIVATE
     DebouncedButton.hpp
     DebugLed.cpp
     DebugLed.hpp
+    DoubleBufferedSerialCommunication.cpp
+    DoubleBufferedSerialCommunication.hpp
     EchoInstantiation.cpp
     EchoInstantiation.hpp
     EchoOnMessageCommunication.cpp
@@ -50,6 +52,7 @@ target_sources(services.util PRIVATE
     FlashSpi.hpp
     FlashRegion.cpp
     FlashRegion.hpp
+    Flushable.hpp
     GpioPinInverted.cpp
     GpioPinInverted.hpp
     I2cMultipleAccess.cpp
@@ -67,10 +70,13 @@ target_sources(services.util PRIVATE
     RepeatingButton.hpp
     SerialCommunicationLoopback.cpp
     SerialCommunicationLoopback.hpp
+    Sesame.cpp
     Sesame.hpp
     SesameCobs.cpp
     SesameCobs.hpp
     SesameCrypto.hpp
+    SesameInstantiation.cpp
+    SesameInstantiation.hpp
     SesameSecured.cpp
     SesameSecured.hpp
     SesameWindowed.cpp
@@ -82,6 +88,10 @@ target_sources(services.util PRIVATE
     SleepableFlashSpi.hpp
     SleepOnInactivityFlashDecorator.cpp
     SleepOnInactivityFlashDecorator.hpp
+    SmiPhy.cpp
+    SmiPhy.hpp
+    SmiPhyLinkMonitor.cpp
+    SmiPhyLinkMonitor.hpp
     SpiMasterWithChipSelect.cpp
     SpiMasterWithChipSelect.hpp
     SpiMultipleAccess.cpp
@@ -125,6 +135,8 @@ if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
         MbedTlsRandomDataGeneratorWrapper.hpp
         SesameCryptoMbedTls.cpp
         SesameCryptoMbedTls.hpp
+        SesameInstantiationSecured.cpp
+        SesameInstantiationSecured.hpp
         Sha256MbedTls.cpp
         Sha256MbedTls.hpp
     )

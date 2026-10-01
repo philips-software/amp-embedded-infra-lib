@@ -16,7 +16,7 @@ namespace services
     struct CertificateAndPrivateKey
     {
         infra::BoundedVector<uint8_t>::WithMaxSize<512> certificate;
-        std::array<uint8_t, 121> privateKey;
+        EcSecP256r1PrivateKey::DerEncoded privateKey;
     };
 
     CertificateAndPrivateKey GenerateRootCertificate(hal::SynchronousRandomDataGenerator& randomDataGenerator);
@@ -52,7 +52,8 @@ namespace services
         EchoPolicyDiffieHellman(const Crypto& crypto, Echo& echo, EchoInitialization& echoInitialization, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
     private:
-        // Implementation of SesameObserver
+        // Implementation of EchoInitializationObserver
+        void Reset() override;
         void Initialized() override;
 
         // Implementation of EchoPolicy

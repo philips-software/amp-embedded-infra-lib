@@ -12,5 +12,6 @@ ignore:
   - documents
   - external
   - lwip/lwip_config
+  - .megalinter_github_conf
   - megalinter-reports
   - osal/*_std_thread

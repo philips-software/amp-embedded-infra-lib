@@ -2,9 +2,13 @@
 #define INFRA_STD_STRING_INPUT_STREAM_HPP
 
 #include "infra/stream/InputStream.hpp"
+#include "infra/stream/StreamErrorPolicy.hpp"
+#include "infra/util/ByteRange.hpp"
 #include "infra/util/WithStorage.hpp"
+#include <cstddef>
 #include <cstdint>
 #include <string>
+#include <string_view>
 
 namespace infra
 {
@@ -12,7 +16,7 @@ namespace infra
         : public StreamReader
     {
     public:
-        explicit StdStringInputStreamReader(const std::string& string);
+        explicit StdStringInputStreamReader(std::string_view string);
 
     private:
         void Extract(ByteRange range, StreamErrorPolicy& errorPolicy) override;
@@ -23,8 +27,8 @@ namespace infra
         std::size_t Available() const override;
 
     private:
-        uint32_t offset = 0;
-        const std::string& string;
+        std::size_t offset = 0;
+        std::string_view string;
     };
 
     class StdStringInputStream
@@ -33,9 +37,9 @@ namespace infra
     public:
         using WithStorage = infra::WithStorage<TextInputStream::WithReader<StdStringInputStreamReader>, std::string>;
 
-        explicit StdStringInputStream(const std::string& storage);
-        StdStringInputStream(const std::string& storage, const SoftFail&);
-        StdStringInputStream(const std::string& storage, const NoFail&);
+        explicit StdStringInputStream(std::string_view storage);
+        StdStringInputStream(std::string_view storage, const SoftFail&);
+        StdStringInputStream(std::string_view storage, const NoFail&);
     };
 }
 

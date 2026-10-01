@@ -26,14 +26,33 @@ namespace services
         services::Tracer& tracer;
     };
 
-    class TracingOutputStream
-        : public infra::DataOutputStream::WithWriter<TracingStreamWriter>
+    class TracingAsciiStreamWriter
+        : public TracingStreamWriter
     {
     public:
-        TracingOutputStream(infra::DataOutputStream& stream, services::Tracer& tracer);
+        TracingAsciiStreamWriter(infra::StreamWriter& writer, services::Tracer& tracer);
 
-        using DataOutputStream::WithWriter<TracingStreamWriter>::WithWriter;
+        void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
+
+    private:
+        infra::StreamWriter& writer;
+        services::Tracer& tracer;
     };
+
+    template<class Writer>
+    class TracingOutputStreamBase
+        : public infra::DataOutputStream::WithWriter<Writer>
+    {
+    public:
+        TracingOutputStreamBase(infra::DataOutputStream& stream, services::Tracer& tracer)
+            : infra::DataOutputStream::WithWriter<Writer>(stream.Writer(), tracer)
+        {}
+
+        using infra::DataOutputStream::WithWriter<Writer>::WithWriter;
+    };
+
+    using TracingOutputStream = TracingOutputStreamBase<TracingStreamWriter>;
+    using TracingAsciiOutputStream = TracingOutputStreamBase<TracingAsciiStreamWriter>;
 }
 
 #endif

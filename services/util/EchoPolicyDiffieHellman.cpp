@@ -36,10 +36,16 @@ namespace services
         echo.SetPolicy(*this);
     }
 
+    void EchoPolicyDiffieHellman::Reset()
+    {
+        busy = false;
+        initializingKeys = true;
+    }
+
     void EchoPolicyDiffieHellman::Initialized()
     {
         if (busy)
-            DiffieHellmanKeyEstablishmentProxy::Rpc().CancelRequestSend(*this);
+            DiffieHellmanKeyEstablishmentProxy::CancelRequestSend();
 
         initializingKeys = true;
         nextKeyPair.reset();
@@ -59,6 +65,7 @@ namespace services
 
                         DiffieHellmanKeyEstablishmentProxy::Exchange(encodedDhPublicKey, r, s);
                         busy = false;
+                        ReQueueWaitingProxies();
                     });
             });
     }
@@ -136,7 +143,7 @@ namespace services
 
     void EchoPolicyDiffieHellman::ReQueueWaitingProxies()
     {
-        while (!waitingProxies.empty())
+        while (!initializingKeys && !busy && !waitingProxies.empty())
         {
             auto& proxy = waitingProxies.front();
             waitingProxies.pop_front();

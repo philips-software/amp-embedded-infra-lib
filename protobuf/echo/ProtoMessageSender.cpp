@@ -3,7 +3,7 @@
 
 namespace services
 {
-    ProtoMessageSenderBase::ProtoMessageSenderBase(infra::BoundedVector<std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy), 3 * sizeof(uint8_t*)>>>& stack)
+    ProtoMessageSenderBase::ProtoMessageSenderBase(infra::BoundedVector<std::pair<uint32_t, FieldSerializationStep>>& stack)
         : stack(stack)
     {}
 
@@ -86,7 +86,7 @@ namespace services
 
     namespace
     {
-        void SerializeRange(infra::BoundedVector<std::pair<uint32_t, infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy), 3 * sizeof(uint8_t*)>>>& stack, infra::ProtoFormatter& formatter, infra::ConstByteRange value, uint32_t fieldNumber, bool& retry)
+        void SerializeRange(infra::BoundedVector<std::pair<uint32_t, FieldSerializationStep>>& stack, infra::ProtoFormatter& formatter, infra::ConstByteRange value, uint32_t fieldNumber, bool& retry)
         {
             formatter.PutVarInt((fieldNumber << 3) | 2);
             formatter.PutVarInt(value.size());

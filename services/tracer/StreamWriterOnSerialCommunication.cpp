@@ -21,23 +21,36 @@ namespace services
 
     void StreamWriterOnSerialCommunication::TrySend()
     {
-        if (!buffer.Empty() && !communicating)
+        if (!buffer.Empty() && currentlySendingBytes == 0)
         {
-            communicating = true;
-
-            uint32_t size = buffer.ContiguousRange().size();
-            communication.SendData(buffer.ContiguousRange(), [this, size]()
+            auto contiguousBytesToSend = buffer.ContiguousRange();
+            currentlySendingBytes = contiguousBytesToSend.size();
+            communication.SendData(contiguousBytesToSend, [this, completedTransactionId = transactionId]()
                 {
-                    CommunicationDone(size);
+                    OnCommunicationDone(completedTransactionId);
                 });
         }
     }
 
-    void StreamWriterOnSerialCommunication::CommunicationDone(uint32_t size)
+    void StreamWriterOnSerialCommunication::OnCommunicationDone(uint32_t completedTransactionId)
     {
-        communicating = false;
-        buffer.Pop(size);
+        if (completedTransactionId != transactionId)
+            return;
+
+        buffer.Pop(currentlySendingBytes);
+        currentlySendingBytes = 0;
+        transactionId++;
 
         TrySend();
+    }
+
+    bool StreamWriterOnSerialCommunication::IsCurrentlySending() const
+    {
+        return currentlySendingBytes != 0;
+    }
+
+    uint32_t StreamWriterOnSerialCommunication::GetCurrentTransactionId() const
+    {
+        return transactionId;
     }
 }

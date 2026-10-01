@@ -18,14 +18,17 @@ namespace services
         , public services::Stoppable
     {
     public:
+        static constexpr uint8_t cobsConstantOverhead = 2; // This is the frame size byte and the closing 0
+        static constexpr uint8_t scratchSize = 2;          // This is added to message storage for filling out frame size bytes
+
         template<std::size_t MaxMessageSize>
         struct EncodedMessageSize
         {
-            static constexpr std::size_t size = MaxMessageSize + MaxMessageSize / 254 + 2;
+            static constexpr std::size_t size = MaxMessageSize + MaxMessageSize / 254 + cobsConstantOverhead;
         };
 
         template<std::size_t MaxMessageSize>
-        static constexpr std::size_t sendBufferSize = MaxMessageSize;
+        static constexpr std::size_t sendBufferSize = MaxMessageSize + scratchSize;
         template<std::size_t MaxMessageSize>
         static constexpr std::size_t receiveBufferSize = EncodedMessageSize<MaxMessageSize>::size;
 
@@ -64,12 +67,12 @@ namespace services
         void SendSerialData(const infra::ConstByteRange data, const infra::Function<void()>& onSendDataDone);
         void SendStreamFilled();
         void SendOrDone();
-        void SendFrame();
-        void SendFrameDone();
+        void SendChunk();
+        bool FillChunk();
+        void FinishChunk();
         void SendFirstDelimiter();
-        void SendLastDelimiter();
-        void SendData(infra::ConstByteRange data);
         void FinishReset();
+        infra::ByteRange CreateChunkWithTermination() const;
         uint8_t FindDelimiter() const;
 
     private:
@@ -80,22 +83,23 @@ namespace services
         std::size_t sendSizeEncoded = 0;
         uint8_t nextOverhead = 1;
         bool overheadPositionIsPseudo = true;
-        bool receiving = false;
         infra::BoundedDeque<uint8_t>& receivedMessage;
         std::size_t receiveSizeEncoded = 0;
         std::size_t currentMessageSize = 0;
-        infra::NotifyingSharedOptional<infra::LimitedStreamReaderWithRewinding::WithInput<infra::BoundedDequeInputStreamReader>> receivedDataReader;
 
         infra::BoundedVector<uint8_t>& sendStorage;
         infra::NotifyingSharedOptional<infra::LimitedStreamWriter::WithOutput<infra::BoundedVectorStreamWriter>> sendStream{ [this]()
             {
                 SendStreamFilled();
             } };
-        infra::ConstByteRange dataToSend;
+        infra::ByteRange dataToSend;
+        infra::ByteRange chunkToSend;
         uint8_t frameSize;
 
         infra::AutoResetFunction<void()> onStopDone;
         infra::AutoResetFunction<void()> onSendDataDone;
+
+        static constexpr uint8_t maxFrameSize = 254;
     };
 }
 

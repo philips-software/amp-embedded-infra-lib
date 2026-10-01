@@ -11,8 +11,7 @@
 #include "services/util/EchoOnSesame.hpp"
 #include "services/util/MessageCommunicationCobs.hpp"
 #include "services/util/MessageCommunicationWindowed.hpp"
-#include "services/util/SesameCobs.hpp"
-#include "services/util/SesameWindowed.hpp"
+#include "services/util/SesameInstantiation.hpp"
 
 namespace main_
 {
@@ -32,45 +31,32 @@ namespace main_
     struct EchoOnSesame
         : public services::Stoppable
     {
-        template<std::size_t MessageSize>
+        template<std::size_t MessageSize, uint8_t SplitBuffers = 2>
         struct WithMessageSize;
 
-        EchoOnSesame(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage, infra::BoundedDeque<uint8_t>& windowedReceivedMessage, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory);
+        EchoOnSesame(Sesame::CobsStorageBase& storage, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory);
 
         void Reset();
 
         // Implementation of Stoppable
         void Stop(const infra::Function<void()>& onDone) override;
 
-        services::SesameCobs cobs;
-        services::SesameWindowed windowed;
+        Sesame sesame;
         services::EchoOnSesame echo;
-
-        infra::AutoResetFunction<void()> onStopDone;
-
-        template<std::size_t MessageSize>
-        struct CobsStorage
-        {
-            static constexpr std::size_t encodedMessageSize = services::SesameWindowed::bufferSizeForMessage<MessageSize, services::SesameCobs::EncodedMessageSize>;
-
-            infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameCobs::sendBufferSize<MessageSize>> cobsSendStorage;
-            infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameCobs::receiveBufferSize<encodedMessageSize>> cobsReceivedMessage;
-            infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameCobs::receiveBufferSize<encodedMessageSize>> windowedReceivedMessage;
-        };
     };
 
-    template<std::size_t MessageSize>
+    template<std::size_t MessageSize, uint8_t SplitBuffers>
     struct EchoOnSesame::WithMessageSize
-        : private EchoOnSesame::CobsStorage<MessageSize>
+        : private Sesame::CobsStorage<MessageSize, SplitBuffers>
         , EchoOnSesame
     {
         WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory)
-            : EchoOnSesame(this->cobsSendStorage, this->cobsReceivedMessage, this->windowedReceivedMessage, serialCommunication, serializerFactory)
+            : EchoOnSesame(static_cast<Sesame::CobsStorageBase&>(*this), serialCommunication, serializerFactory)
         {}
     };
 
 #ifdef EMIL_HAL_GENERIC
-    template<std::size_t MessageSize>
+    template<std::size_t MessageSize, uint8_t SplitBuffers = 2>
     struct EchoOnUart
         : services::Stoppable
     {
@@ -86,7 +72,7 @@ namespace main_
         hal::UartGeneric uart;
         services::MethodSerializerFactory::OnHeap serializerFactory;
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<MessageSize> bufferedSerial{ uart };
-        main_::EchoOnSesame::WithMessageSize<MessageSize> echoOnSesame{ this->bufferedSerial, this->serializerFactory };
+        main_::EchoOnSesame::WithMessageSize<MessageSize, SplitBuffers> echoOnSesame{ this->bufferedSerial, this->serializerFactory };
 
         services::Echo& echo{ echoOnSesame.echo };
     };
@@ -142,7 +128,7 @@ namespace main_
         EchoForwarder<MessageSize, MaxServices> echoForwarder;
     };
 
-    template<std::size_t MessageSize, std::size_t MaxServices>
+    template<std::size_t MessageSize, std::size_t MaxServices, uint8_t SplitBuffers = 2>
     struct EchoForwarderToSesame
     {
         EchoForwarderToSesame(services::Echo& from, hal::SerialCommunication& toSerial, services::MethodSerializerFactory& serializerFactory)
@@ -152,7 +138,7 @@ namespace main_
         {}
 
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<MessageSize> bufferedSerial;
-        EchoOnSesame::WithMessageSize<MessageSize> to;
+        EchoOnSesame::WithMessageSize<MessageSize, SplitBuffers> to;
         EchoForwarder<MessageSize, MaxServices> echoForwarder;
     };
 }

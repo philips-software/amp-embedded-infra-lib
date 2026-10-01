@@ -3,6 +3,8 @@
 
 #include "infra/syntax/Json.hpp"
 #include "infra/syntax/JsonObjectNavigator.hpp"
+#include <string>
+#include <vector>
 
 namespace infra
 {

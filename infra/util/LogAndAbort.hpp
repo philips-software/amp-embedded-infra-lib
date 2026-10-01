@@ -6,6 +6,33 @@
 #include <cstdlib>
 #include <type_traits>
 
+namespace infra::detail
+{
+    template<class T, bool = std::is_enum_v<std::decay_t<T>>>
+    struct LogAndAbortEnumOrIntegralType
+    {
+        using Type = std::decay_t<T>;
+        static_assert(std::is_integral_v<Type>, "T must be an integral type");
+
+        constexpr static Type ToUnderlying(T value)
+        {
+            return static_cast<Type>(value);
+        }
+    };
+
+    template<class T>
+    struct LogAndAbortEnumOrIntegralType<T, true>
+    {
+        using Type = std::underlying_type_t<std::decay_t<T>>;
+        static_assert(std::is_enum_v<std::decay_t<T>>, "T must be an enum type");
+
+        constexpr static Type ToUnderlying(T value)
+        {
+            return static_cast<Type>(value);
+        }
+    };
+}
+
 namespace infra
 {
     using LogAndAbortHook = infra::Function<void(const char* reason, const char* file, int line, const char* format, va_list* args)>;
@@ -57,19 +84,19 @@ namespace infra
     } while (0)
 
 #define LOG_AND_ABORT_NOT_IMPLEMENTED() LOG_AND_ABORT("Not implemented")
-#define LOG_AND_ABORT_ENUM(value)                                                                                                       \
-    do                                                                                                                                  \
-    {                                                                                                                                   \
-        static_assert(std::is_enum_v<std::decay_t<decltype(value)>>, "LOG_AND_ABORT_ENUM can only be used with enum types");            \
-        using LogAndAbortEnumUnderlyingType = std::underlying_type_t<std::decay_t<decltype(value)>>;                                    \
-        if constexpr (std::is_signed_v<LogAndAbortEnumUnderlyingType>)                                                                  \
-        {                                                                                                                               \
-            LOG_AND_ABORT("Unexpected enum: %lld", static_cast<long long>(static_cast<LogAndAbortEnumUnderlyingType>(value)));          \
-        }                                                                                                                               \
-        else                                                                                                                            \
-        {                                                                                                                               \
-            LOG_AND_ABORT("Unexpected enum: %llu", static_cast<unsigned long long>(static_cast<LogAndAbortEnumUnderlyingType>(value))); \
-        }                                                                                                                               \
+#define LOG_AND_ABORT_ENUM(value)                                                                                                                                                             \
+    do                                                                                                                                                                                        \
+    {                                                                                                                                                                                         \
+        static_assert(std::is_enum_v<std::decay_t<decltype(value)>> || std::is_integral_v<std::decay_t<decltype(value)>>, "LOG_AND_ABORT_ENUM can only be used with enum or integral types"); \
+        auto underlyingValue = infra::detail::LogAndAbortEnumOrIntegralType<std::decay_t<decltype(value)>>::ToUnderlying(value);                                                              \
+        if constexpr (std::is_signed_v<decltype(underlyingValue)>)                                                                                                                            \
+        {                                                                                                                                                                                     \
+            LOG_AND_ABORT("Unexpected enum: %lld", static_cast<long long>(underlyingValue));                                                                                                  \
+        }                                                                                                                                                                                     \
+        else                                                                                                                                                                                  \
+        {                                                                                                                                                                                     \
+            LOG_AND_ABORT("Unexpected enum: %llu", static_cast<unsigned long long>(underlyingValue));                                                                                         \
+        }                                                                                                                                                                                     \
     } while (0)
 
 #endif // INFRA_UTIL_LOGANDABORT_HPP

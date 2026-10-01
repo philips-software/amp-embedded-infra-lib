@@ -17,7 +17,7 @@ namespace services
     public:
         constexpr static std::size_t MaxBuffer = MaxCommandLength;
 
-        template<std::size_t MaxQueueSize = 32, std::size_t MaxHistory = 4>
+        template<std::size_t MaxQueueSize = 128, std::size_t MaxHistory = 4>
         using WithMaxQueueAndMaxHistory = infra::WithStorage<infra::WithStorage<TerminalBase, std::array<uint8_t, MaxQueueSize + 1>>, typename infra::BoundedDeque<infra::BoundedString::WithStorage<MaxBuffer>>::template WithMaxSize<MaxHistory>>;
 
         explicit TerminalBase(infra::MemoryRange<uint8_t> bufferQueue, infra::BoundedDeque<infra::BoundedString::WithStorage<MaxBuffer>>& history, hal::SerialCommunication& communication, services::Tracer& tracer);
@@ -109,13 +109,29 @@ namespace services
         : public infra::Subject<TerminalCommands>
     {};
 
+    class TerminalWithCommandsDuplicateDetector
+        : public TerminalWithCommands
+    {
+    public:
+        explicit TerminalWithCommandsDuplicateDetector(TerminalWithCommands& delegate);
+
+        void RegisterObserver(infra::Observer<TerminalCommands, TerminalWithCommands>* observer) override;
+
+    private:
+        void EvaluateDuplicateCommands();
+
+    private:
+        TerminalWithCommands& delegate;
+        bool evaluationScheduled = false;
+    };
+
     template<size_t MaxCommandLength>
     class TerminalWithCommandsImplBase
         : public TerminalWithCommands
         , public TerminalBase<MaxCommandLength>
     {
     public:
-        template<std::size_t MaxQueueSize = 32, std::size_t MaxHistory = 4>
+        template<std::size_t MaxQueueSize = 128, std::size_t MaxHistory = 4>
         using WithMaxQueueAndMaxHistory = infra::WithStorage<infra::WithStorage<TerminalWithCommandsImplBase, std::array<uint8_t, MaxQueueSize + 1>>, typename infra::BoundedDeque<infra::BoundedString::WithStorage<TerminalBase<MaxCommandLength>::MaxBuffer>>::template WithMaxSize<MaxHistory>>;
 
         TerminalWithCommandsImplBase(infra::MemoryRange<uint8_t> bufferQueue, infra::BoundedDeque<infra::BoundedString::WithStorage<TerminalBase<MaxCommandLength>::MaxBuffer>>& history, hal::SerialCommunication& communication, services::Tracer& tracer);

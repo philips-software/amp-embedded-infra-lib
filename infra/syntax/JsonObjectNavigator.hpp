@@ -2,8 +2,10 @@
 #define JSON_OBJECT_NAVIGATOR_HPP
 
 #include "infra/syntax/Json.hpp"
+#include <cstdint>
 #include <functional>
 #include <optional>
+#include <string>
 
 namespace infra
 {

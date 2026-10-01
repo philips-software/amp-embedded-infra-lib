@@ -59,6 +59,7 @@ target_sources(services.network PRIVATE
     HttpServer.hpp
     LlmnrResponder.cpp
     LlmnrResponder.hpp
+    MacResolver.hpp
     MdnsClient.cpp
     MdnsClient.hpp
     Mqtt.hpp
@@ -113,6 +114,8 @@ if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
             mbedtls
         )
     endif()
+
+    target_compile_definitions(services.network PRIVATE EMIL_MBEDTLS_CUSTOM_ENTROPY=$<BOOL:${EMIL_MBEDTLS_CUSTOM_ENTROPY}>)
 
     target_sources(services.network PRIVATE
         CertificatesMbedTls.cpp

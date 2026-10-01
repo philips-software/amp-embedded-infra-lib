@@ -1,12 +1,48 @@
 #include "services/network_instantiations/ConnectionBsd.hpp"
+#include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "services/network_instantiations/EventDispatcherWithNetworkBsd.hpp"
+#include <arpa/inet.h>
+#include <cstring>
 #include <errno.h>
 #include <fcntl.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <optional>
 #include <sys/socket.h>
 #include <unistd.h>
 
 namespace
 {
+    template<class SockAddr>
+    const sockaddr* AsSockAddr(const SockAddr& address)
+    {
+        return static_cast<const sockaddr*>(static_cast<const void*>(&address));
+    }
+
+    template<class SockAddr>
+    sockaddr* AsSockAddr(SockAddr& address)
+    {
+        return static_cast<sockaddr*>(static_cast<void*>(&address));
+    }
+
+    template<class SockAddr>
+    int BindSocket(int fileDescriptor, const SockAddr& address)
+    {
+        return bind(fileDescriptor, AsSockAddr(address), sizeof(address));
+    }
+
+    template<class SockAddr>
+    int ConnectSocket(int fileDescriptor, const SockAddr& address)
+    {
+        return connect(fileDescriptor, AsSockAddr(address), sizeof(address));
+    }
+
+    void GetPeerName(int fileDescriptor, sockaddr_storage& address, socklen_t& addressLength)
+    {
+        if (getpeername(fileDescriptor, AsSockAddr(address), &addressLength) == -1)
+            std::abort();
+    }
+
     void SetNonBlocking(int fileDescriptor)
     {
         auto status_flags = fcntl(fileDescriptor, F_GETFL, 0);
@@ -14,6 +50,55 @@ namespace
             std::abort();
         if (fcntl(fileDescriptor, F_SETFL, status_flags | O_NONBLOCK) == -1)
             std::abort();
+    }
+
+    void EnableKeepAlive(int fileDescriptor)
+    {
+        int enabled = 1;
+        setsockopt(fileDescriptor, SOL_SOCKET, SO_KEEPALIVE, &enabled, sizeof(enabled));
+
+#ifdef __linux__
+        int idleSeconds = 10;
+        int intervalSeconds = 3;
+        int probeCount = 3;
+
+        setsockopt(fileDescriptor, IPPROTO_TCP, TCP_KEEPIDLE, &idleSeconds, sizeof(idleSeconds));
+        setsockopt(fileDescriptor, IPPROTO_TCP, TCP_KEEPINTVL, &intervalSeconds, sizeof(intervalSeconds));
+        setsockopt(fileDescriptor, IPPROTO_TCP, TCP_KEEPCNT, &probeCount, sizeof(probeCount));
+#endif
+    }
+
+    services::IPv6Address ToIpv6Address(const in6_addr& address)
+    {
+        services::IPv6Address ipv6Address{};
+        for (std::size_t i = 0; i != ipv6Address.size(); ++i)
+        {
+            uint16_t value;
+            std::memcpy(&value, &address.s6_addr[i * 2], sizeof(value));
+            ipv6Address[i] = ntohs(value);
+        }
+
+        return ipv6Address;
+    }
+
+    in6_addr ToIn6Addr(const services::IPv6Address& address)
+    {
+        in6_addr in6Address{};
+        for (std::size_t i = 0; i != address.size(); ++i)
+        {
+            const auto value = htons(address[i]);
+            std::memcpy(&in6Address.s6_addr[i * 2], &value, sizeof(value));
+        }
+
+        return in6Address;
+    }
+
+    std::optional<services::IPv4Address> ToIpv4AddressWhenV4Mapped(const in6_addr& address)
+    {
+        if (!IN6_IS_ADDR_V4MAPPED(&address))
+            return std::nullopt;
+
+        return services::IPv4Address{ address.s6_addr[12], address.s6_addr[13], address.s6_addr[14], address.s6_addr[15] };
     }
 }
 
@@ -28,6 +113,7 @@ namespace services
               })
     {
         SetNonBlocking(socket);
+        EnableKeepAlive(socket);
     }
 
     ConnectionBsd::~ConnectionBsd()
@@ -78,13 +164,25 @@ namespace services
         ResetOwnership();
     }
 
-    IPv4Address ConnectionBsd::Ipv4Address() const
+    IPAddress ConnectionBsd::Address() const
     {
-        sockaddr_in address{};
+        sockaddr_storage address{};
         socklen_t addressLength = sizeof(address);
-        getpeername(socket, reinterpret_cast<sockaddr*>(&address), &addressLength);
+        GetPeerName(socket, address, addressLength);
 
-        return services::ConvertFromUint32(htonl(address.sin_addr.s_addr));
+        if (address.ss_family == AF_INET)
+        {
+            sockaddr_in ipv4Address{};
+            std::memcpy(&ipv4Address, &address, sizeof(ipv4Address));
+            return services::ConvertFromUint32(htonl(ipv4Address.sin_addr.s_addr));
+        }
+
+        sockaddr_in6 ipv6Address{};
+        std::memcpy(&ipv6Address, &address, sizeof(ipv6Address));
+        if (auto ipv4Address = ToIpv4AddressWhenV4Mapped(ipv6Address.sin6_addr); ipv4Address)
+            return *ipv4Address;
+
+        return ToIpv6Address(ipv6Address.sin6_addr);
     }
 
     void ConnectionBsd::SetObserver(infra::SharedPtr<services::ConnectionObserver> connectionObserver)
@@ -218,19 +316,43 @@ namespace services
         Rewind(0);
     }
 
-    ListenerBsd::ListenerBsd(EventDispatcherWithNetwork& network, uint16_t port, services::ServerConnectionObserverFactory& factory)
+    ListenerBsd::ListenerBsd(EventDispatcherWithNetwork& network, uint16_t port, services::ServerConnectionObserverFactory& factory, IPVersions versions)
         : network(network)
         , factory(factory)
     {
-        listenSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        const auto family = versions == IPVersions::ipv4 ? AF_INET : AF_INET6;
+
+        listenSocket = socket(family, SOCK_STREAM, IPPROTO_TCP);
         assert(listenSocket != -1);
 
-        sockaddr_in address = {};
-        address.sin_family = AF_INET;
-        address.sin_addr.s_addr = htonl(INADDR_ANY);
-        address.sin_port = htons(port);
-        if (bind(listenSocket, reinterpret_cast<sockaddr*>(&address), sizeof(address)) == -1)
+        if (int reuseAddress = 1; setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, &reuseAddress, sizeof(reuseAddress)) == -1)
             std::abort();
+
+        if (family == AF_INET6)
+        {
+            int v6Only = versions == IPVersions::ipv6 ? 1 : 0;
+            if (setsockopt(listenSocket, IPPROTO_IPV6, IPV6_V6ONLY, &v6Only, sizeof(v6Only)) == -1)
+                std::abort();
+        }
+
+        if (family == AF_INET)
+        {
+            sockaddr_in address = {};
+            address.sin_family = AF_INET;
+            address.sin_addr.s_addr = htonl(INADDR_ANY);
+            address.sin_port = htons(port);
+            if (BindSocket(listenSocket, address) == -1)
+                std::abort();
+        }
+        else
+        {
+            sockaddr_in6 address = {};
+            address.sin6_family = AF_INET6;
+            address.sin6_addr = in6addr_any;
+            address.sin6_port = htons(port);
+            if (BindSocket(listenSocket, address) == -1)
+                std::abort();
+        }
 
         if (listen(listenSocket, 1) == -1)
             std::abort();
@@ -255,28 +377,45 @@ namespace services
                 if (connectionObserver)
                     connection->SetObserver(connectionObserver);
             },
-            connection->Ipv4Address());
+            connection->Address());
     }
 
     ConnectorBsd::ConnectorBsd(EventDispatcherWithNetwork& network, services::ClientConnectionObserverFactory& factory)
         : network(network)
         , factory(factory)
     {
-        auto address = std::get<services::IPv4Address>(factory.Address());
+        const auto address = factory.Address();
 
-        connectSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        if (std::holds_alternative<services::IPv4Address>(address))
+        {
+            auto ipv4Address = std::get<services::IPv4Address>(address);
+
+            connectSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+            assert(connectSocket != -1);
+            SetNonBlocking(connectSocket);
+
+            sockaddr_in saddress = {};
+            saddress.sin_family = AF_INET;
+            saddress.sin_addr.s_addr = htonl(services::ConvertToUint32(ipv4Address));
+            saddress.sin_port = htons(factory.Port());
+            if (ConnectSocket(connectSocket, saddress) == -1 && errno != EWOULDBLOCK && errno != EINPROGRESS)
+                std::abort();
+
+            return;
+        }
+
+        const auto& ipv6Address = std::get<services::IPv6Address>(address);
+
+        connectSocket = socket(AF_INET6, SOCK_STREAM, IPPROTO_TCP);
         assert(connectSocket != -1);
         SetNonBlocking(connectSocket);
 
-        sockaddr_in saddress = {};
-        saddress.sin_family = AF_INET;
-        saddress.sin_addr.s_addr = htonl(services::ConvertToUint32(address));
-        saddress.sin_port = htons(factory.Port());
-        if (connect(connectSocket, reinterpret_cast<sockaddr*>(&saddress), sizeof(saddress)) == -1)
-        {
-            if (errno != EWOULDBLOCK && errno != EINPROGRESS)
-                std::abort();
-        }
+        sockaddr_in6 saddress = {};
+        saddress.sin6_family = AF_INET6;
+        saddress.sin6_addr = ToIn6Addr(ipv6Address);
+        saddress.sin6_port = htons(factory.Port());
+        if (ConnectSocket(connectSocket, saddress) == -1 && errno != EWOULDBLOCK && errno != EINPROGRESS)
+            std::abort();
     }
 
     ConnectorBsd::~ConnectorBsd()
