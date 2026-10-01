@@ -26,13 +26,6 @@ namespace infra
             hasInstance.store(false, std::memory_order_release);
         }
 
-#ifdef EMIL_HOST_BUILD
-        static void ResetSingleInstanceCounter()
-        {
-            hasInstance.store(false, std::memory_order_release);
-        }
-#endif
-
     private:
         static std::atomic<bool> hasInstance;
     };

@@ -3,7 +3,26 @@
 #include "gtest/gtest.h"
 #include <type_traits>
 
-namespace
+TEST(SingleInstanceTest, once_instance_allowed)
+{
+    class Foo : public infra::SingleInstance<Foo>
+    {};
+
+    Foo foo;
+}
+
+TEST(SingleInstanceTest, after_destruction_new_instance_allowed)
+{
+    class Foo : public infra::SingleInstance<Foo>
+    {};
+
+    {
+        Foo foo1;
+    }
+    Foo foo2;
+}
+
+TEST(SingleInstanceTest, multiple_tags_allowed)
 {
     class Foo : public infra::SingleInstance<Foo>
     {};
@@ -11,60 +30,48 @@ namespace
     class Bar : public infra::SingleInstance<Bar>
     {};
 
-    class SingleInstanceTest
-        : public testing::Test
-    {
-    public:
-        ~SingleInstanceTest()
-        {
-            Foo::ResetSingleInstanceCounter();
-            Bar::ResetSingleInstanceCounter();
-        }
-    };
-}
-
-TEST_F(SingleInstanceTest, once_instance_allowed)
-{
-    Foo foo;
-}
-
-TEST_F(SingleInstanceTest, after_destruction_new_instance_allowed)
-{
-    {
-        Foo foo1;
-    }
-    Foo foo2;
-}
-
-TEST_F(SingleInstanceTest, multiple_tags_allowed)
-{
     Foo foo;
     Bar bar;
 }
 
-TEST_F(SingleInstanceTest, two_instances_not_allowed)
+TEST(SingleInstanceTest, two_instances_not_allowed)
 {
+    class Foo : public infra::SingleInstance<Foo>
+    {};
+
     Foo foo1;
 
     EXPECT_DEATH(Foo foo2;, "");
 }
 
-TEST_F(SingleInstanceTest, is_not_copy_constructible)
+TEST(SingleInstanceTest, is_not_copy_constructible)
 {
+    class Foo : public infra::SingleInstance<Foo>
+    {};
+
     static_assert(!std::is_copy_constructible_v<Foo>);
 }
 
-TEST_F(SingleInstanceTest, is_not_move_constructible)
+TEST(SingleInstanceTest, is_not_move_constructible)
 {
+    class Foo : public infra::SingleInstance<Foo>
+    {};
+
     static_assert(!std::is_move_constructible_v<Foo>);
 }
 
-TEST_F(SingleInstanceTest, is_not_copy_assignable)
+TEST(SingleInstanceTest, is_not_copy_assignable)
 {
+    class Foo : public infra::SingleInstance<Foo>
+    {};
+
     static_assert(!std::is_copy_assignable_v<Foo>);
 }
 
-TEST_F(SingleInstanceTest, is_not_move_assignable)
+TEST(SingleInstanceTest, is_not_move_assignable)
 {
+    class Foo : public infra::SingleInstance<Foo>
+    {};
+
     static_assert(!std::is_move_assignable_v<Foo>);
 }
