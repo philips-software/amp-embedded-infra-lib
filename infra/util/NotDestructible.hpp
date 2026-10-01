@@ -24,4 +24,4 @@ namespace infra
     };
 }
 
-#endif // INFRA_UTIL_NOT_DESTRUCTIBLE_HPP
+#endif

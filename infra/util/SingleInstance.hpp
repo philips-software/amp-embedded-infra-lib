@@ -40,4 +40,4 @@ namespace infra
     int SingleInstance<Tag>::numberOfInstances = 0;
 }
 
-#endif // INFRA_UTIL_SINGLE_INSTANCE_HPP
+#endif
