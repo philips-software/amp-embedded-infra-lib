@@ -21,6 +21,7 @@ namespace infra
         SingleInstance& operator=(const SingleInstance&) = delete;
         SingleInstance& operator=(SingleInstance&&) = delete;
 
+    protected:
         ~SingleInstance()
         {
             hasInstance.store(false, std::memory_order_release);

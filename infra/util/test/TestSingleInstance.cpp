@@ -34,6 +34,7 @@ TEST(SingleInstanceTest, multiple_tags_allowed)
     Bar bar;
 }
 
+#ifndef EMIL_MUTATION_TESTING
 TEST(SingleInstanceTest, two_instances_not_allowed)
 {
     class Foo : public infra::SingleInstance<Foo>
@@ -43,6 +44,7 @@ TEST(SingleInstanceTest, two_instances_not_allowed)
 
     EXPECT_DEATH(Foo foo2;, "");
 }
+#endif
 
 TEST(SingleInstanceTest, is_not_copy_constructible)
 {

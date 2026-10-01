@@ -1,5 +1,5 @@
-#ifndef INFRA_UTIL_NOT_DESTRUCTIBLE_HPP
-#define INFRA_UTIL_NOT_DESTRUCTIBLE_HPP
+#ifndef INFRA_UTIL_DESTRUCTION_GUARD_HPP
+#define INFRA_UTIL_DESTRUCTION_GUARD_HPP
 
 #include "infra/util/ReallyAssert.hpp"
 
@@ -7,7 +7,7 @@ namespace infra
 {
     class DestructionGuard
     {
-    public:
+    protected:
         ~DestructionGuard()
         {
 #ifdef EMIL_ENABLE_DESTRUCTION_GUARD
@@ -15,6 +15,7 @@ namespace infra
 #endif
         }
 
+    public:
         void MarkAsSafeToDeconstruct()
         {
             canSafelyDestruct = true;
