@@ -169,7 +169,7 @@
 <div class="sectionbody">
 <div class="imageblock kroki">
 <div class="content">
-<img src="../_images/diag-0f8c887e0b0e8d37c224e32869bf10784b7e8e5b.svg" alt="Diagram">
+<img src="../_images/diag-dacd10933bb0464c170f36f814c51c7965282d7d.svg" alt="Diagram">
 </div>
 </div>
 </div>
@@ -316,9 +316,15 @@
 </div>
 <div class="sect2">
 <h3 id="_getbondinformation"><a class="anchor" href="#_getbondinformation"></a>GetBondInformation</h3>
+<div class="paragraph">
+<p><strong>Allowed states:</strong> standby, advertising, connected.</p>
+</div>
+<div class="paragraph">
+<p><strong>Expected response:</strong> GapPeripheralResponse.BondInformationReceived.</p>
+</div>
 <div class="imageblock kroki">
 <div class="content">
-<img src="../_images/diag-919d18ee344110f9f6636b28a8bea94350a2ac9c.svg" alt="Diagram">
+<img src="../_images/diag-836c861ea113532969c5376848b39e92305efaf3.svg" alt="Diagram">
 </div>
 </div>
 </div>
@@ -334,13 +340,19 @@
 </div>
 </div>
 <div class="sect2">
-<h3 id="_removeoldestbond"><a class="anchor" href="#_removeoldestbond"></a>RemoveOldestBond</h3>
+<h3 id="_removebondwithaddress"><a class="anchor" href="#_removebondwithaddress"></a>RemoveBondWithAddress</h3>
 <div class="paragraph">
 <p><strong>Allowed states:</strong> standby.</p>
 </div>
+<div class="paragraph">
+<p><strong>Expected response:</strong> GapPeripheralResponse.NumberOfBondsChanged.</p>
+</div>
+<div class="paragraph">
+<p>Removes the bond associated with the given identity address.</p>
+</div>
 <div class="imageblock kroki">
 <div class="content">
-<img src="../_images/diag-ceb57a5a9f7b75f3215bcccd6f4c2cb535906d01.svg" alt="Diagram">
+<img src="../_images/diag-8ba621fc686b193aa434a9f0bcf2e19ecb85ac04.svg" alt="Diagram">
 </div>
 </div>
 </div>
@@ -557,10 +569,23 @@ message PairingStatus
     PairingFailedReason reason = 2;
 }
 
-message BondsStatus
+message Bond
+{
+    // Identity address of the peer
+    AddressWithType addressWithType = 1;
+    
+    // Device Name from GAP (Generic Access) service.
+    // Read from the peer on bond created and on every successful encryption change.
+    // Not unique; truncated to 32 bytes.
+    // Can be empty if device has an empty name, or has not been read yet.
+    bytes deviceName = 2 [(bytes_size) = 32];
+}
+
+message BondInformation
 {
     uint32 currentBonds = 1;
     uint32 maxBonds = 2;
+    repeated Bond bonds = 3 [(array_size) = 32];
 }
 
 // Based on Bluetooth Core Specification v6.3, Vol 3, Part H, Sections 2.3.5.3 and 2.3.5.6
@@ -720,11 +745,11 @@ service GapPeripheral
 
     // Allowed states: standby
     // Expected response: GapPeripheralResponse.NumberOfBondsChanged
-    // Description: Oldest bond means the least recently used, i.e. connected, bonded peer.
-    rpc RemoveOldestBond(Nothing) returns (Nothing) { option (method_id) = 12; }
+    // Description: Removes the bond associated with the given identity address.
+    rpc RemoveBondWithAddress(AddressWithType) returns (Nothing) { option (method_id) = 16; }
 
     // Allowed states: standby, advertising, connected
-    // Expected response: GapPeripheralResponse.BondInformation
+    // Expected response: GapPeripheralResponse.BondInformationReceived
     rpc GetBondInformation(Nothing) returns (Nothing) { option (method_id) = 13; }
 
     // Allowed states: standby, connected
@@ -760,12 +785,14 @@ service GapPeripheralResponse
     rpc PairingResult(PairingStatus) returns (Nothing) { option (method_id) = 5; }
 
     // Expected states: standby, connected
+    // Triggered by: GapPeripheral.RemoveAllBonds, GapPeripheral.RemoveBondWithAddress
     // Description: Triggered when a new bond is created, an existing bond is removed, or re-bonding occurs with an already bonded peer.
     rpc NumberOfBondsChanged(UInt32Value) returns(Nothing) { option(method_id) = 6; }
     
     // Expected states: standby, advertising, connected
     // Triggered by: GapPeripheral.GetBondInformation
-    rpc BondInformation(BondsStatus) returns(Nothing) { option(method_id) = 7; }
+    // Description: Returns the number of bonds and the list of bonded devices.
+    rpc BondInformationReceived(BondInformation) returns(Nothing) { option(method_id) = 7; }
 
     // Expected states: connected
     // Description: Sent during an active pairing/bonding procedure when user interaction is required to complete pairing.
@@ -879,24 +906,6 @@ message ResolvedPrivateAddress
 {
     bool success = 1; // True if the address was successfully resolved to a bond, false otherwise.
     Address identityAddress = 2; // The resolved identity address
-}
-
-message Bond
-{
-    // Identity address of the peer
-    AddressWithType addressWithType = 1;
-    
-    // Device Name from GAP (Generic Access) service.
-    // Read from the peer on bond created and on every successful encryption change.
-    // Not unique; truncated to 32 bytes.
-    // Can be empty if device has an empty name, or has not been read yet.
-    bytes deviceName = 2 [(bytes_size) = 32];
-}
-
-message BondList
-{    
-    // Sorted by least recently used (LRU): least recently used -&gt; most recently used.
-    repeated Bond bonds = 1 [(array_size) = 32];
 }
 
 // ==================================================
@@ -1027,9 +1036,9 @@ service GapCentral
     rpc ResolvePrivateAddress(Address) returns (Nothing) { option (method_id) = 13; }
 
     // Allowed states: standby, scanning, connected, initiating
-    // Expected response: GapCentralResponse.BondListReceived
-    // Description: Returns the list of bonded devices.
-    rpc GetBondList(Nothing) returns (Nothing) { option (method_id) = 14; }
+    // Expected response: GapCentralResponse.BondInformationReceived
+    // Description: Returns the number of bonds and the list of bonded devices.
+    rpc GetBondInformation(Nothing) returns (Nothing) { option (method_id) = 14; }
 
     // Allowed states: standby
     // Description: Sets the local identity address used by the central.
@@ -1099,9 +1108,9 @@ service GapCentralResponse {
     rpc NumberOfBondsChanged(UInt32Value) returns (Nothing) { option (method_id) = 6; }
 
     // Expected states: standby, scanning, initiating, connected
-    // Triggered by: GapCentral.GetBondList
-    // Description: Returns the list of bonded devices.
-    rpc BondListReceived(BondList) returns (Nothing) { option(method_id) = 7; }
+    // Triggered by: GapCentral.GetBondInformation
+    // Description: Returns the number of bonds and the list of bonded devices.
+    rpc BondInformationReceived(BondInformation) returns (Nothing) { option(method_id) = 7; }
 
     // DEPRECATED: Will be removed in the near future.
     rpc DeviceBonded(BoolValue) returns (Nothing) { option (method_id) = 8; }
