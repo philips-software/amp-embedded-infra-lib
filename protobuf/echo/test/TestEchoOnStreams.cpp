@@ -32,6 +32,11 @@ namespace services
         {
             return EchoOnStreams::GrantSend(proxy);
         }
+
+        void InheritedReleaseDeserializer()
+        {
+            EchoOnStreams::ReleaseDeserializer();
+        }
     };
 }
 
@@ -77,6 +82,31 @@ TEST_F(EchoOnStreamsTest, ReleaseReader_with_data_in_buffer)
     echo.DataReceived(reader.Emplace(infra::MakeRange(data)));
 
     echo.ReleaseReader();
+}
+
+TEST_F(EchoOnStreamsTest, reset_releases_partially_received_method)
+{
+    std::array<uint8_t, 8> partialMessage{ 1, (1 << 3) | 2, 64 };
+    EXPECT_CALL(echo, StartingMethod(1, 1, testing::_)).WillOnce(testing::Invoke([](uint32_t serviceId, uint32_t methodId, infra::SharedPtr<services::MethodDeserializer>&& deserializer)
+        {
+            return std::move(deserializer);
+        }));
+    EXPECT_CALL(echo, MethodContents(testing::_));
+    echo.DataReceived(reader.Emplace(infra::MakeRange(partialMessage)));
+
+    EXPECT_CALL(echo, ReleaseDeserializer()).WillOnce(testing::Invoke([this]()
+        {
+            echo.InheritedReleaseDeserializer();
+        }));
+    echo.Reset();
+
+    std::array<uint8_t, 4> nextMessage{ 1, (1 << 3) | 2, 4, 1 << 3 };
+    EXPECT_CALL(echo, StartingMethod(1, 1, testing::_)).WillOnce(testing::Invoke([](uint32_t serviceId, uint32_t methodId, infra::SharedPtr<services::MethodDeserializer>&& deserializer)
+        {
+            return std::move(deserializer);
+        }));
+    EXPECT_CALL(echo, MethodContents(testing::_));
+    echo.DataReceived(reader.Emplace(infra::MakeRange(nextMessage)));
 }
 
 TEST_F(EchoOnStreamsTest, reset_after_grant_with_partly_sent_does_not_crash)
