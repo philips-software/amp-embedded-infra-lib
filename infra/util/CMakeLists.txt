@@ -39,6 +39,7 @@ target_sources(infra.util PRIVATE
     CyclicBuffer.hpp
     Endian.hpp
     EnumCast.hpp
+    DestructionGuard.hpp
     FixedPoint.hpp
     Function.cpp
     Function.hpp
@@ -54,7 +55,6 @@ target_sources(infra.util PRIVATE
     LogAndAbort.hpp
     MemoryRange.hpp
     MultiFunction.hpp
-    NotDestructible.hpp
     Observer.hpp
     Overloaded.hpp
     PolymorphicVariant.hpp

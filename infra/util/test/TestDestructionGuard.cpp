@@ -1,5 +1,5 @@
 
-#include "infra/util/NotDestructible.hpp"
+#include "infra/util/DestructionGuard.hpp"
 #include "gtest/gtest.h"
 
 namespace
@@ -8,12 +8,12 @@ namespace
     {};
 }
 
-TEST(NotDestructibleTest, not_destructible)
+TEST(DestructionGuardTest, not_destructible)
 {
     EXPECT_DEATH(Foo foo;, "");
 }
 
-TEST(NotDestructibleTest, destructible_when_allowed)
+TEST(DestructionGuardTest, destructible_when_allowed)
 {
     Foo foo;
     foo.AllowDestructionOfNotDestructible();
