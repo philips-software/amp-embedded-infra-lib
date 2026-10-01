@@ -425,7 +425,7 @@ public:
     {
         echo.NotifyObservers([this, methodId, &message](services::Service& service)
             {
-                auto deserializer = service.StartMethod(sesame_security::DiffieHellmanKeyEstablishment::serviceId, methodId, static_cast<uint32_t>(message.size()), errorPolicy);
+                auto deserializer = service.StartMethod(sesame_security::DiffieHellmanKeyEstablishment::serviceId, methodId, static_cast<uint32_t>(message.size()), services::echoErrorPolicyAbortOnMessageFormatError);
                 infra::StdVectorInputStream::WithStorage inputStream{ std::in_place, message };
                 deserializer->MethodContents(infra::UnOwnedSharedPtr(inputStream.Reader()));
                 deserializer->ExecuteMethod();
@@ -433,7 +433,6 @@ public:
     }
 
     services::MethodSerializerFactory::OnHeap serializerFactory;
-    testing::NiceMock<services::EchoErrorPolicyMock> errorPolicy;
     testing::StrictMock<hal::SynchronousRandomDataGeneratorMock> randomDataGenerator;
     infra::Execute expectRandomData{ [this]()
         {
@@ -444,18 +443,16 @@ public:
                 }));
         } };
     testing::NiceMock<services::SesameMock> lower;
-    services::SesameSecured::KeyType key{ 1, 2 };
-    services::SesameSecured::IvType iv{ 1, 3 };
-    services::SesameSecured::WithCryptoMbedTls::WithBuffers<100> secured{ lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
-    services::EcSecP256r1PrivateKey rootCaPrivateKey{ randomDataGenerator };
-    services::EcSecP256r1Certificate rootCaCertificate{ rootCaPrivateKey, "CN=Root", rootCaPrivateKey, "CN=Root", randomDataGenerator };
-    infra::BoundedVector<uint8_t>::WithMaxSize<512> rootCaCertificateDer{ rootCaCertificate.Der() };
+    services::SesameSecured::KeyMaterial initialKeyMaterial{ { 1, 2 }, { 1, 3 }, { 1, 2 }, { 1, 3 } };
+    services::SesameSecured::WithCryptoMbedTls::WithBuffers<100> secured{ lower, initialKeyMaterial };
+    services::CertificateAndPrivateKey rootCaCertificateMaterial{ services::GenerateRootCertificate(randomDataGenerator) };
+    services::EcSecP256r1PrivateKey rootCaPrivateKey{ infra::MakeRange(rootCaCertificateMaterial.privateKey), randomDataGenerator };
     services::CertificateAndPrivateKey deviceCertificateMaterial{ services::GenerateDeviceCertificate(rootCaPrivateKey, randomDataGenerator) };
     services::EcSecP256r1DiffieHellmanMbedTls peerKey{ randomDataGenerator };
     services::EcSecP256r1DsaSignerMbedTls peerSigner{ deviceCertificateMaterial.privateKey, randomDataGenerator };
     testing::NiceMock<services::EchoMock> echo;
     services::EchoInitialization echoInitialization;
-    testing::StrictMock<EchoPolicyDiffieHellmanWithCryptoMbedTlsMock> policy{ echo, echoInitialization, secured, services::EchoPolicyDiffieHellman::KeyMaterial{ infra::MakeRange(deviceCertificateMaterial.certificate), infra::MakeRange(deviceCertificateMaterial.privateKey), infra::MakeRange(rootCaCertificateDer) }, randomDataGenerator };
+    testing::StrictMock<EchoPolicyDiffieHellmanWithCryptoMbedTlsMock> policy{ echo, echoInitialization, secured, services::EchoPolicyDiffieHellman::KeyMaterial{ infra::MakeRange(deviceCertificateMaterial.certificate), infra::MakeRange(deviceCertificateMaterial.privateKey), infra::MakeRange(rootCaCertificateMaterial.certificate) }, randomDataGenerator };
 };
 
 TEST_F(EchoPolicyDiffieHellmanMethodDoneTest, exchange_without_certificate_calls_service_done)
