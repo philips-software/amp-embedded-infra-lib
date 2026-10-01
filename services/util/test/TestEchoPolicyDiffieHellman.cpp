@@ -1,6 +1,8 @@
 #include "hal/synchronous_interfaces/test_doubles/SynchronousRandomDataGeneratorMock.hpp"
+#include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/StdVectorInputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
+#include "infra/syntax/ProtoFormatter.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "infra/util/ReallyAssert.hpp"
 #include "infra/util/test_helper/MockCallback.hpp"
@@ -382,4 +384,103 @@ TEST_F(EchoPolicyDiffieHellmanAdversaryTest, not_presenting_certificate_leads_to
     EXPECT_CALL(echoPolicyLeft, KeyExchangeFailed());
 
     ExchangeData();
+}
+
+class EchoPolicyDiffieHellmanMethodDoneTest
+    : public testing::Test
+    , public infra::ClockFixture
+{
+public:
+    EchoPolicyDiffieHellmanMethodDoneTest()
+    {
+        ON_CALL(echo, SerializerFactory()).WillByDefault(testing::ReturnRef(serializerFactory));
+    }
+
+    std::vector<uint8_t> CertificateMessage()
+    {
+        infra::ByteOutputStream::WithStorage<1024> stream;
+        infra::ProtoFormatter formatter(stream);
+        formatter.PutBytesField(infra::MakeRange(deviceCertificateMaterial.certificate), 1);
+
+        auto message = stream.Writer().Processed();
+        return { message.begin(), message.end() };
+    }
+
+    std::vector<uint8_t> ExchangeMessage()
+    {
+        auto publicKey = peerKey.PublicKey();
+        auto [signatureR, signatureS] = peerSigner.Sign(publicKey);
+
+        infra::ByteOutputStream::WithStorage<256> stream;
+        infra::ProtoFormatter formatter(stream);
+        formatter.PutBytesField(publicKey, 1);
+        formatter.PutBytesField(signatureR, 2);
+        formatter.PutBytesField(signatureS, 3);
+
+        auto message = stream.Writer().Processed();
+        return { message.begin(), message.end() };
+    }
+
+    void ExecuteMethod(uint32_t methodId, const std::vector<uint8_t>& message)
+    {
+        echo.NotifyObservers([this, methodId, &message](services::Service& service)
+            {
+                auto deserializer = service.StartMethod(sesame_security::DiffieHellmanKeyEstablishment::serviceId, methodId, static_cast<uint32_t>(message.size()), errorPolicy);
+                infra::StdVectorInputStream::WithStorage inputStream{ std::in_place, message };
+                deserializer->MethodContents(infra::UnOwnedSharedPtr(inputStream.Reader()));
+                deserializer->ExecuteMethod();
+            });
+    }
+
+    services::MethodSerializerFactory::OnHeap serializerFactory;
+    testing::NiceMock<services::EchoErrorPolicyMock> errorPolicy;
+    testing::StrictMock<hal::SynchronousRandomDataGeneratorMock> randomDataGenerator;
+    infra::Execute expectRandomData{ [this]()
+        {
+            EXPECT_CALL(randomDataGenerator, GenerateRandomData(testing::_)).WillRepeatedly(testing::Invoke([](infra::ByteRange data)
+                {
+                    static uint8_t fill = 0;
+                    std::fill(data.begin(), data.end(), fill++);
+                }));
+        } };
+    testing::NiceMock<services::SesameMock> lower;
+    services::SesameSecured::KeyType key{ 1, 2 };
+    services::SesameSecured::IvType iv{ 1, 3 };
+    services::SesameSecured::WithCryptoMbedTls::WithBuffers<100> secured{ lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
+    services::EcSecP256r1PrivateKey rootCaPrivateKey{ randomDataGenerator };
+    services::EcSecP256r1Certificate rootCaCertificate{ rootCaPrivateKey, "CN=Root", rootCaPrivateKey, "CN=Root", randomDataGenerator };
+    infra::BoundedVector<uint8_t>::WithMaxSize<512> rootCaCertificateDer{ rootCaCertificate.Der() };
+    services::CertificateAndPrivateKey deviceCertificateMaterial{ services::GenerateDeviceCertificate(rootCaPrivateKey, randomDataGenerator) };
+    services::EcSecP256r1DiffieHellmanMbedTls peerKey{ randomDataGenerator };
+    services::EcSecP256r1DsaSignerMbedTls peerSigner{ deviceCertificateMaterial.privateKey, randomDataGenerator };
+    testing::NiceMock<services::EchoMock> echo;
+    services::EchoInitialization echoInitialization;
+    testing::StrictMock<EchoPolicyDiffieHellmanWithCryptoMbedTlsMock> policy{ echo, echoInitialization, secured, services::EchoPolicyDiffieHellman::KeyMaterial{ infra::MakeRange(deviceCertificateMaterial.certificate), infra::MakeRange(deviceCertificateMaterial.privateKey), infra::MakeRange(rootCaCertificateDer) }, randomDataGenerator };
+};
+
+TEST_F(EchoPolicyDiffieHellmanMethodDoneTest, exchange_without_certificate_calls_service_done)
+{
+    testing::InSequence sequence;
+    EXPECT_CALL(policy, KeyExchangeFailed());
+    EXPECT_CALL(echo, ServiceDone());
+
+    ExecuteMethod(sesame_security::DiffieHellmanKeyEstablishment::idExchange, ExchangeMessage());
+}
+
+TEST_F(EchoPolicyDiffieHellmanMethodDoneTest, successful_exchange_calls_service_done)
+{
+    echoInitialization.NotifyObservers([](auto& observer)
+        {
+            observer.Initialized();
+        });
+
+    EXPECT_CALL(echo, ServiceDone());
+    {
+        testing::InSequence sequence;
+        EXPECT_CALL(policy, KeyExchangeSuccessful());
+        EXPECT_CALL(echo, ServiceDone());
+    }
+
+    ExecuteMethod(sesame_security::DiffieHellmanKeyEstablishment::idPresentCertificate, CertificateMessage());
+    ExecuteMethod(sesame_security::DiffieHellmanKeyEstablishment::idExchange, ExchangeMessage());
 }
