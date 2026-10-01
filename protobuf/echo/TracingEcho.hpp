@@ -157,6 +157,15 @@ namespace services
             const ServiceTracer* receivingService;
             uint32_t receivingMethodId;
         };
+
+        struct TracingEchoOnStreamsDescendantHelperHolder
+        {
+            explicit TracingEchoOnStreamsDescendantHelperHolder(services::Tracer& tracer)
+                : helper(tracer)
+            {}
+
+            TracingEchoOnStreamsDescendantHelper helper;
+        };
     }
 
     class TracingEchoOnStreams
@@ -174,6 +183,7 @@ namespace services
     template<class Descendant>
     class TracingEchoOnStreamsDescendant
         : public TracingEchoOnStreams
+        , private detail::TracingEchoOnStreamsDescendantHelperHolder // Precedes Descendant, so that helper outlives it
         , public Descendant
     {
     public:
@@ -189,9 +199,6 @@ namespace services
         infra::SharedPtr<MethodSerializer> GrantSend(services::ServiceProxy& proxy) override;
         infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, infra::SharedPtr<MethodDeserializer>&& deserializer) override;
         void ReleaseDeserializer() override;
-
-    private:
-        detail::TracingEchoOnStreamsDescendantHelper helper;
     };
 
     //// Implementation
@@ -199,8 +206,8 @@ namespace services
     template<class Descendant>
     template<class... Args>
     TracingEchoOnStreamsDescendant<Descendant>::TracingEchoOnStreamsDescendant(services::MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy, services::Tracer& tracer, Args&&... args)
-        : Descendant(std::forward<Args>(args)..., serializerFactory, errorPolicy)
-        , helper(tracer)
+        : detail::TracingEchoOnStreamsDescendantHelperHolder(tracer)
+        , Descendant(std::forward<Args>(args)..., serializerFactory, errorPolicy)
     {}
 
     template<class Descendant>
