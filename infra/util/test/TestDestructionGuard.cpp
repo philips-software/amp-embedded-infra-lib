@@ -8,10 +8,19 @@ namespace
     {};
 }
 
-TEST(DestructionGuardTest, not_destructible)
+#ifdef EMIL_ENABLE_DESTRUCTION_GUARD
+TEST(DestructionGuardTest, not_destructible_when_not_allowed)
 {
     EXPECT_DEATH(Foo foo;, "");
 }
+#endif
+
+#ifndef EMIL_ENABLE_DESTRUCTION_GUARD
+TEST(DestructionGuardTest, always_destructible_when_not_enabled)
+{
+    Foo foo;
+}
+#endif
 
 TEST(DestructionGuardTest, destructible_when_allowed)
 {

@@ -10,7 +10,9 @@ namespace infra
     public:
         ~DestructionGuard()
         {
+#ifdef EMIL_ENABLE_DESTRUCTION_GUARD
             really_assert_with_msg(canSafelyDestruct, "Destruction not allowed");
+#endif
         }
 
         void MarkAsSafeToDeconstruct()

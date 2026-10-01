@@ -12,7 +12,7 @@ namespace infra
     public:
         SingleInstance()
         {
-            if (hasInstance.exchange(false, std::memory_order_acquire))
+            if (hasInstance.exchange(true, std::memory_order_acquire))
                 LOG_AND_ABORT("Only single instance allowed");
         }
 

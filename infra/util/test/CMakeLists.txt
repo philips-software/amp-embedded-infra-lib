@@ -73,3 +73,18 @@ if (EMIL_BUILD_WIN)
         TestNatvis.cpp
     )
 endif()
+
+add_executable(infra.util_test_destruction_guard)
+emil_build_for(infra.util_test_destruction_guard BOOL EMIL_BUILD_TESTS)
+emil_add_test(infra.util_test_destruction_guard)
+
+target_compile_definitions(infra.util_test_destruction_guard PRIVATE EMIL_ENABLE_DESTRUCTION_GUARD)
+
+target_link_libraries(infra.util_test_destruction_guard PUBLIC
+    gmock_main
+    infra.util
+)
+
+target_sources(infra.util_test_destruction_guard PRIVATE
+    TestDestructionGuard.cpp
+)
