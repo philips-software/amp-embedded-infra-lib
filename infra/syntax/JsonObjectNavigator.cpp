@@ -84,6 +84,11 @@ namespace infra
         return *member;
     }
 
+    std::optional<bool> JsonObjectNavigator::operator/(JsonOptionalBoolNavigatorToken token) const
+    {
+        return object.GetOptionalBoolean(token.name);
+    }
+
     JsonOptionalObjectNavigator::JsonOptionalObjectNavigator(infra::JsonObject& object)
         : navigator(std::in_place, object)
     {}

@@ -37,6 +37,16 @@ TEST(JsonObjectNavigatorTest, bool_navigator_token)
     EXPECT_TRUE(objectNavigator / infra::JsonBoolNavigatorToken{ "enabled" });
 }
 
+TEST(JsonObjectNavigatorTest, optional_bool_navigator_token_distinguishes_true_false_and_missing)
+{
+    infra::JsonObject object(R"({ "enabled" : true, "disabled" : false })");
+    infra::JsonObjectNavigator objectNavigator(object);
+
+    EXPECT_THAT(objectNavigator / infra::JsonOptionalBoolNavigatorToken{ "enabled" }, testing::Optional(true));
+    EXPECT_THAT(objectNavigator / infra::JsonOptionalBoolNavigatorToken{ "disabled" }, testing::Optional(false));
+    EXPECT_THAT(objectNavigator / infra::JsonOptionalBoolNavigatorToken{ "missing" }, testing::Eq(std::nullopt));
+}
+
 TEST(JsonObjectNavigatorTest, object_navigator_token)
 {
     infra::JsonObject object(R"({ "key" : "value", "enabled" : true, "subobject" : { "nested": true } })");

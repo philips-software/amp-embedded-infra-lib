@@ -54,6 +54,11 @@ namespace infra
         std::string name;
     };
 
+    struct JsonOptionalBoolNavigatorToken
+    {
+        std::string name;
+    };
+
     template<class Result>
     struct JsonTransformObjectNavigatorToken
     {
@@ -110,6 +115,7 @@ namespace infra
         std::optional<std::string> operator/(JsonOptionalStringNavigatorToken token) const;
         int32_t operator/(JsonIntegerNavigatorToken token) const;
         bool operator/(JsonBoolNavigatorToken token) const;
+        std::optional<bool> operator/(JsonOptionalBoolNavigatorToken token) const;
 
         template<class Result>
         Result operator/(JsonTransformObjectNavigatorToken<Result> token) const;
