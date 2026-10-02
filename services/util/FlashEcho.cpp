@@ -29,39 +29,48 @@ namespace services
 
     void FlashEcho::Read(uint32_t address, uint32_t size)
     {
-        PrepareFlashOperation([this, size]()
+        PrepareForFlashOperation([this, size]()
             {
                 flashResult.ReadDone(infra::Head(infra::MakeRange(buffer), size));
             });
-        flash.ReadBuffer(infra::Head(infra::MakeRange(buffer), size), address, onFlashOperationDone);
+        flash.ReadBuffer(infra::Head(infra::MakeRange(buffer), size), address, [this]()
+            {
+                FlashOperationDone();
+            });
     }
 
     void FlashEcho::Write(uint32_t address, infra::ConstByteRange contents)
     {
-        PrepareFlashOperation([this]()
+        PrepareForFlashOperation([this]()
             {
                 flashResult.WriteDone();
             });
-        flash.WriteBuffer(contents, address, onFlashOperationDone);
+        flash.WriteBuffer(contents, address, [this]()
+            {
+                FlashOperationDone();
+            });
     }
 
     void FlashEcho::EraseSectors(uint32_t sector, uint32_t numberOfSectors)
     {
-        PrepareFlashOperation([this]()
+        PrepareForFlashOperation([this]()
             {
                 flashResult.EraseSectorsDone();
             });
-        flash.EraseSectors(sector, sector + numberOfSectors, onFlashOperationDone);
+        flash.EraseSectors(sector, sector + numberOfSectors, [this]()
+            {
+                FlashOperationDone();
+            });
     }
 
-    void FlashEcho::PrepareFlashOperation(const infra::Function<void()>& sendResult)
+    void FlashEcho::PrepareForFlashOperation(const infra::Function<void()>& onFlashOperationDone)
     {
         really_assert(!busyWithFlash && !busyWithResponse);
         busyWithFlash = true;
-        this->sendResult = sendResult;
+        this->onFlashOperationDone = onFlashOperationDone;
     }
 
-    void FlashEcho::HandleCompletedFlashOperation()
+    void FlashEcho::FlashOperationDone()
     {
         busyWithFlash = false;
 
@@ -76,7 +85,7 @@ namespace services
             flashResult.RequestSend([this]()
                 {
                     busyWithResponse = false;
-                    sendResult();
+                    onFlashOperationDone();
                     MethodDone();
                 });
         }

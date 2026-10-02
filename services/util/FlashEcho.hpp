@@ -21,8 +21,8 @@ namespace services
         void EraseSectors(uint32_t sector, uint32_t numberOfSectors) override;
 
     private:
-        void PrepareFlashOperation(const infra::Function<void()>& sendResult);
-        void HandleCompletedFlashOperation();
+        void PrepareForFlashOperation(const infra::Function<void()>& onFlashOperationDone);
+        void FlashOperationDone();
 
     private:
         flash::FlashResultProxy flashResult;
@@ -32,12 +32,7 @@ namespace services
 
         bool busyWithFlash = false;
         bool busyWithResponse = false;
-        infra::Function<void()> sendResult;
-        const infra::Function<void()> onFlashOperationDone{ [this]()
-            {
-                HandleCompletedFlashOperation();
-            } };
-
+        infra::Function<void()> onFlashOperationDone;
         infra::AutoResetFunction<void()> onStopped;
     };
 
