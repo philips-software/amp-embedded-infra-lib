@@ -1,21 +1,21 @@
-#ifndef SERVICES_ECHO_POLICY_SYMMETRIC_KEY_HPP
-#define SERVICES_ECHO_POLICY_SYMMETRIC_KEY_HPP
+#ifndef SERVICES_SYNCHRONOUS_ECHO_POLICY_SYMMETRIC_KEY_HPP
+#define SERVICES_SYNCHRONOUS_ECHO_POLICY_SYMMETRIC_KEY_HPP
 
 #include "generated/echo/SesameSecurity.pb.hpp"
 #include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"
+#include "services/synchronous_util/SynchronousSesameSecured.hpp"
 #include "services/util/EchoOnSesame.hpp"
-#include "services/util/SesameSecured.hpp"
 
 namespace services
 {
-    class EchoPolicySymmetricKey
+    class SynchronousEchoPolicySymmetricKey
         : private EchoInitializationObserver
         , private EchoPolicy
         , private sesame_security::SymmetricKeyEstablishment
         , private sesame_security::SymmetricKeyEstablishmentProxy
     {
     public:
-        EchoPolicySymmetricKey(Echo& echo, EchoInitialization& echoInitialization, SesameSecured& secured, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        SynchronousEchoPolicySymmetricKey(Echo& echo, EchoInitialization& echoInitialization, SynchronousSesameSecured& secured, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
     private:
         // Implementation of EchoInitializationObserver
@@ -33,14 +33,14 @@ namespace services
         void ReQueueWaitingProxies();
 
     private:
-        SesameSecured& secured;
+        SynchronousSesameSecured& secured;
         hal::SynchronousRandomDataGenerator& randomDataGenerator;
 
         infra::Function<void(ServiceProxy& proxy)> onRequest;
 
         bool initializingSending = true;
         infra::IntrusiveList<ServiceProxy> waitingProxies;
-        std::optional<std::pair<SesameSecured::KeyType, SesameSecured::IvType>> nextKeyPair;
+        std::optional<std::pair<SynchronousSesameSecured::KeyType, SynchronousSesameSecured::IvType>> nextKeyPair;
     };
 }
 

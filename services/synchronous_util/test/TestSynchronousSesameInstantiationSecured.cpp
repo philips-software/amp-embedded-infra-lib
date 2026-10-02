@@ -1,9 +1,9 @@
 #include "infra/stream/StdVectorInputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
+#include "services/synchronous_util/SynchronousSesameInstantiationSecured.hpp"
+#include "services/synchronous_util/SynchronousSesameSecured.hpp"
 #include "services/util/SerialCommunicationLoopback.hpp"
-#include "services/util/SesameInstantiationSecured.hpp"
-#include "services/util/SesameSecured.hpp"
 #include "services/util/test_doubles/SesameMock.hpp"
 #include "gmock/gmock.h"
 
@@ -14,17 +14,17 @@ namespace
     {
     public:
         services::SerialCommunicationLoopback serial;
-        services::SesameSecured::KeyType keyA{ 1, 2 };
-        services::SesameSecured::KeyType keyB{ 3, 4 };
-        services::SesameSecured::IvType ivA{ 5, 6 };
-        services::SesameSecured::IvType ivB{ 7, 8 };
+        services::SynchronousSesameSecured::KeyType keyA{ 1, 2 };
+        services::SynchronousSesameSecured::KeyType keyB{ 3, 4 };
+        services::SynchronousSesameSecured::IvType ivA{ 5, 6 };
+        services::SynchronousSesameSecured::IvType ivB{ 7, 8 };
 
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<LeftSize> leftSerial{ serial.Server() };
-        main_::SesameSecured::WithMessageSize<LeftSize> leftSesame{ leftSerial, services::SesameSecured::KeyMaterial{ keyA, ivA, keyB, ivB } };
+        main_::SynchronousSesameSecured::WithMessageSize<LeftSize> leftSesame{ leftSerial, services::SynchronousSesameSecured::KeyMaterial{ keyA, ivA, keyB, ivB } };
         testing::StrictMock<services::SesameObserverMock> leftUpper{ leftSesame.secured };
 
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<RightSize> rightSerial{ serial.Client() };
-        main_::SesameSecured::WithMessageSize<RightSize> rightSesame{ rightSerial, services::SesameSecured::KeyMaterial{ keyB, ivB, keyA, ivA } };
+        main_::SynchronousSesameSecured::WithMessageSize<RightSize> rightSesame{ rightSerial, services::SynchronousSesameSecured::KeyMaterial{ keyB, ivB, keyA, ivA } };
         testing::StrictMock<services::SesameObserverMock> rightUpper{ rightSesame.secured };
     };
 }

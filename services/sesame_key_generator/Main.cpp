@@ -4,8 +4,8 @@
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "infra/stream/IoOutputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
-#include "services/util/EchoPolicyDiffieHellman.hpp"
-#include "services/util/SesameCryptoMbedTls.hpp"
+#include "services/synchronous_util/SynchronousEchoPolicyDiffieHellman.hpp"
+#include "services/synchronous_util/SynchronousSesameCryptoMbedTls.hpp"
 #include <fstream>
 #include <iostream>
 

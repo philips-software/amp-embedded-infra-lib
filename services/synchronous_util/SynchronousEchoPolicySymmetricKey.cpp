@@ -1,4 +1,4 @@
-#include "services/util/EchoPolicySymmetricKey.hpp"
+#include "services/synchronous_util/SynchronousEchoPolicySymmetricKey.hpp"
 
 namespace services
 {
@@ -14,7 +14,7 @@ namespace services
         }
     }
 
-    EchoPolicySymmetricKey::EchoPolicySymmetricKey(Echo& echo, EchoInitialization& echoInitialization, SesameSecured& secured, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    SynchronousEchoPolicySymmetricKey::SynchronousEchoPolicySymmetricKey(Echo& echo, EchoInitialization& echoInitialization, SynchronousSesameSecured& secured, hal::SynchronousRandomDataGenerator& randomDataGenerator)
         : EchoInitializationObserver(echoInitialization)
         , SymmetricKeyEstablishment(echo)
         , SymmetricKeyEstablishmentProxy(echo)
@@ -24,19 +24,19 @@ namespace services
         echo.SetPolicy(*this);
     }
 
-    void EchoPolicySymmetricKey::Reset()
+    void SynchronousEchoPolicySymmetricKey::Reset()
     {
         initializingSending = true;
     }
 
-    void EchoPolicySymmetricKey::Initialized()
+    void SynchronousEchoPolicySymmetricKey::Initialized()
     {
         initializingSending = true;
 
         SymmetricKeyEstablishmentProxy::RequestSend([this]()
             {
-                auto key = randomDataGenerator.GenerateRandomData<SesameSecured::KeyType>();
-                auto iv = randomDataGenerator.GenerateRandomData<SesameSecured::IvType>();
+                auto key = randomDataGenerator.GenerateRandomData<SynchronousSesameSecured::KeyType>();
+                auto iv = randomDataGenerator.GenerateRandomData<SynchronousSesameSecured::IvType>();
                 SymmetricKeyEstablishmentProxy::ActivateNewKeyMaterial(infra::MakeRange(key), infra::MakeRange(iv));
                 nextKeyPair = { key, iv };
 
@@ -45,7 +45,7 @@ namespace services
             });
     }
 
-    void EchoPolicySymmetricKey::RequestSend(ServiceProxy& serviceProxy, const infra::Function<void(ServiceProxy& proxy)>& onRequest)
+    void SynchronousEchoPolicySymmetricKey::RequestSend(ServiceProxy& serviceProxy, const infra::Function<void(ServiceProxy& proxy)>& onRequest)
     {
         this->onRequest = onRequest;
 
@@ -55,7 +55,7 @@ namespace services
             onRequest(serviceProxy);
     }
 
-    void EchoPolicySymmetricKey::GrantingSend(ServiceProxy& proxy)
+    void SynchronousEchoPolicySymmetricKey::GrantingSend(ServiceProxy& proxy)
     {
         if (nextKeyPair && &proxy != this)
         {
@@ -64,13 +64,13 @@ namespace services
         }
     }
 
-    void EchoPolicySymmetricKey::ActivateNewKeyMaterial(infra::ConstByteRange key, infra::ConstByteRange iv)
+    void SynchronousEchoPolicySymmetricKey::ActivateNewKeyMaterial(infra::ConstByteRange key, infra::ConstByteRange iv)
     {
         secured.SetReceiveKey(Convert<16>(key), Convert<12>(iv));
         MethodDone();
     }
 
-    void EchoPolicySymmetricKey::ReQueueWaitingProxies()
+    void SynchronousEchoPolicySymmetricKey::ReQueueWaitingProxies()
     {
         while (!waitingProxies.empty())
         {

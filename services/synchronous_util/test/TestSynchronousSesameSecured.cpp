@@ -1,14 +1,14 @@
 #include "infra/stream/StdVectorInputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
-#include "services/util/SesameSecured.hpp"
+#include "services/synchronous_util/SynchronousSesameSecured.hpp"
 #include "services/util/test_doubles/SesameMock.hpp"
 #include "gmock/gmock.h"
 
 namespace
 {
-    class AesGcmEncryptionMock
-        : public services::AesGcmEncryption
+    class SynchronousAesGcmEncryptionMock
+        : public services::SynchronousAesGcmEncryption
     {
     public:
         MOCK_METHOD(void, EncryptWithKey, (infra::ConstByteRange key), (override));
@@ -81,11 +81,11 @@ public:
         sentData.clear();
     }
 
-    services::SesameSecured::KeyType key{ 1, 2 };
-    services::SesameSecured::IvType iv{ 1, 3 };
+    services::SynchronousSesameSecured::KeyType key{ 1, 2 };
+    services::SynchronousSesameSecured::IvType iv{ 1, 3 };
 
     testing::StrictMock<services::SesameMock> lower;
-    services::SesameSecured::WithCryptoMbedTls::WithBuffers<64> secured{ lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
+    services::SynchronousSesameSecured::WithCryptoMbedTls::WithBuffers<64> secured{ lower, services::SynchronousSesameSecured::KeyMaterial{ key, iv, key, iv } };
     testing::StrictMock<services::SesameObserverMock> upper{ secured };
     testing::StrictMock<services::IntegrityObserverMock> integrityObserver{ secured };
 
@@ -143,8 +143,8 @@ TEST_F(SesameSecuredTest, key_change_to_different_key_results_in_different_encry
     auto first = sentData;
     Receive("abcd");
 
-    services::SesameSecured::KeyType key2{ 1, 2, 1 };
-    services::SesameSecured::IvType iv2{ 1, 3, 1 };
+    services::SynchronousSesameSecured::KeyType key2{ 1, 2, 1 };
+    services::SynchronousSesameSecured::IvType iv2{ 1, 3, 1 };
     secured.SetSendKey(key2, iv2);
 
     Send("abcd");
@@ -159,8 +159,8 @@ TEST_F(SesameSecuredTest, initialization_results_in_default_keys)
     auto first = sentData;
     Receive("abcd");
 
-    services::SesameSecured::KeyType key2{ 1, 2, 1 };
-    services::SesameSecured::IvType iv2{ 1, 3, 1 };
+    services::SynchronousSesameSecured::KeyType key2{ 1, 2, 1 };
+    services::SynchronousSesameSecured::IvType iv2{ 1, 3, 1 };
     secured.SetSendKey(key2, iv2);
 
     EXPECT_CALL(upper, Initialized());
@@ -251,21 +251,21 @@ class SesameSecuredStandaloneTest
 
 TEST_F(SesameSecuredStandaloneTest, received_message_includes_non_zero_finish_output)
 {
-    services::SesameSecured::KeyType key{};
-    services::SesameSecured::IvType iv{};
+    services::SynchronousSesameSecured::KeyType key{};
+    services::SynchronousSesameSecured::IvType iv{};
     std::array<uint8_t, 5> encryptedPayload{ 'a', 'b', 'q', 'r', 's' };
     std::array<uint8_t, 3> finishOutput{ 'x', 'y', 'z' };
-    std::array<uint8_t, services::SesameSecured::blockSize> computedMac{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+    std::array<uint8_t, services::SynchronousSesameSecured::blockSize> computedMac{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 
     testing::StrictMock<services::SesameMock> lower;
-    testing::StrictMock<AesGcmEncryptionMock> sendEncryption;
-    testing::StrictMock<AesGcmEncryptionMock> receiveEncryption;
+    testing::StrictMock<SynchronousAesGcmEncryptionMock> sendEncryption;
+    testing::StrictMock<SynchronousAesGcmEncryptionMock> receiveEncryption;
     infra::BoundedVector<uint8_t>::WithMaxSize<64> sendBuffer;
     infra::BoundedVector<uint8_t>::WithMaxSize<64> receiveBuffer;
 
     EXPECT_CALL(sendEncryption, EncryptWithKey(testing::_));
     EXPECT_CALL(receiveEncryption, DecryptWithKey(testing::_));
-    services::SesameSecured secured(sendEncryption, receiveEncryption, sendBuffer, receiveBuffer, lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv });
+    services::SynchronousSesameSecured secured(sendEncryption, receiveEncryption, sendBuffer, receiveBuffer, lower, services::SynchronousSesameSecured::KeyMaterial{ key, iv, key, iv });
     testing::StrictMock<services::SesameObserverMock> upper{ secured };
 
     EXPECT_CALL(receiveEncryption, Start(testing::_));

@@ -1,38 +1,38 @@
-#ifndef SERVICES_SESAME_CRYPTO_HPP
-#define SERVICES_SESAME_CRYPTO_HPP
+#ifndef SERVICES_SYNCHRONOUS_SESAME_CRYPTO_HPP
+#define SERVICES_SYNCHRONOUS_SESAME_CRYPTO_HPP
 
 #include "hal/synchronous_interfaces/SynchronousRandomDataGenerator.hpp"
 #include "infra/util/BoundedString.hpp"
 
 namespace services
 {
-    class EcSecP256r1DiffieHellman
+    class SynchronousEcSecP256r1DiffieHellman
     {
     public:
-        EcSecP256r1DiffieHellman() = default;
-        EcSecP256r1DiffieHellman(const EcSecP256r1DiffieHellman& other) = delete;
-        EcSecP256r1DiffieHellman& operator=(const EcSecP256r1DiffieHellman& other) = delete;
+        SynchronousEcSecP256r1DiffieHellman() = default;
+        SynchronousEcSecP256r1DiffieHellman(const SynchronousEcSecP256r1DiffieHellman& other) = delete;
+        SynchronousEcSecP256r1DiffieHellman& operator=(const SynchronousEcSecP256r1DiffieHellman& other) = delete;
 
         virtual std::array<uint8_t, 65> PublicKey() const = 0;
         virtual std::array<uint8_t, 32> SharedSecret(infra::ConstByteRange otherPublicKey) const = 0;
     };
 
-    class EcSecP256r1DsaSigner
+    class SynchronousEcSecP256r1DsaSigner
     {
     public:
-        EcSecP256r1DsaSigner() = default;
-        EcSecP256r1DsaSigner(const EcSecP256r1DsaSigner& other) = delete;
-        EcSecP256r1DsaSigner& operator=(const EcSecP256r1DsaSigner& other) = delete;
+        SynchronousEcSecP256r1DsaSigner() = default;
+        SynchronousEcSecP256r1DsaSigner(const SynchronousEcSecP256r1DsaSigner& other) = delete;
+        SynchronousEcSecP256r1DsaSigner& operator=(const SynchronousEcSecP256r1DsaSigner& other) = delete;
 
         virtual std::pair<std::array<uint8_t, 32>, std::array<uint8_t, 32>> Sign(infra::ConstByteRange data) const = 0;
     };
 
-    class EcSecP256r1DsaVerifier
+    class SynchronousEcSecP256r1DsaVerifier
     {
     public:
-        EcSecP256r1DsaVerifier() = default;
-        EcSecP256r1DsaVerifier(const EcSecP256r1DsaVerifier& other) = delete;
-        EcSecP256r1DsaVerifier& operator=(const EcSecP256r1DsaVerifier& other) = delete;
+        SynchronousEcSecP256r1DsaVerifier() = default;
+        SynchronousEcSecP256r1DsaVerifier(const SynchronousEcSecP256r1DsaVerifier& other) = delete;
+        SynchronousEcSecP256r1DsaVerifier& operator=(const SynchronousEcSecP256r1DsaVerifier& other) = delete;
 
         virtual bool Verify(infra::ConstByteRange data, infra::ConstByteRange r, infra::ConstByteRange s) const = 0;
     };
@@ -47,12 +47,12 @@ namespace services
         virtual void Expand(infra::ConstByteRange seed, infra::ByteRange expandedMaterial) const = 0;
     };
 
-    class AesGcmEncryption
+    class SynchronousAesGcmEncryption
     {
     public:
-        AesGcmEncryption() = default;
-        AesGcmEncryption(const AesGcmEncryption& other) = delete;
-        AesGcmEncryption& operator=(const AesGcmEncryption& other) = delete;
+        SynchronousAesGcmEncryption() = default;
+        SynchronousAesGcmEncryption(const SynchronousAesGcmEncryption& other) = delete;
+        SynchronousAesGcmEncryption& operator=(const SynchronousAesGcmEncryption& other) = delete;
 
         virtual void EncryptWithKey(infra::ConstByteRange key) = 0;
         virtual void DecryptWithKey(infra::ConstByteRange key) = 0;

@@ -15,6 +15,7 @@ if (EMIL_HOST_BUILD AND EMIL_INCLUDE_MBEDTLS)
         protobuf.protoc_echo_plugin_lib
         protobuf.echo
         services.network_instantiations
+        services.synchronous_sesame
         services.util
     )
 

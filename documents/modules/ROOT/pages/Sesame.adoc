@@ -295,16 +295,16 @@ The classes implementing the protocol layers are:
 
 1. SesameCobs (services/util/SesameCobs.hpp)
 2. SesameWindowed (services/util/SesameWindowed.hpp)
-3. SesameSecured (services/utilSesameSecured.hpp)
+3. SynchronousSesameSecured (services/synchronous_util/SynchronousSesameSecured.hpp)
 
 EchoOnSesame (services/util/EchoOnSesame.hpp) places ECHO on top of SESAME without security;
 main_::EchoOnSesame<max packet size> (services/util/EchoInstantiation) instantiates EchoOnSesame,
 SesameCobs and SesameWindowed to form a full ECHO on SESAME stack on top of a UART.
 
-EchoPolicySymmetricKey (services/util/EchoPolicySymmetricKey.hpp) adds a policy to implement the
+SynchronousEchoPolicySymmetricKey (services/synchronous_util/SynchronousEchoPolicySymmetricKey.hpp) adds a policy to implement the
 Hardcoded Keys scheme on top of SESAME with security.
 
-EchoPolicyDiffieHellman (services/util/EchoPolicyDiffieHellman.hpp) adds a policy to implement the
+SynchronousEchoPolicyDiffieHellman (services/synchronous_util/SynchronousEchoPolicyDiffieHellman.hpp) adds a policy to implement the
 Diffie-Hellman scheme on top of SESAME with security. This class is instantiated with
 one root certificate which is used to verify one certificate received by a peer.
 

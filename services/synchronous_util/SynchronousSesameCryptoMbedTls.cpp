@@ -1,4 +1,4 @@
-#include "services/util/SesameCryptoMbedTls.hpp"
+#include "services/synchronous_util/SynchronousSesameCryptoMbedTls.hpp"
 #include "infra/util/ReallyAssert.hpp"
 #include "mbedtls/ecdsa.h"
 #include "mbedtls/hmac_drbg.h"
@@ -28,7 +28,7 @@ namespace services
         }
     }
 
-    EcSecP256r1DiffieHellmanMbedTls::EcSecP256r1DiffieHellmanMbedTls(hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    SynchronousEcSecP256r1DiffieHellmanMbedTls::SynchronousEcSecP256r1DiffieHellmanMbedTls(hal::SynchronousRandomDataGenerator& randomDataGenerator)
         : randomDataGenerator(randomDataGenerator)
     {
         mbedtls_ecp_group_init(&group);
@@ -40,18 +40,18 @@ namespace services
         really_assert(mbedtls_ecdh_gen_public(&group, &privateKey, &publicKey, &MbedTlsRandomDataGeneratorWrapper, &randomDataGenerator) == 0);
     }
 
-    EcSecP256r1DiffieHellmanMbedTls::~EcSecP256r1DiffieHellmanMbedTls()
+    SynchronousEcSecP256r1DiffieHellmanMbedTls::~SynchronousEcSecP256r1DiffieHellmanMbedTls()
     {
         mbedtls_ecp_point_free(&publicKey);
         mbedtls_mpi_free(&privateKey);
     }
 
-    std::array<uint8_t, 65> EcSecP256r1DiffieHellmanMbedTls::PublicKey() const
+    std::array<uint8_t, 65> SynchronousEcSecP256r1DiffieHellmanMbedTls::PublicKey() const
     {
         return ConvertToBytes<65>(group, publicKey);
     }
 
-    std::array<uint8_t, 32> EcSecP256r1DiffieHellmanMbedTls::SharedSecret(infra::ConstByteRange otherPublicKey) const
+    std::array<uint8_t, 32> SynchronousEcSecP256r1DiffieHellmanMbedTls::SharedSecret(infra::ConstByteRange otherPublicKey) const
     {
         mbedtls_mpi z;
         mbedtls_mpi_init(&z);
@@ -70,7 +70,7 @@ namespace services
         return sharedSecret;
     }
 
-    EcSecP256r1DsaSignerMbedTls::EcSecP256r1DsaSignerMbedTls(infra::ConstByteRange dsaCertificatePrivateKey, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    SynchronousEcSecP256r1DsaSignerMbedTls::SynchronousEcSecP256r1DsaSignerMbedTls(infra::ConstByteRange dsaCertificatePrivateKey, hal::SynchronousRandomDataGenerator& randomDataGenerator)
         : randomDataGenerator(randomDataGenerator)
     {
         mbedtls_ecp_group_init(&group);
@@ -91,14 +91,14 @@ namespace services
         mbedtls_ecp_point_free(&dsaPublicKey);
     }
 
-    EcSecP256r1DsaSignerMbedTls::~EcSecP256r1DsaSignerMbedTls()
+    SynchronousEcSecP256r1DsaSignerMbedTls::~SynchronousEcSecP256r1DsaSignerMbedTls()
     {
         mbedtls_mpi_free(&privateKey);
         mbedtls_ecdh_free(&context);
         mbedtls_ecp_group_free(&group);
     }
 
-    std::pair<std::array<uint8_t, 32>, std::array<uint8_t, 32>> EcSecP256r1DsaSignerMbedTls::Sign(infra::ConstByteRange data) const
+    std::pair<std::array<uint8_t, 32>, std::array<uint8_t, 32>> SynchronousEcSecP256r1DsaSignerMbedTls::Sign(infra::ConstByteRange data) const
     {
         std::array<uint8_t, 32> hash;
 
@@ -121,7 +121,7 @@ namespace services
         return { encodedR, encodedS };
     }
 
-    EcSecP256r1DsaVerifierMbedTls::EcSecP256r1DsaVerifierMbedTls(infra::ConstByteRange dsaPublicKey)
+    SynchronousEcSecP256r1DsaVerifierMbedTls::SynchronousEcSecP256r1DsaVerifierMbedTls(infra::ConstByteRange dsaPublicKey)
         : valid(true) // No verification of root certificate is performed when directly given a public key
     {
         mbedtls_ecp_group_init(&group);
@@ -144,7 +144,7 @@ namespace services
         mbedtls_ecp_group_free(&unusedGroup);
     }
 
-    EcSecP256r1DsaVerifierMbedTls::EcSecP256r1DsaVerifierMbedTls(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)
+    SynchronousEcSecP256r1DsaVerifierMbedTls::SynchronousEcSecP256r1DsaVerifierMbedTls(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)
     {
         mbedtls_x509_crt rootCertificate;
         mbedtls_x509_crt_init(&rootCertificate);
@@ -181,13 +181,13 @@ namespace services
         mbedtls_x509_crt_free(&rootCertificate);
     }
 
-    EcSecP256r1DsaVerifierMbedTls::~EcSecP256r1DsaVerifierMbedTls()
+    SynchronousEcSecP256r1DsaVerifierMbedTls::~SynchronousEcSecP256r1DsaVerifierMbedTls()
     {
         mbedtls_ecp_point_free(&publicKey);
         mbedtls_ecp_group_free(&group);
     }
 
-    bool EcSecP256r1DsaVerifierMbedTls::Verify(infra::ConstByteRange data, infra::ConstByteRange signatureR, infra::ConstByteRange signatureS) const
+    bool SynchronousEcSecP256r1DsaVerifierMbedTls::Verify(infra::ConstByteRange data, infra::ConstByteRange signatureR, infra::ConstByteRange signatureS) const
     {
         if (!valid)
             return false;
@@ -224,41 +224,41 @@ namespace services
         mbedtls_hmac_drbg_free(&context);
     }
 
-    AesGcmEncryptionMbedTls::AesGcmEncryptionMbedTls()
+    SynchronousAesGcmEncryptionMbedTls::SynchronousAesGcmEncryptionMbedTls()
     {
         mbedtls_gcm_init(&context);
     }
 
-    AesGcmEncryptionMbedTls::~AesGcmEncryptionMbedTls()
+    SynchronousAesGcmEncryptionMbedTls::~SynchronousAesGcmEncryptionMbedTls()
     {
         mbedtls_gcm_free(&context);
     }
 
-    void AesGcmEncryptionMbedTls::EncryptWithKey(infra::ConstByteRange key)
+    void SynchronousAesGcmEncryptionMbedTls::EncryptWithKey(infra::ConstByteRange key)
     {
         encrypt = true;
         mbedtls_gcm_setkey(&context, MBEDTLS_CIPHER_ID_AES, key.begin(), key.size() * 8); //NOSONAR
     }
 
-    void AesGcmEncryptionMbedTls::DecryptWithKey(infra::ConstByteRange key)
+    void SynchronousAesGcmEncryptionMbedTls::DecryptWithKey(infra::ConstByteRange key)
     {
         encrypt = false;
         mbedtls_gcm_setkey(&context, MBEDTLS_CIPHER_ID_AES, key.begin(), key.size() * 8); //NOSONAR
     }
 
-    void AesGcmEncryptionMbedTls::Start(infra::ConstByteRange iv)
+    void SynchronousAesGcmEncryptionMbedTls::Start(infra::ConstByteRange iv)
     {
         really_assert(mbedtls_gcm_starts(&context, encrypt ? MBEDTLS_GCM_ENCRYPT : MBEDTLS_GCM_DECRYPT, iv.begin(), iv.size()) == 0);
     }
 
-    std::size_t AesGcmEncryptionMbedTls::Update(infra::ConstByteRange from, infra::ByteRange to)
+    std::size_t SynchronousAesGcmEncryptionMbedTls::Update(infra::ConstByteRange from, infra::ByteRange to)
     {
         std::size_t processedSize = 0;
         really_assert(mbedtls_gcm_update(&context, from.begin(), from.size(), to.begin(), to.size(), &processedSize) == 0);
         return processedSize;
     }
 
-    std::size_t AesGcmEncryptionMbedTls::Finish(infra::ByteRange to, infra::ByteRange mac)
+    std::size_t SynchronousAesGcmEncryptionMbedTls::Finish(infra::ByteRange to, infra::ByteRange mac)
     {
         std::size_t processedSize = 0;
         really_assert(mbedtls_gcm_finish(&context, to.begin(), to.size(), &processedSize, mac.begin(), mac.size()) == 0);

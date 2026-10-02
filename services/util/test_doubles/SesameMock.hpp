@@ -1,8 +1,8 @@
 #ifndef SERVICES_MESSAGE_COMMUNICATION_MOCK_HPP
 #define SERVICES_MESSAGE_COMMUNICATION_MOCK_HPP
 
+#include "services/synchronous_util/SynchronousSesameSecured.hpp"
 #include "services/util/Sesame.hpp"
-#include "services/util/SesameSecured.hpp"
 #include "gmock/gmock.h"
 
 namespace services

@@ -9,17 +9,17 @@
 #include "protobuf/echo/test_doubles/EchoMock.hpp"
 #include "protobuf/echo/test_doubles/ServiceStub.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
-#include "services/util/EchoPolicyDiffieHellman.hpp"
+#include "services/synchronous_util/SynchronousEchoPolicyDiffieHellman.hpp"
 #include "services/util/MbedTlsRandomDataGeneratorWrapper.hpp"
 #include "services/util/test_doubles/SesameMock.hpp"
 
 namespace
 {
     class EchoPolicyDiffieHellmanWithCryptoMbedTlsMock
-        : public services::EchoPolicyDiffieHellman::WithCryptoMbedTls
+        : public services::SynchronousEchoPolicyDiffieHellman::WithCryptoMbedTls
     {
     public:
-        using services::EchoPolicyDiffieHellman::WithCryptoMbedTls::WithCryptoMbedTls;
+        using services::SynchronousEchoPolicyDiffieHellman::WithCryptoMbedTls::WithCryptoMbedTls;
 
         MOCK_METHOD(void, KeyExchangeSuccessful, (), (override));
         MOCK_METHOD(void, KeyExchangeFailed, (), (override));
@@ -106,10 +106,10 @@ public:
     testing::StrictMock<services::SesameMock> lowerRight;
     bool lowerLeftRequest = false;
     bool lowerRightRequest = false;
-    services::SesameSecured::KeyType key{ 1, 2 };
-    services::SesameSecured::IvType iv{ 1, 3 };
-    services::SesameSecured::WithCryptoMbedTls::WithBuffers<100> securedLeft{ lowerLeft, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
-    services::SesameSecured::WithCryptoMbedTls::WithBuffers<100> securedRight{ lowerRight, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
+    services::SynchronousSesameSecured::KeyType key{ 1, 2 };
+    services::SynchronousSesameSecured::IvType iv{ 1, 3 };
+    services::SynchronousSesameSecured::WithCryptoMbedTls::WithBuffers<100> securedLeft{ lowerLeft, services::SynchronousSesameSecured::KeyMaterial{ key, iv, key, iv } };
+    services::SynchronousSesameSecured::WithCryptoMbedTls::WithBuffers<100> securedRight{ lowerRight, services::SynchronousSesameSecured::KeyMaterial{ key, iv, key, iv } };
 
     services::CertificateAndPrivateKey rootCaCertificateMaterial{ services::GenerateRootCertificate(randomDataGenerator) };
     services::EcSecP256r1PrivateKey rootCaPrivateKey{ randomDataGenerator };
@@ -133,7 +133,7 @@ public:
     infra::BoundedVector<uint8_t>::WithMaxSize<512> certificateRightDer{ certificateRight.Der() };
 
     services::EchoOnSesame echoOnSesameLeft{ securedLeft, serializerFactoryLeft, errorPolicy };
-    testing::StrictMock<EchoPolicyDiffieHellmanWithCryptoMbedTlsMock> echoPolicyLeft{ echoOnSesameLeft, echoOnSesameLeft, securedLeft, services::EchoPolicyDiffieHellman::KeyMaterial{ infra::MakeRange(certificateLeftDer), infra::MakeRange(privateKeyLeftDer), infra::MakeRange(rootCaCertificateDer) }, randomDataGenerator };
+    testing::StrictMock<EchoPolicyDiffieHellmanWithCryptoMbedTlsMock> echoPolicyLeft{ echoOnSesameLeft, echoOnSesameLeft, securedLeft, services::SynchronousEchoPolicyDiffieHellman::KeyMaterial{ infra::MakeRange(certificateLeftDer), infra::MakeRange(privateKeyLeftDer), infra::MakeRange(rootCaCertificateDer) }, randomDataGenerator };
 };
 
 class EchoPolicyDiffieHellmanTest
@@ -146,7 +146,7 @@ public:
     }
 
     services::EchoOnSesame echoOnSesameRight{ securedRight, serializerFactoryRight, errorPolicy };
-    testing::StrictMock<EchoPolicyDiffieHellmanWithCryptoMbedTlsMock> echoPolicyRight{ echoOnSesameRight, echoOnSesameRight, securedRight, services::EchoPolicyDiffieHellman::KeyMaterial{ infra::MakeRange(certificateRightDer), infra::MakeRange(privateKeyRightDer), infra::MakeRange(rootCaCertificateDer) }, randomDataGenerator };
+    testing::StrictMock<EchoPolicyDiffieHellmanWithCryptoMbedTlsMock> echoPolicyRight{ echoOnSesameRight, echoOnSesameRight, securedRight, services::SynchronousEchoPolicyDiffieHellman::KeyMaterial{ infra::MakeRange(certificateRightDer), infra::MakeRange(privateKeyRightDer), infra::MakeRange(rootCaCertificateDer) }, randomDataGenerator };
 
     services::ServiceStubProxy serviceProxy{ echoOnSesameLeft };
     testing::StrictMock<services::ServiceStub> service{ echoOnSesameRight };
@@ -219,8 +219,8 @@ public:
     testing::StrictMock<DiffieHellmanKeyEstablishmentMock> keyEstablishment{ echoPolicyRight };
     sesame_security::DiffieHellmanKeyEstablishmentProxy proxy{ echoPolicyRight };
 
-    services::EcSecP256r1DiffieHellmanMbedTls keyExchange{ randomDataGenerator };
-    services::EcSecP256r1DsaSignerMbedTls signer{ privateKeyRightDer, randomDataGenerator };
+    services::SynchronousEcSecP256r1DiffieHellmanMbedTls keyExchange{ randomDataGenerator };
+    services::SynchronousEcSecP256r1DsaSignerMbedTls signer{ privateKeyRightDer, randomDataGenerator };
 };
 
 TEST_F(EchoPolicyDiffieHellmanAdversaryTest, successful_manual_implementation)

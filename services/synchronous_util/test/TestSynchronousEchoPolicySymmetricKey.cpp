@@ -6,7 +6,7 @@
 #include "protobuf/echo/test_doubles/EchoMock.hpp"
 #include "protobuf/echo/test_doubles/ServiceStub.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
-#include "services/util/EchoPolicySymmetricKey.hpp"
+#include "services/synchronous_util/SynchronousEchoPolicySymmetricKey.hpp"
 #include "services/util/test_doubles/SesameMock.hpp"
 #include <numeric>
 
@@ -33,7 +33,7 @@ public:
         lower.GetObserver().Initialized();
     }
 
-    void ExpectGenerationOfKeyMaterial(const services::SesameSecured::KeyType& key, const services::SesameSecured::IvType& iv)
+    void ExpectGenerationOfKeyMaterial(const services::SynchronousSesameSecured::KeyType& key, const services::SynchronousSesameSecured::IvType& iv)
     {
         // clang-format off
         EXPECT_CALL(randomDataGenerator, GenerateRandomData(testing::_)).WillOnce(testing::Invoke([this, key](infra::ByteRange range)
@@ -69,9 +69,9 @@ public:
             ExpectGenerationOfKeyMaterial({ 1, 2 }, { 3, 4 });
         } };
     sesame_security::SymmetricKeyFile keys{ services::GenerateSymmetricKeys(randomDataGenerator) };
-    services::SesameSecured::WithCryptoMbedTls::WithBuffers<64> secured{ lower, keys };
+    services::SynchronousSesameSecured::WithCryptoMbedTls::WithBuffers<64> secured{ lower, keys };
     services::EchoOnSesame echo{ secured, serializerFactory, errorPolicy };
-    services::EchoPolicySymmetricKey policy{ echo, echo, secured, randomDataGenerator };
+    services::SynchronousEchoPolicySymmetricKey policy{ echo, echo, secured, randomDataGenerator };
 
     services::ServiceStubProxy serviceProxy{ echo };
     testing::StrictMock<services::ServiceStub> service{ echo };

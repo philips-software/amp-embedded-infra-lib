@@ -1,4 +1,4 @@
-#include "services/util/SesameSecured.hpp"
+#include "services/synchronous_util/SynchronousSesameSecured.hpp"
 #include "infra/util/ReallyAssert.hpp"
 #include <algorithm>
 
@@ -30,9 +30,9 @@ namespace services
         return { keys.sendByOther, keys.sendBySelf };
     }
 
-    SesameSecured::KeyMaterial ConvertKeyMaterial(const sesame_security::SymmetricKeyFile& keyMaterial)
+    SynchronousSesameSecured::KeyMaterial ConvertKeyMaterial(const sesame_security::SymmetricKeyFile& keyMaterial)
     {
-        SesameSecured::KeyMaterial result;
+        SynchronousSesameSecured::KeyMaterial result;
 
         infra::Copy(infra::MakeRange(keyMaterial.sendBySelf.key), infra::MakeRange(result.sendKey));
         infra::Copy(infra::MakeRange(keyMaterial.sendBySelf.iv), infra::MakeRange(result.sendIv));
@@ -42,7 +42,7 @@ namespace services
         return result;
     }
 
-    SesameSecured::SesameSecured(AesGcmEncryption& sendEncryption, AesGcmEncryption& receiveEncryption, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate,
+    SynchronousSesameSecured::SynchronousSesameSecured(SynchronousAesGcmEncryption& sendEncryption, SynchronousAesGcmEncryption& receiveEncryption, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate,
         const KeyMaterial& keyMaterial)
         : SesameObserver(delegate)
         , sendEncryption(sendEncryption)
@@ -58,23 +58,23 @@ namespace services
         SetReceiveKey(initialReceiveKey, initialReceiveIv);
     }
 
-    SesameSecured::SesameSecured(AesGcmEncryption& sendEncryption, AesGcmEncryption& receiveEncryption, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial)
-        : SesameSecured(sendEncryption, receiveEncryption, sendBuffer, receiveBuffer, delegate, ConvertKeyMaterial(keyMaterial))
+    SynchronousSesameSecured::SynchronousSesameSecured(SynchronousAesGcmEncryption& sendEncryption, SynchronousAesGcmEncryption& receiveEncryption, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial)
+        : SynchronousSesameSecured(sendEncryption, receiveEncryption, sendBuffer, receiveBuffer, delegate, ConvertKeyMaterial(keyMaterial))
     {}
 
-    void SesameSecured::SetSendKey(const KeyType& newSendKey, const IvType& newSendIv)
+    void SynchronousSesameSecured::SetSendKey(const KeyType& newSendKey, const IvType& newSendIv)
     {
         sendEncryption.EncryptWithKey(newSendKey);
         sendIv = newSendIv;
     }
 
-    void SesameSecured::SetReceiveKey(const KeyType& newReceiveKey, const IvType& newReceiveIv)
+    void SynchronousSesameSecured::SetReceiveKey(const KeyType& newReceiveKey, const IvType& newReceiveIv)
     {
         receiveEncryption.DecryptWithKey(newReceiveKey);
         receiveIv = newReceiveIv;
     }
 
-    void SesameSecured::Initialized()
+    void SynchronousSesameSecured::Initialized()
     {
         integrityCheckFailed = false;
         integrityCheckFailedTimer.Cancel();
@@ -83,35 +83,35 @@ namespace services
         GetObserver().Initialized();
     }
 
-    void SesameSecured::RequestSendMessage(std::size_t size)
+    void SynchronousSesameSecured::RequestSendMessage(std::size_t size)
     {
         really_assert(size <= MaxSendMessageSize());
         requestedSendSize = size;
         SesameObserver::Subject().RequestSendMessage(size + blockSize);
     }
 
-    std::size_t SesameSecured::MaxSendMessageSize() const
+    std::size_t SynchronousSesameSecured::MaxSendMessageSize() const
     {
         return std::min(SesameObserver::Subject().MaxSendMessageSize(), sendBuffer.max_size()) - blockSize;
     }
 
-    void SesameSecured::Reset()
+    void SynchronousSesameSecured::Reset()
     {
         SesameObserver::Subject().Reset();
     }
 
-    void SesameSecured::ResetReading()
+    void SynchronousSesameSecured::ResetReading()
     {
         SesameObserver::Subject().ResetReading();
     }
 
-    void SesameSecured::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+    void SynchronousSesameSecured::SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
         sendWriter = std::move(writer);
         GetObserver().SendMessageStreamAvailable(sendBufferWriter.Emplace(std::in_place, sendBuffer, requestedSendSize));
     }
 
-    void SesameSecured::ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+    void SynchronousSesameSecured::ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
     {
         if (integrityCheckFailed)
         {
@@ -174,7 +174,7 @@ namespace services
         Sesame::GetObserver().ReceivedMessage(receiveBufferReader.Emplace(receiveBuffer, reader));
     }
 
-    void SesameSecured::SendMessageStreamReleased()
+    void SynchronousSesameSecured::SendMessageStreamReleased()
     {
         sendEncryption.Start(sendIv);
         auto processedSize = sendEncryption.Update(infra::MakeRange(sendBuffer), infra::MakeRange(sendBuffer));
@@ -189,14 +189,14 @@ namespace services
         sendWriter = nullptr;
     }
 
-    void SesameSecured::IncreaseIv(infra::ByteRange iv) const
+    void SynchronousSesameSecured::IncreaseIv(infra::ByteRange iv) const
     {
         for (auto i = iv.begin() + iv.size(); i != iv.begin(); --i)
             if (++*std::prev(i) != 0)
                 break;
     }
 
-    void SesameSecured::ReportIntegrityCheckFailed()
+    void SynchronousSesameSecured::ReportIntegrityCheckFailed()
     {
         IntegritySubject::NotifyObservers([](auto& observer)
             {
@@ -204,18 +204,18 @@ namespace services
             });
     }
 
-    SesameSecured::ReceiveBufferReader::ReceiveBufferReader(const infra::BoundedVector<uint8_t>& buffer, const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader)
+    SynchronousSesameSecured::ReceiveBufferReader::ReceiveBufferReader(const infra::BoundedVector<uint8_t>& buffer, const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader)
         : infra::BoundedVectorInputStreamReader(buffer)
         , reader(reader)
     {}
 
 #ifdef EMIL_USE_MBEDTLS
-    SesameSecured::WithCryptoMbedTls::WithCryptoMbedTls(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const KeyMaterial& keyMaterial)
-        : SesameSecured(detail::SesameSecuredMbedTlsEncryptors::sendEncryption, detail::SesameSecuredMbedTlsEncryptors::receiveEncryption, sendBuffer, receiveBuffer, delegate, keyMaterial)
+    SynchronousSesameSecured::WithCryptoMbedTls::WithCryptoMbedTls(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const KeyMaterial& keyMaterial)
+        : SynchronousSesameSecured(detail::SynchronousSesameSecuredMbedTlsEncryptors::sendEncryption, detail::SynchronousSesameSecuredMbedTlsEncryptors::receiveEncryption, sendBuffer, receiveBuffer, delegate, keyMaterial)
     {}
 
-    SesameSecured::WithCryptoMbedTls::WithCryptoMbedTls(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial)
-        : SesameSecured(detail::SesameSecuredMbedTlsEncryptors::sendEncryption, detail::SesameSecuredMbedTlsEncryptors::receiveEncryption, sendBuffer, receiveBuffer, delegate, keyMaterial)
+    SynchronousSesameSecured::WithCryptoMbedTls::WithCryptoMbedTls(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial)
+        : SynchronousSesameSecured(detail::SynchronousSesameSecuredMbedTlsEncryptors::sendEncryption, detail::SynchronousSesameSecuredMbedTlsEncryptors::receiveEncryption, sendBuffer, receiveBuffer, delegate, keyMaterial)
     {}
 #endif
 }

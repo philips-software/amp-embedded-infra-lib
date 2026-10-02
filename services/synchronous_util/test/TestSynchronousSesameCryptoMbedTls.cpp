@@ -1,5 +1,5 @@
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
-#include "services/util/SesameCryptoMbedTls.hpp"
+#include "services/synchronous_util/SynchronousSesameCryptoMbedTls.hpp"
 #include "gmock/gmock.h"
 
 class SesameCryptoMbedTlsPublicPrivateKeyTest
@@ -11,8 +11,8 @@ public:
     services::EcSecP256r1PrivateKey privateKey{ randomDataGenerator };
     services::EcSecP256r1PublicKey publicKey{ privateKey, randomDataGenerator };
 
-    services::EcSecP256r1DsaSignerMbedTls signer{ privateKey.Der(), randomDataGenerator };
-    services::EcSecP256r1DsaVerifierMbedTls verifier{ publicKey.Der() };
+    services::SynchronousEcSecP256r1DsaSignerMbedTls signer{ privateKey.Der(), randomDataGenerator };
+    services::SynchronousEcSecP256r1DsaVerifierMbedTls verifier{ publicKey.Der() };
 };
 
 TEST_F(SesameCryptoMbedTlsPublicPrivateKeyTest, sign_and_verify)
@@ -35,8 +35,8 @@ public:
     services::EcSecP256r1Certificate certificate{ privateKey, "CN=subject", rootPrivateKey, "CN=issuer", randomDataGenerator };
     infra::BoundedVector<uint8_t>::WithMaxSize<512> certificateDer{ certificate.Der() };
 
-    services::EcSecP256r1DsaSignerMbedTls signer{ privateKey.Der(), randomDataGenerator };
-    services::EcSecP256r1DsaVerifierMbedTls verifier{ infra::MakeRange(certificateDer), infra::MakeRange(rootCertificateDer) };
+    services::SynchronousEcSecP256r1DsaSignerMbedTls signer{ privateKey.Der(), randomDataGenerator };
+    services::SynchronousEcSecP256r1DsaVerifierMbedTls verifier{ infra::MakeRange(certificateDer), infra::MakeRange(rootCertificateDer) };
 };
 
 TEST_F(SesameCryptoMbedTlsCertificateTest, sign_and_verify)

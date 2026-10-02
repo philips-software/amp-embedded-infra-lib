@@ -4,9 +4,9 @@
 #include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "protobuf/echo/test_doubles/ServiceStub.hpp"
+#include "services/synchronous_util/SynchronousTracingEchoInstantiationSecured.hpp"
 #include "services/tracer/GlobalTracer.hpp"
 #include "services/tracer/TracerWithPrefix.hpp"
-#include "services/tracer/TracingEchoInstantiationSecured.hpp"
 #include "services/util/SerialCommunicationLoopback.hpp"
 #include "gmock/gmock.h"
 
@@ -19,20 +19,20 @@ namespace
         hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
         services::SerialCommunicationLoopback serial;
 
-        services::SesameSecured::KeyType keyA{ 1, 2 };
-        services::SesameSecured::KeyType keyB{ 3, 4 };
-        services::SesameSecured::IvType ivA{ 5, 6 };
-        services::SesameSecured::IvType ivB{ 7, 8 };
-        services::SesameSecured::KeyMaterial keyMaterialLeft{ keyA, ivA, keyB, ivB };
-        services::SesameSecured::KeyMaterial keyMaterialRight{ keyB, ivB, keyA, ivA };
+        services::SynchronousSesameSecured::KeyType keyA{ 1, 2 };
+        services::SynchronousSesameSecured::KeyType keyB{ 3, 4 };
+        services::SynchronousSesameSecured::IvType ivA{ 5, 6 };
+        services::SynchronousSesameSecured::IvType ivB{ 7, 8 };
+        services::SynchronousSesameSecured::KeyMaterial keyMaterialLeft{ keyA, ivA, keyB, ivB };
+        services::SynchronousSesameSecured::KeyMaterial keyMaterialRight{ keyB, ivB, keyA, ivA };
 
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<LeftSize> leftSerial{ serial.Server() };
         services::MethodSerializerFactory::OnHeap leftSerializerFactory;
-        main_::EchoOnSesameSecuredSymmetricKey::WithMessageSize<LeftSize, 2> leftEcho{ leftSerial, leftSerializerFactory, keyMaterialLeft, randomDataGenerator };
+        main_::SynchronousEchoOnSesameSecuredSymmetricKey::WithMessageSize<LeftSize, 2> leftEcho{ leftSerial, leftSerializerFactory, keyMaterialLeft, randomDataGenerator };
 
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<RightSize> rightSerial{ serial.Client() };
         services::MethodSerializerFactory::OnHeap rightSerializerFactory;
-        main_::EchoOnSesameSecuredSymmetricKey::WithMessageSize<RightSize, 2> rightEcho{ rightSerial, rightSerializerFactory, keyMaterialRight, randomDataGenerator };
+        main_::SynchronousEchoOnSesameSecuredSymmetricKey::WithMessageSize<RightSize, 2> rightEcho{ rightSerial, rightSerializerFactory, keyMaterialRight, randomDataGenerator };
 
         services::ServiceStubProxy serviceProxy{ leftEcho.echo };
         testing::StrictMock<services::ServiceStub> service{ rightEcho.echo };
@@ -115,18 +115,18 @@ namespace
         std::string certificateRightPem{ infra::AsStdString(certificateRight.Pem()) };
         infra::BoundedVector<uint8_t>::WithMaxSize<512> certificateRightDer{ certificateRight.Der() };
 
-        services::EchoPolicyDiffieHellman::KeyMaterial keyMaterialLeft{ infra::MakeRange(certificateLeftDer), infra::MakeRange(privateKeyLeftDer), infra::MakeRange(rootCaCertificateDer) };
-        services::EchoPolicyDiffieHellman::KeyMaterial keyMaterialRight{ infra::MakeRange(certificateRightDer), infra::MakeRange(privateKeyRightDer), infra::MakeRange(rootCaCertificateDer) };
+        services::SynchronousEchoPolicyDiffieHellman::KeyMaterial keyMaterialLeft{ infra::MakeRange(certificateLeftDer), infra::MakeRange(privateKeyLeftDer), infra::MakeRange(rootCaCertificateDer) };
+        services::SynchronousEchoPolicyDiffieHellman::KeyMaterial keyMaterialRight{ infra::MakeRange(certificateRightDer), infra::MakeRange(privateKeyRightDer), infra::MakeRange(rootCaCertificateDer) };
 
         services::TracerWithPrefix tracerLeft{ "Left ", services::GlobalTracer() };
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<LeftSize> leftSerial{ serial.Server() };
         services::MethodSerializerFactory::OnHeap leftSerializerFactory;
-        typename main_::TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<LeftSize, 2>::WithCryptoMbedTls leftEcho{ leftSerial, leftSerializerFactory, keyMaterialLeft, randomDataGenerator, tracerLeft };
+        typename main_::SynchronousTracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<LeftSize, 2>::WithCryptoMbedTls leftEcho{ leftSerial, leftSerializerFactory, keyMaterialLeft, randomDataGenerator, tracerLeft };
 
         services::TracerWithPrefix tracerRight{ "Right                                                      ", services::GlobalTracer() };
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<RightSize> rightSerial{ serial.Client() };
         services::MethodSerializerFactory::OnHeap rightSerializerFactory;
-        typename main_::TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<RightSize, 2>::WithCryptoMbedTls rightEcho{ rightSerial, rightSerializerFactory, keyMaterialRight, randomDataGenerator, tracerRight };
+        typename main_::SynchronousTracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<RightSize, 2>::WithCryptoMbedTls rightEcho{ rightSerial, rightSerializerFactory, keyMaterialRight, randomDataGenerator, tracerRight };
 
         services::ServiceStubProxy serviceProxy{ leftEcho.echo };
         testing::StrictMock<services::ServiceStub> service{ rightEcho.echo };

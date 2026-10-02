@@ -10,11 +10,11 @@
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
 #include "services/network/HttpClientImpl.hpp"
 #include "services/network/WebSocketClientConnectionObserver.hpp"
+#include "services/synchronous_util/SynchronousEchoPolicyDiffieHellman.hpp"
+#include "services/synchronous_util/SynchronousEchoPolicySymmetricKey.hpp"
+#include "services/synchronous_util/SynchronousSesameSecured.hpp"
 #include "services/tracer/GlobalTracer.hpp"
-#include "services/util/EchoPolicyDiffieHellman.hpp"
-#include "services/util/EchoPolicySymmetricKey.hpp"
 #include "services/util/SesameCobs.hpp"
-#include "services/util/SesameSecured.hpp"
 #include "services/util/SesameWindowed.hpp"
 #include <deque>
 #include <fstream>
@@ -28,7 +28,7 @@ class ConsoleClientUart
 public:
     ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial);
     ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, const sesame_security::SymmetricKeyFile& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator);
-    ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+    ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, const services::SynchronousEchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
     // Implementation of ConsoleObserver
     void Send(const std::string& message) override;
@@ -46,12 +46,12 @@ private:
     std::deque<std::string> messagesToBeSent;
     services::SesameCobs::WithMaxMessageSize<2048> cobs;
     services::SesameWindowed::WithMaxMessageSize<2048> windowed{ cobs };
-    std::optional<services::SesameSecured::WithCryptoMbedTls::WithBuffers<2048>> secured;
+    std::optional<services::SynchronousSesameSecured::WithCryptoMbedTls::WithBuffers<2048>> secured;
     services::Sesame& sesame;
     bool sending = false;
     services::SesameObserver::DelayedAttachDetach delayed{ *this, sesame };
-    std::optional<services::EchoPolicySymmetricKey> policySymmetricKey;
-    std::optional<services::EchoPolicyDiffieHellman::WithCryptoMbedTls> policyDiffieHellman;
+    std::optional<services::SynchronousEchoPolicySymmetricKey> policySymmetricKey;
+    std::optional<services::SynchronousEchoPolicyDiffieHellman::WithCryptoMbedTls> policyDiffieHellman;
 };
 
 ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial)
@@ -68,10 +68,10 @@ ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::Buffere
     , policySymmetricKey{ std::in_place, application::ConsoleObserver::Subject(), static_cast<services::EchoInitialization&>(*this), *secured, randomDataGenerator }
 {}
 
-ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, const services::SynchronousEchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
     : application::ConsoleObserver(console)
     , cobs(serial)
-    , secured{ std::in_place, windowed, services::SesameSecured::KeyMaterial{} }
+    , secured{ std::in_place, windowed, services::SynchronousSesameSecured::KeyMaterial{} }
     , sesame{ *secured }
     , policyDiffieHellman{ std::in_place, application::ConsoleObserver::Subject(), static_cast<services::EchoInitialization&>(*this), *secured, keyMaterial, randomDataGenerator }
 {}
@@ -397,7 +397,7 @@ int main(int argc, char* argv[], const char* env[])
                 static auto clientCertificate = fileSystem.ReadBinaryFile(get(clientCertificateFile));
                 static auto clientCertificatePrivateKey = fileSystem.ReadBinaryFile(get(clientCertificatePrivateFile));
                 static auto rootCertificate = fileSystem.ReadBinaryFile(get(rootCertificateFile));
-                consoleClientUart.emplace(console, *bufferedUart, services::EchoPolicyDiffieHellman::KeyMaterial{ clientCertificate, clientCertificatePrivateKey, rootCertificate }, randomDataGenerator);
+                consoleClientUart.emplace(console, *bufferedUart, services::SynchronousEchoPolicyDiffieHellman::KeyMaterial{ clientCertificate, clientCertificatePrivateKey, rootCertificate }, randomDataGenerator);
             }
             else
                 consoleClientUart.emplace(console, *bufferedUart);

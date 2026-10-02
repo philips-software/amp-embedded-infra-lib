@@ -1,5 +1,5 @@
-#ifndef SERVICES_SESAME_CRYPTO_MBED_TLS_HPP
-#define SERVICES_SESAME_CRYPTO_MBED_TLS_HPP
+#ifndef SERVICES_SYNCHRONOUS_SESAME_CRYPTO_MBED_TLS_HPP
+#define SERVICES_SYNCHRONOUS_SESAME_CRYPTO_MBED_TLS_HPP
 
 #include "infra/util/BoundedVector.hpp"
 #include "mbedtls/ecdh.h"
@@ -7,16 +7,16 @@
 #include "mbedtls/gcm.h"
 #include "mbedtls/pk.h"
 #include "mbedtls/x509_crt.h"
-#include "services/util/SesameCrypto.hpp"
+#include "services/synchronous_util/SynchronousSesameCrypto.hpp"
 
 namespace services
 {
-    class EcSecP256r1DiffieHellmanMbedTls
-        : public EcSecP256r1DiffieHellman
+    class SynchronousEcSecP256r1DiffieHellmanMbedTls
+        : public SynchronousEcSecP256r1DiffieHellman
     {
     public:
-        explicit EcSecP256r1DiffieHellmanMbedTls(hal::SynchronousRandomDataGenerator& randomDataGenerator);
-        ~EcSecP256r1DiffieHellmanMbedTls();
+        explicit SynchronousEcSecP256r1DiffieHellmanMbedTls(hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        ~SynchronousEcSecP256r1DiffieHellmanMbedTls();
 
         std::array<uint8_t, 65> PublicKey() const override;
         std::array<uint8_t, 32> SharedSecret(infra::ConstByteRange otherPublicKey) const override;
@@ -29,12 +29,12 @@ namespace services
         mbedtls_ecp_point publicKey;
     };
 
-    class EcSecP256r1DsaSignerMbedTls
-        : public EcSecP256r1DsaSigner
+    class SynchronousEcSecP256r1DsaSignerMbedTls
+        : public SynchronousEcSecP256r1DsaSigner
     {
     public:
-        EcSecP256r1DsaSignerMbedTls(infra::ConstByteRange dsaCertificatePrivateKey, hal::SynchronousRandomDataGenerator& randomDataGenerator);
-        ~EcSecP256r1DsaSignerMbedTls();
+        SynchronousEcSecP256r1DsaSignerMbedTls(infra::ConstByteRange dsaCertificatePrivateKey, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        ~SynchronousEcSecP256r1DsaSignerMbedTls();
 
         std::pair<std::array<uint8_t, 32>, std::array<uint8_t, 32>> Sign(infra::ConstByteRange data) const override;
 
@@ -45,13 +45,13 @@ namespace services
         mbedtls_ecdh_context context;
     };
 
-    class EcSecP256r1DsaVerifierMbedTls
-        : public EcSecP256r1DsaVerifier
+    class SynchronousEcSecP256r1DsaVerifierMbedTls
+        : public SynchronousEcSecP256r1DsaVerifier
     {
     public:
-        explicit EcSecP256r1DsaVerifierMbedTls(infra::ConstByteRange dsaPublicKey);
-        EcSecP256r1DsaVerifierMbedTls(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate);
-        ~EcSecP256r1DsaVerifierMbedTls();
+        explicit SynchronousEcSecP256r1DsaVerifierMbedTls(infra::ConstByteRange dsaPublicKey);
+        SynchronousEcSecP256r1DsaVerifierMbedTls(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate);
+        ~SynchronousEcSecP256r1DsaVerifierMbedTls();
 
         bool Verify(infra::ConstByteRange data, infra::ConstByteRange r, infra::ConstByteRange s) const override;
 
@@ -69,12 +69,12 @@ namespace services
         void Expand(infra::ConstByteRange seed, infra::ByteRange expandedMaterial) const override;
     };
 
-    class AesGcmEncryptionMbedTls
-        : public AesGcmEncryption
+    class SynchronousAesGcmEncryptionMbedTls
+        : public SynchronousAesGcmEncryption
     {
     public:
-        AesGcmEncryptionMbedTls();
-        ~AesGcmEncryptionMbedTls();
+        SynchronousAesGcmEncryptionMbedTls();
+        ~SynchronousAesGcmEncryptionMbedTls();
 
         void EncryptWithKey(infra::ConstByteRange key) override;
         void DecryptWithKey(infra::ConstByteRange key) override;
