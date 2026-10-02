@@ -246,9 +246,15 @@ namespace services
                     httpClientPtr->createdObserver(httpClientPtr);
                     httpClientPtr->Attach(observer);
                 }
+                else
+                {
+                    httpClientPtr->createdObserver(httpClientPtr);
+                    httpClientPtr->HttpClientObserver::Subject().CloseConnection();
+                }
             });
 
         clientObserverFactory = nullptr;
+        TryConnectWaiting();
     }
 
     void HttpClientCachedConnectionConnector::ConnectionFailed(ConnectFailReason reason)
