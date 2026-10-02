@@ -211,11 +211,17 @@ Given a resolvable private address (RPA), returns the identity address of the bo
 include::partial$echoservices/gap_central/GapCentral_ResolvePrivateAddress_sequence.mmd[]
 ....
 
-=== GetBondList
+=== GetBondInformation
+
+*Allowed states:* standby, scanning, connected, initiating.
+
+*Expected response:* GapCentralResponse.BondInformationReceived.
+
+Returns the number of bonds and the list of bonded devices.
 
 [mermaid]
 ....
-include::partial$echoservices/gap_central/GapCentral_GetBondList_sequence.mmd[]
+include::partial$echoservices/gap_central/GapCentral_GetBondInformation_sequence.mmd[]
 ....
 
 === RemoveAllBonds
@@ -262,7 +268,7 @@ include::partial$echoservices/gap_central/GapCentral_SetPrivacyMode_sequence.mmd
 
 === IsDeviceBonded
 
-*Deprecated.* Will be removed in a future release. Prefer `ResolvePrivateAddress` or `GetBondList` for bond queries.
+*Deprecated.* Will be removed in a future release. Prefer `ResolvePrivateAddress` or `GetBondInformation` for bond queries.
 
 [mermaid]
 ....
@@ -313,7 +319,7 @@ include::partial$echoservices/gap_central/GapCentral_IdentifyBondedDevice_sequen
 
 *Pre-conditions:* standby.
 
-Enumerate stored bonds via `GetBondList` and remove a specific bond by identity address using `RemoveBondWithAddress`.
+Enumerate stored bonds via `GetBondInformation` and remove a specific bond by identity address using `RemoveBondWithAddress`.
 
 [mermaid]
 ....
