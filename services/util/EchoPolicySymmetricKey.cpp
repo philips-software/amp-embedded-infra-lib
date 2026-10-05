@@ -28,6 +28,9 @@ namespace services
     void EchoPolicySymmetricKey::Reset()
     {
         initializingSending = true;
+
+        while (!waitingProxies.empty())
+            waitingProxies.front().CancelRequestSend();
     }
 
     void EchoPolicySymmetricKey::Initialized()

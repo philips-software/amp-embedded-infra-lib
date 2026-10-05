@@ -185,6 +185,40 @@ TEST_F(EchoPolicyDiffieHellmanTest, cancel_send_while_initializing_removes_waiti
     ExchangeData();
 }
 
+TEST_F(EchoPolicyDiffieHellmanTest, reset_cancels_request_waiting_for_key_establishment)
+{
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.Method(5);
+        });
+
+    lowerLeftRequest = false;
+    lowerRightRequest = false;
+    EXPECT_CALL(lowerLeft, ResetReading());
+    EXPECT_CALL(lowerLeft, Reset());
+    echoOnSesameLeft.Reset();
+    EXPECT_CALL(lowerRight, ResetReading());
+    EXPECT_CALL(lowerRight, Reset());
+    echoOnSesameRight.Reset();
+    EXPECT_THAT(serviceProxy.CurrentRequestedSize(), testing::Eq(0));
+
+    Initialized();
+
+    EXPECT_CALL(echoPolicyLeft, KeyExchangeSuccessful());
+    EXPECT_CALL(echoPolicyRight, KeyExchangeSuccessful());
+    ExchangeData();
+
+    EXPECT_CALL(service, Method(6)).WillOnce(testing::Invoke([this]()
+        {
+            service.MethodDone();
+        }));
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.Method(6);
+        });
+    ExchangeData();
+}
+
 TEST_F(EchoPolicyDiffieHellmanTest, initialize_while_initializing_starts_over)
 {
     Initialized(); // second initialization
