@@ -82,25 +82,16 @@ namespace services
     void EchoOnStreams::CancelRequestSend(ServiceProxy& serviceProxy)
     {
         if (sendRequesters.has_element(serviceProxy))
-        {
             sendRequesters.erase(serviceProxy);
-            return;
-        }
-
-        if (&serviceProxy == sendingProxy)
+        else if (&serviceProxy == sendingProxy)
         {
             sendingProxy = nullptr;
             skipNextStream = true;
-            return;
         }
-
-        if (policy->PendingRequestSend(serviceProxy))
-        {
+        else if (policy->PendingRequestSend(serviceProxy))
             policy->CancelRequestSend(serviceProxy);
-            return;
-        }
-
-        LOG_AND_ABORT("CancelRequestSend called with no pending request");
+        else
+            LOG_AND_ABORT("CancelRequestSend with no pending request");
     }
 
     services::MethodSerializerFactory& EchoOnStreams::SerializerFactory()
