@@ -17,7 +17,7 @@ namespace hal
 
     void LowPowerStrategyFreeRtos::RequestExecution()
     {
-        BaseType_t higherPriorityTaskWoken;
+        BaseType_t higherPriorityTaskWoken = pdFALSE;
         xSemaphoreGiveFromISR(semaphore, &higherPriorityTaskWoken);
         portYIELD_FROM_ISR(higherPriorityTaskWoken);
     }
