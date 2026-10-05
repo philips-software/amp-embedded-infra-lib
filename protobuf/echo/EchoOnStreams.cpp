@@ -95,8 +95,13 @@ namespace services
             return;
         }
 
-        really_assert(policy->RequestSendPending(serviceProxy));
-        policy->CancelRequestSend(serviceProxy);
+        if (policy->RequestSendPending(serviceProxy))
+        {
+            policy->CancelRequestSend(serviceProxy);
+            return;
+        }
+
+        LOG_AND_ABORT("CancelRequestSend called with no pending request");
     }
 
     services::MethodSerializerFactory& EchoOnStreams::SerializerFactory()
