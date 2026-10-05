@@ -1,4 +1,5 @@
 #include "osal/freertos/LowPowerStrategyFreeRtos.hpp"
+#include "portmacro.h"
 
 namespace hal
 {
@@ -15,6 +16,7 @@ namespace hal
     {
         BaseType_t higherPriorityTaskWoken;
         xSemaphoreGiveFromISR(semaphore, &higherPriorityTaskWoken);
+        portYIELD_FROM_ISR(higherPriorityTaskWoken);
     }
 
     void LowPowerStrategyFreeRtos::Idle(const infra::EventDispatcherWorker& eventDispatcher)
