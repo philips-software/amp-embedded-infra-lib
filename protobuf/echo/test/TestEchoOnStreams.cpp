@@ -34,6 +34,13 @@ namespace services
             return EchoOnStreams::GrantSend(proxy);
         }
     };
+
+    class EchoPolicyMock
+        : public EchoPolicy
+    {
+    public:
+        MOCK_METHOD(bool, CancelRequestSend, (ServiceProxy & proxy), (override));
+    };
 }
 
 class EchoOnStreamsTest
@@ -44,6 +51,7 @@ public:
     testing::StrictMock<services::EchoErrorPolicyMock> errorPolicy;
     services::MethodSerializerFactory::ForServices<services::ServiceStub>::AndProxies<services::ServiceStubProxy> serializerFactory;
     services::DeferredSendEchoPolicy policy;
+    testing::StrictMock<services::EchoPolicyMock> policyMock;
     testing::StrictMock<services::EchoOnStreamsMock> echo{ serializerFactory, errorPolicy };
     testing::StrictMock<services::ServiceStub> service{ echo };
     services::ServiceStubProxy serviceProxy{ echo };
@@ -199,4 +207,23 @@ TEST_F(EchoOnStreamsTest, cancel_of_queued_request_not_deferred_by_policy_is_han
         }));
     echo.SendStreamAvailable(writer.Emplace(data));
     EXPECT_THAT(data, testing::ElementsAre(1, 26, 0));
+}
+
+TEST_F(EchoOnStreamsTest, cancel_of_requests_tracked_by_echo_does_not_consult_policy)
+{
+    echo.SetPolicy(policyMock);
+    services::ServiceStubProxy otherServiceProxy{ echo };
+
+    EXPECT_CALL(echo, RequestSendStream(testing::_));
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.MethodNoParameter();
+        });
+    otherServiceProxy.RequestSend([&otherServiceProxy]()
+        {
+            otherServiceProxy.MethodNoParameter();
+        });
+
+    otherServiceProxy.CancelRequestSend();
+    serviceProxy.CancelRequestSend();
 }
