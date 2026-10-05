@@ -139,3 +139,19 @@ TEST_F(EchoPolicySymmetricKeyTest, send_while_initializing)
         }));
     LoopBackData();
 }
+
+TEST_F(EchoPolicySymmetricKeyTest, cancel_send_while_initializing_removes_waiting_request)
+{
+    EXPECT_CALL(lower, RequestSendMessage(testing::_));
+    EXPECT_CALL(lower, ResetReading());
+    lower.GetObserver().Initialized();
+
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.Method(5);
+        });
+    serviceProxy.CancelRequestSend();
+
+    ExpectGenerationOfKeyMaterial({ 4 }, { 5 });
+    LoopBackData();
+}

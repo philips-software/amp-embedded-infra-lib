@@ -1,4 +1,5 @@
 #include "services/util/EchoPolicyDiffieHellman.hpp"
+#include "infra/util/ReallyAssert.hpp"
 
 namespace services
 {
@@ -87,6 +88,17 @@ namespace services
             secured.SetSendKey(nextKeyPair->first, nextKeyPair->second);
             nextKeyPair.reset();
         }
+    }
+
+    bool EchoPolicyDiffieHellman::PendingRequestSend(ServiceProxy& proxy) const
+    {
+        return waitingProxies.has_element(proxy);
+    }
+
+    void EchoPolicyDiffieHellman::CancelRequestSend(ServiceProxy& proxy)
+    {
+        really_assert(PendingRequestSend(proxy));
+        waitingProxies.erase(proxy);
     }
 
     void EchoPolicyDiffieHellman::KeyExchangeSuccessful()
