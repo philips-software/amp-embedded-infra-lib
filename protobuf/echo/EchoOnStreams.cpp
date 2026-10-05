@@ -81,21 +81,22 @@ namespace services
 
     void EchoOnStreams::CancelRequestSend(ServiceProxy& serviceProxy)
     {
-        if (policy->CancelRequestSend(serviceProxy))
+        if (sendRequesters.has_element(serviceProxy))
         {
-            really_assert(!sendRequesters.has_element(serviceProxy));
-            really_assert(&serviceProxy != sendingProxy);
+            sendRequesters.erase(serviceProxy);
             return;
         }
 
-        if (sendRequesters.has_element(serviceProxy))
-            sendRequesters.erase(serviceProxy);
-        else
+        if (sendingProxy != nullptr)
         {
             really_assert(&serviceProxy == sendingProxy);
             sendingProxy = nullptr;
             skipNextStream = true;
+            return;
         }
+
+        really_assert(policy->RequestSendPending(serviceProxy));
+        policy->CancelRequestSend(serviceProxy);
     }
 
     services::MethodSerializerFactory& EchoOnStreams::SerializerFactory()

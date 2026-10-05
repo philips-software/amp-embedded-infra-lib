@@ -1,4 +1,5 @@
 #include "services/util/EchoPolicyDiffieHellman.hpp"
+#include "infra/util/ReallyAssert.hpp"
 
 namespace services
 {
@@ -89,13 +90,15 @@ namespace services
         }
     }
 
-    bool EchoPolicyDiffieHellman::CancelRequestSend(ServiceProxy& proxy)
+    bool EchoPolicyDiffieHellman::RequestSendPending(ServiceProxy& proxy) const
     {
-        if (!waitingProxies.has_element(proxy))
-            return false;
+        return waitingProxies.has_element(proxy);
+    }
 
+    void EchoPolicyDiffieHellman::CancelRequestSend(ServiceProxy& proxy)
+    {
+        really_assert(RequestSendPending(proxy));
         waitingProxies.erase(proxy);
-        return true;
     }
 
     void EchoPolicyDiffieHellman::KeyExchangeSuccessful()

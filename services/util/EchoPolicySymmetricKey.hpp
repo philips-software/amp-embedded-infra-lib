@@ -25,7 +25,8 @@ namespace services
         // Implementation of EchoPolicy
         void RequestSend(ServiceProxy& proxy, const infra::Function<void(ServiceProxy& proxy)>& onRequest) override;
         void GrantingSend(ServiceProxy& proxy) override;
-        bool CancelRequestSend(ServiceProxy& proxy) override;
+        bool RequestSendPending(ServiceProxy& proxy) const override;
+        void CancelRequestSend(ServiceProxy& proxy) override;
 
     private:
         // Implementation of SymmetricKeyEstablishment

@@ -14,7 +14,8 @@ namespace services
         using DeferredRequest = std::pair<ServiceProxy*, infra::Function<void(ServiceProxy& proxy)>>;
 
         void RequestSend(ServiceProxy& proxy, const infra::Function<void(ServiceProxy& proxy)>& onRequest) override;
-        bool CancelRequestSend(ServiceProxy& proxy) override;
+        bool RequestSendPending(ServiceProxy& proxy) const override;
+        void CancelRequestSend(ServiceProxy& proxy) override;
 
         void StartDeferring();
         void GrantDeferredRequests();

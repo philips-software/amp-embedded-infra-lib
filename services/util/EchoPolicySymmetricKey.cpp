@@ -1,4 +1,5 @@
 #include "services/util/EchoPolicySymmetricKey.hpp"
+#include "infra/util/ReallyAssert.hpp"
 
 namespace services
 {
@@ -64,13 +65,15 @@ namespace services
         }
     }
 
-    bool EchoPolicySymmetricKey::CancelRequestSend(ServiceProxy& proxy)
+    bool EchoPolicySymmetricKey::RequestSendPending(ServiceProxy& proxy) const
     {
-        if (!waitingProxies.has_element(proxy))
-            return false;
+        return waitingProxies.has_element(proxy);
+    }
 
+    void EchoPolicySymmetricKey::CancelRequestSend(ServiceProxy& proxy)
+    {
+        really_assert(RequestSendPending(proxy));
         waitingProxies.erase(proxy);
-        return true;
     }
 
     void EchoPolicySymmetricKey::ActivateNewKeyMaterial(infra::ConstByteRange key, infra::ConstByteRange iv)

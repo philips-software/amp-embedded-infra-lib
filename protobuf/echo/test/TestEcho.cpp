@@ -29,12 +29,21 @@ TEST_F(EchoTest, request_send_while_already_awaiting_grant_aborts)
 }
 #endif
 
-TEST_F(EchoTest, default_policy_does_not_handle_cancel_request_send)
+TEST_F(EchoTest, default_policy_has_no_pending_request_send)
 {
     services::EchoPolicy policy;
 
-    EXPECT_FALSE(policy.CancelRequestSend(serviceProxy));
+    EXPECT_FALSE(policy.RequestSendPending(serviceProxy));
 }
+
+#ifndef EMIL_MUTATION_TESTING
+TEST_F(EchoTest, default_policy_aborts_on_cancel_request_send)
+{
+    services::EchoPolicy policy;
+
+    EXPECT_DEATH(policy.CancelRequestSend(serviceProxy), "");
+}
+#endif
 
 TEST_F(EchoTest, cancel_clears_pending_grant_and_notifies_echo)
 {

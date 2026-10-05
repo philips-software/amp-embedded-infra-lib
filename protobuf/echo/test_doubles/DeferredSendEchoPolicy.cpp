@@ -1,4 +1,5 @@
 #include "protobuf/echo/test_doubles/DeferredSendEchoPolicy.hpp"
+#include "infra/util/ReallyAssert.hpp"
 #include <algorithm>
 
 namespace services
@@ -11,18 +12,22 @@ namespace services
             onRequest(proxy);
     }
 
-    bool DeferredSendEchoPolicy::CancelRequestSend(ServiceProxy& proxy)
+    bool DeferredSendEchoPolicy::RequestSendPending(ServiceProxy& proxy) const
     {
-        auto request = std::find_if(deferredRequests.begin(), deferredRequests.end(), [&proxy](const DeferredRequest& deferred)
+        return std::any_of(deferredRequests.begin(), deferredRequests.end(), [&proxy](const DeferredRequest& deferred)
             {
                 return deferred.first == &proxy;
             });
+    }
 
-        if (request == deferredRequests.end())
-            return false;
-
-        deferredRequests.erase(request);
-        return true;
+    void DeferredSendEchoPolicy::CancelRequestSend(ServiceProxy& proxy)
+    {
+        really_assert(RequestSendPending(proxy));
+        deferredRequests.erase(std::remove_if(deferredRequests.begin(), deferredRequests.end(), [&proxy](const DeferredRequest& deferred)
+                                   {
+                                       return deferred.first == &proxy;
+                                   }),
+            deferredRequests.end());
     }
 
     void DeferredSendEchoPolicy::StartDeferring()

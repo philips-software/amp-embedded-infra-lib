@@ -39,7 +39,8 @@ namespace services
         : public EchoPolicy
     {
     public:
-        MOCK_METHOD(bool, CancelRequestSend, (ServiceProxy & proxy), (override));
+        MOCK_METHOD(bool, RequestSendPending, (ServiceProxy & proxy), (const, override));
+        MOCK_METHOD(void, CancelRequestSend, (ServiceProxy & proxy), (override));
     };
 }
 
@@ -161,6 +162,7 @@ TEST_F(EchoOnStreamsTest, cancel_of_request_deferred_by_policy_is_handled_by_pol
             serviceProxy.MethodNoParameter();
         });
     EXPECT_THAT(policy.DeferredRequests(), testing::SizeIs(1));
+    EXPECT_TRUE(policy.RequestSendPending(serviceProxy));
 
     serviceProxy.CancelRequestSend();
     EXPECT_THAT(policy.DeferredRequests(), testing::IsEmpty());
