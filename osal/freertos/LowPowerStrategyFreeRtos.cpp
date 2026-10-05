@@ -1,5 +1,8 @@
 #include "osal/freertos/LowPowerStrategyFreeRtos.hpp"
+extern "C"
+{
 #include "portmacro.h"
+}
 
 namespace hal
 {
