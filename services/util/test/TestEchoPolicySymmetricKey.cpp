@@ -139,3 +139,51 @@ TEST_F(EchoPolicySymmetricKeyTest, send_while_initializing)
         }));
     LoopBackData();
 }
+
+TEST_F(EchoPolicySymmetricKeyTest, cancel_send_while_initializing_removes_waiting_request)
+{
+    EXPECT_CALL(lower, RequestSendMessage(testing::_));
+    EXPECT_CALL(lower, ResetReading());
+    lower.GetObserver().Initialized();
+
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.Method(5);
+        });
+    serviceProxy.CancelRequestSend();
+
+    ExpectGenerationOfKeyMaterial({ 4 }, { 5 });
+    LoopBackData();
+}
+
+TEST_F(EchoPolicySymmetricKeyTest, reset_cancels_request_waiting_for_key_establishment)
+{
+    EXPECT_CALL(lower, RequestSendMessage(testing::_));
+    EXPECT_CALL(lower, ResetReading());
+    lower.GetObserver().Initialized();
+
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.Method(5);
+        });
+
+    EXPECT_CALL(lower, ResetReading());
+    EXPECT_CALL(lower, Reset());
+    echo.Reset();
+    EXPECT_THAT(serviceProxy.CurrentRequestedSize(), testing::Eq(0));
+
+    Initialized();
+
+    EXPECT_CALL(lower, RequestSendMessage(testing::_)).WillOnce(testing::Invoke([this]()
+        {
+            EXPECT_CALL(service, Method(6)).WillOnce(testing::Invoke([this]()
+                {
+                    service.MethodDone();
+                }));
+            LoopBackData();
+        }));
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.Method(6);
+        });
+}
