@@ -129,5 +129,25 @@ if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
     )
 endif()
 
+add_library(services.sesame_secured ${EMIL_EXCLUDE_FROM_ALL} STATIC)
+
+target_link_libraries(services.sesame_secured PUBLIC
+    infra.timer
+    protobuf.echo
+    services.synchronous_sesame
+    services.tracer
+    services.util
+)
+
+target_sources(services.sesame_secured PRIVATE
+    EchoPolicyDiffieHellman.cpp
+    EchoPolicyDiffieHellman.hpp
+    SesameCrypto.hpp
+    SesameSecured.cpp
+    SesameSecured.hpp
+    TracingEchoInstantiationSecured.cpp
+    TracingEchoInstantiationSecured.hpp
+)
+
 add_subdirectory(test)
 add_subdirectory(test_doubles)

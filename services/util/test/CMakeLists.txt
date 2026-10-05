@@ -56,3 +56,29 @@ target_sources(services.util_test PRIVATE
     TestTimeWithLocalization.cpp
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestWritableConfiguration.cpp>
 )
+
+add_executable(services.sesame_secured_test)
+emil_build_for(services.sesame_secured_test BOOL EMIL_BUILD_TESTS)
+emil_add_test(services.sesame_secured_test)
+
+if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang|AppleClang")
+    target_compile_options(services.sesame_secured_test PRIVATE -Wno-braced-scalar-init)
+endif()
+
+target_link_libraries(services.sesame_secured_test PUBLIC
+    gmock_main
+    hal.interfaces_test_doubles
+    hal.synchronous_interfaces_test_doubles
+    infra.event_test_helper
+    infra.timer_test_helper
+    infra.util_test_helper
+    protobuf.test_doubles
+    services.sesame_secured
+    services.util_test_doubles
+)
+
+target_sources(services.sesame_secured_test PRIVATE
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestEchoPolicyDiffieHellman.cpp>
+    TestSesameSecured.cpp
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestTracingEchoInstantiationSecured.cpp>
+)

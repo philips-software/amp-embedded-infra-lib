@@ -11,6 +11,7 @@ target_sources(services.util_test_doubles PRIVATE
     FlushableMock.hpp
     MessageCommunicationMock.hpp
     SesameMock.hpp
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:SesameCryptoMbedTlsAdapters.hpp>
     StoppableMock.hpp
     WritableConfigurationMock.hpp
 )
