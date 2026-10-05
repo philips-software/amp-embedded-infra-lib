@@ -41,6 +41,9 @@ namespace services
     {
         busy = false;
         initializingKeys = true;
+
+        while (!waitingProxies.empty())
+            waitingProxies.front().CancelRequestSend();
     }
 
     void EchoPolicyDiffieHellman::Initialized()
