@@ -1,7 +1,7 @@
 {
-    "chat.tools.terminal.autoApprove": {
-        "cmake": true,
-        "ctest": true,
-        "clang-format": true
-    }
+  "chat.tools.terminal.autoApprove": {
+    "cmake": true,
+    "ctest": true,
+    "clang-format": true
+  }
 }
