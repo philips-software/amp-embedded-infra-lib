@@ -89,6 +89,15 @@ namespace services
         }
     }
 
+    bool EchoPolicyDiffieHellman::CancelRequestSend(ServiceProxy& proxy)
+    {
+        if (!waitingProxies.has_element(proxy))
+            return false;
+
+        waitingProxies.erase(proxy);
+        return true;
+    }
+
     void EchoPolicyDiffieHellman::KeyExchangeSuccessful()
     {}
 

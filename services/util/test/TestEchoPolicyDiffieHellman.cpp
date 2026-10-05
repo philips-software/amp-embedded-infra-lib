@@ -171,6 +171,20 @@ TEST_F(EchoPolicyDiffieHellmanTest, send_and_receive)
     ExchangeData();
 }
 
+TEST_F(EchoPolicyDiffieHellmanTest, cancel_send_while_initializing_removes_waiting_request)
+{
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.Method(5);
+        });
+    serviceProxy.CancelRequestSend();
+
+    EXPECT_CALL(echoPolicyLeft, KeyExchangeSuccessful());
+    EXPECT_CALL(echoPolicyRight, KeyExchangeSuccessful());
+
+    ExchangeData();
+}
+
 TEST_F(EchoPolicyDiffieHellmanTest, initialize_while_initializing_starts_over)
 {
     Initialized(); // second initialization

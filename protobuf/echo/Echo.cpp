@@ -77,4 +77,9 @@ namespace services
 
     void EchoPolicy::GrantingSend(ServiceProxy& proxy)
     {}
+
+    bool EchoPolicy::CancelRequestSend(ServiceProxy& proxy)
+    {
+        return false;
+    }
 }

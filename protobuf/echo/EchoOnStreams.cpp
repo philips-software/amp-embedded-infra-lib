@@ -81,6 +81,9 @@ namespace services
 
     void EchoOnStreams::CancelRequestSend(ServiceProxy& serviceProxy)
     {
+        if (policy->CancelRequestSend(serviceProxy))
+            return;
+
         if (sendRequesters.has_element(serviceProxy))
             sendRequesters.erase(serviceProxy);
         else

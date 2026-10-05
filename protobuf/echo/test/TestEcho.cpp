@@ -29,6 +29,13 @@ TEST_F(EchoTest, request_send_while_already_awaiting_grant_aborts)
 }
 #endif
 
+TEST_F(EchoTest, default_policy_does_not_handle_cancel_request_send)
+{
+    services::EchoPolicy policy;
+
+    EXPECT_FALSE(policy.CancelRequestSend(serviceProxy));
+}
+
 TEST_F(EchoTest, cancel_clears_pending_grant_and_notifies_echo)
 {
     EXPECT_CALL(echo, RequestSend(testing::Ref(serviceProxy)));
