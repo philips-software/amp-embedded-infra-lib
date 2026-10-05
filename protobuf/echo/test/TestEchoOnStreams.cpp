@@ -229,3 +229,31 @@ TEST_F(EchoOnStreamsTest, cancel_of_requests_tracked_by_echo_does_not_consult_po
     otherServiceProxy.CancelRequestSend();
     serviceProxy.CancelRequestSend();
 }
+
+TEST_F(EchoOnStreamsTest, cancel_of_request_deferred_by_policy_while_other_proxy_is_sending_is_handled_by_policy)
+{
+    echo.SetPolicy(policy);
+    services::ServiceStubProxy deferredServiceProxy{ echo };
+
+    EXPECT_CALL(echo, RequestSendStream(testing::_));
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.MethodNoParameter();
+        });
+
+    policy.StartDeferring();
+    deferredServiceProxy.RequestSend([&deferredServiceProxy]()
+        {
+            deferredServiceProxy.MethodNoParameter();
+        });
+
+    deferredServiceProxy.CancelRequestSend();
+    EXPECT_THAT(policy.DeferredRequests(), testing::IsEmpty());
+
+    EXPECT_CALL(echo, GrantSend(testing::Ref(serviceProxy))).WillOnce(testing::Invoke([this](services::ServiceProxy& proxy)
+        {
+            return echo.InheritedGrantSend(proxy);
+        }));
+    echo.SendStreamAvailable(writer.Emplace(data));
+    EXPECT_THAT(data, testing::ElementsAre(1, 26, 0));
+}

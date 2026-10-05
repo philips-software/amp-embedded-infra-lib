@@ -87,9 +87,8 @@ namespace services
             return;
         }
 
-        if (sendingProxy != nullptr)
+        if (&serviceProxy == sendingProxy)
         {
-            really_assert(&serviceProxy == sendingProxy);
             sendingProxy = nullptr;
             skipNextStream = true;
             return;
