@@ -33,7 +33,7 @@ TEST_F(EchoTest, default_policy_has_no_pending_request_send)
 {
     services::EchoPolicy policy;
 
-    EXPECT_FALSE(policy.RequestSendPending(serviceProxy));
+    EXPECT_FALSE(policy.PendingRequestSend(serviceProxy));
 }
 
 #ifndef EMIL_MUTATION_TESTING

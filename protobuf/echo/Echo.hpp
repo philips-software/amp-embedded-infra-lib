@@ -64,7 +64,7 @@ namespace services
 
         virtual void RequestSend(ServiceProxy& proxy, const infra::Function<void(ServiceProxy& proxy)>& onRequest);
         virtual void GrantingSend(ServiceProxy& proxy);
-        virtual bool RequestSendPending(ServiceProxy& proxy) const;
+        virtual bool PendingRequestSend(ServiceProxy& proxy) const;
         virtual void CancelRequestSend(ServiceProxy& proxy);
     };
 

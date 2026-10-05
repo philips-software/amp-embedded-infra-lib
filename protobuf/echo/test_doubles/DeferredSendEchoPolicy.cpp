@@ -12,7 +12,7 @@ namespace services
             onRequest(proxy);
     }
 
-    bool DeferredSendEchoPolicy::RequestSendPending(ServiceProxy& proxy) const
+    bool DeferredSendEchoPolicy::PendingRequestSend(ServiceProxy& proxy) const
     {
         return std::any_of(deferredRequests.begin(), deferredRequests.end(), [&proxy](const DeferredRequest& deferred)
             {
@@ -22,7 +22,7 @@ namespace services
 
     void DeferredSendEchoPolicy::CancelRequestSend(ServiceProxy& proxy)
     {
-        really_assert(RequestSendPending(proxy));
+        really_assert(PendingRequestSend(proxy));
         deferredRequests.erase(std::remove_if(deferredRequests.begin(), deferredRequests.end(), [&proxy](const DeferredRequest& deferred)
                                    {
                                        return deferred.first == &proxy;

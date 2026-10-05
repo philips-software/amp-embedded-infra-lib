@@ -95,7 +95,7 @@ namespace services
             return;
         }
 
-        if (policy->RequestSendPending(serviceProxy))
+        if (policy->PendingRequestSend(serviceProxy))
         {
             policy->CancelRequestSend(serviceProxy);
             return;

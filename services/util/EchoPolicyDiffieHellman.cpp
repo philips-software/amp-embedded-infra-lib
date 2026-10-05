@@ -90,14 +90,14 @@ namespace services
         }
     }
 
-    bool EchoPolicyDiffieHellman::RequestSendPending(ServiceProxy& proxy) const
+    bool EchoPolicyDiffieHellman::PendingRequestSend(ServiceProxy& proxy) const
     {
         return waitingProxies.has_element(proxy);
     }
 
     void EchoPolicyDiffieHellman::CancelRequestSend(ServiceProxy& proxy)
     {
-        really_assert(RequestSendPending(proxy));
+        really_assert(PendingRequestSend(proxy));
         waitingProxies.erase(proxy);
     }
 

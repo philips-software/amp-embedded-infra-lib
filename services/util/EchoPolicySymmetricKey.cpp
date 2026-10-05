@@ -65,14 +65,14 @@ namespace services
         }
     }
 
-    bool EchoPolicySymmetricKey::RequestSendPending(ServiceProxy& proxy) const
+    bool EchoPolicySymmetricKey::PendingRequestSend(ServiceProxy& proxy) const
     {
         return waitingProxies.has_element(proxy);
     }
 
     void EchoPolicySymmetricKey::CancelRequestSend(ServiceProxy& proxy)
     {
-        really_assert(RequestSendPending(proxy));
+        really_assert(PendingRequestSend(proxy));
         waitingProxies.erase(proxy);
     }
 
