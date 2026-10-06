@@ -6,23 +6,14 @@
 #include <cstdarg>
 #include <utility>
 
-namespace
-{
-    static std::atomic<bool> instantiated{};
-}
-
 namespace services
 {
     LogAndAbortTracer::LogAndAbortTracer(TracerProvider tracerProvider, services::Flushable* flushable)
         : flushable(flushable)
         , tracerProvider(std::move(tracerProvider))
     {
-        if (instantiated.exchange(true))
-            LOG_AND_ABORT("Only one instance allowed");
-
         infra::RegisterLogAndAbortHook([this](const char* reason, const char* file, int line, const char* format, va_list* args)
             {
-                really_assert(instantiated);
                 really_assert(this->tracerProvider);
                 auto& tracer = this->tracerProvider();
                 TraceAbort(tracer, reason, file, line, format, args);
@@ -72,6 +63,5 @@ namespace services
         LOG_AND_ABORT("Not destructible");
 #endif
         infra::RegisterLogAndAbortHook(nullptr);
-        instantiated = false;
     }
 }

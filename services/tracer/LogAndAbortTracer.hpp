@@ -2,6 +2,7 @@
 #define SERVICES_UTIL_LOGANDABORTTRACER_HPP
 
 #include "infra/util/Function.hpp"
+#include "infra/util/SingleInstance.hpp"
 #include "services/tracer/Tracer.hpp"
 #include "services/util/Flushable.hpp"
 #include <cstdarg>
@@ -9,6 +10,7 @@
 namespace services
 {
     class LogAndAbortTracer
+        : private infra::SingleInstance<LogAndAbortTracer>
     {
     public:
         using TracerProvider = infra::Function<services::Tracer&()>;
