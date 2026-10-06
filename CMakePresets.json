@@ -16,6 +16,7 @@
       "displayName": "Configuration for Host Tooling and Tests",
       "inherits": "defaults",
       "cacheVariables": {
+        "EMIL_ENABLE_DESTRUCTION_GUARD": "On",
         "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo;MinSizeRel"
       },
       "generator": "Ninja Multi-Config"
@@ -26,6 +27,7 @@
       "inherits": "defaults",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
+        "EMIL_ENABLE_DESTRUCTION_GUARD": "On",
         "EMIL_ENABLE_DOCKER_TOOLS": "Off"
       }
     },
