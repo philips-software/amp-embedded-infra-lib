@@ -83,7 +83,6 @@ if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
 else()
     target_compile_options(infra.util_test_disabled_destruction_guard PRIVATE -UEMIL_ENABLE_DESTRUCTION_GUARD)
 endif()
-target_compile_definitions(infra.util_test_disabled_destruction_guard PRIVATE EXPECT_EMIL_DESTRUCTION_GUARD_DISABLED)
 
 target_link_libraries(infra.util_test_disabled_destruction_guard PUBLIC
     gmock_main

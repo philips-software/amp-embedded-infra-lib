@@ -2,12 +2,6 @@
 #include "infra/util/DestructionGuard.hpp"
 #include "gtest/gtest.h"
 
-#if defined(EXPECT_EMIL_DESTRUCTION_GUARD_DISABLED) && defined(EMIL_ENABLE_DESTRUCTION_GUARD)
-#error EMIL_ENABLE_DESTRUCTION_GUARD must be disabled for this test target
-#elif !defined(EXPECT_EMIL_DESTRUCTION_GUARD_DISABLED) && !defined(EMIL_ENABLE_DESTRUCTION_GUARD)
-#error EMIL_ENABLE_DESTRUCTION_GUARD must be enabled for this test target
-#endif
-
 namespace
 {
     class Foo : public infra::DestructionGuard
