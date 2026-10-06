@@ -1,6 +1,7 @@
 #ifndef SERVICES_UTIL_LOGANDABORTTRACER_HPP
 #define SERVICES_UTIL_LOGANDABORTTRACER_HPP
 
+#include "infra/util/DestructionGuard.hpp"
 #include "infra/util/Function.hpp"
 #include "infra/util/SingleInstance.hpp"
 #include "services/tracer/Tracer.hpp"
@@ -11,6 +12,7 @@ namespace services
 {
     class LogAndAbortTracer
         : private infra::SingleInstance<LogAndAbortTracer>
+        , private infra::DestructionGuard
     {
     public:
         using TracerProvider = infra::Function<services::Tracer&()>;
