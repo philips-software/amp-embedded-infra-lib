@@ -78,10 +78,11 @@ add_executable(infra.util_test_disabled_destruction_guard)
 emil_build_for(infra.util_test_disabled_destruction_guard BOOL EMIL_BUILD_TESTS)
 emil_add_test(infra.util_test_disabled_destruction_guard)
 
-target_compile_options(infra.util_test_disabled_destruction_guard PRIVATE
-    "$<$<CXX_COMPILER_FRONTEND_VARIANT:MSVC>:/UEMIL_ENABLE_DESTRUCTION_GUARD>"
-    "$<$<NOT:$<CXX_COMPILER_FRONTEND_VARIANT:MSVC>>:-UEMIL_ENABLE_DESTRUCTION_GUARD>"
-)
+if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    target_compile_options(infra.util_test_disabled_destruction_guard PRIVATE /UEMIL_ENABLE_DESTRUCTION_GUARD)
+else()
+    target_compile_options(infra.util_test_disabled_destruction_guard PRIVATE -UEMIL_ENABLE_DESTRUCTION_GUARD)
+endif()
 target_compile_definitions(infra.util_test_disabled_destruction_guard PRIVATE EXPECT_EMIL_DESTRUCTION_GUARD_DISABLED)
 
 target_link_libraries(infra.util_test_disabled_destruction_guard PUBLIC
