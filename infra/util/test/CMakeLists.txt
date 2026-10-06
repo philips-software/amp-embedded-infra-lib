@@ -82,6 +82,7 @@ target_compile_options(infra.util_test_disabled_destruction_guard PRIVATE
     "$<$<CXX_COMPILER_FRONTEND_VARIANT:MSVC>:/UEMIL_ENABLE_DESTRUCTION_GUARD>"
     "$<$<NOT:$<CXX_COMPILER_FRONTEND_VARIANT:MSVC>>:-UEMIL_ENABLE_DESTRUCTION_GUARD>"
 )
+target_compile_definitions(infra.util_test_disabled_destruction_guard PRIVATE EXPECT_EMIL_DESTRUCTION_GUARD_DISABLED)
 
 target_link_libraries(infra.util_test_disabled_destruction_guard PUBLIC
     gmock_main
