@@ -90,13 +90,11 @@ namespace services
     struct SesameSecuredMbedTlsEncryptors
         : AesGcmEncryptors
     {
-        SesameSecuredMbedTlsEncryptors()
-            : AesGcmEncryptors(sendEncryptor, receiveEncryptor)
-        {
-        }
+        SesameSecuredMbedTlsEncryptors();
 
-        AesGcmEncryptionMbedTls sendEncryptor;
-        AesGcmEncryptionMbedTls receiveEncryptor;
+    private:
+        AesGcmEncryptionMbedTls send;
+        AesGcmEncryptionMbedTls receive;
     };
 
     class EcSecP256r1PrivateKey

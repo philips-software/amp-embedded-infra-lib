@@ -63,12 +63,6 @@ namespace services
 
     struct AesGcmEncryptors
     {
-        AesGcmEncryptors(services::AesGcmEncryption& sendEncryption, services::AesGcmEncryption& receiveEncryption)
-            : sendEncryption(sendEncryption)
-            , receiveEncryption(receiveEncryption)
-        {
-        }
-
         services::AesGcmEncryption& sendEncryption;
         services::AesGcmEncryption& receiveEncryption;
     };
