@@ -22,6 +22,31 @@ namespace
         MOCK_METHOD(void, KeyExchangeFailed, (), (override));
     };
 
+    class CountingDiffieHellman
+        : public services::EcSecP256r1DiffieHellman
+    {
+    public:
+        explicit CountingDiffieHellman(services::EcSecP256r1DiffieHellman& delegate)
+            : delegate(delegate)
+        {}
+
+        void GenerateKeyPair(const infra::Function<void(const std::array<uint8_t, 65>& publicKey)>& onDone) override
+        {
+            ++generateKeyPairCount;
+            delegate.GenerateKeyPair(onDone);
+        }
+
+        void SharedSecret(infra::ConstByteRange otherPublicKey, const infra::Function<void(const std::array<uint8_t, 32>& sharedSecret)>& onDone) override
+        {
+            delegate.SharedSecret(otherPublicKey, onDone);
+        }
+
+        std::size_t generateKeyPairCount = 0;
+
+    private:
+        services::EcSecP256r1DiffieHellman& delegate;
+    };
+
     struct Side
     {
         Side(services::Sesame& lower, services::MethodSerializerFactory& serializerFactory, const services::EchoErrorPolicy& errorPolicy, infra::ConstByteRange certificate, infra::ConstByteRange privateKey,
@@ -30,7 +55,7 @@ namespace
             , signer(privateKey, randomDataGenerator)
             , secured(lower, sendEncryption, receiveEncryption, services::SesameSecured::KeyMaterial{ key, iv, key, iv })
             , echo(secured, serializerFactory, errorPolicy)
-            , policy(services::EchoPolicyDiffieHellman::Crypto{ keyExchange, signer, verifier, keyExpander }, echo, echo, secured, certificate, rootCaCertificate)
+            , policy(services::EchoPolicyDiffieHellman::Crypto{ countingKeyExchange, signer, verifier, keyExpander }, echo, echo, secured, certificate, rootCaCertificate)
         {}
 
         services::SesameSecured::KeyType key{ 1, 2 };
@@ -38,6 +63,7 @@ namespace
         services::AesGcmEncryptionMbedTlsAdapter sendEncryption;
         services::AesGcmEncryptionMbedTlsAdapter receiveEncryption;
         services::EcSecP256r1DiffieHellmanMbedTlsAdapter keyExchange;
+        CountingDiffieHellman countingKeyExchange{ keyExchange };
         services::EcSecP256r1DsaSignerMbedTlsAdapter signer;
         services::EcSecP256r1DsaVerifierMbedTlsAdapter verifier;
         services::HmacDrbgSha256MbedTls keyExpander;
@@ -229,6 +255,61 @@ TEST_F(EchoPolicyDiffieHellmanWithValidPeerTest, initialize_during_certificate_v
     EXPECT_CALL(left.policy, KeyExchangeSuccessful());
     EXPECT_CALL(right.policy, KeyExchangeSuccessful());
 
+    ExchangeData();
+}
+
+TEST_F(EchoPolicyDiffieHellmanWithValidPeerTest, key_pair_is_generated_before_initialization_and_again_after_key_exchange)
+{
+    EXPECT_THAT(left.countingKeyExchange.generateKeyPairCount, testing::Eq(1));
+
+    EXPECT_CALL(left.policy, KeyExchangeSuccessful());
+    EXPECT_CALL(right.policy, KeyExchangeSuccessful());
+    ExchangeData();
+
+    EXPECT_THAT(left.countingKeyExchange.generateKeyPairCount, testing::Eq(2));
+}
+
+TEST_F(EchoPolicyDiffieHellmanWithValidPeerTest, next_key_exchange_uses_prepared_key_pair)
+{
+    EXPECT_CALL(left.policy, KeyExchangeSuccessful()).Times(2);
+    EXPECT_CALL(right.policy, KeyExchangeSuccessful()).Times(2);
+    ExchangeData();
+
+    Reset();
+    Initialized();
+    EXPECT_THAT(left.countingKeyExchange.generateKeyPairCount, testing::Eq(2));
+
+    ExchangeData();
+}
+
+TEST_F(EchoPolicyDiffieHellmanWithValidPeerTest, reset_after_exchange_was_sent_generates_new_key_pair)
+{
+    EXPECT_CALL(right.policy, KeyExchangeSuccessful()).Times(2);
+
+    ExecuteAllActions();
+    while (lowerLeftRequest)
+        ExchangeMessage(lowerLeftRequest, lowerLeft, lowerRight);
+
+    Reset();
+    EXPECT_THAT(left.countingKeyExchange.generateKeyPairCount, testing::Eq(2));
+
+    Initialized();
+    EXPECT_THAT(left.countingKeyExchange.generateKeyPairCount, testing::Eq(2));
+
+    EXPECT_CALL(left.policy, KeyExchangeSuccessful());
+    ExchangeData();
+}
+
+TEST_F(EchoPolicyDiffieHellmanWithValidPeerTest, reset_before_exchange_was_sent_keeps_key_pair)
+{
+    ExecuteAllActions();
+
+    Reset();
+    Initialized();
+    EXPECT_THAT(left.countingKeyExchange.generateKeyPairCount, testing::Eq(1));
+
+    EXPECT_CALL(left.policy, KeyExchangeSuccessful());
+    EXPECT_CALL(right.policy, KeyExchangeSuccessful());
     ExchangeData();
 }
 

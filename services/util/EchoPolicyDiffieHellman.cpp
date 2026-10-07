@@ -27,6 +27,7 @@ namespace services
         , keyExpander(crypto.keyExpander)
     {
         echo.SetPolicy(*this);
+        GenerateKeyPair();
     }
 
     void EchoPolicyDiffieHellman::Reset()
@@ -35,6 +36,9 @@ namespace services
         busy = false;
         requestSendPending = false;
         initializingKeys = true;
+
+        if (keyPairUsed)
+            GenerateKeyPair();
     }
 
     void EchoPolicyDiffieHellman::Initialized()
@@ -46,19 +50,17 @@ namespace services
         initializingKeys = true;
         requestSendPending = false;
         certificateSent = false;
+        exchangeRequested = false;
+        exchangeSent = false;
+        sharedSecretComputed = false;
         otherCertificateValid = false;
         peerPublicKeyVerified = false;
-        ownPublicKey.reset();
-        ownSignature.reset();
         nextKeyPair.reset();
 
-        busy = true;
-        keyExchange.GenerateKeyPair([this, currentEpoch = epoch](const std::array<uint8_t, 65>& publicKey)
-            {
-                if (currentEpoch == epoch)
-                    KeyPairGenerated(publicKey);
-            });
+        if (keyPairUsed)
+            GenerateKeyPair();
 
+        busy = true;
         requestSendPending = true;
         DiffieHellmanKeyEstablishmentProxy::RequestSend([this]()
             {
@@ -133,13 +135,27 @@ namespace services
             });
     }
 
+    void EchoPolicyDiffieHellman::GenerateKeyPair()
+    {
+        ++keyPairEpoch;
+        keyPairUsed = false;
+        ownPublicKey.reset();
+        ownSignature.reset();
+
+        keyExchange.GenerateKeyPair([this, currentKeyPairEpoch = keyPairEpoch](const std::array<uint8_t, 65>& publicKey)
+            {
+                if (currentKeyPairEpoch == keyPairEpoch)
+                    KeyPairGenerated(publicKey);
+            });
+    }
+
     void EchoPolicyDiffieHellman::KeyPairGenerated(const std::array<uint8_t, 65>& publicKey)
     {
         ownPublicKey = publicKey;
 
-        signer.Sign(*ownPublicKey, [this, currentEpoch = epoch](const std::array<uint8_t, 32>& r, const std::array<uint8_t, 32>& s)
+        signer.Sign(*ownPublicKey, [this, currentKeyPairEpoch = keyPairEpoch](const std::array<uint8_t, 32>& r, const std::array<uint8_t, 32>& s)
             {
-                if (currentEpoch != epoch)
+                if (currentKeyPairEpoch != keyPairEpoch)
                     return;
 
                 ownSignature.emplace(r, s);
@@ -152,22 +168,27 @@ namespace services
 
     void EchoPolicyDiffieHellman::TrySendExchange()
     {
-        if (!certificateSent || ownSignature == std::nullopt)
+        if (!certificateSent || exchangeRequested || ownSignature == std::nullopt)
             return;
 
+        exchangeRequested = true;
+        keyPairUsed = true;
         requestSendPending = true;
         DiffieHellmanKeyEstablishmentProxy::RequestSend([this]()
             {
                 requestSendPending = false;
                 DiffieHellmanKeyEstablishmentProxy::Exchange(*ownPublicKey, ownSignature->first, ownSignature->second);
+                exchangeSent = true;
                 busy = false;
                 ReQueueWaitingProxies();
+                GenerateNextKeyPairWhenDone();
             });
     }
 
     void EchoPolicyDiffieHellman::ComputeSharedSecret()
     {
         peerPublicKeyVerified = false;
+        keyPairUsed = true;
 
         keyExchange.SharedSecret(peerPublicKey, [this, currentEpoch = epoch](const std::array<uint8_t, 32>& sharedSecret)
             {
@@ -196,6 +217,15 @@ namespace services
         initializingKeys = false;
         ReQueueWaitingProxies();
         MethodDone();
+
+        sharedSecretComputed = true;
+        GenerateNextKeyPairWhenDone();
+    }
+
+    void EchoPolicyDiffieHellman::GenerateNextKeyPairWhenDone()
+    {
+        if (exchangeSent && sharedSecretComputed)
+            GenerateKeyPair();
     }
 
     void EchoPolicyDiffieHellman::ReQueueWaitingProxies()
