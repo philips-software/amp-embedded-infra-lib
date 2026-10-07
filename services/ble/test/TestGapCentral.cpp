@@ -85,6 +85,9 @@ namespace services
 
         EXPECT_CALL(gap, ResolvePrivateAddress(mac)).WillOnce(testing::Return(std::make_optional(mac)));
         EXPECT_EQ(decorator.ResolvePrivateAddress(mac), mac);
+
+        EXPECT_CALL(gap, SetDeviceName(infra::BoundedConstString("central")));
+        decorator.SetDeviceName("central");
     }
 
     TEST(GapAdvertisingDataParserTest, payload_too_small)

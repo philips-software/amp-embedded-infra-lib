@@ -410,6 +410,7 @@ namespace services
         virtual void StartDeviceDiscovery() = 0;
         virtual std::optional<hal::MacAddress> ResolvePrivateAddress(hal::MacAddress address) const = 0;
         virtual void SetPrivacyMode(bool enabled) = 0;
+        virtual void SetDeviceName(infra::BoundedConstString name) = 0;
     };
 
     class GapCentralDecorator
@@ -430,6 +431,7 @@ namespace services
         void StartDeviceDiscovery() override;
         std::optional<hal::MacAddress> ResolvePrivateAddress(hal::MacAddress address) const override;
         void SetPrivacyMode(bool enabled) override;
+        void SetDeviceName(infra::BoundedConstString name) override;
     };
 }
 

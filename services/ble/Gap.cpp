@@ -222,6 +222,11 @@ namespace services
         GapCentralObserver::Subject().SetPrivacyMode(enabled);
     }
 
+    void GapCentralDecorator::SetDeviceName(infra::BoundedConstString name)
+    {
+        GapCentralObserver::Subject().SetDeviceName(name);
+    }
+
     GapAdvertisingDataParser::GapAdvertisingDataParser(infra::ConstByteRange data)
         : data(data)
     {}
