@@ -168,6 +168,11 @@ message BondInformation
     uint32 currentBonds = 1;
     uint32 maxBonds = 2;
     repeated Bond bonds = 3 [(array_size) = 32];
+
+    // Persisting the bond list to non-volatile memory is not instantaneous on all targets.
+    // If this flag is true, the bond list has been successfully persisted in non-volatile memory.
+    // If this flag is false, there are pending changes that might be lost on reset.
+    bool persisted = 4;
 }
 
 // Based on Bluetooth Core Specification v6.3, Vol 3, Part H, Sections 2.3.5.3 and 2.3.5.6
