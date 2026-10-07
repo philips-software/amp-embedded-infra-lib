@@ -14,89 +14,81 @@ namespace services
     {
         onStopped = onDone;
 
+        if (busyWithResponse)
+        {
+            // Echo owns cleanup of cancelled sends, including requests deferred by an EchoPolicy.
+            // FlashEcho completes the method here without waiting for the response callback.
+            flashResult.CancelRequestSend();
+            busyWithResponse = false;
+            MethodDone();
+        }
+
         if (!busyWithFlash)
             onStopped();
     }
 
     void FlashEcho::Read(uint32_t address, uint32_t size)
     {
-        really_assert(!busyWithFlash && !busyWithResponse);
-        busyWithFlash = true;
-
-        flash.ReadBuffer(infra::Head(infra::MakeRange(buffer), size), address, [this, size]()
+        PrepareForFlashOperation([this, size]()
             {
-                busyWithFlash = false;
-
-                if (onStopped)
-                    onStopped();
-                else
-                {
-                    busyWithResponse = true;
-                    flashResult.RequestSend([this, size]()
-                        {
-                            busyWithResponse = false;
-
-                            flashResult.ReadDone(infra::Head(infra::MakeRange(buffer), size));
-                            MethodDone();
-
-                            if (onStopped)
-                                onStopped();
-                        });
-                }
+                flashResult.ReadDone(infra::Head(infra::MakeRange(buffer), size));
+            });
+        flash.ReadBuffer(infra::Head(infra::MakeRange(buffer), size), address, [this]()
+            {
+                FlashOperationDone();
             });
     }
 
     void FlashEcho::Write(uint32_t address, infra::ConstByteRange contents)
     {
-        really_assert(!busyWithFlash && !busyWithResponse);
-        busyWithFlash = true;
-
+        PrepareForFlashOperation([this]()
+            {
+                flashResult.WriteDone();
+            });
         flash.WriteBuffer(contents, address, [this]()
             {
-                busyWithFlash = false;
-
-                if (onStopped)
-                    onStopped();
-                else
-                {
-                    busyWithResponse = true;
-                    flashResult.RequestSend([this]()
-                        {
-                            busyWithResponse = false;
-                            flashResult.WriteDone();
-                            MethodDone();
-
-                            if (onStopped)
-                                onStopped();
-                        });
-                }
+                FlashOperationDone();
             });
     }
 
     void FlashEcho::EraseSectors(uint32_t sector, uint32_t numberOfSectors)
     {
-        really_assert(!busyWithFlash && !busyWithResponse);
-        busyWithFlash = true;
-
+        PrepareForFlashOperation([this]()
+            {
+                flashResult.EraseSectorsDone();
+            });
         flash.EraseSectors(sector, sector + numberOfSectors, [this]()
             {
-                busyWithFlash = false;
-                if (onStopped)
-                    onStopped();
-                else
-                {
-                    busyWithResponse = true;
-                    flashResult.RequestSend([this]()
-                        {
-                            busyWithResponse = false;
-                            flashResult.EraseSectorsDone();
-                            MethodDone();
-
-                            if (onStopped)
-                                onStopped();
-                        });
-                }
+                FlashOperationDone();
             });
+    }
+
+    void FlashEcho::PrepareForFlashOperation(const infra::Function<void()>& onFlashOperationDone)
+    {
+        really_assert(!busyWithFlash && !busyWithResponse);
+        busyWithFlash = true;
+        this->onFlashOperationDone = onFlashOperationDone;
+    }
+
+    void FlashEcho::FlashOperationDone()
+    {
+        busyWithFlash = false;
+
+        if (onStopped)
+        {
+            MethodDone();
+            onStopped();
+        }
+        else
+        {
+            busyWithResponse = true;
+            flashResult.RequestSend([this]()
+                {
+                    busyWithResponse = false;
+                    onFlashOperationDone();
+                    MethodDone();
+                });
+        }
     }
 
     FlashEchoProxyBase::FlashEchoProxyBase(services::Echo& echo, infra::MemoryRange<const uint32_t> sectorSizes)

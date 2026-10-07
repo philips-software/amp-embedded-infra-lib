@@ -11,7 +11,7 @@ classDiagram
         +SetSecurityPreferences()
         +SetAllowPairing()
         +RemoveAllBonds()
-        +RemoveOldestBond()
+        +RemoveBondWithAddress()
         +GetBondInformation()
         +NumericComparisonConfirm()
     }
@@ -22,7 +22,7 @@ classDiagram
         +IdentityAddress()
         +PairingResult()
         +NumberOfBondsChanged()
-        +BondInformation()
+        +BondInformationReceived()
         +AuthenticationRequired()
     }
     GapPeripheral --> GapPeripheralResponse : responses

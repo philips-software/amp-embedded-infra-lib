@@ -98,11 +98,6 @@ namespace services
         GapBondingObserver::Subject().RemoveAllBonds();
     }
 
-    void GapBondingDecorator::RemoveOldestBond()
-    {
-        GapBondingObserver::Subject().RemoveOldestBond();
-    }
-
     void GapBondingDecorator::RemoveBondWithAddress(GapAddress gapAddress)
     {
         GapBondingObserver::Subject().RemoveBondWithAddress(gapAddress);

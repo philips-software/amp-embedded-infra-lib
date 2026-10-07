@@ -83,12 +83,15 @@ namespace services
     {
         if (sendRequesters.has_element(serviceProxy))
             sendRequesters.erase(serviceProxy);
-        else
+        else if (&serviceProxy == sendingProxy)
         {
-            really_assert(&serviceProxy == sendingProxy);
             sendingProxy = nullptr;
             skipNextStream = true;
         }
+        else if (policy->PendingRequestSend(serviceProxy))
+            policy->CancelRequestSend(serviceProxy);
+        else
+            LOG_AND_ABORT("CancelRequestSend with no pending request");
     }
 
     services::MethodSerializerFactory& EchoOnStreams::SerializerFactory()
