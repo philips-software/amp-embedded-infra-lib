@@ -217,7 +217,7 @@ include::partial$echoservices/gap_central/GapCentral_ResolvePrivateAddress_seque
 
 *Expected response:* GapCentralResponse.BondInformationReceived.
 
-Returns the number of bonds and the list of bonded devices.
+Returns the number of bonds and the list of bonded devices. `persisted` is true when the bond list has been successfully saved to non-volatile memory. If false, pending changes may be lost on reset.
 
 [mermaid]
 ....
@@ -319,7 +319,7 @@ include::partial$echoservices/gap_central/GapCentral_IdentifyBondedDevice_sequen
 
 *Pre-conditions:* standby.
 
-Enumerate stored bonds via `GetBondInformation` and remove a specific bond by identity address using `RemoveBondWithAddress`.
+Enumerate stored bonds via `GetBondInformation` and remove a specific bond by identity address using `RemoveBondWithAddress`. Check `persisted` in the response to determine whether the bond list, including pending changes, has been saved to non-volatile memory before resetting.
 
 [mermaid]
 ....

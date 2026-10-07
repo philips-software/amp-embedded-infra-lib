@@ -2,4 +2,4 @@ sequenceDiagram
     participant App as App<br>[implements GapPeripheralResponse]
     participant Node as Node<br>[implements GapPeripheral]
     App->>Node: GapPeripheral.GetBondInformation()
-    Node-->>App: GapPeripheralResponse.BondInformationReceived(<br>currentBonds=2,<br>maxBonds=8,<br>bonds=[{addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress}, deviceName="DeviceA"},<br>{addressWithType={address=00:1A:7D:DA:71:13, addressType=publicAddress}, deviceName="DeviceB"}])
+    Node-->>App: GapPeripheralResponse.BondInformationReceived(<br>currentBonds=2,<br>maxBonds=8,<br>bonds=[{addressWithType={address=C4:AB:12:34:56:78, addressType=randomAddress}, deviceName="DeviceA"},<br>{addressWithType={address=00:1A:7D:DA:71:13, addressType=publicAddress}, deviceName="DeviceB"}],<br>persisted=true)

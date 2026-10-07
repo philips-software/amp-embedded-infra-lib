@@ -133,6 +133,8 @@ include::partial$echoservices/gap_peripheral/GapPeripheral_GetIdentityAddress_se
 
 *Expected response:* GapPeripheralResponse.BondInformationReceived.
 
+Returns the number of bonds and the list of bonded devices. `persisted` is true when the bond list has been successfully saved to non-volatile memory. If false, pending changes may be lost on reset.
+
 [mermaid]
 ....
 include::partial$echoservices/gap_peripheral/GapPeripheral_GetBondInformation_sequence.mmd[]
