@@ -259,9 +259,25 @@ namespace services
 
     uint32_t ConfigurationStoreBase::Erase()
     {
-        pendingWriteId = std::nullopt;
-        uint32_t thisId = operationId++;
-        EraseBlob(thisId);
+        if (!pendingEraseId)
+        {
+            pendingWriteId = std::nullopt;
+            pendingEraseId = operationId++;
+        }
+
+        uint32_t thisId = *pendingEraseId;
+        if (!operationInProgress)
+        {
+            operationInProgress = true;
+            inactiveBlob->Erase([this, thisId]()
+                {
+                    activeBlob->Erase([this, thisId]()
+                        {
+                            pendingEraseId = std::nullopt;
+                            OperationCompleted(thisId);
+                        });
+                });
+        }
 
         return thisId;
     }
@@ -328,23 +344,6 @@ namespace services
         OperationCompleted(id);
     }
 
-    void ConfigurationStoreBase::EraseBlob(uint32_t id)
-    {
-        if (operationInProgress)
-            pendingEraseId = id;
-        else
-        {
-            operationInProgress = true;
-            inactiveBlob->Erase([this, id]()
-                {
-                    activeBlob->Erase([this, id]()
-                        {
-                            OperationCompleted(id);
-                        });
-                });
-        }
-    }
-
     void ConfigurationStoreBase::OperationCompleted(uint32_t id)
     {
         really_assert(operationInProgress);
@@ -354,11 +353,7 @@ namespace services
             });
         operationInProgress = false;
         if (pendingEraseId)
-        {
-            auto eraseId = *pendingEraseId;
-            pendingEraseId = std::nullopt;
-            EraseBlob(eraseId);
-        }
+            Erase();
         else
             Unlocked();
     }
