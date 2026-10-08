@@ -237,23 +237,20 @@ namespace services
 
     uint32_t ConfigurationStoreBase::Write()
     {
-        uint32_t thisId = operationId;
+        if (!pendingWriteId)
+            pendingWriteId = operationId++;
 
-        writeRequested = true;
-        if (!writingBlob && !IsLocked())
+        uint32_t thisId = *pendingWriteId;
+        if (!operationInProgress && !IsLocked())
         {
-            ++operationId;
-            writeRequested = false;
-            writingBlob = true;
+            pendingWriteId = std::nullopt;
+            operationInProgress = true;
             Serialize(*activeBlob, [this, thisId]()
                 {
                     inactiveBlob->Erase([this, thisId]()
                         {
-                            BlobWriteDone();
-                            NotifyObservers([thisId](ConfigurationStoreObserver& observer)
-                                {
-                                    observer.OperationDone(thisId);
-                                });
+                            std::swap(activeBlob, inactiveBlob);
+                            OperationCompleted(thisId);
                         });
                 });
         }
@@ -263,21 +260,28 @@ namespace services
 
     uint32_t ConfigurationStoreBase::Erase()
     {
-        uint32_t thisId = operationId;
-        ++operationId;
-
-        inactiveBlob->Erase([this, thisId]()
-            {
-                activeBlob->Erase([this, thisId]()
-                    {
-                        NotifyObservers([thisId](ConfigurationStoreObserver& observer)
-                            {
-                                observer.OperationDone(thisId);
-                            });
-                    });
-            });
+        pendingWriteId = std::nullopt;
+        uint32_t thisId = operationId++;
+        EraseBlob(thisId);
 
         return thisId;
+    }
+
+    void ConfigurationStoreBase::EraseBlob(uint32_t id)
+    {
+        if (operationInProgress)
+            pendingEraseId = id;
+        else
+        {
+            operationInProgress = true;
+            inactiveBlob->Erase([this, id]()
+                {
+                    activeBlob->Erase([this, id]()
+                        {
+                            OperationCompleted(id);
+                        });
+                });
+        }
     }
 
     void ConfigurationStoreBase::Recover(const infra::Function<void(bool success)>& onRecovered)
@@ -321,7 +325,7 @@ namespace services
 
     void ConfigurationStoreBase::Unlocked()
     {
-        if (writeRequested)
+        if (pendingWriteId)
             Write();
     }
 
@@ -335,12 +339,21 @@ namespace services
         onRecovered(success);
     }
 
-    void ConfigurationStoreBase::BlobWriteDone()
+    void ConfigurationStoreBase::OperationCompleted(uint32_t id)
     {
-        std::swap(activeBlob, inactiveBlob);
-        writingBlob = false;
-        if (writeRequested)
-            Write();
+        NotifyObservers([id](ConfigurationStoreObserver& observer)
+            {
+                observer.OperationDone(id);
+            });
+        operationInProgress = false;
+        if (pendingEraseId)
+        {
+            auto eraseId = *pendingEraseId;
+            pendingEraseId = std::nullopt;
+            EraseBlob(eraseId);
+        }
+        else
+            Unlocked();
     }
 
     FactoryDefaultConfigurationStoreBase::FactoryDefaultConfigurationStoreBase(ConfigurationStoreBase& configurationStore, ConfigurationBlob& factoryDefaultBlob)

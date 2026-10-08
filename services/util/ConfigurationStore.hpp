@@ -12,6 +12,7 @@
 #include "infra/util/ReallyAssert.hpp"
 #include "infra/util/WithStorage.hpp"
 #include "services/util/Sha256.hpp"
+#include <optional>
 
 namespace services
 {
@@ -208,15 +209,17 @@ namespace services
 
     private:
         void OnBlobLoaded(bool success);
-        void BlobWriteDone();
+        void EraseBlob(uint32_t id);
+        void OperationCompleted(uint32_t id);
 
     private:
         ConfigurationBlob* activeBlob;
         ConfigurationBlob* inactiveBlob;
         infra::AutoResetFunction<void(bool success)> onRecovered;
         uint32_t operationId = 0;
-        bool writingBlob = false;
-        bool writeRequested = false;
+        bool operationInProgress = false;
+        std::optional<uint32_t> pendingWriteId;
+        std::optional<uint32_t> pendingEraseId;
     };
 
     template<class T>

@@ -285,7 +285,18 @@ public:
         onEraseDone();
     }
 
+    void ExpectSerializeAndWrite(ConfigurationBlobMock& blob, infra::Function<void()>& onWriteDone)
+    {
+        EXPECT_CALL(blob, MaxBlob()).WillOnce(testing::Return(infra::MakeRange(blobData)));
+        EXPECT_CALL(dataInstance, Serialize(testing::_)).WillOnce(testing::Invoke([](infra::ProtoFormatter& formatter)
+            {
+                formatter.PutFixed32(1);
+            }));
+        EXPECT_CALL(blob, Write(4, testing::_)).WillOnce(testing::SaveArg<1>(&onWriteDone));
+    }
+
 public:
+    std::array<uint8_t, 32> blobData;
     infra::Function<void(bool success)> onRecoverDone;
     infra::Function<void()> onEraseDone;
     infra::Function<void(bool success)> onEraseCheckDone;
@@ -465,6 +476,121 @@ TEST_F(ConfigurationStoreTest, double_Write_is_held)
     EXPECT_CALL(configurationBlob1, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
     onWriteDone();
     EXPECT_CALL(observer, OperationDone(1));
+    onEraseDone();
+}
+
+TEST_F(ConfigurationStoreTest, erase_supersedes_pending_write_and_preserves_later_write_id)
+{
+    infra::Function<void()> onWriteDone;
+    ExpectSerializeAndWrite(configurationBlob1, onWriteDone);
+    EXPECT_THAT(configurationStore.Write(), testing::Eq(0));
+    EXPECT_THAT(configurationStore.Write(), testing::Eq(1));
+    EXPECT_THAT(configurationStore.Write(), testing::Eq(1));
+    EXPECT_THAT(configurationStore.Erase(), testing::Eq(2));
+    EXPECT_THAT(configurationStore.Write(), testing::Eq(3));
+    EXPECT_THAT(configurationStore.Write(), testing::Eq(3));
+
+    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onWriteDone();
+
+    testing::InSequence sequence;
+    EXPECT_CALL(observer, OperationDone(0));
+    EXPECT_CALL(configurationBlob1, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onEraseDone();
+
+    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onEraseDone();
+
+    EXPECT_CALL(observer, OperationDone(2));
+    ExpectSerializeAndWrite(configurationBlob2, onWriteDone);
+    onEraseDone();
+
+    EXPECT_CALL(configurationBlob1, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onWriteDone();
+
+    EXPECT_CALL(observer, OperationDone(3));
+    onEraseDone();
+}
+
+TEST_F(ConfigurationStoreTest, erase_does_not_reuse_locked_write_id)
+{
+    std::optional<services::ConfigurationStoreBase::LockGuard> lock(std::in_place, configurationStore.Lock());
+    EXPECT_THAT(configurationStore.Write(), testing::Eq(0));
+    EXPECT_THAT(configurationStore.Write(), testing::Eq(0));
+
+    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    EXPECT_THAT(configurationStore.Erase(), testing::Eq(1));
+    EXPECT_THAT(configurationStore.Write(), testing::Eq(2));
+    EXPECT_THAT(configurationStore.Write(), testing::Eq(2));
+
+    EXPECT_CALL(configurationBlob1, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onEraseDone();
+
+    EXPECT_CALL(observer, OperationDone(1));
+    onEraseDone();
+
+    infra::Function<void()> onWriteDone;
+    ExpectSerializeAndWrite(configurationBlob1, onWriteDone);
+    lock.reset();
+
+    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onWriteDone();
+
+    EXPECT_CALL(observer, OperationDone(2));
+    onEraseDone();
+}
+
+TEST_F(ConfigurationStoreTest, observer_requested_erase_waits_for_all_write_observers)
+{
+    testing::StrictMock<ConfigurationStoreObserverMock> secondObserver{ configurationStore };
+    infra::Function<void()> onWriteDone;
+    ExpectSerializeAndWrite(configurationBlob1, onWriteDone);
+    EXPECT_THAT(configurationStore.Write(), testing::Eq(0));
+
+    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onWriteDone();
+
+    testing::InSequence sequence;
+    EXPECT_CALL(observer, OperationDone(0)).WillOnce(testing::Invoke([this](uint32_t)
+        {
+            EXPECT_THAT(configurationStore.Erase(), testing::Eq(1));
+        }));
+    EXPECT_CALL(secondObserver, OperationDone(0));
+    EXPECT_CALL(configurationBlob1, Erase(testing::_)).WillOnce(testing::Invoke([](const infra::Function<void()>& onDone)
+        {
+            onDone();
+        }));
+    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::Invoke([](const infra::Function<void()>& onDone)
+        {
+            onDone();
+        }));
+    EXPECT_CALL(observer, OperationDone(1));
+    EXPECT_CALL(secondObserver, OperationDone(1));
+    onEraseDone();
+}
+
+TEST_F(ConfigurationStoreTest, synchronous_queued_erase_notifies_after_running_write)
+{
+    infra::Function<void()> onWriteDone;
+    ExpectSerializeAndWrite(configurationBlob1, onWriteDone);
+    auto writeId = configurationStore.Write();
+    auto eraseId = configurationStore.Erase();
+    EXPECT_THAT(eraseId, testing::Gt(writeId));
+
+    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onWriteDone();
+
+    testing::InSequence sequence;
+    EXPECT_CALL(observer, OperationDone(writeId));
+    EXPECT_CALL(configurationBlob1, Erase(testing::_)).WillOnce(testing::Invoke([](const infra::Function<void()>& onDone)
+        {
+            onDone();
+        }));
+    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::Invoke([](const infra::Function<void()>& onDone)
+        {
+            onDone();
+        }));
+    EXPECT_CALL(observer, OperationDone(eraseId));
     onEraseDone();
 }
 
