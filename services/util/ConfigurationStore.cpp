@@ -323,6 +323,7 @@ namespace services
 
     void ConfigurationStoreBase::BlobWriteDone(uint32_t id)
     {
+        really_assert(operationInProgress);
         std::swap(activeBlob, inactiveBlob);
         OperationCompleted(id);
     }
@@ -346,6 +347,7 @@ namespace services
 
     void ConfigurationStoreBase::OperationCompleted(uint32_t id)
     {
+        really_assert(operationInProgress);
         NotifyObservers([id](ConfigurationStoreObserver& observer)
             {
                 observer.OperationDone(id);
