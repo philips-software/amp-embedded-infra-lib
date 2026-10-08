@@ -169,7 +169,7 @@ namespace services
         explicit ConfigurationStoreWriteTracker(ConfigurationStoreInterface& configurationStore);
         ConfigurationStoreWriteTracker(const ConfigurationStoreWriteTracker& other);
         ConfigurationStoreWriteTracker& operator=(const ConfigurationStoreWriteTracker& other) = delete;
-        ~ConfigurationStoreWriteTracker() = default;
+        ~ConfigurationStoreWriteTracker();
 
         uint32_t Write();
         bool IsAwaitingWrite() const;

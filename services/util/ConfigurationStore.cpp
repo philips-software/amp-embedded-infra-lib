@@ -243,6 +243,11 @@ namespace services
         : ConfigurationStoreObserver(other.Subject())
     {}
 
+    ConfigurationStoreWriteTracker::~ConfigurationStoreWriteTracker()
+    {
+        Detach();
+    }
+
     uint32_t ConfigurationStoreWriteTracker::Write()
     {
         waitingForId = Subject().Write();
