@@ -127,7 +127,7 @@ namespace services
     public:
         virtual uint32_t Write() = 0;
 
-        static bool HasOperationIdBeenExecuted(uint32_t latestId, uint32_t idToCheck);
+        static bool IsOperationDone(uint32_t latestId, uint32_t idToCheck);
 
         class LockGuard
         {

@@ -191,7 +191,7 @@ namespace services
         return LockGuard(*this);
     }
 
-    bool ConfigurationStoreInterface::HasOperationIdBeenExecuted(uint32_t latestId, uint32_t idToCheck)
+    bool ConfigurationStoreInterface::IsOperationDone(uint32_t latestId, uint32_t idToCheck)
     {
         return latestId - idToCheck < 0x80000000u;
     }
@@ -259,7 +259,7 @@ namespace services
         if (!latestWriteId)
             return false;
 
-        return !latestExecutedId || !ConfigurationStoreInterface::HasOperationIdBeenExecuted(*latestExecutedId, *latestWriteId);
+        return !latestExecutedId || !ConfigurationStoreInterface::IsOperationDone(*latestExecutedId, *latestWriteId);
     }
 
     void ConfigurationStoreWriteTracker::OperationDone(uint32_t executedId)
@@ -431,7 +431,7 @@ namespace services
 
     void FactoryDefaultConfigurationStoreBase::OperationDone(uint32_t id)
     {
-        if (onRecovered != nullptr && HasOperationIdBeenExecuted(id, eraseOperationId))
+        if (onRecovered != nullptr && IsOperationDone(id, eraseOperationId))
             onRecovered(true);
 
         NotifyObservers([id](ConfigurationStoreObserver& observer)

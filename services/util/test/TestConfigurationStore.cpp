@@ -591,13 +591,13 @@ TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_write_is_pending_until_w
 
 TEST(ConfigurationStoreInterfaceTest, HasOperationIdBeenExecuted_handles_overflow)
 {
-    EXPECT_THAT(services::ConfigurationStoreInterface::HasOperationIdBeenExecuted(5, 5), testing::IsTrue());
-    EXPECT_THAT(services::ConfigurationStoreInterface::HasOperationIdBeenExecuted(6, 5), testing::IsTrue());
-    EXPECT_THAT(services::ConfigurationStoreInterface::HasOperationIdBeenExecuted(4, 5), testing::IsFalse());
-    EXPECT_THAT(services::ConfigurationStoreInterface::HasOperationIdBeenExecuted(0, 0xffffffff), testing::IsTrue());
-    EXPECT_THAT(services::ConfigurationStoreInterface::HasOperationIdBeenExecuted(0xffffffff, 0), testing::IsFalse());
-    EXPECT_THAT(services::ConfigurationStoreInterface::HasOperationIdBeenExecuted(0x7fffffff, 0), testing::IsTrue());
-    EXPECT_THAT(services::ConfigurationStoreInterface::HasOperationIdBeenExecuted(0x80000000, 0), testing::IsFalse());
+    EXPECT_THAT(services::ConfigurationStoreInterface::IsOperationDone(5, 5), testing::IsTrue());
+    EXPECT_THAT(services::ConfigurationStoreInterface::IsOperationDone(6, 5), testing::IsTrue());
+    EXPECT_THAT(services::ConfigurationStoreInterface::IsOperationDone(4, 5), testing::IsFalse());
+    EXPECT_THAT(services::ConfigurationStoreInterface::IsOperationDone(0, 0xffffffff), testing::IsTrue());
+    EXPECT_THAT(services::ConfigurationStoreInterface::IsOperationDone(0xffffffff, 0), testing::IsFalse());
+    EXPECT_THAT(services::ConfigurationStoreInterface::IsOperationDone(0x7fffffff, 0), testing::IsTrue());
+    EXPECT_THAT(services::ConfigurationStoreInterface::IsOperationDone(0x80000000, 0), testing::IsFalse());
 }
 
 class ConfigurationStoreAccessTest
