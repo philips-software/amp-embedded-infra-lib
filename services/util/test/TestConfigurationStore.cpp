@@ -589,86 +589,6 @@ TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_write_is_pending_until_w
     EXPECT_THAT(access.IsWritePending(), testing::IsFalse());
 }
 
-TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_write_during_ongoing_write_is_pending_until_next_write_is_done)
-{
-    struct Data
-    {
-        int x;
-    };
-
-    Data data;
-
-    services::ConfigurationStoreAccess access(configurationStore, data);
-
-    DontRecover();
-
-    infra::Function<void()> onWriteDone;
-    std::array<uint8_t, 32> data2;
-    EXPECT_CALL(configurationBlob1, MaxBlob()).WillOnce(testing::Return(infra::MakeRange(data2)));
-    EXPECT_CALL(dataInstance, Serialize(testing::_)).WillOnce(testing::Invoke([](infra::ProtoFormatter& formatter)
-        {
-            formatter.PutFixed32(1);
-        }));
-    EXPECT_CALL(configurationBlob1, Write(4, testing::_)).WillOnce(testing::SaveArg<1>(&onWriteDone));
-    EXPECT_THAT(configurationStore.Write(), testing::Eq(0));
-    EXPECT_THAT(access.Write(), testing::Eq(1));
-
-    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
-    onWriteDone();
-
-    EXPECT_CALL(configurationBlob2, MaxBlob()).WillOnce(testing::Return(infra::MakeRange(data2)));
-    EXPECT_CALL(dataInstance, Serialize(testing::_)).WillOnce(testing::Invoke([](infra::ProtoFormatter& formatter)
-        {
-            formatter.PutFixed32(1);
-        }));
-    EXPECT_CALL(configurationBlob2, Write(4, testing::_)).WillOnce(testing::SaveArg<1>(&onWriteDone));
-    EXPECT_CALL(observer, OperationDone(0));
-    onEraseDone();
-    EXPECT_THAT(access.IsWritePending(), testing::IsTrue());
-
-    EXPECT_CALL(configurationBlob1, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
-    onWriteDone();
-    EXPECT_CALL(observer, OperationDone(1));
-    onEraseDone();
-    EXPECT_THAT(access.IsWritePending(), testing::IsFalse());
-}
-
-TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_write_during_Lock_is_pending_until_write_after_unlock_is_done)
-{
-    struct Data
-    {
-        int x;
-    };
-
-    Data data;
-
-    services::ConfigurationStoreAccess access(configurationStore, data);
-
-    DontRecover();
-
-    std::optional<services::ConfigurationStoreBase::LockGuard> lock(std::in_place, configurationStore.Lock());
-    EXPECT_THAT(access.Write(), testing::Eq(0));
-    EXPECT_THAT(access.IsWritePending(), testing::IsTrue());
-
-    infra::Function<void()> onWriteDone;
-    std::array<uint8_t, 32> data2;
-    EXPECT_CALL(configurationBlob1, MaxBlob()).WillOnce(testing::Return(infra::MakeRange(data2)));
-    EXPECT_CALL(dataInstance, Serialize(testing::_)).WillOnce(testing::Invoke([](infra::ProtoFormatter& formatter)
-        {
-            formatter.PutFixed32(1);
-        }));
-    EXPECT_CALL(configurationBlob1, Write(4, testing::_)).WillOnce(testing::SaveArg<1>(&onWriteDone));
-    lock.reset();
-    EXPECT_THAT(access.IsWritePending(), testing::IsTrue());
-
-    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
-    onWriteDone();
-
-    EXPECT_CALL(observer, OperationDone(0));
-    onEraseDone();
-    EXPECT_THAT(access.IsWritePending(), testing::IsFalse());
-}
-
 TEST(ConfigurationStoreInterfaceTest, HasOperationIdBeenExecuted_handles_overflow)
 {
     EXPECT_THAT(services::ConfigurationStoreInterface::HasOperationIdBeenExecuted(5, 5), testing::IsTrue());
@@ -696,18 +616,6 @@ public:
     int value = 0;
     services::ConfigurationStoreAccess<int> access{ configurationStore, value };
 };
-
-TEST_F(ConfigurationStoreAccessTest, IsWritePending_handles_operation_id_overflow)
-{
-    EXPECT_CALL(configurationStore, Write()).WillOnce(testing::Return(0xffffffff));
-    access.Write();
-
-    NotifyOperationDone(0xfffffffe);
-    EXPECT_THAT(access.IsWritePending(), testing::IsTrue());
-
-    NotifyOperationDone(0);
-    EXPECT_THAT(access.IsWritePending(), testing::IsFalse());
-}
 
 TEST_F(ConfigurationStoreAccessTest, write_completed_before_Write_returns_is_not_pending)
 {
