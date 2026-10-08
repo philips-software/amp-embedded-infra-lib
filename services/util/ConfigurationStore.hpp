@@ -12,6 +12,7 @@
 #include "infra/util/ReallyAssert.hpp"
 #include "infra/util/WithStorage.hpp"
 #include "services/util/Sha256.hpp"
+#include <optional>
 
 namespace services
 {
@@ -126,6 +127,8 @@ namespace services
     public:
         virtual uint32_t Write() = 0;
 
+        static bool HasOperationIdBeenExecuted(uint32_t latestId, uint32_t idToCheck);
+
         class LockGuard
         {
         public:
@@ -159,6 +162,25 @@ namespace services
         {}
     };
 
+    class ConfigurationStoreWriteTracker
+        : private ConfigurationStoreObserver
+    {
+    public:
+        explicit ConfigurationStoreWriteTracker(ConfigurationStoreInterface& configurationStore);
+        ConfigurationStoreWriteTracker(const ConfigurationStoreWriteTracker& other);
+        ConfigurationStoreWriteTracker& operator=(const ConfigurationStoreWriteTracker& other) = delete;
+        ~ConfigurationStoreWriteTracker() = default;
+
+        uint32_t Write();
+        bool IsAwaitingWrite() const;
+
+    private:
+        void OperationDone(uint32_t id) override;
+
+    private:
+        std::optional<uint32_t> lastWriteId;
+    };
+
     template<class T>
     class ConfigurationStoreAccess
     {
@@ -173,6 +195,7 @@ namespace services
         const T* operator->() const;
 
         uint32_t Write();
+        bool IsAwaitingWrite() const;
 
         template<class U>
         ConfigurationStoreAccess<U> Configuration(U& member) const;
@@ -185,6 +208,7 @@ namespace services
 
         ConfigurationStoreInterface& configurationStore;
         T& configuration;
+        ConfigurationStoreWriteTracker writeTracker;
     };
 
     class ConfigurationStoreBase
@@ -419,6 +443,7 @@ namespace services
     ConfigurationStoreAccess<T>::ConfigurationStoreAccess(ConfigurationStoreInterface& configurationStore, T& configuration)
         : configurationStore(configurationStore)
         , configuration(configuration)
+        , writeTracker(configurationStore)
     {}
 
     template<class T>
@@ -426,6 +451,7 @@ namespace services
     ConfigurationStoreAccess<T>::ConfigurationStoreAccess(const ConfigurationStoreAccess<U>& other)
         : configurationStore(other.configurationStore)
         , configuration(other.configuration)
+        , writeTracker(other.configurationStore)
     {}
 
     template<class T>
@@ -455,7 +481,13 @@ namespace services
     template<class T>
     uint32_t ConfigurationStoreAccess<T>::Write()
     {
-        return configurationStore.Write();
+        return writeTracker.Write();
+    }
+
+    template<class T>
+    bool ConfigurationStoreAccess<T>::IsAwaitingWrite() const
+    {
+        return writeTracker.IsAwaitingWrite();
     }
 
     template<class T>
