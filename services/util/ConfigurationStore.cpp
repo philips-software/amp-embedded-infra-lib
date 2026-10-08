@@ -250,19 +250,21 @@ namespace services
 
     uint32_t ConfigurationStoreWriteTracker::Write()
     {
-        waitingForId = Subject().Write();
-        return *waitingForId;
+        latestWriteId = Subject().Write();
+        return *latestWriteId;
     }
 
     bool ConfigurationStoreWriteTracker::IsAwaitingWrite() const
     {
-        return waitingForId.has_value();
+        if (!latestWriteId)
+            return false;
+
+        return !latestExecutedId || !ConfigurationStoreInterface::HasOperationIdBeenExecuted(*latestExecutedId, *latestWriteId);
     }
 
-    void ConfigurationStoreWriteTracker::OperationDone(uint32_t completedId)
+    void ConfigurationStoreWriteTracker::OperationDone(uint32_t executedId)
     {
-        if (waitingForId && ConfigurationStoreInterface::HasOperationIdBeenExecuted(completedId, *waitingForId))
-            waitingForId.reset();
+        latestExecutedId = executedId;
     }
 
     ConfigurationStoreBase::ConfigurationStoreBase(ConfigurationBlob& blob1, ConfigurationBlob& blob2)

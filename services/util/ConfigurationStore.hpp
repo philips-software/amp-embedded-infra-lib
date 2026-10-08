@@ -175,10 +175,11 @@ namespace services
         bool IsAwaitingWrite() const;
 
     private:
-        void OperationDone(uint32_t id) override;
+        void OperationDone(uint32_t executedId) override;
 
     private:
-        std::optional<uint32_t> waitingForId;
+        std::optional<uint32_t> latestWriteId;
+        std::optional<uint32_t> latestExecutedId;
     };
 
     template<class T>

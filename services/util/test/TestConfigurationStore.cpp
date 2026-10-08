@@ -709,6 +709,32 @@ TEST_F(ConfigurationStoreAccessTest, IsAwaitingWrite_handles_operation_id_overfl
     EXPECT_THAT(access.IsAwaitingWrite(), testing::IsFalse());
 }
 
+TEST_F(ConfigurationStoreAccessTest, write_completed_before_Write_returns_is_not_awaited)
+{
+    EXPECT_CALL(configurationStore, Write()).WillOnce(testing::Invoke([this]()
+        {
+            NotifyOperationDone(5);
+            return 5;
+        }));
+    access.Write();
+
+    EXPECT_THAT(access.IsAwaitingWrite(), testing::IsFalse());
+}
+
+TEST_F(ConfigurationStoreAccessTest, write_is_awaited_when_only_earlier_operation_completed_before_Write_returns)
+{
+    EXPECT_CALL(configurationStore, Write()).WillOnce(testing::Invoke([this]()
+        {
+            NotifyOperationDone(5);
+            return 6;
+        }));
+    access.Write();
+    EXPECT_THAT(access.IsAwaitingWrite(), testing::IsTrue());
+
+    NotifyOperationDone(6);
+    EXPECT_THAT(access.IsAwaitingWrite(), testing::IsFalse());
+}
+
 TEST_F(ConfigurationStoreAccessTest, copies_do_not_inherit_pending_write)
 {
     EXPECT_CALL(configurationStore, Write()).WillOnce(testing::Return(3));
