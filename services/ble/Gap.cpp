@@ -176,6 +176,11 @@ namespace services
         GapPeripheralObserver::Subject().SetConnectionParameters(connParam);
     }
 
+    void GapPeripheralDecorator::SetDeviceName(infra::BoundedConstString name)
+    {
+        GapPeripheralObserver::Subject().SetDeviceName(name);
+    }
+
     void GapCentralDecorator::DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered)
     {
         GapCentralObserver::SubjectType::NotifyObservers([&deviceDiscovered](auto& obs)

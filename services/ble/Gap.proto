@@ -151,6 +151,14 @@ message PairingStatus
     PairingFailedReason reason = 2;
 }
 
+// Value of the Device Name characteristic of a GAP (Generic Access) service.
+// See Bluetooth Core Specification v6.3, Vol 3, Part C, Section 12.1
+// UTF-8 encoded and not zero-terminated.
+message DeviceName
+{
+    bytes value = 1 [(bytes_size) = 32];
+}
+
 message Bond
 {
     // Identity address of the peer
@@ -160,7 +168,7 @@ message Bond
     // Read from the peer on bond created and on every successful encryption change.
     // Not unique; truncated to 32 bytes.
     // Can be empty if device has an empty name, or has not been read yet.
-    bytes deviceName = 2 [(bytes_size) = 32];
+    DeviceName deviceName = 2;
 }
 
 message BondInformation
@@ -347,6 +355,13 @@ service GapPeripheral
     //   of receiving AuthenticationRequired, otherwise pairing will fail.
     //   If peer disconnects before NumericComparisonConfirm, state becomes standby. PairingResult may or may not be generated
     rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 14; }
+
+    // Allowed states: standby
+    // Description: Sets the Device Name characteristic of the local GAP service, which a connected peer can read.
+    //   The name remains in effect until it is overwritten or the device is rebooted.
+    //   If not set by this method, a platform-defined default name is used.
+    //   Call SetDeviceName before creating new bonds so bonded peers store the intended device name.
+    rpc SetDeviceName(DeviceName) returns (Nothing) { option (method_id) = 17; }
 }
 
 service GapPeripheralResponse
@@ -493,14 +508,6 @@ message ResolvedPrivateAddress
 {
     bool success = 1; // True if the address was successfully resolved to a bond, false otherwise.
     Address identityAddress = 2; // The resolved identity address
-}
-
-// Value of the Device Name characteristic of the local GAP (Generic Access) service.
-// See Bluetooth Core Specification v6.3, Vol 3, Part C, Section 12.1
-// UTF-8 encoded and not zero-terminated.
-message DeviceName
-{
-    bytes name = 1 [(bytes_size) = 32];
 }
 
 // ==================================================
