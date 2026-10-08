@@ -249,8 +249,7 @@ namespace services
                 {
                     inactiveBlob->Erase([this, thisId]()
                         {
-                            std::swap(activeBlob, inactiveBlob);
-                            OperationCompleted(thisId);
+                            BlobWriteDone(thisId);
                         });
                 });
         }
@@ -265,23 +264,6 @@ namespace services
         EraseBlob(thisId);
 
         return thisId;
-    }
-
-    void ConfigurationStoreBase::EraseBlob(uint32_t id)
-    {
-        if (operationInProgress)
-            pendingEraseId = id;
-        else
-        {
-            operationInProgress = true;
-            inactiveBlob->Erase([this, id]()
-                {
-                    activeBlob->Erase([this, id]()
-                        {
-                            OperationCompleted(id);
-                        });
-                });
-        }
     }
 
     void ConfigurationStoreBase::Recover(const infra::Function<void(bool success)>& onRecovered)
@@ -337,6 +319,29 @@ namespace services
             Deserialize(*inactiveBlob);
 
         onRecovered(success);
+    }
+
+    void ConfigurationStoreBase::BlobWriteDone(uint32_t id)
+    {
+        std::swap(activeBlob, inactiveBlob);
+        OperationCompleted(id);
+    }
+
+    void ConfigurationStoreBase::EraseBlob(uint32_t id)
+    {
+        if (operationInProgress)
+            pendingEraseId = id;
+        else
+        {
+            operationInProgress = true;
+            inactiveBlob->Erase([this, id]()
+                {
+                    activeBlob->Erase([this, id]()
+                        {
+                            OperationCompleted(id);
+                        });
+                });
+        }
     }
 
     void ConfigurationStoreBase::OperationCompleted(uint32_t id)

@@ -209,6 +209,7 @@ namespace services
 
     private:
         void OnBlobLoaded(bool success);
+        void BlobWriteDone(uint32_t id);
         void EraseBlob(uint32_t id);
         void OperationCompleted(uint32_t id);
 
