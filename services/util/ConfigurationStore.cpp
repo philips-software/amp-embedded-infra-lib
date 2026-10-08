@@ -254,7 +254,7 @@ namespace services
         return *latestWriteId;
     }
 
-    bool ConfigurationStoreWriteTracker::IsAwaitingWrite() const
+    bool ConfigurationStoreWriteTracker::IsWritePending() const
     {
         if (!latestWriteId)
             return false;

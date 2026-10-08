@@ -172,7 +172,7 @@ namespace services
         ~ConfigurationStoreWriteTracker();
 
         uint32_t Write();
-        bool IsAwaitingWrite() const;
+        bool IsWritePending() const;
 
     private:
         void OperationDone(uint32_t executedId) override;
@@ -488,7 +488,7 @@ namespace services
     template<class T>
     bool ConfigurationStoreAccess<T>::IsWritePending() const
     {
-        return writeTracker.IsAwaitingWrite();
+        return writeTracker.IsWritePending();
     }
 
     template<class T>
