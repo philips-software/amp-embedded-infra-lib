@@ -191,9 +191,9 @@ namespace services
         return LockGuard(*this);
     }
 
-    bool ConfigurationStoreInterface::IsOperationDone(uint32_t latestId, uint32_t idToCheck)
+    bool ConfigurationStoreInterface::IsOperationDone(uint32_t latestCompletedId, uint32_t idToCheck)
     {
-        return latestId - idToCheck < 0x80000000u;
+        return latestCompletedId - idToCheck < 0x80000000u;
     }
 
     bool ConfigurationStoreInterface::IsLocked() const
@@ -259,12 +259,15 @@ namespace services
         if (!latestWriteId)
             return false;
 
-        return !latestExecutedId || !ConfigurationStoreInterface::IsOperationDone(*latestExecutedId, *latestWriteId);
+        if (!latestCompletedId)
+            return true;
+
+        return !ConfigurationStoreInterface::IsOperationDone(*latestCompletedId, *latestWriteId);
     }
 
     void ConfigurationStoreWriteTracker::OperationDone(uint32_t executedId)
     {
-        latestExecutedId = executedId;
+        latestCompletedId = executedId;
     }
 
     ConfigurationStoreBase::ConfigurationStoreBase(ConfigurationBlob& blob1, ConfigurationBlob& blob2)

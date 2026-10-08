@@ -179,7 +179,7 @@ namespace services
 
     private:
         std::optional<uint32_t> latestWriteId;
-        std::optional<uint32_t> latestExecutedId;
+        std::optional<uint32_t> latestCompletedId;
     };
 
     template<class T>
