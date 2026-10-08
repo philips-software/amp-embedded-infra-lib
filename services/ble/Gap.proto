@@ -653,7 +653,8 @@ service GapCentral
     // Allowed states: standby
     // Description: Sets the Device Name characteristic of the local GAP service, which a connected peer can read.
     //   The name remains in effect until it is overwritten or the device is rebooted.
-    //   If not set by this method, the name from the configuration of the device is used.
+    //   If not set by this method, a platform-defined default name is used.
+    //   Call SetDeviceName before creating new bonds so bonded peers store the intended device name.
     rpc SetDeviceName(DeviceName) returns (Nothing) { option (method_id) = 18; }
 
     // DEPRECATED: Will be removed in the near future.
