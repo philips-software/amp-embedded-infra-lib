@@ -178,7 +178,7 @@ namespace services
         void OperationDone(uint32_t id) override;
 
     private:
-        std::optional<uint32_t> lastWriteId;
+        std::optional<uint32_t> waitingForId;
     };
 
     template<class T>

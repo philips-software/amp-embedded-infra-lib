@@ -245,19 +245,19 @@ namespace services
 
     uint32_t ConfigurationStoreWriteTracker::Write()
     {
-        lastWriteId = Subject().Write();
-        return *lastWriteId;
+        waitingForId = Subject().Write();
+        return *waitingForId;
     }
 
     bool ConfigurationStoreWriteTracker::IsAwaitingWrite() const
     {
-        return lastWriteId.has_value();
+        return waitingForId.has_value();
     }
 
-    void ConfigurationStoreWriteTracker::OperationDone(uint32_t id)
+    void ConfigurationStoreWriteTracker::OperationDone(uint32_t completedId)
     {
-        if (lastWriteId && ConfigurationStoreInterface::HasOperationIdBeenExecuted(id, *lastWriteId))
-            lastWriteId.reset();
+        if (waitingForId && ConfigurationStoreInterface::HasOperationIdBeenExecuted(completedId, *waitingForId))
+            waitingForId.reset();
     }
 
     ConfigurationStoreBase::ConfigurationStoreBase(ConfigurationBlob& blob1, ConfigurationBlob& blob2)
