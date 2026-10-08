@@ -555,7 +555,7 @@ TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_writes_ConfigurationStor
     access.Write();
 }
 
-TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_is_awaiting_write_until_write_is_done)
+TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_write_is_pending_until_write_is_done)
 {
     struct Data
     {
@@ -567,7 +567,7 @@ TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_is_awaiting_write_until_
     services::ConfigurationStoreAccess access(configurationStore, data);
 
     DontRecover();
-    EXPECT_THAT(access.IsAwaitingWrite(), testing::IsFalse());
+    EXPECT_THAT(access.IsWritePending(), testing::IsFalse());
 
     infra::Function<void()> onWriteDone;
     std::array<uint8_t, 32> data2;
@@ -578,18 +578,18 @@ TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_is_awaiting_write_until_
         }));
     EXPECT_CALL(configurationBlob1, Write(4, testing::_)).WillOnce(testing::SaveArg<1>(&onWriteDone));
     EXPECT_THAT(access.Write(), testing::Eq(0));
-    EXPECT_THAT(access.IsAwaitingWrite(), testing::IsTrue());
+    EXPECT_THAT(access.IsWritePending(), testing::IsTrue());
 
     EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
     onWriteDone();
-    EXPECT_THAT(access.IsAwaitingWrite(), testing::IsTrue());
+    EXPECT_THAT(access.IsWritePending(), testing::IsTrue());
 
     EXPECT_CALL(observer, OperationDone(0));
     onEraseDone();
-    EXPECT_THAT(access.IsAwaitingWrite(), testing::IsFalse());
+    EXPECT_THAT(access.IsWritePending(), testing::IsFalse());
 }
 
-TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_written_during_ongoing_write_awaits_next_write)
+TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_write_during_ongoing_write_is_pending_until_next_write_is_done)
 {
     struct Data
     {
@@ -624,16 +624,16 @@ TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_written_during_ongoing_w
     EXPECT_CALL(configurationBlob2, Write(4, testing::_)).WillOnce(testing::SaveArg<1>(&onWriteDone));
     EXPECT_CALL(observer, OperationDone(0));
     onEraseDone();
-    EXPECT_THAT(access.IsAwaitingWrite(), testing::IsTrue());
+    EXPECT_THAT(access.IsWritePending(), testing::IsTrue());
 
     EXPECT_CALL(configurationBlob1, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
     onWriteDone();
     EXPECT_CALL(observer, OperationDone(1));
     onEraseDone();
-    EXPECT_THAT(access.IsAwaitingWrite(), testing::IsFalse());
+    EXPECT_THAT(access.IsWritePending(), testing::IsFalse());
 }
 
-TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_written_during_Lock_awaits_write_after_unlock)
+TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_write_during_Lock_is_pending_until_write_after_unlock_is_done)
 {
     struct Data
     {
@@ -648,7 +648,7 @@ TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_written_during_Lock_awai
 
     std::optional<services::ConfigurationStoreBase::LockGuard> lock(std::in_place, configurationStore.Lock());
     EXPECT_THAT(access.Write(), testing::Eq(0));
-    EXPECT_THAT(access.IsAwaitingWrite(), testing::IsTrue());
+    EXPECT_THAT(access.IsWritePending(), testing::IsTrue());
 
     infra::Function<void()> onWriteDone;
     std::array<uint8_t, 32> data2;
@@ -659,14 +659,14 @@ TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_written_during_Lock_awai
         }));
     EXPECT_CALL(configurationBlob1, Write(4, testing::_)).WillOnce(testing::SaveArg<1>(&onWriteDone));
     lock.reset();
-    EXPECT_THAT(access.IsAwaitingWrite(), testing::IsTrue());
+    EXPECT_THAT(access.IsWritePending(), testing::IsTrue());
 
     EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
     onWriteDone();
 
     EXPECT_CALL(observer, OperationDone(0));
     onEraseDone();
-    EXPECT_THAT(access.IsAwaitingWrite(), testing::IsFalse());
+    EXPECT_THAT(access.IsWritePending(), testing::IsFalse());
 }
 
 TEST(ConfigurationStoreInterfaceTest, HasOperationIdBeenExecuted_handles_overflow)
@@ -697,19 +697,19 @@ public:
     services::ConfigurationStoreAccess<int> access{ configurationStore, value };
 };
 
-TEST_F(ConfigurationStoreAccessTest, IsAwaitingWrite_handles_operation_id_overflow)
+TEST_F(ConfigurationStoreAccessTest, IsWritePending_handles_operation_id_overflow)
 {
     EXPECT_CALL(configurationStore, Write()).WillOnce(testing::Return(0xffffffff));
     access.Write();
 
     NotifyOperationDone(0xfffffffe);
-    EXPECT_THAT(access.IsAwaitingWrite(), testing::IsTrue());
+    EXPECT_THAT(access.IsWritePending(), testing::IsTrue());
 
     NotifyOperationDone(0);
-    EXPECT_THAT(access.IsAwaitingWrite(), testing::IsFalse());
+    EXPECT_THAT(access.IsWritePending(), testing::IsFalse());
 }
 
-TEST_F(ConfigurationStoreAccessTest, write_completed_before_Write_returns_is_not_awaited)
+TEST_F(ConfigurationStoreAccessTest, write_completed_before_Write_returns_is_not_pending)
 {
     EXPECT_CALL(configurationStore, Write()).WillOnce(testing::Invoke([this]()
         {
@@ -718,10 +718,10 @@ TEST_F(ConfigurationStoreAccessTest, write_completed_before_Write_returns_is_not
         }));
     access.Write();
 
-    EXPECT_THAT(access.IsAwaitingWrite(), testing::IsFalse());
+    EXPECT_THAT(access.IsWritePending(), testing::IsFalse());
 }
 
-TEST_F(ConfigurationStoreAccessTest, write_is_awaited_when_only_earlier_operation_completed_before_Write_returns)
+TEST_F(ConfigurationStoreAccessTest, write_is_pending_when_only_earlier_operation_completed_before_Write_returns)
 {
     EXPECT_CALL(configurationStore, Write()).WillOnce(testing::Invoke([this]()
         {
@@ -729,10 +729,10 @@ TEST_F(ConfigurationStoreAccessTest, write_is_awaited_when_only_earlier_operatio
             return 6;
         }));
     access.Write();
-    EXPECT_THAT(access.IsAwaitingWrite(), testing::IsTrue());
+    EXPECT_THAT(access.IsWritePending(), testing::IsTrue());
 
     NotifyOperationDone(6);
-    EXPECT_THAT(access.IsAwaitingWrite(), testing::IsFalse());
+    EXPECT_THAT(access.IsWritePending(), testing::IsFalse());
 }
 
 TEST_F(ConfigurationStoreAccessTest, copies_do_not_inherit_pending_write)
@@ -743,15 +743,15 @@ TEST_F(ConfigurationStoreAccessTest, copies_do_not_inherit_pending_write)
     services::ConfigurationStoreAccess<int> copy(access);
     services::ConfigurationStoreAccess<int> member = access.Configuration(value);
 
-    EXPECT_THAT(access.IsAwaitingWrite(), testing::IsTrue());
-    EXPECT_THAT(copy.IsAwaitingWrite(), testing::IsFalse());
-    EXPECT_THAT(member.IsAwaitingWrite(), testing::IsFalse());
+    EXPECT_THAT(access.IsWritePending(), testing::IsTrue());
+    EXPECT_THAT(copy.IsWritePending(), testing::IsFalse());
+    EXPECT_THAT(member.IsWritePending(), testing::IsFalse());
 
     EXPECT_CALL(configurationStore, Write()).WillOnce(testing::Return(4));
     copy.Write();
     NotifyOperationDone(3);
-    EXPECT_THAT(access.IsAwaitingWrite(), testing::IsFalse());
-    EXPECT_THAT(copy.IsAwaitingWrite(), testing::IsTrue());
+    EXPECT_THAT(access.IsWritePending(), testing::IsFalse());
+    EXPECT_THAT(copy.IsWritePending(), testing::IsTrue());
 }
 
 class FactoryDefaultConfigurationStoreTest
@@ -968,7 +968,7 @@ TEST_F(FactoryDefaultConfigurationStoreTest, when_ConfigurationStore_Recover_fai
     EXPECT_EQ(5, configurationStore.Configuration().data);
 }
 
-TEST_F(FactoryDefaultConfigurationStoreTest, ConfigurationStoreAccess_is_awaiting_write_until_write_is_done)
+TEST_F(FactoryDefaultConfigurationStoreTest, ConfigurationStoreAccess_write_is_pending_until_write_is_done)
 {
     auto access = configurationStore.Access(configurationStore.Configuration().data);
 
@@ -976,14 +976,14 @@ TEST_F(FactoryDefaultConfigurationStoreTest, ConfigurationStoreAccess_is_awaitin
     infra::Function<void()> onWriteDone;
     EXPECT_CALL(configurationBlob1, Write(4, testing::_)).WillOnce(testing::SaveArg<1>(&onWriteDone));
     access.Write();
-    EXPECT_THAT(access.IsAwaitingWrite(), testing::IsTrue());
+    EXPECT_THAT(access.IsWritePending(), testing::IsTrue());
 
     EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
     onWriteDone();
-    EXPECT_THAT(access.IsAwaitingWrite(), testing::IsTrue());
+    EXPECT_THAT(access.IsWritePending(), testing::IsTrue());
 
     onEraseDone();
-    EXPECT_THAT(access.IsAwaitingWrite(), testing::IsFalse());
+    EXPECT_THAT(access.IsWritePending(), testing::IsFalse());
 }
 
 TEST_F(FactoryDefaultConfigurationStoreTest, recovery_is_not_completed_by_operation_preceding_erase)

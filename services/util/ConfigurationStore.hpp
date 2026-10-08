@@ -196,7 +196,7 @@ namespace services
         const T* operator->() const;
 
         uint32_t Write();
-        bool IsAwaitingWrite() const;
+        bool IsWritePending() const;
 
         template<class U>
         ConfigurationStoreAccess<U> Configuration(U& member) const;
@@ -486,7 +486,7 @@ namespace services
     }
 
     template<class T>
-    bool ConfigurationStoreAccess<T>::IsAwaitingWrite() const
+    bool ConfigurationStoreAccess<T>::IsWritePending() const
     {
         return writeTracker.IsAwaitingWrite();
     }
