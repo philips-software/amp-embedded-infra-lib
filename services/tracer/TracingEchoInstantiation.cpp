@@ -3,7 +3,7 @@
 namespace main_
 {
     TracingEchoOnSesame::TracingEchoOnSesame(Sesame::CobsStorageBase& storage, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, services::Tracer& tracer)
-        : cobs(storage.cobsSendStorage, storage.cobsReceivedMessage, serialCommunication)
+        : cobs(storage.cobsSendMessage, storage.cobsReceivedMessage, serialCommunication)
         , windowed(storage.windowedReceivedMessage, storage.windowedReceiveBuffers, cobs)
         , echo(serializerFactory, services::echoErrorPolicyAbort, tracer, windowed)
     {}

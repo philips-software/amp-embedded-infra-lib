@@ -7,6 +7,7 @@
 #include "services/tracer/GlobalTracer.hpp"
 #include "services/tracer/TracerWithPrefix.hpp"
 #include "services/tracer/TracingEchoInstantiationSecured.hpp"
+#include "services/util/EchoInstantiationSecured.hpp"
 #include "services/util/SerialCommunicationLoopback.hpp"
 #include "gmock/gmock.h"
 
@@ -28,11 +29,11 @@ namespace
 
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<LeftSize> leftSerial{ serial.Server() };
         services::MethodSerializerFactory::OnHeap leftSerializerFactory;
-        main_::EchoOnSesameSecuredSymmetricKey::WithMessageSize<LeftSize, 2> leftEcho{ leftSerial, leftSerializerFactory, keyMaterialLeft, randomDataGenerator };
+        typename main_::EchoOnSesameSecuredSymmetricKey<LeftSize, 2>::WithCryptoMbedTls leftEcho{ leftSerial, leftSerializerFactory, keyMaterialLeft, randomDataGenerator };
 
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<RightSize> rightSerial{ serial.Client() };
         services::MethodSerializerFactory::OnHeap rightSerializerFactory;
-        main_::EchoOnSesameSecuredSymmetricKey::WithMessageSize<RightSize, 2> rightEcho{ rightSerial, rightSerializerFactory, keyMaterialRight, randomDataGenerator };
+        typename main_::EchoOnSesameSecuredSymmetricKey<RightSize, 2>::WithCryptoMbedTls rightEcho{ rightSerial, rightSerializerFactory, keyMaterialRight, randomDataGenerator };
 
         services::ServiceStubProxy serviceProxy{ leftEcho.echo };
         testing::StrictMock<services::ServiceStub> service{ rightEcho.echo };
@@ -172,12 +173,12 @@ namespace
         services::TracerWithPrefix tracerLeft{ "Left ", services::GlobalTracer() };
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<LeftSize> leftSerial{ serial.Server() };
         services::MethodSerializerFactory::OnHeap leftSerializerFactory;
-        typename main_::TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<LeftSize, 2>::WithCryptoMbedTls leftEcho{ leftSerial, leftSerializerFactory, keyMaterialLeft, randomDataGenerator, tracerLeft };
+        typename main_::TracingEchoOnSesameSecuredDiffieHellman<LeftSize, 2>::WithCryptoMbedTls leftEcho{ leftSerial, leftSerializerFactory, keyMaterialLeft, randomDataGenerator, tracerLeft };
 
         services::TracerWithPrefix tracerRight{ "Right                                                      ", services::GlobalTracer() };
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<RightSize> rightSerial{ serial.Client() };
         services::MethodSerializerFactory::OnHeap rightSerializerFactory;
-        typename main_::TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<RightSize, 2>::WithCryptoMbedTls rightEcho{ rightSerial, rightSerializerFactory, keyMaterialRight, randomDataGenerator, tracerRight };
+        typename main_::TracingEchoOnSesameSecuredDiffieHellman<RightSize, 2>::WithCryptoMbedTls rightEcho{ rightSerial, rightSerializerFactory, keyMaterialRight, randomDataGenerator, tracerRight };
 
         services::ServiceStubProxy serviceProxy{ leftEcho.echo };
         testing::StrictMock<services::ServiceStub> service{ rightEcho.echo };

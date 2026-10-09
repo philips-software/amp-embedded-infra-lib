@@ -42,7 +42,7 @@ namespace services
         return result;
     }
 
-    SesameSecured::SesameSecured(AesGcmEncryptors& encryptors, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate,
+    SesameSecured::SesameSecured(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, AesGcmEncryptors& encryptors, Sesame& delegate,
         const KeyMaterial& keyMaterial)
         : SesameObserver(delegate)
         , sendEncryption(encryptors.sendEncryption)
@@ -58,8 +58,8 @@ namespace services
         SetReceiveKey(initialReceiveKey, initialReceiveIv);
     }
 
-    SesameSecured::SesameSecured(AesGcmEncryptors& encryptors, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial)
-        : SesameSecured(encryptors, sendBuffer, receiveBuffer, delegate, ConvertKeyMaterial(keyMaterial))
+    SesameSecured::SesameSecured(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, AesGcmEncryptors& encryptors, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial)
+        : SesameSecured(sendBuffer, receiveBuffer, encryptors, delegate, ConvertKeyMaterial(keyMaterial))
     {}
 
     void SesameSecured::SetSendKey(const KeyType& newSendKey, const IvType& newSendIv)
@@ -212,14 +212,4 @@ namespace services
                 observer.IntegrityCheckFailed();
             });
     }
-
-#ifdef EMIL_USE_MBEDTLS
-    SesameSecured::WithCryptoMbedTls::WithCryptoMbedTls(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const KeyMaterial& keyMaterial)
-        : SesameSecured(*this, sendBuffer, receiveBuffer, delegate, keyMaterial)
-    {}
-
-    SesameSecured::WithCryptoMbedTls::WithCryptoMbedTls(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial)
-        : SesameSecured(*this, sendBuffer, receiveBuffer, delegate, keyMaterial)
-    {}
-#endif
 }
