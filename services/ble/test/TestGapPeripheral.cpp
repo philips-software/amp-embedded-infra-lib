@@ -70,5 +70,8 @@ namespace services
                 EXPECT_EQ(param.supervisorTimeoutMs, connParam.supervisorTimeoutMs);
             }));
         decorator.SetConnectionParameters(connParam);
+
+        EXPECT_CALL(gap, SetDeviceName(infra::BoundedConstString("peripheral")));
+        decorator.SetDeviceName("peripheral");
     }
 }

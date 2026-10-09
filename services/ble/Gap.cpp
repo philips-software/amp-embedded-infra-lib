@@ -176,6 +176,11 @@ namespace services
         GapPeripheralObserver::Subject().SetConnectionParameters(connParam);
     }
 
+    void GapPeripheralDecorator::SetDeviceName(infra::BoundedConstString name)
+    {
+        GapPeripheralObserver::Subject().SetDeviceName(name);
+    }
+
     void GapCentralDecorator::DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered)
     {
         GapCentralObserver::SubjectType::NotifyObservers([&deviceDiscovered](auto& obs)
@@ -220,6 +225,11 @@ namespace services
     void GapCentralDecorator::SetPrivacyMode(bool enabled)
     {
         GapCentralObserver::Subject().SetPrivacyMode(enabled);
+    }
+
+    void GapCentralDecorator::SetDeviceName(infra::BoundedConstString name)
+    {
+        GapCentralObserver::Subject().SetDeviceName(name);
     }
 
     GapAdvertisingDataParser::GapAdvertisingDataParser(infra::ConstByteRange data)

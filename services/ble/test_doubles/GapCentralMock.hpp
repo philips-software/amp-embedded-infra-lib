@@ -16,6 +16,7 @@ namespace services
         MOCK_METHOD(void, StartDeviceDiscovery, ());
         MOCK_METHOD(std::optional<hal::MacAddress>, ResolvePrivateAddress, (hal::MacAddress address), (const));
         MOCK_METHOD(void, SetPrivacyMode, (bool enabled));
+        MOCK_METHOD(void, SetDeviceName, (infra::BoundedConstString name));
 
         void ChangeState(GapState newState)
         {
