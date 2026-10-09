@@ -191,6 +191,11 @@ namespace services
         return LockGuard(*this);
     }
 
+    bool ConfigurationStoreInterface::IsOperationDone(uint32_t latestCompletedId, uint32_t idToCheck)
+    {
+        return latestCompletedId - idToCheck < 0x80000000u;
+    }
+
     bool ConfigurationStoreInterface::IsLocked() const
     {
         return lockCount != 0;
@@ -228,6 +233,41 @@ namespace services
         --store->lockCount;
         if (store->lockCount == 0)
             store->Unlocked();
+    }
+
+    ConfigurationStoreWriteTracker::ConfigurationStoreWriteTracker(ConfigurationStoreInterface& configurationStore)
+        : ConfigurationStoreObserver(configurationStore)
+    {}
+
+    ConfigurationStoreWriteTracker::ConfigurationStoreWriteTracker(const ConfigurationStoreWriteTracker& other)
+        : ConfigurationStoreObserver(other.Subject())
+    {}
+
+    ConfigurationStoreWriteTracker::~ConfigurationStoreWriteTracker()
+    {
+        Detach();
+    }
+
+    uint32_t ConfigurationStoreWriteTracker::Write()
+    {
+        latestWriteId = Subject().Write();
+        return *latestWriteId;
+    }
+
+    bool ConfigurationStoreWriteTracker::IsWritePending() const
+    {
+        if (!latestWriteId)
+            return false;
+
+        if (!latestCompletedId)
+            return true;
+
+        return !ConfigurationStoreInterface::IsOperationDone(*latestCompletedId, *latestWriteId);
+    }
+
+    void ConfigurationStoreWriteTracker::OperationDone(uint32_t executedId)
+    {
+        latestCompletedId = executedId;
     }
 
     ConfigurationStoreBase::ConfigurationStoreBase(ConfigurationBlob& blob1, ConfigurationBlob& blob2)
@@ -394,7 +434,7 @@ namespace services
 
     void FactoryDefaultConfigurationStoreBase::OperationDone(uint32_t id)
     {
-        if (onRecovered != nullptr && eraseOperationId <= id)
+        if (onRecovered != nullptr && IsOperationDone(id, eraseOperationId))
             onRecovered(true);
 
         NotifyObservers([id](ConfigurationStoreObserver& observer)

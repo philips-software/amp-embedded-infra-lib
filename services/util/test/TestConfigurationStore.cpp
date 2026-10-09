@@ -7,6 +7,7 @@
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/util/ConfigurationStore.hpp"
 #include "services/util/Sha256MbedTls.hpp"
+#include "services/util/test_doubles/ConfigurationStoreMock.hpp"
 #include "gmock/gmock.h"
 
 namespace
@@ -554,6 +555,113 @@ TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_writes_ConfigurationStor
     access.Write();
 }
 
+TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_write_is_pending_until_write_is_done)
+{
+    struct Data
+    {
+        int x;
+    };
+
+    Data data;
+
+    services::ConfigurationStoreAccess access(configurationStore, data);
+
+    DontRecover();
+    EXPECT_THAT(access.IsWritePending(), testing::IsFalse());
+
+    infra::Function<void()> onWriteDone;
+    std::array<uint8_t, 32> data2;
+    EXPECT_CALL(configurationBlob1, MaxBlob()).WillOnce(testing::Return(infra::MakeRange(data2)));
+    EXPECT_CALL(dataInstance, Serialize(testing::_)).WillOnce(testing::Invoke([](infra::ProtoFormatter& formatter)
+        {
+            formatter.PutFixed32(1);
+        }));
+    EXPECT_CALL(configurationBlob1, Write(4, testing::_)).WillOnce(testing::SaveArg<1>(&onWriteDone));
+    EXPECT_THAT(access.Write(), testing::Eq(0));
+    EXPECT_THAT(access.IsWritePending(), testing::IsTrue());
+
+    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onWriteDone();
+    EXPECT_THAT(access.IsWritePending(), testing::IsTrue());
+
+    EXPECT_CALL(observer, OperationDone(0));
+    onEraseDone();
+    EXPECT_THAT(access.IsWritePending(), testing::IsFalse());
+}
+
+TEST(ConfigurationStoreInterfaceTest, HasOperationIdBeenExecuted_handles_overflow)
+{
+    EXPECT_THAT(services::ConfigurationStoreInterface::IsOperationDone(5, 5), testing::IsTrue());
+    EXPECT_THAT(services::ConfigurationStoreInterface::IsOperationDone(6, 5), testing::IsTrue());
+    EXPECT_THAT(services::ConfigurationStoreInterface::IsOperationDone(4, 5), testing::IsFalse());
+    EXPECT_THAT(services::ConfigurationStoreInterface::IsOperationDone(0, 0xffffffff), testing::IsTrue());
+    EXPECT_THAT(services::ConfigurationStoreInterface::IsOperationDone(0xffffffff, 0), testing::IsFalse());
+    EXPECT_THAT(services::ConfigurationStoreInterface::IsOperationDone(0x7fffffff, 0), testing::IsTrue());
+    EXPECT_THAT(services::ConfigurationStoreInterface::IsOperationDone(0x80000000, 0), testing::IsFalse());
+}
+
+class ConfigurationStoreAccessTest
+    : public testing::Test
+{
+public:
+    void NotifyOperationDone(uint32_t id)
+    {
+        configurationStore.NotifyObservers([id](services::ConfigurationStoreObserver& observer)
+            {
+                observer.OperationDone(id);
+            });
+    }
+
+    testing::StrictMock<services::ConfigurationStoreInterfaceMock> configurationStore;
+    int value = 0;
+    services::ConfigurationStoreAccess<int> access{ configurationStore, value };
+};
+
+TEST_F(ConfigurationStoreAccessTest, write_completed_before_Write_returns_is_not_pending)
+{
+    EXPECT_CALL(configurationStore, Write()).WillOnce(testing::Invoke([this]()
+        {
+            NotifyOperationDone(5);
+            return 5;
+        }));
+    access.Write();
+
+    EXPECT_THAT(access.IsWritePending(), testing::IsFalse());
+}
+
+TEST_F(ConfigurationStoreAccessTest, write_is_pending_when_only_earlier_operation_completed_before_Write_returns)
+{
+    EXPECT_CALL(configurationStore, Write()).WillOnce(testing::Invoke([this]()
+        {
+            NotifyOperationDone(5);
+            return 6;
+        }));
+    access.Write();
+    EXPECT_THAT(access.IsWritePending(), testing::IsTrue());
+
+    NotifyOperationDone(6);
+    EXPECT_THAT(access.IsWritePending(), testing::IsFalse());
+}
+
+TEST_F(ConfigurationStoreAccessTest, copies_do_not_inherit_pending_write)
+{
+    EXPECT_CALL(configurationStore, Write()).WillOnce(testing::Return(3));
+    access.Write();
+
+    services::ConfigurationStoreAccess<int> copy(access);
+    services::ConfigurationStoreAccess<int> member = access.Configuration(value);
+
+    EXPECT_THAT(access.IsWritePending(), testing::IsTrue());
+    EXPECT_THAT(copy.IsWritePending(), testing::IsFalse());
+    EXPECT_THAT(member.IsWritePending(), testing::IsFalse());
+
+    EXPECT_CALL(configurationStore, Write()).WillOnce(testing::Return(4));
+    copy.Write();
+    NotifyOperationDone(3);
+    EXPECT_THAT(access.IsWritePending(), testing::IsFalse());
+    EXPECT_THAT(copy.IsWritePending(), testing::IsTrue());
+}
+
 class FactoryDefaultConfigurationStoreTest
     : public testing::Test
 {
@@ -766,6 +874,82 @@ TEST_F(FactoryDefaultConfigurationStoreTest, when_ConfigurationStore_Recover_fai
     onEraseDone();
 
     EXPECT_EQ(5, configurationStore.Configuration().data);
+}
+
+TEST_F(FactoryDefaultConfigurationStoreTest, ConfigurationStoreAccess_write_is_pending_until_write_is_done)
+{
+    auto access = configurationStore.Access(configurationStore.Configuration().data);
+
+    EXPECT_CALL(configurationBlob1, MaxBlob()).WillOnce(testing::Return(infra::MakeByteRange(blob)));
+    infra::Function<void()> onWriteDone;
+    EXPECT_CALL(configurationBlob1, Write(4, testing::_)).WillOnce(testing::SaveArg<1>(&onWriteDone));
+    access.Write();
+    EXPECT_THAT(access.IsWritePending(), testing::IsTrue());
+
+    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onWriteDone();
+    EXPECT_THAT(access.IsWritePending(), testing::IsTrue());
+
+    onEraseDone();
+    EXPECT_THAT(access.IsWritePending(), testing::IsFalse());
+}
+
+TEST_F(FactoryDefaultConfigurationStoreTest, recovery_is_not_completed_by_operation_preceding_erase)
+{
+    testing::InSequence s;
+
+    infra::Function<void()> onWriteDone;
+    EXPECT_CALL(configurationBlob1, MaxBlob()).WillOnce(testing::Return(infra::MakeByteRange(blob)));
+    EXPECT_CALL(configurationBlob1, Write(4, testing::_)).WillOnce(testing::SaveArg<1>(&onWriteDone));
+    configurationStore.Write();
+
+    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onWriteDone();
+    onEraseDone();
+
+    EXPECT_CALL(configurationBlobFactoryDefault, Recover(testing::_)).WillOnce(testing::SaveArg<0>(&onRecoverDone));
+    configurationStore.Recover([this]()
+        {
+            OnLoadFactoryDefault();
+        },
+        [this](bool isFactoryDefault)
+        {
+            OnRecovered(isFactoryDefault);
+        });
+
+    EXPECT_CALL(*this, OnLoadFactoryDefault());
+    EXPECT_CALL(configurationBlobFactoryDefault, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onRecoverDone(false);
+
+    EXPECT_CALL(configurationBlobFactoryDefault, MaxBlob()).WillOnce(testing::Return(infra::MakeByteRange(blob)));
+    EXPECT_CALL(configurationBlobFactoryDefault, Write(4, testing::_)).WillOnce(testing::SaveArg<1>(&onWriteDone));
+    onEraseDone();
+
+    EXPECT_CALL(configurationBlob2, Recover(testing::_)).WillOnce(testing::SaveArg<0>(&onRecoverDone));
+    onWriteDone();
+
+    EXPECT_CALL(configurationBlob1, Recover(testing::_)).WillOnce(testing::SaveArg<0>(&onRecoverDone));
+    onRecoverDone(false);
+
+    EXPECT_CALL(configurationBlob2, IsErased(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseCheckDone));
+    onRecoverDone(false);
+
+    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onEraseCheckDone(false);
+
+    EXPECT_CALL(configurationBlob1, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onEraseDone();
+
+    configurationStore.Interface().NotifyObservers([](services::ConfigurationStoreObserver& observer)
+        {
+            observer.OperationDone(0);
+        });
+
+    EXPECT_CALL(configurationBlob2, Erase(testing::_)).WillOnce(testing::SaveArg<0>(&onEraseDone));
+    onEraseDone();
+
+    EXPECT_CALL(*this, OnRecovered(true));
+    onEraseDone();
 }
 
 class FactoryDefaultConfigurationStoreIntegrationTest
