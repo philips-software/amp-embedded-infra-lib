@@ -6,9 +6,17 @@
 #include "infra/util/Function.hpp"
 #include "infra/util/Observer.hpp"
 #include "infra/util/SharedPtr.hpp"
+#include <cstdint>
+#include <utility>
 
 namespace services
 {
+    enum class SesameChannel : uint8_t
+    {
+        red = 0,
+        blue = 1
+    };
+
     class Sesame;
     class SesameEncoded;
 
@@ -19,15 +27,30 @@ namespace services
         using infra::SingleObserver<SesameObserver, Sesame>::SingleObserver;
 
         virtual void Initialized() = 0;
-        virtual void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer) = 0;
-        virtual void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) = 0;
+        virtual void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer, SesameChannel channel) = 0;
+        virtual void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader, SesameChannel channel) = 0;
+
+        void SendMessageStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
+        {
+            SendMessageStreamAvailable(std::move(writer), SesameChannel::red);
+        }
+
+        void ReceivedMessage(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+        {
+            ReceivedMessage(std::move(reader), SesameChannel::red);
+        }
     };
 
     class Sesame
         : public infra::Subject<SesameObserver>
     {
     public:
-        virtual void RequestSendMessage(std::size_t size) = 0;
+        virtual void RequestSendMessage(std::size_t size, SesameChannel channel) = 0;
+        void RequestSendMessage(std::size_t size)
+        {
+            RequestSendMessage(size, SesameChannel::red);
+        }
+
         virtual std::size_t MaxSendMessageSize() const = 0;
         virtual void Reset() = 0;
         virtual void ResetReading() = 0;
