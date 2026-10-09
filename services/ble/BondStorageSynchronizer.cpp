@@ -115,6 +115,11 @@ namespace services
         // because we can't know the state of the other role's bonds at this point.
     }
 
+    bool BondStorageSynchronizerImpl::IsStoragePersisted() const
+    {
+        return enrichedBondStorage.IsStoragePersisted();
+    }
+
     void BondStorageSynchronizerImpl::SyncBondStorages()
     {
         enrichedBondStorage.RemoveBondIf([this](const services::Bond& bond)

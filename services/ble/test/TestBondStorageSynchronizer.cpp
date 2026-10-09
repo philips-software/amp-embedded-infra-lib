@@ -258,6 +258,15 @@ TEST_F(BondStorageSynchronizerTestWithConstruction, get_number_of_bonds_for_role
     EXPECT_THAT(bondStorageSynchronizer.GetNumberOfBondsForRole(services::Role::peripheral), testing::Eq(2u));
 }
 
+TEST_F(BondStorageSynchronizerTestWithConstruction, is_storage_persisted_is_forwarded_to_bond_storage)
+{
+    EXPECT_CALL(enrichedBondStorage, IsStoragePersisted()).WillOnce(testing::Return(true));
+    EXPECT_THAT(bondStorageSynchronizer.IsStoragePersisted(), testing::IsTrue());
+
+    EXPECT_CALL(enrichedBondStorage, IsStoragePersisted()).WillOnce(testing::Return(false));
+    EXPECT_THAT(bondStorageSynchronizer.IsStoragePersisted(), testing::IsFalse());
+}
+
 TEST_F(BondStorageSynchronizerTestWithConstruction, iterate_bonded_devices_is_forwarded_to_bond_storage)
 {
     EXPECT_CALL(enrichedBondStorage, IterateBondedDevices(services::Role::peripheral, testing::_));

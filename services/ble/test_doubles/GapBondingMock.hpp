@@ -16,6 +16,7 @@ namespace services
         MOCK_METHOD(std::size_t, GetNumberOfBonds, (), (const));
         MOCK_METHOD(bool, IsDeviceBonded, (hal::MacAddress deviceAddress, GapDeviceAddressType addressType), (const));
         MOCK_METHOD(infra::MemoryRange<const services::Bond>, GetBondList, (), (const));
+        MOCK_METHOD(bool, IsBondListPersisted, (), (const));
     };
 }
 

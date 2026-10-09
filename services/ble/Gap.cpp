@@ -123,6 +123,11 @@ namespace services
         return GapBondingObserver::Subject().GetBondList();
     }
 
+    bool GapBondingDecorator::IsBondListPersisted() const
+    {
+        return GapBondingObserver::Subject().IsBondListPersisted();
+    }
+
     void GapPeripheralDecorator::StateChanged(GapState state)
     {
         GapPeripheral::NotifyObservers([&state](auto& obs)
