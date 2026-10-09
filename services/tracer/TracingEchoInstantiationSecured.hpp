@@ -8,6 +8,7 @@
 #include "services/util/EchoPolicyDiffieHellman.hpp"
 #include "services/util/EchoPolicySymmetricKey.hpp"
 #include "services/util/SesameCobs.hpp"
+#include "services/util/SesameCryptoMbedTls.hpp"
 #include "services/util/SesameSecured.hpp"
 #include "services/util/SesameWindowed.hpp"
 #include "services/util/TracingEchoOnSesame.hpp"
@@ -16,10 +17,27 @@ namespace main_
 {
     struct TracingEchoOnSesameSecured
         : public services::Stoppable
+
     {
-        TracingEchoOnSesameSecured(Sesame::CobsStorageBase& storage, infra::BoundedVector<uint8_t>& securedSendBuffer, infra::BoundedVector<uint8_t>& securedReceiveBuffer,
-            hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::SesameSecured::KeyMaterial& keyMaterial,
-            services::Tracer& tracer, const services::EchoErrorPolicy& echoErrorPolicy = services::echoErrorPolicyAbortOnMessageFormatError, services::SesameInitializer& initializer = services::immediatelyGranted);
+        struct SesameArgs
+        {
+            Sesame::CobsStorageBase& storage;
+            hal::BufferedSerialCommunication& serialCommunication;
+            services::AesGcmEncryptors& encryptors;
+            infra::BoundedVector<uint8_t>& securedSendBuffer;
+            infra::BoundedVector<uint8_t>& securedReceiveBuffer;
+            const services::SesameSecured::KeyMaterial& keyMaterial = {};
+            services::SesameInitializer& initializer = services::immediatelyGranted;
+        };
+
+        struct EchoArgs
+        {
+            services::MethodSerializerFactory& serializerFactory;
+            services::Tracer& tracer;
+            const services::EchoErrorPolicy& echoErrorPolicy = services::echoErrorPolicyAbortOnMessageFormatError;
+        };
+
+        TracingEchoOnSesameSecured(const EchoArgs& echoArgs, const SesameArgs& sesameArgs);
 
         void Reset();
 
@@ -28,7 +46,7 @@ namespace main_
 
         services::SesameCobs cobs;
         services::SesameWindowed windowed;
-        services::SesameSecured::WithCryptoMbedTls secured;
+        services::SesameSecured secured;
         services::TracingEchoOnSesame echo;
 
         infra::AutoResetFunction<void()> onStopDone;
@@ -40,9 +58,7 @@ namespace main_
         template<std::size_t MessageSize, uint8_t SplitBuffers = 2>
         struct WithMessageSize;
 
-        TracingEchoOnSesameSecuredSymmetricKey(Sesame::CobsStorageBase& storage, infra::BoundedVector<uint8_t>& securedSendBuffer, infra::BoundedVector<uint8_t>& securedReceiveBuffer,
-            hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::SesameSecured::KeyMaterial& keyMaterial,
-            hal::SynchronousRandomDataGenerator& randomDataGenerator, services::Tracer& tracer, const services::EchoErrorPolicy& echoErrorPolicy = services::echoErrorPolicyAbortOnMessageFormatError, services::SesameInitializer& initializer = services::immediatelyGranted);
+        TracingEchoOnSesameSecuredSymmetricKey(const EchoArgs& echoArgs, const SesameArgs& sesameArgs, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
         services::EchoPolicySymmetricKey policy;
     };
@@ -53,9 +69,15 @@ namespace main_
         , private EchoOnSesameSecured::SecuredStorage<MessageSize>
         , TracingEchoOnSesameSecuredSymmetricKey
     {
-        WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::SesameSecured::KeyMaterial& keyMaterial,
-            hal::SynchronousRandomDataGenerator& randomDataGenerator, services::Tracer& tracer, const services::EchoErrorPolicy& echoErrorPolicy = services::echoErrorPolicyAbortOnMessageFormatError, services::SesameInitializer& initializer = services::immediatelyGranted)
-            : TracingEchoOnSesameSecuredSymmetricKey(static_cast<Sesame::CobsStorageBase&>(*this), this->securedSendBuffer, this->securedReceiveBuffer, serialCommunication, serializerFactory, keyMaterial, randomDataGenerator, tracer, echoErrorPolicy, initializer)
+        WithMessageSize(const EchoArgs& echoArgs, services::AesGcmEncryptors& encryptors, hal::BufferedSerialCommunication& serialCommunication, const services::SesameSecured::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator, services::SesameInitializer& initializer = services::immediatelyGranted)
+            : TracingEchoOnSesameSecuredSymmetricKey({ static_cast<Sesame::CobsStorageBase&>(*this),
+                                                         serialCommunication,
+                                                         encryptors,
+                                                         this->securedSendBuffer,
+                                                         this->securedReceiveBuffer,
+                                                         keyMaterial,
+                                                         initializer },
+                  echoArgs, randomDataGenerator)
         {}
     };
 
@@ -65,10 +87,7 @@ namespace main_
         template<std::size_t MessageSize, uint8_t SplitBuffers = 2>
         struct WithMessageSize;
 
-        TracingEchoOnSesameSecuredDiffieHellman(Sesame::CobsStorageBase& storage, infra::BoundedVector<uint8_t>& securedSendBuffer, infra::BoundedVector<uint8_t>& securedReceiveBuffer,
-            hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory,
-            const services::EchoPolicyDiffieHellman::Crypto& crypto, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate,
-            hal::SynchronousRandomDataGenerator& randomDataGenerator, services::Tracer& tracer, const services::EchoErrorPolicy& echoErrorPolicy = services::echoErrorPolicyAbortOnMessageFormatError, services::SesameInitializer& initializer = services::immediatelyGranted);
+        TracingEchoOnSesameSecuredDiffieHellman(const EchoArgs& echoArgs, const SesameArgs& sesameArgs, const services::EchoPolicyDiffieHellman::Crypto& crypto, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
         services::EchoPolicyDiffieHellman policy;
     };
@@ -79,10 +98,8 @@ namespace main_
         , private EchoOnSesameSecured::SecuredStorage<MessageSize>
         , TracingEchoOnSesameSecuredDiffieHellman
     {
-        WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory,
-            const services::EchoPolicyDiffieHellman::Crypto& crypto, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate,
-            hal::SynchronousRandomDataGenerator& randomDataGenerator, services::Tracer& tracer, const services::EchoErrorPolicy& echoErrorPolicy = services::echoErrorPolicyAbortOnMessageFormatError, services::SesameInitializer& initializer = services::immediatelyGranted)
-            : TracingEchoOnSesameSecuredDiffieHellman(static_cast<Sesame::CobsStorageBase&>(*this), this->securedSendBuffer, this->securedReceiveBuffer, serialCommunication, serializerFactory, crypto, dsaCertificate, rootCaCertificate, randomDataGenerator, tracer, echoErrorPolicy, initializer)
+        WithMessageSize(const EchoArgs& echoArgs, services::AesGcmEncryptors& encryptors, hal::BufferedSerialCommunication& serialCommunication, const services::EchoPolicyDiffieHellman::Crypto& crypto, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator, services::SesameInitializer& initializer = services::immediatelyGranted)
+            : TracingEchoOnSesameSecuredDiffieHellman(echoArgs, { static_cast<Sesame::CobsStorageBase&>(*this), serialCommunication, encryptors, this->securedSendBuffer, this->securedReceiveBuffer, services::SesameSecured::KeyMaterial{}, initializer }, crypto, keyMaterial, randomDataGenerator)
         {}
 
 #ifdef EMIL_USE_MBEDTLS
@@ -93,11 +110,12 @@ namespace main_
 #ifdef EMIL_USE_MBEDTLS
     template<std::size_t MessageSize, uint8_t SplitBuffers>
     struct TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<MessageSize, SplitBuffers>::WithCryptoMbedTls
-        : public TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<MessageSize, SplitBuffers>
+        : private services::SesameSecuredMbedTlsEncryptors
+        , public TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<MessageSize, SplitBuffers>
     {
         WithCryptoMbedTls(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial,
             hal::SynchronousRandomDataGenerator& randomDataGenerator, services::Tracer& tracer, const services::EchoErrorPolicy& echoErrorPolicy = services::echoErrorPolicyAbortOnMessageFormatError, services::SesameInitializer& initializer = services::immediatelyGranted)
-            : TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<MessageSize, SplitBuffers>(serialCommunication, serializerFactory, services::EchoPolicyDiffieHellman::Crypto{ keyExchange, signer, verifier, keyExpander }, keyMaterial.dsaCertificate, keyMaterial.rootCaCertificate, randomDataGenerator, tracer, echoErrorPolicy, initializer)
+            : TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<MessageSize, SplitBuffers>({ serializerFactory, tracer, echoErrorPolicy }, *this, serialCommunication, services::EchoPolicyDiffieHellman::Crypto{ keyExchange, signer, verifier, keyExpander }, keyMaterial, randomDataGenerator, initializer)
             , signer(keyMaterial.dsaCertificatePrivateKey, randomDataGenerator)
         {}
 

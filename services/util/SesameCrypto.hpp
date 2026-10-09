@@ -60,6 +60,12 @@ namespace services
         virtual std::size_t Update(infra::ConstByteRange from, infra::ByteRange to) = 0;
         virtual std::size_t Finish(infra::ByteRange to, infra::ByteRange mac) = 0;
     };
+
+    struct AesGcmEncryptors
+    {
+        services::AesGcmEncryption& sendEncryption;
+        services::AesGcmEncryption& receiveEncryption;
+    };
 }
 
 #endif

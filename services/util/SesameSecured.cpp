@@ -42,11 +42,11 @@ namespace services
         return result;
     }
 
-    SesameSecured::SesameSecured(AesGcmEncryption& sendEncryption, AesGcmEncryption& receiveEncryption, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate,
+    SesameSecured::SesameSecured(AesGcmEncryptors& encryptors, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate,
         const KeyMaterial& keyMaterial)
         : SesameObserver(delegate)
-        , sendEncryption(sendEncryption)
-        , receiveEncryption(receiveEncryption)
+        , sendEncryption(encryptors.sendEncryption)
+        , receiveEncryption(encryptors.receiveEncryption)
         , sendBuffer(sendBuffer)
         , initialSendKey(keyMaterial.sendKey)
         , initialSendIv(keyMaterial.sendIv)
@@ -58,8 +58,8 @@ namespace services
         SetReceiveKey(initialReceiveKey, initialReceiveIv);
     }
 
-    SesameSecured::SesameSecured(AesGcmEncryption& sendEncryption, AesGcmEncryption& receiveEncryption, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial)
-        : SesameSecured(sendEncryption, receiveEncryption, sendBuffer, receiveBuffer, delegate, ConvertKeyMaterial(keyMaterial))
+    SesameSecured::SesameSecured(AesGcmEncryptors& encryptors, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial)
+        : SesameSecured(encryptors, sendBuffer, receiveBuffer, delegate, ConvertKeyMaterial(keyMaterial))
     {}
 
     void SesameSecured::SetSendKey(const KeyType& newSendKey, const IvType& newSendIv)
@@ -215,11 +215,11 @@ namespace services
 
 #ifdef EMIL_USE_MBEDTLS
     SesameSecured::WithCryptoMbedTls::WithCryptoMbedTls(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const KeyMaterial& keyMaterial)
-        : SesameSecured(detail::SesameSecuredMbedTlsEncryptors::sendEncryption, detail::SesameSecuredMbedTlsEncryptors::receiveEncryption, sendBuffer, receiveBuffer, delegate, keyMaterial)
+        : SesameSecured(*this, sendBuffer, receiveBuffer, delegate, keyMaterial)
     {}
 
     SesameSecured::WithCryptoMbedTls::WithCryptoMbedTls(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial)
-        : SesameSecured(detail::SesameSecuredMbedTlsEncryptors::sendEncryption, detail::SesameSecuredMbedTlsEncryptors::receiveEncryption, sendBuffer, receiveBuffer, delegate, keyMaterial)
+        : SesameSecured(*this, sendBuffer, receiveBuffer, delegate, keyMaterial)
     {}
 #endif
 }
