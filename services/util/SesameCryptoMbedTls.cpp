@@ -267,8 +267,7 @@ namespace services
 
     SesameSecuredMbedTlsEncryptors::SesameSecuredMbedTlsEncryptors()
         : AesGcmEncryptors{ send, receive }
-    {
-    }
+    {}
 
     EcSecP256r1PrivateKey::EcSecP256r1PrivateKey(hal::SynchronousRandomDataGenerator& randomDataGenerator)
     {

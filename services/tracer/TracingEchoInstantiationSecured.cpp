@@ -1,9 +1,10 @@
 #include "services/tracer/TracingEchoInstantiationSecured.hpp"
 #include "protobuf/echo/EchoErrorPolicy.hpp"
+#include "services/util/SesameInstantiation.hpp"
 
 namespace main_
 {
-    TracingEchoOnSesameSecured::TracingEchoOnSesameSecured(EchoArgs echoArgs, SesameArgs sesameArgs)
+    TracingEchoOnSesameSecured::TracingEchoOnSesameSecured(const EchoArgs& echoArgs, const SesameArgs& sesameArgs)
         : cobs(sesameArgs.storage.cobsSendStorage, sesameArgs.storage.cobsReceivedMessage, sesameArgs.serialCommunication)
         , windowed(sesameArgs.storage.windowedReceivedMessage, sesameArgs.storage.windowedReceiveBuffers, cobs, sesameArgs.initializer)
         , secured(sesameArgs.encryptors, sesameArgs.securedSendBuffer, sesameArgs.securedReceiveBuffer, windowed, sesameArgs.keyMaterial)
@@ -25,12 +26,12 @@ namespace main_
             });
     }
 
-    TracingEchoOnSesameSecuredSymmetricKey::TracingEchoOnSesameSecuredSymmetricKey(EchoArgs echoArgs, SesameArgs sesameArgs, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    TracingEchoOnSesameSecuredSymmetricKey::TracingEchoOnSesameSecuredSymmetricKey(const EchoArgs& echoArgs, const SesameArgs& sesameArgs, hal::SynchronousRandomDataGenerator& randomDataGenerator)
         : TracingEchoOnSesameSecured(echoArgs, sesameArgs)
         , policy(echo, echo, secured, randomDataGenerator)
     {}
 
-    TracingEchoOnSesameSecuredDiffieHellman::TracingEchoOnSesameSecuredDiffieHellman(EchoArgs echoArgs, SesameArgs sesameArgs, const services::EchoPolicyDiffieHellman::Crypto& crypto, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    TracingEchoOnSesameSecuredDiffieHellman::TracingEchoOnSesameSecuredDiffieHellman(const EchoArgs& echoArgs, const SesameArgs& sesameArgs, const services::EchoPolicyDiffieHellman::Crypto& crypto, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
         : TracingEchoOnSesameSecured(echoArgs, sesameArgs)
         , policy(crypto, echo, echo, secured, keyMaterial.dsaCertificate, keyMaterial.rootCaCertificate, randomDataGenerator)
     {}
