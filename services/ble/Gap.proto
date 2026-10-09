@@ -347,6 +347,13 @@ service GapPeripheral
     //   of receiving AuthenticationRequired, otherwise pairing will fail.
     //   If peer disconnects before NumericComparisonConfirm, state becomes standby. PairingResult may or may not be generated
     rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 14; }
+
+    // Allowed states: standby
+    // Description: Sets the local identity address used by the peripheral.
+    //   The address type may be public or random. Not every configuration supports both types; an unsupported type results in an assertion.
+    //   Call SetIdentityAddress before advertising or creating new bonds so bonded peers store the intended identity.
+    //   The new address can be read back with GetIdentityAddress.
+    rpc SetIdentityAddress(AddressWithType) returns (Nothing) { option (method_id) = 17; }
 }
 
 service GapPeripheralResponse 

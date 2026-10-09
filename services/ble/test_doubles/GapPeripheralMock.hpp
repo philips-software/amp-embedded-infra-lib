@@ -12,6 +12,7 @@ namespace services
     public:
         MOCK_METHOD(GapAddress, GetAddress, (), (const));
         MOCK_METHOD(GapAddress, GetIdentityAddress, (), (const));
+        MOCK_METHOD(void, SetIdentityAddress, (hal::MacAddress macAddress, GapDeviceAddressType addressType));
         MOCK_METHOD(void, SetAdvertisementData, (infra::ConstByteRange data));
         MOCK_METHOD(infra::ConstByteRange, GetAdvertisementData, (), (const));
         MOCK_METHOD(void, SetScanResponseData, (infra::ConstByteRange data));

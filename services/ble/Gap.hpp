@@ -301,6 +301,7 @@ namespace services
     public:
         virtual GapAddress GetAddress() const = 0;
         virtual GapAddress GetIdentityAddress() const = 0;
+        virtual void SetIdentityAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) = 0;
         virtual void SetAdvertisementData(infra::ConstByteRange data) = 0;
         virtual infra::ConstByteRange GetAdvertisementData() const = 0;
         virtual void SetScanResponseData(infra::ConstByteRange data) = 0;
@@ -323,6 +324,7 @@ namespace services
         // Implementation of GapPeripheral
         GapAddress GetAddress() const override;
         GapAddress GetIdentityAddress() const override;
+        void SetIdentityAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) override;
 
         void SetAdvertisementData(infra::ConstByteRange data) override;
         infra::ConstByteRange GetAdvertisementData() const override;

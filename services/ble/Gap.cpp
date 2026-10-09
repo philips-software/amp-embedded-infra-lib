@@ -141,6 +141,11 @@ namespace services
         return GapPeripheralObserver::Subject().GetIdentityAddress();
     }
 
+    void GapPeripheralDecorator::SetIdentityAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType)
+    {
+        GapPeripheralObserver::Subject().SetIdentityAddress(macAddress, addressType);
+    }
+
     void GapPeripheralDecorator::SetAdvertisementData(infra::ConstByteRange data)
     {
         GapPeripheralObserver::Subject().SetAdvertisementData(data);
