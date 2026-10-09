@@ -11,9 +11,6 @@
 #include "infra/util/WithStorage.hpp"
 #include "services/util/Sesame.hpp"
 #include "services/util/SesameCrypto.hpp"
-#ifdef EMIL_USE_MBEDTLS
-#include "services/util/SesameCryptoMbedTls.hpp"
-#endif
 
 namespace services
 {
@@ -50,6 +47,9 @@ namespace services
         template<std::size_t Size>
         static constexpr std::size_t encodedMessageSize = Size + blockSize;
 
+        template<std::size_t MessageSize>
+        using WithMessageSize = infra::WithStorage<infra::WithStorage<SesameSecured, infra::BoundedVector<uint8_t>::WithMaxSize<encodedMessageSize<MessageSize>>>, infra::BoundedVector<uint8_t>::WithMaxSize<encodedMessageSize<MessageSize>>>;
+
         struct KeyMaterial
         {
             KeyType sendKey;
@@ -58,12 +58,8 @@ namespace services
             IvType receiveIv;
         };
 
-#ifdef EMIL_USE_MBEDTLS
-        struct WithCryptoMbedTls;
-#endif
-
-        SesameSecured(AesGcmEncryptors& encryptors, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const KeyMaterial& keyMaterial);
-        SesameSecured(AesGcmEncryptors& encryptors, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial);
+        SesameSecured(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, AesGcmEncryptors& encryptors, Sesame& delegate, const KeyMaterial& keyMaterial);
+        SesameSecured(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, AesGcmEncryptors& encryptors, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial);
 
         void SetSendKey(const KeyType& newSendKey, const IvType& newSendIv);
         void SetReceiveKey(const KeyType& newReceiveKey, const IvType& newReceiveIv);
@@ -112,19 +108,6 @@ namespace services
         bool integrityCheckFailed = false;
         infra::TimerSingleShot integrityCheckFailedTimer;
     };
-
-#ifdef EMIL_USE_MBEDTLS
-    struct SesameSecured::WithCryptoMbedTls
-        : private services::SesameSecuredMbedTlsEncryptors
-        , public SesameSecured
-    {
-        template<std::size_t Size>
-        using WithBuffers = infra::WithStorage<infra::WithStorage<WithCryptoMbedTls, infra::BoundedVector<uint8_t>::WithMaxSize<encodedMessageSize<Size>>>, infra::BoundedVector<uint8_t>::WithMaxSize<encodedMessageSize<Size>>>;
-
-        WithCryptoMbedTls(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const KeyMaterial& keyMaterial);
-        WithCryptoMbedTls(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial);
-    };
-#endif
 
     SesameSecured::KeyMaterial ConvertKeyMaterial(const sesame_security::SymmetricKeyFile& keyMaterial);
 }

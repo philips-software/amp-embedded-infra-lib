@@ -1,84 +1,84 @@
 #ifndef SERVICES_UTIL_ECHO_INSTANTIATION_SECURED_HPP
 #define SERVICES_UTIL_ECHO_INSTANTIATION_SECURED_HPP
 
-#include "services/util/EchoInstantiation.hpp"
+#include "protobuf/echo/EchoErrorPolicy.hpp"
+#include "services/util/EchoOnSesame.hpp"
 #include "services/util/EchoPolicyDiffieHellman.hpp"
 #include "services/util/EchoPolicySymmetricKey.hpp"
 #include "services/util/SesameInstantiationSecured.hpp"
+#ifdef EMIL_USE_MBEDTLS
+#include "services/util/SesameCryptoMbedTls.hpp"
+#endif
 
 namespace main_
 {
-    struct EchoOnSesameSecured
-        : public services::Stoppable
+    template<std::size_t MessageSize, uint8_t SplitBuffers = 2>
+    struct EchoOnSesameSecuredSymmetricKey
+        : public SesameInstantiationSecured<MessageSize, SplitBuffers>
     {
-        EchoOnSesameSecured(Sesame::CobsStorageBase& storage, infra::BoundedVector<uint8_t>& securedSendBuffer, infra::BoundedVector<uint8_t>& securedReceiveBuffer,
-            hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::SesameSecured::KeyMaterial& keyMaterial);
+        using SesameInstantiationSecured<MessageSize, SplitBuffers>::SesameInstantiationSecured;
 
-        void Reset();
-
-        // Implementation of Stoppable
-        void Stop(const infra::Function<void()>& onDone) override;
-
-        SesameSecured sesame;
-        services::EchoOnSesame echo;
-
-        template<std::size_t MessageSize>
-        struct SecuredStorage
-        {
-            infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameSecured::encodedMessageSize<MessageSize>> securedSendBuffer;
-            infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameSecured::encodedMessageSize<MessageSize>> securedReceiveBuffer;
-        };
+#ifdef EMIL_USE_MBEDTLS
+        struct WithCryptoMbedTls;
+#endif
     };
 
-    struct EchoOnSesameSecuredSymmetricKey
-        : EchoOnSesameSecured
+#ifdef EMIL_USE_MBEDTLS
+    template<std::size_t MessageSize, uint8_t SplitBuffers>
+    struct EchoOnSesameSecuredSymmetricKey<MessageSize, SplitBuffers>::WithCryptoMbedTls
+        : private services::SesameSecuredMbedTlsEncryptors
+        , public EchoOnSesameSecuredSymmetricKey<MessageSize, SplitBuffers>
     {
-        template<std::size_t MessageSize, uint8_t SplitBuffers = 2>
-        struct WithMessageSize;
+        WithCryptoMbedTls(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::SesameSecured::KeyMaterial& keyMaterial,
+            hal::SynchronousRandomDataGenerator& randomDataGenerator, const services::EchoErrorPolicy& echoErrorPolicy = services::echoErrorPolicyAbortOnMessageFormatError, services::SesameInitializer& initializer = services::immediatelyGranted)
+            : EchoOnSesameSecuredSymmetricKey<MessageSize, SplitBuffers>(*this, serialCommunication, keyMaterial, initializer)
+            , echo(this->secured, serializerFactory, echoErrorPolicy)
+            , policy(echo, echo, this->secured, randomDataGenerator)
+        {}
 
-        EchoOnSesameSecuredSymmetricKey(Sesame::CobsStorageBase& storage, infra::BoundedVector<uint8_t>& securedSendBuffer, infra::BoundedVector<uint8_t>& securedReceiveBuffer,
-            hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::SesameSecured::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        void Reset()
+        {
+            echo.Reset();
+        }
 
+        services::EchoOnSesame echo;
         services::EchoPolicySymmetricKey policy;
     };
+#endif
 
-    template<std::size_t MessageSize, uint8_t SplitBuffers>
-    struct EchoOnSesameSecuredSymmetricKey::WithMessageSize
-        : private Sesame::CobsStorage<MessageSize, SplitBuffers>
-        , private EchoOnSesameSecured::SecuredStorage<MessageSize>
-        , EchoOnSesameSecuredSymmetricKey
-    {
-        WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::SesameSecured::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-            : EchoOnSesameSecuredSymmetricKey(static_cast<Sesame::CobsStorageBase&>(*this), this->securedSendBuffer, this->securedReceiveBuffer, serialCommunication, serializerFactory, keyMaterial, randomDataGenerator)
-        {}
-    };
-
+    template<std::size_t MessageSize, uint8_t SplitBuffers = 2>
     struct EchoOnSesameSecuredDiffieHellman
-        : EchoOnSesameSecured
+        : public SesameInstantiationSecured<MessageSize, SplitBuffers>
     {
-        template<std::size_t MessageSize, uint8_t SplitBuffers = 2>
-        struct WithMessageSize;
+        using SesameInstantiationSecured<MessageSize, SplitBuffers>::SesameInstantiationSecured;
 
-        EchoOnSesameSecuredDiffieHellman(Sesame::CobsStorageBase& storage, infra::BoundedVector<uint8_t>& securedSendBuffer, infra::BoundedVector<uint8_t>& securedReceiveBuffer,
-            hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator);
-
-        infra::Creator<services::EcSecP256r1DiffieHellman, services::EcSecP256r1DiffieHellmanMbedTls, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)> keyExchange;
-        services::EcSecP256r1DsaSignerMbedTls signer;
-        infra::Creator<services::EcSecP256r1DsaVerifier, services::EcSecP256r1DsaVerifierMbedTls, void(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)> verifier;
-        services::HmacDrbgSha256MbedTls keyExpander;
-        services::EchoPolicyDiffieHellman policy;
+#ifdef EMIL_USE_MBEDTLS
+        struct WithCryptoMbedTls;
+#endif
     };
 
+#ifdef EMIL_USE_MBEDTLS
     template<std::size_t MessageSize, uint8_t SplitBuffers>
-    struct EchoOnSesameSecuredDiffieHellman::WithMessageSize
-        : private Sesame::CobsStorage<MessageSize, SplitBuffers>
-        , private EchoOnSesameSecured::SecuredStorage<MessageSize>
-        , EchoOnSesameSecuredDiffieHellman
+    struct EchoOnSesameSecuredDiffieHellman<MessageSize, SplitBuffers>::WithCryptoMbedTls
+        : private services::SesameSecuredMbedTlsEncryptors
+        , public EchoOnSesameSecuredDiffieHellman<MessageSize, SplitBuffers>
     {
-        WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-            : EchoOnSesameSecuredDiffieHellman(static_cast<Sesame::CobsStorageBase&>(*this), this->securedSendBuffer, this->securedReceiveBuffer, serialCommunication, serializerFactory, keyMaterial, randomDataGenerator)
+        WithCryptoMbedTls(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial,
+            hal::SynchronousRandomDataGenerator& randomDataGenerator, const services::EchoErrorPolicy& echoErrorPolicy = services::echoErrorPolicyAbortOnMessageFormatError, services::SesameInitializer& initializer = services::immediatelyGranted)
+            : EchoOnSesameSecuredDiffieHellman<MessageSize, SplitBuffers>(*this, serialCommunication, services::SesameSecured::KeyMaterial{}, initializer)
+            , echo(this->secured, serializerFactory, echoErrorPolicy)
+            , policy(echo, echo, this->secured, keyMaterial, randomDataGenerator)
         {}
+
+        void Reset()
+        {
+            echo.Reset();
+        }
+
+        services::EchoOnSesame echo;
+        services::EchoPolicyDiffieHellman::WithCryptoMbedTls policy;
     };
+#endif
 }
 
 #endif

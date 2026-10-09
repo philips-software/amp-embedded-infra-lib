@@ -3,40 +3,47 @@
 
 #include "services/util/SesameInstantiation.hpp"
 #include "services/util/SesameSecured.hpp"
+#include "services/util/Stoppable.hpp"
+#ifdef EMIL_USE_MBEDTLS
+#include "services/util/SesameCryptoMbedTls.hpp"
+#endif
 
 namespace main_
 {
-    struct SesameSecured
-        : Sesame
+    template<std::size_t MessageSize, uint8_t SplitBuffers = 2>
+    struct SesameInstantiationSecured
+        : public services::Stoppable
     {
-    public:
-        template<std::size_t MessageSize, uint8_t SplitBuffers = 2>
-        struct WithMessageSize;
+        SesameInstantiationSecured(services::AesGcmEncryptors& encryptors, hal::BufferedSerialCommunication& serialCommunication,
+            const services::SesameSecured::KeyMaterial& keyMaterial = {}, services::SesameInitializer& initializer = services::immediatelyGranted)
+            : sesame(serialCommunication, initializer)
+            , secured(encryptors, sesame.windowed, keyMaterial)
+        {}
 
-        SesameSecured(CobsStorageBase& storage,
-            infra::BoundedVector<uint8_t>& securedSendBuffer, infra::BoundedVector<uint8_t>& securedReceiveBuffer,
-            hal::BufferedSerialCommunication& serialCommunication, const services::SesameSecured::KeyMaterial& keyMaterial);
-
-        services::SesameSecured::WithCryptoMbedTls secured;
-
-        template<std::size_t MessageSize>
-        struct SecuredStorage
+        void Stop(const infra::Function<void()>& onDone) override
         {
-            infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameSecured::encodedMessageSize<MessageSize>> securedSendBuffer;
-            infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameSecured::encodedMessageSize<MessageSize>> securedReceiveBuffer;
-        };
+            sesame.Stop(onDone);
+        }
+
+        Sesame::WithMessageSize<MessageSize, SplitBuffers> sesame;
+        services::SesameSecured::WithMessageSize<MessageSize> secured;
+
+#ifdef EMIL_USE_MBEDTLS
+        struct WithCryptoMbedTls;
+#endif
     };
 
+#ifdef EMIL_USE_MBEDTLS
     template<std::size_t MessageSize, uint8_t SplitBuffers>
-    struct SesameSecured::WithMessageSize
-        : private SesameSecured::SecuredStorage<MessageSize>
-        , private Sesame::CobsStorage<MessageSize, SplitBuffers>
-        , SesameSecured
+    struct SesameInstantiationSecured<MessageSize, SplitBuffers>::WithCryptoMbedTls
+        : private services::SesameSecuredMbedTlsEncryptors
+        , public SesameInstantiationSecured<MessageSize, SplitBuffers>
     {
-        WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, const services::SesameSecured::KeyMaterial& keyMaterial)
-            : SesameSecured(static_cast<CobsStorageBase&>(*this), this->securedSendBuffer, this->securedReceiveBuffer, serialCommunication, keyMaterial)
+        explicit WithCryptoMbedTls(hal::BufferedSerialCommunication& serialCommunication, const services::SesameSecured::KeyMaterial& keyMaterial = {}, services::SesameInitializer& initializer = services::immediatelyGranted)
+            : SesameInstantiationSecured<MessageSize, SplitBuffers>(*this, serialCommunication, keyMaterial, initializer)
         {}
     };
+#endif
 }
 
 #endif

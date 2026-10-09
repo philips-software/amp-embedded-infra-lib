@@ -14,6 +14,7 @@
 #include "services/util/EchoPolicyDiffieHellman.hpp"
 #include "services/util/EchoPolicySymmetricKey.hpp"
 #include "services/util/SesameCobs.hpp"
+#include "services/util/SesameCryptoMbedTls.hpp"
 #include "services/util/SesameSecured.hpp"
 #include "services/util/SesameWindowed.hpp"
 #include <deque>
@@ -46,7 +47,8 @@ private:
     std::deque<std::string> messagesToBeSent;
     services::SesameCobs::WithMaxMessageSize<2048> cobs;
     services::SesameWindowed::WithMaxMessageSize<2048> windowed{ cobs };
-    std::optional<services::SesameSecured::WithCryptoMbedTls::WithBuffers<2048>> secured;
+    services::SesameSecuredMbedTlsEncryptors encryptors;
+    std::optional<services::SesameSecured::WithMessageSize<2048>> secured;
     services::Sesame& sesame;
     bool sending = false;
     services::SesameObserver::DelayedAttachDetach delayed{ *this, sesame };
@@ -63,7 +65,7 @@ ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::Buffere
 ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, const sesame_security::SymmetricKeyFile& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
     : application::ConsoleObserver(console)
     , cobs(serial)
-    , secured{ std::in_place, windowed, keyMaterial }
+    , secured{ std::in_place, encryptors, windowed, keyMaterial }
     , sesame{ *secured }
     , policySymmetricKey{ std::in_place, application::ConsoleObserver::Subject(), static_cast<services::EchoInitialization&>(*this), *secured, randomDataGenerator }
 {}
@@ -71,7 +73,7 @@ ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::Buffere
 ConsoleClientUart::ConsoleClientUart(application::Console& console, hal::BufferedSerialCommunication& serial, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
     : application::ConsoleObserver(console)
     , cobs(serial)
-    , secured{ std::in_place, windowed, services::SesameSecured::KeyMaterial{} }
+    , secured{ std::in_place, encryptors, windowed, services::SesameSecured::KeyMaterial{} }
     , sesame{ *secured }
     , policyDiffieHellman{ std::in_place, application::ConsoleObserver::Subject(), static_cast<services::EchoInitialization&>(*this), *secured, keyMaterial, randomDataGenerator }
 {}

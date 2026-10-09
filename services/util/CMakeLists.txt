@@ -129,13 +129,11 @@ if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
     target_sources(services.util PRIVATE
         AesMbedTls.cpp
         AesMbedTls.hpp
-        EchoInstantiationSecured.cpp
         EchoInstantiationSecured.hpp
         MbedTlsRandomDataGeneratorWrapper.cpp
         MbedTlsRandomDataGeneratorWrapper.hpp
         SesameCryptoMbedTls.cpp
         SesameCryptoMbedTls.hpp
-        SesameInstantiationSecured.cpp
         SesameInstantiationSecured.hpp
         Sha256MbedTls.cpp
         Sha256MbedTls.hpp

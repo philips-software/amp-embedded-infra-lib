@@ -1,6 +1,7 @@
 #include "infra/stream/StdVectorInputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
+#include "services/util/SesameCryptoMbedTls.hpp"
 #include "services/util/SesameSecured.hpp"
 #include "services/util/test_doubles/SesameMock.hpp"
 #include "gmock/gmock.h"
@@ -85,7 +86,8 @@ public:
     services::SesameSecured::IvType iv{ 1, 3 };
 
     testing::StrictMock<services::SesameMock> lower;
-    services::SesameSecured::WithCryptoMbedTls::WithBuffers<64> secured{ lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
+    services::SesameSecuredMbedTlsEncryptors encryptors;
+    services::SesameSecured::WithMessageSize<64> secured{ encryptors, lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
     testing::StrictMock<services::SesameObserverMock> upper{ secured };
     testing::StrictMock<services::IntegrityObserverMock> integrityObserver{ secured };
 
@@ -98,6 +100,20 @@ TEST_F(SesameSecuredTest, send_receive_message)
 {
     Send("abcd");
     Receive("abcd");
+}
+
+TEST_F(SesameSecuredTest, max_send_message_size_is_limited_by_owned_storage)
+{
+    EXPECT_CALL(lower, MaxSendMessageSize()).WillOnce(testing::Return(100));
+
+    EXPECT_THAT(secured.MaxSendMessageSize(), testing::Eq(64));
+}
+
+TEST_F(SesameSecuredTest, max_send_message_size_is_limited_by_delegate)
+{
+    EXPECT_CALL(lower, MaxSendMessageSize()).WillOnce(testing::Return(48));
+
+    EXPECT_THAT(secured.MaxSendMessageSize(), testing::Eq(32));
 }
 
 TEST_F(SesameSecuredTest, send_receive_two_messages)
@@ -249,6 +265,26 @@ class SesameSecuredStandaloneTest
     , public infra::ClockFixture
 {};
 
+TEST_F(SesameSecuredStandaloneTest, message_size_wrapper_initializes_keys_from_symmetric_key_file)
+{
+    sesame_security::SymmetricKeyFile keyMaterial;
+    keyMaterial.sendBySelf.key.resize(services::SesameSecured::keySize);
+    keyMaterial.sendBySelf.iv.resize(services::SesameSecured::ivSize);
+    keyMaterial.sendByOther.key.resize(services::SesameSecured::keySize);
+    keyMaterial.sendByOther.iv.resize(services::SesameSecured::ivSize);
+    keyMaterial.sendBySelf.key[0] = 1;
+    keyMaterial.sendByOther.key[0] = 2;
+    testing::StrictMock<services::SesameMock> lower;
+    testing::StrictMock<AesGcmEncryptionMock> sendEncryption;
+    testing::StrictMock<AesGcmEncryptionMock> receiveEncryption;
+    services::AesGcmEncryptors encryptors{ sendEncryption, receiveEncryption };
+
+    EXPECT_CALL(sendEncryption, EncryptWithKey(testing::ElementsAreArray(keyMaterial.sendBySelf.key)));
+    EXPECT_CALL(receiveEncryption, DecryptWithKey(testing::ElementsAreArray(keyMaterial.sendByOther.key)));
+
+    services::SesameSecured::WithMessageSize<64> secured{ encryptors, lower, keyMaterial };
+}
+
 TEST_F(SesameSecuredStandaloneTest, received_message_includes_non_zero_finish_output)
 {
     services::SesameSecured::KeyType key{};
@@ -266,7 +302,7 @@ TEST_F(SesameSecuredStandaloneTest, received_message_includes_non_zero_finish_ou
     EXPECT_CALL(sendEncryption, EncryptWithKey(testing::_));
     EXPECT_CALL(receiveEncryption, DecryptWithKey(testing::_));
     services::AesGcmEncryptors encryptors{ sendEncryption, receiveEncryption };
-    services::SesameSecured secured(encryptors, sendBuffer, receiveBuffer, lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv });
+    services::SesameSecured secured(sendBuffer, receiveBuffer, encryptors, lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv });
     testing::StrictMock<services::SesameObserverMock> upper{ secured };
 
     EXPECT_CALL(receiveEncryption, Start(testing::_));

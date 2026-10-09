@@ -7,6 +7,7 @@
 #include "protobuf/echo/test_doubles/ServiceStub.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/util/EchoPolicySymmetricKey.hpp"
+#include "services/util/SesameCryptoMbedTls.hpp"
 #include "services/util/test_doubles/SesameMock.hpp"
 #include <numeric>
 
@@ -69,7 +70,10 @@ public:
             ExpectGenerationOfKeyMaterial({ 1, 2 }, { 3, 4 });
         } };
     sesame_security::SymmetricKeyFile keys{ services::GenerateSymmetricKeys(randomDataGenerator) };
-    services::SesameSecured::WithCryptoMbedTls::WithBuffers<64> secured{ lower, keys };
+    services::SesameSecuredMbedTlsEncryptors encryptors;
+    infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameSecured::encodedMessageSize<64>> sendBuffer;
+    infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameSecured::encodedMessageSize<64>> receiveBuffer;
+    services::SesameSecured secured{ sendBuffer, receiveBuffer, encryptors, lower, keys };
     services::EchoOnSesame echo{ secured, serializerFactory, errorPolicy };
     services::EchoPolicySymmetricKey policy{ echo, echo, secured, randomDataGenerator };
 

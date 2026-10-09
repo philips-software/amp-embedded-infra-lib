@@ -87,14 +87,20 @@ namespace services
         mbedtls_gcm_context context;
     };
 
+    namespace detail
+    {
+        struct EncryptorsStorage
+        {
+            AesGcmEncryptionMbedTls send;
+            AesGcmEncryptionMbedTls receive;
+        };
+    };
+
     struct SesameSecuredMbedTlsEncryptors
-        : AesGcmEncryptors
+        : private detail::EncryptorsStorage
+        , AesGcmEncryptors
     {
         SesameSecuredMbedTlsEncryptors();
-
-    private:
-        AesGcmEncryptionMbedTls send;
-        AesGcmEncryptionMbedTls receive;
     };
 
     class EcSecP256r1PrivateKey
