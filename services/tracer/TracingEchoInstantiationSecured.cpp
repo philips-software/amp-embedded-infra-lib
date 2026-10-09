@@ -1,5 +1,4 @@
 #include "services/tracer/TracingEchoInstantiationSecured.hpp"
-#include "protobuf/echo/EchoErrorPolicy.hpp"
 #include "services/util/SesameInstantiation.hpp"
 
 namespace main_
