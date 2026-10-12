@@ -162,26 +162,6 @@ namespace services
         {}
     };
 
-    class ConfigurationStoreWriteTracker
-        : private ConfigurationStoreObserver
-    {
-    public:
-        explicit ConfigurationStoreWriteTracker(ConfigurationStoreInterface& configurationStore);
-        ConfigurationStoreWriteTracker(const ConfigurationStoreWriteTracker& other);
-        ConfigurationStoreWriteTracker& operator=(const ConfigurationStoreWriteTracker& other) = delete;
-        ~ConfigurationStoreWriteTracker();
-
-        uint32_t Write();
-        bool IsWritePending() const;
-
-    private:
-        void OperationDone(uint32_t executedId) override;
-
-    private:
-        std::optional<uint32_t> latestWriteId;
-        std::optional<uint32_t> latestCompletedId;
-    };
-
     template<class T>
     class ConfigurationStoreAccess
     {
@@ -196,7 +176,6 @@ namespace services
         const T* operator->() const;
 
         uint32_t Write();
-        bool IsWritePending() const;
 
         template<class U>
         ConfigurationStoreAccess<U> Configuration(U& member) const;
@@ -209,7 +188,29 @@ namespace services
 
         ConfigurationStoreInterface& configurationStore;
         T& configuration;
-        ConfigurationStoreWriteTracker writeTracker;
+    };
+
+    template<class T>
+    class ConfigurationStoreAccessWithTracking
+        : public ConfigurationStoreAccess<T>
+        , private ConfigurationStoreObserver
+    {
+    public:
+        ConfigurationStoreAccessWithTracking(ConfigurationStoreInterface& configurationStore, T& configuration);
+        explicit ConfigurationStoreAccessWithTracking(const ConfigurationStoreAccess<T>& access);
+        ConfigurationStoreAccessWithTracking(const ConfigurationStoreAccessWithTracking& other);
+        ConfigurationStoreAccessWithTracking& operator=(const ConfigurationStoreAccessWithTracking& other) = delete;
+        ~ConfigurationStoreAccessWithTracking();
+
+        uint32_t Write();
+        bool IsWritePending() const;
+
+    private:
+        void OperationDone(uint32_t completedId) override;
+
+    private:
+        std::optional<uint32_t> latestWriteId;
+        std::optional<uint32_t> latestCompletedId;
     };
 
     class ConfigurationStoreBase
@@ -446,7 +447,6 @@ namespace services
     ConfigurationStoreAccess<T>::ConfigurationStoreAccess(ConfigurationStoreInterface& configurationStore, T& configuration)
         : configurationStore(configurationStore)
         , configuration(configuration)
-        , writeTracker(configurationStore)
     {}
 
     template<class T>
@@ -454,7 +454,6 @@ namespace services
     ConfigurationStoreAccess<T>::ConfigurationStoreAccess(const ConfigurationStoreAccess<U>& other)
         : configurationStore(other.configurationStore)
         , configuration(other.configuration)
-        , writeTracker(other.configurationStore)
     {}
 
     template<class T>
@@ -484,13 +483,7 @@ namespace services
     template<class T>
     uint32_t ConfigurationStoreAccess<T>::Write()
     {
-        return writeTracker.Write();
-    }
-
-    template<class T>
-    bool ConfigurationStoreAccess<T>::IsWritePending() const
-    {
-        return writeTracker.IsWritePending();
+        return configurationStore.Write();
     }
 
     template<class T>
@@ -504,6 +497,55 @@ namespace services
     ConfigurationStoreAccess<U> ConfigurationStoreAccess<T>::Configuration(U& member) const
     {
         return ConfigurationStoreAccess<U>(configurationStore, member);
+    }
+
+    template<class T>
+    ConfigurationStoreAccessWithTracking<T>::ConfigurationStoreAccessWithTracking(ConfigurationStoreInterface& configurationStore, T& configuration)
+        : ConfigurationStoreAccess<T>(configurationStore, configuration)
+        , ConfigurationStoreObserver(configurationStore)
+    {}
+
+    template<class T>
+    ConfigurationStoreAccessWithTracking<T>::ConfigurationStoreAccessWithTracking(const ConfigurationStoreAccess<T>& access)
+        : ConfigurationStoreAccess<T>(access)
+        , ConfigurationStoreObserver(ConfigurationStoreAccess<T>::Interface())
+    {}
+
+    template<class T>
+    ConfigurationStoreAccessWithTracking<T>::ConfigurationStoreAccessWithTracking(const ConfigurationStoreAccessWithTracking& other)
+        : ConfigurationStoreAccess<T>(other)
+        , ConfigurationStoreObserver(ConfigurationStoreAccess<T>::Interface())
+    {}
+
+    template<class T>
+    ConfigurationStoreAccessWithTracking<T>::~ConfigurationStoreAccessWithTracking()
+    {
+        Detach();
+    }
+
+    template<class T>
+    uint32_t ConfigurationStoreAccessWithTracking<T>::Write()
+    {
+        latestWriteId = ConfigurationStoreAccess<T>::Write();
+        return *latestWriteId;
+    }
+
+    template<class T>
+    bool ConfigurationStoreAccessWithTracking<T>::IsWritePending() const
+    {
+        if (!latestWriteId)
+            return false;
+
+        if (!latestCompletedId)
+            return true;
+
+        return !ConfigurationStoreInterface::IsOperationDone(*latestCompletedId, *latestWriteId);
+    }
+
+    template<class T>
+    void ConfigurationStoreAccessWithTracking<T>::OperationDone(uint32_t completedId)
+    {
+        latestCompletedId = completedId;
     }
 
     template<class T>

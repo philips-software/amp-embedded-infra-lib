@@ -681,7 +681,7 @@ TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_writes_ConfigurationStor
     access.Write();
 }
 
-TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_write_is_pending_until_write_is_done)
+TEST_F(ConfigurationStoreTest, ConfigurationStoreAccessWithTracking_write_is_pending_until_write_is_done)
 {
     struct Data
     {
@@ -690,7 +690,7 @@ TEST_F(ConfigurationStoreTest, ConfigurationStoreAccess_write_is_pending_until_w
 
     Data data;
 
-    services::ConfigurationStoreAccess access(configurationStore, data);
+    services::ConfigurationStoreAccessWithTracking access(configurationStore, data);
 
     DontRecover();
     EXPECT_THAT(access.IsWritePending(), testing::IsFalse());
@@ -726,7 +726,7 @@ TEST(ConfigurationStoreInterfaceTest, HasOperationIdBeenExecuted_handles_overflo
     EXPECT_THAT(services::ConfigurationStoreInterface::IsOperationDone(0x80000000, 0), testing::IsFalse());
 }
 
-class ConfigurationStoreAccessTest
+class ConfigurationStoreAccessWithTrackingTest
     : public testing::Test
 {
 public:
@@ -740,10 +740,10 @@ public:
 
     testing::StrictMock<services::ConfigurationStoreInterfaceMock> configurationStore;
     int value = 0;
-    services::ConfigurationStoreAccess<int> access{ configurationStore, value };
+    services::ConfigurationStoreAccessWithTracking<int> access{ configurationStore, value };
 };
 
-TEST_F(ConfigurationStoreAccessTest, write_completed_before_Write_returns_is_not_pending)
+TEST_F(ConfigurationStoreAccessWithTrackingTest, write_completed_before_Write_returns_is_not_pending)
 {
     EXPECT_CALL(configurationStore, Write()).WillOnce(testing::Invoke([this]()
         {
@@ -755,7 +755,7 @@ TEST_F(ConfigurationStoreAccessTest, write_completed_before_Write_returns_is_not
     EXPECT_THAT(access.IsWritePending(), testing::IsFalse());
 }
 
-TEST_F(ConfigurationStoreAccessTest, write_is_pending_when_only_earlier_operation_completed_before_Write_returns)
+TEST_F(ConfigurationStoreAccessWithTrackingTest, write_is_pending_when_only_earlier_operation_completed_before_Write_returns)
 {
     EXPECT_CALL(configurationStore, Write()).WillOnce(testing::Invoke([this]()
         {
@@ -769,13 +769,13 @@ TEST_F(ConfigurationStoreAccessTest, write_is_pending_when_only_earlier_operatio
     EXPECT_THAT(access.IsWritePending(), testing::IsFalse());
 }
 
-TEST_F(ConfigurationStoreAccessTest, copies_do_not_inherit_pending_write)
+TEST_F(ConfigurationStoreAccessWithTrackingTest, copies_do_not_inherit_pending_write)
 {
     EXPECT_CALL(configurationStore, Write()).WillOnce(testing::Return(3));
     access.Write();
 
-    services::ConfigurationStoreAccess<int> copy(access);
-    services::ConfigurationStoreAccess<int> member = access.Configuration(value);
+    services::ConfigurationStoreAccessWithTracking<int> copy(access);
+    services::ConfigurationStoreAccessWithTracking<int> member(access.Configuration(value));
 
     EXPECT_THAT(access.IsWritePending(), testing::IsTrue());
     EXPECT_THAT(copy.IsWritePending(), testing::IsFalse());
@@ -1002,9 +1002,9 @@ TEST_F(FactoryDefaultConfigurationStoreTest, when_ConfigurationStore_Recover_fai
     EXPECT_EQ(5, configurationStore.Configuration().data);
 }
 
-TEST_F(FactoryDefaultConfigurationStoreTest, ConfigurationStoreAccess_write_is_pending_until_write_is_done)
+TEST_F(FactoryDefaultConfigurationStoreTest, ConfigurationStoreAccessWithTracking_write_is_pending_until_write_is_done)
 {
-    auto access = configurationStore.Access(configurationStore.Configuration().data);
+    services::ConfigurationStoreAccessWithTracking access(configurationStore.Access(configurationStore.Configuration().data));
 
     EXPECT_CALL(configurationBlob1, MaxBlob()).WillOnce(testing::Return(infra::MakeByteRange(blob)));
     infra::Function<void()> onWriteDone;

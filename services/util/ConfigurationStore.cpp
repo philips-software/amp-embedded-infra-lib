@@ -235,41 +235,6 @@ namespace services
             store->Unlocked();
     }
 
-    ConfigurationStoreWriteTracker::ConfigurationStoreWriteTracker(ConfigurationStoreInterface& configurationStore)
-        : ConfigurationStoreObserver(configurationStore)
-    {}
-
-    ConfigurationStoreWriteTracker::ConfigurationStoreWriteTracker(const ConfigurationStoreWriteTracker& other)
-        : ConfigurationStoreObserver(other.Subject())
-    {}
-
-    ConfigurationStoreWriteTracker::~ConfigurationStoreWriteTracker()
-    {
-        Detach();
-    }
-
-    uint32_t ConfigurationStoreWriteTracker::Write()
-    {
-        latestWriteId = Subject().Write();
-        return *latestWriteId;
-    }
-
-    bool ConfigurationStoreWriteTracker::IsWritePending() const
-    {
-        if (!latestWriteId)
-            return false;
-
-        if (!latestCompletedId)
-            return true;
-
-        return !ConfigurationStoreInterface::IsOperationDone(*latestCompletedId, *latestWriteId);
-    }
-
-    void ConfigurationStoreWriteTracker::OperationDone(uint32_t executedId)
-    {
-        latestCompletedId = executedId;
-    }
-
     ConfigurationStoreBase::ConfigurationStoreBase(ConfigurationBlob& blob1, ConfigurationBlob& blob2)
         : activeBlob(&blob1)
         , inactiveBlob(&blob2)
