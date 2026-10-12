@@ -42,9 +42,9 @@ namespace services
         EXPECT_CALL(gap, GetIdentityAddress()).WillOnce(testing::Return(identityAddress));
         EXPECT_THAT(decorator.GetIdentityAddress(), testing::Eq(identityAddress));
 
-        hal::MacAddress newIdentityAddress{ 5, 4, 3, 2, 1, 0 };
-        EXPECT_CALL(gap, SetIdentityAddress(newIdentityAddress, services::GapDeviceAddressType::randomAddress));
-        decorator.SetIdentityAddress(newIdentityAddress, services::GapDeviceAddressType::randomAddress);
+        services::GapAddress newIdentityAddress{ hal::MacAddress({ 5, 4, 3, 2, 1, 0 }), services::GapDeviceAddressType::randomAddress };
+        EXPECT_CALL(gap, SetIdentityAddress(newIdentityAddress));
+        decorator.SetIdentityAddress(newIdentityAddress);
 
         std::array<uint8_t, 6> data{ 0, 1, 2, 3, 4, 5 };
         EXPECT_CALL(gap, SetAdvertisementData(infra::ContentsEqual(data)));
