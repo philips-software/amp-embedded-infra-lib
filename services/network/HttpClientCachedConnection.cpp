@@ -241,14 +241,16 @@ namespace services
 
         clientObserverFactory->ConnectionEstablished([httpClientPtr = clientPtr.MakeShared(*client)](infra::SharedPtr<HttpClientObserver> observer)
             {
+                httpClientPtr->createdObserver(httpClientPtr);
+
                 if (observer != nullptr)
-                {
-                    httpClientPtr->createdObserver(httpClientPtr);
                     httpClientPtr->Attach(observer);
-                }
+                else
+                    httpClientPtr->HttpClientObserver::Subject().CloseConnection();
             });
 
         clientObserverFactory = nullptr;
+        TryConnectWaiting();
     }
 
     void HttpClientCachedConnectionConnector::ConnectionFailed(ConnectFailReason reason)
