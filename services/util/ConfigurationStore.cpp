@@ -191,6 +191,11 @@ namespace services
         return LockGuard(*this);
     }
 
+    bool ConfigurationStoreInterface::IsOperationDone(uint32_t latestCompletedId, uint32_t idToCheck)
+    {
+        return latestCompletedId - idToCheck < 0x80000000u;
+    }
+
     bool ConfigurationStoreInterface::IsLocked() const
     {
         return lockCount != 0;
@@ -409,7 +414,7 @@ namespace services
 
     void FactoryDefaultConfigurationStoreBase::OperationDone(uint32_t id)
     {
-        if (onRecovered != nullptr && eraseOperationId <= id)
+        if (onRecovered != nullptr && IsOperationDone(id, eraseOperationId))
             onRecovered(true);
 
         NotifyObservers([id](ConfigurationStoreObserver& observer)

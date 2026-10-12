@@ -127,6 +127,8 @@ namespace services
     public:
         virtual uint32_t Write() = 0;
 
+        static bool IsOperationDone(uint32_t latestId, uint32_t idToCheck);
+
         class LockGuard
         {
         public:
@@ -186,6 +188,28 @@ namespace services
 
         ConfigurationStoreInterface& configurationStore;
         T& configuration;
+    };
+
+    template<class T>
+    class ConfigurationStoreAccessWithTracking
+        : public ConfigurationStoreAccess<T>
+        , private ConfigurationStoreObserver
+    {
+    public:
+        ConfigurationStoreAccessWithTracking(ConfigurationStoreInterface& configurationStore, T& configuration);
+        explicit ConfigurationStoreAccessWithTracking(const ConfigurationStoreAccess<T>& access);
+        ConfigurationStoreAccessWithTracking(const ConfigurationStoreAccessWithTracking& other);
+        ConfigurationStoreAccessWithTracking& operator=(const ConfigurationStoreAccessWithTracking& other) = delete;
+
+        uint32_t Write();
+        bool IsWritePending() const;
+
+    private:
+        void OperationDone(uint32_t completedId) override;
+
+    private:
+        std::optional<uint32_t> latestWriteId;
+        std::optional<uint32_t> latestCompletedId;
     };
 
     class ConfigurationStoreBase
@@ -472,6 +496,49 @@ namespace services
     ConfigurationStoreAccess<U> ConfigurationStoreAccess<T>::Configuration(U& member) const
     {
         return ConfigurationStoreAccess<U>(configurationStore, member);
+    }
+
+    template<class T>
+    ConfigurationStoreAccessWithTracking<T>::ConfigurationStoreAccessWithTracking(ConfigurationStoreInterface& configurationStore, T& configuration)
+        : ConfigurationStoreAccess<T>(configurationStore, configuration)
+        , ConfigurationStoreObserver(configurationStore)
+    {}
+
+    template<class T>
+    ConfigurationStoreAccessWithTracking<T>::ConfigurationStoreAccessWithTracking(const ConfigurationStoreAccess<T>& access)
+        : ConfigurationStoreAccess<T>(access)
+        , ConfigurationStoreObserver(ConfigurationStoreAccess<T>::Interface())
+    {}
+
+    template<class T>
+    ConfigurationStoreAccessWithTracking<T>::ConfigurationStoreAccessWithTracking(const ConfigurationStoreAccessWithTracking& other)
+        : ConfigurationStoreAccess<T>(other)
+        , ConfigurationStoreObserver(ConfigurationStoreAccess<T>::Interface())
+    {}
+
+    template<class T>
+    uint32_t ConfigurationStoreAccessWithTracking<T>::Write()
+    {
+        latestWriteId = ConfigurationStoreAccess<T>::Write();
+        return *latestWriteId;
+    }
+
+    template<class T>
+    bool ConfigurationStoreAccessWithTracking<T>::IsWritePending() const
+    {
+        if (!latestWriteId)
+            return false;
+
+        if (!latestCompletedId)
+            return true;
+
+        return !ConfigurationStoreInterface::IsOperationDone(*latestCompletedId, *latestWriteId);
+    }
+
+    template<class T>
+    void ConfigurationStoreAccessWithTracking<T>::OperationDone(uint32_t completedId)
+    {
+        latestCompletedId = completedId;
     }
 
     template<class T>
