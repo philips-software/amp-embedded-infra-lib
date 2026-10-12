@@ -200,7 +200,6 @@ namespace services
         explicit ConfigurationStoreAccessWithTracking(const ConfigurationStoreAccess<T>& access);
         ConfigurationStoreAccessWithTracking(const ConfigurationStoreAccessWithTracking& other);
         ConfigurationStoreAccessWithTracking& operator=(const ConfigurationStoreAccessWithTracking& other) = delete;
-        ~ConfigurationStoreAccessWithTracking();
 
         uint32_t Write();
         bool IsWritePending() const;
@@ -516,12 +515,6 @@ namespace services
         : ConfigurationStoreAccess<T>(other)
         , ConfigurationStoreObserver(ConfigurationStoreAccess<T>::Interface())
     {}
-
-    template<class T>
-    ConfigurationStoreAccessWithTracking<T>::~ConfigurationStoreAccessWithTracking()
-    {
-        Detach();
-    }
 
     template<class T>
     uint32_t ConfigurationStoreAccessWithTracking<T>::Write()
