@@ -408,7 +408,7 @@ namespace services
     public:
         virtual void Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType, infra::Duration initiatingTimeout) = 0;
         virtual void Standby() = 0;
-        virtual void SetIdentityAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) = 0;
+        virtual void SetIdentityAddress(GapAddress address) = 0;
         virtual void StartDeviceDiscovery() = 0;
         virtual std::optional<hal::MacAddress> ResolvePrivateAddress(hal::MacAddress address) const = 0;
         virtual void SetPrivacyMode(bool enabled) = 0;
@@ -428,7 +428,7 @@ namespace services
         // Implementation of GapCentral
         void Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType, infra::Duration initiatingTimeout) override;
         void Standby() override;
-        void SetIdentityAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) override;
+        void SetIdentityAddress(GapAddress address) override;
         void StartDeviceDiscovery() override;
         std::optional<hal::MacAddress> ResolvePrivateAddress(hal::MacAddress address) const override;
         void SetPrivacyMode(bool enabled) override;

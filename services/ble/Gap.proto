@@ -314,7 +314,7 @@ service GapPeripheral
 
     // Allowed states: standby, advertising, connected
     // Expected response: GapPeripheralResponse.IdentityAddress
-    // Description: The address type (public or random) is determined by the HAL implementation and is not configurable via the service.
+    // Description: The initial address type (public or random) is determined by the HAL implementation. It can be changed with SetIdentityAddress, subject to configuration support.
     rpc GetIdentityAddress(Nothing) returns (Nothing) { option (method_id) = 7; }
 
     // Allowed states: standby
