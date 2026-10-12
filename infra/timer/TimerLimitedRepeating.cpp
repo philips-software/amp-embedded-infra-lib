@@ -37,6 +37,12 @@ namespace infra
             action();
     }
 
+    void TimerLimitedRepeating::Start(Duration timeout, Duration duration, const infra::Function<void()>& action)
+    {
+        const auto howMany = static_cast<uint32_t>(timeout / duration);
+        Start(howMany, duration, action);
+    }
+
     void TimerLimitedRepeating::ComputeNextTriggerTime()
     {
         --howMany;
