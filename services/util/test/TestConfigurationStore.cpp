@@ -775,7 +775,7 @@ TEST_F(ConfigurationStoreAccessWithTrackingTest, copies_do_not_inherit_pending_w
     access.Write();
 
     services::ConfigurationStoreAccessWithTracking<int> copy(access);
-    services::ConfigurationStoreAccessWithTracking<int> member(access.Configuration(value));
+    auto member = services::ConfigurationStoreAccessWithTracking(access.Configuration(value));
 
     EXPECT_THAT(access.IsWritePending(), testing::IsTrue());
     EXPECT_THAT(copy.IsWritePending(), testing::IsFalse());
