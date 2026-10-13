@@ -6,6 +6,22 @@
 #include "protobuf/echo/ProtoMessageSender.hpp"
 #include "gtest/gtest.h"
 
+namespace
+{
+    // Each frame reserves stack space, so Fill() runs at a different stack address than when called directly
+    void FillFromDeeperStack(services::ProtoMessageSenderBase& sender, infra::DataOutputStream stream, std::size_t depth)
+    {
+        std::array<volatile uint8_t, 256> padding{};
+
+        if (depth == 0)
+            sender.Fill(stream);
+        else
+            FillFromDeeperStack(sender, stream, depth - 1);
+
+        padding[0] = padding[1];
+    }
+}
+
 class ProtoMessageSenderTest
     : public testing::Test
 {
@@ -233,6 +249,42 @@ TEST_F(ProtoMessageSenderTest, format_many_repeated_nested_messages)
     sender.Fill(stream);
     EXPECT_EQ(infra::ConstructBin().Repeat(8, { (1 << 3) | 2, 2, 1 << 3, 5 }).Vector(), stream.Storage());
     EXPECT_FALSE(stream.Failed());
+}
+
+TEST_F(ProtoMessageSenderTest, format_many_repeated_nested_messages_with_fills_from_different_stack_depths)
+{
+    test_messages::TestNestedRepeatedMessage message;
+    message.message.insert(message.message.end(), 10, static_cast<uint8_t>(5));
+    services::ProtoMessageSender sender{ message };
+
+    infra::ByteOutputStream::WithStorage<8> partialStream(infra::noFail);
+    FillFromDeeperStack(sender, partialStream, 16);
+    EXPECT_EQ((std::array<uint8_t, 8>{ (1 << 3) | 2, 2, 1 << 3, 5, (1 << 3) | 2, 2, 1 << 3, 5 }), partialStream.Storage());
+    EXPECT_TRUE(partialStream.Failed());
+
+    infra::StdVectorOutputStream::WithStorage stream;
+    sender.Fill(stream);
+    EXPECT_EQ(infra::ConstructBin().Repeat(8, { (1 << 3) | 2, 2, 1 << 3, 5 }).Vector(), stream.Storage());
+    EXPECT_FALSE(stream.Failed());
+    EXPECT_TRUE(sender.BufferEmpty());
+}
+
+TEST_F(ProtoMessageSenderTest, format_many_unbounded_repeated_nested_messages_with_fills_from_different_stack_depths)
+{
+    test_messages::TestUnboundedRepeatedEverything message;
+    message.v13.insert(message.v13.end(), 10, test_messages::TestUInt32{ 5 });
+    services::ProtoMessageSender sender{ message };
+
+    infra::ByteOutputStream::WithStorage<8> partialStream(infra::noFail);
+    FillFromDeeperStack(sender, partialStream, 16);
+    EXPECT_EQ((std::array<uint8_t, 8>{ (13 << 3) | 2, 2, 1 << 3, 5, (13 << 3) | 2, 2, 1 << 3, 5 }), partialStream.Storage());
+    EXPECT_TRUE(partialStream.Failed());
+
+    infra::StdVectorOutputStream::WithStorage stream;
+    sender.Fill(stream);
+    EXPECT_EQ(infra::ConstructBin().Repeat(8, { (13 << 3) | 2, 2, 1 << 3, 5 }).Vector(), stream.Storage());
+    EXPECT_FALSE(stream.Failed());
+    EXPECT_TRUE(sender.BufferEmpty());
 }
 
 TEST_F(ProtoMessageSenderTest, format_many_bytes)
