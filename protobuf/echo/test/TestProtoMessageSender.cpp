@@ -287,6 +287,24 @@ TEST_F(ProtoMessageSenderTest, format_many_unbounded_repeated_nested_messages_wi
     EXPECT_TRUE(sender.BufferEmpty());
 }
 
+TEST_F(ProtoMessageSenderTest, format_many_repeated_strings_with_fills_from_different_stack_depths)
+{
+    test_messages::TestRepeatedString message;
+    message.value.insert(message.value.end(), 10, "ab");
+    services::ProtoMessageSender sender{ message };
+
+    infra::ByteOutputStream::WithStorage<8> partialStream(infra::noFail);
+    FillFromDeeperStack(sender, partialStream, 16);
+    EXPECT_EQ((std::array<uint8_t, 8>{ (1 << 3) | 2, 2, 'a', 'b', (1 << 3) | 2, 2, 'a', 'b' }), partialStream.Storage());
+    EXPECT_TRUE(partialStream.Failed());
+
+    infra::StdVectorOutputStream::WithStorage stream;
+    sender.Fill(stream);
+    EXPECT_EQ(infra::ConstructBin().Repeat(8, { (1 << 3) | 2, 2, 'a', 'b' }).Vector(), stream.Storage());
+    EXPECT_FALSE(stream.Failed());
+    EXPECT_TRUE(sender.BufferEmpty());
+}
+
 TEST_F(ProtoMessageSenderTest, format_many_bytes)
 {
     test_messages::TestBytes message;
