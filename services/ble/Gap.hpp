@@ -301,6 +301,7 @@ namespace services
     public:
         virtual GapAddress GetAddress() const = 0;
         virtual GapAddress GetIdentityAddress() const = 0;
+        virtual void SetIdentityAddress(GapAddress address) = 0;
         virtual void SetAdvertisementData(infra::ConstByteRange data) = 0;
         virtual infra::ConstByteRange GetAdvertisementData() const = 0;
         virtual void SetScanResponseData(infra::ConstByteRange data) = 0;
@@ -323,6 +324,7 @@ namespace services
         // Implementation of GapPeripheral
         GapAddress GetAddress() const override;
         GapAddress GetIdentityAddress() const override;
+        void SetIdentityAddress(GapAddress address) override;
 
         void SetAdvertisementData(infra::ConstByteRange data) override;
         infra::ConstByteRange GetAdvertisementData() const override;
@@ -406,7 +408,7 @@ namespace services
     public:
         virtual void Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType, infra::Duration initiatingTimeout) = 0;
         virtual void Standby() = 0;
-        virtual void SetIdentityAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) = 0;
+        virtual void SetIdentityAddress(GapAddress address) = 0;
         virtual void StartDeviceDiscovery() = 0;
         virtual std::optional<hal::MacAddress> ResolvePrivateAddress(hal::MacAddress address) const = 0;
         virtual void SetPrivacyMode(bool enabled) = 0;
@@ -426,7 +428,7 @@ namespace services
         // Implementation of GapCentral
         void Connect(hal::MacAddress macAddress, GapDeviceAddressType addressType, infra::Duration initiatingTimeout) override;
         void Standby() override;
-        void SetIdentityAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType) override;
+        void SetIdentityAddress(GapAddress address) override;
         void StartDeviceDiscovery() override;
         std::optional<hal::MacAddress> ResolvePrivateAddress(hal::MacAddress address) const override;
         void SetPrivacyMode(bool enabled) override;

@@ -127,6 +127,17 @@ include::partial$echoservices/gap_peripheral/GapPeripheral_GetAdvertisingAddress
 include::partial$echoservices/gap_peripheral/GapPeripheral_GetIdentityAddress_sequence.mmd[]
 ....
 
+=== SetIdentityAddress
+
+*Allowed states:* standby.
+
+Sets the local identity address. The address type may be public or random; an unsupported type results in an assertion. Call `SetIdentityAddress` before advertising or creating new bonds so bonded peers store the intended identity. The new address can be read back with `GetIdentityAddress`.
+
+[mermaid]
+....
+include::partial$echoservices/gap_peripheral/GapPeripheral_SetIdentityAddress_sequence.mmd[]
+....
+
 === GetBondInformation
 
 *Allowed states:* standby, advertising, connected.
