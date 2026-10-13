@@ -62,8 +62,8 @@ namespace services
         struct WithCryptoMbedTls;
 #endif
 
-        SesameSecured(AesGcmEncryption& sendEncryption, AesGcmEncryption& receiveEncryption, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const KeyMaterial& keyMaterial);
-        SesameSecured(AesGcmEncryption& sendEncryption, AesGcmEncryption& receiveEncryption, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial);
+        SesameSecured(AesGcmEncryptors& encryptors, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const KeyMaterial& keyMaterial);
+        SesameSecured(AesGcmEncryptors& encryptors, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial);
 
         void SetSendKey(const KeyType& newSendKey, const IvType& newSendIv);
         void SetReceiveKey(const KeyType& newReceiveKey, const IvType& newReceiveIv);
@@ -114,17 +114,8 @@ namespace services
     };
 
 #ifdef EMIL_USE_MBEDTLS
-    namespace detail
-    {
-        struct SesameSecuredMbedTlsEncryptors
-        {
-            AesGcmEncryptionMbedTls sendEncryption;
-            AesGcmEncryptionMbedTls receiveEncryption;
-        };
-    }
-
     struct SesameSecured::WithCryptoMbedTls
-        : private detail::SesameSecuredMbedTlsEncryptors
+        : private services::SesameSecuredMbedTlsEncryptors
         , public SesameSecured
     {
         template<std::size_t Size>
