@@ -169,7 +169,7 @@
 <div class="sectionbody">
 <div class="imageblock kroki">
 <div class="content">
-<img src="../_images/diag-dacd10933bb0464c170f36f814c51c7965282d7d.svg" alt="Diagram">
+<img src="../_images/diag-6125a3d8837917a44c927f6f4a71551498a89c1d.svg" alt="Diagram">
 </div>
 </div>
 </div>
@@ -311,6 +311,20 @@
 <div class="imageblock kroki">
 <div class="content">
 <img src="../_images/diag-7c57259fffe0e973e065ddf9bcea486cbc5711a0.svg" alt="Diagram">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_setidentityaddress"><a class="anchor" href="#_setidentityaddress"></a>SetIdentityAddress</h3>
+<div class="paragraph">
+<p><strong>Allowed states:</strong> standby.</p>
+</div>
+<div class="paragraph">
+<p>Sets the local identity address. The address type may be public or random; an unsupported type results in an assertion. Call <code>SetIdentityAddress</code> before advertising or creating new bonds so bonded peers store the intended identity. The new address can be read back with <code>GetIdentityAddress</code>.</p>
+</div>
+<div class="imageblock kroki">
+<div class="content">
+<img src="../_images/diag-7347f2117e3328023ade8c6862e308ca35bb6f0e.svg" alt="Diagram">
 </div>
 </div>
 </div>
@@ -735,7 +749,7 @@ service GapPeripheral
 
     // Allowed states: standby, advertising, connected
     // Expected response: GapPeripheralResponse.IdentityAddress
-    // Description: The address type (public or random) is determined by the HAL implementation and is not configurable via the service.
+    // Description: The initial address type (public or random) is determined by the HAL implementation. It can be changed with SetIdentityAddress, subject to configuration support.
     rpc GetIdentityAddress(Nothing) returns (Nothing) { option (method_id) = 7; }
 
     // Allowed states: standby
@@ -768,6 +782,13 @@ service GapPeripheral
     //   of receiving AuthenticationRequired, otherwise pairing will fail.
     //   If peer disconnects before NumericComparisonConfirm, state becomes standby. PairingResult may or may not be generated
     rpc NumericComparisonConfirm(BoolValue) returns (Nothing) { option (method_id) = 14; }
+
+    // Allowed states: standby
+    // Description: Sets the local identity address used by the peripheral.
+    //   The address type may be public or random. Not every configuration supports both types; an unsupported type results in an assertion.
+    //   Call SetIdentityAddress before advertising or creating new bonds so bonded peers store the intended identity.
+    //   The new address can be read back with GetIdentityAddress.
+    rpc SetIdentityAddress(AddressWithType) returns (Nothing) { option (method_id) = 17; }
 }
 
 service GapPeripheralResponse 
