@@ -140,7 +140,7 @@ namespace services
     template<class ProtoType, class Type>
     bool ProtoMessageSenderBase::SerializeField(ProtoRepeatedBase<ProtoType>, const infra::ProtoFormatter&, const infra::BoundedVector<Type>& value, uint32_t fieldNumber, bool& retry) const
     {
-        stack.emplace_back(0, [this, &value, fieldNumber](infra::DataOutputStream& stream, uint32_t& index, bool& retry2, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy)
+        stack.emplace_back(0, [this, &value, fieldNumber](infra::DataOutputStream& stream, uint32_t& index, bool& stepRetry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy)
             {
                 infra::ProtoFormatter formatter{ stream };
 
@@ -153,12 +153,12 @@ namespace services
                     }
 
                     auto size = stack.size();
-                    auto result = SerializeField(ProtoType(), formatter, value[index], fieldNumber, retry2);
+                    auto result = SerializeField(ProtoType(), formatter, value[index], fieldNumber, stepRetry);
                     if (size != stack.size())
                     {
                         // A nested message was added to the stack, so we need to stop processing the current message until it has been fully sent
                         ++index;
-                        retry2 = retry2 && result;
+                        stepRetry = stepRetry && result;
                         return false;
                     }
                 }
@@ -173,7 +173,7 @@ namespace services
     template<class ProtoType, class Type>
     bool ProtoMessageSenderBase::SerializeField(ProtoUnboundedRepeated<ProtoType>, const infra::ProtoFormatter&, const std::vector<Type>& value, uint32_t fieldNumber, bool& retry) const
     {
-        stack.emplace_back(0, [this, &value, fieldNumber](infra::DataOutputStream& stream, uint32_t& index, bool& retry2, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy)
+        stack.emplace_back(0, [this, &value, fieldNumber](infra::DataOutputStream& stream, uint32_t& index, bool& stepRetry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy)
             {
                 infra::ProtoFormatter formatter{ stream };
 
@@ -186,12 +186,12 @@ namespace services
                     }
 
                     auto size = stack.size();
-                    auto result = SerializeField(ProtoType(), formatter, value[index], fieldNumber, retry2);
+                    auto result = SerializeField(ProtoType(), formatter, value[index], fieldNumber, stepRetry);
                     if (size != stack.size())
                     {
                         // A nested message was added to the stack, so we need to stop processing the current message until it has been fully sent
                         ++index;
-                        retry2 = retry2 && result;
+                        stepRetry = stepRetry && result;
                         return false;
                     }
                 }
