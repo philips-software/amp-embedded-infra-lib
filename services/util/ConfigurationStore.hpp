@@ -12,6 +12,7 @@
 #include "infra/util/ReallyAssert.hpp"
 #include "infra/util/WithStorage.hpp"
 #include "services/util/Sha256.hpp"
+#include <optional>
 
 namespace services
 {
@@ -126,6 +127,8 @@ namespace services
     public:
         virtual uint32_t Write() = 0;
 
+        static bool IsOperationDone(uint32_t latestId, uint32_t idToCheck);
+
         class LockGuard
         {
         public:
@@ -187,6 +190,28 @@ namespace services
         T& configuration;
     };
 
+    template<class T>
+    class ConfigurationStoreAccessWithTracking
+        : public ConfigurationStoreAccess<T>
+        , private ConfigurationStoreObserver
+    {
+    public:
+        ConfigurationStoreAccessWithTracking(ConfigurationStoreInterface& configurationStore, T& configuration);
+        explicit ConfigurationStoreAccessWithTracking(const ConfigurationStoreAccess<T>& access);
+        ConfigurationStoreAccessWithTracking(const ConfigurationStoreAccessWithTracking& other);
+        ConfigurationStoreAccessWithTracking& operator=(const ConfigurationStoreAccessWithTracking& other) = delete;
+
+        uint32_t Write();
+        bool IsWritePending() const;
+
+    private:
+        void OperationDone(uint32_t completedId) override;
+
+    private:
+        std::optional<uint32_t> latestWriteId;
+        std::optional<uint32_t> latestCompletedId;
+    };
+
     class ConfigurationStoreBase
         : public ConfigurationStoreInterface
     {
@@ -208,15 +233,17 @@ namespace services
 
     private:
         void OnBlobLoaded(bool success);
-        void BlobWriteDone();
+        void BlobWriteDone(uint32_t id);
+        void OperationCompleted(uint32_t id);
 
     private:
         ConfigurationBlob* activeBlob;
         ConfigurationBlob* inactiveBlob;
         infra::AutoResetFunction<void(bool success)> onRecovered;
         uint32_t operationId = 0;
-        bool writingBlob = false;
-        bool writeRequested = false;
+        bool operationInProgress = false;
+        std::optional<uint32_t> pendingWriteId;
+        std::optional<uint32_t> pendingEraseId;
     };
 
     template<class T>
@@ -469,6 +496,49 @@ namespace services
     ConfigurationStoreAccess<U> ConfigurationStoreAccess<T>::Configuration(U& member) const
     {
         return ConfigurationStoreAccess<U>(configurationStore, member);
+    }
+
+    template<class T>
+    ConfigurationStoreAccessWithTracking<T>::ConfigurationStoreAccessWithTracking(ConfigurationStoreInterface& configurationStore, T& configuration)
+        : ConfigurationStoreAccess<T>(configurationStore, configuration)
+        , ConfigurationStoreObserver(configurationStore)
+    {}
+
+    template<class T>
+    ConfigurationStoreAccessWithTracking<T>::ConfigurationStoreAccessWithTracking(const ConfigurationStoreAccess<T>& access)
+        : ConfigurationStoreAccess<T>(access)
+        , ConfigurationStoreObserver(ConfigurationStoreAccess<T>::Interface())
+    {}
+
+    template<class T>
+    ConfigurationStoreAccessWithTracking<T>::ConfigurationStoreAccessWithTracking(const ConfigurationStoreAccessWithTracking& other)
+        : ConfigurationStoreAccess<T>(other)
+        , ConfigurationStoreObserver(ConfigurationStoreAccess<T>::Interface())
+    {}
+
+    template<class T>
+    uint32_t ConfigurationStoreAccessWithTracking<T>::Write()
+    {
+        latestWriteId = ConfigurationStoreAccess<T>::Write();
+        return *latestWriteId;
+    }
+
+    template<class T>
+    bool ConfigurationStoreAccessWithTracking<T>::IsWritePending() const
+    {
+        if (!latestWriteId)
+            return false;
+
+        if (!latestCompletedId)
+            return true;
+
+        return !ConfigurationStoreInterface::IsOperationDone(*latestCompletedId, *latestWriteId);
+    }
+
+    template<class T>
+    void ConfigurationStoreAccessWithTracking<T>::OperationDone(uint32_t completedId)
+    {
+        latestCompletedId = completedId;
     }
 
     template<class T>

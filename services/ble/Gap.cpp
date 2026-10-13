@@ -141,6 +141,11 @@ namespace services
         return GapPeripheralObserver::Subject().GetIdentityAddress();
     }
 
+    void GapPeripheralDecorator::SetIdentityAddress(GapAddress address)
+    {
+        GapPeripheralObserver::Subject().SetIdentityAddress(address);
+    }
+
     void GapPeripheralDecorator::SetAdvertisementData(infra::ConstByteRange data)
     {
         GapPeripheralObserver::Subject().SetAdvertisementData(data);
@@ -207,9 +212,9 @@ namespace services
         GapCentralObserver::Subject().Standby();
     }
 
-    void GapCentralDecorator::SetIdentityAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType)
+    void GapCentralDecorator::SetIdentityAddress(GapAddress address)
     {
-        GapCentralObserver::Subject().SetIdentityAddress(macAddress, addressType);
+        GapCentralObserver::Subject().SetIdentityAddress(address);
     }
 
     void GapCentralDecorator::StartDeviceDiscovery()

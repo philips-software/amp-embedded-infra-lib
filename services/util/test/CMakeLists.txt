@@ -11,6 +11,7 @@ target_link_libraries(services.util_test PUBLIC
     protobuf.test_doubles
     services.tracer
     services.util
+    services.util_test_doubles
     hal.interfaces_test_doubles
     infra.timer_test_helper
     infra.util_test_helper
