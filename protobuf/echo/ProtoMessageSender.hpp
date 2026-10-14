@@ -55,6 +55,9 @@ namespace services
         template<class ProtoType, class Type>
         bool SerializeField(ProtoUnboundedRepeated<ProtoType>, const infra::ProtoFormatter& formatter, const std::vector<Type>& value, uint32_t fieldNumber, bool& retry) const;
 
+        template<class ProtoType, class Container>
+        void SerializeRepeatedField(const Container& value, uint32_t fieldNumber, bool& retry) const;
+
     private:
         infra::BoundedDeque<uint8_t>::WithMaxSize<32> buffer;
         infra::BoundedVector<std::pair<uint32_t, FieldSerializationStep>>& stack;
@@ -140,38 +143,19 @@ namespace services
     template<class ProtoType, class Type>
     bool ProtoMessageSenderBase::SerializeField(ProtoRepeatedBase<ProtoType>, const infra::ProtoFormatter&, const infra::BoundedVector<Type>& value, uint32_t fieldNumber, bool& retry) const
     {
-        stack.emplace_back(0, [this, &value, fieldNumber](infra::DataOutputStream& stream, uint32_t& index, bool& stepRetry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy)
-            {
-                infra::ProtoFormatter formatter{ stream };
-
-                for (; index != value.size(); ++index)
-                {
-                    if (finalWriter.Available() == 0)
-                    {
-                        errorPolicy.ReportResult(false);
-                        return false;
-                    }
-
-                    auto size = stack.size();
-                    auto result = SerializeField(ProtoType(), formatter, value[index], fieldNumber, stepRetry);
-                    if (size != stack.size())
-                    {
-                        // A nested message was added to the stack, so we need to stop processing the current message until it has been fully sent
-                        ++index;
-                        stepRetry = stepRetry && result;
-                        return false;
-                    }
-                }
-
-                return true;
-            });
-
-        retry = true;
+        SerializeRepeatedField<ProtoType>(value, fieldNumber, retry);
         return true;
     }
 
     template<class ProtoType, class Type>
     bool ProtoMessageSenderBase::SerializeField(ProtoUnboundedRepeated<ProtoType>, const infra::ProtoFormatter&, const std::vector<Type>& value, uint32_t fieldNumber, bool& retry) const
+    {
+        SerializeRepeatedField<ProtoType>(value, fieldNumber, retry);
+        return true;
+    }
+
+    template<class ProtoType, class Container>
+    void ProtoMessageSenderBase::SerializeRepeatedField(const Container& value, uint32_t fieldNumber, bool& retry) const
     {
         stack.emplace_back(0, [this, &value, fieldNumber](infra::DataOutputStream& stream, uint32_t& index, bool& stepRetry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy)
             {
@@ -200,7 +184,6 @@ namespace services
             });
 
         retry = true;
-        return true;
     }
 
     template<class Message>
