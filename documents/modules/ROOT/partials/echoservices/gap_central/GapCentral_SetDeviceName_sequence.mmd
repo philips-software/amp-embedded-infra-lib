@@ -2,4 +2,6 @@ sequenceDiagram
     participant App as App<br>[implements GapCentralResponse]
     participant Node as Node<br>[implements GapCentral]
 
+    Note over App, Node: Allowed states: standby
+
     App->>Node: GapCentral.SetDeviceName(value="DeviceA")
