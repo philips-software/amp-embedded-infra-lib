@@ -9,7 +9,7 @@
 
 namespace services
 {
-    static constexpr std::size_t serializationStepExtraSize = 4 * sizeof(void*);
+    static constexpr std::size_t serializationStepExtraSize = 3 * sizeof(void*);
     using FieldSerializationStep = infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy), serializationStepExtraSize>;
 
     class ProtoMessageSenderBase
