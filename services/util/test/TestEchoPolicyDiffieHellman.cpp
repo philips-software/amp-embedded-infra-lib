@@ -111,13 +111,9 @@ public:
     services::SesameSecured::KeyType key{ 1, 2 };
     services::SesameSecured::IvType iv{ 1, 3 };
     services::SesameSecuredMbedTlsEncryptors encryptorsLeft;
-    infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameSecured::encodedMessageSize<100>> sendBufferLeft;
-    infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameSecured::encodedMessageSize<100>> receiveBufferLeft;
-    services::SesameSecured securedLeft{ sendBufferLeft, receiveBufferLeft, encryptorsLeft, lowerLeft, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
+    services::SesameSecured::WithMessageSize<100> securedLeft{ encryptorsLeft, lowerLeft, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
     services::SesameSecuredMbedTlsEncryptors encryptorsRight;
-    infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameSecured::encodedMessageSize<100>> sendBufferRight;
-    infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameSecured::encodedMessageSize<100>> receiveBufferRight;
-    services::SesameSecured securedRight{ sendBufferRight, receiveBufferRight, encryptorsRight, lowerRight, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
+    services::SesameSecured::WithMessageSize<100> securedRight{ encryptorsRight, lowerRight, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
 
     services::CertificateAndPrivateKey rootCaCertificateMaterial{ services::GenerateRootCertificate(randomDataGenerator) };
     services::EcSecP256r1PrivateKey rootCaPrivateKey{ randomDataGenerator };
@@ -499,9 +495,7 @@ public:
     testing::NiceMock<services::SesameMock> lower;
     services::SesameSecured::KeyMaterial initialKeyMaterial{ { 1, 2 }, { 1, 3 }, { 1, 2 }, { 1, 3 } };
     services::SesameSecuredMbedTlsEncryptors encryptors;
-    infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameSecured::encodedMessageSize<100>> sendBuffer;
-    infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameSecured::encodedMessageSize<100>> receiveBuffer;
-    services::SesameSecured secured{ sendBuffer, receiveBuffer, encryptors, lower, initialKeyMaterial };
+    services::SesameSecured::WithMessageSize<100> secured{ encryptors, lower, initialKeyMaterial };
     services::CertificateAndPrivateKey rootCaCertificateMaterial{ services::GenerateRootCertificate(randomDataGenerator) };
     services::EcSecP256r1PrivateKey rootCaPrivateKey{ infra::MakeRange(rootCaCertificateMaterial.privateKey), randomDataGenerator };
     services::CertificateAndPrivateKey deviceCertificateMaterial{ services::GenerateDeviceCertificate(rootCaPrivateKey, randomDataGenerator) };

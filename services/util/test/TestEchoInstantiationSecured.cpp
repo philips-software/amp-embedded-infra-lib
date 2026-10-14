@@ -139,8 +139,7 @@ TEST_F(EchoInstantiationSecuredSymmetricKeySlicedTest, sliced_messages_are_recei
 
 namespace
 {
-    template<std::size_t LeftSize, std::size_t RightSize>
-    class EchoInstantiationSecuredDiffieHellman
+    class EchoInstantiationSecuredDiffieHellmanKeyMaterial
     {
     public:
         hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
@@ -169,7 +168,13 @@ namespace
 
         services::EchoPolicyDiffieHellman::KeyMaterial keyMaterialLeft{ infra::MakeRange(certificateLeftDer), infra::MakeRange(privateKeyLeftDer), infra::MakeRange(rootCaCertificateDer) };
         services::EchoPolicyDiffieHellman::KeyMaterial keyMaterialRight{ infra::MakeRange(certificateRightDer), infra::MakeRange(privateKeyRightDer), infra::MakeRange(rootCaCertificateDer) };
+    };
 
+    template<std::size_t LeftSize, std::size_t RightSize>
+    class EchoInstantiationSecuredDiffieHellman
+        : public EchoInstantiationSecuredDiffieHellmanKeyMaterial
+    {
+    public:
         services::TracerWithPrefix tracerLeft{ "Left ", services::GlobalTracer() };
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<LeftSize> leftSerial{ serial.Server() };
         services::MethodSerializerFactory::OnHeap leftSerializerFactory;
@@ -229,6 +234,47 @@ TEST_F(EchoInstantiationSecuredDiffieHellmanTest, send_multiple_messages)
                             serviceProxy.Method(5);
                         });
                 });
+        });
+
+    ExecuteAllActions();
+}
+
+namespace
+{
+    template<std::size_t LeftSize, std::size_t RightSize>
+    class EchoInstantiationSecuredDiffieHellmanUntraced
+        : public EchoInstantiationSecuredDiffieHellmanKeyMaterial
+    {
+    public:
+        hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<LeftSize> leftSerial{ serial.Server() };
+        services::MethodSerializerFactory::OnHeap leftSerializerFactory;
+        typename main_::EchoOnSesameSecuredDiffieHellman<LeftSize, 2>::WithCryptoMbedTls leftEcho{ leftSerial, leftSerializerFactory, keyMaterialLeft, randomDataGenerator };
+
+        hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<RightSize> rightSerial{ serial.Client() };
+        services::MethodSerializerFactory::OnHeap rightSerializerFactory;
+        typename main_::EchoOnSesameSecuredDiffieHellman<RightSize, 2>::WithCryptoMbedTls rightEcho{ rightSerial, rightSerializerFactory, keyMaterialRight, randomDataGenerator };
+
+        services::ServiceStubProxy serviceProxy{ leftEcho.echo };
+        testing::StrictMock<services::ServiceStub> service{ rightEcho.echo };
+    };
+}
+
+class EchoInstantiationSecuredDiffieHellmanUntracedTest
+    : public testing::Test
+    , public infra::ClockFixture
+    , public EchoInstantiationSecuredDiffieHellmanUntraced<4000, 4000>
+{};
+
+TEST_F(EchoInstantiationSecuredDiffieHellmanUntracedTest, send_message)
+{
+    EXPECT_CALL(service, Method(5)).WillOnce(testing::Invoke([this]()
+        {
+            service.MethodDone();
+        }));
+
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.Method(5);
         });
 
     ExecuteAllActions();

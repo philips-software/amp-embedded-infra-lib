@@ -3,37 +3,16 @@
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "services/util/SerialCommunicationLoopback.hpp"
 #include "services/util/SesameInstantiationSecured.hpp"
+#include "services/util/SesameSecured.hpp"
 #include "services/util/test_doubles/SesameMock.hpp"
 #include "gmock/gmock.h"
 
 namespace
 {
     template<std::size_t LeftSize, std::size_t RightSize>
-    class SesameInstantiationSecuredPair
+    class SesameInstantiationSecured
     {
     public:
-        void ExpectSend(testing::StrictMock<services::SesameObserverMock>& sender, std::string& sentData, std::size_t messageSize, char fill)
-        {
-            EXPECT_CALL(sender, SendMessageStreamAvailable(testing::_)).WillOnce(testing::Invoke([&sentData, messageSize, fill](infra::SharedPtr<infra::StreamWriter>&& writer)
-                {
-                    infra::TextOutputStream::WithErrorPolicy stream(*writer);
-                    sentData = std::string(messageSize, fill);
-                    stream << sentData;
-                }));
-        }
-
-        void ExpectReceive(testing::StrictMock<services::SesameObserverMock>& receiver, const std::string& sentData)
-        {
-            EXPECT_CALL(receiver, ReceivedMessage(testing::_)).WillOnce(testing::Invoke([&sentData](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
-                {
-                    infra::TextInputStream::WithErrorPolicy stream(*reader);
-                    std::string text(stream.Available(), ' ');
-                    infra::BoundedString textString(text);
-                    stream >> textString;
-                    EXPECT_THAT(text, testing::Eq(sentData));
-                }));
-        }
-
         services::SerialCommunicationLoopback serial;
         services::SesameSecured::KeyType keyA{ 1, 2 };
         services::SesameSecured::KeyType keyB{ 3, 4 };
@@ -53,7 +32,7 @@ namespace
 class SesameInstantiationSecuredTest
     : public testing::Test
     , public infra::ClockFixture
-    , public SesameInstantiationSecuredPair<256, 1024>
+    , public SesameInstantiationSecured<256, 1024>
 {
 public:
     SesameInstantiationSecuredTest()
@@ -67,71 +46,117 @@ public:
 TEST_F(SesameInstantiationSecuredTest, send_big_message_right)
 {
     std::string sentData;
-    const auto messageSize = leftUpper.Subject().MaxSendMessageSize();
 
-    ExpectSend(leftUpper, sentData, messageSize, 'a');
-    ExpectReceive(rightUpper, sentData);
-    leftUpper.Subject().RequestSendMessage(messageSize);
+    EXPECT_CALL(leftUpper, SendMessageStreamAvailable(testing::_)).WillOnce(testing::Invoke([this, &sentData](infra::SharedPtr<infra::StreamWriter>&& writer)
+        {
+            infra::TextOutputStream::WithErrorPolicy stream(*writer);
+            sentData = std::string(stream.Available(), 'a');
+            stream << sentData;
+        }));
+    leftUpper.Subject().RequestSendMessage(leftUpper.Subject().MaxSendMessageSize());
+
+    EXPECT_CALL(rightUpper, ReceivedMessage(testing::_)).WillOnce(testing::Invoke([this, &sentData](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+        {
+            infra::TextInputStream::WithErrorPolicy stream(*reader);
+            std::string text(stream.Available(), ' ');
+            infra::BoundedString textString(text);
+            stream >> textString;
+            EXPECT_EQ(sentData, text);
+        }));
     ExecuteAllActions();
 
-    EXPECT_THAT(sentData.size(), testing::Eq(105));
+    EXPECT_EQ(105, sentData.size());
 }
 
 TEST_F(SesameInstantiationSecuredTest, send_big_message_left)
 {
     std::string sentData;
-    const auto messageSize = rightUpper.Subject().MaxSendMessageSize();
 
-    ExpectSend(rightUpper, sentData, messageSize, 'a');
-    ExpectReceive(leftUpper, sentData);
-    rightUpper.Subject().RequestSendMessage(messageSize);
+    EXPECT_CALL(rightUpper, SendMessageStreamAvailable(testing::_)).WillOnce(testing::Invoke([this, &sentData](infra::SharedPtr<infra::StreamWriter>&& writer)
+        {
+            infra::TextOutputStream::WithErrorPolicy stream(*writer);
+            sentData = std::string(stream.Available(), 'a');
+            stream << sentData;
+        }));
+    rightUpper.Subject().RequestSendMessage(rightUpper.Subject().MaxSendMessageSize());
+
+    EXPECT_CALL(leftUpper, ReceivedMessage(testing::_)).WillOnce(testing::Invoke([this, &sentData](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+        {
+            infra::TextInputStream::WithErrorPolicy stream(*reader);
+            std::string text(stream.Available(), ' ');
+            infra::BoundedString textString(text);
+            stream >> textString;
+            EXPECT_EQ(sentData, text);
+        }));
     ExecuteAllActions();
 
-    EXPECT_THAT(sentData.size(), testing::Eq(105));
+    EXPECT_EQ(105, sentData.size());
 }
 
-class SesameInstantiationSecuredMessageSizeTest
+class SesameInstantiationSecuredTestMessageSize
     : public testing::TestWithParam<std::size_t>
     , public infra::ClockFixture
-    , public SesameInstantiationSecuredPair<2048, 2048>
+    , public SesameInstantiationSecured<2048, 2048>
 {
 public:
-    SesameInstantiationSecuredMessageSizeTest()
+    SesameInstantiationSecuredTestMessageSize()
     {
         EXPECT_CALL(leftUpper, Initialized()).Times(testing::AnyNumber());
         EXPECT_CALL(rightUpper, Initialized()).Times(testing::AnyNumber());
         ExecuteAllActions();
     }
+
+    const std::size_t messageSize = GetParam();
 };
 
-TEST_P(SesameInstantiationSecuredMessageSizeTest, send_message_of_size_right)
+TEST_P(SesameInstantiationSecuredTestMessageSize, send_message_of_size_right)
 {
-    const auto messageSize = GetParam();
-    ASSERT_THAT(leftUpper.Subject().MaxSendMessageSize(), testing::Eq(994));
+    EXPECT_EQ(994, leftUpper.Subject().MaxSendMessageSize());
 
     std::string sentData1;
     std::string sentData2;
 
-    {
-        testing::InSequence sequence;
-        ExpectSend(leftUpper, sentData1, messageSize, 'a');
-        ExpectSend(leftUpper, sentData2, messageSize, 0);
-    }
-    {
-        testing::InSequence sequence;
-        ExpectReceive(rightUpper, sentData1);
-        ExpectReceive(rightUpper, sentData2);
-    }
+    EXPECT_CALL(leftUpper, SendMessageStreamAvailable(testing::_)).WillOnce(testing::Invoke([this, &sentData1](infra::SharedPtr<infra::StreamWriter>&& writer)
+        {
+            infra::TextOutputStream::WithErrorPolicy stream(*writer);
+            sentData1 = std::string(messageSize, 'a');
+            stream << sentData1;
+        }));
     leftUpper.Subject().RequestSendMessage(messageSize);
+
+    EXPECT_CALL(leftUpper, SendMessageStreamAvailable(testing::_)).WillOnce(testing::Invoke([this, &sentData2](infra::SharedPtr<infra::StreamWriter>&& writer)
+        {
+            infra::TextOutputStream::WithErrorPolicy stream(*writer);
+            sentData2 = std::string(messageSize, 0);
+            stream << sentData2;
+        }));
     leftUpper.Subject().RequestSendMessage(messageSize);
+
+    EXPECT_CALL(rightUpper, ReceivedMessage(testing::_))
+        .WillOnce(testing::Invoke([this, &sentData1](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+            {
+                infra::TextInputStream::WithErrorPolicy stream(*reader);
+                std::string text(stream.Available(), ' ');
+                infra::BoundedString textString(text);
+                stream >> textString;
+                EXPECT_EQ(sentData1, text);
+            }))
+        .WillOnce(testing::Invoke([this, &sentData2](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+            {
+                infra::TextInputStream::WithErrorPolicy stream(*reader);
+                std::string text(stream.Available(), ' ');
+                infra::BoundedString textString(text);
+                stream >> textString;
+                EXPECT_EQ(sentData2, text);
+            }));
     ExecuteAllActions();
 
-    EXPECT_THAT(sentData1.size(), testing::Eq(messageSize));
-    EXPECT_THAT(sentData2.size(), testing::Eq(messageSize));
+    EXPECT_EQ(messageSize, sentData1.size());
+    EXPECT_EQ(messageSize, sentData2.size());
 }
 
 #ifndef EMIL_MUTATION_TESTING
-INSTANTIATE_TEST_SUITE_P(SesameInstantiationSecuredMessageSize, SesameInstantiationSecuredMessageSizeTest, testing::Range<std::size_t>(1, 995));
+INSTANTIATE_TEST_SUITE_P(SesameInstantiationSecuredTestMessageSize, SesameInstantiationSecuredTestMessageSize, testing::Range<std::size_t>(1, 995));
 #else
-INSTANTIATE_TEST_SUITE_P(SesameInstantiationSecuredMessageSize, SesameInstantiationSecuredMessageSizeTest, testing::Values<std::size_t>(1, 111, 221, 332, 442, 553, 663, 774, 884, 994));
+INSTANTIATE_TEST_SUITE_P(SesameInstantiationSecuredTestMessageSize, SesameInstantiationSecuredTestMessageSize, testing::Values<std::size_t>(1, 111, 221, 332, 442, 553, 663, 774, 884, 994));
 #endif

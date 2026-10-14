@@ -71,9 +71,7 @@ public:
         } };
     sesame_security::SymmetricKeyFile keys{ services::GenerateSymmetricKeys(randomDataGenerator) };
     services::SesameSecuredMbedTlsEncryptors encryptors;
-    infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameSecured::encodedMessageSize<64>> sendBuffer;
-    infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameSecured::encodedMessageSize<64>> receiveBuffer;
-    services::SesameSecured secured{ sendBuffer, receiveBuffer, encryptors, lower, keys };
+    services::SesameSecured::WithMessageSize<64> secured{ encryptors, lower, keys };
     services::EchoOnSesame echo{ secured, serializerFactory, errorPolicy };
     services::EchoPolicySymmetricKey policy{ echo, echo, secured, randomDataGenerator };
 
