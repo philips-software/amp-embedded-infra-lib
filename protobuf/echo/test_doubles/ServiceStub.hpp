@@ -60,6 +60,28 @@ namespace services
         Type<0> value = 0;
     };
 
+    struct MessageRepeatedMessage
+    {
+    public:
+        static const uint32_t numberOfFields = 1;
+        template<std::size_t fieldIndex>
+        using ProtoType = ProtoRepeated<4, ProtoMessage<Message>>;
+        template<std::size_t fieldIndex>
+        using Type = infra::BoundedVector<Message>::WithMaxSize<4>;
+        template<std::size_t fieldIndex>
+        static const uint32_t fieldNumber = 1;
+
+    public:
+        explicit MessageRepeatedMessage(infra::MemoryRange<const Message> value);
+
+        void Serialize(infra::ProtoFormatter& formatter) const;
+
+        const infra::BoundedVector<Message>& Get(std::integral_constant<uint32_t, 0>) const;
+
+    public:
+        Type<0> value;
+    };
+
     class ServiceStub
         : public services::Service
     {
@@ -96,16 +118,18 @@ namespace services
         void Method(uint32_t value);
         void MethodNoParameter();
         void MethodBytes(infra::ConstByteRange data);
+        void MethodRepeatedMessage(infra::MemoryRange<const Message> values);
 
     public:
         static constexpr uint32_t serviceId = 1;
         static constexpr uint32_t idMethod = 1;
         static const uint32_t idMethodNoParameter = 3;
         static const uint32_t idMethodBytes = 4;
+        static const uint32_t idMethodRepeatedMessage = 5;
         static constexpr uint32_t maxMessageSize = 78;
 
     public:
-        using MethodTypeList = infra::List<Message, MessageBytes, EmptyMessage>;
+        using MethodTypeList = infra::List<Message, MessageBytes, MessageRepeatedMessage, EmptyMessage>;
     };
 }
 
