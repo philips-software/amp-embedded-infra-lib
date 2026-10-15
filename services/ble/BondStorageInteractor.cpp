@@ -73,6 +73,11 @@ namespace services
         bondStorageSynchroniser.AssertBondStoragesAreInSyncForRole(role);
     }
 
+    bool BondStorageInteractor::IsStoragePersisted() const
+    {
+        return bondStorageSynchroniser.IsStoragePersisted();
+    }
+
     std::optional<services::Bond> BondStorageInteractor::GetLeastRecentlyUsedBond()
     {
         std::optional<services::Bond> oldestBond;

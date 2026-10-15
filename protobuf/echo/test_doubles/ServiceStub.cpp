@@ -50,6 +50,20 @@ namespace services
         return value;
     }
 
+    MessageRepeatedMessage::MessageRepeatedMessage(infra::MemoryRange<const Message> value)
+        : value(value.begin(), value.end())
+    {}
+
+    void MessageRepeatedMessage::Serialize(infra::ProtoFormatter& formatter) const
+    {
+        SerializeField(services::ProtoRepeated<4, services::ProtoMessage<Message>>(), formatter, value, 1);
+    }
+
+    const infra::BoundedVector<Message>& MessageRepeatedMessage::Get(std::integral_constant<uint32_t, 0>) const
+    {
+        return value;
+    }
+
     ServiceStub::ServiceStub(Echo& echo)
         : Service(echo)
     {}
@@ -103,6 +117,12 @@ namespace services
     void ServiceStubProxy::MethodBytes(infra::ConstByteRange data)
     {
         auto serializer = Rpc().SerializerFactory().MakeSerializer<MessageBytes>(serviceId, idMethodBytes, data);
+        SetSerializer(serializer);
+    }
+
+    void ServiceStubProxy::MethodRepeatedMessage(infra::MemoryRange<const Message> values)
+    {
+        auto serializer = Rpc().SerializerFactory().MakeSerializer<MessageRepeatedMessage>(serviceId, idMethodRepeatedMessage, values);
         SetSerializer(serializer);
     }
 }
