@@ -42,6 +42,7 @@ jobs:
         run: |
           gcovr --sonarqube=coverage.xml \
             --merge-mode-functions=separate \
+            --merge-lines \
             --exclude-lines-by-pattern '.*assert\(.*\);|.*really_assert\(.*\);|.*std::abort\(\);|.*LOG_AND_ABORT.*' \
             --exclude-unreachable-branches \
             --exclude-throw-branches \
