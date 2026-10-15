@@ -51,6 +51,7 @@ jobs:
             --exclude=.*/examples/.* \
             --exclude=.*/external/.* \
             --exclude=.*/lwip/.* \
+            --exclude=.*/test/.* \
             --exclude=.*/tracing/.*
       - name: Perform mutation testing
         uses: lukka/run-cmake@5d55ea7949e25f69f0ecb516d8d572297e03a956 # v10.9
