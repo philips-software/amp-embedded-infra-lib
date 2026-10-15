@@ -42,15 +42,15 @@ namespace services
         return result;
     }
 
-    SesameSecured::SesameSecured(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, AesGcmEncryptors& encryptors, Sesame& delegate,
+    SesameSecured::SesameSecured(StorageBase& storage, AesGcmEncryptors& encryptors, Sesame& delegate,
         const KeyMaterial& keyMaterial)
         : SesameObserver(delegate)
         , sendEncryption(encryptors.sendEncryption)
         , receiveEncryption(encryptors.receiveEncryption)
-        , sendBuffer(sendBuffer)
+        , sendBuffer(storage.sendBuffer)
         , initialSendKey(keyMaterial.sendKey)
         , initialSendIv(keyMaterial.sendIv)
-        , receiveBuffer(receiveBuffer)
+        , receiveBuffer(storage.receiveBuffer)
         , initialReceiveKey(keyMaterial.receiveKey)
         , initialReceiveIv(keyMaterial.receiveIv)
     {
@@ -58,8 +58,8 @@ namespace services
         SetReceiveKey(initialReceiveKey, initialReceiveIv);
     }
 
-    SesameSecured::SesameSecured(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, AesGcmEncryptors& encryptors, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial)
-        : SesameSecured(sendBuffer, receiveBuffer, encryptors, delegate, ConvertKeyMaterial(keyMaterial))
+    SesameSecured::SesameSecured(StorageBase& storage, AesGcmEncryptors& encryptors, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial)
+        : SesameSecured(storage, encryptors, delegate, ConvertKeyMaterial(keyMaterial))
     {}
 
     void SesameSecured::SetSendKey(const KeyType& newSendKey, const IvType& newSendIv)

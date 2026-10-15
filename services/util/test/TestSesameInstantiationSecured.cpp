@@ -20,11 +20,11 @@ namespace
         services::SesameSecured::IvType ivB{ 7, 8 };
 
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<LeftSize> leftSerial{ serial.Server() };
-        typename main_::SesameInstantiationSecured<LeftSize>::WithCryptoMbedTls leftSesame{ leftSerial, services::SesameSecured::KeyMaterial{ keyA, ivA, keyB, ivB } };
+        typename main_::SesameInstantiationSecured::WithMessageSize<LeftSize>::WithCryptoMbedTls leftSesame{ leftSerial, services::SesameSecured::KeyMaterial{ keyA, ivA, keyB, ivB } };
         testing::StrictMock<services::SesameObserverMock> leftUpper{ leftSesame.secured };
 
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<RightSize> rightSerial{ serial.Client() };
-        typename main_::SesameInstantiationSecured<RightSize>::WithCryptoMbedTls rightSesame{ rightSerial, services::SesameSecured::KeyMaterial{ keyB, ivB, keyA, ivA } };
+        typename main_::SesameInstantiationSecured::WithMessageSize<RightSize>::WithCryptoMbedTls rightSesame{ rightSerial, services::SesameSecured::KeyMaterial{ keyB, ivB, keyA, ivA } };
         testing::StrictMock<services::SesameObserverMock> rightUpper{ rightSesame.secured };
     };
 }

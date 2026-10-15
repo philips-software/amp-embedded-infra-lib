@@ -302,7 +302,8 @@ TEST_F(SesameSecuredStandaloneTest, received_message_includes_non_zero_finish_ou
     EXPECT_CALL(sendEncryption, EncryptWithKey(testing::_));
     EXPECT_CALL(receiveEncryption, DecryptWithKey(testing::_));
     services::AesGcmEncryptors encryptors{ sendEncryption, receiveEncryption };
-    services::SesameSecured secured(sendBuffer, receiveBuffer, encryptors, lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv });
+    services::SesameSecured::StorageBase storage{ sendBuffer, receiveBuffer };
+    services::SesameSecured secured(storage, encryptors, lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv });
     testing::StrictMock<services::SesameObserverMock> upper{ secured };
 
     EXPECT_CALL(receiveEncryption, Start(testing::_));

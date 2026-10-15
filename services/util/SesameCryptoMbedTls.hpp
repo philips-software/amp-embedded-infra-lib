@@ -89,15 +89,15 @@ namespace services
 
     namespace detail
     {
-        struct EncryptorsStorage
+        struct MbedTlsEncryptors
         {
-            AesGcmEncryptionMbedTls send;
-            AesGcmEncryptionMbedTls receive;
+            AesGcmEncryptionMbedTls sendEncryption;
+            AesGcmEncryptionMbedTls receiveEncryption;
         };
     };
 
     struct SesameSecuredMbedTlsEncryptors
-        : private detail::EncryptorsStorage
+        : private detail::MbedTlsEncryptors
         , AesGcmEncryptors
     {
         SesameSecuredMbedTlsEncryptors();

@@ -47,8 +47,23 @@ namespace services
         template<std::size_t Size>
         static constexpr std::size_t encodedMessageSize = Size + blockSize;
 
+        struct StorageBase
+        {
+            infra::BoundedVector<uint8_t>& sendBuffer;
+            infra::BoundedVector<uint8_t>& receiveBuffer;
+        };
+
         template<std::size_t MessageSize>
-        using WithMessageSize = infra::WithStorage<infra::WithStorage<SesameSecured, infra::BoundedVector<uint8_t>::WithMaxSize<encodedMessageSize<MessageSize>>>, infra::BoundedVector<uint8_t>::WithMaxSize<encodedMessageSize<MessageSize>>>;
+        struct Storage
+            : StorageBase
+        {
+            Storage()
+                : StorageBase{ sendBufferStorage, receiveBufferStorage }
+            {}
+
+            infra::BoundedVector<uint8_t>::WithMaxSize<encodedMessageSize<MessageSize>> sendBufferStorage;
+            infra::BoundedVector<uint8_t>::WithMaxSize<encodedMessageSize<MessageSize>> receiveBufferStorage;
+        };
 
         struct KeyMaterial
         {
@@ -58,8 +73,11 @@ namespace services
             IvType receiveIv;
         };
 
-        SesameSecured(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, AesGcmEncryptors& encryptors, Sesame& delegate, const KeyMaterial& keyMaterial);
-        SesameSecured(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, AesGcmEncryptors& encryptors, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial);
+        template<std::size_t MessageSize>
+        using WithMessageSize = infra::WithStorage<SesameSecured, Storage<MessageSize>>;
+
+        SesameSecured(StorageBase& storage, AesGcmEncryptors& encryptors, Sesame& delegate, const KeyMaterial& keyMaterial);
+        SesameSecured(StorageBase& storage, AesGcmEncryptors& encryptors, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial);
 
         void SetSendKey(const KeyType& newSendKey, const IvType& newSendIv);
         void SetReceiveKey(const KeyType& newReceiveKey, const IvType& newReceiveIv);

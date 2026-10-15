@@ -10,9 +10,9 @@ namespace main_
     struct Sesame
     {
     public:
-        struct CobsStorageBase
+        struct StorageBase
         {
-            CobsStorageBase(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage,
+            StorageBase(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage,
                 infra::BoundedDeque<uint8_t>& windowedReceivedMessage, uint8_t windowedReceiveBuffers);
 
             infra::BoundedVector<uint8_t>& cobsSendMessage;
@@ -22,15 +22,15 @@ namespace main_
         };
 
         template<std::size_t MessageSize, uint8_t SplitBuffers>
-        struct CobsStorage
-            : CobsStorageBase
+        struct Storage
+            : StorageBase
         {
             static_assert(SplitBuffers >= 2, "Sesame requires at least 2 receive buffers");
 
             static constexpr std::size_t encodedMessageSize = services::SesameWindowed::bufferSizeForMessage<MessageSize, services::SesameCobs::EncodedMessageSize>;
 
-            CobsStorage()
-                : CobsStorageBase(cobsSendMessageStorage, cobsReceivedMessageStorage, windowedReceivedMessageStorage, SplitBuffers)
+            Storage()
+                : StorageBase(cobsSendMessageStorage, cobsReceivedMessageStorage, windowedReceivedMessageStorage, SplitBuffers)
             {}
 
             infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameCobs::sendBufferSize<MessageSize>> cobsSendMessageStorage;
@@ -39,9 +39,9 @@ namespace main_
         };
 
         template<std::size_t MessageSize, uint8_t SplitBuffers = 2>
-        using WithMessageSize = infra::WithStorage<Sesame, CobsStorage<MessageSize, SplitBuffers>>;
+        using WithMessageSize = infra::WithStorage<Sesame, Storage<MessageSize, SplitBuffers>>;
 
-        Sesame(CobsStorageBase& storage, hal::BufferedSerialCommunication& serialCommunication, services::SesameInitializer& initializer = services::immediatelyGranted);
+        Sesame(StorageBase& storage, hal::BufferedSerialCommunication& serialCommunication, services::SesameInitializer& initializer = services::immediatelyGranted);
 
         void Stop(const infra::Function<void()>& onDone);
 

@@ -29,11 +29,11 @@ namespace
 
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<LeftSize> leftSerial{ serial.Server() };
         services::MethodSerializerFactory::OnHeap leftSerializerFactory;
-        typename main_::EchoOnSesameSecuredSymmetricKey<LeftSize, 2>::WithCryptoMbedTls leftEcho{ leftSerial, leftSerializerFactory, keyMaterialLeft, randomDataGenerator };
+        typename main_::EchoOnSesameSecuredSymmetricKey::WithMessageSize<LeftSize, 2>::WithCryptoMbedTls leftEcho{ leftSerial, leftSerializerFactory, keyMaterialLeft, randomDataGenerator };
 
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<RightSize> rightSerial{ serial.Client() };
         services::MethodSerializerFactory::OnHeap rightSerializerFactory;
-        typename main_::EchoOnSesameSecuredSymmetricKey<RightSize, 2>::WithCryptoMbedTls rightEcho{ rightSerial, rightSerializerFactory, keyMaterialRight, randomDataGenerator };
+        typename main_::EchoOnSesameSecuredSymmetricKey::WithMessageSize<RightSize, 2>::WithCryptoMbedTls rightEcho{ rightSerial, rightSerializerFactory, keyMaterialRight, randomDataGenerator };
 
         services::ServiceStubProxy serviceProxy{ leftEcho.echo };
         testing::StrictMock<services::ServiceStub> service{ rightEcho.echo };
@@ -178,12 +178,12 @@ namespace
         services::TracerWithPrefix tracerLeft{ "Left ", services::GlobalTracer() };
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<LeftSize> leftSerial{ serial.Server() };
         services::MethodSerializerFactory::OnHeap leftSerializerFactory;
-        typename main_::TracingEchoOnSesameSecuredDiffieHellman<LeftSize, 2>::WithCryptoMbedTls leftEcho{ leftSerial, leftSerializerFactory, keyMaterialLeft, randomDataGenerator, tracerLeft };
+        typename main_::TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<LeftSize, 2>::WithCryptoMbedTls leftEcho{ leftSerial, leftSerializerFactory, keyMaterialLeft, randomDataGenerator, tracerLeft };
 
         services::TracerWithPrefix tracerRight{ "Right                                                      ", services::GlobalTracer() };
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<RightSize> rightSerial{ serial.Client() };
         services::MethodSerializerFactory::OnHeap rightSerializerFactory;
-        typename main_::TracingEchoOnSesameSecuredDiffieHellman<RightSize, 2>::WithCryptoMbedTls rightEcho{ rightSerial, rightSerializerFactory, keyMaterialRight, randomDataGenerator, tracerRight };
+        typename main_::TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<RightSize, 2>::WithCryptoMbedTls rightEcho{ rightSerial, rightSerializerFactory, keyMaterialRight, randomDataGenerator, tracerRight };
 
         services::ServiceStubProxy serviceProxy{ leftEcho.echo };
         testing::StrictMock<services::ServiceStub> service{ rightEcho.echo };
@@ -248,11 +248,11 @@ namespace
     public:
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<LeftSize> leftSerial{ serial.Server() };
         services::MethodSerializerFactory::OnHeap leftSerializerFactory;
-        typename main_::EchoOnSesameSecuredDiffieHellman<LeftSize, 2>::WithCryptoMbedTls leftEcho{ leftSerial, leftSerializerFactory, keyMaterialLeft, randomDataGenerator };
+        typename main_::EchoOnSesameSecuredDiffieHellman::WithMessageSize<LeftSize, 2>::WithCryptoMbedTls leftEcho{ leftSerial, leftSerializerFactory, keyMaterialLeft, randomDataGenerator };
 
         hal::BufferedSerialCommunicationOnUnbuffered::WithStorage<RightSize> rightSerial{ serial.Client() };
         services::MethodSerializerFactory::OnHeap rightSerializerFactory;
-        typename main_::EchoOnSesameSecuredDiffieHellman<RightSize, 2>::WithCryptoMbedTls rightEcho{ rightSerial, rightSerializerFactory, keyMaterialRight, randomDataGenerator };
+        typename main_::EchoOnSesameSecuredDiffieHellman::WithMessageSize<RightSize, 2>::WithCryptoMbedTls rightEcho{ rightSerial, rightSerializerFactory, keyMaterialRight, randomDataGenerator };
 
         services::ServiceStubProxy serviceProxy{ leftEcho.echo };
         testing::StrictMock<services::ServiceStub> service{ rightEcho.echo };
