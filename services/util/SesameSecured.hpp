@@ -57,9 +57,7 @@ namespace services
         struct Storage
             : StorageBase
         {
-            Storage()
-                : StorageBase{ sendBufferStorage, receiveBufferStorage }
-            {}
+            Storage();
 
             infra::BoundedVector<uint8_t>::WithMaxSize<encodedMessageSize<MessageSize>> sendBufferStorage;
             infra::BoundedVector<uint8_t>::WithMaxSize<encodedMessageSize<MessageSize>> receiveBufferStorage;
@@ -108,7 +106,7 @@ namespace services
         std::array<uint8_t, ivSize> initialSendIv;
         std::array<uint8_t, ivSize> sendIv;
         infra::SharedPtr<infra::StreamWriter> sendWriter;
-        infra::NotifyingSharedOptional<infra::LimitedStreamWriter::WithOutput<infra::BoundedVectorStreamWriter>> sendBufferWriter{ [this]()
+        infra::NotifyingSharedOptional<infra::LimitedStreamWriter::WithOutput<infra::BoundedVectorStreamWriter>> sendBufferWriter{ [this]
             {
                 SendMessageStreamReleased();
             } };
@@ -119,7 +117,7 @@ namespace services
         std::array<uint8_t, ivSize> initialReceiveIv;
         std::array<uint8_t, ivSize> receiveIv;
         infra::SharedPtr<infra::StreamReaderWithRewinding> receivedReader;
-        infra::NotifyingSharedOptional<infra::BoundedVectorInputStreamReader> receiveBufferReader{ [this]()
+        infra::NotifyingSharedOptional<infra::BoundedVectorInputStreamReader> receiveBufferReader{ [this]
             {
                 ReleaseReceivedReader();
             } };
@@ -128,6 +126,13 @@ namespace services
     };
 
     SesameSecured::KeyMaterial ConvertKeyMaterial(const sesame_security::SymmetricKeyFile& keyMaterial);
+
+    //// Implementation ////
+
+    template<std::size_t MessageSize>
+    SesameSecured::Storage<MessageSize>::Storage()
+        : StorageBase{ sendBufferStorage, receiveBufferStorage }
+    {}
 }
 
 #endif

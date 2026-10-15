@@ -29,9 +29,7 @@ namespace main_
 
             static constexpr std::size_t encodedMessageSize = services::SesameWindowed::bufferSizeForMessage<MessageSize, services::SesameCobs::EncodedMessageSize>;
 
-            Storage()
-                : StorageBase(cobsSendMessageStorage, cobsReceivedMessageStorage, windowedReceivedMessageStorage, SplitBuffers)
-            {}
+            Storage();
 
             infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameCobs::sendBufferSize<MessageSize>> cobsSendMessageStorage;
             infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameCobs::receiveBufferSize<encodedMessageSize>> cobsReceivedMessageStorage;
@@ -50,6 +48,13 @@ namespace main_
 
         infra::AutoResetFunction<void()> onStopDone;
     };
+
+    //// Implementation ////
+
+    template<std::size_t MessageSize, uint8_t SplitBuffers>
+    Sesame::Storage<MessageSize, SplitBuffers>::Storage()
+        : StorageBase(cobsSendMessageStorage, cobsReceivedMessageStorage, windowedReceivedMessageStorage, SplitBuffers)
+    {}
 }
 
 #endif
