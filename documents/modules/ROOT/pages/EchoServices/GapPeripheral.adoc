@@ -138,6 +138,19 @@ Sets the local identity address. The address type may be public or random; an un
 include::partial$echoservices/gap_peripheral/GapPeripheral_SetIdentityAddress_sequence.mmd[]
 ....
 
+=== SetDeviceName
+
+*Allowed states:* standby.
+
+Sets the Device Name characteristic of the local GAP service, which a connected peer can read. The name remains in effect until it is overwritten or the device is rebooted. If not set by this method, a platform-defined default name is used. Call `SetDeviceName` before creating new bonds so bonded peers store the intended device name.
+
+Pass the name as `DeviceName(value=...)`. The `value` is UTF-8 encoded, not null-terminated, and limited to 32 bytes.
+
+[mermaid]
+....
+include::partial$echoservices/gap_peripheral/GapPeripheral_SetDeviceName_sequence.mmd[]
+....
+
 === GetBondInformation
 
 *Allowed states:* standby, advertising, connected.
