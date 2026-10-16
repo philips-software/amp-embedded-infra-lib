@@ -22,6 +22,8 @@ target_sources(services.ble PRIVATE
     Att.hpp
     BondBlobPersistence.cpp
     BondBlobPersistence.hpp
+    BondStorageInteractor.cpp
+    BondStorageInteractor.hpp
     BondStorageSynchronizer.cpp
     BondStorageSynchronizer.hpp
     ClaimingGattClientAdapter.cpp
@@ -41,6 +43,7 @@ target_sources(services.ble PRIVATE
     GattServerCharacteristicImpl.hpp
     RetryGattClientCharacteristicsOperations.cpp
     RetryGattClientCharacteristicsOperations.hpp
+    StateGuard.hpp
 )
 
 add_subdirectory(test)

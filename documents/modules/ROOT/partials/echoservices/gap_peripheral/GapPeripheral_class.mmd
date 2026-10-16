@@ -1,0 +1,29 @@
+classDiagram
+    class GapPeripheral {
+        <<service id=32>>
+        +GetState()
+        +Advertise()
+        +Standby()
+        +SetAdvertisementData()
+        +SetScanResponseData()
+        +GetAdvertisingAddress()
+        +GetIdentityAddress()
+        +SetIdentityAddress()
+        +SetSecurityPreferences()
+        +SetAllowPairing()
+        +RemoveAllBonds()
+        +RemoveBondWithAddress()
+        +GetBondInformation()
+        +NumericComparisonConfirm()
+    }
+    class GapPeripheralResponse {
+        <<service id=34>>
+        +CurrentState()
+        +AdvertisingAddress()
+        +IdentityAddress()
+        +PairingResult()
+        +NumberOfBondsChanged()
+        +BondInformationReceived()
+        +AuthenticationRequired()
+    }
+    GapPeripheral --> GapPeripheralResponse : responses

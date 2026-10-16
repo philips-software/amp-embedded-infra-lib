@@ -2,7 +2,7 @@
 #define EMIL_SERVICES_UTIL_FLASH_HPP
 
 #include "generated/echo/Flash.pb.hpp"
-#include "hal/interfaces/FlashHomogeneous.hpp"
+#include "hal/interfaces/Flash.hpp"
 #include "infra/util/AutoResetFunction.hpp"
 
 namespace services
@@ -21,6 +21,10 @@ namespace services
         void EraseSectors(uint32_t sector, uint32_t numberOfSectors) override;
 
     private:
+        void PrepareForFlashOperation(const infra::Function<void()>& onFlashOperationDone);
+        void FlashOperationDone();
+
+    private:
         flash::FlashResultProxy flashResult;
         hal::Flash& flash;
 
@@ -28,6 +32,7 @@ namespace services
 
         bool busyWithFlash = false;
         bool busyWithResponse = false;
+        infra::Function<void()> onFlashOperationDone;
         infra::AutoResetFunction<void()> onStopped;
     };
 

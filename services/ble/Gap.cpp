@@ -98,11 +98,6 @@ namespace services
         GapBondingObserver::Subject().RemoveAllBonds();
     }
 
-    void GapBondingDecorator::RemoveOldestBond()
-    {
-        GapBondingObserver::Subject().RemoveOldestBond();
-    }
-
     void GapBondingDecorator::RemoveBondWithAddress(GapAddress gapAddress)
     {
         GapBondingObserver::Subject().RemoveBondWithAddress(gapAddress);
@@ -128,6 +123,11 @@ namespace services
         return GapBondingObserver::Subject().GetBondList();
     }
 
+    bool GapBondingDecorator::IsBondListPersisted() const
+    {
+        return GapBondingObserver::Subject().IsBondListPersisted();
+    }
+
     void GapPeripheralDecorator::StateChanged(GapState state)
     {
         GapPeripheral::NotifyObservers([&state](auto& obs)
@@ -144,6 +144,11 @@ namespace services
     GapAddress GapPeripheralDecorator::GetIdentityAddress() const
     {
         return GapPeripheralObserver::Subject().GetIdentityAddress();
+    }
+
+    void GapPeripheralDecorator::SetIdentityAddress(GapAddress address)
+    {
+        GapPeripheralObserver::Subject().SetIdentityAddress(address);
     }
 
     void GapPeripheralDecorator::SetAdvertisementData(infra::ConstByteRange data)
@@ -207,9 +212,9 @@ namespace services
         GapCentralObserver::Subject().Standby();
     }
 
-    void GapCentralDecorator::SetIdentityAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType)
+    void GapCentralDecorator::SetIdentityAddress(GapAddress address)
     {
-        GapCentralObserver::Subject().SetIdentityAddress(macAddress, addressType);
+        GapCentralObserver::Subject().SetIdentityAddress(address);
     }
 
     void GapCentralDecorator::StartDeviceDiscovery()

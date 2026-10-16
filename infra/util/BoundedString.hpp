@@ -1130,6 +1130,8 @@ namespace infra
     {
         using std::swap;
 
+        really_assert(size() <= other.max_size() && other.size() <= max_size());
+
         for (size_type i = 0; i < size() && i < other.size(); ++i)
             swap(range[i], other.range[i]);
 

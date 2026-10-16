@@ -94,6 +94,7 @@ option(EMIL_ENABLE_FUZZING "Enable building the fuzzing targets" Off)
 option(EMIL_ENABLE_DOCKER_TOOLS "Enable shift-left tools (e.g. linters, formatters) that are run using Docker" On)
 option(EMIL_GENERATE_PACKAGE_CONFIG "Enable generation of package configuration and install files" ${EMIL_HOST_BUILD})
 option(EMIL_ENABLE_TRACING "Enable Tracing" On)
+option(EMIL_ENABLE_DESTRUCTION_GUARD "Enable the destruction guard" ${EMIL_DEFAULTOPT})
 option(EMIL_FETCH_ECHO_COMPILERS "Fetch the Protobuf ECHO compilers from GitHub" ${EMIL_DEFAULTOPT_INVERTED})
 if (NOT EMIL_FETCH_ECHO_COMPILERS)
     set(EMIL_DEFAULTOPT_BUILD_ECHO_COMPILERS ${EMIL_DEFAULTOPT})
@@ -113,6 +114,19 @@ option(EMIL_INCLUDE_THREADX "Include ThreadX as part of EmIL (Incomplete, experi
 option(EMIL_INCLUDE_SEGGER_RTT "Include support for Segger RTT" Off)
 set(EMIL_EXTERNAL_LWIP_TARGET "" CACHE STRING "Specify an external LWIP target")
 option(EMIL_LWIP_CHECKSUM_IN_SOFTWARE "Enable lwIP checksum calculation in software" Off)
+
+if (EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
+    set(EMIL_MBEDTLS_CUSTOM_ENTROPY_DEFAULT On)
+else()
+    set(EMIL_MBEDTLS_CUSTOM_ENTROPY_DEFAULT Off)
+endif()
+
+option(EMIL_MBEDTLS_CUSTOM_ENTROPY "Enable custom entropy for MbedTLS" ${EMIL_MBEDTLS_CUSTOM_ENTROPY_DEFAULT})
+
+if (EMIL_INCLUDE_MBEDTLS AND NOT EMIL_HOST_BUILD AND EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "" AND NOT EMIL_MBEDTLS_CUSTOM_ENTROPY)
+    message(FATAL_ERROR
+        "EMIL_MBEDTLS_CUSTOM_ENTROPY must be enabled when using bundled mbedTLS")
+endif()
 
 if (EMIL_ENABLE_DOCKER_TOOLS)
     emil_enable_docker_tools()

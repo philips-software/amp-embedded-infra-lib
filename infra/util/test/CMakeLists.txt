@@ -24,6 +24,7 @@ target_sources(infra.util_test PRIVATE
     TestCrc.cpp
     TestCrcCcittCalculator.cpp
     TestCyclicBuffer.cpp
+    TestDestructionGuard.cpp
     TestEndian.cpp
     TestFixedPoint.cpp
     TestFunction.cpp
@@ -46,6 +47,7 @@ target_sources(infra.util_test PRIVATE
     TestSharedObjectAllocatorHeap.cpp
     TestSharedOptional.cpp
     TestSharedPtr.cpp
+    TestSingleInstance.cpp
     TestStaticStorage.cpp
     TestTokenizer.cpp
     TestUnit.cpp
@@ -71,3 +73,22 @@ if (EMIL_BUILD_WIN)
         TestNatvis.cpp
     )
 endif()
+
+add_executable(infra.util_test_disabled_destruction_guard)
+emil_build_for(infra.util_test_disabled_destruction_guard BOOL EMIL_BUILD_TESTS)
+emil_add_test(infra.util_test_disabled_destruction_guard)
+
+if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+    target_compile_options(infra.util_test_disabled_destruction_guard PRIVATE /UEMIL_ENABLE_DESTRUCTION_GUARD)
+else()
+    target_compile_options(infra.util_test_disabled_destruction_guard PRIVATE -UEMIL_ENABLE_DESTRUCTION_GUARD)
+endif()
+
+target_link_libraries(infra.util_test_disabled_destruction_guard PUBLIC
+    gmock_main
+    infra.util
+)
+
+target_sources(infra.util_test_disabled_destruction_guard PRIVATE
+    TestDestructionGuard.cpp
+)

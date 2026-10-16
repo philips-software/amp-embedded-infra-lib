@@ -35,9 +35,6 @@ namespace services
         EXPECT_CALL(gapBonding, RemoveAllBonds());
         decorator.RemoveAllBonds();
 
-        EXPECT_CALL(gapBonding, RemoveOldestBond());
-        decorator.RemoveOldestBond();
-
         EXPECT_CALL(gapBonding, GetMaxNumberOfBonds()).WillOnce(testing::Return(5));
         EXPECT_EQ(decorator.GetMaxNumberOfBonds(), 5);
 
@@ -62,5 +59,11 @@ namespace services
         };
         EXPECT_CALL(gapBonding, GetBondList()).WillOnce(testing::Return(infra::MakeRange(bonds)));
         EXPECT_THAT(decorator.GetBondList(), testing::ElementsAreArray(bonds.begin(), bonds.end()));
+
+        EXPECT_CALL(gapBonding, IsBondListPersisted()).WillOnce(testing::Return(true));
+        EXPECT_THAT(decorator.IsBondListPersisted(), testing::IsTrue());
+
+        EXPECT_CALL(gapBonding, IsBondListPersisted()).WillOnce(testing::Return(false));
+        EXPECT_THAT(decorator.IsBondListPersisted(), testing::IsFalse());
     }
 }

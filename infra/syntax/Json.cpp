@@ -272,12 +272,7 @@ namespace infra
 #ifdef EMIL_HOST_BUILD
     std::string JsonString::ToStdString() const
     {
-        std::string result;
-
-        for (auto c : *this)
-            result.push_back(c);
-
-        return result;
+        return { begin(), end() };
     }
 #endif
 

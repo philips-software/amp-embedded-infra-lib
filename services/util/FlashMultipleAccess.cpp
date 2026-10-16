@@ -29,6 +29,7 @@ namespace services
 
     void FlashMultipleAccess::WriteBuffer(infra::ConstByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
+        really_assert(!this->onDone);
         this->onDone = onDone;
         claimer.Claim([this, buffer, address]()
             {
@@ -42,6 +43,7 @@ namespace services
 
     void FlashMultipleAccess::ReadBuffer(infra::ByteRange buffer, uint32_t address, infra::Function<void()> onDone)
     {
+        really_assert(!this->onDone);
         this->onDone = onDone;
         claimer.Claim([this, buffer, address]()
             {
@@ -55,6 +57,7 @@ namespace services
 
     void FlashMultipleAccess::EraseSectors(uint32_t beginIndex, uint32_t endIndex, infra::Function<void()> onDone)
     {
+        really_assert(!this->onDone);
         this->onDone = onDone;
         claimer.Claim([this, beginIndex, endIndex]()
             {

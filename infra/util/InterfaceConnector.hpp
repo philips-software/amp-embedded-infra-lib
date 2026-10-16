@@ -40,7 +40,7 @@
 //      ...
 //  }
 
-#include <cassert>
+#include "infra/util/ReallyAssert.hpp"
 
 namespace infra
 {
@@ -69,28 +69,28 @@ namespace infra
     template<class DerivedClass>
     InterfaceConnector<DerivedClass>::InterfaceConnector()
     {
-        assert(sInstance == nullptr);
+        really_assert(sInstance == nullptr);
         sInstance = static_cast<DerivedClass*>(this);
     }
 
     template<class DerivedClass>
     InterfaceConnector<DerivedClass>::InterfaceConnector(DerivedClass* instance)
     {
-        assert(sInstance == nullptr);
+        really_assert(sInstance == nullptr);
         sInstance = instance;
     }
 
     template<class DerivedClass>
     InterfaceConnector<DerivedClass>::~InterfaceConnector()
     {
-        assert(sInstance != nullptr);
+        really_assert(sInstance != nullptr);
         sInstance = nullptr;
     }
 
     template<class DerivedClass>
     DerivedClass& InterfaceConnector<DerivedClass>::Instance()
     {
-        assert(sInstance != nullptr);
+        really_assert(sInstance != nullptr);
         return *sInstance;
     }
 

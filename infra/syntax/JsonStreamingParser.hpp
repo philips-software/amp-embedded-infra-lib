@@ -5,6 +5,7 @@
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/PolymorphicVariant.hpp"
 #include "infra/util/WithStorage.hpp"
+#include <cstdint>
 
 namespace infra
 {
@@ -24,6 +25,7 @@ namespace infra
         virtual void ParseError() = 0;
         virtual void SemanticError() = 0;
         virtual void StringOverflow() = 0;
+        virtual void NumberOverflow() = 0;
     };
 
     class JsonArrayVisitor;
@@ -43,6 +45,7 @@ namespace infra
         void ParseError() override;
         void SemanticError() override;
         void StringOverflow() override;
+        void NumberOverflow() override;
     };
 
     class JsonArrayVisitor
@@ -66,6 +69,7 @@ namespace infra
         void ParseError() override;
         void SemanticError() override;
         void StringOverflow() override;
+        void NumberOverflow() override;
     };
 
     class JsonSubParser
@@ -108,6 +112,7 @@ namespace infra
             string,
             stringOverflow,
             number,
+            numberOverflow,
             true_,
             false_,
             null
@@ -118,9 +123,12 @@ namespace infra
         void ReportParseError();
         void ReportSemanticError();
         infra::BoundedString CopyAndClear(infra::BoundedString& value) const;
+        int64_t SignedTokenNumber() const;
 
     private:
+        void AddDigitToTokenNumber(char c);
         void FoundToken(Token found);
+        void FoundNumberToken();
         void ProcessEscapedData(char c, bool saveValue);
         void AddToValueBuffer(char c, bool saveValue, bool inString);
 
@@ -131,7 +139,11 @@ namespace infra
 
         TokenState tokenState = TokenState::open;
         Token token = Token::error;
-        int64_t tokenNumber;
+        // The magnitude of the number being scanned, with its sign kept apart in tokenSign, so that a
+        // literal too large for the int64_t handed to visitors is detected rather than wrapped into a
+        // different number. JsonTokenizer splits a number the same way.
+        uint64_t tokenNumber;
+        bool tokenNumberOverflow;
         int8_t tokenSign;
 
     private:
@@ -280,6 +292,7 @@ namespace infra
         void ParseError() override;
         void SemanticError() override;
         void StringOverflow() override;
+        void NumberOverflow() override;
 
     private:
         JsonObjectVisitor& decorated;

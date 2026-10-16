@@ -46,6 +46,20 @@ TEST_F(TimerLimitedRepeatingTest, LimitedTimerExecutesNTimes)
     ForwardTime(std::chrono::seconds(10));
 }
 
+TEST_F(TimerLimitedRepeatingTest, TimeoutSchedulesOnlyCompleteIntervals)
+{
+    infra::MockCallback<void()> callback;
+    EXPECT_CALL(callback, callback()).Times(2);
+
+    infra::TimerLimitedRepeating timer;
+    timer.Start(std::chrono::milliseconds(2500), std::chrono::seconds(1), [&callback]()
+        {
+            callback.callback();
+        });
+
+    ForwardTime(std::chrono::seconds(4));
+}
+
 TEST_F(TimerLimitedRepeatingTest, ResolutionIsTakenIntoAccount)
 {
     infra::MockCallback<void()> callback;
