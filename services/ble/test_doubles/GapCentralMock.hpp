@@ -12,10 +12,11 @@ namespace services
     public:
         MOCK_METHOD(void, Connect, (hal::MacAddress macAddress, GapDeviceAddressType addressType, infra::Duration initiatingTimeout));
         MOCK_METHOD(void, Standby, ());
-        MOCK_METHOD(void, SetIdentityAddress, (hal::MacAddress macAddress, GapDeviceAddressType addressType));
+        MOCK_METHOD(void, SetIdentityAddress, (GapAddress address));
         MOCK_METHOD(void, StartDeviceDiscovery, ());
         MOCK_METHOD(std::optional<hal::MacAddress>, ResolvePrivateAddress, (hal::MacAddress address), (const));
         MOCK_METHOD(void, SetPrivacyMode, (bool enabled));
+        MOCK_METHOD(void, SetDeviceName, (infra::BoundedConstString name));
 
         void ChangeState(GapState newState)
         {

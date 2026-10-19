@@ -22,6 +22,7 @@ namespace services
         MOCK_METHOD(uint32_t, GetTotalNumberOfBonds, (), (const, override));
         MOCK_METHOD(uint32_t, GetMaxNumberOfBonds, (), (const, override));
         MOCK_METHOD(std::optional<services::Bond>, GetBond, (Role role, const services::GapAddress& address), (const, override));
+        MOCK_METHOD(bool, IsStoragePersisted, (), (const, override));
         MOCK_METHOD(void, IterateBondedDevices, (Role role, const infra::Function<void(const services::Bond&)>& onBond), (override));
     };
 
@@ -54,6 +55,7 @@ namespace services
         MOCK_METHOD(uint32_t, GetMaxNumberOfBonds, (), (const, override));
         MOCK_METHOD(void, AllocateInteractableBondStorage, (uint32_t size), (override));
         MOCK_METHOD(void, AssertBondStoragesAreInSyncForRole, (Role role), (override));
+        MOCK_METHOD(bool, IsStoragePersisted, (), (const, override));
         MOCK_METHOD(void, IterateBondedDevices, (Role role, const infra::Function<void(const services::Bond&)>& onBond), (override));
     };
 }

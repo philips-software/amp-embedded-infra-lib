@@ -123,6 +123,11 @@ namespace services
         return GapBondingObserver::Subject().GetBondList();
     }
 
+    bool GapBondingDecorator::IsBondListPersisted() const
+    {
+        return GapBondingObserver::Subject().IsBondListPersisted();
+    }
+
     void GapPeripheralDecorator::StateChanged(GapState state)
     {
         GapPeripheral::NotifyObservers([&state](auto& obs)
@@ -139,6 +144,11 @@ namespace services
     GapAddress GapPeripheralDecorator::GetIdentityAddress() const
     {
         return GapPeripheralObserver::Subject().GetIdentityAddress();
+    }
+
+    void GapPeripheralDecorator::SetIdentityAddress(GapAddress address)
+    {
+        GapPeripheralObserver::Subject().SetIdentityAddress(address);
     }
 
     void GapPeripheralDecorator::SetAdvertisementData(infra::ConstByteRange data)
@@ -176,6 +186,11 @@ namespace services
         GapPeripheralObserver::Subject().SetConnectionParameters(connParam);
     }
 
+    void GapPeripheralDecorator::SetDeviceName(infra::BoundedConstString name)
+    {
+        GapPeripheralObserver::Subject().SetDeviceName(name);
+    }
+
     void GapCentralDecorator::DeviceDiscovered(const GapAdvertisingReport& deviceDiscovered)
     {
         GapCentralObserver::SubjectType::NotifyObservers([&deviceDiscovered](auto& obs)
@@ -202,9 +217,9 @@ namespace services
         GapCentralObserver::Subject().Standby();
     }
 
-    void GapCentralDecorator::SetIdentityAddress(hal::MacAddress macAddress, GapDeviceAddressType addressType)
+    void GapCentralDecorator::SetIdentityAddress(GapAddress address)
     {
-        GapCentralObserver::Subject().SetIdentityAddress(macAddress, addressType);
+        GapCentralObserver::Subject().SetIdentityAddress(address);
     }
 
     void GapCentralDecorator::StartDeviceDiscovery()
@@ -220,6 +235,11 @@ namespace services
     void GapCentralDecorator::SetPrivacyMode(bool enabled)
     {
         GapCentralObserver::Subject().SetPrivacyMode(enabled);
+    }
+
+    void GapCentralDecorator::SetDeviceName(infra::BoundedConstString name)
+    {
+        GapCentralObserver::Subject().SetDeviceName(name);
     }
 
     GapAdvertisingDataParser::GapAdvertisingDataParser(infra::ConstByteRange data)
