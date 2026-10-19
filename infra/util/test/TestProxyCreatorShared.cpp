@@ -1,15 +1,15 @@
-#include "infra/util/CreatorShared.hpp"
+#include "infra/util/ProxyCreatorShared.hpp"
 #include "gmock/gmock.h"
 #include <optional>
 #include <type_traits>
 
-class CreatorSharedTest
+class ProxyCreatorSharedTest
     : public testing::Test
 {
 public:
     struct Resource
     {
-        explicit Resource(CreatorSharedTest& test)
+        explicit Resource(ProxyCreatorSharedTest& test)
             : test(test)
         {
             test.constructed.Call();
@@ -20,12 +20,12 @@ public:
             test.destructed.Call();
         }
 
-        CreatorSharedTest& test;
+        ProxyCreatorSharedTest& test;
     };
 
     testing::StrictMock<testing::MockFunction<void()>> constructed;
     testing::StrictMock<testing::MockFunction<void()>> destructed;
-    infra::CreatorShared<Resource, Resource, void()> creator{ [this](std::optional<Resource>& resource)
+    infra::ProxyCreatorShared<Resource, Resource, void()> creator{ [this](std::optional<Resource>& resource)
         {
             resource.emplace(*this);
         } };
@@ -33,10 +33,10 @@ public:
     std::optional<infra::ProxyCreator<Resource, void()>> secondUser;
 };
 
-static_assert(!std::is_constructible_v<infra::DelayedProxyCreator<CreatorSharedTest::Resource, void()>, infra::CreatorShared<CreatorSharedTest::Resource, CreatorSharedTest::Resource, void()>&>);
-static_assert(std::is_constructible_v<infra::DelayedProxyCreator<CreatorSharedTest::Resource, void()>, infra::Creator<CreatorSharedTest::Resource, CreatorSharedTest::Resource, void()>&>);
+static_assert(!std::is_constructible_v<infra::DelayedProxyCreator<ProxyCreatorSharedTest::Resource, void()>, infra::ProxyCreatorShared<ProxyCreatorSharedTest::Resource, ProxyCreatorSharedTest::Resource, void()>&>);
+static_assert(std::is_constructible_v<infra::DelayedProxyCreator<ProxyCreatorSharedTest::Resource, void()>, infra::Creator<ProxyCreatorSharedTest::Resource, ProxyCreatorSharedTest::Resource, void()>&>);
 
-TEST_F(CreatorSharedTest, first_user_constructs_the_resource)
+TEST_F(ProxyCreatorSharedTest, first_user_constructs_the_resource)
 {
     EXPECT_CALL(constructed, Call());
 
@@ -45,7 +45,7 @@ TEST_F(CreatorSharedTest, first_user_constructs_the_resource)
     EXPECT_CALL(destructed, Call());
 }
 
-TEST_F(CreatorSharedTest, second_user_shares_the_resource_of_the_first_user)
+TEST_F(ProxyCreatorSharedTest, second_user_shares_the_resource_of_the_first_user)
 {
     EXPECT_CALL(constructed, Call());
     firstUser.emplace(creator);
@@ -56,7 +56,7 @@ TEST_F(CreatorSharedTest, second_user_shares_the_resource_of_the_first_user)
     EXPECT_CALL(destructed, Call());
 }
 
-TEST_F(CreatorSharedTest, resource_survives_while_another_user_remains)
+TEST_F(ProxyCreatorSharedTest, resource_survives_while_another_user_remains)
 {
     EXPECT_CALL(constructed, Call());
     firstUser.emplace(creator);
@@ -67,7 +67,7 @@ TEST_F(CreatorSharedTest, resource_survives_while_another_user_remains)
     EXPECT_CALL(destructed, Call());
 }
 
-TEST_F(CreatorSharedTest, last_user_destroys_the_resource)
+TEST_F(ProxyCreatorSharedTest, last_user_destroys_the_resource)
 {
     EXPECT_CALL(constructed, Call());
     firstUser.emplace(creator);
@@ -78,7 +78,7 @@ TEST_F(CreatorSharedTest, last_user_destroys_the_resource)
     secondUser.reset();
 }
 
-TEST_F(CreatorSharedTest, a_later_user_constructs_the_resource_again)
+TEST_F(ProxyCreatorSharedTest, a_later_user_constructs_the_resource_again)
 {
     EXPECT_CALL(constructed, Call());
     firstUser.emplace(creator);

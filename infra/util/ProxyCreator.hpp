@@ -20,7 +20,7 @@ namespace infra
     class Creator;
 
     template<class T, class U, class ConstructionArgs>
-    class CreatorShared;
+    class ProxyCreatorShared;
 
     template<class T, class ConstructionArgs>
     class CreatorExternal;
@@ -70,7 +70,7 @@ namespace infra
     public:
         explicit DelayedProxyCreator(CreatorBase<T, void(ConstructionArgs...)>& creator);
         template<class U>
-        DelayedProxyCreator(CreatorShared<T, U, void(ConstructionArgs...)>& creator) = delete;
+        DelayedProxyCreator(ProxyCreatorShared<T, U, void(ConstructionArgs...)>& creator) = delete;
         DelayedProxyCreator(const DelayedProxyCreator& other) = delete;
         DelayedProxyCreator& operator=(const DelayedProxyCreator& other) = delete;
         ~DelayedProxyCreator();

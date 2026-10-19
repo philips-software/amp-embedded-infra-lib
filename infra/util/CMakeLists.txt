@@ -36,7 +36,6 @@ target_sources(infra.util PRIVATE
     ConstructBin.hpp
     Crc.hpp
     CrcCcittCalculator.hpp
-    CreatorShared.hpp
     CyclicBuffer.hpp
     Endian.hpp
     EnumCast.hpp
@@ -61,6 +60,7 @@ target_sources(infra.util PRIVATE
     PolymorphicVariant.hpp
     PostAssign.hpp
     ProxyCreator.hpp
+    ProxyCreatorShared.hpp
     ReallyAssert.cpp
     ReallyAssert.hpp
     ReferenceCountedSingleton.hpp

@@ -1,5 +1,5 @@
-#ifndef INFRA_CREATOR_SHARED_HPP
-#define INFRA_CREATOR_SHARED_HPP
+#ifndef INFRA_PROXY_CREATOR_SHARED_HPP
+#define INFRA_PROXY_CREATOR_SHARED_HPP
 
 #include "infra/util/ProxyCreator.hpp"
 #include <cstddef>
@@ -7,10 +7,10 @@
 namespace infra
 {
     template<class T, class U, class ConstructionArgs>
-    class CreatorShared;
+    class ProxyCreatorShared;
 
     template<class T, class U, class... ConstructionArgs>
-    class CreatorShared<T, U, void(ConstructionArgs...)>
+    class ProxyCreatorShared<T, U, void(ConstructionArgs...)>
         : public Creator<T, U, void(ConstructionArgs...)>
     {
     public:
@@ -18,22 +18,22 @@ namespace infra
 
         void Emplace(ConstructionArgs... args) override
         {
-            if (users == 0)
+            if (referenceCount == 0)
                 Creator<T, U, void(ConstructionArgs...)>::Emplace(args...);
 
-            ++users;
+            ++referenceCount;
         }
 
         void Destroy() override
         {
-            --users;
+            --referenceCount;
 
-            if (users == 0)
+            if (referenceCount == 0)
                 Creator<T, U, void(ConstructionArgs...)>::Destroy();
         }
 
     private:
-        std::size_t users = 0;
+        std::size_t referenceCount = 0;
     };
 }
 

@@ -23,7 +23,6 @@ target_sources(infra.util_test PRIVATE
     TestCompareMembers.cpp
     TestCrc.cpp
     TestCrcCcittCalculator.cpp
-    TestCreatorShared.cpp
     TestCyclicBuffer.cpp
     TestDestructionGuard.cpp
     TestEndian.cpp
@@ -41,6 +40,7 @@ target_sources(infra.util_test PRIVATE
     TestObserver.cpp
     TestPolymorphicVariant.cpp
     TestProxyCreator.cpp
+    TestProxyCreatorShared.cpp
     TestReallyAssert.cpp
     TestReferenceCountedSingleton.cpp
     TestSequencer.cpp
