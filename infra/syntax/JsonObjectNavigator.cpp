@@ -161,6 +161,14 @@ namespace infra
             return {};
     }
 
+    std::optional<bool> JsonOptionalObjectNavigator::operator/(JsonOptionalBoolNavigatorToken token) const
+    {
+        if (navigator != std::nullopt)
+            return *navigator / token;
+        else
+            return {};
+    }
+
     JsonArrayNavigator::JsonArrayNavigator(infra::JsonArray& array)
         : array(array)
     {}

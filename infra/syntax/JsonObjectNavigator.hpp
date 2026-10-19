@@ -149,6 +149,7 @@ namespace infra
         std::optional<std::string> operator/(JsonOptionalStringNavigatorToken token) const;
         std::optional<int32_t> operator/(JsonIntegerNavigatorToken token) const;
         std::optional<bool> operator/(JsonBoolNavigatorToken token) const;
+        std::optional<bool> operator/(JsonOptionalBoolNavigatorToken token) const;
 
         template<class Result>
         std::optional<Result> operator/(JsonTransformObjectNavigatorToken<Result> token) const;
