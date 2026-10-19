@@ -265,6 +265,10 @@ namespace services
         return processedSize;
     }
 
+    SesameSecuredMbedTlsEncryptors::SesameSecuredMbedTlsEncryptors()
+        : AesGcmEncryptors{ detail::MbedTlsEncryptors::sendEncryption, detail::MbedTlsEncryptors::receiveEncryption }
+    {}
+
     EcSecP256r1PrivateKey::EcSecP256r1PrivateKey(hal::SynchronousRandomDataGenerator& randomDataGenerator)
     {
         mbedtls_pk_init(&context);

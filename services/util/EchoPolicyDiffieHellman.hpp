@@ -94,15 +94,31 @@ namespace services
     };
 
 #ifdef EMIL_USE_MBEDTLS
+    namespace detail
+    {
+        struct CryptoMbedTls
+        {
+            CryptoMbedTls(const EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+
+            infra::Creator<EcSecP256r1DiffieHellman, EcSecP256r1DiffieHellmanMbedTls, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)> keyExchange;
+            EcSecP256r1DsaSignerMbedTls signer;
+            infra::Creator<EcSecP256r1DsaVerifier, EcSecP256r1DsaVerifierMbedTls, void(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)> verifier;
+            HmacDrbgSha256MbedTls keyExpander;
+        };
+    }
+
+    struct CryptoMbedTls
+        : private detail::CryptoMbedTls
+        , EchoPolicyDiffieHellman::Crypto
+    {
+        CryptoMbedTls(const EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+    };
+
     struct EchoPolicyDiffieHellman::WithCryptoMbedTls
-        : public EchoPolicyDiffieHellman
+        : private CryptoMbedTls
+        , public EchoPolicyDiffieHellman
     {
         WithCryptoMbedTls(Echo& echo, EchoInitialization& echoInitialization, SesameSecured& secured, const EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator);
-
-        infra::Creator<EcSecP256r1DiffieHellman, EcSecP256r1DiffieHellmanMbedTls, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)> keyExchange;
-        EcSecP256r1DsaSignerMbedTls signer;
-        infra::Creator<EcSecP256r1DsaVerifier, EcSecP256r1DsaVerifierMbedTls, void(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)> verifier;
-        HmacDrbgSha256MbedTls keyExpander;
     };
 #endif
 }

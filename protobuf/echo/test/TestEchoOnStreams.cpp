@@ -1,5 +1,6 @@
 #include "generated/echo/TestMessages.pb.hpp"
 #include "infra/stream/ByteInputStream.hpp"
+#include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/util/SharedPtr.hpp"
 #include "protobuf/echo/EchoOnStreams.hpp"
@@ -75,6 +76,30 @@ TEST_F(EchoOnStreamsTest, send_method_without_parameter)
         }));
     echo.SendStreamAvailable(writer.Emplace(data));
     EXPECT_EQ((std::vector<uint8_t>{ 1, 26, 0 }), data);
+}
+
+TEST_F(EchoOnStreamsTest, send_repeated_messages_split_over_two_streams)
+{
+    const std::array<services::Message, 4> messages{ 5, 6, 7, 8 };
+
+    EXPECT_CALL(echo, RequestSendStream(testing::_));
+    serviceProxy.RequestSend([this, &messages]()
+        {
+            serviceProxy.MethodRepeatedMessage(infra::MakeRange(messages));
+        });
+
+    EXPECT_CALL(echo, GrantSend(testing::Ref(serviceProxy))).WillOnce(testing::Invoke([this](services::ServiceProxy& proxy)
+        {
+            return echo.InheritedGrantSend(proxy);
+        }));
+    EXPECT_CALL(echo, RequestSendStream(testing::_));
+    std::array<uint8_t, 7> firstPart{};
+    infra::SharedOptional<infra::ByteOutputStreamWriter> firstWriter;
+    echo.SendStreamAvailable(firstWriter.Emplace(infra::MakeRange(firstPart)));
+    EXPECT_EQ((std::array<uint8_t, 7>{ 1, (5 << 3) | 2, 16, (1 << 3) | 2, 2, 1 << 3, 5 }), firstPart);
+
+    echo.SendStreamAvailable(writer.Emplace(data));
+    EXPECT_EQ((std::vector<uint8_t>{ (1 << 3) | 2, 2, 1 << 3, 6, (1 << 3) | 2, 2, 1 << 3, 7, (1 << 3) | 2, 2, 1 << 3, 8 }), data);
 }
 
 TEST_F(EchoOnStreamsTest, ReleaseReader_with_data_in_buffer)

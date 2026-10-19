@@ -53,7 +53,6 @@ target_sources(services.tracer PRIVATE
 
 if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
     target_sources(services.tracer PRIVATE
-        TracingEchoInstantiationSecured.cpp
         TracingEchoInstantiationSecured.hpp
     )
 endif()

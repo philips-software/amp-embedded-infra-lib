@@ -73,8 +73,9 @@ namespace services
         EXPECT_CALL(gap, Standby());
         decorator.Standby();
 
-        EXPECT_CALL(gap, SetIdentityAddress(MacAddressContentsEqual(macAddress), GapDeviceAddressType::publicAddress));
-        decorator.SetIdentityAddress(macAddress, GapDeviceAddressType::publicAddress);
+        const services::GapAddress identityAddress{ macAddress, GapDeviceAddressType::publicAddress };
+        EXPECT_CALL(gap, SetIdentityAddress(identityAddress));
+        decorator.SetIdentityAddress(identityAddress);
 
         EXPECT_CALL(gap, StartDeviceDiscovery());
         decorator.StartDeviceDiscovery();
@@ -85,6 +86,9 @@ namespace services
 
         EXPECT_CALL(gap, ResolvePrivateAddress(mac)).WillOnce(testing::Return(std::make_optional(mac)));
         EXPECT_EQ(decorator.ResolvePrivateAddress(mac), mac);
+
+        EXPECT_CALL(gap, SetDeviceName(infra::BoundedConstString("central")));
+        decorator.SetDeviceName("central");
     }
 
     TEST(GapAdvertisingDataParserTest, payload_too_small)

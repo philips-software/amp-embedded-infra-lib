@@ -26,6 +26,7 @@ namespace services
         virtual uint32_t GetMaxNumberOfBonds() const = 0;
         virtual void AllocateInteractableBondStorage(uint32_t size) = 0;
         virtual void AssertBondStoragesAreInSyncForRole(Role role) = 0;
+        virtual bool IsStoragePersisted() const = 0;
 
         // Iteration is in least recently used order, i.e. the first bond returned is the least recently used one.
         virtual void IterateBondedDevices(Role role, const infra::Function<void(const services::Bond&)>& onBond) = 0;
@@ -52,6 +53,7 @@ namespace services
         virtual uint32_t GetTotalNumberOfBonds() const = 0;
         virtual uint32_t GetMaxNumberOfBonds() const = 0;
         virtual std::optional<services::Bond> GetBond(Role role, const services::GapAddress& address) const = 0;
+        virtual bool IsStoragePersisted() const = 0;
 
         // Iteration is in least recently used order, i.e. the first bond returned is the least recently used one.
         virtual void IterateBondedDevices(Role role, const infra::Function<void(const services::Bond&)>& onBond) = 0;
@@ -95,6 +97,7 @@ namespace services
         void IterateBondedDevices(Role role, const infra::Function<void(const services::Bond&)>& onBond) override;
         void AllocateInteractableBondStorage(uint32_t size) override;
         void AssertBondStoragesAreInSyncForRole(Role role) override;
+        bool IsStoragePersisted() const override;
 
     private:
         void SyncBondStorages();

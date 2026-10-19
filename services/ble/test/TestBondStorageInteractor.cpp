@@ -138,6 +138,15 @@ TEST_F(BondStorageInteractorTest, assert_bond_storages_are_in_sync_is_forwarded_
     interactor.AssertBondStoragesAreInSync();
 }
 
+TEST_F(BondStorageInteractorTest, is_storage_persisted_is_forwarded)
+{
+    EXPECT_CALL(bondStorageSynchroniser, IsStoragePersisted()).WillOnce(testing::Return(true));
+    EXPECT_THAT(interactor.IsStoragePersisted(), testing::IsTrue());
+
+    EXPECT_CALL(bondStorageSynchroniser, IsStoragePersisted()).WillOnce(testing::Return(false));
+    EXPECT_THAT(interactor.IsStoragePersisted(), testing::IsFalse());
+}
+
 TEST_F(BondStorageInteractorTest, get_least_recently_used_bond_returns_nothing_when_no_bonds_are_stored)
 {
     EXPECT_CALL(bondStorageSynchroniser, IterateBondedDevices(role, testing::_));
