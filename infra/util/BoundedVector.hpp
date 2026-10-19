@@ -494,7 +494,7 @@ namespace infra
     {
         really_assert(size() + n <= max_size());
 
-        auto initialized_size = std::min(std::min(position - begin() + n, size()), n);
+        auto initialized_size = std::min<size_type>(end() - position, n);
 
         move_up(position, n);
         std::fill_n(position, initialized_size, value);
@@ -508,7 +508,7 @@ namespace infra
         size_type n = last - first;
         really_assert(size() + n <= max_size());
 
-        auto initialized_size = std::min(std::min(position - begin() + n, size()), n);
+        auto initialized_size = std::min<size_type>(end() - position, n);
         auto last_initialized = first + initialized_size;
 
         move_up(position, n);
