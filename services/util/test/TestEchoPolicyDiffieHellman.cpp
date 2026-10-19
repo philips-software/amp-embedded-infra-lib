@@ -1,6 +1,8 @@
 #include "hal/synchronous_interfaces/test_doubles/SynchronousRandomDataGeneratorMock.hpp"
+#include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/StdVectorInputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
+#include "infra/syntax/ProtoFormatter.hpp"
 #include "infra/timer/test_helper/ClockFixture.hpp"
 #include "protobuf/echo/test_doubles/EchoMock.hpp"
 #include "protobuf/echo/test_doubles/ServiceStub.hpp"
@@ -190,6 +192,47 @@ TEST_F(EchoPolicyDiffieHellmanWithValidPeerTest, key_exchange_succeeds_and_messa
     ExchangeData();
 }
 
+TEST_F(EchoPolicyDiffieHellmanWithValidPeerTest, cancel_send_while_initializing_removes_waiting_request)
+{
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.Method(5);
+        });
+    serviceProxy.CancelRequestSend();
+
+    EXPECT_CALL(left.policy, KeyExchangeSuccessful());
+    EXPECT_CALL(right.policy, KeyExchangeSuccessful());
+
+    ExchangeData();
+}
+
+TEST_F(EchoPolicyDiffieHellmanWithValidPeerTest, reset_cancels_request_waiting_for_key_establishment)
+{
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.Method(5);
+        });
+
+    Reset();
+    EXPECT_THAT(serviceProxy.CurrentRequestedSize(), testing::Eq(0));
+
+    Initialized();
+
+    EXPECT_CALL(left.policy, KeyExchangeSuccessful());
+    EXPECT_CALL(right.policy, KeyExchangeSuccessful());
+    ExchangeData();
+
+    EXPECT_CALL(service, Method(6)).WillOnce(testing::Invoke([this]()
+        {
+            service.MethodDone();
+        }));
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.Method(6);
+        });
+    ExchangeData();
+}
+
 TEST_F(EchoPolicyDiffieHellmanWithValidPeerTest, initialize_while_initializing_starts_over)
 {
     Initialized();
@@ -250,4 +293,151 @@ TEST_F(EchoPolicyDiffieHellmanWithUntrustedPeerTest, key_exchange_fails_on_side_
     EXPECT_CALL(right.policy, KeyExchangeSuccessful());
 
     ExchangeData();
+}
+
+class EchoPolicyDiffieHellmanMethodDoneTest
+    : public testing::Test
+    , public infra::ClockFixture
+{
+public:
+    EchoPolicyDiffieHellmanMethodDoneTest()
+    {
+        ON_CALL(echo, SerializerFactory()).WillByDefault(testing::ReturnRef(serializerFactory));
+    }
+
+    std::vector<uint8_t> CertificateMessage()
+    {
+        infra::ByteOutputStream::WithStorage<1024> stream;
+        infra::ProtoFormatter formatter(stream);
+        formatter.PutBytesField(infra::MakeRange(peerCertificateDer), 1);
+
+        auto message = stream.Writer().Processed();
+        return { message.begin(), message.end() };
+    }
+
+    std::vector<uint8_t> ExchangeMessage(infra::ConstByteRange signedData)
+    {
+        auto publicKey = peerKey.PublicKey();
+        auto [signatureR, signatureS] = peerSigner.Sign(signedData);
+
+        infra::ByteOutputStream::WithStorage<256> stream;
+        infra::ProtoFormatter formatter(stream);
+        formatter.PutBytesField(publicKey, 1);
+        formatter.PutBytesField(signatureR, 2);
+        formatter.PutBytesField(signatureS, 3);
+
+        auto message = stream.Writer().Processed();
+        return { message.begin(), message.end() };
+    }
+
+    std::vector<uint8_t> ExchangeMessage()
+    {
+        auto publicKey = peerKey.PublicKey();
+        return ExchangeMessage(infra::MakeRange(publicKey));
+    }
+
+    void ExecuteMethod(uint32_t methodId, const std::vector<uint8_t>& message)
+    {
+        echo.NotifyObservers([methodId, &message](services::Service& service)
+            {
+                auto deserializer = service.StartMethod(sesame_security::DiffieHellmanKeyEstablishment::serviceId, methodId, static_cast<uint32_t>(message.size()), services::echoErrorPolicyAbortOnMessageFormatError);
+                infra::StdVectorInputStream::WithStorage inputStream{ std::in_place, message };
+                deserializer->MethodContents(infra::UnOwnedSharedPtr(inputStream.Reader()));
+                deserializer->ExecuteMethod();
+            });
+        ExecuteAllActions();
+    }
+
+    void Initialized()
+    {
+        echoInitialization.NotifyObservers([](auto& observer)
+            {
+                observer.Initialized();
+            });
+        ExecuteAllActions();
+    }
+
+    services::MethodSerializerFactory::OnHeap serializerFactory;
+    testing::StrictMock<hal::SynchronousRandomDataGeneratorMock> randomDataGenerator;
+    infra::Execute expectRandomData{ [this]()
+        {
+            EXPECT_CALL(randomDataGenerator, GenerateRandomData(testing::_)).WillRepeatedly(testing::Invoke([](infra::ByteRange data)
+                {
+                    static uint8_t fill = 0;
+                    std::fill(data.begin(), data.end(), fill++);
+                }));
+        } };
+
+    services::EcSecP256r1PrivateKey rootCaPrivateKey{ randomDataGenerator };
+    services::EcSecP256r1Certificate rootCaCertificate{ rootCaPrivateKey, "CN=Root", rootCaPrivateKey, "CN=Root", randomDataGenerator };
+    infra::BoundedVector<uint8_t>::WithMaxSize<512> rootCaCertificateDer{ rootCaCertificate.Der() };
+
+    services::EcSecP256r1PrivateKey ownPrivateKey{ randomDataGenerator };
+    services::EcSecP256r1PrivateKey::DerEncoded ownPrivateKeyDer{ ownPrivateKey.Der() };
+    services::EcSecP256r1Certificate ownCertificate{ ownPrivateKey, "CN=own", rootCaPrivateKey, "CN=Root", randomDataGenerator };
+    infra::BoundedVector<uint8_t>::WithMaxSize<512> ownCertificateDer{ ownCertificate.Der() };
+
+    services::EcSecP256r1PrivateKey peerPrivateKey{ randomDataGenerator };
+    services::EcSecP256r1PrivateKey::DerEncoded peerPrivateKeyDer{ peerPrivateKey.Der() };
+    services::EcSecP256r1Certificate peerCertificate{ peerPrivateKey, "CN=peer", rootCaPrivateKey, "CN=Root", randomDataGenerator };
+    infra::BoundedVector<uint8_t>::WithMaxSize<512> peerCertificateDer{ peerCertificate.Der() };
+    services::SynchronousEcSecP256r1DiffieHellmanMbedTls peerKey{ randomDataGenerator };
+    services::SynchronousEcSecP256r1DsaSignerMbedTls peerSigner{ peerPrivateKeyDer, randomDataGenerator };
+
+    testing::NiceMock<services::SesameMock> lower;
+    services::SesameSecured::KeyType key{ 1, 2 };
+    services::SesameSecured::IvType iv{ 1, 3 };
+    services::AesGcmEncryptionMbedTlsAdapter sendEncryption;
+    services::AesGcmEncryptionMbedTlsAdapter receiveEncryption;
+    services::SesameSecured::WithBuffers<100> secured{ lower, sendEncryption, receiveEncryption, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
+
+    services::EcSecP256r1DiffieHellmanMbedTlsAdapter keyExchange{ randomDataGenerator };
+    services::EcSecP256r1DsaSignerMbedTlsAdapter signer{ ownPrivateKeyDer, randomDataGenerator };
+    services::EcSecP256r1DsaVerifierMbedTlsAdapter verifier;
+    services::HmacDrbgSha256MbedTls keyExpander;
+    testing::NiceMock<services::EchoMock> echo;
+    services::EchoInitialization echoInitialization;
+    testing::StrictMock<EchoPolicyDiffieHellmanMock> policy{ services::EchoPolicyDiffieHellman::Crypto{ keyExchange, signer, verifier, keyExpander }, echo, echoInitialization, secured,
+        infra::MakeRange(ownCertificateDer), infra::MakeRange(rootCaCertificateDer) };
+};
+
+TEST_F(EchoPolicyDiffieHellmanMethodDoneTest, exchange_without_certificate_calls_service_done)
+{
+    testing::InSequence sequence;
+    EXPECT_CALL(policy, KeyExchangeFailed());
+    EXPECT_CALL(echo, ServiceDone());
+
+    ExecuteMethod(sesame_security::DiffieHellmanKeyEstablishment::idExchange, ExchangeMessage());
+}
+
+TEST_F(EchoPolicyDiffieHellmanMethodDoneTest, exchange_with_invalid_signature_calls_service_done)
+{
+    Initialized();
+
+    EXPECT_CALL(echo, ServiceDone());
+    ExecuteMethod(sesame_security::DiffieHellmanKeyEstablishment::idPresentCertificate, CertificateMessage());
+
+    {
+        testing::InSequence sequence;
+        EXPECT_CALL(policy, KeyExchangeFailed());
+        EXPECT_CALL(echo, ServiceDone());
+    }
+
+    std::array<uint8_t, 4> otherData{ 1, 2, 3, 4 };
+    ExecuteMethod(sesame_security::DiffieHellmanKeyEstablishment::idExchange, ExchangeMessage(infra::MakeRange(otherData)));
+}
+
+TEST_F(EchoPolicyDiffieHellmanMethodDoneTest, successful_exchange_calls_service_done)
+{
+    Initialized();
+
+    EXPECT_CALL(echo, ServiceDone());
+    {
+        testing::InSequence sequence;
+        EXPECT_CALL(policy, KeyExchangeSuccessful());
+        EXPECT_CALL(echo, ServiceDone());
+    }
+
+    ExecuteMethod(sesame_security::DiffieHellmanKeyEstablishment::idPresentCertificate, CertificateMessage());
+    ExecuteMethod(sesame_security::DiffieHellmanKeyEstablishment::idExchange, ExchangeMessage());
 }

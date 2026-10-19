@@ -42,11 +42,11 @@ namespace services
         return result;
     }
 
-    SynchronousSesameSecured::SynchronousSesameSecured(SynchronousAesGcmEncryption& sendEncryption, SynchronousAesGcmEncryption& receiveEncryption, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate,
+    SynchronousSesameSecured::SynchronousSesameSecured(SynchronousAesGcmEncryptors& encryptors, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate,
         const KeyMaterial& keyMaterial)
         : SesameObserver(delegate)
-        , sendEncryption(sendEncryption)
-        , receiveEncryption(receiveEncryption)
+        , sendEncryption(encryptors.sendEncryption)
+        , receiveEncryption(encryptors.receiveEncryption)
         , sendBuffer(sendBuffer)
         , initialSendKey(keyMaterial.sendKey)
         , initialSendIv(keyMaterial.sendIv)
@@ -58,8 +58,8 @@ namespace services
         SetReceiveKey(initialReceiveKey, initialReceiveIv);
     }
 
-    SynchronousSesameSecured::SynchronousSesameSecured(SynchronousAesGcmEncryption& sendEncryption, SynchronousAesGcmEncryption& receiveEncryption, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial)
-        : SynchronousSesameSecured(sendEncryption, receiveEncryption, sendBuffer, receiveBuffer, delegate, ConvertKeyMaterial(keyMaterial))
+    SynchronousSesameSecured::SynchronousSesameSecured(SynchronousAesGcmEncryptors& encryptors, infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial)
+        : SynchronousSesameSecured(encryptors, sendBuffer, receiveBuffer, delegate, ConvertKeyMaterial(keyMaterial))
     {}
 
     void SynchronousSesameSecured::SetSendKey(const KeyType& newSendKey, const IvType& newSendIv)
@@ -171,7 +171,16 @@ namespace services
 
         IncreaseIv(receiveIv);
 
-        Sesame::GetObserver().ReceivedMessage(receiveBufferReader.Emplace(receiveBuffer, reader));
+        receivedReader = std::move(reader);
+        Sesame::GetObserver().ReceivedMessage(receiveBufferReader.Emplace(receiveBuffer));
+    }
+
+    void SynchronousSesameSecured::ReleaseReceivedReader()
+    {
+        // Releasing the reader lets the lower layer forward the next message into receiveBufferReader.
+        // Move it out first, so that a re-entrant ReceivedMessage() assigns to an empty receivedReader
+        // instead of having its assignment overwritten while this SharedPtr is being reset.
+        auto reader = std::move(receivedReader);
     }
 
     void SynchronousSesameSecured::SendMessageStreamReleased()
@@ -204,18 +213,13 @@ namespace services
             });
     }
 
-    SynchronousSesameSecured::ReceiveBufferReader::ReceiveBufferReader(const infra::BoundedVector<uint8_t>& buffer, const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader)
-        : infra::BoundedVectorInputStreamReader(buffer)
-        , reader(reader)
-    {}
-
 #ifdef EMIL_USE_MBEDTLS
     SynchronousSesameSecured::WithCryptoMbedTls::WithCryptoMbedTls(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const KeyMaterial& keyMaterial)
-        : SynchronousSesameSecured(detail::SynchronousSesameSecuredMbedTlsEncryptors::sendEncryption, detail::SynchronousSesameSecuredMbedTlsEncryptors::receiveEncryption, sendBuffer, receiveBuffer, delegate, keyMaterial)
+        : SynchronousSesameSecured(*this, sendBuffer, receiveBuffer, delegate, keyMaterial)
     {}
 
     SynchronousSesameSecured::WithCryptoMbedTls::WithCryptoMbedTls(infra::BoundedVector<uint8_t>& sendBuffer, infra::BoundedVector<uint8_t>& receiveBuffer, Sesame& delegate, const sesame_security::SymmetricKeyFile& keyMaterial)
-        : SynchronousSesameSecured(detail::SynchronousSesameSecuredMbedTlsEncryptors::sendEncryption, detail::SynchronousSesameSecuredMbedTlsEncryptors::receiveEncryption, sendBuffer, receiveBuffer, delegate, keyMaterial)
+        : SynchronousSesameSecured(*this, sendBuffer, receiveBuffer, delegate, keyMaterial)
     {}
 #endif
 }

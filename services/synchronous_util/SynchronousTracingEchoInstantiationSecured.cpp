@@ -1,13 +1,13 @@
 #include "services/synchronous_util/SynchronousTracingEchoInstantiationSecured.hpp"
-#include "protobuf/echo/EchoErrorPolicy.hpp"
+#include "services/util/SesameInstantiation.hpp"
 
 namespace main_
 {
-    SynchronousTracingEchoOnSesameSecured::SynchronousTracingEchoOnSesameSecured(Sesame::CobsStorageBase& storage, infra::BoundedVector<uint8_t>& securedSendBuffer, infra::BoundedVector<uint8_t>& securedReceiveBuffer, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::SynchronousSesameSecured::KeyMaterial& keyMaterial, services::Tracer& tracer, const services::EchoErrorPolicy& echoErrorPolicy, services::SesameInitializer& initializer)
-        : cobs(storage.cobsSendStorage, storage.cobsReceivedMessage, serialCommunication)
-        , windowed(storage.windowedReceivedMessage, storage.windowedReceiveBuffers, cobs, initializer)
-        , secured(securedSendBuffer, securedReceiveBuffer, windowed, keyMaterial)
-        , echo(serializerFactory, echoErrorPolicy, tracer, secured)
+    SynchronousTracingEchoOnSesameSecured::SynchronousTracingEchoOnSesameSecured(const EchoArgs& echoArgs, const SesameArgs& sesameArgs)
+        : cobs(sesameArgs.storage.cobsSendStorage, sesameArgs.storage.cobsReceivedMessage, sesameArgs.serialCommunication)
+        , windowed(sesameArgs.storage.windowedReceivedMessage, sesameArgs.storage.windowedReceiveBuffers, cobs, sesameArgs.initializer)
+        , secured(sesameArgs.encryptors, sesameArgs.securedSendBuffer, sesameArgs.securedReceiveBuffer, windowed, sesameArgs.keyMaterial)
+        , echo(echoArgs.serializerFactory, echoArgs.echoErrorPolicy, echoArgs.tracer, secured)
     {}
 
     void SynchronousTracingEchoOnSesameSecured::Reset()
@@ -25,13 +25,13 @@ namespace main_
             });
     }
 
-    SynchronousTracingEchoOnSesameSecuredSymmetricKey::SynchronousTracingEchoOnSesameSecuredSymmetricKey(Sesame::CobsStorageBase& storage, infra::BoundedVector<uint8_t>& securedSendBuffer, infra::BoundedVector<uint8_t>& securedReceiveBuffer, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::SynchronousSesameSecured::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator, services::Tracer& tracer, const services::EchoErrorPolicy& echoErrorPolicy, services::SesameInitializer& initializer)
-        : SynchronousTracingEchoOnSesameSecured(storage, securedSendBuffer, securedReceiveBuffer, serialCommunication, serializerFactory, keyMaterial, tracer, echoErrorPolicy, initializer)
+    SynchronousTracingEchoOnSesameSecuredSymmetricKey::SynchronousTracingEchoOnSesameSecuredSymmetricKey(const EchoArgs& echoArgs, const SesameArgs& sesameArgs, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+        : SynchronousTracingEchoOnSesameSecured(echoArgs, sesameArgs)
         , policy(echo, echo, secured, randomDataGenerator)
     {}
 
-    SynchronousTracingEchoOnSesameSecuredDiffieHellman::SynchronousTracingEchoOnSesameSecuredDiffieHellman(Sesame::CobsStorageBase& storage, infra::BoundedVector<uint8_t>& securedSendBuffer, infra::BoundedVector<uint8_t>& securedReceiveBuffer, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::SynchronousEchoPolicyDiffieHellman::Crypto& crypto, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator, services::Tracer& tracer, const services::EchoErrorPolicy& echoErrorPolicy, services::SesameInitializer& initializer)
-        : SynchronousTracingEchoOnSesameSecured(storage, securedSendBuffer, securedReceiveBuffer, serialCommunication, serializerFactory, services::SynchronousSesameSecured::KeyMaterial{}, tracer, echoErrorPolicy, initializer)
-        , policy(crypto, echo, echo, secured, dsaCertificate, rootCaCertificate, randomDataGenerator)
+    SynchronousTracingEchoOnSesameSecuredDiffieHellman::SynchronousTracingEchoOnSesameSecuredDiffieHellman(const EchoArgs& echoArgs, const SesameArgs& sesameArgs, const services::SynchronousEchoPolicyDiffieHellman::Crypto& crypto, const services::SynchronousEchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+        : SynchronousTracingEchoOnSesameSecured(echoArgs, sesameArgs)
+        , policy(crypto, echo, echo, secured, keyMaterial.dsaCertificate, keyMaterial.rootCaCertificate, randomDataGenerator)
     {}
 }

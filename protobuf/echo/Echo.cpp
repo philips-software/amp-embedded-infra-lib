@@ -77,4 +77,14 @@ namespace services
 
     void EchoPolicy::GrantingSend(ServiceProxy& proxy)
     {}
+
+    bool EchoPolicy::PendingRequestSend(ServiceProxy& proxy) const
+    {
+        return false;
+    }
+
+    void EchoPolicy::CancelRequestSend(ServiceProxy& proxy)
+    {
+        really_assert(PendingRequestSend(proxy));
+    }
 }

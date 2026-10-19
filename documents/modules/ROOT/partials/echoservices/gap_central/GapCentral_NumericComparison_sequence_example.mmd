@@ -1,0 +1,24 @@
+sequenceDiagram
+    title Numeric Comparison Pairing Example
+
+    participant App as App<br>[implements GapCentralResponse]
+    participant Node as Node<br>[implements GapCentral]
+
+    note over App, Node: Precondition: connected.<br>IoCapabilities set to displayYesNo.
+
+    rect rgb(230, 230, 240)
+        note over App, Node: Initiate pairing
+        App->>Node: GapCentral.PairAndBond()
+        Node-->>App: GapCentralResponse.AuthenticationRequired(<br>isNumericComparison=true, passkey=485923)
+
+        note over App: Display "485923" to the user.<br>User verifies the same number appears on the peripheral.
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Node: User confirms match
+        App->>Node: GapCentral.NumericComparisonConfirm(true)
+        Node-->>App: GapCentralResponse.NumberOfBondsChanged(1)
+        Node-->>App: GapCentralResponse.PairingResult(pairedSuccessfully=true)
+
+        note over App: Bond stored. Keys (LTK, IRK) exchanged.<br>Future reconnections use encryption without re-pairing.
+    end

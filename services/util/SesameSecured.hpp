@@ -72,19 +72,9 @@ namespace services
         void Decrypted();
         bool MacIsValid() const;
         void IntegrityCheckFailedOnReceive();
+        void ReleaseReceivedReader();
         void IncreaseIv(infra::ByteRange iv) const;
         void ReportIntegrityCheckFailed();
-
-    private:
-        class ReceiveBufferReader
-            : public infra::BoundedVectorInputStreamReader
-        {
-        public:
-            ReceiveBufferReader(const infra::BoundedVector<uint8_t>& buffer, const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader);
-
-        private:
-            infra::SharedPtr<infra::StreamReaderWithRewinding> reader;
-        };
 
     private:
         AesGcmEncryption& sendEncryption;
@@ -118,7 +108,11 @@ namespace services
         bool decrypting = false;
         uint32_t receiveEpoch = 0;
         uint32_t decryptingEpoch = 0;
-        infra::SharedOptional<ReceiveBufferReader> receiveBufferReader;
+        infra::SharedPtr<infra::StreamReaderWithRewinding> receivedReader;
+        infra::NotifyingSharedOptional<infra::BoundedVectorInputStreamReader> receiveBufferReader{ [this]()
+            {
+                ReleaseReceivedReader();
+            } };
         bool integrityCheckFailed = false;
         infra::TimerSingleShot integrityCheckFailedTimer;
     };

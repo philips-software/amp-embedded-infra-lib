@@ -40,4 +40,5 @@ target_sources(services.synchronous_sesame_test PRIVATE
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestSynchronousSesameCryptoMbedTls.cpp>
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestSynchronousSesameInstantiationSecured.cpp>
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestSynchronousSesameSecured.cpp>
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestSynchronousTracingEchoInstantiationSecured.cpp>
 )

@@ -1,0 +1,6 @@
+sequenceDiagram
+    participant App as App<br>[implements GapCentralResponse]
+    participant Node as Node<br>[implements GapCentral]
+
+    App->>Node: GapCentral.IsDeviceBonded(<br>addressWithType={address=6C:8B:2F:3A:9D:41,<br>addressType=randomAddress})
+    Node-->>App: GapCentralResponse.DeviceBonded(bonded=true)

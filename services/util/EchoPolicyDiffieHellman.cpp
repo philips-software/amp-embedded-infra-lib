@@ -1,4 +1,5 @@
 #include "services/util/EchoPolicyDiffieHellman.hpp"
+#include "infra/util/ReallyAssert.hpp"
 #include <algorithm>
 
 namespace services
@@ -35,6 +36,9 @@ namespace services
         busy = false;
         requestSendPending = false;
         initializingKeys = true;
+
+        while (!waitingProxies.empty())
+            waitingProxies.front().CancelRequestSend();
     }
 
     void EchoPolicyDiffieHellman::Initialized()
@@ -88,6 +92,17 @@ namespace services
         }
     }
 
+    bool EchoPolicyDiffieHellman::PendingRequestSend(ServiceProxy& proxy) const
+    {
+        return waitingProxies.has_element(proxy);
+    }
+
+    void EchoPolicyDiffieHellman::CancelRequestSend(ServiceProxy& proxy)
+    {
+        really_assert(PendingRequestSend(proxy));
+        waitingProxies.erase(proxy);
+    }
+
     void EchoPolicyDiffieHellman::KeyExchangeSuccessful()
     {}
 
@@ -99,6 +114,7 @@ namespace services
         if (!otherCertificateValid || otherPublicKey.size() != peerPublicKey.size())
         {
             KeyExchangeFailed();
+            MethodDone();
             return;
         }
 
@@ -112,6 +128,7 @@ namespace services
                 if (!valid)
                 {
                     KeyExchangeFailed();
+                    MethodDone();
                     return;
                 }
 

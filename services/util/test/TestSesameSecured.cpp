@@ -333,3 +333,41 @@ TEST_F(SesameSecuredTest, reset_is_forwarded)
     EXPECT_CALL(lower, Reset());
     upper.Subject().Reset();
 }
+
+class SesameSecuredReentrantReceiveTest
+    : public SesameSecuredTest
+{
+public:
+    std::vector<uint8_t> firstMessage = EncodedMessage("abcd", mac);
+    std::vector<uint8_t> secondMessage = EncodedMessage("efgh", mac);
+    infra::SharedOptional<infra::StdVectorInputStreamReader> secondReader;
+    infra::NotifyingSharedOptional<infra::StdVectorInputStreamReader> firstReader{ [this]()
+        {
+            lower.GetObserver().ReceivedMessage(secondReader.Emplace(secondMessage));
+        } };
+};
+
+TEST_F(SesameSecuredReentrantReceiveTest, next_message_is_received_reentrantly_when_previous_message_is_released)
+{
+    infra::SharedPtr<infra::StreamReaderWithRewinding> heldReader;
+    EXPECT_CALL(upper, ReceivedMessage(testing::_)).WillOnce(testing::Invoke([&heldReader](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+        {
+            heldReader = std::move(reader);
+        }));
+
+    ExpectProcess(receiveEncryption, receiveOperation);
+    lower.GetObserver().ReceivedMessage(firstReader.Emplace(firstMessage));
+    Complete(receiveOperation, mac);
+    EXPECT_THAT(firstReader.Allocatable(), testing::IsFalse());
+
+    EXPECT_CALL(receiveEncryption, Process(testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Invoke([this](infra::ConstByteRange, infra::ByteRange, infra::ByteRange computedMac, const infra::Function<void()>& onDone)
+        {
+            infra::Copy(infra::MakeRange(mac), computedMac);
+            onDone();
+        }));
+    ExpectReceivedMessage("efgh");
+    heldReader = nullptr;
+
+    EXPECT_THAT(firstReader.Allocatable(), testing::IsTrue());
+    EXPECT_THAT(secondReader.Allocatable(), testing::IsTrue());
+}

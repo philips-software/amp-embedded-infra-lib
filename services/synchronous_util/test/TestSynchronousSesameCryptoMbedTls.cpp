@@ -1,5 +1,6 @@
 #include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
 #include "services/synchronous_util/SynchronousSesameCryptoMbedTls.hpp"
+#include "services/synchronous_util/SynchronousSesameSecured.hpp"
 #include "gmock/gmock.h"
 
 class SesameCryptoMbedTlsPublicPrivateKeyTest

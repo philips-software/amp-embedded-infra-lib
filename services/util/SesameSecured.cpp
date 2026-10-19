@@ -203,11 +203,20 @@ namespace services
         {
             IncreaseIv(receiveIv);
             ApplyPendingReceiveKey();
-            Sesame::GetObserver().ReceivedMessage(receiveBufferReader.Emplace(receiveBuffer, std::exchange(receiveReader, nullptr)));
+            receivedReader = std::exchange(receiveReader, nullptr);
+            Sesame::GetObserver().ReceivedMessage(receiveBufferReader.Emplace(receiveBuffer));
         }
 
         if (waitingReceiveReader != nullptr)
             ReceivedMessage(std::exchange(waitingReceiveReader, nullptr));
+    }
+
+    void SesameSecured::ReleaseReceivedReader()
+    {
+        // Releasing the reader lets the lower layer forward the next message into receiveBufferReader.
+        // Move it out first, so that a re-entrant ReceivedMessage() assigns to an empty receivedReader
+        // instead of having its assignment overwritten while this SharedPtr is being reset.
+        auto reader = std::move(receivedReader);
     }
 
     bool SesameSecured::MacIsValid() const
@@ -245,9 +254,4 @@ namespace services
                 observer.IntegrityCheckFailed();
             });
     }
-
-    SesameSecured::ReceiveBufferReader::ReceiveBufferReader(const infra::BoundedVector<uint8_t>& buffer, const infra::SharedPtr<infra::StreamReaderWithRewinding>& reader)
-        : infra::BoundedVectorInputStreamReader(buffer)
-        , reader(reader)
-    {}
 }
