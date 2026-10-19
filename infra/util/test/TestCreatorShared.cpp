@@ -1,6 +1,7 @@
 #include "infra/util/CreatorShared.hpp"
 #include "gmock/gmock.h"
 #include <optional>
+#include <type_traits>
 
 class CreatorSharedTest
     : public testing::Test
@@ -31,6 +32,9 @@ public:
     std::optional<infra::ProxyCreator<Resource, void()>> firstUser;
     std::optional<infra::ProxyCreator<Resource, void()>> secondUser;
 };
+
+static_assert(!std::is_constructible_v<infra::DelayedProxyCreator<CreatorSharedTest::Resource, void()>, infra::CreatorShared<CreatorSharedTest::Resource, CreatorSharedTest::Resource, void()>&>);
+static_assert(std::is_constructible_v<infra::DelayedProxyCreator<CreatorSharedTest::Resource, void()>, infra::Creator<CreatorSharedTest::Resource, CreatorSharedTest::Resource, void()>&>);
 
 TEST_F(CreatorSharedTest, first_user_constructs_the_resource)
 {
