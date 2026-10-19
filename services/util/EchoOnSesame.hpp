@@ -14,7 +14,7 @@ namespace services
     public:
         EchoOnSesame(Sesame& subject, services::MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy = echoErrorPolicyAbortOnMessageFormatError);
 
-        void Reset();
+        void Reset() override;
 
         // Implementation of SesameObserver
         void Initialized() override;

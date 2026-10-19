@@ -85,6 +85,7 @@ namespace services
         public:
             explicit TracingEchoOnStreamsDescendantHelper(services::Tracer& tracer);
 
+            void Reset();
             void AddServiceTracer(ServiceTracer& service);
             void RemoveServiceTracer(const ServiceTracer& service);
 
@@ -194,6 +195,8 @@ namespace services
         template<class... Args>
         TracingEchoOnStreamsDescendant(services::MethodSerializerFactory& serializerFactory, const EchoErrorPolicy& errorPolicy, services::Tracer& tracer, Args&&... args);
 
+        void Reset() override;
+
         // Implementation of TracingEchoOnStreams
         void AddServiceTracer(ServiceTracer& service) override;
         void RemoveServiceTracer(const ServiceTracer& service) override;
@@ -213,6 +216,13 @@ namespace services
         : detail::TracingEchoOnStreamsDescendantHelperHolder(tracer)
         , Descendant(std::forward<Args>(args)..., serializerFactory, errorPolicy)
     {}
+
+    template<class Descendant>
+    void TracingEchoOnStreamsDescendant<Descendant>::Reset()
+    {
+        Descendant::Reset();
+        helper.Reset();
+    }
 
     template<class Descendant>
     void TracingEchoOnStreamsDescendant<Descendant>::AddServiceTracer(ServiceTracer& service)
