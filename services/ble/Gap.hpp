@@ -311,6 +311,7 @@ namespace services
         virtual void Advertise(GapAdvertisementType type, AdvertisementIntervalMultiplier multiplier) = 0;
         virtual void Standby() = 0;
         virtual void SetConnectionParameters(const services::GapConnectionParameters& connParam) = 0;
+        virtual void SetDeviceName(infra::BoundedConstString name) = 0;
     };
 
     class GapPeripheralDecorator
@@ -335,6 +336,7 @@ namespace services
         void Advertise(GapAdvertisementType type, AdvertisementIntervalMultiplier multiplier) override;
         void Standby() override;
         void SetConnectionParameters(const services::GapConnectionParameters& connParam) override;
+        void SetDeviceName(infra::BoundedConstString name) override;
     };
 
     inline GapPeripheral::AdvertisementFlags operator|(GapPeripheral::AdvertisementFlags lhs, GapPeripheral::AdvertisementFlags rhs)
@@ -414,6 +416,7 @@ namespace services
         virtual void StartDeviceDiscovery() = 0;
         virtual std::optional<hal::MacAddress> ResolvePrivateAddress(hal::MacAddress address) const = 0;
         virtual void SetPrivacyMode(bool enabled) = 0;
+        virtual void SetDeviceName(infra::BoundedConstString name) = 0;
     };
 
     class GapCentralDecorator
@@ -434,6 +437,7 @@ namespace services
         void StartDeviceDiscovery() override;
         std::optional<hal::MacAddress> ResolvePrivateAddress(hal::MacAddress address) const override;
         void SetPrivacyMode(bool enabled) override;
+        void SetDeviceName(infra::BoundedConstString name) override;
     };
 }
 

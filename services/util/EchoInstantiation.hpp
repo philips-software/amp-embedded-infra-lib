@@ -34,7 +34,7 @@ namespace main_
         template<std::size_t MessageSize, uint8_t SplitBuffers = 2>
         struct WithMessageSize;
 
-        EchoOnSesame(Sesame::CobsStorageBase& storage, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory);
+        EchoOnSesame(Sesame::StorageBase& storage, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory);
 
         void Reset();
 
@@ -47,11 +47,11 @@ namespace main_
 
     template<std::size_t MessageSize, uint8_t SplitBuffers>
     struct EchoOnSesame::WithMessageSize
-        : private Sesame::CobsStorage<MessageSize, SplitBuffers>
+        : private Sesame::Storage<MessageSize, SplitBuffers>
         , EchoOnSesame
     {
         WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory)
-            : EchoOnSesame(static_cast<Sesame::CobsStorageBase&>(*this), serialCommunication, serializerFactory)
+            : EchoOnSesame(static_cast<Sesame::StorageBase&>(*this), serialCommunication, serializerFactory)
         {}
     };
 

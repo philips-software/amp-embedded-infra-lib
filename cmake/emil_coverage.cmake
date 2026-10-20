@@ -1,7 +1,12 @@
 define_property(TARGET PROPERTY EXCLUDE_FROM_COVERAGE)
+define_property(TARGET PROPERTY EXCLUDE_FROM_MUTATION)
 
 function(emil_exclude_from_coverage target)
     set_target_properties(${target} PROPERTIES EXCLUDE_FROM_COVERAGE TRUE)
+endfunction()
+
+function(emil_exclude_from_mutation target)
+    set_target_properties(${target} PROPERTIES EXCLUDE_FROM_MUTATION TRUE)
 endfunction()
 
 function(emil_exclude_directory_from_coverage directory)
@@ -56,11 +61,14 @@ function(emil_coverage_targets directories)
     set(non_generated_target_sources)
     foreach(target ${targets})
         get_target_property(exclude ${target} EXCLUDE_FROM_COVERAGE)
+        get_target_property(excludeMutation ${target} EXCLUDE_FROM_MUTATION)
         get_target_property(type ${target} TYPE)
 
         if (NOT exclude AND NOT ${type} STREQUAL "INTERFACE_LIBRARY" AND NOT ${type} STREQUAL "UTILITY")
             emil_enable_coverage_for(${target})
-            emil_enable_mutation_for(${target})
+            if (NOT excludeMutation)
+                emil_enable_mutation_for(${target})
+            endif()
         else()
             message(DEBUG "skipping coverage and mutation for: ${target}")
         endif()
