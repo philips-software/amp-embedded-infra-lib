@@ -1,33 +1,12 @@
 #include "lwip/lwip_cpp/ConnectionLwIp.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
+#include "lwip/lwip_cpp/IpAddressLwIp.hpp"
 #include "services/tracer/GlobalTracer.hpp"
 
 namespace services
 {
     namespace
     {
-        IPAddress Convert(const ip_addr_t& address)
-        {
-            if (address.type == IPADDR_TYPE_V4)
-                return IPv4Address{
-                    ip4_addr1(ip_2_ip4(&address)),
-                    ip4_addr2(ip_2_ip4(&address)),
-                    ip4_addr3(ip_2_ip4(&address)),
-                    ip4_addr4(ip_2_ip4(&address))
-                };
-            else
-                return IPv6Address{
-                    IP6_ADDR_BLOCK1(ip_2_ip6(&address)),
-                    IP6_ADDR_BLOCK2(ip_2_ip6(&address)),
-                    IP6_ADDR_BLOCK3(ip_2_ip6(&address)),
-                    IP6_ADDR_BLOCK4(ip_2_ip6(&address)),
-                    IP6_ADDR_BLOCK5(ip_2_ip6(&address)),
-                    IP6_ADDR_BLOCK6(ip_2_ip6(&address)),
-                    IP6_ADDR_BLOCK7(ip_2_ip6(&address)),
-                    IP6_ADDR_BLOCK8(ip_2_ip6(&address))
-                };
-        }
-
         tcp_ext_arg_callbacks emptyCallbacks{};
     }
 
@@ -165,7 +144,7 @@ namespace services
 
     IPAddress ConnectionLwIp::IpAddress() const
     {
-        return Convert(control->remote_ip);
+        return IpAddressLwIp::Convert(control->remote_ip);
     }
 
     bool ConnectionLwIp::PendingSend() const
@@ -537,7 +516,7 @@ namespace services
     err_t ListenerLwIp::Accept(tcp_pcb* newPcb, err_t err)
     {
         tcp_accepted(listenPort);
-        services::GlobalTracer().Trace() << "ListenerLwIp::Accept accepted new connection from " << Convert(newPcb->remote_ip);
+        services::GlobalTracer().Trace() << "ListenerLwIp::Accept accepted new connection from " << IpAddressLwIp::Convert(newPcb->remote_ip);
         ip_set_option(newPcb, SOF_REUSEADDR);
         PurgeBacklog();
         if (!backlog.full())
@@ -630,22 +609,9 @@ namespace services
         tcp_arg(control, this);
         tcp_err(control, &ConnectorLwIp::StaticError);
 
-        if (std::holds_alternative<IPv4Address>(clientFactory.Address()))
-        {
-            IPv4Address ipv4Address = std::get<IPv4Address>(clientFactory.Address());
-            ip_addr_t ipAddress IPADDR4_INIT(0);
-            IP4_ADDR(&ipAddress.u_addr.ip4, ipv4Address[0], ipv4Address[1], ipv4Address[2], ipv4Address[3]);
-            err_t result = tcp_connect(control, &ipAddress, clientFactory.Port(), &ConnectorLwIp::StaticConnected);
-            assert(result == ERR_OK);
-        }
-        else
-        {
-            IPv6Address ipv6Address = std::get<IPv6Address>(clientFactory.Address());
-            ip_addr_t ipAddress IPADDR6_INIT(0, 0, 0, 0);
-            IP6_ADDR(&ipAddress.u_addr.ip6, PP_HTONL(ipv6Address[1] + (static_cast<uint32_t>(ipv6Address[0]) << 16)), PP_HTONL(ipv6Address[3] + (static_cast<uint32_t>(ipv6Address[2]) << 16)), PP_HTONL(ipv6Address[5] + (static_cast<uint32_t>(ipv6Address[4]) << 16)), PP_HTONL(ipv6Address[7] + (static_cast<uint32_t>(ipv6Address[6]) << 16)));
-            err_t result = tcp_connect(control, &ipAddress, clientFactory.Port(), &ConnectorLwIp::StaticConnected);
-            assert(result == ERR_OK);
-        }
+        ip_addr_t ipAddress = IpAddressLwIp::ToIpAddr(clientFactory.Address());
+        err_t result = tcp_connect(control, &ipAddress, clientFactory.Port(), &ConnectorLwIp::StaticConnected);
+        assert(result == ERR_OK);
     }
 
     ConnectorLwIp::~ConnectorLwIp()

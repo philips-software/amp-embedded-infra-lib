@@ -20,12 +20,12 @@ extern "C"
 #define LWIP_DNS 1
 #define LWIP_RAW 0
 #define LWIP_IGMP 1
-uint32_t StaticLwIpRand();
+    uint32_t StaticLwIpRand();
 #define LWIP_RAND() StaticLwIpRand()
 #define MEM_ALIGNMENT 4
 #define LWIP_STATS 0
 
-#define LWIP_DNS_SECURE 0
+#define LWIP_DNS_SECURE 1
 
 #define MEM_SIZE 3200
 
