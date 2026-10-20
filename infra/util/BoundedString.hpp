@@ -1002,7 +1002,7 @@ namespace infra
     template<class U>
     BoundedStringBase<T>& BoundedStringBase<T>::replace(size_type pos, size_type count, const BoundedStringBase<U>& other, size_type pos2, size_type count2)
     {
-        ReplaceImpl(begin() + pos, count, other.begin(), count2);
+        ReplaceImpl(begin() + pos, count, other.begin() + pos2, count2);
         return *this;
     }
 
