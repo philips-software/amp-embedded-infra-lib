@@ -1,30 +1,17 @@
 #include "lwip/lwip_cpp/DatagramLwIp.hpp"
 #include "infra/event/EventDispatcherWithWeakPtr.hpp"
+#include "lwip/lwip_cpp/IpAddressLwIp.hpp"
 
 namespace services
 {
     namespace
     {
-        ip_addr_t Convert(IPv4Address address)
-        {
-            ip_addr_t result IPADDR4_INIT(0);
-            IP4_ADDR(&result.u_addr.ip4, address[0], address[1], address[2], address[3]);
-            return result;
-        }
-
-        ip_addr_t Convert(IPv6Address address)
-        {
-            ip_addr_t result IPADDR6_INIT(0, 0, 0, 0);
-            IP6_ADDR(&result.u_addr.ip6, PP_HTONL(address[1] + (static_cast<uint32_t>(address[0]) << 16)), PP_HTONL(address[3] + (static_cast<uint32_t>(address[2]) << 16)), PP_HTONL(address[5] + (static_cast<uint32_t>(address[4]) << 16)), PP_HTONL(address[7] + (static_cast<uint32_t>(address[6]) << 16)));
-            return result;
-        }
-
         std::pair<ip_addr_t, uint16_t> Convert(UdpSocket socket)
         {
             if (std::holds_alternative<Udpv4Socket>(socket))
-                return std::make_pair(Convert(std::get<Udpv4Socket>(socket).first), std::get<Udpv4Socket>(socket).second);
+                return std::make_pair(IpAddressLwIp::ToIpAddr(std::get<Udpv4Socket>(socket).first), std::get<Udpv4Socket>(socket).second);
             else
-                return std::make_pair(Convert(std::get<Udpv6Socket>(socket).first), std::get<Udpv6Socket>(socket).second);
+                return std::make_pair(IpAddressLwIp::ToIpAddrWithZone(std::get<Udpv6Socket>(socket).first), std::get<Udpv6Socket>(socket).second);
         }
     }
 
@@ -70,9 +57,7 @@ namespace services
         {
             control = CreateUdpPcb(IPVersions::ipv4);
             assert(control != nullptr);
-            IPv4Address ipv4Address = std::get<Udpv4Socket>(remote).first;
-            ip_addr_t ipAddress IPADDR4_INIT(0);
-            IP4_ADDR(&ipAddress.u_addr.ip4, ipv4Address[0], ipv4Address[1], ipv4Address[2], ipv4Address[3]);
+            ip_addr_t ipAddress = IpAddressLwIp::ToIpAddr(std::get<Udpv4Socket>(remote).first);
             err_t result = udp_connect(control, &ipAddress, std::get<Udpv4Socket>(remote).second);
             assert(result == ERR_OK);
         }
@@ -80,10 +65,7 @@ namespace services
         {
             control = CreateUdpPcb(IPVersions::ipv6);
             assert(control != nullptr);
-            IPv6Address ipv6Address = std::get<Udpv6Socket>(remote).first;
-            ip_addr_t ipAddress IPADDR6_INIT(0, 0, 0, 0);
-            IP6_ADDR(&ipAddress.u_addr.ip6, PP_HTONL(ipv6Address[1] + (static_cast<uint32_t>(ipv6Address[0]) << 16)), PP_HTONL(ipv6Address[3] + (static_cast<uint32_t>(ipv6Address[2]) << 16)), PP_HTONL(ipv6Address[5] + (static_cast<uint32_t>(ipv6Address[4]) << 16)), PP_HTONL(ipv6Address[7] + (static_cast<uint32_t>(ipv6Address[6]) << 16)));
-            ip6_addr_set_zone(&ipAddress.u_addr.ip6, netif_default->ip6_addr->u_addr.ip6.zone);
+            ip_addr_t ipAddress = IpAddressLwIp::ToIpAddrWithZone(std::get<Udpv6Socket>(remote).first);
             err_t result = udp_connect(control, &ipAddress, std::get<Udpv6Socket>(remote).second);
             assert(result == ERR_OK);
         }
@@ -98,9 +80,7 @@ namespace services
             control = CreateUdpPcb(IPVersions::ipv4);
             assert(control != nullptr);
             ip_set_option(control, SOF_BROADCAST);
-            IPv4Address ipv4Address = std::get<Udpv4Socket>(remote).first;
-            ip_addr_t ipAddress IPADDR4_INIT(0);
-            IP4_ADDR(&ipAddress.u_addr.ip4, ipv4Address[0], ipv4Address[1], ipv4Address[2], ipv4Address[3]);
+            ip_addr_t ipAddress = IpAddressLwIp::ToIpAddr(std::get<Udpv4Socket>(remote).first);
             err_t result = udp_connect(control, &ipAddress, std::get<Udpv4Socket>(remote).second);
             assert(result == ERR_OK);
             result = udp_bind(control, IP4_ADDR_ANY, localPort);
@@ -110,10 +90,7 @@ namespace services
         {
             control = CreateUdpPcb(IPVersions::ipv6);
             assert(control != nullptr);
-            IPv6Address ipv6Address = std::get<Udpv6Socket>(remote).first;
-            ip_addr_t ipAddress IPADDR6_INIT(0, 0, 0, 0);
-            IP6_ADDR(&ipAddress.u_addr.ip6, PP_HTONL(ipv6Address[1] + (static_cast<uint32_t>(ipv6Address[0]) << 16)), PP_HTONL(ipv6Address[3] + (static_cast<uint32_t>(ipv6Address[2]) << 16)), PP_HTONL(ipv6Address[5] + (static_cast<uint32_t>(ipv6Address[4]) << 16)), PP_HTONL(ipv6Address[7] + (static_cast<uint32_t>(ipv6Address[6]) << 16)));
-            ip6_addr_set_zone(&ipAddress.u_addr.ip6, netif_default->ip6_addr->u_addr.ip6.zone);
+            ip_addr_t ipAddress = IpAddressLwIp::ToIpAddrWithZone(std::get<Udpv6Socket>(remote).first);
             err_t result = udp_connect(control, &ipAddress, std::get<Udpv6Socket>(remote).second);
             assert(result == ERR_OK);
             result = udp_bind(control, IP6_ADDR_ANY, localPort);
@@ -173,11 +150,9 @@ namespace services
         if (HasObserver() && reader.Allocatable())
         {
             if (IP_GET_TYPE(address) == IPADDR_TYPE_V4)
-                GetObserver().DataReceived(reader.Emplace(buffer), Udpv4Socket{ IPv4Address{ ip4_addr1(ip_2_ip4(address)), ip4_addr2(ip_2_ip4(address)), ip4_addr3(ip_2_ip4(address)), ip4_addr4(ip_2_ip4(address)) }, port });
+                GetObserver().DataReceived(reader.Emplace(buffer), Udpv4Socket{ IpAddressLwIp::Convert(*ip_2_ip4(address)), port });
             else
-                GetObserver().DataReceived(reader.Emplace(buffer), Udpv6Socket{ IPv6Address{ IP6_ADDR_BLOCK1(ip_2_ip6(address)), IP6_ADDR_BLOCK2(ip_2_ip6(address)), IP6_ADDR_BLOCK3(ip_2_ip6(address)), IP6_ADDR_BLOCK4(ip_2_ip6(address)),
-                                                                                    IP6_ADDR_BLOCK5(ip_2_ip6(address)), IP6_ADDR_BLOCK6(ip_2_ip6(address)), IP6_ADDR_BLOCK7(ip_2_ip6(address)), IP6_ADDR_BLOCK8(ip_2_ip6(address)) },
-                                                                       port });
+                GetObserver().DataReceived(reader.Emplace(buffer), Udpv6Socket{ IpAddressLwIp::Convert(*ip_2_ip6(address)), port });
         }
         else
             pbuf_free(buffer);
@@ -275,8 +250,6 @@ namespace services
         else
         {
             auto address = Convert(*remote).first;
-            if (address.type == IPADDR_TYPE_V6)
-                ip6_addr_set_zone(&address.u_addr.ip6, netif_default->ip6_addr->u_addr.ip6.zone);
 
             err_t result = udp_sendto(control, buffer, &address, Convert(*remote).second);
             assert(result == ERR_OK);

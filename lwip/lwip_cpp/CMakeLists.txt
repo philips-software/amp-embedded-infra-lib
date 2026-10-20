@@ -25,6 +25,8 @@ target_sources(lwip.lwip_cpp PRIVATE
     ConnectionLwIp.hpp
     DatagramLwIp.cpp
     DatagramLwIp.hpp
+    IpAddressLwIp.cpp
+    IpAddressLwIp.hpp
     LightweightIp.cpp
     LightweightIp.hpp
     LightweightIpOverEthernet.cpp
@@ -33,4 +35,6 @@ target_sources(lwip.lwip_cpp PRIVATE
     MacResolverLwIp.hpp
     MulticastLwIp.cpp
     MulticastLwIp.hpp
+    NameResolverLwIp.cpp
+    NameResolverLwIp.hpp
 )
