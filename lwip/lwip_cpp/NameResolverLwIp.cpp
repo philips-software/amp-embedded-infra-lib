@@ -57,6 +57,8 @@ namespace services
 
     NameResolverLwIp::~NameResolverLwIp()
     {
+        really_assert(waiting.empty() && std::all_of(requests.begin(), requests.end(), &IsFree));
+
         netif_remove_ext_callback(&extCallback);
     }
 
