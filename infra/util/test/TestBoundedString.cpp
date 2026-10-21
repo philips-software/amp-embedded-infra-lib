@@ -567,6 +567,13 @@ TEST(BoundedStringTest, TestReplaceByString)
     EXPECT_EQ("adxle", string1);
 }
 
+TEST(BoundedStringTest, TestReplaceBySubstringOfString)
+{
+    infra::BoundedString::WithStorage<10> string("abcde");
+    string.replace(1, 2, infra::BoundedConstString("klmn"), 1, 2);
+    EXPECT_EQ("almde", string);
+}
+
 TEST(BoundedStringTest, TestReplaceByChars)
 {
     infra::BoundedString::WithStorage<5> string("abcd");
