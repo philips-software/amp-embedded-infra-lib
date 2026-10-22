@@ -33,7 +33,7 @@ namespace services
         services::MethodSerializerFactory& SerializerFactory() override;
 
     protected:
-        void Reset();
+        virtual void Reset();
         virtual infra::SharedPtr<MethodSerializer> GrantSend(ServiceProxy& proxy);
         virtual void SendingProxySelected(ServiceProxy& proxy);
         virtual infra::SharedPtr<MethodDeserializer> StartingMethod(uint32_t serviceId, uint32_t methodId, infra::SharedPtr<MethodDeserializer>&& deserializer);

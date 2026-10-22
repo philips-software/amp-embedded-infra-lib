@@ -1,4 +1,5 @@
 #include "infra/stream/ByteInputStream.hpp"
+#include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/StdStringOutputStream.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "protobuf/echo/EchoOnStreams.hpp"
@@ -21,6 +22,12 @@ namespace
 
         using services::EchoOnStreams::DataReceived;
         using services::EchoOnStreams::Reset;
+        using services::EchoOnStreams::SendStreamAvailable;
+
+        void ResetFromTransport()
+        {
+            Reset();
+        }
     };
 
     class ServiceStubTracer
@@ -33,6 +40,7 @@ namespace
 
         void TraceMethod(uint32_t methodId, infra::ProtoLengthDelimited& contents, services::Tracer& tracer) const override
         {
+            tracer.Continue() << methodId;
             contents.SkipEverything();
         }
     };
@@ -90,4 +98,29 @@ TEST_F(TracingEchoTest, destruction_after_reset_with_partially_received_method_d
 
     echo->Reset();
     Destroy();
+}
+
+TEST_F(TracingEchoTest, reset_discards_partially_sent_trace_before_next_message)
+{
+    services::ServiceStubProxy proxy{ *echo };
+    std::array<uint8_t, 4> data{};
+    infra::SharedOptional<infra::ByteOutputStreamWriter> writer;
+
+    EXPECT_CALL(*echo, RequestSendStream(testing::_)).Times(2);
+    proxy.RequestSend([&proxy]()
+        {
+            proxy.Method(42);
+        });
+    echo->SendStreamAvailable(writer.Emplace(infra::MakeRange(data)));
+
+    echo->ResetFromTransport();
+
+    EXPECT_CALL(*echo, RequestSendStream(testing::_));
+    proxy.RequestSend([&proxy]()
+        {
+            proxy.MethodNoParameter();
+        });
+    echo->SendStreamAvailable(writer.Emplace(infra::MakeRange(data)));
+
+    EXPECT_THAT(stream.Storage(), testing::Eq("\r\n< 3"));
 }

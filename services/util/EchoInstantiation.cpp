@@ -2,7 +2,7 @@
 
 namespace main_
 {
-    EchoOnSesame::EchoOnSesame(Sesame::CobsStorageBase& storage, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory)
+    EchoOnSesame::EchoOnSesame(Sesame::StorageBase& storage, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory)
         : sesame(storage, serialCommunication)
         , echo(sesame.windowed, serializerFactory)
     {}

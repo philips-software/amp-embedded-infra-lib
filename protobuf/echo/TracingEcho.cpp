@@ -73,6 +73,13 @@ namespace services
             : tracer(tracer)
         {}
 
+        void TracingEchoOnStreamsDescendantHelper::Reset()
+        {
+            writerBuffer.clear();
+            skipping = 0;
+            readerBuffer.clear();
+        }
+
         void TracingEchoOnStreamsDescendantHelper::AddServiceTracer(ServiceTracer& service)
         {
             services.push_front(service);

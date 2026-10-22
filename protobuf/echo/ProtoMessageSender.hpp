@@ -9,7 +9,7 @@
 
 namespace services
 {
-    static constexpr std::size_t serializationStepExtraSize = 4 * sizeof(void*);
+    static constexpr std::size_t serializationStepExtraSize = 3 * sizeof(void*);
     using FieldSerializationStep = infra::Function<bool(infra::DataOutputStream& stream, uint32_t& index, bool& retry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy), serializationStepExtraSize>;
 
     class ProtoMessageSenderBase
@@ -54,6 +54,9 @@ namespace services
         bool SerializeField(ProtoRepeatedBase<ProtoType>, const infra::ProtoFormatter& formatter, const infra::BoundedVector<Type>& value, uint32_t fieldNumber, bool& retry) const;
         template<class ProtoType, class Type>
         bool SerializeField(ProtoUnboundedRepeated<ProtoType>, const infra::ProtoFormatter& formatter, const std::vector<Type>& value, uint32_t fieldNumber, bool& retry) const;
+
+        template<class ProtoType, class Container>
+        void SerializeRepeatedField(const Container& value, uint32_t fieldNumber, bool& retry) const;
 
     private:
         infra::BoundedDeque<uint8_t>::WithMaxSize<32> buffer;
@@ -140,40 +143,21 @@ namespace services
     template<class ProtoType, class Type>
     bool ProtoMessageSenderBase::SerializeField(ProtoRepeatedBase<ProtoType>, const infra::ProtoFormatter&, const infra::BoundedVector<Type>& value, uint32_t fieldNumber, bool& retry) const
     {
-        stack.emplace_back(0, [this, &value, fieldNumber, &retry](infra::DataOutputStream& stream, uint32_t& index, const bool&, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy)
-            {
-                infra::ProtoFormatter formatter{ stream };
-
-                for (; index != value.size(); ++index)
-                {
-                    if (finalWriter.Available() == 0)
-                    {
-                        errorPolicy.ReportResult(false);
-                        return false;
-                    }
-
-                    auto size = stack.size();
-                    auto result = SerializeField(ProtoType(), formatter, value[index], fieldNumber, retry);
-                    if (size != stack.size())
-                    {
-                        // A nested message was added to the stack, so we need to stop processing the current message until it has been fully sent
-                        ++index;
-                        retry = retry && result;
-                        return false;
-                    }
-                }
-
-                return true;
-            });
-
-        retry = true;
+        SerializeRepeatedField<ProtoType>(value, fieldNumber, retry);
         return true;
     }
 
     template<class ProtoType, class Type>
     bool ProtoMessageSenderBase::SerializeField(ProtoUnboundedRepeated<ProtoType>, const infra::ProtoFormatter&, const std::vector<Type>& value, uint32_t fieldNumber, bool& retry) const
     {
-        stack.emplace_back(0, [this, &value, fieldNumber, &retry](infra::DataOutputStream& stream, uint32_t& index, const bool&, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy)
+        SerializeRepeatedField<ProtoType>(value, fieldNumber, retry);
+        return true;
+    }
+
+    template<class ProtoType, class Container>
+    void ProtoMessageSenderBase::SerializeRepeatedField(const Container& value, uint32_t fieldNumber, bool& retry) const
+    {
+        stack.emplace_back(0, [this, &value, fieldNumber](infra::DataOutputStream& stream, uint32_t& index, bool& stepRetry, const infra::StreamWriter& finalWriter, infra::StreamErrorPolicy& errorPolicy)
             {
                 infra::ProtoFormatter formatter{ stream };
 
@@ -186,12 +170,12 @@ namespace services
                     }
 
                     auto size = stack.size();
-                    auto result = SerializeField(ProtoType(), formatter, value[index], fieldNumber, retry);
+                    auto result = SerializeField(ProtoType(), formatter, value[index], fieldNumber, stepRetry);
                     if (size != stack.size())
                     {
                         // A nested message was added to the stack, so we need to stop processing the current message until it has been fully sent
                         ++index;
-                        retry = retry && result;
+                        stepRetry = stepRetry && result;
                         return false;
                     }
                 }
@@ -200,7 +184,6 @@ namespace services
             });
 
         retry = true;
-        return true;
     }
 
     template<class Message>

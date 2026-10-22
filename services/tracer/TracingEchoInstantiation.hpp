@@ -16,7 +16,7 @@ namespace main_
         template<std::size_t MessageSize, uint8_t SplitBuffers = 2>
         struct WithMessageSize;
 
-        TracingEchoOnSesame(Sesame::CobsStorageBase& storage, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, services::Tracer& tracer);
+        TracingEchoOnSesame(Sesame::StorageBase& storage, hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, services::Tracer& tracer);
 
         void Reset();
 
@@ -32,11 +32,11 @@ namespace main_
 
     template<std::size_t MessageSize, uint8_t SplitBuffers>
     struct TracingEchoOnSesame::WithMessageSize
-        : private Sesame::CobsStorage<MessageSize, SplitBuffers>
+        : private Sesame::Storage<MessageSize, SplitBuffers>
         , TracingEchoOnSesame
     {
         WithMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, services::Tracer& tracer)
-            : TracingEchoOnSesame(static_cast<Sesame::CobsStorageBase&>(*this), serialCommunication, serializerFactory, tracer)
+            : TracingEchoOnSesame(static_cast<Sesame::StorageBase&>(*this), serialCommunication, serializerFactory, tracer)
         {}
     };
 

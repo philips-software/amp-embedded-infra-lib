@@ -110,8 +110,10 @@ public:
     bool lowerRightRequest = false;
     services::SesameSecured::KeyType key{ 1, 2 };
     services::SesameSecured::IvType iv{ 1, 3 };
-    services::SesameSecured::WithCryptoMbedTls::WithBuffers<100> securedLeft{ lowerLeft, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
-    services::SesameSecured::WithCryptoMbedTls::WithBuffers<100> securedRight{ lowerRight, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
+    services::SesameSecuredMbedTlsEncryptors encryptorsLeft;
+    services::SesameSecured::WithMessageSize<100> securedLeft{ encryptorsLeft, lowerLeft, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
+    services::SesameSecuredMbedTlsEncryptors encryptorsRight;
+    services::SesameSecured::WithMessageSize<100> securedRight{ encryptorsRight, lowerRight, services::SesameSecured::KeyMaterial{ key, iv, key, iv } };
 
     services::CertificateAndPrivateKey rootCaCertificateMaterial{ services::GenerateRootCertificate(randomDataGenerator) };
     services::EcSecP256r1PrivateKey rootCaPrivateKey{ randomDataGenerator };
@@ -492,7 +494,8 @@ public:
         } };
     testing::NiceMock<services::SesameMock> lower;
     services::SesameSecured::KeyMaterial initialKeyMaterial{ { 1, 2 }, { 1, 3 }, { 1, 2 }, { 1, 3 } };
-    services::SesameSecured::WithCryptoMbedTls::WithBuffers<100> secured{ lower, initialKeyMaterial };
+    services::SesameSecuredMbedTlsEncryptors encryptors;
+    services::SesameSecured::WithMessageSize<100> secured{ encryptors, lower, initialKeyMaterial };
     services::CertificateAndPrivateKey rootCaCertificateMaterial{ services::GenerateRootCertificate(randomDataGenerator) };
     services::EcSecP256r1PrivateKey rootCaPrivateKey{ infra::MakeRange(rootCaCertificateMaterial.privateKey), randomDataGenerator };
     services::CertificateAndPrivateKey deviceCertificateMaterial{ services::GenerateDeviceCertificate(rootCaPrivateKey, randomDataGenerator) };

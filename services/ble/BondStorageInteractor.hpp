@@ -24,6 +24,7 @@ namespace services
         bool Full() const;
         std::optional<services::Bond> GetLeastRecentlyUsedBond();
         void AssertBondStoragesAreInSync();
+        bool IsStoragePersisted() const;
 
     private:
         Role role;

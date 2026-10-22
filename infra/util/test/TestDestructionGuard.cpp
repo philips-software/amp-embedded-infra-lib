@@ -8,7 +8,7 @@ namespace
     {};
 }
 
-#if defined(EMIL_ENABLE_DESTRUCTION_GUARD) && defined(EMIL_MUTATION_TESTING)
+#if defined(EMIL_ENABLE_DESTRUCTION_GUARD) && !defined(EMIL_MUTATION_TESTING)
 TEST(DestructionGuardTest, not_destructible_when_not_allowed)
 {
     EXPECT_DEATH(Foo foo;, "");

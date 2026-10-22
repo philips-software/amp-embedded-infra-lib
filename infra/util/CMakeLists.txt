@@ -60,6 +60,7 @@ target_sources(infra.util PRIVATE
     PolymorphicVariant.hpp
     PostAssign.hpp
     ProxyCreator.hpp
+    ProxyCreatorShared.hpp
     ReallyAssert.cpp
     ReallyAssert.hpp
     ReferenceCountedSingleton.hpp

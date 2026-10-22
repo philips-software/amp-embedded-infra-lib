@@ -219,6 +219,8 @@ include::partial$echoservices/gap_central/GapCentral_ResolvePrivateAddress_seque
 
 Returns the number of bonds and the list of bonded devices.
 
+The `persisted` flag is true when the bond list has been saved to non-volatile memory. When false, pending changes may be lost on reset.
+
 [mermaid]
 ....
 include::partial$echoservices/gap_central/GapCentral_GetBondInformation_sequence.mmd[]
@@ -264,6 +266,19 @@ Fire-and-forget, no response callback.
 [mermaid]
 ....
 include::partial$echoservices/gap_central/GapCentral_SetPrivacyMode_sequence.mmd[]
+....
+
+=== SetDeviceName
+
+*Allowed states:* standby.
+
+Sets the Device Name characteristic of the local GAP service, which a connected peer can read. The name remains in effect until it is overwritten or the device is rebooted. If not set by this method, a platform-defined default name is used. Call `SetDeviceName` before creating new bonds so bonded peers store the intended device name.
+
+Pass the name as `DeviceName(value=...)`. The `value` is UTF-8 encoded, not null-terminated, and limited to 32 bytes.
+
+[mermaid]
+....
+include::partial$echoservices/gap_central/GapCentral_SetDeviceName_sequence.mmd[]
 ....
 
 === IsDeviceBonded
