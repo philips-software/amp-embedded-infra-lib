@@ -157,7 +157,7 @@ include::partial$echoservices/gap_peripheral/GapPeripheral_SetDeviceName_sequenc
 
 *Expected response:* GapPeripheralResponse.BondInformationReceived.
 
-The `persisted` flag is true when the bond list has been saved to non-volatile memory. When false, pending changes may be lost on reset.
+Returns the number of bonds and the list of bonded devices. `persisted` is true when the bond list has been successfully saved to non-volatile memory. If false, pending changes may be lost on reset.
 
 [mermaid]
 ....
