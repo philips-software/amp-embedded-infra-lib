@@ -40,7 +40,41 @@ public:
     testing::StrictMock<hal::CleanFlashMock> delegate;
     services::FlashEcho flash{ echo, delegate };
     testing::StrictMock<FlashResultMock> flashResult{ echo };
+    flash::FlashProxy flashProxy{ echo };
 
+    void Read(uint32_t address, uint32_t size)
+    {
+        pendingAddress = address;
+        pendingSize = size;
+        flashProxy.RequestSend([this]()
+            {
+                flashProxy.Read(pendingAddress, pendingSize);
+            });
+    }
+
+    void Write(uint32_t address, infra::ConstByteRange contents)
+    {
+        pendingAddress = address;
+        pendingContents = contents;
+        flashProxy.RequestSend([this]()
+            {
+                flashProxy.Write(pendingAddress, pendingContents);
+            });
+    }
+
+    void EraseSectors(uint32_t sector, uint32_t numberOfSectors)
+    {
+        pendingAddress = sector;
+        pendingSize = numberOfSectors;
+        flashProxy.RequestSend([this]()
+            {
+                flashProxy.EraseSectors(pendingAddress, pendingSize);
+            });
+    }
+
+    uint32_t pendingAddress = 0;
+    uint32_t pendingSize = 0;
+    infra::ConstByteRange pendingContents;
     const std::array<uint8_t, 4> data{ 5, 8, 2, 3 };
     infra::Function<void()> onDone;
 };
@@ -52,7 +86,7 @@ TEST_F(FlashEchoTest, Read)
             infra::Copy(infra::MakeRange(data), buffer);
             onDone = onReadDone;
         }));
-    flash.Read(1234, data.size());
+    Read(1234, data.size());
 
     EXPECT_CALL(flashResult, ReadDone(infra::CheckByteRangeContents(infra::MakeRange(data))));
     onDone();
@@ -64,7 +98,7 @@ TEST_F(FlashEchoTest, Write)
         {
             onDone = onWriteDone;
         }));
-    flash.Write(1234, data);
+    Write(1234, data);
 
     EXPECT_CALL(flashResult, WriteDone());
     onDone();
@@ -73,7 +107,7 @@ TEST_F(FlashEchoTest, Write)
 TEST_F(FlashEchoTest, EraseSectors)
 {
     EXPECT_CALL(delegate, EraseSectors(1234, 1238, testing::_)).WillOnce(testing::SaveArg<2>(&onDone));
-    flash.EraseSectors(1234, 4);
+    EraseSectors(1234, 4);
 
     EXPECT_CALL(flashResult, EraseSectorsDone());
     onDone();
