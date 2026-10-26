@@ -729,7 +729,7 @@ namespace infra
     template<class T>
     BoundedStringBase<T>& BoundedStringBase<T>::insert(size_type index, size_type count, char ch)
     {
-        really_assert(length + count <= max_size());
+        really_assert(count <= max_size() - length);
         MoveUp(index, count);
         for (; count != 0; --count)
             range[index++] = ch;
@@ -746,7 +746,7 @@ namespace infra
     template<class T>
     BoundedStringBase<T>& BoundedStringBase<T>::insert(size_type index, const char* s, size_type count)
     {
-        really_assert(length + count <= max_size());
+        really_assert(count <= max_size() - length);
         MoveUp(index, count);
         for (; count != 0; --count)
             range[index++] = *s++;
@@ -757,7 +757,7 @@ namespace infra
     template<class T>
     BoundedStringBase<T>& BoundedStringBase<T>::insert(size_type index, const BoundedStringBase<T>& other)
     {
-        really_assert(length + other.size() <= max_size());
+        really_assert(other.size() <= max_size() - length);
         MoveUp(index, other.size());
         for (const_iterator i = other.begin(); i != other.end(); ++i)
             range[index++] = *i;
@@ -768,7 +768,9 @@ namespace infra
     template<class T>
     BoundedStringBase<T>& BoundedStringBase<T>::insert(size_type index, const BoundedStringBase<T>& other, size_type index_str, size_type count)
     {
-        really_assert(length + count <= max_size());
+        really_assert(index_str <= other.size());
+        count = std::min(count, other.size() - index_str);
+        really_assert(count <= max_size() - length);
         MoveUp(index, count);
         const_iterator i = other.begin() + index_str;
         for (; count != 0; --count)
@@ -786,7 +788,8 @@ namespace infra
     template<class T>
     BoundedStringBase<T>& BoundedStringBase<T>::insert(size_type index, const std::string& other, size_type index_str, size_type count)
     {
-        return insert(index, other.data() + index_str, count);
+        really_assert(index_str <= other.size());
+        return insert(index, other.data() + index_str, std::min(count, other.size() - index_str));
     }
 
     template<class T>
@@ -803,7 +806,7 @@ namespace infra
     template<class T>
     typename BoundedStringBase<T>::iterator BoundedStringBase<T>::insert(const_iterator pos, size_type count, char ch)
     {
-        really_assert(length + count <= max_size());
+        really_assert(count <= max_size() - length);
         size_type index = pos - begin();
         MoveUp(index, count);
         for (; count != 0; --count)
@@ -1002,7 +1005,8 @@ namespace infra
     template<class U>
     BoundedStringBase<T>& BoundedStringBase<T>::replace(size_type pos, size_type count, const BoundedStringBase<U>& other, size_type pos2, size_type count2)
     {
-        ReplaceImpl(begin() + pos, count, other.begin() + pos2, count2);
+        really_assert(pos2 <= other.size());
+        ReplaceImpl(begin() + pos, count, other.begin() + pos2, std::min(count2, other.size() - pos2));
         return *this;
     }
 
@@ -1398,7 +1402,8 @@ namespace infra
     template<class U>
     void BoundedStringBase<T>::AssignToRange(infra::MemoryRange<NonConstT> range, size_type& length, const BoundedStringBase<U>& other, size_type pos, size_type count)
     {
-        count = std::min(count, other.size());
+        really_assert(pos <= other.size());
+        count = std::min(count, other.size() - pos);
         really_assert(count <= range.size());
         length = count;
         std::copy(other.range.begin() + pos, other.range.begin() + pos + length, range.begin());
@@ -1435,6 +1440,7 @@ namespace infra
     template<class T>
     void BoundedStringBase<T>::MoveUp(size_type start, size_type count)
     {
+        really_assert(start <= length);
         std::memmove(range.begin() + start + count, range.begin() + start, length - start);
         length += count;
     }
@@ -1442,6 +1448,7 @@ namespace infra
     template<class T>
     void BoundedStringBase<T>::MoveDown(size_type start, size_type count)
     {
+        really_assert(start <= length && count <= length - start);
         std::memmove(range.begin() + start, range.begin() + start + count, length - start - count);
         length -= count;
     }
@@ -1463,9 +1470,12 @@ namespace infra
     template<class T>
     void BoundedStringBase<T>::ReplaceImpl(char* begin1, size_type count1, const char* begin2, size_type count2)
     {
-        really_assert(length - count1 + count2 <= max_size());
+        auto pos = static_cast<size_type>(begin1 - begin());
+        really_assert(pos <= length);
+        count1 = std::min(count1, length - pos);
+        really_assert(count2 <= max_size() - (length - count1));
 
-        std::memmove(begin1 + count2, begin1 + count1, length - count1 - (begin() - begin1));
+        std::memmove(begin1 + count2, begin1 + count1, length - pos - count1);
         std::memmove(begin1, begin2, count2);
         length += count2 - count1;
     }
@@ -1473,9 +1483,12 @@ namespace infra
     template<class T>
     void BoundedStringBase<T>::ReplaceImpl(char* begin1, size_type count1, char ch, size_type count2)
     {
-        really_assert(length - count1 + count2 <= max_size());
+        auto pos = static_cast<size_type>(begin1 - begin());
+        really_assert(pos <= length);
+        count1 = std::min(count1, length - pos);
+        really_assert(count2 <= max_size() - (length - count1));
 
-        std::memmove(begin1 + count2, begin1 + count1, length - count1 - (begin() - begin1));
+        std::memmove(begin1 + count2, begin1 + count1, length - pos - count1);
         std::fill(begin1, begin1 + count2, ch);
         length += count2 - count1;
     }
