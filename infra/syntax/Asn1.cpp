@@ -28,8 +28,10 @@ namespace infra
 
     Asn1SequenceIterator::Asn1SequenceIterator(infra::ConstByteRange range)
         : range(range)
-        , currentValue(MakeValue())
-    {}
+        , currentValue(0, infra::ConstByteRange())
+    {
+        ReadCurrentValue();
+    }
 
     bool Asn1SequenceIterator::operator==(const Asn1SequenceIterator& other) const
     {
@@ -63,14 +65,10 @@ namespace infra
 
     Asn1SequenceIterator& Asn1SequenceIterator::operator++()
     {
-        if (!currentValue.range.empty())
+        if (!range.empty())
         {
             range = infra::ConstByteRange(currentValue.range.end(), range.end());
-
-            if (range.empty())
-                currentValue = Asn1Value(0, infra::ConstByteRange());
-            else
-                currentValue = MakeValue();
+            ReadCurrentValue();
         }
 
         return *this;
@@ -83,9 +81,25 @@ namespace infra
         return result;
     }
 
-    Asn1Value Asn1SequenceIterator::MakeValue() const
+    void Asn1SequenceIterator::ReadCurrentValue()
+    {
+        auto value = MakeValue();
+
+        if (value)
+            currentValue = *value;
+        else
+        {
+            range = infra::ConstByteRange();
+            currentValue = Asn1Value(0, infra::ConstByteRange());
+        }
+    }
+
+    std::optional<Asn1Value> Asn1SequenceIterator::MakeValue() const
     {
         infra::ConstByteRange range = this->range;
+        if (range.size() < 2)
+            return std::nullopt;
+
         uint8_t tag = range.front();
         range.pop_front();
 
@@ -93,16 +107,27 @@ namespace infra
         range.pop_front();
         if (length == 0x81)
         {
+            if (range.empty())
+                return std::nullopt;
+
             length = range.front();
             range.pop_front();
         }
         else if (length == 0x82)
         {
+            if (range.size() < 2)
+                return std::nullopt;
+
             length = range.front() << 8;
             range.pop_front();
             length += range.front();
             range.pop_front();
         }
+        else if (length > 0x7f)
+            return std::nullopt;
+
+        if (length > range.size())
+            return std::nullopt;
 
         return Asn1Value(tag, infra::Head(range, length));
     }
