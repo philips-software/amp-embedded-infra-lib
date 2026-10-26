@@ -1,5 +1,7 @@
 #include "infra/syntax/ProtoParser.hpp"
 #include "infra/util/Overloaded.hpp"
+#include <algorithm>
+#include <limits>
 
 namespace infra
 {
@@ -102,8 +104,8 @@ namespace infra
             ++index;
         } while (!input.Failed() && (byte & 0x80) != 0 && index != 10);
 
-        if (!input.Failed() && (byte & 0x80) != 0 && index == 10)
-            formatErrorPolicy.Failed();
+        if (!input.Failed() && index == 10 && (byte & 0xfe) != 0)
+            formatErrorPolicy.ReportResult(false);
 
         return result;
     }
@@ -144,7 +146,14 @@ namespace infra
 
     ProtoParser::PartialField ProtoParser::GetPartialField()
     {
-        uint32_t x = static_cast<uint32_t>(GetVarInt());
+        auto key = GetVarInt();
+        if (key > std::numeric_limits<uint32_t>::max())
+        {
+            formatErrorPolicy.ReportResult(false);
+            return std::make_pair(static_cast<uint32_t>(0), 0);
+        }
+
+        uint32_t x = static_cast<uint32_t>(key);
         uint8_t type = x & 7;
         uint32_t fieldNumber = x >> 3;
 
@@ -155,7 +164,12 @@ namespace infra
             case 1:
                 return std::make_pair(GetFixed64(), fieldNumber);
             case 2:
-                return std::make_pair(PartialProtoLengthDelimited{ static_cast<uint32_t>(GetVarInt()) }, fieldNumber);
+            {
+                auto length = GetVarInt();
+                if (length > std::numeric_limits<uint32_t>::max())
+                    formatErrorPolicy.ReportResult(false);
+                return std::make_pair(PartialProtoLengthDelimited{ static_cast<uint32_t>(std::min<uint64_t>(length, std::numeric_limits<uint32_t>::max())) }, fieldNumber);
+            }
             case 5:
                 return std::make_pair(GetFixed32(), fieldNumber);
             default:
