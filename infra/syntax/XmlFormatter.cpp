@@ -81,7 +81,9 @@ namespace infra
 
     void XmlTagFormatter::Attribute(const char* name, infra::BoundedConstString value)
     {
-        *stream << " " << name << R"(=")" << value << R"(")";
+        *stream << " " << name << R"(=")";
+        InsertEscapedContent(*stream, value);
+        *stream << R"(")";
     }
 
     void XmlTagFormatter::Content(infra::BoundedConstString string)
