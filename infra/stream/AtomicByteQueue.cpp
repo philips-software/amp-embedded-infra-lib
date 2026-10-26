@@ -1,4 +1,5 @@
 #include "infra/stream/AtomicByteQueue.hpp"
+#include "infra/util/ReallyAssert.hpp"
 
 namespace infra
 {
@@ -8,7 +9,7 @@ namespace infra
 
     void AtomicByteQueue::Push(infra::ConstByteRange range)
     {
-        assert(range.size() <= MaxSize() - Size());
+        really_assert(range.size() <= MaxSize() - Size());
 
         while (!range.empty())
         {
