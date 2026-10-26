@@ -4,6 +4,7 @@
 #include "infra/util/VariantDetail.hpp"
 #include <algorithm>
 #include <cctype>
+#include <limits>
 #include <optional>
 #include <variant>
 
@@ -25,11 +26,17 @@ namespace
     }
 
     template<class IntType>
-    IntType ToInt(infra::BoundedConstString string, bool sign)
+    std::optional<IntType> ToInt(infra::BoundedConstString string, bool sign)
     {
         IntType value{};
         for (auto c : string.substr(sign ? 1 : 0))
-            value = value * 10 + c - '0';
+        {
+            const auto digit = static_cast<IntType>(c - '0');
+            if (value > (std::numeric_limits<IntType>::max() - digit) / 10)
+                return std::nullopt;
+
+            value = value * 10 + digit;
+        }
 
         return value;
     }
@@ -622,13 +629,15 @@ namespace infra
             ++parseIndex;
 
         auto value = ToInt<uint64_t>(objectString.substr(tokenStart, parseIndex - tokenStart), sign);
+        if (!value)
+            return JsonToken::Error();
 
         if (parseIndex == objectString.size() || objectString[parseIndex] != '.')
-            return JsonBiggerInt(value, sign);
+            return JsonBiggerInt(*value, sign);
 
         ++parseIndex;
 
-        return TryCreateFloatToken(value, sign);
+        return TryCreateFloatToken(*value, sign);
     }
 
     JsonToken::Token JsonTokenizer::TryCreateIdentifierToken()
@@ -662,7 +671,7 @@ namespace infra
         infra::BoundedConstString fractional = objectString.substr(tokenStart, parseIndex - tokenStart);
         fractional.shrink(nanoValueWidth);
 
-        auto fractionalValue = ToInt<uint32_t>(fractional, false);
+        auto fractionalValue = ToInt<uint32_t>(fractional, false).value_or(0);
 
         if (fractional.size() < 9)
             for (std::size_t count = fractional.size(); count != nanoValueWidth; ++count)
