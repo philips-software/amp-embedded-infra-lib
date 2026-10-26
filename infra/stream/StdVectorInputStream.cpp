@@ -38,7 +38,7 @@ namespace infra
 
     ConstByteRange StdVectorInputStreamReader::PeekContiguousRange(std::size_t start)
     {
-        ConstByteRange result(vector.data() + offset + start, vector.data() + vector.size());
+        ConstByteRange result(vector.data() + std::min(offset + start, vector.size()), vector.data() + vector.size());
 
         return result;
     }

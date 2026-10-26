@@ -41,7 +41,7 @@ namespace infra
 
     ConstByteRange infra::BoundedDequeInputStreamReader::PeekContiguousRange(std::size_t start)
     {
-        return container.contiguous_range(container.begin() + offset + start);
+        return container.contiguous_range(container.begin() + std::min(offset + start, container.size()));
     }
 
     bool BoundedDequeInputStreamReader::Empty() const
