@@ -118,6 +118,15 @@ TEST_F(AtomicByteQueueTest, PeekContiguousRange_beyond_end_is_empty)
     EXPECT_THAT(reader.PeekContiguousRange(3), testing::IsEmpty());
 }
 
+#ifndef EMIL_MUTATION_TESTING
+TEST_F(AtomicByteQueueTest, Push_more_than_available_aborts)
+{
+    std::vector<uint8_t> data{ 1, 2, 3, 4, 5 };
+
+    EXPECT_DEATH(deque.Push(infra::MakeRange(data)), "");
+}
+#endif
+
 TEST_F(AtomicByteQueueTest, Extract_overflows)
 {
     std::vector<uint8_t> data1{ 1, 2 };

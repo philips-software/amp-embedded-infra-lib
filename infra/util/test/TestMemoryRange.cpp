@@ -147,6 +147,24 @@ TEST(MemoryRangeTest, TestPopBack)
     EXPECT_EQ(2, range.back());
 }
 
+#ifndef EMIL_MUTATION_TESTING
+TEST(MemoryRangeTest, TestPopFrontMoreThanSizeAborts)
+{
+    std::array<int, 4> array = { 0, 1, 2, 3 };
+    infra::MemoryRange<int> range(array);
+
+    EXPECT_DEATH(range.pop_front(5), "");
+}
+
+TEST(MemoryRangeTest, TestPopBackMoreThanSizeAborts)
+{
+    std::array<int, 4> array = { 0, 1, 2, 3 };
+    infra::MemoryRange<int> range(array);
+
+    EXPECT_DEATH(range.pop_back(5), "");
+}
+#endif
+
 TEST(MemoryRangeTest, TestShrinkFromFront)
 {
     std::array<int, 4> array = { 0, 1, 2, 3 };
@@ -191,6 +209,16 @@ TEST(MemoryRangeTest, Copy)
     infra::Copy(infra::MakeByteRange(x), infra::MakeByteRange(y));
     EXPECT_EQ(0x12345678, y);
 }
+
+#ifndef EMIL_MUTATION_TESTING
+TEST(MemoryRangeTest, CopyToSmallerRangeAborts)
+{
+    std::array<uint8_t, 4> from = { 1, 2, 3, 4 };
+    std::array<uint8_t, 8> to = {};
+
+    EXPECT_DEATH(infra::Copy(infra::MakeRange(from), infra::Head(infra::MakeRange(to), 2)), "");
+}
+#endif
 
 TEST(MemoryRangeTest, ContentsEqual)
 {
