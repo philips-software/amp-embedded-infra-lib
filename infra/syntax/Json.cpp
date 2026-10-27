@@ -4,6 +4,7 @@
 #include "infra/util/VariantDetail.hpp"
 #include <algorithm>
 #include <cctype>
+#include <cstring>
 #include <limits>
 #include <optional>
 #include <variant>
@@ -1381,14 +1382,34 @@ namespace infra
     void CleanJsonContents(infra::BoundedString& contents)
     {
         infra::JsonTokenizer tokenizer(contents);
-        infra::BoundedString newContents(contents);
-        newContents.clear();
-        infra::StringOutputStream stream(newContents);
+        std::size_t write = 0;
 
-        for (JsonToken::Token token = tokenizer.Token(); !std::holds_alternative<JsonToken::End>(token) && !std::holds_alternative<JsonToken::Error>(token); token = tokenizer.Token())
-            CopyToken(token, stream);
+        while (true)
+        {
+            tokenizer.SkipWhitespace();
+            auto start = tokenizer.parseIndex;
+            auto token = tokenizer.Token();
 
-        contents = newContents;
+            if (std::holds_alternative<JsonToken::End>(token) || std::holds_alternative<JsonToken::Error>(token))
+                break;
+
+            infra::BoundedConstString text = contents.substr(start, tokenizer.parseIndex - start);
+            infra::BoundedString::WithStorage<32> normalized;
+
+            if (std::holds_alternative<infra::JsonBiggerInt>(token) || std::holds_alternative<infra::JsonFloat>(token))
+            {
+                infra::StringOutputStream stream(normalized);
+                CopyToken(token, stream);
+
+                if (write + normalized.size() <= tokenizer.parseIndex)
+                    text = normalized;
+            }
+
+            std::memmove(contents.data() + write, text.data(), text.size());
+            write += text.size();
+        }
+
+        contents.resize(write);
     }
 
     bool ValidJsonObject(infra::BoundedConstString contents)
