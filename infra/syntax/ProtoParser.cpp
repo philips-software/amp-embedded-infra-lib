@@ -44,7 +44,7 @@ namespace infra
 
     void ProtoLengthDelimited::GetStringReference(infra::BoundedConstString& string)
     {
-        string = infra::ByteRangeAsString(input.ContiguousRange());
+        string = infra::ByteRangeAsString(GetReference());
     }
 
     std::string ProtoLengthDelimited::GetStdString()
@@ -63,7 +63,7 @@ namespace infra
 
     void ProtoLengthDelimited::GetBytesReference(infra::ConstByteRange& bytes)
     {
-        bytes = input.ContiguousRange();
+        bytes = GetReference();
     }
 
     std::vector<uint8_t> ProtoLengthDelimited::GetUnboundedBytes()
@@ -71,6 +71,20 @@ namespace infra
         std::vector<uint8_t> result(input.Available());
         input >> infra::MakeRange(result);
         return result;
+    }
+
+    infra::ConstByteRange ProtoLengthDelimited::GetReference()
+    {
+        auto available = input.Available();
+        auto reference = input.ContiguousRange();
+
+        if (reference.size() < available)
+        {
+            formatErrorPolicy.ReportResult(false);
+            input.Consume(available - reference.size());
+        }
+
+        return reference;
     }
 
     ProtoParser::ProtoParser(infra::DataInputStream inputStream)
