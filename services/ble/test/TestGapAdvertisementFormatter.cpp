@@ -263,7 +263,7 @@ namespace services
         formatter.AppendListOfServicesUuid(GapAdvertisementDataType::completeListOf16BitUuids, infra::MakeByteRange(uuids));
 
         EXPECT_THAT(formatter.FormattedAdvertisementData(), infra::ContentsEqual(std::array<uint8_t, 7>{ 2, 0x01, static_cast<uint8_t>(GapPeripheral::AdvertisementFlags::leGeneralDiscoverableMode), 3, 0x03, 0x34, 0x12 }));
-        EXPECT_EQ(formatter.RemainingSpaceAvailable(), GapPeripheral::maxScanResponseDataSize - 7);
+        EXPECT_THAT(formatter.RemainingSpaceAvailable(), testing::Eq(GapPeripheral::maxScanResponseDataSize - 7));
     }
 
 #ifndef EMIL_MUTATION_TESTING
