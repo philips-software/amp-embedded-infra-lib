@@ -347,6 +347,24 @@ TEST_F(SharedPtrTest, converting_WeakPtr_to_SharedPtr_for_expired_object_results
     EXPECT_EQ(nullptr, object);
 }
 
+TEST_F(SharedPtrTest, assigning_WeakPtr_to_SharedPtr_for_expired_object_results_in_nullptr)
+{
+    infra::SharedObjectAllocatorFixedSize<MySharedObject, void(infra::ConstructionMonitorMock&)>::WithStorage<1> allocator;
+
+    infra::WeakPtr<MySharedObject> weakObject;
+
+    {
+        EXPECT_CALL(objectConstructionMock, Construct(testing::_));
+        infra::SharedPtr<MySharedObject> object = allocator.Allocate(objectConstructionMock);
+        weakObject = object;
+        EXPECT_CALL(objectConstructionMock, Destruct(testing::_));
+    }
+
+    infra::SharedPtr<MySharedObject> object;
+    object = weakObject;
+    EXPECT_THAT(object, testing::IsNull());
+}
+
 TEST_F(SharedPtrTest, allocate_multiple_inherited_class)
 {
     infra::SharedObjectAllocatorFixedSize<MultiInheritedClass, void(infra::ConstructionMonitorMock&)>::WithStorage<2> allocator;

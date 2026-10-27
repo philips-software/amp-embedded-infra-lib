@@ -334,7 +334,10 @@ namespace infra
     template<class T>
     SharedPtr<T>& SharedPtr<T>::operator=(const WeakPtr<T>& other)
     {
-        Reset(other.control, other.object);
+        if (other.control && !other.control->Expired())
+            Reset(other.control, other.object);
+        else
+            Reset(nullptr, nullptr);
 
         return *this;
     }
