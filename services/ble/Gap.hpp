@@ -48,7 +48,11 @@ namespace services
     {
         unknownType = 0x00u,
         flags = 0x01u,
+        incompleteListOf16BitUuids = 0x02u,
         completeListOf16BitUuids = 0x03u,
+        incompleteListOf32BitUuids = 0x04u,
+        completeListOf32BitUuids = 0x05u,
+        incompleteListOf128BitUuids = 0x06u,
         completeListOf128BitUuids = 0x07u,
         shortenedLocalName = 0x08u,
         completeLocalName = 0x09u,
@@ -355,6 +359,7 @@ namespace services
         infra::MemoryRange<const AttAttribute::Uuid16> CompleteListOf16BitUuids() const;
         infra::MemoryRange<const AttAttribute::Uuid128> CompleteListOf128BitUuids() const;
         std::optional<uint16_t> Appearance() const;
+        bool ContainsServiceUuid(infra::ConstByteRange uuid) const;
 
     private:
         infra::ConstByteRange data;
@@ -374,6 +379,7 @@ namespace services
         void AppendManufacturerData(uint16_t manufacturerCode, infra::ConstByteRange data);
         void AppendListOfServicesUuid(infra::MemoryRange<AttAttribute::Uuid16> services);
         void AppendListOfServicesUuid(infra::MemoryRange<AttAttribute::Uuid128> services);
+        void AppendListOfServicesUuid(GapAdvertisementDataType listType, infra::ConstByteRange uuids);
         void AppendPublicTargetAddress(hal::MacAddress address);
         void AppendAppearance(uint16_t appearance);
 
@@ -392,6 +398,27 @@ namespace services
         GapAddress gapAddress;
         infra::BoundedVector<uint8_t>::WithMaxSize<GapPeripheral::maxAdvertisementDataSize> data;
         int32_t rssi;
+    };
+
+    class GapDeviceDiscoveryFilter
+    {
+    public:
+        enum class Type : uint8_t
+        {
+            none,
+            address,
+            manufacturerSpecificData,
+            serviceUuid
+        };
+
+        GapDeviceDiscoveryFilter() = default;
+        GapDeviceDiscoveryFilter(Type type, infra::ConstByteRange data);
+
+        bool Passes(const GapAdvertisingReport& report) const;
+
+    private:
+        Type type = Type::none;
+        infra::BoundedVector<uint8_t>::WithMaxSize<GapPeripheral::maxAdvertisementDataSize> data;
     };
 
     class GapCentral;
