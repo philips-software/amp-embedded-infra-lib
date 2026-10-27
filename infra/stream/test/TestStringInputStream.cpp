@@ -204,6 +204,12 @@ TEST(StringInputStreamTest, Base64DecodedSize_with_insufficient_input_reports_nu
     EXPECT_EQ(0, Base64DecodedSize(infra::BoundedConstString("")));
 }
 
+TEST(StringInputStreamTest, Base64DecodedSize_counts_at_most_two_pads)
+{
+    EXPECT_THAT(Base64DecodedSize(infra::BoundedConstString("====")), testing::Eq(1));
+    EXPECT_THAT(Base64DecodedSize(infra::BoundedConstString("YWJj====")), testing::Eq(4));
+}
+
 TEST(StringInputStreamTest, Rewind)
 {
     infra::BoundedString::WithStorage<10> string("abcd");
