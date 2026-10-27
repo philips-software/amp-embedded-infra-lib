@@ -52,6 +52,14 @@ TEST(BoundedStringTest, TestConstructFromOtherString)
     EXPECT_EQ(2, copy2.size());
 }
 
+TEST(BoundedStringTest, TestConstructFromSubstringOfOtherString)
+{
+    infra::BoundedString::WithStorage<10> string("abcd");
+
+    infra::BoundedString::WithStorage<10> copy(string, 2);
+    EXPECT_THAT(copy, testing::Eq("cd"));
+}
+
 TEST(BoundedStringTest, TestConstructFromStdString)
 {
     std::string string(3, 'a');
@@ -166,6 +174,26 @@ TEST(BoundedStringTest, TestAssignFromString)
 
     EXPECT_EQ(string, copy);
 }
+
+TEST(BoundedStringTest, TestAssignFromSubstringOfString)
+{
+    infra::BoundedString::WithStorage<10> string("abcd");
+    infra::BoundedString::WithStorage<10> copy;
+
+    copy.assign(string, 3, 4);
+
+    EXPECT_THAT(copy, testing::Eq("d"));
+}
+
+#ifndef EMIL_MUTATION_TESTING
+TEST(BoundedStringTest, TestAssignFromSubstringWithPositionBeyondEndAborts)
+{
+    infra::BoundedString::WithStorage<10> string("abcd");
+    infra::BoundedString::WithStorage<10> copy;
+
+    EXPECT_DEATH(copy.assign(string, 5, 1), "");
+}
+#endif
 
 TEST(BoundedStringTest, TestAssignFromStdString)
 {
@@ -348,6 +376,34 @@ TEST(BoundedStringTest, TestInsertString)
     EXPECT_EQ("axxddebc", string);
 }
 
+TEST(BoundedStringTest, TestInsertSubstringIsLimitedToEndOfOtherString)
+{
+    infra::BoundedString::WithStorage<16> string("xy");
+    infra::BoundedString::WithStorage<16> other("abcd");
+
+    string.insert(1, other, 2, 10);
+    EXPECT_THAT(string, testing::Eq("xcdy"));
+    string.insert(1, std::string("efgh"), 3, 10);
+    EXPECT_THAT(string, testing::Eq("xhcdy"));
+}
+
+#ifndef EMIL_MUTATION_TESTING
+TEST(BoundedStringTest, TestInsertWithIndexBeyondEndAborts)
+{
+    infra::BoundedString::WithStorage<10> string("abc");
+
+    EXPECT_DEATH(string.insert(4, "x"), "");
+}
+
+TEST(BoundedStringTest, TestInsertSubstringWithPositionBeyondEndAborts)
+{
+    infra::BoundedString::WithStorage<10> string("abc");
+    infra::BoundedString::WithStorage<10> other("de");
+
+    EXPECT_DEATH(string.insert(1, other, 3, 1), "");
+}
+#endif
+
 TEST(BoundedStringTest, TestInsertCharAtIterator)
 {
     infra::BoundedString::WithStorage<5> string("abc");
@@ -419,6 +475,15 @@ TEST(BoundedStringTest, TestEraseRange)
     EXPECT_EQ("ad", string);
     EXPECT_EQ(2, string.size());
 }
+
+#ifndef EMIL_MUTATION_TESTING
+TEST(BoundedStringTest, TestEraseWithIndexBeyondEndAborts)
+{
+    infra::BoundedString::WithStorage<10> string("abc");
+
+    EXPECT_DEATH(string.erase(4), "");
+}
+#endif
 
 TEST(BoundedStringTest, TestPushBack)
 {
@@ -581,6 +646,53 @@ TEST(BoundedStringTest, TestReplaceByChars)
     EXPECT_EQ("akkkd", string);
     string.replace(string.begin() + 1, string.begin() + 2, 1, 'x');
     EXPECT_EQ("axkkd", string);
+}
+
+TEST(BoundedStringTest, TestReplaceIsLimitedToEndOfString)
+{
+    infra::BoundedString::WithStorage<10> string("abcde");
+    string.replace(1, infra::BoundedString::npos, "X");
+    EXPECT_THAT(string, testing::Eq("aX"));
+}
+
+TEST(BoundedStringTest, TestReplaceBySubstringIsLimitedToEndOfOtherString)
+{
+    infra::BoundedString::WithStorage<10> string("abcde");
+    string.replace(1, 2, infra::BoundedConstString("klmn"), 2, infra::BoundedString::npos);
+    EXPECT_THAT(string, testing::Eq("amnde"));
+}
+
+#ifndef EMIL_MUTATION_TESTING
+TEST(BoundedStringTest, TestReplaceWithPositionBeyondEndAborts)
+{
+    infra::BoundedString::WithStorage<10> string("abc");
+
+    EXPECT_DEATH(string.replace(4, 1, "x"), "");
+}
+#endif
+
+class BoundedStringInPartOfBufferTest
+    : public testing::Test
+{
+public:
+    std::array<char, 16> buffer{ { '#', '#', '#', '#', '#', '#', '#', '#', '0', '1', '2', '3', '4', '5', '6', '7' } };
+    infra::BoundedString string{ infra::MemoryRange<char>(buffer.data(), buffer.data() + 8), "abcdefg" };
+};
+
+TEST_F(BoundedStringInPartOfBufferTest, TestReplaceByStringDoesNotWriteBeyondStorage)
+{
+    string.replace(4, 2, "X");
+
+    EXPECT_THAT(string, testing::Eq("abcdXg"));
+    EXPECT_THAT(std::string(buffer.begin() + 8, buffer.end()), testing::Eq("01234567"));
+}
+
+TEST_F(BoundedStringInPartOfBufferTest, TestReplaceByCharsDoesNotWriteBeyondStorage)
+{
+    string.replace(4, 2, 1, 'X');
+
+    EXPECT_THAT(string, testing::Eq("abcdXg"));
+    EXPECT_THAT(std::string(buffer.begin() + 8, buffer.end()), testing::Eq("01234567"));
 }
 
 TEST(BoundedStringTest, TestSubstr)
