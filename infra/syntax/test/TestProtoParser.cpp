@@ -139,6 +139,28 @@ TEST(ProtoParserTest, GetPartialField_with_length_exceeding_32_bits_reports_form
     EXPECT_TRUE(parser.FormatFailed());
 }
 
+TEST(ProtoParserTest, GetPartialField_with_split_key_does_not_report_format_error)
+{
+    infra::StdVectorInputStream::WithStorage stream(std::in_place, std::vector<uint8_t>{ 0xfa, 0xff, 0xff, 0xff }, infra::softFail);
+    infra::StreamErrorPolicy formatErrorPolicy(infra::softFail);
+    infra::ProtoParser parser(stream, formatErrorPolicy);
+
+    parser.GetPartialField();
+    EXPECT_TRUE(stream.Failed());
+    EXPECT_FALSE(parser.FormatFailed());
+}
+
+TEST(ProtoParserTest, GetPartialField_with_split_length_does_not_report_format_error)
+{
+    infra::StdVectorInputStream::WithStorage stream(std::in_place, std::vector<uint8_t>{ 0x0a, 0xff, 0xff, 0xff, 0xff }, infra::softFail);
+    infra::StreamErrorPolicy formatErrorPolicy(infra::softFail);
+    infra::ProtoParser parser(stream, formatErrorPolicy);
+
+    parser.GetPartialField();
+    EXPECT_TRUE(stream.Failed());
+    EXPECT_FALSE(parser.FormatFailed());
+}
+
 TEST(ProtoParserTest, too_short_string_is_reported_on_stream)
 {
     infra::StdVectorInputStream::WithStorage stream(std::in_place, std::vector<uint8_t>{ (1 << 3) | 2, 5, 'a', 'b', 'c' }, infra::softFail);
