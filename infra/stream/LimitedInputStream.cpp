@@ -89,7 +89,7 @@ namespace infra
     {
         errorPolicy.ReportResult(length >= range.size());
         range.shrink_from_back_to(length);
-        auto start = input->ConstructSaveMarker();
+        const auto start = input->ConstructSaveMarker();
         input->Extract(range, errorPolicy);
         length -= input->ConstructSaveMarker() - start;
     }
