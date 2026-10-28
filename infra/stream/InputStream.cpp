@@ -537,7 +537,7 @@ namespace infra
             return 0;
 
         auto size = encodedContents.size() / 4 * 3;
-        for (auto it = encodedContents.crbegin(); *it == '=' && it != encodedContents.crend(); ++it)
+        for (auto it = encodedContents.crbegin(); it != encodedContents.crbegin() + 2 && *it == '='; ++it)
             --size;
 
         return size;
