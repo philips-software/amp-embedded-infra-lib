@@ -219,7 +219,7 @@
 </div>
 <div class="imageblock kroki">
 <div class="content">
-<img src="../_images/diag-552cdf3cdee71eff9da5f1f8a7cfb35a350d5d1f.svg" alt="Diagram">
+<img src="../_images/diag-b8209eb5f108bc5f4666d0375154c906bb67bf81.svg" alt="Diagram">
 </div>
 </div>
 </div>
@@ -641,7 +641,7 @@
 <h3 id="_discovery_and_connection_2"><a class="anchor" href="#_discovery_and_connection_2"></a>Discovery and Connection</h3>
 <div class="imageblock kroki">
 <div class="content">
-<img src="../_images/diag-f22285ccdcb0a5c314766a49f5dc707a2347f3fc.svg" alt="Diagram">
+<img src="../_images/diag-2148cdab7171bc43ff06c0165bf693bbf3fbe33d.svg" alt="Diagram">
 </div>
 </div>
 </div>
@@ -1171,7 +1171,12 @@ message DeviceDiscoveryFilter
         // data: the manufacturer specific data to match, including the 2-byte manufacturer ID.
         manufacturerSpecificData = 2;
 
-        // TODO: Add filter for Service UUID to allow filtering on device type/profile.
+        // Filters on the Incomplete and Complete List of Service UUIDs fields in the advertising or scan response data.
+        // See Core Specification Supplement, Part A, Section 1.1
+        // Passes if the service UUID in the filter data is found in either the incomplete or complete service UUID list.
+        // data: the service UUID to match (2 bytes for a 16-bit UUID, 4 bytes for 32-bit, or 16 bytes for 128-bit).
+        // The UUID bytes are in the byte order of the advertising data. A UUID only matches an entry of the same size.
+        serviceUuid = 3;
     }
 
     Filter filter = 1;
