@@ -147,7 +147,7 @@ namespace infra
     ProtoParser::PartialField ProtoParser::GetPartialField()
     {
         auto key = GetVarInt();
-        if (key > std::numeric_limits<uint32_t>::max())
+        if (!input.Failed() && key > std::numeric_limits<uint32_t>::max())
         {
             formatErrorPolicy.ReportResult(false);
             return std::make_pair(static_cast<uint32_t>(0), 0);
@@ -166,7 +166,7 @@ namespace infra
             case 2:
             {
                 auto length = GetVarInt();
-                if (length > std::numeric_limits<uint32_t>::max())
+                if (!input.Failed() && length > std::numeric_limits<uint32_t>::max())
                     formatErrorPolicy.ReportResult(false);
                 return std::make_pair(PartialProtoLengthDelimited{ static_cast<uint32_t>(std::min<uint64_t>(length, std::numeric_limits<uint32_t>::max())) }, fieldNumber);
             }
