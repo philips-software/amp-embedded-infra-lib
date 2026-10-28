@@ -989,6 +989,7 @@ namespace infra
     template<class U>
     BoundedStringBase<T>& BoundedStringBase<T>::replace(size_type pos, size_type count, const BoundedStringBase<U>& other)
     {
+        really_assert(pos <= size());
         ReplaceImpl(begin() + pos, count, other.begin(), other.size());
         return *this;
     }
@@ -1005,6 +1006,7 @@ namespace infra
     template<class U>
     BoundedStringBase<T>& BoundedStringBase<T>::replace(size_type pos, size_type count, const BoundedStringBase<U>& other, size_type pos2, size_type count2)
     {
+        really_assert(pos <= size());
         really_assert(pos2 <= other.size());
         ReplaceImpl(begin() + pos, count, other.begin() + pos2, std::min(count2, other.size() - pos2));
         return *this;
@@ -1013,6 +1015,7 @@ namespace infra
     template<class T>
     BoundedStringBase<T>& BoundedStringBase<T>::replace(size_type pos, size_type count, const char* cstr, size_type count2)
     {
+        really_assert(pos <= size());
         ReplaceImpl(begin() + pos, count, cstr, count2);
         return *this;
     }
@@ -1027,6 +1030,7 @@ namespace infra
     template<class T>
     BoundedStringBase<T>& BoundedStringBase<T>::replace(size_type pos, size_type count, const char* cstr)
     {
+        really_assert(pos <= size());
         ReplaceImpl(begin() + pos, count, cstr, std::strlen(cstr)); //NOSONAR
         return *this;
     }
@@ -1041,6 +1045,7 @@ namespace infra
     template<class T>
     BoundedStringBase<T>& BoundedStringBase<T>::replace(size_type pos, size_type count, const std::string& s, size_type count2)
     {
+        really_assert(pos <= size());
         ReplaceImpl(begin() + pos, count, s.data(), count2);
         return *this;
     }
@@ -1055,6 +1060,7 @@ namespace infra
     template<class T>
     BoundedStringBase<T>& BoundedStringBase<T>::replace(size_type pos, size_type count, const std::string& s)
     {
+        really_assert(pos <= size());
         ReplaceImpl(begin() + pos, count, s.data(), s.size());
         return *this;
     }
@@ -1069,6 +1075,7 @@ namespace infra
     template<class T>
     BoundedStringBase<T>& BoundedStringBase<T>::replace(size_type pos, size_type count, size_type count2, char ch)
     {
+        really_assert(pos <= size());
         ReplaceImpl(begin() + pos, count, ch, count2);
         return *this;
     }

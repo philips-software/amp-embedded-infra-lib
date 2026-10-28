@@ -668,6 +668,7 @@ TEST(BoundedStringTest, TestReplaceWithPositionBeyondEndAborts)
     infra::BoundedString::WithStorage<10> string("abc");
 
     EXPECT_DEATH(string.replace(4, 1, "x"), "");
+    EXPECT_DEATH(string.replace(4, 1, 1, 'x'), "");
 }
 #endif
 
