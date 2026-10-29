@@ -198,4 +198,101 @@ namespace services
 
         EXPECT_EQ(formatter.RemainingSpaceAvailable(), GapPeripheral::maxScanResponseDataSize - 4);
     }
+
+    TEST_F(GapAdvertisementFormatterTest, append_service_uuid_list_formats_incomplete_16bit)
+    {
+        std::array<uint8_t, 4> uuids = { 0x34, 0x12, 0x78, 0x56 };
+
+        formatter.AppendListOfServicesUuid(GapAdvertisementDataType::incompleteListOf16BitUuids, infra::MakeByteRange(uuids));
+
+        EXPECT_THAT(formatter.FormattedAdvertisementData(), infra::ContentsEqual(std::array<uint8_t, 6>{ 5, 0x02, 0x34, 0x12, 0x78, 0x56 }));
+    }
+
+    TEST_F(GapAdvertisementFormatterTest, append_service_uuid_list_formats_complete_16bit)
+    {
+        std::array<uint8_t, 2> uuids = { 0x34, 0x12 };
+
+        formatter.AppendListOfServicesUuid(GapAdvertisementDataType::completeListOf16BitUuids, infra::MakeByteRange(uuids));
+
+        EXPECT_THAT(formatter.FormattedAdvertisementData(), infra::ContentsEqual(std::array<uint8_t, 4>{ 3, 0x03, 0x34, 0x12 }));
+    }
+
+    TEST_F(GapAdvertisementFormatterTest, append_service_uuid_list_formats_incomplete_32bit)
+    {
+        std::array<uint8_t, 4> uuids = { 0x78, 0x56, 0x34, 0x12 };
+
+        formatter.AppendListOfServicesUuid(GapAdvertisementDataType::incompleteListOf32BitUuids, infra::MakeByteRange(uuids));
+
+        EXPECT_THAT(formatter.FormattedAdvertisementData(), infra::ContentsEqual(std::array<uint8_t, 6>{ 5, 0x04, 0x78, 0x56, 0x34, 0x12 }));
+    }
+
+    TEST_F(GapAdvertisementFormatterTest, append_service_uuid_list_formats_complete_32bit)
+    {
+        std::array<uint8_t, 8> uuids = { 0x78, 0x56, 0x34, 0x12, 0xF0, 0xDE, 0xBC, 0x9A };
+
+        formatter.AppendListOfServicesUuid(GapAdvertisementDataType::completeListOf32BitUuids, infra::MakeByteRange(uuids));
+
+        EXPECT_THAT(formatter.FormattedAdvertisementData(), infra::ContentsEqual(std::array<uint8_t, 10>{ 9, 0x05, 0x78, 0x56, 0x34, 0x12, 0xF0, 0xDE, 0xBC, 0x9A }));
+    }
+
+    TEST_F(GapAdvertisementFormatterTest, append_service_uuid_list_formats_incomplete_128bit)
+    {
+        std::array<uint8_t, 16> uuids = { 0x0F, 0x0E, 0x0D, 0x0C, 0x0B, 0x0A, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00 };
+
+        formatter.AppendListOfServicesUuid(GapAdvertisementDataType::incompleteListOf128BitUuids, infra::MakeByteRange(uuids));
+
+        std::array<uint8_t, 18> expected = { 17, 0x06, 0x0F, 0x0E, 0x0D, 0x0C, 0x0B, 0x0A, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00 };
+        EXPECT_THAT(formatter.FormattedAdvertisementData(), infra::ContentsEqual(expected));
+    }
+
+    TEST_F(GapAdvertisementFormatterTest, append_service_uuid_list_formats_complete_128bit)
+    {
+        std::array<uint8_t, 16> uuids = { 0x0F, 0x0E, 0x0D, 0x0C, 0x0B, 0x0A, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00 };
+
+        formatter.AppendListOfServicesUuid(GapAdvertisementDataType::completeListOf128BitUuids, infra::MakeByteRange(uuids));
+
+        std::array<uint8_t, 18> expected = { 17, 0x07, 0x0F, 0x0E, 0x0D, 0x0C, 0x0B, 0x0A, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00 };
+        EXPECT_THAT(formatter.FormattedAdvertisementData(), infra::ContentsEqual(expected));
+    }
+
+    TEST_F(GapAdvertisementFormatterTest, append_service_uuid_list_after_other_data)
+    {
+        std::array<uint8_t, 2> uuids = { 0x34, 0x12 };
+
+        formatter.AppendFlags(GapPeripheral::AdvertisementFlags::leGeneralDiscoverableMode);
+        formatter.AppendListOfServicesUuid(GapAdvertisementDataType::completeListOf16BitUuids, infra::MakeByteRange(uuids));
+
+        EXPECT_THAT(formatter.FormattedAdvertisementData(), infra::ContentsEqual(std::array<uint8_t, 7>{ 2, 0x01, static_cast<uint8_t>(GapPeripheral::AdvertisementFlags::leGeneralDiscoverableMode), 3, 0x03, 0x34, 0x12 }));
+        EXPECT_THAT(formatter.RemainingSpaceAvailable(), testing::Eq(GapPeripheral::maxScanResponseDataSize - 7));
+    }
+
+#ifndef EMIL_MUTATION_TESTING
+    TEST_F(GapAdvertisementFormatterTest, append_service_uuid_list_asserts_on_non_list_type)
+    {
+        std::array<uint8_t, 2> uuids = { 0x34, 0x12 };
+
+        EXPECT_DEATH(formatter.AppendListOfServicesUuid(GapAdvertisementDataType::flags, infra::MakeByteRange(uuids)), "");
+    }
+
+    TEST_F(GapAdvertisementFormatterTest, append_service_uuid_list_asserts_when_size_is_not_a_multiple)
+    {
+        std::array<uint8_t, 3> uuids = { 0x34, 0x12, 0x78 };
+
+        EXPECT_DEATH(formatter.AppendListOfServicesUuid(GapAdvertisementDataType::completeListOf16BitUuids, infra::MakeByteRange(uuids)), "");
+    }
+
+    TEST_F(GapAdvertisementFormatterTest, append_service_uuid_list_asserts_on_empty_list)
+    {
+        EXPECT_DEATH(formatter.AppendListOfServicesUuid(GapAdvertisementDataType::completeListOf16BitUuids, infra::ConstByteRange()), "");
+    }
+
+    TEST_F(GapAdvertisementFormatterTest, append_service_uuid_list_asserts_on_overflow)
+    {
+        std::array<uint8_t, 16> uuids{};
+
+        formatter.AppendListOfServicesUuid(GapAdvertisementDataType::completeListOf128BitUuids, infra::MakeByteRange(uuids));
+
+        EXPECT_DEATH(formatter.AppendListOfServicesUuid(GapAdvertisementDataType::completeListOf128BitUuids, infra::MakeByteRange(uuids)), "");
+    }
+#endif
 }
