@@ -1,4 +1,5 @@
 #include "infra/stream/BufferingStreamReader.hpp"
+#include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/test/StreamMock.hpp"
 #include "gmock/gmock.h"
 
@@ -170,7 +171,7 @@ TEST_F(BufferingStreamReaderTest, Rewind_from_input_to_input)
     EXPECT_CALL(input, Rewind(99));
     reader.Rewind(3);
     std::array<uint8_t, 1> inputData2{ 4 };
-    EXPECT_CALL(input, PeekContiguousRange(1)).WillOnce(testing::Invoke([&](std::size_t start)
+    EXPECT_CALL(input, PeekContiguousRange(0)).WillOnce(testing::Invoke([&](std::size_t start)
         {
             return infra::MakeRange(inputData2);
         }));
@@ -231,4 +232,22 @@ TEST_F(BufferingStreamReaderTest, destruction_stores_input_until_empty)
     infra::ReConstruct(reader, buffer, input);
 
     ExpectBuffer({ 1, 2, 3, 3 });
+}
+
+TEST(BufferingStreamReaderWithInputTest, Peek_after_Extract_from_input_returns_next_data)
+{
+    infra::BoundedDeque<uint8_t>::WithMaxSize<4> buffer{ std::initializer_list<uint8_t>{ 1, 2 } };
+    std::array<uint8_t, 3> inputData{ { 3, 4, 5 } };
+    infra::ByteInputStreamReader input(inputData);
+    infra::BufferingStreamReader reader(buffer, input);
+    infra::StreamErrorPolicy errorPolicy(infra::noFail);
+
+    std::array<uint8_t, 3> data{};
+    reader.Extract(data, errorPolicy);
+
+    EXPECT_THAT(data, testing::ElementsAre(1, 2, 3));
+    EXPECT_THAT(reader.Peek(errorPolicy), testing::Eq(4));
+    EXPECT_THAT(reader.PeekContiguousRange(0), testing::ElementsAre(4, 5));
+    EXPECT_THAT(reader.PeekContiguousRange(1), testing::ElementsAre(5));
+    EXPECT_THAT(reader.PeekContiguousRange(2), testing::IsEmpty());
 }
