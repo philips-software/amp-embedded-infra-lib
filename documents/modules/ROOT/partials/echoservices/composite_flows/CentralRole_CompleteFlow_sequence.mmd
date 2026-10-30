@@ -11,8 +11,7 @@ sequenceDiagram
     rect rgb(230, 230, 240)
         note over App, Peripheral: 1. Configuration (optional)
         opt App overrides the default security profile
-            App->>Node: GapCentral.SetSecurityMode(<br>mode=mode1, level=authenticatedPairing)
-            App->>Node: GapCentral.SetIoCapabilities(displayYesNo)
+            App->>Node: GapCentral.SetSecurityPreferences(<br>secureConnections=supported, mitm=enforced,<br>ioCapabilities=displayYesNo)
         end
         Note over App: If skipped, the Node uses the platform defaults configured at build time.
     end
