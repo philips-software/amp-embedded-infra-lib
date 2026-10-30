@@ -26,6 +26,35 @@ TEST(ProtoParserTest, GetVarInt_largest)
     EXPECT_EQ(std::numeric_limits<uint64_t>::max(), parser.GetVarInt());
 }
 
+class ProtoParserMalformedVarIntTest
+    : public testing::TestWithParam<std::vector<uint8_t>>
+{};
+
+TEST_P(ProtoParserMalformedVarIntTest, GetVarInt_reports_format_error)
+{
+    infra::StdVectorInputStream::WithStorage stream(std::in_place, GetParam(), infra::softFail);
+    infra::ProtoParser parser(stream);
+
+    parser.GetVarInt();
+    EXPECT_TRUE(parser.FormatFailed());
+}
+
+INSTANTIATE_TEST_SUITE_P(ProtoParserMalformedVarIntTest, ProtoParserMalformedVarIntTest,
+    testing::Values(
+        std::vector<uint8_t>{ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x81, 0x01 },
+        std::vector<uint8_t>{ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x02 }));
+
+TEST(ProtoParserTest, GetVarInt_on_incomplete_input_does_not_report_format_error)
+{
+    infra::StdVectorInputStream::WithStorage stream(std::in_place, std::vector<uint8_t>{ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }, infra::softFail);
+    infra::StreamErrorPolicy formatErrorPolicy(infra::softFail);
+    infra::ProtoParser parser(stream, formatErrorPolicy);
+
+    parser.GetVarInt();
+    EXPECT_TRUE(stream.Failed());
+    EXPECT_FALSE(parser.FormatFailed());
+}
+
 TEST(ProtoParserTest, GetFixed32)
 {
     infra::StdVectorInputStream::WithStorage stream(std::in_place, std::vector<uint8_t>{ 1, 0, 0, 0 });
@@ -90,6 +119,46 @@ TEST(ProtoParserTest, GetField_on_unknown_type_reports_error)
 
     infra::ProtoParser::Field field = parser.GetField();
     EXPECT_TRUE(stream.Failed());
+}
+
+TEST(ProtoParserTest, GetPartialField_with_key_exceeding_32_bits_reports_format_error)
+{
+    infra::StdVectorInputStream::WithStorage stream(std::in_place, std::vector<uint8_t>{ 0x88, 0x80, 0x80, 0x80, 0x10, 5 }, infra::softFail);
+    infra::ProtoParser parser(stream);
+
+    parser.GetPartialField();
+    EXPECT_TRUE(parser.FormatFailed());
+}
+
+TEST(ProtoParserTest, GetPartialField_with_length_exceeding_32_bits_reports_format_error)
+{
+    infra::StdVectorInputStream::WithStorage stream(std::in_place, std::vector<uint8_t>{ (1 << 3) | 2, 0x80, 0x80, 0x80, 0x80, 0x10, 1 << 3, 5 }, infra::softFail);
+    infra::ProtoParser parser(stream);
+
+    parser.GetPartialField();
+    EXPECT_TRUE(parser.FormatFailed());
+}
+
+TEST(ProtoParserTest, GetPartialField_with_split_key_does_not_report_format_error)
+{
+    infra::StdVectorInputStream::WithStorage stream(std::in_place, std::vector<uint8_t>{ 0xfa, 0xff, 0xff, 0xff }, infra::softFail);
+    infra::StreamErrorPolicy formatErrorPolicy(infra::softFail);
+    infra::ProtoParser parser(stream, formatErrorPolicy);
+
+    parser.GetPartialField();
+    EXPECT_TRUE(stream.Failed());
+    EXPECT_FALSE(parser.FormatFailed());
+}
+
+TEST(ProtoParserTest, GetPartialField_with_split_length_does_not_report_format_error)
+{
+    infra::StdVectorInputStream::WithStorage stream(std::in_place, std::vector<uint8_t>{ 0x0a, 0xff, 0xff, 0xff, 0xff }, infra::softFail);
+    infra::StreamErrorPolicy formatErrorPolicy(infra::softFail);
+    infra::ProtoParser parser(stream, formatErrorPolicy);
+
+    parser.GetPartialField();
+    EXPECT_TRUE(stream.Failed());
+    EXPECT_FALSE(parser.FormatFailed());
 }
 
 TEST(ProtoParserTest, too_short_string_is_reported_on_stream)
