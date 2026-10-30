@@ -4,6 +4,7 @@
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include <cstdio>
 #include <stdexcept>
 
 class EventDispatcherTest
@@ -189,3 +190,51 @@ TEST_F(EventDispatcherTest, scheduled_action_can_throw)
     EXPECT_THROW(ExecuteAllActions(), std::runtime_error);
     EXPECT_NO_THROW(ExecuteAllActions());
 }
+
+namespace
+{
+    bool reportCopies = false;
+
+    struct CopyReporter
+    {
+        CopyReporter() = default;
+
+        CopyReporter(const CopyReporter&)
+        {
+            if (reportCopies)
+                std::fputs("action copied", stderr);
+        }
+
+        CopyReporter& operator=(const CopyReporter&) = default;
+    };
+}
+
+class EventDispatcherWithFullQueueTest
+    : public testing::Test
+    , public infra::EventDispatcher::WithSize<2>
+{
+public:
+    EventDispatcherWithFullQueueTest()
+    {
+        infra::EventDispatcher::Instance().Schedule([]() {});
+        infra::EventDispatcher::Instance().Schedule([]() {});
+    }
+};
+
+#ifndef EMIL_MUTATION_TESTING
+TEST_F(EventDispatcherWithFullQueueTest, Schedule_aborts_before_writing_into_occupied_slot)
+{
+    CopyReporter reporter;
+    infra::Function<void()> action = [reporter]()
+    {
+        (void)reporter;
+    };
+
+    EXPECT_DEATH(
+        {
+            reportCopies = true;
+            infra::EventDispatcher::Instance().Schedule(action);
+        },
+        testing::Not(testing::HasSubstr("action copied")));
+}
+#endif
