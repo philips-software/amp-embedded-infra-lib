@@ -99,7 +99,7 @@ include::partial$echoservices/gap_central/GapCentral_Connect_sequence.mmd[]
 
 *Allowed states:* connected.
 
-*Pre-conditions:* optional `SetSecurityMode` and `SetIoCapabilities` (consumed at SMP start to select the pairing method).
+*Pre-conditions:* optional `SetSecurityPreferences` (consumed at SMP start to select the pairing method).
 
 Secures the connection to the currently connected peripheral. Two paths are possible:
 
@@ -120,36 +120,19 @@ If the peripheral sends a security request first, this procedure runs automatica
 include::partial$echoservices/gap_central/GapCentral_PairAndBond_sequence.mmd[]
 ....
 
-=== SetSecurityMode
+=== SetSecurityPreferences
 
 *Allowed states:* standby.
 
-Fire-and-forget, no response callback. Should be called once during initialization before any connections are made.
+Fire-and-forget, no response callback. Configures LE Secure Connections support, MITM protection, and the local I/O capabilities. Should be called during initialization before connecting or pairing.
 
-*Security mode is a pairing-time requirement, not a Connect-time filter.* Setting a required security level does not prevent the underlying `Connect` from succeeding. It prevents *pairing* from completing with peripherals whose IoCapabilities cannot satisfy the required level. Observable sequence when the peripheral cannot meet the level:
+Security preferences are pairing-time requirements, not Connect-time filters. Setting a required security level does not prevent the underlying `Connect` from succeeding. It can cause *pairing* to fail with `authenticationRequirementsNotMet` when the peripheral cannot satisfy the requested security level. The link stays connected on SMP failure; the App can call `Standby()` to terminate it.
 
-1. `Connect(...)` -> `CurrentState(initiating)` -> `CurrentState(connected)` (the connection is established normally).
-2. `PairAndBond()` (or a peripheral-initiated security request that auto-triggers PairAndBond) starts SMP negotiation.
-3. Central detects the peripheral's IoCapabilities cannot satisfy the required MITM level.
-4. `PairingResult(pairedSuccessfully=false, reason=authenticationRequirementsNotMet)`.
-5. The link stays connected on SMP failure. The App typically calls `Standby()` (or the peripheral disconnects voluntarily on receiving the SMP Pairing Failed PDU), producing `CurrentState(standby)` via one of those paths, not automatic on pairing failure per se.
-
-If the App wants to reject connections to capability-mismatched peripherals up-front, it must decide before calling `Connect` (e.g. by inspecting scan-response data or a prior bond entry). The Node cannot pre-empt the connection based on security mode.
+The selected I/O capabilities help determine the pairing method (Just Works, Passkey Entry, or Numeric Comparison) and whether user interaction is needed. When preferences are omitted, the HAL defaults apply.
 
 [mermaid]
 ....
-include::partial$echoservices/gap_central/GapCentral_SetSecurityMode_sequence.mmd[]
-....
-
-=== SetIoCapabilities
-
-*Allowed states:* standby.
-
-Fire-and-forget, no response callback. Should be called once during initialization before any pairing takes place. The selected capability drives the pairing method during `PairAndBond` (Just Works, Passkey Entry, or Numeric Comparison).
-
-[mermaid]
-....
-include::partial$echoservices/gap_central/GapCentral_SetIoCapabilities_sequence.mmd[]
+include::partial$echoservices/gap_central/GapCentral_SetSecurityPreferences_sequence.mmd[]
 ....
 
 === NumericComparisonConfirm

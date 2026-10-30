@@ -49,35 +49,6 @@ message State
     Event value = 1;
 }
 
-// Based on Bluetooth Core Specification v6.3, Vol 3, Part H, Section 2.3.2
-message IoCapabilities
-{
-    enum IoCapabilitiesEnum
-    {
-        none = 0;
-        display = 1;
-        displayYesNo = 2;
-        keyboard = 3;
-        keyboardDisplay = 4;
-    }
-
-    IoCapabilitiesEnum ioCaps = 1;
-}
-
-// Based on Bluetooth Core Specification v6.3, Vol 3, Part C, Section 10.2
-message SecurityLevel
-{
-    enum SecurityLevelEnum
-    {
-        none = 0;
-        unauthenticatedPairing = 1;
-        authenticatedPairing = 2;
-        authenticatedPairingWithLE = 3;
-    }
-
-    SecurityLevelEnum level = 1;
-}
-
 // Based on Bluetooth Core Specification v6.3, Vol 6, Part B, Section 1.3
 message AddressType
 {
@@ -423,27 +394,6 @@ service GapPeripheralReadiness {
 // GAP CENTRAL
 // ==================================================
 
-// Based on Bluetooth Core Specification v6.3, Vol 3, Part C, Section 10.2
-message SecurityModeAndLevel
-{
-    enum SecurityLevelEnum
-    {
-        none = 0;
-        unauthenticatedPairing = 1;
-        authenticatedPairing = 2;
-        authenticatedPairingWithLE = 3;
-    }
-
-    enum SecurityModeEnum
-    {
-        mode1 = 0;
-        mode2 = 1;
-    }
-
-    SecurityModeEnum mode = 1;
-    SecurityLevelEnum level = 2;
-}
-
 message ConnectionParameters
 {
     // The address of the peripheral to connect to, as discovered during scanning (e.g. from DiscoveredDevice).
@@ -589,7 +539,7 @@ service GapCentral
     //   If the peripheral sends a security request, this procedure is triggered automatically.
     //   1. If there is no pre-existing bond, then pairing, encrypting, and bonding (storing the keys) will take place.
     //   2. If there is a pre-existing bond, then the connection will be encrypted using the existing keys.
-    // Pre-conditions: Optional SetSecurityMode and SetIoCapabilities (both consumed at SMP start to select the pairing method).
+    // Pre-conditions: Optional SetSecurityPreferences (consumed at SMP start to select the pairing method).
     // Response Sequences:
     //   On successful pairing with new bond: GapCentralResponse.AuthenticationRequired (if applicable) -> GapCentralResponse.NumberOfBondsChanged -> GapCentralResponse.PairingResult
     //   On successful re-encryption with existing bond: GapCentralResponse.NumberOfBondsChanged -> GapCentralResponse.PairingResult
@@ -598,19 +548,12 @@ service GapCentral
     rpc PairAndBond(Nothing) returns (Nothing) { option (method_id) = 6; }
 
     // Allowed states: standby
-    // Description: Configures the minimum security mode and level required for connections.
+    // Description: Configures LE Secure Connections support, MITM protection, and I/O capabilities.
     //   Should be called once during initialization before any connections are made.
-    //   If the connected peripheral does not meet the required security level, the PairAndBond procedure fails with PairingResult(pairedSuccessfully=false, reason=authenticationRequirementsNotMet).
-    //   The link stays connected on SMP failure; the App must call Standby (or wait for the peer to disconnect) to reach CurrentState(standby).
-    //   The Connect procedure itself is unaffected: the link reaches CurrentState(connected) regardless of capability match.
-    //   Security mode is a pairing-time requirement, not a Connect-time filter.
-    rpc SetSecurityMode(SecurityModeAndLevel) returns (Nothing) { option (method_id) = 7; }
-
-    // Allowed in link layer states: standby
-    // Configures the I/O capabilities of this device, used to determine the pairing method during PairAndBond.
-    // Should be called once during initialization before any pairing takes place.
-    // The selected capabilities influence which pairing method is chosen (e.g. Just Works, Passkey Entry, or Numeric Comparison).
-    rpc SetIoCapabilities(IoCapabilities) returns (Nothing) { option (method_id) = 8; }
+    //   Security requirements are pairing-time requirements, not Connect-time filters.
+    //   If the connected peripheral does not meet the required security level, PairAndBond fails with
+    //   PairingResult(pairedSuccessfully=false, reason=authenticationRequirementsNotMet).
+    rpc SetSecurityPreferences(SecurityPreference) returns (Nothing) { option (method_id) = 7; }
 
     // Allowed states: connected
     // Pre-conditions: A prior GapCentralResponse.AuthenticationRequired callback with isNumericComparison=false (Passkey Entry method).
@@ -700,7 +643,7 @@ service GapCentralResponse {
     // Expected states: connected
     // Triggered by: GapCentral.PairAndBond (during pairing, when negotiated pairing method requires user interaction)
     // Description: Requests user interaction during an active pairing procedure.
-    //   This will only be triggered when the negotiated pairing method requires it, which is determined by the I/O capabilities configured via GapCentral.SetIoCapabilities
+    //   This will only be triggered when the negotiated pairing method requires it, which is determined by the I/O capabilities configured via GapCentral.SetSecurityPreferences
     //   Not all pairing methods require user interaction (e.g. Just Works will never trigger this).
     //   Must be responded to with GapCentral.NumericComparisonConfirm when AuthenticationRequest.isNumericComparison is true,
     //   or GapCentral.AuthenticateWithPasskey when AuthenticationRequest.isNumericComparison is false.
