@@ -124,7 +124,7 @@ include::partial$echoservices/gap_central/GapCentral_PairAndBond_sequence.mmd[]
 
 *Allowed states:* standby.
 
-Fire-and-forget, no response callback. Configures LE Secure Connections support, MITM protection, and the local I/O capabilities. Should be called during initialization before connecting or pairing.
+Fire-and-forget, no response callback. Configures LE Secure Connections support, MITM protection, and the local I/O capabilities. Should be called once during initialization before any connections are made.
 
 Security preferences are pairing-time requirements, not Connect-time filters. Setting a required security level does not prevent the underlying `Connect` from succeeding. It can cause *pairing* to fail with `authenticationRequirementsNotMet` when the peripheral cannot satisfy the requested security level. The link stays connected on SMP failure; the App can call `Standby()` to terminate it.
 
