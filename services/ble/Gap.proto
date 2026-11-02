@@ -297,7 +297,12 @@ service GapPeripheral
     rpc GetIdentityAddress(Nothing) returns (Nothing) { option (method_id) = 7; }
 
     // Allowed states: standby
-    // Description: When a SecurityPreference is not supported by the configuration it results in an assertion
+    // Description: Configures LE Secure Connections support, MITM protection, and I/O capabilities.
+    //   Should be called once during initialization before advertising or connecting.
+    //   Security requirements are pairing-time requirements, not Connect-time filters.
+    //   If the connected central does not meet the required security level, pairing fails with
+    //   PairingResult(pairedSuccessfully=false, reason=authenticationRequirementsNotMet).
+    //   When a SecurityPreference is not supported by the configuration it results in an assertion.
     rpc SetSecurityPreferences(SecurityPreference) returns (Nothing) { option (method_id) = 8; }
 
     // Allowed states: standby
@@ -548,6 +553,7 @@ service GapCentral
     //   Security requirements are pairing-time requirements, not Connect-time filters.
     //   If the connected peripheral does not meet the required security level, PairAndBond fails with
     //   PairingResult(pairedSuccessfully=false, reason=authenticationRequirementsNotMet).
+    //   When a SecurityPreference is not supported by the configuration it results in an assertion.
     rpc SetSecurityPreferences(SecurityPreference) returns (Nothing) { option (method_id) = 7; }
 
     // Allowed states: connected
