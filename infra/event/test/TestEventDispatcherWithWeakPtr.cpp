@@ -4,6 +4,7 @@
 #include "infra/util/test_helper/MockCallback.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include <cstdio>
 #include <stdexcept>
 
 class EventDispatcherWithWeakPtrTest
@@ -185,3 +186,51 @@ TEST_F(EventDispatcherWithWeakPtrDetailedTest, scheduled_action_can_throw)
     EXPECT_THROW(ExecuteAllActions(), std::runtime_error);
     EXPECT_NO_THROW(ExecuteAllActions());
 }
+
+namespace
+{
+    bool reportCopies = false;
+
+    struct CopyReporter
+    {
+        CopyReporter() = default;
+
+        CopyReporter(const CopyReporter&)
+        {
+            if (reportCopies)
+                std::fputs("action copied", stderr);
+        }
+
+        CopyReporter& operator=(const CopyReporter&) = default;
+    };
+}
+
+class EventDispatcherWithWeakPtrWithFullQueueTest
+    : public testing::Test
+    , public infra::EventDispatcherWithWeakPtr::WithSize<2>
+{
+public:
+    EventDispatcherWithWeakPtrWithFullQueueTest()
+    {
+        infra::EventDispatcherWithWeakPtr::Instance().Schedule([]() {});
+        infra::EventDispatcherWithWeakPtr::Instance().Schedule([]() {});
+    }
+};
+
+#ifndef EMIL_MUTATION_TESTING
+TEST_F(EventDispatcherWithWeakPtrWithFullQueueTest, Schedule_aborts_before_writing_into_occupied_slot)
+{
+    CopyReporter reporter;
+    infra::Function<void()> action = [reporter]()
+    {
+        (void)reporter;
+    };
+
+    EXPECT_DEATH(
+        {
+            reportCopies = true;
+            infra::EventDispatcherWithWeakPtr::Instance().Schedule(action);
+        },
+        testing::Not(testing::HasSubstr("action copied")));
+}
+#endif
