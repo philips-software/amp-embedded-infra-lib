@@ -3,6 +3,7 @@
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/BoundedVector.hpp"
 #include "infra/util/ByteRange.hpp"
+#include "mbedtls/platform_time.h"
 #include "services/network/Address.hpp"
 #include "services/util/Sha256.hpp"
 
@@ -34,6 +35,12 @@ namespace services
     {
         mbedtls_ssl_session_init(&session);
         clientSessionDeserialized = mbedtls_ssl_session_load(&session, reference.serializedSession.begin(), reference.serializedSession.size()) == 0;
+
+#if defined(MBEDTLS_SSL_PROTO_TLS1_3)
+        // Clean unknown age; rely on the server to reject an expired ticket
+        if (clientSessionDeserialized)
+            session.MBEDTLS_PRIVATE(ticket_reception_time) = mbedtls_ms_time();
+#endif
     }
 
     MbedTlsSession::~MbedTlsSession()

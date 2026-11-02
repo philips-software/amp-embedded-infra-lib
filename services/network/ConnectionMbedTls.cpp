@@ -10,7 +10,7 @@ extern "C"
 
     mbedtls_ms_time_t mbedtls_ms_time(void)
     {
-        return static_cast<mbedtls_ms_time_t>(std::chrono::duration_cast<std::chrono::milliseconds>(infra::Now(3).time_since_epoch()).count());
+        return static_cast<mbedtls_ms_time_t>(std::chrono::duration_cast<std::chrono::milliseconds>(infra::Now().time_since_epoch()).count());
     }
 #endif
 
