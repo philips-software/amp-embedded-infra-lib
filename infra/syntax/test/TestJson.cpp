@@ -194,6 +194,20 @@ TEST(JsonTokenizerTest, clean_json)
     EXPECT_EQ(R"({"key":"value","key2":1234,"key3":true,"key4":-42.1})", data);
 }
 
+TEST(JsonTokenizerTest, clean_json_does_not_overwrite_unread_input)
+{
+    infra::BoundedString::WithStorage<512> data(R"([1.,1.,1.])");
+    infra::CleanJsonContents(data);
+    EXPECT_THAT(infra::AsStdString(data), testing::StrEq(R"([1.,1.,1.])"));
+}
+
+TEST(JsonTokenizerTest, clean_json_normalizes_numbers_when_there_is_room)
+{
+    infra::BoundedString::WithStorage<512> data(R"([ 1., 1., 1. ])");
+    infra::CleanJsonContents(data);
+    EXPECT_THAT(infra::AsStdString(data), testing::StrEq(R"([1.0,1.0,1.0])"));
+}
+
 TEST(JsonTokenizerTest, ValidJsonObject)
 {
     EXPECT_TRUE(infra::ValidJsonObject(R"({ "key" : "value", "key2" : 1234, "key3" : true })"));
