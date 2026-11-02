@@ -112,6 +112,9 @@ namespace main_
 #ifdef EMIL_USE_MBEDTLS
         struct WithCryptoMbedTls;
 #endif
+#ifdef EMIL_USE_CUSTOM_CRYPTO
+        struct WithCustomCrypto;
+#endif
     };
 
 #ifdef EMIL_USE_MBEDTLS
