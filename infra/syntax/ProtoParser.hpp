@@ -32,6 +32,9 @@ namespace infra
         std::vector<uint8_t> GetUnboundedBytes();
 
     private:
+        infra::ConstByteRange GetReference();
+
+    private:
         infra::LimitedStreamReader limitedReader;
         infra::DataInputStream input;
         infra::StreamErrorPolicy& formatErrorPolicy;
