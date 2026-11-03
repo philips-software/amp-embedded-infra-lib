@@ -295,6 +295,63 @@ TEST_F(ConnectionMbedTlsTest, mbedtls_session_fails_deserialize)
     EXPECT_FALSE(sessionDeserialize.IsDeserialized());
 }
 
+#if defined(MBEDTLS_SSL_PROTO_TLS1_3)
+class MbedTlsSessionTest
+    : public testing::Test
+{
+public:
+    void PersistTls13ClientSession(mbedtls_ms_time_t ticketReceptionTime, network::MbedTlsPersistedSession& persisted)
+    {
+        mbedtls_ssl_session session;
+        mbedtls_ssl_session_init(&session);
+        session.MBEDTLS_PRIVATE(endpoint) = MBEDTLS_SSL_IS_CLIENT;
+        session.MBEDTLS_PRIVATE(tls_version) = MBEDTLS_SSL_VERSION_TLS1_3;
+        session.MBEDTLS_PRIVATE(ciphersuite) = MBEDTLS_TLS1_3_AES_128_GCM_SHA256;
+        session.MBEDTLS_PRIVATE(ticket_lifetime) = ticketLifetimeInSeconds;
+        session.MBEDTLS_PRIVATE(ticket_reception_time) = ticketReceptionTime;
+
+        std::size_t length = 0;
+        persisted.clientSessionObtained = true;
+        persisted.serializedSession.resize(persisted.serializedSession.max_size());
+        auto result = mbedtls_ssl_session_save(&session, persisted.serializedSession.begin(), persisted.serializedSession.size(), &length);
+        persisted.serializedSession.resize(length);
+        mbedtls_ssl_session_free(&session);
+
+        ASSERT_THAT(result, testing::Eq(0));
+    }
+
+    mbedtls_ms_time_t TicketReceptionTimeOf(services::MbedTlsSession& session)
+    {
+        network::MbedTlsPersistedSession reserialized;
+        services::MbedTlsSession::Serialize(session, reserialized);
+
+        mbedtls_ssl_session loaded;
+        mbedtls_ssl_session_init(&loaded);
+        mbedtls_ssl_session_load(&loaded, reserialized.serializedSession.begin(), reserialized.serializedSession.size());
+        auto receptionTime = loaded.MBEDTLS_PRIVATE(ticket_reception_time);
+        mbedtls_ssl_session_free(&loaded);
+
+        return receptionTime;
+    }
+
+    const uint32_t ticketLifetimeInSeconds = 604800;
+    const mbedtls_ms_time_t oneHourInMilliseconds = 3600000;
+};
+
+TEST_F(MbedTlsSessionTest, deserialized_session_restarts_ticket_age_received_in_previous_run)
+{
+    network::MbedTlsPersistedSession persisted;
+    PersistTls13ClientSession(mbedtls_ms_time() + oneHourInMilliseconds, persisted);
+
+    auto before = mbedtls_ms_time();
+    services::MbedTlsSession session{ persisted };
+    auto after = mbedtls_ms_time();
+
+    ASSERT_THAT(session.IsDeserialized(), testing::IsTrue());
+    EXPECT_THAT(TicketReceptionTimeOf(session), testing::AllOf(testing::Ge(before), testing::Le(after)));
+}
+#endif
+
 class ConnectionWithNameResolverMbedTlsTest
     : public testing::Test
     , public infra::ClockFixture
