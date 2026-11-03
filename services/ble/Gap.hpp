@@ -184,7 +184,6 @@ namespace services
             SecuritySupport secureConnections;
             SecuritySupport mitm;
             IoCapabilities ioCapabilities;
-            bool outOfBandSupported;
         };
 
         // 1. If there is a pre-existing bond, then the connection will be encrypted.
