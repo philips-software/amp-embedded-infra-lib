@@ -44,7 +44,10 @@ namespace infra
 
     ConstByteRange infra::LimitedStreamReader::PeekContiguousRange(std::size_t start)
     {
-        return input.PeekContiguousRange(start);
+        if (start >= length)
+            return ConstByteRange();
+
+        return infra::Head(input.PeekContiguousRange(start), length - start);
     }
 
     bool LimitedStreamReader::Empty() const
@@ -86,8 +89,9 @@ namespace infra
     {
         errorPolicy.ReportResult(length >= range.size());
         range.shrink_from_back_to(length);
-        length -= range.size();
+        const auto start = input->ConstructSaveMarker();
         input->Extract(range, errorPolicy);
+        length -= input->ConstructSaveMarker() - start;
     }
 
     uint8_t LimitedStreamReaderWithRewinding::Peek(StreamErrorPolicy& errorPolicy)
@@ -109,7 +113,10 @@ namespace infra
 
     ConstByteRange infra::LimitedStreamReaderWithRewinding::PeekContiguousRange(std::size_t start)
     {
-        return input->PeekContiguousRange(start);
+        if (start >= length)
+            return ConstByteRange();
+
+        return infra::Head(input->PeekContiguousRange(start), length - start);
     }
 
     bool LimitedStreamReaderWithRewinding::Empty() const
