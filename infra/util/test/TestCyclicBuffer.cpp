@@ -192,3 +192,34 @@ TEST_F(CyclicBufferTest, PopIntoLessBeyondEndWrapped)
     EXPECT_EQ(buffer.Size(), 1);
     EXPECT_THAT(buffer.ContiguousRange(), testing::ElementsAreArray({ 7 }));
 }
+
+#ifndef EMIL_MUTATION_TESTING
+TEST_F(CyclicBufferTest, PushWhenFullAborts)
+{
+    buffer.Push(std::vector<uint8_t>{ 1, 2, 3, 4 });
+
+    EXPECT_DEATH(buffer.Push(5), "");
+}
+
+TEST_F(CyclicBufferTest, PushRangeLargerThanAvailableAborts)
+{
+    buffer.Push(std::vector<uint8_t>{ 1, 2, 3 });
+
+    EXPECT_DEATH(buffer.Push(std::vector<uint8_t>{ 4, 5 }), "");
+}
+
+TEST_F(CyclicBufferTest, PopMoreThanSizeAborts)
+{
+    buffer.Push(std::vector<uint8_t>{ 1 });
+
+    EXPECT_DEATH(buffer.Pop(2), "");
+}
+
+TEST_F(CyclicBufferTest, PopIntoMoreThanSizeAborts)
+{
+    buffer.Push(std::vector<uint8_t>{ 1 });
+
+    std::array<uint8_t, 2> destination;
+    EXPECT_DEATH(buffer.PopInto(infra::MakeRange(destination)), "");
+}
+#endif
