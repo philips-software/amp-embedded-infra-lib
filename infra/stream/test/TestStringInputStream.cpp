@@ -1,5 +1,6 @@
 #include "infra/stream/StringInputStream.hpp"
 #include "infra/util/BoundedString.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include <cstdint>
 
@@ -112,6 +113,15 @@ TEST(StringInputStreamTest, Consume)
     EXPECT_EQ(string, infra::ByteRangeAsString(stream.PeekContiguousRange(0)));
     stream.Consume(stream.PeekContiguousRange().size());
     EXPECT_EQ("", infra::ByteRangeAsString(stream.PeekContiguousRange(0)));
+}
+
+TEST(StringInputStreamTest, PeekContiguousRange_beyond_end_is_empty)
+{
+    infra::BoundedConstString string("ab");
+    infra::StringInputStream stream(string);
+
+    EXPECT_THAT(stream.PeekContiguousRange(2), testing::IsEmpty());
+    EXPECT_THAT(stream.PeekContiguousRange(3), testing::IsEmpty());
 }
 
 TEST(StringInputStreamTest, FromHex)
