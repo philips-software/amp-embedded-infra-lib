@@ -9,6 +9,7 @@
 #include "services/util/SesameCryptoMbedTls.hpp"
 #endif
 #include "services/util/SesameSecured.hpp"
+#include <cstdint>
 
 namespace services
 {
@@ -43,6 +44,7 @@ namespace services
             infra::ConstByteRange dsaCertificate;
             infra::ConstByteRange dsaCertificatePrivateKey;
             infra::ConstByteRange rootCaCertificate;
+            uint32_t dsaCertificatePrivateKeyId = 0;
         };
 
 #ifdef EMIL_USE_MBEDTLS
