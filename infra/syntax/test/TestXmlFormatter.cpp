@@ -1,4 +1,5 @@
 #include "infra/syntax/XmlFormatter.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 TEST(XmlFormatter, usage_example)
@@ -135,4 +136,37 @@ TEST(XmlFormatter, inserts_escaped_contents)
     }
 
     EXPECT_EQ(R"(<?xml version="1.0" encoding="ISO-8859-1" ?><root>&lt;&gt;&amp;&apos;&quot;</root>)", string);
+}
+
+TEST(XmlFormatter, inserts_escaped_attribute_value)
+{
+    infra::BoundedString::WithStorage<128> string;
+    infra::XmlFormatter::WithStringStream formatter(std::in_place, string);
+    {
+        formatter.Tag("root").Attribute("name", "<>&'\"");
+    }
+
+    EXPECT_THAT(string, testing::Eq(R"(<?xml version="1.0" encoding="ISO-8859-1" ?><root name="&lt;&gt;&amp;&apos;&quot;" />)"));
+}
+
+TEST(XmlFormatter, preserves_whitespace_in_attribute_value)
+{
+    infra::BoundedString::WithStorage<128> string;
+    infra::XmlFormatter::WithStringStream formatter(std::in_place, string);
+    {
+        formatter.Tag("root").Attribute("name", "a\tb\rc\nd");
+    }
+
+    EXPECT_THAT(string, testing::Eq("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?><root name=\"a\tb\rc\nd\" />"));
+}
+
+TEST(XmlFormatter, preserves_high_bit_bytes_in_attribute_value)
+{
+    infra::BoundedString::WithStorage<128> string;
+    infra::XmlFormatter::WithStringStream formatter(std::in_place, string);
+    {
+        formatter.Tag("root").Attribute("name", "caf\xE9");
+    }
+
+    EXPECT_THAT(string, testing::Eq("<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?><root name=\"caf\xE9\" />"));
 }
