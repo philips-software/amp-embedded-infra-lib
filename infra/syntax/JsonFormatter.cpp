@@ -309,7 +309,7 @@ namespace infra
     void JsonObjectFormatter::Add(JsonString tagName, JsonBiggerInt tag)
     {
         InsertSeparation();
-        *stream << '"' << tagName << R"(":)";
+        *stream << '"' << tagName.Raw() << R"(":)";
         if (tag.Negative())
             *stream << "-";
         *stream << tag.Value();
