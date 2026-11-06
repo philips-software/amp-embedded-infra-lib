@@ -187,6 +187,9 @@ namespace services
                 if (!TraceOneMessage())
                     break;
             }
+
+            auto writerToRelease = std::move(this->writerToRelease);
+            writerToRelease = nullptr;
         }
 
         bool TracingEchoOnStreamsDescendantHelper::TraceOneMessage()
@@ -241,10 +244,16 @@ namespace services
         }
 
         TracingEchoOnStreamsDescendantHelper::TracingWriter::TracingWriter(infra::SharedPtr<infra::StreamWriter>&& delegate, TracingEchoOnStreamsDescendantHelper& echo)
-            : delegate(std::move(delegate))
+            : echo(echo)
+            , delegate(std::move(delegate))
             , writer(echo.writerBuffer)
             , skipping(echo.skipping)
         {}
+
+        TracingEchoOnStreamsDescendantHelper::TracingWriter::~TracingWriter()
+        {
+            echo.writerToRelease = std::move(delegate);
+        }
 
         void TracingEchoOnStreamsDescendantHelper::TracingWriter::Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy)
         {

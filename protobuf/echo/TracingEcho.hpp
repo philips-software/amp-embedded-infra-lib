@@ -114,6 +114,7 @@ namespace services
             {
             public:
                 TracingWriter(infra::SharedPtr<infra::StreamWriter>&& delegate, TracingEchoOnStreamsDescendantHelper& echo);
+                ~TracingWriter();
 
                 // Implementation of StreamWriter
                 void Insert(infra::ConstByteRange range, infra::StreamErrorPolicy& errorPolicy) override;
@@ -125,6 +126,7 @@ namespace services
                 infra::ByteRange Overwrite(std::size_t marker) override;
 
             private:
+                TracingEchoOnStreamsDescendantHelper& echo;
                 infra::SharedPtr<infra::StreamWriter> delegate;
                 infra::BoundedVectorStreamWriter writer;
                 uint32_t& skipping;
@@ -141,6 +143,7 @@ namespace services
                     SerializationDone();
                 } };
             ;
+            infra::SharedPtr<infra::StreamWriter> writerToRelease;
             infra::SharedPtr<MethodSerializer> serializer;
             infra::AccessedBySharedPtr serializerAccess{ [this]()
                 {
