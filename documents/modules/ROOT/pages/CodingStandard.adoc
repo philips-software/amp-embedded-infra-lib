@@ -123,8 +123,8 @@ This rule applies even to the first-level namespace. Other coding standards ofte
 [source,cpp]
 ----
 Timer::Timer()
-    : registered(false)
-    , nextTriggerTime()
+    : registered{ false }
+    , nextTriggerTime{}
 {}
 ----
 
@@ -420,7 +420,7 @@ struct Uart: hal::Uart::Name<Uart> {};
 struct C
 {
     C()
-        : member1(0)		// int32_ts are not initialized by default and therefore require
+        : member1{ 0 }		// int32_ts are not initialized by default and therefore require
     {}				        // explicit initialization
 
     int32_t member1;
@@ -550,6 +550,19 @@ TEST(MyTest, SecondTest)
 }
 ----
 
+*Rule 62.* Objects shall be initialized using `{ }` in favour of `( )`; this includes data members in the initialiser list. `( )` shall only be used when `{ }` would change the intended meaning of the initialization, i.e. when `{ }` would select a different constructor, such as one taking a `std::initializer_list`, or would result in a different value. Initialization using `=`, as in Rule 46, is not affected by this rule. Example:
+
+[source,cpp]
+----
+Rectangle rectangle{ 4, 3 };            // <-- correct
+Rectangle rectangle(4, 3);              // <-- incorrect
+
+std::vector<int32_t> values(3, 0);      // <-- correct: three elements with value 0
+std::vector<int32_t> values{ 3, 0 };    // <-- incorrect: two elements with values 3 and 0
+----
+
+*Rationale 17.* Initialization using `{ }` does not allow narrowing conversions, such as initializing an `int32_t` with a `float`, and cannot be mistaken for a function declaration: `Timer timer();` declares a function, while `Timer timer{};` defines an object.
+
 == Document Revision History
 [cols="10,15,20,40,15", options="header"]
 |====
@@ -637,8 +650,8 @@ namespace infra
     }
 
     CheatSheetExample::CheatSheetExample(uint8_t identifier)
-        : identifier(identifier)
-        , state(State::initializing)
+        : identifier{ identifier }
+        , state{ State::initializing }
     {}
 
     void CheatSheetExample::Operate()
