@@ -401,8 +401,8 @@ This rule applies even to the first-level namespace. Other coding standards ofte
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">Timer::Timer()
-    : registered(false)
-    , nextTriggerTime()
+    : registered{ false }
+    , nextTriggerTime{}
 {}</code></pre>
 </div>
 </div>
@@ -631,7 +631,7 @@ a = ( b + c ) * d;	// &lt;-- incorrect</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p><strong>Rule 37.</strong> When <code>{</code> and <code>}</code> are used on a single line to define a short array or a single statement lambda expression (see Rule 42) <code>{</code> shall be followed by a space and <code>}</code> shall be preceded by a space. Example:</p>
+<p><strong>Rule 37.</strong> When <code>{</code> and <code>}</code> are used on a single line to define a short array, to initialize an object, or to define a single statement lambda expression (see Rule 42) <code>{</code> shall be followed by a space and <code>}</code> shall be preceded by a space. Example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -754,13 +754,14 @@ When an <code>? :</code> expression is broken down over multiple lines, both <co
 </div>
 </div>
 <div class="paragraph">
-<p><strong>Rule 42.</strong> <code>{</code> and <code>}</code> shall be the single token in one line (except when <code>}</code> is followed by <code>;</code>), except when used to define short arrays, when used in a lambda expressions containing only a single statement, and when used in an empty definition. Example:</p>
+<p><strong>Rule 42.</strong> <code>{</code> and <code>}</code> shall be the single token in one line (except when <code>}</code> is followed by <code>;</code>), except when used to define short arrays, when used to initialize an object (see Rule 62), when used in a lambda expressions containing only a single statement, and when used in an empty definition. Example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">class C
 {
     std::array&lt;int32_t, 4&gt; a = { 0, 2, 8, 64 };	// &lt;-- short array
+    Rectangle rectangle{ 4, 3 };                // &lt;-- object initialization
 
     void F()
     {
@@ -811,7 +812,7 @@ When an <code>? :</code> expression is broken down over multiple lines, both <co
 <pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">struct C
 {
     C()
-        : member1(0)		// int32_ts are not initialized by default and therefore require
+        : member1{ 0 }		// int32_ts are not initialized by default and therefore require
     {}				        // explicit initialization
 
     int32_t member1;
@@ -974,6 +975,21 @@ TEST(MyTest, SecondTest)
 }</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p><strong>Rule 62.</strong> Objects shall be initialized using <code>{ }</code> in favour of <code>( )</code>; this includes data members in the initialiser list. <code>( )</code> shall only be used when <code>{ }</code> would change the intended meaning of the initialization, i.e. when <code>{ }</code> would select a different constructor, such as one taking a <code>std::initializer_list</code>, or would result in a different value. Initialization using <code>=</code>, as in Rule 46, is not affected by this rule. Example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">Rectangle rectangle{ 4, 3 };            // &lt;-- correct
+Rectangle rectangle(4, 3);              // &lt;-- incorrect
+
+std::vector&lt;int32_t&gt; values(3, 0);      // &lt;-- correct: three elements with value 0
+std::vector&lt;int32_t&gt; values{ 3, 0 };    // &lt;-- incorrect: two elements with values 3 and 0</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Rationale 17.</strong> Initialization using <code>{ }</code> does not allow narrowing conversions, such as initializing an <code>int32_t</code> with a <code>float</code>, and cannot be mistaken for a function declaration: <code>Timer timer();</code> declares a function, while <code>Timer timer{};</code> defines an object.</p>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -1104,8 +1120,8 @@ namespace infra
     }
 
     CheatSheetExample::CheatSheetExample(uint8_t identifier)
-        : identifier(identifier)
-        , state(State::initializing)
+        : identifier{ identifier }
+        , state{ State::initializing }
     {}
 
     void CheatSheetExample::Operate()
