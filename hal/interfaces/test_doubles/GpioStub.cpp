@@ -44,10 +44,20 @@ namespace hal
 
     void GpioPinStub::Config(PinConfigType config)
     {
-        input = true;
+        ReConfig(config);
     }
 
     void GpioPinStub::Config(PinConfigType config, bool startOutputState)
+    {
+        ReConfig(config, startOutputState);
+    }
+
+    void GpioPinStub::ReConfig(PinConfigType config)
+    {
+        input = true;
+    }
+
+    void GpioPinStub::ReConfig(PinConfigType config, bool startOutputState)
     {
         input = false;
         Set(startOutputState);

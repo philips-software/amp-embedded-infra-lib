@@ -45,64 +45,97 @@ namespace hal
 
         virtual void Config(PinConfigType config) = 0;
         virtual void Config(PinConfigType config, bool startOutputState) = 0;
+
+        virtual void ReConfig(PinConfigType config) = 0;
+        virtual void ReConfig(PinConfigType config, bool startOutputState) = 0;
+
         virtual void ResetConfig() = 0;
 
         virtual void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type = InterruptType::dispatched) = 0;
         virtual void DisableInterrupt() = 0;
     };
 
+    class GpioPinOwner
+    {
+    public:
+        GpioPinOwner() = default;
+        explicit GpioPinOwner(GpioPin& pin);
+
+        GpioPinOwner(const GpioPinOwner& other) = delete;
+        GpioPinOwner& operator=(const GpioPinOwner& other) = delete;
+
+        GpioPinOwner(GpioPinOwner&& other) noexcept(true);
+        GpioPinOwner& operator=(GpioPinOwner&& other) noexcept(true);
+
+    protected:
+        ~GpioPinOwner();
+
+    protected:
+        GpioPin& GetPin() const;
+        bool HasPin() const;
+
+    private:
+        GpioPin* pin{ nullptr };
+    };
+
     class InputPin
+        : public GpioPinOwner
     {
     public:
         explicit InputPin(GpioPin& pin);
+
+        explicit InputPin(GpioPinOwner&& pin) noexcept(true);
+        InputPin(InputPin&& other) noexcept(true);
+
         InputPin(const InputPin& other) = delete;
         InputPin& operator=(const InputPin& other) = delete;
-        ~InputPin();
 
         bool Get() const;
 
-        void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type = InterruptType::dispatched);
-        void DisableInterrupt();
-
-    private:
-        GpioPin& pin;
+        void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type = InterruptType::dispatched) const;
+        void DisableInterrupt() const;
     };
 
     class OutputPin
+        : public GpioPinOwner
     {
     public:
         explicit OutputPin(GpioPin& pin, bool startState = false);
+
+        OutputPin(GpioPinOwner&& pin, bool startState = false) noexcept(true);
+        OutputPin(OutputPin&& other, bool startState = false) noexcept(true);
+
         OutputPin(const OutputPin& other) = delete;
         OutputPin& operator=(const OutputPin& other) = delete;
-        ~OutputPin();
 
-        void Set(bool value);
+        void Set(bool value) const;
         bool GetOutputLatch() const;
-
-    private:
-        GpioPin& pin;
     };
 
     class TriStatePin
+        : public GpioPinOwner
     {
     public:
         explicit TriStatePin(GpioPin& pin);
         TriStatePin(GpioPin& pin, bool startOutputState);
+
+        explicit TriStatePin(GpioPinOwner&& pin) noexcept(true);
+        TriStatePin(TriStatePin&& other) noexcept(true);
+
+        TriStatePin(GpioPinOwner&& pin, bool startState) noexcept(true);
+        TriStatePin(TriStatePin&& other, bool startState) noexcept(true);
+
         TriStatePin(const TriStatePin& other) = delete;
         TriStatePin& operator=(const TriStatePin& other) = delete;
-        ~TriStatePin();
 
         bool Get() const;
         bool GetOutputLatch() const;
-        void Set(bool value);
-        void SetAsInput();
+        void Set(bool value) const;
+        void SetAsInput() const;
         bool IsInput() const;
 
-        void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type = InterruptType::dispatched);
-        void DisableInterrupt();
-
-    private:
-        GpioPin& pin;
+        void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type = InterruptType::dispatched) const;
+        void DisableInterrupt() const;
     };
 
     class DummyPin
@@ -114,9 +147,15 @@ namespace hal
         void Set(bool value) override;
         void SetAsInput() override;
         bool IsInput() const override;
+
         void Config(PinConfigType config) override;
         void Config(PinConfigType config, bool startOutputState) override;
+
+        void ReConfig(PinConfigType config) override;
+        void ReConfig(PinConfigType config, bool startOutputState) override;
+
         void ResetConfig() override;
+
         void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type = InterruptType::dispatched) override;
         void DisableInterrupt() override;
     };
