@@ -6,6 +6,31 @@
 #include <memory>
 #include <utility>
 
+struct GpioPinOwnerSpy : hal::GpioPinOwner
+{
+    using GpioPinOwner::GetPin;
+    using GpioPinOwner::GpioPinOwner;
+};
+
+TEST(GpioTest, GpioPinOwner)
+{
+    testing::StrictMock<hal::GpioPinMock> pin1;
+    testing::StrictMock<hal::GpioPinMock> pin2;
+
+    GpioPinOwnerSpy owner1{ pin1 };
+    GpioPinOwnerSpy owner2{ pin2 };
+
+    {
+        EXPECT_CALL(pin2, ResetConfig());
+        owner2 = std::move(owner1);
+    }
+
+    EXPECT_CALL(pin1, Set(true));
+    owner2.GetPin().Set(true);
+
+    EXPECT_CALL(pin1, ResetConfig());
+}
+
 TEST(GpioTest, InputPin)
 {
     testing::StrictMock<hal::GpioPinMock> pin;

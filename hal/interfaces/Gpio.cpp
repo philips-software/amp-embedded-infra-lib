@@ -20,7 +20,12 @@ namespace hal
     GpioPinOwner& GpioPinOwner::operator=(GpioPinOwner&& other) noexcept(true)
     {
         if (this != &other)
+        {
+            if (pin != nullptr)
+                pin->ResetConfig();
+
             pin = std::exchange(other.pin, nullptr);
+        }
 
         return *this;
     }
@@ -66,7 +71,7 @@ namespace hal
     InputPin::InputPin(InputPin&& other) noexcept(true)
         : GpioPinOwner{ std::move(other) }
     {
-        /* we moved from an input pin, no reconfiguration needed */
+        // we moved from an input pin, no reconfiguration needed
     }
 
     bool InputPin::Get() const
@@ -99,7 +104,7 @@ namespace hal
     OutputPin::OutputPin(OutputPin&& other, bool startState) noexcept(true)
         : GpioPinOwner{ std::move(other) }
     {
-        /* we moved from an output pin, no reconfiguration needed */
+        // we moved from an output pin, no reconfiguration needed
         Set(startState);
     }
 
@@ -134,7 +139,7 @@ namespace hal
     TriStatePin::TriStatePin(TriStatePin&& other) noexcept(true)
         : GpioPinOwner{ std::move(other) }
     {
-        /* we moved from a tri-state pin, no reconfiguration needed */
+        // we moved from a tri-state pin, no reconfiguration needed
         SetAsInput();
     }
 
@@ -147,7 +152,7 @@ namespace hal
     TriStatePin::TriStatePin(TriStatePin&& other, bool startState) noexcept(true)
         : GpioPinOwner{ std::move(other) }
     {
-        /* we moved from a tri-state pin, no reconfiguration needed */
+        // we moved from an input pin, no reconfiguration needed
         Set(startState);
     }
 
@@ -197,14 +202,10 @@ namespace hal
     }
 
     void DummyPin::Set(bool value)
-    {
-        /* dummy pin, no behaviour */
-    }
+    {}
 
     void DummyPin::SetAsInput()
-    {
-        /* dummy pin, no behaviour */
-    }
+    {}
 
     bool DummyPin::IsInput() const
     {
@@ -212,39 +213,25 @@ namespace hal
     }
 
     void DummyPin::Config(PinConfigType config)
-    {
-        /* dummy pin, no behaviour */
-    }
+    {}
 
     void DummyPin::Config(PinConfigType config, bool startOutputState)
-    {
-        /* dummy pin, no behaviour */
-    }
+    {}
 
     void DummyPin::ReConfig(PinConfigType config)
-    {
-        /* dummy pin, no behaviour */
-    }
+    {}
 
     void DummyPin::ReConfig(PinConfigType config, bool startOutputState)
-    {
-        /* dummy pin, no behaviour */
-    }
+    {}
 
     void DummyPin::ResetConfig()
-    {
-        /* dummy pin, no behaviour */
-    }
+    {}
 
     void DummyPin::EnableInterrupt(const infra::Function<void()>& actionOnInterrupt, InterruptTrigger trigger, InterruptType type)
-    {
-        /* dummy pin, no behaviour */
-    }
+    {}
 
     void DummyPin::DisableInterrupt()
-    {
-        /* dummy pin, no behaviour */
-    }
+    {}
 
     ScopedHigh::ScopedHigh(OutputPin& pin)
         : pin(pin)
