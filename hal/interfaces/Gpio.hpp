@@ -71,7 +71,8 @@ namespace hal
         ~GpioPinOwner();
 
     protected:
-        GpioPin& GetPin() const;
+        GpioPin& GetPin();
+        const GpioPin& GetPin() const;
         bool HasPin() const;
 
     private:
@@ -92,8 +93,8 @@ namespace hal
 
         bool Get() const;
 
-        void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type = InterruptType::dispatched) const;
-        void DisableInterrupt() const;
+        void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type = InterruptType::dispatched);
+        void DisableInterrupt();
     };
 
     class OutputPin
@@ -108,7 +109,7 @@ namespace hal
         OutputPin(const OutputPin& other) = delete;
         OutputPin& operator=(const OutputPin& other) = delete;
 
-        void Set(bool value) const;
+        void Set(bool value);
         bool GetOutputLatch() const;
     };
 
@@ -130,12 +131,12 @@ namespace hal
 
         bool Get() const;
         bool GetOutputLatch() const;
-        void Set(bool value) const;
-        void SetAsInput() const;
+        void Set(bool value);
+        void SetAsInput();
         bool IsInput() const;
 
-        void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type = InterruptType::dispatched) const;
-        void DisableInterrupt() const;
+        void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type = InterruptType::dispatched);
+        void DisableInterrupt();
     };
 
     class DummyPin

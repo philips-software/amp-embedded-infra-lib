@@ -34,7 +34,13 @@ namespace hal
         }
     }
 
-    GpioPin& GpioPinOwner::GetPin() const
+    GpioPin& GpioPinOwner::GetPin()
+    {
+        really_assert(pin != nullptr);
+        return *pin;
+    }
+
+    const GpioPin& GpioPinOwner::GetPin() const
     {
         really_assert(pin != nullptr);
         return *pin;
@@ -68,12 +74,12 @@ namespace hal
         return GetPin().Get();
     }
 
-    void InputPin::EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type) const
+    void InputPin::EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type)
     {
         GetPin().EnableInterrupt(action, trigger, type);
     }
 
-    void InputPin::DisableInterrupt() const
+    void InputPin::DisableInterrupt()
     {
         GetPin().DisableInterrupt();
     }
@@ -97,7 +103,7 @@ namespace hal
         Set(startState);
     }
 
-    void OutputPin::Set(bool value) const
+    void OutputPin::Set(bool value)
     {
         GetPin().Set(value);
     }
@@ -150,7 +156,7 @@ namespace hal
         return GetPin().Get();
     }
 
-    void TriStatePin::Set(bool value) const
+    void TriStatePin::Set(bool value)
     {
         GetPin().Set(value);
     }
@@ -160,7 +166,7 @@ namespace hal
         return GetPin().GetOutputLatch();
     }
 
-    void TriStatePin::SetAsInput() const
+    void TriStatePin::SetAsInput()
     {
         GetPin().SetAsInput();
     }
@@ -170,12 +176,12 @@ namespace hal
         return GetPin().IsInput();
     }
 
-    void TriStatePin::EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type) const
+    void TriStatePin::EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type)
     {
         GetPin().EnableInterrupt(action, trigger, type);
     }
 
-    void TriStatePin::DisableInterrupt() const
+    void TriStatePin::DisableInterrupt()
     {
         GetPin().DisableInterrupt();
     }
