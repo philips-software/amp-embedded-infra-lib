@@ -67,7 +67,6 @@ namespace
 
         using Base::Attempts;
         using Base::CancelAtLower;
-        using Base::CancelAttempt;
         using Base::WaitingClients;
 
     protected:
@@ -407,7 +406,7 @@ TEST_F(ConnectionFactoryDecoratorSingleAttemptTest, cancel_of_waiting_client_doe
     factory.Connect(clientA);
     factory.Connect(clientB);
 
-    EXPECT_THAT(factory.CancelAttempt(clientB), testing::IsTrue());
+    factory.CancelConnect(clientB);
     EXPECT_THAT(factory.WaitingClients().empty(), testing::IsTrue());
 
     EXPECT_CALL(clientA, ConnectionFailed(Client::refused));
@@ -438,8 +437,8 @@ TEST_F(ConnectionFactoryDecoratorTest, cancel_of_established_client_has_no_effec
     ExpectClientEstablishedLater(clientA, createdObserver);
     EstablishLowerConnection(0, connectionA);
 
-    EXPECT_THAT(factory.CancelAttempt(clientA), testing::IsTrue());
-    EXPECT_THAT(factory.CancelAttempt(clientA), testing::IsTrue());
+    factory.CancelConnect(clientA);
+    factory.CancelConnect(clientA);
 
     EXPECT_THAT(factory.Attempts().size(), testing::Eq(1));
     AttachClientObserver(createdObserver, connectionA);
@@ -464,16 +463,12 @@ TEST_F(ConnectionFactoryDecoratorTest, cancel_prefers_second_connecting_attempt_
     ReleaseConnection(connectionA);
 }
 
-TEST_F(ConnectionFactoryDecoratorTest, cancel_attempt_of_unknown_client_returns_false_and_cancel_connect_ignores_it)
+#ifndef EMIL_MUTATION_TESTING
+TEST_F(ConnectionFactoryDecoratorTest, cancel_of_unknown_client_aborts)
 {
-    EXPECT_THAT(factory.CancelAttempt(clientA), testing::IsFalse());
-    factory.CancelConnect(clientA);
-
-    ExpectLowerConnect(portB);
-    factory.Connect(clientB);
-    ExpectLowerCancel(portB);
-    EXPECT_THAT(factory.CancelAttempt(clientB), testing::IsTrue());
+    EXPECT_DEATH(factory.CancelConnect(clientA), "");
 }
+#endif
 
 TEST_F(ConnectionFactoryDecoratorObserverGivenTest, declining_in_client_observer_given_override_gives_lower_null_observer_creates_no_connection_and_forwards_next_after_release)
 {

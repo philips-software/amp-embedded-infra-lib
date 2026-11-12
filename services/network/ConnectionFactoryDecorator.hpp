@@ -5,6 +5,7 @@
 #include "infra/util/BoundedList.hpp"
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/IntrusiveList.hpp"
+#include "infra/util/ReallyAssert.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "infra/util/SharedPtr.hpp"
 #include "services/network/Connection.hpp"
@@ -40,7 +41,28 @@ namespace services
 
         void CancelConnect(Client& client) override
         {
-            CancelAttempt(client);
+            if (waitingClients.has_element(client))
+            {
+                waitingClients.erase(client);
+                return;
+            }
+
+            bool known = false;
+
+            for (auto& connector : connectors)
+                if (connector.Serves(client))
+                {
+                    if (connector.IsWaiting())
+                    {
+                        CancelAtLower(connector);
+                        ForwardWaitingClients();
+                        return;
+                    }
+
+                    known = true;
+                }
+
+            really_assert(known);
         }
 
     protected:
@@ -59,32 +81,6 @@ namespace services
         virtual void ClientObserverGiven(Connector& connector, const infra::SharedPtr<ConnectionObserver>& clientObserver)
         {
             connector.AttachConnection(clientObserver);
-        }
-
-        bool CancelAttempt(Client& client)
-        {
-            if (waitingClients.has_element(client))
-            {
-                waitingClients.erase(client);
-                return true;
-            }
-
-            bool known = false;
-
-            for (auto& connector : connectors)
-                if (connector.Serves(client))
-                {
-                    if (connector.IsWaiting())
-                    {
-                        CancelAtLower(connector);
-                        ForwardWaitingClients();
-                        return true;
-                    }
-
-                    known = true;
-                }
-
-            return known;
         }
 
         void CancelAtLower(Connector& connector)
