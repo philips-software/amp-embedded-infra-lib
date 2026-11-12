@@ -17,9 +17,15 @@ namespace services
         bool GetOutputLatch() const override;
         void SetAsInput() override;
         bool IsInput() const override;
+
         void Config(hal::PinConfigType config) override;
         void Config(hal::PinConfigType config, bool startOutputState) override;
+
+        void ReConfig(hal::PinConfigType config) override;
+        void ReConfig(hal::PinConfigType config, bool startOutputState) override;
+
         void ResetConfig() override;
+
         void EnableInterrupt(const infra::Function<void()>& action, hal::InterruptTrigger trigger, hal::InterruptType type) override;
         void DisableInterrupt() override;
 
