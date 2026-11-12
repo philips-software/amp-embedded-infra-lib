@@ -22,6 +22,7 @@ target_link_libraries(services.network_test PUBLIC
 target_sources(services.network_test PRIVATE
     TestAddress.cpp
     TestBonjourServer.cpp
+    TestConnectionFactoryDecorator.cpp
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestConnectionMbedTls.cpp>
     TestDnsResolver.cpp
     TestDnsServer.cpp

@@ -22,6 +22,7 @@ target_sources(services.network PRIVATE
     $<$<BOOL:${EMIL_HOST_BUILD}>:CertificateConvertor.hpp>
     Connection.cpp
     Connection.hpp
+    ConnectionFactoryDecorator.hpp
     ConnectionFactoryWithNameResolver.cpp
     ConnectionFactoryWithNameResolver.hpp
     ConnectionStatus.hpp
