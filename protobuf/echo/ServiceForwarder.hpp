@@ -14,10 +14,10 @@ namespace services
     public:
         ServiceForwarderBase(Echo& echo, Echo& forwardTo);
 
-        // Implementation of Service
-        infra::SharedPtr<MethodDeserializer> StartMethod(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy) override;
-
     private:
+        // Implementation of Service
+        infra::SharedPtr<MethodDeserializer> StartMethodImpl(uint32_t serviceId, uint32_t methodId, uint32_t size, const EchoErrorPolicy& errorPolicy) override;
+
         // Implementation of MethodDeserializer
         void MethodContents(infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader) override;
         void ExecuteMethod() override;
