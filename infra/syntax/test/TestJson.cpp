@@ -78,6 +78,20 @@ TEST(JsonTokenizerTest, get_negative_int_token)
     EXPECT_EQ(infra::JsonToken::Token(infra::JsonBiggerInt(42, true)), tokenizer.Token());
 }
 
+class JsonTokenizerIntegerOverflowTest
+    : public testing::TestWithParam<const char*>
+{};
+
+TEST_P(JsonTokenizerIntegerOverflowTest, integer_exceeding_64_bits_results_in_error_token)
+{
+    infra::JsonTokenizer tokenizer(GetParam());
+
+    EXPECT_THAT(tokenizer.Token(), testing::Eq(infra::JsonToken::Token(infra::JsonToken::Error())));
+}
+
+INSTANTIATE_TEST_SUITE_P(JsonTokenizerIntegerOverflowTest, JsonTokenizerIntegerOverflowTest,
+    testing::Values("18446744073709551616", "-18446744073709551616", "18446744073709551616.5", "184467440737095516150"));
+
 TEST(JsonTokenizerTest, skip_whitespace_before_end)
 {
     infra::JsonTokenizer tokenizer(R"( )");
@@ -322,6 +336,14 @@ TEST(JsonObjectIteratorTest, get_minimum_bigger_integer_value_from_iterator)
     infra::JsonObjectIterator iterator(object.begin());
 
     EXPECT_EQ(infra::JsonBiggerInt(18446744073709551615u, true), std::get<infra::JsonBiggerInt>(iterator->value));
+}
+
+TEST(JsonObjectTest, integer_exceeding_64_bits_results_in_error)
+{
+    infra::JsonObject object(R"({ "key" : 18446744073709551617 })");
+
+    object.GetInteger("key");
+    EXPECT_THAT(object.Error(), testing::IsTrue());
 }
 
 TEST(JsonObjectIteratorTest, get_negative_bigger_integer_value_from_iterator)
