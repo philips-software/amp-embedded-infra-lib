@@ -13,11 +13,12 @@ namespace main_
         struct StorageBase
         {
             StorageBase(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage,
-                infra::BoundedDeque<uint8_t>& windowedReceivedMessage, uint8_t windowedReceiveBuffers);
+                infra::BoundedDeque<uint8_t>& windowedRedReceivedMessage, infra::BoundedDeque<uint8_t>& windowedBlueReceivedMessage, uint8_t windowedReceiveBuffers);
 
             infra::BoundedVector<uint8_t>& cobsSendMessage;
             infra::BoundedDeque<uint8_t>& cobsReceivedMessage;
-            infra::BoundedDeque<uint8_t>& windowedReceivedMessage;
+            infra::BoundedDeque<uint8_t>& windowedRedReceivedMessage;
+            infra::BoundedDeque<uint8_t>& windowedBlueReceivedMessage;
             uint8_t windowedReceiveBuffers;
         };
 
@@ -34,6 +35,7 @@ namespace main_
             infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameCobs::sendBufferSize<MessageSize>> cobsSendMessageStorage;
             infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameCobs::receiveBufferSize<encodedMessageSize>> cobsReceivedMessageStorage;
             infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameWindowed::receiveBufferSize<MessageSize, SplitBuffers>> windowedReceivedMessageStorage;
+            infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameWindowed::receiveBufferSize<MessageSize, SplitBuffers>> windowedBlueReceivedStorage;
         };
 
         template<std::size_t MessageSize, uint8_t SplitBuffers = 2>
@@ -53,7 +55,7 @@ namespace main_
 
     template<std::size_t MessageSize, uint8_t SplitBuffers>
     Sesame::Storage<MessageSize, SplitBuffers>::Storage()
-        : StorageBase(cobsSendMessageStorage, cobsReceivedMessageStorage, windowedReceivedMessageStorage, SplitBuffers)
+        : StorageBase(cobsSendMessageStorage, cobsReceivedMessageStorage, windowedReceivedMessageStorage, windowedBlueReceivedStorage, SplitBuffers)
     {}
 }
 

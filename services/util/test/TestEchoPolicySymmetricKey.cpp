@@ -26,7 +26,7 @@ public:
     void Initialized()
     {
         EXPECT_CALL(lower, ResetReading());
-        EXPECT_CALL(lower, RequestSendMessage(testing::_)).WillOnce(testing::Invoke([this]()
+        EXPECT_CALL(lower, RequestSendMessage(testing::_, testing::_)).WillOnce(testing::Invoke([this]()
             {
                 ExpectGenerationOfKeyMaterial({ 4 }, { 5 });
                 LoopBackData();
@@ -81,7 +81,7 @@ public:
 
 TEST_F(EchoPolicySymmetricKeyTest, send_and_receive)
 {
-    EXPECT_CALL(lower, RequestSendMessage(testing::_)).WillOnce(testing::Invoke([this]()
+    EXPECT_CALL(lower, RequestSendMessage(testing::_, testing::_)).WillOnce(testing::Invoke([this]()
         {
             EXPECT_CALL(service, Method(5)).WillOnce(testing::Invoke([this]()
                 {
@@ -100,9 +100,9 @@ TEST_F(EchoPolicySymmetricKeyTest, send_and_receive_large_message)
 {
     std::array<uint8_t, 64> bytes;
     std::iota(bytes.begin(), bytes.end(), 1);
-    EXPECT_CALL(lower, RequestSendMessage(testing::_)).WillOnce(testing::Invoke([this, &bytes]()
+    EXPECT_CALL(lower, RequestSendMessage(testing::_, testing::_)).WillOnce(testing::Invoke([this, &bytes]()
         {
-            EXPECT_CALL(lower, RequestSendMessage(testing::_));
+            EXPECT_CALL(lower, RequestSendMessage(testing::_, testing::_));
             LoopBackData();
 
             EXPECT_CALL(service, MethodBytes(testing::_)).WillOnce(testing::Invoke([this, &bytes](const infra::BoundedVector<uint8_t>& value)
@@ -121,7 +121,7 @@ TEST_F(EchoPolicySymmetricKeyTest, send_and_receive_large_message)
 
 TEST_F(EchoPolicySymmetricKeyTest, send_while_initializing)
 {
-    EXPECT_CALL(lower, RequestSendMessage(testing::_));
+    EXPECT_CALL(lower, RequestSendMessage(testing::_, testing::_));
     EXPECT_CALL(lower, ResetReading());
     lower.GetObserver().Initialized();
 
@@ -130,7 +130,7 @@ TEST_F(EchoPolicySymmetricKeyTest, send_while_initializing)
             serviceProxy.Method(5);
         });
 
-    EXPECT_CALL(lower, RequestSendMessage(testing::_));
+    EXPECT_CALL(lower, RequestSendMessage(testing::_, testing::_));
 
     ExpectGenerationOfKeyMaterial({ 4 }, { 5 });
     LoopBackData();
@@ -144,7 +144,7 @@ TEST_F(EchoPolicySymmetricKeyTest, send_while_initializing)
 
 TEST_F(EchoPolicySymmetricKeyTest, cancel_send_while_initializing_removes_waiting_request)
 {
-    EXPECT_CALL(lower, RequestSendMessage(testing::_));
+    EXPECT_CALL(lower, RequestSendMessage(testing::_, services::SesameChannel::red));
     EXPECT_CALL(lower, ResetReading());
     lower.GetObserver().Initialized();
 
@@ -160,7 +160,7 @@ TEST_F(EchoPolicySymmetricKeyTest, cancel_send_while_initializing_removes_waitin
 
 TEST_F(EchoPolicySymmetricKeyTest, reset_cancels_request_waiting_for_key_establishment)
 {
-    EXPECT_CALL(lower, RequestSendMessage(testing::_));
+    EXPECT_CALL(lower, RequestSendMessage(testing::_, services::SesameChannel::red));
     EXPECT_CALL(lower, ResetReading());
     lower.GetObserver().Initialized();
 
@@ -176,7 +176,7 @@ TEST_F(EchoPolicySymmetricKeyTest, reset_cancels_request_waiting_for_key_establi
 
     Initialized();
 
-    EXPECT_CALL(lower, RequestSendMessage(testing::_)).WillOnce(testing::Invoke([this]()
+    EXPECT_CALL(lower, RequestSendMessage(testing::_, services::SesameChannel::red)).WillOnce(testing::Invoke([this]()
         {
             EXPECT_CALL(service, Method(6)).WillOnce(testing::Invoke([this]()
                 {

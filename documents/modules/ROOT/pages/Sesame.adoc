@@ -49,13 +49,14 @@ for details.
 == SESAME layer Windowed
 
 Using the Windowed layer, both sides of the communication notify and update their peer of
-available window size. A peer can only send packets up to the available window. Four
+available window size. A peer can only send packets up to the available window. Five
 packet types are defined:
 
 1. Init
 2. InitResponse
 3. ReleaseWindow
-4. Message
+4. MessageRed
+5. MessageBlue
 
 === Init
 
@@ -122,9 +123,9 @@ freed up in addition to already known free space.
 (draw-box "size" {:span 2})
 ----
 
-=== Message
+=== MessageRed and MessageBlue
 
-Data sent by higher protocol layers are sent by `Message` packets. Each `Message` packet consumes a window
+Data sent by higher protocol layers are sent by `MessageRed` (`identifier 4`) and `MessageBlue` (`identifier 5`) packets. Each message packet consumes a window
 amount equal to the size of that packet plus the COBS overhead of that specific packet, plus
 its terminating 0.
 
@@ -133,7 +134,7 @@ its terminating 0.
 ----
 (def boxes-per-row 8)
 (draw-column-headers)
-(draw-box 4)
+(draw-box "4 or 5")
 (draw-gap "message")
 (draw-bottom)
 ----
