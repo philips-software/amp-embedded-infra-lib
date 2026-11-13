@@ -119,13 +119,13 @@ namespace services
         virtual void NetworkDetailsUnavailable() = 0;
     };
 
-    class WiFiNetworkScanNetworksResultObserver
+    class WiFiNetworkScanNetworksResult
     {
     protected:
-        WiFiNetworkScanNetworksResultObserver() = default;
-        WiFiNetworkScanNetworksResultObserver(const WiFiNetworkScanNetworksResultObserver& other) = delete;
-        WiFiNetworkScanNetworksResultObserver& operator=(const WiFiNetworkScanNetworksResultObserver& other) = delete;
-        ~WiFiNetworkScanNetworksResultObserver() = default;
+        WiFiNetworkScanNetworksResult() = default;
+        WiFiNetworkScanNetworksResult(const WiFiNetworkScanNetworksResult& other) = delete;
+        WiFiNetworkScanNetworksResult& operator=(const WiFiNetworkScanNetworksResult& other) = delete;
+        ~WiFiNetworkScanNetworksResult() = default;
 
     public:
         struct Network
@@ -175,7 +175,7 @@ namespace services
         // ScanForNetworkDetails eventually results in either NetworkDetailsAvailable or NetworkDetailsUnavailable
         virtual void ScanForNetworkDetails(infra::BoundedConstString ssid, WiFiNetworkScanNetworkForDetailsResultObserver& observer) = 0;
         // ScanNetworks eventually results in NetworksFound
-        virtual void ScanNetworks(int32_t numOfProbesPerChannel, std::optional<infra::Duration> waitTimePerChannelActive, WiFiNetworkScanNetworksResultObserver& observer) = 0;
+        virtual void ScanNetworks(int32_t numOfProbesPerChannel, std::optional<infra::Duration> waitTimePerChannelActive, WiFiNetworkScanNetworksResult& result) = 0;
     };
 
     class NetworkPingResultsObserver
