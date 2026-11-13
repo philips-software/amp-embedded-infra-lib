@@ -39,7 +39,7 @@ namespace infra
 
     ConstByteRange infra::BoundedVectorInputStreamReader::PeekContiguousRange(std::size_t start)
     {
-        return { container.begin() + offset + start, container.end() };
+        return { container.begin() + std::min(offset + start, container.size()), container.end() };
     }
 
     bool BoundedVectorInputStreamReader::Empty() const

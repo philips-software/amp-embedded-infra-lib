@@ -1,5 +1,6 @@
 #include "infra/stream/AtomicByteQueue.hpp"
 #include "infra/util/ConstructBin.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 class AtomicByteQueueTest
@@ -106,6 +107,15 @@ TEST_F(AtomicByteQueueTest, PeekContiguousRange)
 
     EXPECT_TRUE(infra::ContentsEqual(infra::ConstructBin()({ 3, 4, 5 }).Range(), reader.PeekContiguousRange(0)));
     EXPECT_TRUE(infra::ContentsEqual(infra::ConstructBin()({ 6 }).Range(), reader.PeekContiguousRange(3)));
+}
+
+TEST_F(AtomicByteQueueTest, PeekContiguousRange_beyond_end_is_empty)
+{
+    std::vector<uint8_t> data{ 1, 2 };
+    writer.Insert(infra::MakeRange(data), errorPolicy);
+
+    EXPECT_THAT(reader.PeekContiguousRange(2), testing::IsEmpty());
+    EXPECT_THAT(reader.PeekContiguousRange(3), testing::IsEmpty());
 }
 
 TEST_F(AtomicByteQueueTest, Extract_overflows)
