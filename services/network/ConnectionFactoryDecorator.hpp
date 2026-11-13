@@ -10,6 +10,7 @@
 #include "infra/util/SharedPtr.hpp"
 #include "services/network/Connection.hpp"
 #include "services/network/ConnectionFactoryWithNameResolver.hpp"
+#include <algorithm>
 #include <cstdint>
 #include <type_traits>
 #include <utility>
@@ -34,7 +35,7 @@ namespace services
         void Connect(Client& client) override
         {
             if (connectors.full() || !waitingClients.empty())
-                waitingClients.push_back(client);
+                QueueClient(client);
             else
                 StartForward(client);
         }
@@ -78,15 +79,9 @@ namespace services
             ForwardWaitingClients();
         }
 
-        virtual void ClientObserverGiven(Connector& connector, const infra::SharedPtr<ConnectionObserver>& clientObserver)
+        void QueueClient(Client& client)
         {
-            connector.AttachConnection(clientObserver);
-        }
-
-        void CancelAtLower(Connector& connector)
-        {
-            lower.CancelConnect(connector);
-            connectors.remove(connector);
+            waitingClients.push_back(client);
         }
 
         void ForwardWaitingClients()
@@ -99,14 +94,59 @@ namespace services
             }
         }
 
-        infra::BoundedList<Connector>& Attempts()
+        void FailPendingClients(Client::ConnectFailReason reason)
         {
-            return connectors;
+            auto connecting = [](const Connector& connector)
+            {
+                return connector.IsWaiting();
+            };
+
+            for (auto attempt = std::find_if(connectors.begin(), connectors.end(), connecting); attempt != connectors.end(); attempt = std::find_if(connectors.begin(), connectors.end(), connecting))
+            {
+                auto& failedClient = attempt->RequestingClient();
+                CancelAtLower(*attempt);
+                failedClient.ConnectionFailed(reason);
+            }
+
+            while (!waitingClients.empty())
+            {
+                auto& failedClient = waitingClients.front();
+                waitingClients.pop_front();
+                failedClient.ConnectionFailed(reason);
+            }
         }
 
-        infra::IntrusiveList<Client>& WaitingClients()
+        void AbortEstablishedConnections()
         {
-            return waitingClients;
+            auto abortable = [](const Connector& connector)
+            {
+                return !connector.IsWaiting() && !connector.IsAborted();
+            };
+
+            aborting = true;
+
+            for (auto attempt = std::find_if(connectors.begin(), connectors.end(), abortable); attempt != connectors.end(); attempt = std::find_if(connectors.begin(), connectors.end(), abortable))
+                attempt->Abort();
+
+            aborting = false;
+        }
+
+        bool HasAttempts() const
+        {
+            return !connectors.empty();
+        }
+
+        bool HasWaitingClients() const
+        {
+            return !waitingClients.empty();
+        }
+
+        bool HasConnectingAttempts() const
+        {
+            return std::any_of(connectors.begin(), connectors.end(), [](const Connector& connector)
+                {
+                    return connector.IsWaiting();
+                });
         }
 
         class Connector
@@ -125,6 +165,41 @@ namespace services
                           Released();
                       })
             {}
+
+            infra::BoundedConstString Hostname() const override
+            {
+                return client.Hostname();
+            }
+
+            uint16_t Port() const override
+            {
+                return client.Port();
+            }
+
+            void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver) override
+            {
+                established = true;
+                attachToLower = std::move(createdObserver);
+                auto self = access.MakeShared(*this);
+                client.ConnectionEstablished([self](infra::SharedPtr<ConnectionObserver> clientObserver)
+                    {
+                        self->ObserverGiven(clientObserver);
+                    });
+            }
+
+            void ConnectionFailed(ConnectFailReason reason) override
+            {
+                auto& failedClient = client;
+                auto& owner = factory;
+
+                owner.connectors.remove(*this);
+                owner.LowerConnectFailed(reason);
+                failedClient.ConnectionFailed(reason);
+                owner.NotifyAttemptRemoved();
+            }
+
+        private:
+            friend ConnectionFactoryDecorator;
 
             Client& RequestingClient() const
             {
@@ -154,8 +229,14 @@ namespace services
                     connection->Abort();
             }
 
-            void AttachConnection(const infra::SharedPtr<ConnectionObserver>& clientObserver)
+            void ObserverGiven(const infra::SharedPtr<ConnectionObserver>& clientObserver)
             {
+                if (clientObserver == nullptr)
+                {
+                    attachToLower(nullptr);
+                    return;
+                }
+
                 auto tracked = factory.CreateConnection(connection);
                 attachToLower(tracked);
 
@@ -166,44 +247,6 @@ namespace services
                     tracked->Abort();
             }
 
-            void Decline()
-            {
-                attachToLower(nullptr);
-            }
-
-            infra::BoundedConstString Hostname() const override
-            {
-                return client.Hostname();
-            }
-
-            uint16_t Port() const override
-            {
-                return client.Port();
-            }
-
-            void ConnectionEstablished(infra::AutoResetFunction<void(infra::SharedPtr<ConnectionObserver> connectionObserver)>&& createdObserver) override
-            {
-                established = true;
-                attachToLower = std::move(createdObserver);
-                auto self = access.MakeShared(*this);
-                client.ConnectionEstablished([self](infra::SharedPtr<ConnectionObserver> clientObserver)
-                    {
-                        self->factory.ClientObserverGiven(*self, clientObserver);
-                    });
-            }
-
-            void ConnectionFailed(ConnectFailReason reason) override
-            {
-                auto& failedClient = client;
-                auto& owner = factory;
-
-                owner.connectors.remove(*this);
-                owner.LowerConnectFailed(reason);
-                failedClient.ConnectionFailed(reason);
-                owner.AttemptRemoved();
-            }
-
-        private:
             bool HasConnection() const
             {
                 return !connection.Allocatable();
@@ -215,7 +258,7 @@ namespace services
                 {
                     auto& owner = factory;
                     owner.connectors.remove(*this);
-                    owner.AttemptRemoved();
+                    owner.NotifyAttemptRemoved();
                 }
             }
 
@@ -230,16 +273,29 @@ namespace services
         };
 
     private:
+        void CancelAtLower(Connector& connector)
+        {
+            lower.CancelConnect(connector);
+            connectors.remove(connector);
+        }
+
         void StartForward(Client& client)
         {
             connectors.emplace_back(*this, client);
             lower.Connect(connectors.back());
         }
 
+        void NotifyAttemptRemoved()
+        {
+            if (!aborting)
+                AttemptRemoved();
+        }
+
     private:
         ConnectionFactoryWithNameResolver& lower;
         infra::BoundedList<Connector>& connectors;
         infra::IntrusiveList<Client> waitingClients;
+        bool aborting = false;
     };
 }
 

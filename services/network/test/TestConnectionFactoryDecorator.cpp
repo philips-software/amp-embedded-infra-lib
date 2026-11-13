@@ -31,7 +31,6 @@ namespace
     public:
         MOCK_METHOD(void, LowerConnectFailed, (Client::ConnectFailReason reason));
         MOCK_METHOD(void, AttemptRemoved, ());
-        MOCK_METHOD(void, ClientObserverGiven, (Client & requestingClient, bool clientObserverGiven));
     };
 
     class DerivedDecorated
@@ -63,14 +62,27 @@ namespace
         FactoryAccess(infra::BoundedList<Connector>& connectors, services::ConnectionFactoryWithNameResolver& lower, HooksMock& hooks)
             : Base(connectors, lower)
             , hooks(hooks)
+            , attempts(connectors)
         {}
 
-        using Base::Attempts;
-        using Base::CancelAtLower;
-        using Base::WaitingClients;
+        infra::BoundedList<Connector>& Attempts()
+        {
+            return attempts;
+        }
+
+        using Base::AbortEstablishedConnections;
+        using Base::FailPendingClients;
+        using Base::ForwardWaitingClients;
+        using Base::HasAttempts;
+        using Base::HasConnectingAttempts;
+        using Base::HasWaitingClients;
+        using Base::QueueClient;
 
     protected:
         HooksMock& hooks;
+
+    private:
+        infra::BoundedList<Connector>& attempts;
     };
 
     class PlainFactory
@@ -102,23 +114,6 @@ namespace
         void AttemptRemoved() override
         {
             hooks.AttemptRemoved();
-        }
-    };
-
-    class ObserverGivenFactory
-        : public PlainFactory
-    {
-    public:
-        using PlainFactory::PlainFactory;
-
-        void ClientObserverGiven(Connector& connector, const infra::SharedPtr<services::ConnectionObserver>& clientObserver) override
-        {
-            hooks.ClientObserverGiven(connector.RequestingClient(), clientObserver != nullptr);
-
-            if (clientObserver == nullptr)
-                connector.Decline();
-            else
-                PlainFactory::ClientObserverGiven(connector, clientObserver);
         }
     };
 
@@ -304,8 +299,8 @@ namespace
         : public ConnectionFactoryDecoratorTestBase<HookedFactory, 2>
     {};
 
-    class ConnectionFactoryDecoratorObserverGivenTest
-        : public ConnectionFactoryDecoratorTestBase<ObserverGivenFactory, 1>
+    class ConnectionFactoryDecoratorThreeAttemptsTest
+        : public ConnectionFactoryDecoratorTestBase<PlainFactory, 3>
     {};
 
     class ConnectionFactoryDecoratorDerivedTypeTest
@@ -332,7 +327,7 @@ TEST_F(ConnectionFactoryDecoratorSingleAttemptTest, connect_when_full_queues_and
 
     ExpectLowerConnect(portB);
     ReleaseConnection(connectionA);
-    EXPECT_THAT(factory.WaitingClients().has_element(clientC), testing::IsTrue());
+    EXPECT_THAT(factory.HasWaitingClients(), testing::IsTrue());
 
     ExpectClientAttaches(clientB, connectionB);
     EstablishLowerConnection(1, connectionB);
@@ -397,7 +392,7 @@ TEST_F(ConnectionFactoryDecoratorSingleAttemptTest, synchronous_lower_failure_on
 
     EXPECT_THAT(forwarded, testing::SizeIs(3));
     EXPECT_THAT(factory.Attempts().size(), testing::Eq(1));
-    EXPECT_THAT(factory.WaitingClients().empty(), testing::IsTrue());
+    EXPECT_THAT(factory.HasWaitingClients(), testing::IsFalse());
 }
 
 TEST_F(ConnectionFactoryDecoratorSingleAttemptTest, cancel_of_waiting_client_does_not_call_lower_and_is_not_forwarded_later)
@@ -407,7 +402,7 @@ TEST_F(ConnectionFactoryDecoratorSingleAttemptTest, cancel_of_waiting_client_doe
     factory.Connect(clientB);
 
     factory.CancelConnect(clientB);
-    EXPECT_THAT(factory.WaitingClients().empty(), testing::IsTrue());
+    EXPECT_THAT(factory.HasWaitingClients(), testing::IsFalse());
 
     EXPECT_CALL(clientA, ConnectionFailed(Client::refused));
     forwarded.at(0)->ConnectionFailed(Client::refused);
@@ -470,16 +465,15 @@ TEST_F(ConnectionFactoryDecoratorTest, cancel_of_unknown_client_aborts)
 }
 #endif
 
-TEST_F(ConnectionFactoryDecoratorObserverGivenTest, declining_in_client_observer_given_override_gives_lower_null_observer_creates_no_connection_and_forwards_next_after_release)
+TEST_F(ConnectionFactoryDecoratorSingleAttemptTest, declining_gives_lower_null_observer_creates_no_connection_and_forwards_next_after_release)
 {
     ExpectLowerConnect(portA);
     factory.Connect(clientA);
     factory.Connect(clientB);
     ExpectClientDeclines(clientA);
-    EXPECT_CALL(hooks, ClientObserverGiven(testing::Ref(clientA), false));
 
     ExpectLowerConnect(portB);
-    EstablishLowerConnection(0, connectionA);
+    EstablishLowerConnectionWithoutAttaching(0);
 
     EXPECT_THAT(factory.createdConnections, testing::Eq(0));
     EXPECT_THAT(forwarded, testing::SizeIs(2));
@@ -522,8 +516,7 @@ TEST_F(ConnectionFactoryDecoratorTest, abort_before_observer_aborts_connection_a
     ExpectClientEstablishedLater(clientA, createdObserver);
     EstablishLowerConnection(0, connectionA);
 
-    factory.Attempts().front().Abort();
-    EXPECT_THAT(factory.Attempts().front().IsAborted(), testing::IsTrue());
+    factory.AbortEstablishedConnections();
 
     testing::InSequence sequence;
     EXPECT_CALL(lowerObserverCreated, Call(true));
@@ -537,12 +530,10 @@ TEST_F(ConnectionFactoryDecoratorTest, abort_before_observer_aborts_connection_a
 TEST_F(ConnectionFactoryDecoratorTest, abort_after_observer_aborts_connection)
 {
     EstablishConnection(clientA, portA, connectionA);
-    EXPECT_THAT(factory.Attempts().front().IsAborted(), testing::IsFalse());
 
     ExpectAbort(connectionA);
-    factory.Attempts().front().Abort();
+    factory.AbortEstablishedConnections();
 
-    EXPECT_THAT(factory.Attempts().front().IsAborted(), testing::IsTrue());
     ReleaseConnection(connectionA);
 }
 
@@ -571,7 +562,7 @@ TEST_F(ConnectionFactoryDecoratorSingleAttemptTest, capacity_is_kept_until_callb
     ExpectClientEstablishedLater(clientC, abortedObserver);
     EstablishLowerConnection(2, connectionC);
     factory.Connect(clientD);
-    factory.Attempts().front().Abort();
+    factory.AbortEstablishedConnections();
     EXPECT_THAT(forwarded, testing::SizeIs(3));
 
     EXPECT_CALL(lowerObserverCreated, Call(true));
@@ -599,12 +590,18 @@ TEST_F(ConnectionFactoryDecoratorSingleAttemptTest, abort_that_releases_synchron
     factory.Connect(clientB);
 
     ExpectAbortThatReleases(connectionA);
+    factory.AbortEstablishedConnections();
+
+    EXPECT_THAT(forwarded, testing::SizeIs(1));
+    EXPECT_THAT(factory.Attempts().empty(), testing::IsTrue());
+    EXPECT_THAT(factory.HasWaitingClients(), testing::IsTrue());
+
     ExpectLowerConnect(portB);
-    factory.Attempts().front().Abort();
+    factory.ForwardWaitingClients();
 
     EXPECT_THAT(forwarded, testing::SizeIs(2));
     EXPECT_THAT(factory.Attempts().size(), testing::Eq(1));
-    EXPECT_THAT(factory.WaitingClients().empty(), testing::IsTrue());
+    EXPECT_THAT(factory.HasWaitingClients(), testing::IsFalse());
 }
 
 TEST_F(ConnectionFactoryDecoratorHooksTest, lower_failure_hook_runs_after_removal_and_before_client_is_told)
@@ -668,34 +665,40 @@ TEST_F(ConnectionFactoryDecoratorHooksTest, overridden_follow_up_runs_after_rele
     forwarded.at(2)->ConnectionFailed(Client::refused);
 }
 
-TEST_F(ConnectionFactoryDecoratorSingleAttemptTest, cancel_at_lower_removes_waiting_attempt_without_forwarding)
+TEST_F(ConnectionFactoryDecoratorSingleAttemptTest, derived_class_reads_attempts_waiting_clients_and_connecting_attempts)
 {
-    ExpectLowerConnect(portA);
-    factory.Connect(clientA);
-    factory.Connect(clientB);
-
-    ExpectLowerCancel(portA);
-    factory.CancelAtLower(factory.Attempts().front());
-
-    EXPECT_THAT(factory.Attempts().empty(), testing::IsTrue());
-    EXPECT_THAT(factory.WaitingClients().has_element(clientB), testing::IsTrue());
-}
-
-TEST_F(ConnectionFactoryDecoratorSingleAttemptTest, derived_class_reads_attempts_and_waiting_clients)
-{
-    EXPECT_THAT(factory.Attempts().empty(), testing::IsTrue());
-    EXPECT_THAT(factory.WaitingClients().empty(), testing::IsTrue());
+    EXPECT_THAT(factory.HasAttempts(), testing::IsFalse());
+    EXPECT_THAT(factory.HasWaitingClients(), testing::IsFalse());
+    EXPECT_THAT(factory.HasConnectingAttempts(), testing::IsFalse());
 
     ExpectLowerConnect(portA);
     factory.Connect(clientA);
     factory.Connect(clientB);
 
-    EXPECT_THAT(factory.Attempts().size(), testing::Eq(1));
-    EXPECT_THAT(factory.Attempts().front().RequestingClient(), testing::Ref(clientA));
-    EXPECT_THAT(factory.Attempts().front().Serves(clientA), testing::IsTrue());
-    EXPECT_THAT(factory.Attempts().front().Serves(clientB), testing::IsFalse());
-    EXPECT_THAT(factory.Attempts().front().IsWaiting(), testing::IsTrue());
-    EXPECT_THAT(factory.WaitingClients().has_element(clientB), testing::IsTrue());
+    EXPECT_THAT(factory.HasAttempts(), testing::IsTrue());
+    EXPECT_THAT(factory.HasWaitingClients(), testing::IsTrue());
+    EXPECT_THAT(factory.HasConnectingAttempts(), testing::IsTrue());
+
+    CreatedObserver createdObserver;
+    ExpectClientEstablishedLater(clientA, createdObserver);
+    EstablishLowerConnection(0, connectionA);
+
+    EXPECT_THAT(factory.HasAttempts(), testing::IsTrue());
+    EXPECT_THAT(factory.HasWaitingClients(), testing::IsTrue());
+    EXPECT_THAT(factory.HasConnectingAttempts(), testing::IsFalse());
+
+    AttachClientObserver(createdObserver, connectionA);
+
+    EXPECT_THAT(factory.HasAttempts(), testing::IsTrue());
+    EXPECT_THAT(factory.HasWaitingClients(), testing::IsTrue());
+    EXPECT_THAT(factory.HasConnectingAttempts(), testing::IsFalse());
+
+    ExpectLowerConnect(portB);
+    ReleaseConnection(connectionA);
+
+    EXPECT_THAT(factory.HasAttempts(), testing::IsTrue());
+    EXPECT_THAT(factory.HasWaitingClients(), testing::IsFalse());
+    EXPECT_THAT(factory.HasConnectingAttempts(), testing::IsTrue());
 }
 
 TEST_F(ConnectionFactoryDecoratorDerivedTypeTest, non_default_decorated_type_is_created_by_derived_class_and_attached)
@@ -709,16 +712,160 @@ TEST_F(ConnectionFactoryDecoratorDerivedTypeTest, non_default_decorated_type_is_
     ReleaseConnection(connectionA);
 }
 
-TEST_F(ConnectionFactoryDecoratorObserverGivenTest, client_observer_given_override_delegating_to_base_attaches_non_null_observer)
+TEST_F(ConnectionFactoryDecoratorSingleAttemptTest, decline_after_abort_gives_lower_null_observer_aborts_nothing_and_frees_capacity)
 {
     ExpectLowerConnect(portA);
     factory.Connect(clientA);
-    EXPECT_CALL(hooks, ClientObserverGiven(testing::Ref(clientA), true));
-    ExpectClientAttaches(clientA, connectionA);
+    factory.Connect(clientB);
+    CreatedObserver createdObserver;
+    ExpectClientEstablishedLater(clientA, createdObserver);
+    EstablishLowerConnectionWithoutAttaching(0);
+    factory.AbortEstablishedConnections();
+    EXPECT_THAT(forwarded, testing::SizeIs(1));
 
+    EXPECT_CALL(lowerObserverCreated, Call(false));
+    ExpectLowerConnect(portB);
+    createdObserver(nullptr);
+
+    EXPECT_THAT(factory.createdConnections, testing::Eq(0));
+    EXPECT_THAT(forwarded, testing::SizeIs(2));
+    EXPECT_THAT(factory.Attempts().size(), testing::Eq(1));
+}
+
+TEST_F(ConnectionFactoryDecoratorTest, fail_pending_clients_cancels_connecting_attempts_then_fails_waiting_clients_in_order_and_leaves_established_attempts)
+{
+    ExpectLowerConnect(portA);
+    factory.Connect(clientA);
+    CreatedObserver createdObserver;
+    ExpectClientEstablishedLater(clientA, createdObserver);
     EstablishLowerConnection(0, connectionA);
+    ExpectLowerConnect(portB);
+    factory.Connect(clientB);
+    factory.Connect(clientC);
+    factory.Connect(clientD);
 
-    EXPECT_THAT(factory.createdConnections, testing::Eq(1));
-    EXPECT_THAT(connectionA.observer->IsAttached(), testing::IsTrue());
+    {
+        testing::InSequence sequence;
+        ExpectLowerCancel(portB);
+        EXPECT_CALL(clientB, ConnectionFailed(Client::refused));
+        EXPECT_CALL(clientC, ConnectionFailed(Client::refused));
+        EXPECT_CALL(clientD, ConnectionFailed(Client::refused));
+        factory.FailPendingClients(Client::refused);
+    }
+
+    EXPECT_THAT(forwarded, testing::SizeIs(2));
+    EXPECT_THAT(factory.Attempts().size(), testing::Eq(1));
+    EXPECT_THAT(factory.HasWaitingClients(), testing::IsFalse());
+    EXPECT_THAT(factory.HasConnectingAttempts(), testing::IsFalse());
+
+    AttachClientObserver(createdObserver, connectionA);
     ReleaseConnection(connectionA);
+}
+
+TEST_F(ConnectionFactoryDecoratorSingleAttemptTest, client_connecting_inside_fail_pending_callback_joins_waiting_clients_and_is_failed_too)
+{
+    ExpectLowerConnect(portA);
+    factory.Connect(clientA);
+    factory.Connect(clientB);
+    factory.Connect(clientC);
+
+    testing::InSequence sequence;
+    ExpectLowerCancel(portA);
+    EXPECT_CALL(clientA, ConnectionFailed(Client::refused)).WillOnce(testing::Invoke([this](Client::ConnectFailReason)
+        {
+            factory.Connect(clientA);
+        }));
+    EXPECT_CALL(clientB, ConnectionFailed(Client::refused));
+    EXPECT_CALL(clientC, ConnectionFailed(Client::refused));
+    EXPECT_CALL(clientA, ConnectionFailed(Client::refused));
+    factory.FailPendingClients(Client::refused);
+
+    EXPECT_THAT(forwarded, testing::SizeIs(1));
+    EXPECT_THAT(factory.HasAttempts(), testing::IsFalse());
+    EXPECT_THAT(factory.HasWaitingClients(), testing::IsFalse());
+}
+
+TEST_F(ConnectionFactoryDecoratorSingleAttemptTest, client_connecting_inside_fail_pending_callback_without_waiting_clients_is_forwarded_at_once)
+{
+    ExpectLowerConnect(portA);
+    factory.Connect(clientA);
+
+    std::size_t forwardedInCallback = 0;
+    testing::InSequence sequence;
+    ExpectLowerCancel(portA);
+    EXPECT_CALL(clientA, ConnectionFailed(Client::refused)).WillOnce(testing::Invoke([this, &forwardedInCallback](Client::ConnectFailReason)
+        {
+            factory.Connect(clientA);
+            forwardedInCallback = forwarded.size();
+        }));
+    ExpectLowerConnect(portA);
+    ExpectLowerCancel(portA);
+    EXPECT_CALL(clientA, ConnectionFailed(Client::refused));
+    factory.FailPendingClients(Client::refused);
+
+    EXPECT_THAT(forwardedInCallback, testing::Eq(2));
+    EXPECT_THAT(forwarded, testing::SizeIs(2));
+    EXPECT_THAT(factory.HasAttempts(), testing::IsFalse());
+}
+
+TEST_F(ConnectionFactoryDecoratorThreeAttemptsTest, abort_established_connections_aborts_each_unaborted_established_attempt_once_and_skips_others)
+{
+    EstablishConnection(clientA, portA, connectionA);
+    ExpectLowerConnect(portB);
+    factory.Connect(clientB);
+    CreatedObserver pendingObserver;
+    ExpectClientEstablishedLater(clientB, pendingObserver);
+    EstablishLowerConnection(1, connectionB);
+    ExpectLowerConnect(portC);
+    factory.Connect(clientC);
+
+    ExpectAbortThatReleases(connectionA);
+    factory.AbortEstablishedConnections();
+    EXPECT_THAT(factory.Attempts().size(), testing::Eq(2));
+
+    factory.AbortEstablishedConnections();
+    EXPECT_THAT(factory.Attempts().size(), testing::Eq(2));
+
+    testing::InSequence sequence;
+    EXPECT_CALL(lowerObserverCreated, Call(true));
+    EXPECT_CALL(*connectionB.observer, Attached());
+    ExpectAbort(connectionB);
+    pendingObserver(connectionB.observer);
+
+    ReleaseConnection(connectionB);
+    EXPECT_THAT(factory.Attempts().size(), testing::Eq(1));
+    EXPECT_THAT(factory.HasConnectingAttempts(), testing::IsTrue());
+}
+
+TEST_F(ConnectionFactoryDecoratorHooksTest, abort_established_connections_suppresses_attempt_removed_during_the_call_only)
+{
+    EstablishConnection(clientA, portA, connectionA);
+    EstablishConnection(clientB, portB, connectionB);
+
+    ExpectAbortThatReleases(connectionA);
+    ExpectAbort(connectionB);
+    factory.AbortEstablishedConnections();
+    EXPECT_THAT(factory.Attempts().size(), testing::Eq(1));
+
+    EXPECT_CALL(hooks, AttemptRemoved());
+    ReleaseConnection(connectionB);
+    EXPECT_THAT(factory.HasAttempts(), testing::IsFalse());
+}
+
+TEST_F(ConnectionFactoryDecoratorTest, queue_client_joins_waiting_clients_without_forwarding_until_forward_waiting_clients)
+{
+    factory.QueueClient(clientA);
+    factory.QueueClient(clientB);
+
+    EXPECT_THAT(factory.HasWaitingClients(), testing::IsTrue());
+    EXPECT_THAT(factory.HasAttempts(), testing::IsFalse());
+    EXPECT_THAT(forwarded, testing::IsEmpty());
+
+    testing::InSequence sequence;
+    ExpectLowerConnect(portA);
+    ExpectLowerConnect(portB);
+    factory.ForwardWaitingClients();
+
+    EXPECT_THAT(forwarded, testing::SizeIs(2));
+    EXPECT_THAT(factory.HasWaitingClients(), testing::IsFalse());
 }
