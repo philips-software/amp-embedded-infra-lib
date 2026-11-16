@@ -95,16 +95,13 @@ public:
 
     void ReceiveMessage(const std::string& text)
     {
-        EXPECT_CALL(base, MessageSize(testing::_)).WillOnce([](infra::StreamReader&& reader)
-            {
-                return reader.Available() + reader.Available() / 254 + 2;
-            });
         ReceivePacket(infra::ConstructBin()(4)(text).Vector());
     }
 
-    void PretendReceiveMessage(const std::string& text)
+    void ReceiveMessageWithEncodedSize(const std::string& text, std::size_t encodedSize)
     {
-        ReceivePacket(infra::ConstructBin()(4)(text).Vector());
+        infra::StdVectorInputStreamReader::WithStorage reader(std::in_place, infra::ConstructBin()(4)(text).Vector());
+        base.GetObserver().ReceivedMessage(reader, encodedSize);
     }
 
     void ExpectRequestSendMessageForInit(uint16_t availableWindow)
@@ -299,6 +296,15 @@ TEST_F(SesameWindowedTestDouble, receive_message_after_initialized)
     ReceiveMessage("abcd");
 }
 
+TEST_F(SesameWindowedTestDouble, release_window_equals_encoded_size_reported_for_message)
+{
+    ReceiveInitResponse(26);
+
+    ExpectReceivedMessage("abcd");
+    ExpectRequestSendMessageForReleaseWindow(15);
+    ReceiveMessageWithEncodedSize("abcd", 8);
+}
+
 TEST_F(SesameWindowedTestDouble, release_window_packet_waits_for_window_available)
 {
     ReceiveInitResponse(0);
@@ -312,7 +318,7 @@ TEST_F(SesameWindowedTestDouble, release_window_packet_waits_for_window_availabl
 
 TEST_F(SesameWindowedTestDouble, received_message_before_initialized_is_discarded)
 {
-    PretendReceiveMessage("abcd");
+    ReceiveMessage("abcd");
 
     ReceiveInitResponse(24);
 }
