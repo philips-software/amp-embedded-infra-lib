@@ -592,3 +592,24 @@ TEST_F(SesameWindowedTestTriple, MaxSendMessageSize_for_3_way_buffer)
 
     observer.Detach();
 }
+
+TEST_F(SesameWindowedTestTriple, queued_empty_messages_fill_receive_window_without_overflowing_storage)
+{
+    constexpr std::size_t emptyMessageEncodedSize = 3;
+    constexpr std::size_t queuedMessages = 8;
+
+    ReceiveInitResponse(32);
+
+    EXPECT_CALL(observer, ReceivedMessage(testing::_)).WillOnce([this](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+        {
+            savedReader = std::move(reader);
+        });
+    ReceiveMessageWithEncodedSize("", emptyMessageEncodedSize);
+
+    for (std::size_t i = 0; i != queuedMessages; ++i)
+        ReceiveMessageWithEncodedSize("", emptyMessageEncodedSize);
+
+    communication->ResetReading();
+    savedReader = nullptr;
+    observer.Detach();
+}

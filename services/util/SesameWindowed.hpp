@@ -54,7 +54,8 @@ namespace services
         template<std::size_t MaxMessageSize, template<std::size_t> class MessageSize>
         static constexpr std::size_t bufferSizeForMessage = MessageSize<sizeof(Operation) + MaxMessageSize>::size;
 
-        static constexpr std::size_t receivedMessageHeaderSize = 2 * sizeof(uint16_t);
+        static constexpr std::size_t minimumEncodingOverhead = sizeof(Operation) + 2;
+        static constexpr std::size_t receivedMessageHeaderSize = sizeof(uint16_t) + sizeof(uint8_t);
 
         template<std::size_t MaxMessageSize, uint8_t SplitBuffers>
         static constexpr std::size_t receiveBufferSize = (MaxMessageSize + receivedMessageHeaderSize) * SplitBuffers;

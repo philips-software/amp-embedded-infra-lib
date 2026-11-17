@@ -1,6 +1,8 @@
 #include "services/util/SesameWindowed.hpp"
 #include "infra/stream/BoundedDequeOutputStream.hpp"
+#include "infra/util/ReallyAssert.hpp"
 #include <algorithm>
+#include <limits>
 
 namespace services
 {
@@ -156,9 +158,12 @@ namespace services
 
     void SesameWindowed::SaveReceivedMessage(infra::StreamReader& reader, std::size_t encodedSize)
     {
+        auto payloadSize = static_cast<uint16_t>(reader.Available());
+        really_assert(encodedSize >= payloadSize + minimumEncodingOverhead && encodedSize - payloadSize - minimumEncodingOverhead <= std::numeric_limits<uint8_t>::max());
+
         infra::BoundedDequeOutputStream stream(receivedMessage);
 
-        stream << static_cast<uint16_t>(reader.Available()) << static_cast<uint16_t>(encodedSize);
+        stream << payloadSize << static_cast<uint8_t>(encodedSize - payloadSize - minimumEncodingOverhead);
         while (!reader.Empty())
             stream << reader.ExtractContiguousRange(std::numeric_limits<uint16_t>::max());
 
@@ -171,11 +176,11 @@ namespace services
         {
             infra::BoundedDequeInputStream stream(receivedMessage);
             currentReceiveMessageSize = stream.Extract<uint16_t>();
-            auto encodedSize = stream.Extract<uint16_t>();
+            auto encodedSize = static_cast<uint16_t>(currentReceiveMessageSize + minimumEncodingOverhead + stream.Extract<uint8_t>());
             receivedMessage.erase(receivedMessage.begin(), receivedMessage.begin() + receivedMessageHeaderSize);
 
             currentReceiveMessageReader.emplace(std::in_place, receivedMessage, currentReceiveMessageSize);
-            ForwardReceivedMessage(static_cast<uint16_t>(encodedSize));
+            ForwardReceivedMessage(encodedSize);
         }
     }
 
