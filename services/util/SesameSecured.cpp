@@ -127,36 +127,14 @@ namespace services
             return;
 
         const auto encryptedPayloadSize = stream.Available() - blockSize;
-        receiveBuffer.clear();
-
-        receiveEncryption.Start(receiveIv);
-
-        while (stream.Available() != blockSize)
-        {
-            infra::BoundedVector<uint8_t>::WithMaxSize<blockSize> encrypted;
-            encrypted.resize(std::min(encrypted.max_size(), stream.Available() - blockSize));
-            stream >> infra::MakeRange(encrypted);
-
-            receiveBuffer.resize(receiveBuffer.size() + encrypted.size());
-            std::size_t processedSize = receiveEncryption.Update(infra::MakeRange(encrypted), infra::Tail(infra::MakeRange(receiveBuffer), encrypted.size()));
-            receiveBuffer.resize(receiveBuffer.size() - encrypted.size() + processedSize);
-        }
-
-        std::array<uint8_t, blockSize> computedMac;
-        const auto expectedFinishSize = encryptedPayloadSize - receiveBuffer.size();
-        really_assert(receiveBuffer.size() + expectedFinishSize <= receiveBuffer.max_size());
-        receiveBuffer.resize(receiveBuffer.size() + expectedFinishSize);
-        auto moreProcessedSize = receiveEncryption.Finish(infra::Tail(infra::MakeRange(receiveBuffer), expectedFinishSize), computedMac);
-        really_assert(moreProcessedSize == expectedFinishSize);
+        really_assert(encryptedPayloadSize <= receiveBuffer.max_size());
+        receiveBuffer.resize(encryptedPayloadSize);
+        stream >> infra::MakeRange(receiveBuffer);
 
         std::array<uint8_t, blockSize> receivedMac;
         stream >> infra::MakeRange(receivedMac);
 
-        uint32_t numSame = 0;
-        for (auto i = 0; i != computedMac.size(); ++i)
-            numSame += computedMac[i] == receivedMac[i];
-
-        if (numSame != computedMac.size())
+        if (!receiveEncryption.Decrypt(receiveIv, infra::MakeRange(receiveBuffer), receivedMac))
         {
             integrityCheckFailed = true;
             integrityCheckFailedTimer.Start(std::chrono::seconds(1), [this]()
@@ -185,16 +163,17 @@ namespace services
 
     void SesameSecured::SendMessageStreamReleased()
     {
-        sendEncryption.Start(sendIv);
-        auto processedSize = sendEncryption.Update(infra::MakeRange(sendBuffer), infra::MakeRange(sendBuffer));
-        sendBuffer.resize(sendBuffer.size() + blockSize);
-        auto moreProcessedSize = sendEncryption.Finish(infra::DiscardTail(infra::DiscardHead(infra::MakeRange(sendBuffer), processedSize), blockSize), infra::Tail(infra::MakeRange(sendBuffer), blockSize));
-        really_assert(processedSize + moreProcessedSize + blockSize == sendBuffer.size());
+        if (!sendBuffer.empty())
+        {
+            sendBuffer.resize(sendBuffer.size() + blockSize);
+            sendEncryption.Encrypt(sendIv, infra::DiscardTail(infra::MakeRange(sendBuffer), blockSize), infra::Tail(infra::MakeRange(sendBuffer), blockSize));
 
-        infra::DataOutputStream::WithErrorPolicy stream(*sendWriter);
-        stream << infra::MakeRange(sendBuffer);
-        sendBuffer.clear();
-        IncreaseIv(sendIv);
+            infra::DataOutputStream::WithErrorPolicy stream(*sendWriter);
+            stream << infra::MakeRange(sendBuffer);
+            sendBuffer.clear();
+            IncreaseIv(sendIv);
+        }
+
         sendWriter = nullptr;
     }
 

@@ -14,9 +14,8 @@ namespace
     public:
         MOCK_METHOD(void, EncryptWithKey, (infra::ConstByteRange key), (override));
         MOCK_METHOD(void, DecryptWithKey, (infra::ConstByteRange key), (override));
-        MOCK_METHOD(void, Start, (infra::ConstByteRange iv), (override));
-        MOCK_METHOD(std::size_t, Update, (infra::ConstByteRange from, infra::ByteRange to), (override));
-        MOCK_METHOD(std::size_t, Finish, (infra::ByteRange to, infra::ByteRange mac), (override));
+        MOCK_METHOD(void, Encrypt, (infra::ConstByteRange iv, infra::ByteRange data, infra::ByteRange mac), (override));
+        MOCK_METHOD(bool, Decrypt, (infra::ConstByteRange iv, infra::ByteRange data, infra::ConstByteRange mac), (override));
     };
 }
 
@@ -80,6 +79,16 @@ public:
         ExpectReceivedMessage(message);
         ReceivedMessage(sentData);
         sentData.clear();
+    }
+
+    void ReleaseSendStreamWithoutPayload(std::size_t requestedSize)
+    {
+        EXPECT_CALL(lower, MaxSendMessageSize()).WillOnce(testing::Return(100));
+        EXPECT_CALL(lower, RequestSendMessage(16 + requestedSize));
+        upper.Subject().RequestSendMessage(requestedSize);
+
+        EXPECT_CALL(upper, SendMessageStreamAvailable(testing::_));
+        SendMessageStreamAvailable(sentData);
     }
 
     services::SesameSecured::KeyType key{ 1, 2 };
@@ -244,7 +253,7 @@ TEST_F(SesameSecuredTest, short_message_does_not_propagate)
 
 TEST_F(SesameSecuredTest, different_sizes)
 {
-    for (auto i = 0; i != 34; ++i)
+    for (auto i = 1; i != 34; ++i)
     {
         infra::BoundedConstString message("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
         message.shrink(i);
@@ -252,6 +261,22 @@ TEST_F(SesameSecuredTest, different_sizes)
         Send(message);
         Receive(message);
     }
+}
+
+TEST_F(SesameSecuredTest, send_stream_released_without_payload_sends_nothing)
+{
+    ReleaseSendStreamWithoutPayload(4);
+
+    EXPECT_THAT(sentData, testing::IsEmpty());
+    EXPECT_THAT(writer.Allocatable(), testing::IsTrue());
+}
+
+TEST_F(SesameSecuredTest, message_after_send_stream_released_without_payload_is_received)
+{
+    ReleaseSendStreamWithoutPayload(4);
+
+    Send("abcd");
+    Receive("abcd");
 }
 
 TEST_F(SesameSecuredTest, Reset_is_forwarded)
@@ -285,12 +310,12 @@ TEST_F(SesameSecuredStandaloneTest, message_size_wrapper_initializes_keys_from_s
     services::SesameSecured::WithMessageSize<64> secured{ encryptors, lower, keyMaterial };
 }
 
-TEST_F(SesameSecuredStandaloneTest, received_message_includes_non_zero_finish_output)
+TEST_F(SesameSecuredStandaloneTest, received_message_longer_than_one_block_is_decrypted_in_one_call)
 {
     services::SesameSecured::KeyType key{};
     services::SesameSecured::IvType iv{};
-    std::array<uint8_t, 5> encryptedPayload{ 'a', 'b', 'q', 'r', 's' };
-    std::array<uint8_t, 3> finishOutput{ 'x', 'y', 'z' };
+    std::array<uint8_t, 20> encryptedPayload{ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T' };
+    std::array<uint8_t, 20> decryptedPayload{ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't' };
     std::array<uint8_t, services::SesameSecured::blockSize> computedMac{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 
     testing::StrictMock<services::SesameMock> lower;
@@ -306,34 +331,142 @@ TEST_F(SesameSecuredStandaloneTest, received_message_includes_non_zero_finish_ou
     services::SesameSecured secured(storage, encryptors, lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv });
     testing::StrictMock<services::SesameObserverMock> upper{ secured };
 
-    EXPECT_CALL(receiveEncryption, Start(testing::_));
-    EXPECT_CALL(receiveEncryption, Update(testing::_, testing::_)).WillOnce(testing::Invoke([](infra::ConstByteRange from, infra::ByteRange to)
+    EXPECT_CALL(receiveEncryption, Decrypt(testing::_, testing::_, testing::_)).WillOnce(testing::Invoke([&](infra::ConstByteRange, infra::ByteRange data, infra::ConstByteRange mac)
         {
-            const auto producedByUpdate = 2U;
-            infra::Copy(infra::Head(from, producedByUpdate), infra::Head(to, producedByUpdate));
-            return producedByUpdate;
-        }));
-    EXPECT_CALL(receiveEncryption, Finish(testing::_, testing::_)).WillOnce(testing::Invoke([&](infra::ByteRange to, infra::ByteRange mac)
-        {
-            EXPECT_EQ(to.size(), finishOutput.size());
-            EXPECT_EQ(computedMac.size(), mac.size());
-            infra::Copy(infra::MakeRange(finishOutput), to);
-            infra::Copy(infra::MakeRange(computedMac), mac);
-            return finishOutput.size();
+            EXPECT_THAT(std::vector<uint8_t>(data.begin(), data.end()), testing::ElementsAreArray(encryptedPayload));
+            EXPECT_THAT(std::vector<uint8_t>(mac.begin(), mac.end()), testing::ElementsAreArray(computedMac));
+            infra::Copy(infra::MakeRange(decryptedPayload), data);
+            return true;
         }));
 
     EXPECT_CALL(upper, ReceivedMessage(testing::_)).WillOnce(testing::Invoke([](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
         {
             infra::TextInputStream::WithErrorPolicy stream(*reader);
-            EXPECT_EQ(5, stream.Available());
-            infra::BoundedString::WithStorage<8> s;
+            EXPECT_THAT(stream.Available(), testing::Eq(20));
+            infra::BoundedString::WithStorage<32> s;
             s.resize(stream.Available());
             stream >> s;
-            EXPECT_EQ("abxyz", s);
+            EXPECT_THAT(s, testing::Eq("abcdefghijklmnopqrst"));
         }));
 
     std::vector<uint8_t> encodedMessage(encryptedPayload.begin(), encryptedPayload.end());
     encodedMessage.insert(encodedMessage.end(), computedMac.begin(), computedMac.end());
     infra::SharedOptional<infra::StdVectorInputStreamReader> reader;
     lower.GetObserver().ReceivedMessage(reader.Emplace(encodedMessage));
+}
+
+TEST_F(SesameSecuredStandaloneTest, received_message_with_mac_mismatch_is_reported_and_not_delivered)
+{
+    services::SesameSecured::KeyType key{};
+    services::SesameSecured::IvType iv{};
+    std::array<uint8_t, 5> encryptedPayload{ 'a', 'b', 'q', 'r', 's' };
+    std::array<uint8_t, services::SesameSecured::blockSize> receivedMac{};
+
+    testing::StrictMock<services::SesameMock> lower;
+    testing::StrictMock<AesGcmEncryptionMock> sendEncryption;
+    testing::StrictMock<AesGcmEncryptionMock> receiveEncryption;
+    infra::BoundedVector<uint8_t>::WithMaxSize<64> sendBuffer;
+    infra::BoundedVector<uint8_t>::WithMaxSize<64> receiveBuffer;
+
+    EXPECT_CALL(sendEncryption, EncryptWithKey(testing::_));
+    EXPECT_CALL(receiveEncryption, DecryptWithKey(testing::_));
+    services::AesGcmEncryptors encryptors{ sendEncryption, receiveEncryption };
+    services::SesameSecured::StorageBase storage{ sendBuffer, receiveBuffer };
+    services::SesameSecured secured(storage, encryptors, lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv });
+    testing::StrictMock<services::SesameObserverMock> upper{ secured };
+    testing::StrictMock<services::IntegrityObserverMock> integrityObserver{ secured };
+
+    EXPECT_CALL(receiveEncryption, Decrypt(testing::_, testing::_, testing::_)).Times(1).WillOnce(testing::Return(false));
+
+    std::vector<uint8_t> encodedMessage(encryptedPayload.begin(), encryptedPayload.end());
+    encodedMessage.insert(encodedMessage.end(), receivedMac.begin(), receivedMac.end());
+    infra::SharedOptional<infra::StdVectorInputStreamReader> reader;
+    lower.GetObserver().ReceivedMessage(reader.Emplace(encodedMessage));
+
+    EXPECT_CALL(integrityObserver, IntegrityCheckFailed());
+    ForwardTime(std::chrono::seconds(1));
+}
+
+TEST_F(SesameSecuredStandaloneTest, received_message_without_payload_is_decrypted_with_empty_data)
+{
+    services::SesameSecured::KeyType key{};
+    services::SesameSecured::IvType iv{};
+    std::array<uint8_t, services::SesameSecured::blockSize> receivedMac{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+
+    testing::StrictMock<services::SesameMock> lower;
+    testing::StrictMock<AesGcmEncryptionMock> sendEncryption;
+    testing::StrictMock<AesGcmEncryptionMock> receiveEncryption;
+    infra::BoundedVector<uint8_t>::WithMaxSize<64> sendBuffer;
+    infra::BoundedVector<uint8_t>::WithMaxSize<64> receiveBuffer;
+
+    EXPECT_CALL(sendEncryption, EncryptWithKey(testing::_));
+    EXPECT_CALL(receiveEncryption, DecryptWithKey(testing::_));
+    services::AesGcmEncryptors encryptors{ sendEncryption, receiveEncryption };
+    services::SesameSecured::StorageBase storage{ sendBuffer, receiveBuffer };
+    services::SesameSecured secured(storage, encryptors, lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv });
+    testing::StrictMock<services::SesameObserverMock> upper{ secured };
+
+    EXPECT_CALL(receiveEncryption, Decrypt(testing::_, testing::_, testing::_)).Times(1).WillOnce(testing::Invoke([&](infra::ConstByteRange, infra::ByteRange data, infra::ConstByteRange mac)
+        {
+            EXPECT_THAT(data.size(), testing::Eq(0));
+            EXPECT_THAT(std::vector<uint8_t>(mac.begin(), mac.end()), testing::ElementsAreArray(receivedMac));
+            return true;
+        }));
+    EXPECT_CALL(upper, ReceivedMessage(testing::_)).WillOnce(testing::Invoke([](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+        {
+            infra::TextInputStream::WithErrorPolicy stream(*reader);
+            EXPECT_THAT(stream.Available(), testing::Eq(0));
+        }));
+
+    std::vector<uint8_t> encodedMessage(receivedMac.begin(), receivedMac.end());
+    infra::SharedOptional<infra::StdVectorInputStreamReader> reader;
+    lower.GetObserver().ReceivedMessage(reader.Emplace(encodedMessage));
+}
+
+TEST_F(SesameSecuredStandaloneTest, sent_message_is_encrypted_in_one_call_with_mac_in_tail)
+{
+    services::SesameSecured::KeyType key{};
+    services::SesameSecured::IvType iv{ 1, 2, 3 };
+    const std::string plain = "abcdefghijklmnopqrstu";
+    const std::vector<uint8_t> encrypted{ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U' };
+    std::array<uint8_t, services::SesameSecured::blockSize> mac{ 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
+
+    testing::StrictMock<services::SesameMock> lower;
+    testing::StrictMock<AesGcmEncryptionMock> sendEncryption;
+    testing::StrictMock<AesGcmEncryptionMock> receiveEncryption;
+    infra::BoundedVector<uint8_t>::WithMaxSize<64> sendBuffer;
+    infra::BoundedVector<uint8_t>::WithMaxSize<64> receiveBuffer;
+
+    EXPECT_CALL(sendEncryption, EncryptWithKey(testing::_));
+    EXPECT_CALL(receiveEncryption, DecryptWithKey(testing::_));
+    services::AesGcmEncryptors encryptors{ sendEncryption, receiveEncryption };
+    services::SesameSecured::StorageBase storage{ sendBuffer, receiveBuffer };
+    services::SesameSecured secured(storage, encryptors, lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv });
+    testing::StrictMock<services::SesameObserverMock> upper{ secured };
+
+    EXPECT_CALL(lower, MaxSendMessageSize()).WillOnce(testing::Return(100));
+    EXPECT_CALL(lower, RequestSendMessage(plain.size() + services::SesameSecured::blockSize));
+    upper.Subject().RequestSendMessage(plain.size());
+
+    EXPECT_CALL(upper, SendMessageStreamAvailable(testing::_)).WillOnce(testing::Invoke([&](infra::SharedPtr<infra::StreamWriter>&& writer)
+        {
+            infra::TextOutputStream::WithErrorPolicy stream(*writer);
+            stream << infra::BoundedConstString(plain.data(), plain.size());
+        }));
+    std::vector<uint8_t> sentData;
+    infra::SharedOptional<infra::StdVectorOutputStreamWriter> writer;
+
+    EXPECT_CALL(sendEncryption, Encrypt(testing::_, testing::_, testing::_)).Times(1).WillOnce(testing::Invoke([&](infra::ConstByteRange ivUsed, infra::ByteRange data, infra::ByteRange macOut)
+        {
+            EXPECT_THAT(std::vector<uint8_t>(ivUsed.begin(), ivUsed.end()), testing::ElementsAreArray(iv));
+            EXPECT_THAT(std::string(data.begin(), data.end()), testing::Eq(plain));
+            EXPECT_THAT(macOut.size(), testing::Eq(services::SesameSecured::blockSize));
+            infra::Copy(infra::MakeRange(encrypted), data);
+            infra::Copy(infra::MakeRange(mac), macOut);
+        }));
+    lower.GetObserver().SendMessageStreamAvailable(writer.Emplace(sentData));
+
+    std::vector<uint8_t> expected(encrypted);
+    expected.insert(expected.end(), mac.begin(), mac.end());
+    EXPECT_THAT(sentData, testing::ElementsAreArray(expected));
 }

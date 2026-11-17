@@ -1,5 +1,6 @@
 #include "services/util/EchoPolicyDiffieHellman.hpp"
 #include "infra/util/ReallyAssert.hpp"
+#include "mbedtls/platform_util.h"
 
 namespace services
 {
@@ -52,6 +53,8 @@ namespace services
             DiffieHellmanKeyEstablishmentProxy::CancelRequestSend();
 
         initializingKeys = true;
+        if (nextKeyPair.has_value())
+            Clean(infra::MakeByteRange(nextKeyPair.value()));
         nextKeyPair.reset();
         verifier.reset();
 
@@ -86,9 +89,10 @@ namespace services
 
     void EchoPolicyDiffieHellman::GrantingSend(ServiceProxy& proxy)
     {
-        if (nextKeyPair && &proxy != this)
+        if (nextKeyPair.has_value() && &proxy != this)
         {
-            secured.SetSendKey(nextKeyPair->first, nextKeyPair->second);
+            secured.SetSendKey(nextKeyPair.value().first, nextKeyPair.value().second);
+            Clean(infra::MakeByteRange(nextKeyPair.value()));
             nextKeyPair.reset();
         }
     }
@@ -134,14 +138,20 @@ namespace services
 
         std::array<uint8_t, 64> expandedMaterial{};
         keyExpander.Expand(sharedSecret, expandedMaterial);
+        Clean(infra::MakeRange(sharedSecret));
 
         auto key = Middle<16>(expandedMaterial, 0 + swap);
         auto iv = Middle<12>(expandedMaterial, 16 + swap);
         auto otherKey = Middle<16>(expandedMaterial, 28 - swap);
         auto otherIv = Middle<12>(expandedMaterial, 44 - swap);
+        Clean(expandedMaterial);
 
         nextKeyPair = { key, iv };
         secured.SetReceiveKey(otherKey, otherIv);
+        Clean(key);
+        Clean(iv);
+        Clean(otherKey);
+        Clean(otherIv);
 
         KeyExchangeSuccessful();
 
@@ -165,6 +175,11 @@ namespace services
             waitingProxies.pop_front();
             onRequest(proxy);
         }
+    }
+
+    void EchoPolicyDiffieHellman::Clean(infra::ByteRange material) const
+    {
+        mbedtls_platform_zeroize(material.begin(), material.size());
     }
 
 #ifdef EMIL_USE_MBEDTLS
