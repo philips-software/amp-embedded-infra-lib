@@ -1,6 +1,5 @@
 #include "services/util/EchoPolicyDiffieHellman.hpp"
 #include "infra/util/ReallyAssert.hpp"
-#include "mbedtls/platform_util.h"
 
 namespace services
 {
@@ -179,7 +178,9 @@ namespace services
 
     void EchoPolicyDiffieHellman::Clean(infra::ByteRange material) const
     {
-        mbedtls_platform_zeroize(material.begin(), material.size());
+        volatile uint8_t* p = material.begin();
+        for (std::size_t i = 0; i != material.size(); ++i)
+            p[i] = 0;
     }
 
 #ifdef EMIL_USE_MBEDTLS

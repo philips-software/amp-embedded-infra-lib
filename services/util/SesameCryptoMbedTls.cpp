@@ -27,6 +27,11 @@ namespace services
             really_assert(mbedtls_mpi_write_binary(&x, result.data(), result.size()) == 0);
             return result;
         }
+
+        bool IsAllowedCertificateDigest(mbedtls_md_type_t digest)
+        {
+            return digest == MBEDTLS_MD_SHA256 || digest == MBEDTLS_MD_SHA384 || digest == MBEDTLS_MD_SHA512;
+        }
     }
 
     EcSecP256r1DiffieHellmanMbedTls::EcSecP256r1DiffieHellmanMbedTls(hal::SynchronousRandomDataGenerator& randomDataGenerator)
@@ -171,7 +176,7 @@ namespace services
         std::array<uint8_t, MBEDTLS_MD_MAX_SIZE> hash;
         auto signatureMd = certificate.MBEDTLS_PRIVATE(sig_md);
         const mbedtls_md_info_t* mdInfo = mbedtls_md_info_from_type(signatureMd);
-        valid = mdInfo != nullptr && mbedtls_md(mdInfo, certificate.tbs.p, certificate.tbs.len, hash.data()) == 0 && mbedtls_pk_verify(&rootCertificate.pk, signatureMd, hash.data(), mbedtls_md_get_size(mdInfo), certificate.MBEDTLS_PRIVATE(sig).p, certificate.MBEDTLS_PRIVATE(sig).len) == 0;
+        valid = IsAllowedCertificateDigest(signatureMd) && mdInfo != nullptr && mbedtls_md(mdInfo, certificate.tbs.p, certificate.tbs.len, hash.data()) == 0 && mbedtls_pk_verify(&rootCertificate.pk, signatureMd, hash.data(), mbedtls_md_get_size(mdInfo), certificate.MBEDTLS_PRIVATE(sig).p, certificate.MBEDTLS_PRIVATE(sig).len) == 0;
 
         really_assert(mbedtls_ecp_export(mbedtls_pk_ec(certificate.pk), &unusedGroup, &unusedDsaPrivateKey, &publicKey) == 0);
 
