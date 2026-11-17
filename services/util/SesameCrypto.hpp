@@ -60,8 +60,8 @@ namespace services
 
         virtual void EncryptWithKey(infra::ConstByteRange key) = 0;
         virtual void DecryptWithKey(infra::ConstByteRange key) = 0;
-        virtual void Encrypt(infra::ConstByteRange iv, infra::ByteRange data, infra::ByteRange mac) = 0;
-        virtual bool Decrypt(infra::ConstByteRange iv, infra::ByteRange data, infra::ConstByteRange mac) = 0;
+        virtual void Encrypt(infra::ConstByteRange iv, infra::ByteRange data) = 0;
+        virtual bool Decrypt(infra::ConstByteRange iv, infra::ByteRange data) = 0;
     };
 
     struct AesGcmEncryptors

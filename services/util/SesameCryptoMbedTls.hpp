@@ -78,8 +78,8 @@ namespace services
 
         void EncryptWithKey(infra::ConstByteRange key) override;
         void DecryptWithKey(infra::ConstByteRange key) override;
-        void Encrypt(infra::ConstByteRange iv, infra::ByteRange data, infra::ByteRange mac) override;
-        bool Decrypt(infra::ConstByteRange iv, infra::ByteRange data, infra::ConstByteRange mac) override;
+        void Encrypt(infra::ConstByteRange iv, infra::ByteRange data) override;
+        bool Decrypt(infra::ConstByteRange iv, infra::ByteRange data) override;
 
     private:
         mbedtls_gcm_context context;

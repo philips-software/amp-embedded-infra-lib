@@ -126,15 +126,12 @@ namespace services
         if (stream.Available() < blockSize)
             return;
 
-        const auto encryptedPayloadSize = stream.Available() - blockSize;
+        const auto encryptedPayloadSize = stream.Available();
         really_assert(encryptedPayloadSize <= receiveBuffer.max_size());
         receiveBuffer.resize(encryptedPayloadSize);
         stream >> infra::MakeRange(receiveBuffer);
 
-        std::array<uint8_t, blockSize> receivedMac;
-        stream >> infra::MakeRange(receivedMac);
-
-        if (!receiveEncryption.Decrypt(receiveIv, infra::MakeRange(receiveBuffer), receivedMac))
+        if (!receiveEncryption.Decrypt(receiveIv, infra::MakeRange(receiveBuffer)))
         {
             integrityCheckFailed = true;
             integrityCheckFailedTimer.Start(std::chrono::seconds(1), [this]()
@@ -146,6 +143,8 @@ namespace services
                 });
             return;
         }
+
+        receiveBuffer.resize(receiveBuffer.size() - blockSize);
 
         IncreaseIv(receiveIv);
 
@@ -166,7 +165,7 @@ namespace services
         if (!sendBuffer.empty())
         {
             sendBuffer.resize(sendBuffer.size() + blockSize);
-            sendEncryption.Encrypt(sendIv, infra::DiscardTail(infra::MakeRange(sendBuffer), blockSize), infra::Tail(infra::MakeRange(sendBuffer), blockSize));
+            sendEncryption.Encrypt(sendIv, infra::MakeRange(sendBuffer));
 
             infra::DataOutputStream::WithErrorPolicy stream(*sendWriter);
             stream << infra::MakeRange(sendBuffer);

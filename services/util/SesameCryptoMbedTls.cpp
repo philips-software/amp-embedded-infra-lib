@@ -250,14 +250,18 @@ namespace services
         mbedtls_gcm_setkey(&context, MBEDTLS_CIPHER_ID_AES, key.begin(), key.size() * 8); //NOSONAR
     }
 
-    void AesGcmEncryptionMbedTls::Encrypt(infra::ConstByteRange iv, infra::ByteRange data, infra::ByteRange mac)
+    void AesGcmEncryptionMbedTls::Encrypt(infra::ConstByteRange iv, infra::ByteRange data)
     {
-        really_assert(mbedtls_gcm_crypt_and_tag(&context, MBEDTLS_GCM_ENCRYPT, data.size(), iv.begin(), iv.size(), nullptr, 0, data.begin(), data.begin(), mac.size(), mac.begin()) == 0);
+        really_assert(data.size() >= blockSize);
+        const auto payloadSize = data.size() - blockSize;
+        really_assert(mbedtls_gcm_crypt_and_tag(&context, MBEDTLS_GCM_ENCRYPT, payloadSize, iv.begin(), iv.size(), nullptr, 0, data.begin(), data.begin(), blockSize, data.begin() + payloadSize) == 0);
     }
 
-    bool AesGcmEncryptionMbedTls::Decrypt(infra::ConstByteRange iv, infra::ByteRange data, infra::ConstByteRange mac)
+    bool AesGcmEncryptionMbedTls::Decrypt(infra::ConstByteRange iv, infra::ByteRange data)
     {
-        auto result = mbedtls_gcm_auth_decrypt(&context, data.size(), iv.begin(), iv.size(), nullptr, 0, mac.begin(), mac.size(), data.begin(), data.begin());
+        really_assert(data.size() >= blockSize);
+        const auto payloadSize = data.size() - blockSize;
+        auto result = mbedtls_gcm_auth_decrypt(&context, payloadSize, iv.begin(), iv.size(), nullptr, 0, data.begin() + payloadSize, blockSize, data.begin(), data.begin());
         really_assert(result == 0 || result == MBEDTLS_ERR_GCM_AUTH_FAILED);
         return result == 0;
     }
