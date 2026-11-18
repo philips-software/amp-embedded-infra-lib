@@ -48,6 +48,9 @@ namespace services
 #ifdef EMIL_USE_MBEDTLS
         struct WithCryptoMbedTls;
 #endif
+#ifdef EMIL_USE_CUSTOM_CRYPTO
+        struct WithCustomCrypto;
+#endif
 
         EchoPolicyDiffieHellman(const Crypto& crypto, Echo& echo, EchoInitialization& echoInitialization, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 

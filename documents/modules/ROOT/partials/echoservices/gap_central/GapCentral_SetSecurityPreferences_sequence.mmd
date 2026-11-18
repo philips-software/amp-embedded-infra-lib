@@ -1,0 +1,7 @@
+sequenceDiagram
+    participant App as App<br>[implements GapCentralResponse]
+    participant Node as Node<br>[implements GapCentral]
+
+    App->>Node: GapCentral.SetSecurityPreferences(<br>secureConnections=supported, mitm=enforced,<br>ioCapabilities=displayYesNo)
+
+    Note over App: Pairing-time requirements, not a Connect-time filter.<br>The I/O capabilities help select the pairing method.

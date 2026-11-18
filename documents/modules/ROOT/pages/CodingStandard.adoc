@@ -123,8 +123,8 @@ This rule applies even to the first-level namespace. Other coding standards ofte
 [source,cpp]
 ----
 Timer::Timer()
-    : registered(false)
-    , nextTriggerTime()
+    : registered{ false }
+    , nextTriggerTime{}
 {}
 ----
 
@@ -306,7 +306,7 @@ a = (b + c) * d;	// <-- correct
 a = ( b + c ) * d;	// <-- incorrect
 ----
 
-*Rule 37.* When `{` and `}` are used on a single line to define a short array or a single statement lambda expression (see Rule 42) `{` shall be followed by a space and `}` shall be preceded by a space. Example:
+*Rule 37.* When `{` and `}` are used on a single line to define a short array, to initialize an object, or to define a single statement lambda expression (see Rule 42) `{` shall be followed by a space and `}` shall be preceded by a space. Example:
 
 [source,cpp]
 ----
@@ -371,13 +371,14 @@ Colour c = todayIsMonday
     : SomeVeryLargeFactoryFunctionThatTranslatesColours(green);
 ----
 
-*Rule 42.* `{` and `}` shall be the single token in one line (except when `}` is followed by `;`), except when used to define short arrays, when used in a lambda expressions containing only a single statement, and when used in an empty definition. Example:
+*Rule 42.* `{` and `}` shall be the single token in one line (except when `}` is followed by `;`), except when used to define short arrays, when used to initialize an object (see Rule 62), when used in a lambda expressions containing only a single statement, and when used in an empty definition. Example:
 
 [source,cpp]
 ----
 class C
 {
     std::array<int32_t, 4> a = { 0, 2, 8, 64 };	// <-- short array
+    Rectangle rectangle{ 4, 3 };                // <-- object initialization
 
     void F()
     {
@@ -420,7 +421,7 @@ struct Uart: hal::Uart::Name<Uart> {};
 struct C
 {
     C()
-        : member1(0)		// int32_ts are not initialized by default and therefore require
+        : member1{ 0 }		// int32_ts are not initialized by default and therefore require
     {}				        // explicit initialization
 
     int32_t member1;
@@ -550,6 +551,19 @@ TEST(MyTest, SecondTest)
 }
 ----
 
+*Rule 62.* Objects shall be initialized using `{ }` in favour of `( )`; this includes data members in the initialiser list. `( )` shall only be used when `{ }` would change the intended meaning of the initialization, i.e. when `{ }` would select a different constructor, such as one taking a `std::initializer_list`, or would result in a different value. Initialization using `=`, as in Rule 46, is not affected by this rule. Example:
+
+[source,cpp]
+----
+Rectangle rectangle{ 4, 3 };            // <-- correct
+Rectangle rectangle(4, 3);              // <-- incorrect
+
+std::vector<int32_t> values(3, 0);      // <-- correct: three elements with value 0
+std::vector<int32_t> values{ 3, 0 };    // <-- incorrect: two elements with values 3 and 0
+----
+
+*Rationale 17.* Initialization using `{ }` does not allow narrowing conversions, such as initializing an `int32_t` with a `float`, and cannot be mistaken for a function declaration: `Timer timer();` declares a function, while `Timer timer{};` defines an object.
+
 == Document Revision History
 [cols="10,15,20,40,15", options="header"]
 |====
@@ -637,8 +651,8 @@ namespace infra
     }
 
     CheatSheetExample::CheatSheetExample(uint8_t identifier)
-        : identifier(identifier)
-        , state(State::initializing)
+        : identifier{ identifier }
+        , state{ State::initializing }
     {}
 
     void CheatSheetExample::Operate()
