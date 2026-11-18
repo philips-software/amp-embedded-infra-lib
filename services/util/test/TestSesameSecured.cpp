@@ -12,8 +12,8 @@ namespace
         : public services::AesGcmEncryption
     {
     public:
-        MOCK_METHOD(void, SetEncryptionKey, (infra::ConstByteRange key), (override));
-        MOCK_METHOD(void, SetDecryptionKey, (infra::ConstByteRange key), (override));
+        MOCK_METHOD(void, EncryptWithKey, (infra::ConstByteRange key), (override));
+        MOCK_METHOD(void, DecryptWithKey, (infra::ConstByteRange key), (override));
         MOCK_METHOD(void, Encrypt, (infra::ConstByteRange iv, infra::ByteRange data), (override));
         MOCK_METHOD(bool, Decrypt, (infra::ConstByteRange iv, infra::ByteRange data), (override));
     };
@@ -304,8 +304,8 @@ TEST_F(SesameSecuredStandaloneTest, message_size_wrapper_initializes_keys_from_s
     testing::StrictMock<AesGcmEncryptionMock> receiveEncryption;
     services::AesGcmEncryptors encryptors{ sendEncryption, receiveEncryption };
 
-    EXPECT_CALL(sendEncryption, SetEncryptionKey(testing::ElementsAreArray(keyMaterial.sendBySelf.key)));
-    EXPECT_CALL(receiveEncryption, SetDecryptionKey(testing::ElementsAreArray(keyMaterial.sendByOther.key)));
+    EXPECT_CALL(sendEncryption, EncryptWithKey(testing::ElementsAreArray(keyMaterial.sendBySelf.key)));
+    EXPECT_CALL(receiveEncryption, DecryptWithKey(testing::ElementsAreArray(keyMaterial.sendByOther.key)));
 
     services::SesameSecured::WithMessageSize<64> secured{ encryptors, lower, keyMaterial };
 }
@@ -324,8 +324,8 @@ TEST_F(SesameSecuredStandaloneTest, received_message_longer_than_one_block_is_de
     infra::BoundedVector<uint8_t>::WithMaxSize<64> sendBuffer;
     infra::BoundedVector<uint8_t>::WithMaxSize<64> receiveBuffer;
 
-    EXPECT_CALL(sendEncryption, SetEncryptionKey(testing::_));
-    EXPECT_CALL(receiveEncryption, SetDecryptionKey(testing::_));
+    EXPECT_CALL(sendEncryption, EncryptWithKey(testing::_));
+    EXPECT_CALL(receiveEncryption, DecryptWithKey(testing::_));
     services::AesGcmEncryptors encryptors{ sendEncryption, receiveEncryption };
     services::SesameSecured::StorageBase storage{ sendBuffer, receiveBuffer };
     services::SesameSecured secured(storage, encryptors, lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv });
@@ -370,8 +370,8 @@ TEST_F(SesameSecuredStandaloneTest, received_message_with_mac_mismatch_is_report
     infra::BoundedVector<uint8_t>::WithMaxSize<64> sendBuffer;
     infra::BoundedVector<uint8_t>::WithMaxSize<64> receiveBuffer;
 
-    EXPECT_CALL(sendEncryption, SetEncryptionKey(testing::_));
-    EXPECT_CALL(receiveEncryption, SetDecryptionKey(testing::_));
+    EXPECT_CALL(sendEncryption, EncryptWithKey(testing::_));
+    EXPECT_CALL(receiveEncryption, DecryptWithKey(testing::_));
     services::AesGcmEncryptors encryptors{ sendEncryption, receiveEncryption };
     services::SesameSecured::StorageBase storage{ sendBuffer, receiveBuffer };
     services::SesameSecured secured(storage, encryptors, lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv });
@@ -401,8 +401,8 @@ TEST_F(SesameSecuredStandaloneTest, received_message_without_payload_is_decrypte
     infra::BoundedVector<uint8_t>::WithMaxSize<64> sendBuffer;
     infra::BoundedVector<uint8_t>::WithMaxSize<64> receiveBuffer;
 
-    EXPECT_CALL(sendEncryption, SetEncryptionKey(testing::_));
-    EXPECT_CALL(receiveEncryption, SetDecryptionKey(testing::_));
+    EXPECT_CALL(sendEncryption, EncryptWithKey(testing::_));
+    EXPECT_CALL(receiveEncryption, DecryptWithKey(testing::_));
     services::AesGcmEncryptors encryptors{ sendEncryption, receiveEncryption };
     services::SesameSecured::StorageBase storage{ sendBuffer, receiveBuffer };
     services::SesameSecured secured(storage, encryptors, lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv });
@@ -438,8 +438,8 @@ TEST_F(SesameSecuredStandaloneTest, sent_message_is_encrypted_in_one_call_with_m
     infra::BoundedVector<uint8_t>::WithMaxSize<64> sendBuffer;
     infra::BoundedVector<uint8_t>::WithMaxSize<64> receiveBuffer;
 
-    EXPECT_CALL(sendEncryption, SetEncryptionKey(testing::_));
-    EXPECT_CALL(receiveEncryption, SetDecryptionKey(testing::_));
+    EXPECT_CALL(sendEncryption, EncryptWithKey(testing::_));
+    EXPECT_CALL(receiveEncryption, DecryptWithKey(testing::_));
     services::AesGcmEncryptors encryptors{ sendEncryption, receiveEncryption };
     services::SesameSecured::StorageBase storage{ sendBuffer, receiveBuffer };
     services::SesameSecured secured(storage, encryptors, lower, services::SesameSecured::KeyMaterial{ key, iv, key, iv });

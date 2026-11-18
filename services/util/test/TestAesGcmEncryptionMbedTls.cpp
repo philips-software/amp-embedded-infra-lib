@@ -11,7 +11,7 @@ public:
     {
         auto payloadSize = data.size();
         data.resize(payloadSize + mac.size());
-        encryption.SetEncryptionKey(infra::MakeRange(withKey));
+        encryption.EncryptWithKey(infra::MakeRange(withKey));
         encryption.Encrypt(infra::MakeRange(withIv), infra::MakeRange(data));
         std::copy(data.begin() + payloadSize, data.end(), mac.begin());
         data.resize(payloadSize);
@@ -21,7 +21,7 @@ public:
     {
         auto payloadSize = data.size();
         data.insert(data.end(), withMac.begin(), withMac.end());
-        decryption.SetDecryptionKey(infra::MakeRange(withKey));
+        decryption.DecryptWithKey(infra::MakeRange(withKey));
         auto result = decryption.Decrypt(infra::MakeRange(withIv), infra::MakeRange(data));
         data.resize(payloadSize);
         return result;
