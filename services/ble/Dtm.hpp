@@ -17,7 +17,7 @@ namespace services
         Dtm(const Dtm& other) = delete;
         Dtm& operator=(const Dtm& other) = delete;
 
-        virtual bool StartTone(uint8_t rfChannel, uint8_t offset) = 0;
+        virtual bool StartTone(uint8_t rfChannel) = 0;
         virtual bool StopTone() = 0;
         virtual bool SetTxPowerLevel(uint8_t txPower) = 0;
 

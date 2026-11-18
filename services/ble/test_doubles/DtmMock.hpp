@@ -13,7 +13,7 @@ namespace services
         : public Dtm
     {
     public:
-        MOCK_METHOD(bool, StartTone, (uint8_t rfChannel, uint8_t offset), (override));
+        MOCK_METHOD(bool, StartTone, (uint8_t rfChannel), (override));
         MOCK_METHOD(bool, StopTone, (), (override));
         MOCK_METHOD(bool, SetTxPowerLevel, (uint8_t txPower), (override));
         MOCK_METHOD(bool, StartContinuousRx, (uint8_t channel), (override));
