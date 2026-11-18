@@ -21,20 +21,9 @@ namespace services
         virtual bool StopTone() = 0;
         virtual bool SetTxPowerLevel(uint8_t txPower) = 0;
 
-        virtual bool StartContinuousRx(uint8_t)
-        {
-            return false;
-        }
-
-        virtual std::optional<int8_t> ReadRssi()
-        {
-            return std::nullopt;
-        }
-
-        virtual bool StopContinuousRx()
-        {
-            return false;
-        }
+        virtual bool StartContinuousRx(uint8_t channel) = 0;
+        virtual std::optional<int8_t> ReadRssi() = 0;
+        virtual bool StopContinuousRx() = 0;
 
         virtual bool StartRxTest(uint8_t frequency, uint8_t phy) = 0;
         virtual bool StartTxTest(uint8_t frequency, uint8_t dataLength, uint8_t packetPayload, uint8_t phy) = 0;
