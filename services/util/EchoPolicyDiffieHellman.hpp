@@ -75,6 +75,8 @@ namespace services
 
         void ReQueueWaitingProxies();
 
+        void Clean(infra::ByteRange material) const;
+
     private:
         SesameSecured& secured;
         hal::SynchronousRandomDataGenerator& randomDataGenerator;
