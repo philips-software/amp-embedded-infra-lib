@@ -46,6 +46,16 @@ namespace services
         pin.Config(config, !startOutputState);
     }
 
+    void GpioPinInverted::ReConfig(hal::PinConfigType config)
+    {
+        pin.ReConfig(config);
+    }
+
+    void GpioPinInverted::ReConfig(hal::PinConfigType config, bool startOutputState)
+    {
+        pin.ReConfig(config, !startOutputState);
+    }
+
     void GpioPinInverted::ResetConfig()
     {
         pin.ResetConfig();
