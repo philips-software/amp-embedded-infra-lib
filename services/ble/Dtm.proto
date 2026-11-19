@@ -12,7 +12,7 @@ option java_outer_classname = "DtmProto";
 
 // ToneParams: Input parameters to generate a carrier wave (tone)
 //   - channel      : BLE channel ID (2.402 + 0.002*<channel>) GHz (Range 0x00 to 0x27)
-//   - durationMs   : Duration in milliseconds
+//   - durationMs   : Duration in milliseconds before automatic stop
 message ToneParams
 {
     uint32 channel = 1;
@@ -65,11 +65,6 @@ message TxParams
     uint32 durationMs = 5;
 }
 
-message ContinuousRxParams
-{
-    uint32 channel = 1;
-}
-
 message RssiResult
 {
     bool success = 1;
@@ -86,9 +81,7 @@ service Dtm
     rpc StartRxTest(RxParams) returns(Nothing) { option (method_id) = 4; }
     rpc StartTxTest(TxParams) returns(Nothing) { option (method_id) = 5; }
     rpc StopTest(Nothing) returns(Nothing) { option (method_id) = 6; }
-    rpc StartContinuousRx(ContinuousRxParams) returns(Nothing) { option (method_id) = 7; }
     rpc ReadRssi(Nothing) returns(Nothing) { option (method_id) = 8; }
-    rpc StopContinuousRx(Nothing) returns(Nothing) { option (method_id) = 9; }
 }
 
 message Result
