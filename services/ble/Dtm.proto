@@ -20,10 +20,10 @@ message ToneParams
 }
 
 // TxPowerParams: Input parameter to set the transmit power
-//   - txPower      : Power amplifier output level (Range: 0x00 - 0x23)
+//   - txPower      : Requested output power in dBm (Range: -127 to +20)
 message TxPowerParams
 {
-    uint32 txPower = 1;
+    int32 txPower = 1;
 }
 
 // RxParams: Input parameters for the receive Test

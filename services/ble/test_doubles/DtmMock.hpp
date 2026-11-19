@@ -15,7 +15,7 @@ namespace services
     public:
         MOCK_METHOD(bool, StartTone, (uint8_t rfChannel), (override));
         MOCK_METHOD(bool, StopTone, (), (override));
-        MOCK_METHOD(bool, SetTxPowerLevel, (uint8_t txPower), (override));
+        MOCK_METHOD(bool, SetTxPowerLevel, (int8_t txPowerDbm), (override));
         MOCK_METHOD(bool, StartContinuousRx, (uint8_t channel), (override));
         MOCK_METHOD(std::optional<int8_t>, ReadRssi, (), (override));
         MOCK_METHOD(bool, StopContinuousRx, (), (override));

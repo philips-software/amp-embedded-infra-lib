@@ -19,7 +19,7 @@ namespace services
 
         virtual bool StartTone(uint8_t rfChannel) = 0;
         virtual bool StopTone() = 0;
-        virtual bool SetTxPowerLevel(uint8_t txPower) = 0;
+        virtual bool SetTxPowerLevel(int8_t txPowerDbm) = 0;
 
         virtual bool StartContinuousRx(uint8_t channel) = 0;
         virtual std::optional<int8_t> ReadRssi() = 0;
