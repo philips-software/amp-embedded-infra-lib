@@ -178,9 +178,8 @@ namespace services
 
     void EchoPolicyDiffieHellman::Clean(infra::ByteRange material) const
     {
-        volatile uint8_t* p = material.begin();
-        for (std::size_t i = 0; i != material.size(); ++i)
-            p[i] = 0;
+        infra::MemoryRange<volatile uint8_t> materialRange = material;
+        std::fill(materialRange.begin(), materialRange.end(), 0);
     }
 
 #ifdef EMIL_USE_MBEDTLS
