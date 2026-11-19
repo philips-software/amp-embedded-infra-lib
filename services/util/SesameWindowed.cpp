@@ -1,60 +1,11 @@
 #include "services/util/SesameWindowed.hpp"
 #include "infra/stream/BoundedDequeOutputStream.hpp"
+#include "infra/util/ReallyAssert.hpp"
 #include <algorithm>
+#include <limits>
 
 namespace services
 {
-    namespace
-    {
-        // This reader is used to put the Operation::message byte ('\x4') in front of a message, in order to exactly calculate the encoded size
-        // Only ExtractContiguousRange(), Empty(), and Available() are used by SesameCobs, so only those methods are implemented here.
-        class ExtraCharacterReader
-            : public infra::LimitedStreamReader
-        {
-        public:
-            using infra::LimitedStreamReader::LimitedStreamReader;
-
-            void Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) override
-            {
-                std::abort();
-            }
-
-            uint8_t Peek(infra::StreamErrorPolicy& errorPolicy) override
-            {
-                std::abort();
-            }
-
-            infra::ConstByteRange ExtractContiguousRange(std::size_t max) override
-            {
-                if (extraCharacter != 0)
-                    return infra::Head(infra::Head(infra::MakeByteRange(character), std::exchange(extraCharacter, 0)), max);
-                else
-                    return infra::LimitedStreamReader::ExtractContiguousRange(max);
-            }
-
-            infra::ConstByteRange PeekContiguousRange(std::size_t start) override
-            {
-                std::abort();
-            }
-
-            bool Empty() const override
-            {
-                return extraCharacter == 0 && infra::LimitedStreamReader::Empty();
-            }
-
-            std::size_t Available() const override
-            {
-                return infra::LimitedStreamReader::Available() + extraCharacter;
-            }
-
-        private:
-            static const char character;
-            std::size_t extraCharacter = 1;
-        };
-
-        const char ExtraCharacterReader::character = '\x4';
-    }
-
     SesameWindowed::SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, uint8_t splitBuffers, SesameEncoded& delegate, SesameInitializer& sesameInitializer)
         : SesameEncodedObserver(delegate)
         , receivedMessage(receivedMessage)
@@ -191,7 +142,7 @@ namespace services
                 break;
             case Operation::message:
                 if (initialized)
-                    SaveReceivedMessage(reader);
+                    SaveReceivedMessage(reader, encodedSize);
                 break;
         }
 
@@ -205,11 +156,14 @@ namespace services
         GetObserver().Initialized();
     }
 
-    void SesameWindowed::SaveReceivedMessage(infra::StreamReader& reader)
+    void SesameWindowed::SaveReceivedMessage(infra::StreamReader& reader, std::size_t encodedSize)
     {
+        auto payloadSize = static_cast<uint16_t>(reader.Available());
+        really_assert(encodedSize >= payloadSize + minimumEncodingOverhead && encodedSize - payloadSize - minimumEncodingOverhead <= std::numeric_limits<uint8_t>::max());
+
         infra::BoundedDequeOutputStream stream(receivedMessage);
 
-        stream << static_cast<uint16_t>(reader.Available());
+        stream << payloadSize << static_cast<uint8_t>(encodedSize - payloadSize - minimumEncodingOverhead);
         while (!reader.Empty())
             stream << reader.ExtractContiguousRange(std::numeric_limits<uint16_t>::max());
 
@@ -222,11 +176,11 @@ namespace services
         {
             infra::BoundedDequeInputStream stream(receivedMessage);
             currentReceiveMessageSize = stream.Extract<uint16_t>();
-            auto encodedSize = SesameEncodedObserver::Subject().MessageSize(ExtraCharacterReader(stream.Reader(), currentReceiveMessageSize));
-            receivedMessage.erase(receivedMessage.begin(), receivedMessage.begin() + 2);
+            auto encodedSize = static_cast<uint16_t>(currentReceiveMessageSize + minimumEncodingOverhead + stream.Extract<uint8_t>());
+            receivedMessage.erase(receivedMessage.begin(), receivedMessage.begin() + receivedMessageHeaderSize);
 
             currentReceiveMessageReader.emplace(std::in_place, receivedMessage, currentReceiveMessageSize);
-            ForwardReceivedMessage(static_cast<uint16_t>(encodedSize));
+            ForwardReceivedMessage(encodedSize);
         }
     }
 

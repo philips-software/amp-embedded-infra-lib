@@ -95,16 +95,13 @@ public:
 
     void ReceiveMessage(const std::string& text)
     {
-        EXPECT_CALL(base, MessageSize(testing::_)).WillOnce([](infra::StreamReader&& reader)
-            {
-                return reader.Available() + reader.Available() / 254 + 2;
-            });
         ReceivePacket(infra::ConstructBin()(4)(text).Vector());
     }
 
-    void PretendReceiveMessage(const std::string& text)
+    void ReceiveMessageWithEncodedSize(const std::string& text, std::size_t encodedSize)
     {
-        ReceivePacket(infra::ConstructBin()(4)(text).Vector());
+        infra::StdVectorInputStreamReader::WithStorage reader(std::in_place, infra::ConstructBin()(4)(text).Vector());
+        base.GetObserver().ReceivedMessage(reader, encodedSize);
     }
 
     void ExpectRequestSendMessageForInit(uint16_t availableWindow)
@@ -299,6 +296,15 @@ TEST_F(SesameWindowedTestDouble, receive_message_after_initialized)
     ReceiveMessage("abcd");
 }
 
+TEST_F(SesameWindowedTestDouble, release_window_equals_encoded_size_reported_for_message)
+{
+    ReceiveInitResponse(26);
+
+    ExpectReceivedMessage("abcd");
+    ExpectRequestSendMessageForReleaseWindow(15);
+    ReceiveMessageWithEncodedSize("abcd", 8);
+}
+
 TEST_F(SesameWindowedTestDouble, release_window_packet_waits_for_window_available)
 {
     ReceiveInitResponse(0);
@@ -312,7 +318,7 @@ TEST_F(SesameWindowedTestDouble, release_window_packet_waits_for_window_availabl
 
 TEST_F(SesameWindowedTestDouble, received_message_before_initialized_is_discarded)
 {
-    PretendReceiveMessage("abcd");
+    ReceiveMessage("abcd");
 
     ReceiveInitResponse(24);
 }
@@ -584,5 +590,26 @@ TEST_F(SesameWindowedTestTriple, MaxSendMessageSize_for_3_way_buffer)
     EXPECT_EQ(6, communication->MaxSendMessageSize());
     EXPECT_EQ(9, (services::SesameWindowed::bufferSizeForMessage<6, services::SesameCobs::EncodedMessageSize>));
 
+    observer.Detach();
+}
+
+TEST_F(SesameWindowedTestTriple, queued_empty_messages_fill_receive_window_without_overflowing_storage)
+{
+    constexpr std::size_t emptyMessageEncodedSize = 3;
+    constexpr std::size_t queuedMessages = 8;
+
+    ReceiveInitResponse(32);
+
+    EXPECT_CALL(observer, ReceivedMessage(testing::_)).WillOnce([this](infra::SharedPtr<infra::StreamReaderWithRewinding>&& reader)
+        {
+            savedReader = std::move(reader);
+        });
+    ReceiveMessageWithEncodedSize("", emptyMessageEncodedSize);
+
+    for (std::size_t i = 0; i != queuedMessages; ++i)
+        ReceiveMessageWithEncodedSize("", emptyMessageEncodedSize);
+
+    communication->ResetReading();
+    savedReader = nullptr;
     observer.Detach();
 }
