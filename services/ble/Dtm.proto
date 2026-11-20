@@ -11,23 +11,23 @@ option java_package = "com.philips.emil.protobufEcho";
 option java_outer_classname = "DtmProto";
 
 // ToneParams: Input parameters to generate a carrier wave (tone)
-//   - rfChannel    : BLE channel ID (2.402 + 0.002*<rfChannel>) Ghz (Range 0x00 to 0x27)
-//   - offset       : Frequency offset for tone channel (Range: 0x00 - 0xff)
+//   - channel      : BLE channel ID (2.402 + 0.002*<channel>) GHz (Range 0x00 to 0x27)
+//   - durationMs   : Duration in milliseconds before automatic stop
 message ToneParams
 {
-    uint32 rfChannel = 1;
-    uint32 offset = 2;
+    uint32 channel = 1;
+    uint32 durationMs = 2;
 }
 
 // TxPowerParams: Input parameter to set the transmit power
-//   - txPower      : Power amplifier output level (Range: 0x00 - 0x23)
+//   - txPower      : Requested output power in dBm (Range: -127 to +20)
 message TxPowerParams
 {
-    uint32 txPower = 1;
+    int32 txPower = 1;
 }
 
 // RxParams: Input parameters for the receive Test
-//   - frequency    : Frequency (F - 2402)/2 (Range: 0x00 - 0x27)
+//   - channel      : Frequency (F - 2402)/2 (Range: 0x00 - 0x27)
 //   - phy          : 0x01 - LE 1M
 //                    0x02 - LE 2M
 //                    0x03 - LE Coded PHY S=8
@@ -35,13 +35,13 @@ message TxPowerParams
 //   - durationMs   : Duration in milliseconds
 message RxParams
 {
-    uint32 frequency = 1;
+    uint32 channel = 1;
     uint32 phy = 2;
     uint32 durationMs = 3;
 }
 
 // TxParams: Input parameters for the transmit Test
-//   - frequency    : Frequency (F - 2402)/2 (Range: 0x00 - 0x27)
+//   - channel      : Frequency (F - 2402)/2 (Range: 0x00 - 0x27)
 //   - dataLength   : Length in bytes of the payload data in each packet
 //   - packetPayload: 0x00 - Pseudo random bit sequence 9
 //                    0x01 - Pattern of alternating bits 11110000
@@ -58,23 +58,30 @@ message RxParams
 //   - durationMs   : Duration in milliseconds
 message TxParams
 {
-    uint32 frequency = 1;
+    uint32 channel = 1;
     uint32 dataLength = 2;
     uint32 packetPayload = 3;
     uint32 phy = 4;
     uint32 durationMs = 5;
 }
 
+message RssiResult
+{
+    bool success = 1;
+    int32 rssiDbm = 2;
+}
+
 service Dtm
 {
     option (service_id) = 232;
 
-    rpc StartTone(ToneParams) returns(Nothing) { option (method_id) = 1; }
-    rpc StopTone(Nothing) returns(Nothing) { option (method_id) = 2; }
+    rpc StartTxTone(ToneParams) returns(Nothing) { option (method_id) = 1; }
+    rpc StopTxTone(Nothing) returns(Nothing) { option (method_id) = 2; }
     rpc SetTxPowerLevel(TxPowerParams) returns(Nothing) { option (method_id) = 3; }
     rpc StartRxTest(RxParams) returns(Nothing) { option (method_id) = 4; }
     rpc StartTxTest(TxParams) returns(Nothing) { option (method_id) = 5; }
     rpc StopTest(Nothing) returns(Nothing) { option (method_id) = 6; }
+    rpc ReadRssi(Nothing) returns(Nothing) { option (method_id) = 8; }
 }
 
 message Result
@@ -94,4 +101,5 @@ service DtmResponse
 
     rpc Done(Result) returns (Nothing) { option (method_id) = 1; }
     rpc TestCompleted(TestResult) returns (Nothing) { option (method_id) = 2; }
+    rpc RssiRead(RssiResult) returns (Nothing) { option (method_id) = 3; }
 }
