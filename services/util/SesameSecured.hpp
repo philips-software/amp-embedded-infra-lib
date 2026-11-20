@@ -38,9 +38,9 @@ namespace services
         , private SesameObserver
     {
     public:
-        static constexpr std::size_t keySize = 16;
-        static constexpr std::size_t blockSize = 16;
-        static constexpr std::size_t ivSize = 12;
+        static constexpr std::size_t keySize = AesGcmEncryption::keySize;
+        static constexpr std::size_t blockSize = AesGcmEncryption::blockSize;
+        static constexpr std::size_t ivSize = AesGcmEncryption::ivSize;
         using KeyType = std::array<uint8_t, keySize>;
         using IvType = std::array<uint8_t, ivSize>;
 
