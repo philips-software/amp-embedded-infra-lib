@@ -285,14 +285,18 @@ namespace infra
     template<class T>
     constexpr void MemoryRange<T>::pop_front(std::size_t num)
     {
-        assert(num <= size());
+        if (num > size())
+            std::abort();
+
         beginElement += num;
     }
 
     template<class T>
     constexpr void MemoryRange<T>::pop_back(std::size_t num)
     {
-        assert(num <= size());
+        if (num > size())
+            std::abort();
+
         endElement -= num;
     }
 
@@ -422,6 +426,9 @@ namespace infra
     void Copy(MemoryRange<const typename std::remove_const<T>::type> from, MemoryRange<T> to)
     {
         assert(from.size() == to.size());
+        if (from.size() > to.size())
+            std::abort();
+
         std::copy(from.begin(), from.begin() + from.size(), to.begin());
     }
 
