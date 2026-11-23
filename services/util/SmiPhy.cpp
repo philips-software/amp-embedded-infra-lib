@@ -59,6 +59,26 @@ namespace services
         return Read(BasicStatusRegister::Address);
     }
 
+    void SmiPhy::PowerDown()
+    {
+        uint16_t bcr = ReadBcr();
+        if (!BasicStatusRegister::IsResponding(bcr))
+            return;
+
+        infra::SetBit(bcr, BasicControlRegister::PowerDownBit);
+        WriteBcr(bcr);
+    }
+
+    void SmiPhy::PowerUp()
+    {
+        uint16_t bcr = ReadBcr();
+        if (!BasicStatusRegister::IsResponding(bcr))
+            return;
+
+        infra::ClearBit(bcr, BasicControlRegister::PowerDownBit);
+        WriteBcr(bcr);
+    }
+
     hal::LinkSpeed SmiPhy::NegotiatedLinkSpeed() const
     {
         const uint16_t advertisement = Read(AutoNegRegister::AdvertisementAddress);
