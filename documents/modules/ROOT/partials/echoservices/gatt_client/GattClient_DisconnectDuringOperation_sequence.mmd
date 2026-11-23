@@ -1,0 +1,19 @@
+sequenceDiagram
+    title BLE GATT Disconnect During Pending Operation
+
+    participant App as App<br>[implements GattClientResponse, GapCentralResponse]
+    participant Node as Node<br>[implements GattClient, GapCentral]
+    participant Peripheral as BLE Peripheral
+
+    Note over Node, Peripheral: Messages between Node and<br>BLE Peripheral are link-layer / ATT<br>events, not driven by the App.<br>The App only observes them<br>through Echo callbacks.
+
+    App->>Node: GattClient.ReadCharacteristic(0x0025)
+    Node-)Peripheral: ATT_READ_REQ (handle=0x0025)
+
+    rect rgb(245, 230, 230)
+        Peripheral-)Node: LL_TERMINATE_IND
+    end
+
+    Node-->>App: GattClientResponse.OperationComplete(error)
+    Node-->>App: GapCentralResponse.CurrentState(standby)
+    Note over App, Node: OperationComplete(error) is delivered<br>before CurrentState(standby).<br>No further GATT callbacks fire until the App<br>re-establishes the link and re-drives<br>discovery from GattClient.StartServiceDiscovery().

@@ -10,6 +10,7 @@ target_link_libraries(services.ble_test PUBLIC
 
 target_sources(services.ble_test PRIVATE
     TestBondBlobPersistence.cpp
+    TestBondStorageInteractor.cpp
     TestBondStorageSynchronizer.cpp
     TestGapBonding.cpp
     TestGapCentral.cpp
@@ -22,4 +23,5 @@ target_sources(services.ble_test PRIVATE
     TestGapAdvertisementFormatter.cpp
     TestGattServer.cpp
     TestRetryGattClientAdapter.cpp
+    TestStateGuard.cpp
 )

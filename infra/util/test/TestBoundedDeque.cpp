@@ -656,6 +656,16 @@ TEST(BoundedDequeTest, TestSwapDifferentSizes)
     EXPECT_EQ(expectedDeque2, deque2);
 }
 
+TEST(BoundedDequeTest, TestSwapDoesNotExceedCapacity)
+{
+    int range1[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+    infra::BoundedDeque<int>::WithMaxSize<8> big(range1, range1 + 8);
+    int range2[2] = { 8, 9 };
+    infra::BoundedDeque<int>::WithMaxSize<3> small(range2, range2 + 2);
+
+    ASSERT_DEATH(small.swap(big), "");
+}
+
 TEST(BoundedDequeTest, TestSwapDifferentSizesWrapped)
 {
     int range1[2] = { 0, 1 };

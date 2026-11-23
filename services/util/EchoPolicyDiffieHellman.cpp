@@ -1,4 +1,5 @@
 #include "services/util/EchoPolicyDiffieHellman.hpp"
+#include "infra/util/ReallyAssert.hpp"
 
 namespace services
 {
@@ -40,6 +41,9 @@ namespace services
     {
         busy = false;
         initializingKeys = true;
+
+        while (!waitingProxies.empty())
+            waitingProxies.front().CancelRequestSend();
     }
 
     void EchoPolicyDiffieHellman::Initialized()
@@ -48,6 +52,8 @@ namespace services
             DiffieHellmanKeyEstablishmentProxy::CancelRequestSend();
 
         initializingKeys = true;
+        if (nextKeyPair.has_value())
+            Clean(infra::MakeByteRange(nextKeyPair.value()));
         nextKeyPair.reset();
         verifier.reset();
 
@@ -65,6 +71,7 @@ namespace services
 
                         DiffieHellmanKeyEstablishmentProxy::Exchange(encodedDhPublicKey, r, s);
                         busy = false;
+                        ReQueueWaitingProxies();
                     });
             });
     }
@@ -81,11 +88,23 @@ namespace services
 
     void EchoPolicyDiffieHellman::GrantingSend(ServiceProxy& proxy)
     {
-        if (nextKeyPair && &proxy != this)
+        if (nextKeyPair.has_value() && &proxy != this)
         {
-            secured.SetSendKey(nextKeyPair->first, nextKeyPair->second);
+            secured.SetSendKey(nextKeyPair.value().first, nextKeyPair.value().second);
+            Clean(infra::MakeByteRange(nextKeyPair.value()));
             nextKeyPair.reset();
         }
+    }
+
+    bool EchoPolicyDiffieHellman::PendingRequestSend(ServiceProxy& proxy) const
+    {
+        return waitingProxies.has_element(proxy);
+    }
+
+    void EchoPolicyDiffieHellman::CancelRequestSend(ServiceProxy& proxy)
+    {
+        really_assert(PendingRequestSend(proxy));
+        waitingProxies.erase(proxy);
     }
 
     void EchoPolicyDiffieHellman::KeyExchangeSuccessful()
@@ -107,6 +126,7 @@ namespace services
         if (verifier == std::nullopt || !(*verifier)->Verify(otherPublicKey, signatureR, signatureS))
         {
             KeyExchangeFailed();
+            MethodDone();
             return;
         }
 
@@ -117,14 +137,20 @@ namespace services
 
         std::array<uint8_t, 64> expandedMaterial{};
         keyExpander.Expand(sharedSecret, expandedMaterial);
+        Clean(infra::MakeRange(sharedSecret));
 
         auto key = Middle<16>(expandedMaterial, 0 + swap);
         auto iv = Middle<12>(expandedMaterial, 16 + swap);
         auto otherKey = Middle<16>(expandedMaterial, 28 - swap);
         auto otherIv = Middle<12>(expandedMaterial, 44 - swap);
+        Clean(expandedMaterial);
 
         nextKeyPair = { key, iv };
         secured.SetReceiveKey(otherKey, otherIv);
+        Clean(key);
+        Clean(iv);
+        Clean(otherKey);
+        Clean(otherIv);
 
         KeyExchangeSuccessful();
 
@@ -142,7 +168,7 @@ namespace services
 
     void EchoPolicyDiffieHellman::ReQueueWaitingProxies()
     {
-        while (!waitingProxies.empty())
+        while (!initializingKeys && !busy && !waitingProxies.empty())
         {
             auto& proxy = waitingProxies.front();
             waitingProxies.pop_front();
@@ -150,10 +176,27 @@ namespace services
         }
     }
 
+    void EchoPolicyDiffieHellman::Clean(infra::ByteRange material) const
+    {
+        infra::MemoryRange<volatile uint8_t> materialRange = material;
+        std::fill(materialRange.begin(), materialRange.end(), 0);
+    }
+
 #ifdef EMIL_USE_MBEDTLS
+    detail::CryptoMbedTls::CryptoMbedTls(const EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+        : signer(keyMaterial.dsaCertificatePrivateKey, randomDataGenerator)
+    {
+    }
+
+    CryptoMbedTls::CryptoMbedTls(const EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+        : detail::CryptoMbedTls(keyMaterial, randomDataGenerator)
+        , EchoPolicyDiffieHellman::Crypto{ detail::CryptoMbedTls::keyExchange, detail::CryptoMbedTls::signer, detail::CryptoMbedTls::verifier, detail::CryptoMbedTls::keyExpander }
+    {
+    }
+
     EchoPolicyDiffieHellman::WithCryptoMbedTls::WithCryptoMbedTls(Echo& echo, EchoInitialization& echoInitialization, SesameSecured& secured, const EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-        : EchoPolicyDiffieHellman(Crypto{ keyExchange, signer, verifier, keyExpander }, echo, echoInitialization, secured, keyMaterial.dsaCertificate, keyMaterial.rootCaCertificate, randomDataGenerator)
-        , signer(keyMaterial.dsaCertificatePrivateKey, randomDataGenerator)
+        : CryptoMbedTls(keyMaterial, randomDataGenerator)
+        , EchoPolicyDiffieHellman(static_cast<EchoPolicyDiffieHellman::Crypto&>(*this), echo, echoInitialization, secured, keyMaterial.dsaCertificate, keyMaterial.rootCaCertificate, randomDataGenerator)
     {}
 #endif
 }

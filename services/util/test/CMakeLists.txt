@@ -11,6 +11,7 @@ target_link_libraries(services.util_test PUBLIC
     protobuf.test_doubles
     services.tracer
     services.util
+    services.util_test_doubles
     hal.interfaces_test_doubles
     infra.timer_test_helper
     infra.util_test_helper
@@ -23,6 +24,9 @@ target_sources(services.util_test PRIVATE
     TestCyclicStore.cpp
     TestDebouncedButton.cpp
     TestDebugLed.cpp
+    TestDoubleBufferedSerialCommunication.cpp
+    TestEchoInstantiation.cpp
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestEchoInstantiationSecured.cpp>
     TestEchoOnSesame.cpp
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestEchoPolicyDiffieHellman.cpp>
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestEchoPolicySymmetricKey.cpp>
@@ -43,6 +47,7 @@ target_sources(services.util_test PRIVATE
     TestRepeatingButton.cpp
     TestSerialCommunicationLoopback.cpp
     TestSesameCobs.cpp
+    $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestAesGcmEncryptionMbedTls.cpp>
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestSesameCryptoMbedTls.cpp>
     TestSesameInstantiation.cpp
     $<$<BOOL:${EMIL_INCLUDE_MBEDTLS}>:TestSesameInstantiationSecured.cpp>

@@ -8,7 +8,7 @@
 namespace services
 {
     class EventDispatcherWithNetwork
-        : public infra::EventDispatcherWithWeakPtr::WithSize<50>
+        : public infra::EventDispatcherWithWeakPtr::WithSize<1024>
         , public ConnectionFactory
         , public DatagramFactoryWithLocalIpBinding
         , public Multicast
@@ -39,6 +39,7 @@ namespace services
         infra::SharedPtr<DatagramExchange> Connect(DatagramExchangeObserver& observer, uint16_t localPort, UdpSocket remote) override;
         infra::SharedPtr<DatagramExchange> Listen(DatagramExchangeObserver& observer, IPAddress localAddress, uint16_t port, IPVersions versions = IPVersions::both) override;
         infra::SharedPtr<DatagramExchange> Listen(DatagramExchangeObserver& observer, IPAddress localAddress, IPVersions versions = IPVersions::both) override;
+        infra::SharedPtr<DatagramExchange> Listen(DatagramExchangeObserver& observer, IPv6Address localAddress, uint32_t interfaceIndex, uint16_t port) override;
         infra::SharedPtr<DatagramExchange> Connect(DatagramExchangeObserver& observer, IPAddress localAddress, UdpSocket remote) override;
         infra::SharedPtr<DatagramExchange> Connect(DatagramExchangeObserver& observer, UdpSocket local, UdpSocket remote) override;
 

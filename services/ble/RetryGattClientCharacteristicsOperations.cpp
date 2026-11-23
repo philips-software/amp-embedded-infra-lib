@@ -8,40 +8,30 @@ namespace services
         , gattClient(gattClient)
     {}
 
-    void RetryGattClientCharacteristicsOperations::Read(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone)
+    void RetryGattClientCharacteristicsOperations::ReadCharacteristic(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone)
     {
-        gattClient.Read(handle, onRead, onDone);
+        gattClient.ReadCharacteristic(handle, onRead, onDone);
     }
 
-    void RetryGattClientCharacteristicsOperations::Write(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
+    void RetryGattClientCharacteristicsOperations::WriteCharacteristic(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
     {
-        gattClient.Write(handle, data, onDone);
+        gattClient.WriteCharacteristic(handle, data, onDone);
     }
 
-    void RetryGattClientCharacteristicsOperations::WriteWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
+    void RetryGattClientCharacteristicsOperations::WriteCharacteristicWithoutResponse(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
     {
         operationWriteWithoutResponse.emplace(Operation{ handle, data, onDone });
-        TryWriteWithoutResponse();
+        TryWriteCharacteristicWithoutResponse();
     }
 
-    void RetryGattClientCharacteristicsOperations::EnableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone)
+    void RetryGattClientCharacteristicsOperations::ReadDescriptor(AttAttribute::Handle handle, const infra::Function<void(const infra::ConstByteRange&)>& onRead, const infra::Function<void(OperationStatus)>& onDone)
     {
-        gattClient.EnableNotification(handle, onDone);
+        gattClient.ReadDescriptor(handle, onRead, onDone);
     }
 
-    void RetryGattClientCharacteristicsOperations::DisableNotification(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone)
+    void RetryGattClientCharacteristicsOperations::WriteDescriptor(AttAttribute::Handle handle, infra::ConstByteRange data, const infra::Function<void(OperationStatus)>& onDone)
     {
-        gattClient.DisableNotification(handle, onDone);
-    }
-
-    void RetryGattClientCharacteristicsOperations::EnableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone)
-    {
-        gattClient.EnableIndication(handle, onDone);
-    }
-
-    void RetryGattClientCharacteristicsOperations::DisableIndication(AttAttribute::Handle handle, const infra::Function<void(OperationStatus)>& onDone)
-    {
-        gattClient.DisableIndication(handle, onDone);
+        gattClient.WriteDescriptor(handle, data, onDone);
     }
 
     void RetryGattClientCharacteristicsOperations::NotificationReceived(AttAttribute::Handle handle, infra::ConstByteRange data)
@@ -61,15 +51,15 @@ namespace services
             });
     }
 
-    void RetryGattClientCharacteristicsOperations::TryWriteWithoutResponse()
+    void RetryGattClientCharacteristicsOperations::TryWriteCharacteristicWithoutResponse()
     {
-        gattClient.WriteWithoutResponse(operationWriteWithoutResponse->handle, operationWriteWithoutResponse->data, [this](OperationStatus result)
+        gattClient.WriteCharacteristicWithoutResponse(operationWriteWithoutResponse->handle, operationWriteWithoutResponse->data, [this](OperationStatus result)
             {
                 if (result == OperationStatus::retry)
                 {
                     infra::EventDispatcher::Instance().Schedule([this]()
                         {
-                            TryWriteWithoutResponse();
+                            TryWriteCharacteristicWithoutResponse();
                         });
                 }
                 else

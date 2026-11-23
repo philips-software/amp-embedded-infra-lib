@@ -10,10 +10,10 @@ namespace services
         : public SesameWindowed
     {
     public:
-        template<std::size_t MaxMessageSize>
-        using WithStorage = infra::WithStorage<TracingSesameWindowed, infra::BoundedDeque<uint8_t>::WithMaxSize<MaxMessageSize>>;
+        template<std::size_t MaxMessageSize, uint8_t SplitBuffers = 2>
+        struct WithMaxMessageSize;
 
-        TracingSesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, SesameEncoded& delegate, Tracer& tracer);
+        TracingSesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, uint8_t splitBuffers, SesameEncoded& delegate, Tracer& tracer, SesameInitializer& sesameInitializer = immediatelyGranted);
 
     protected:
         void ReceivedInit(uint16_t newWindow) override;
@@ -29,6 +29,17 @@ namespace services
 
     private:
         Tracer& tracer;
+    };
+
+    template<std::size_t MaxMessageSize, uint8_t SplitBuffers>
+    struct TracingSesameWindowed::WithMaxMessageSize
+        : infra::WithStorage<TracingSesameWindowed, infra::BoundedDeque<uint8_t>::WithMaxSize<receiveBufferSize<MaxMessageSize, SplitBuffers>>>
+    {
+        static_assert(SplitBuffers >= 2, "SesameWindowed requires at least 2 receive buffers");
+
+        WithMaxMessageSize(SesameEncoded& delegate, Tracer& tracer, SesameInitializer& sesameInitializer = immediatelyGranted)
+            : infra::WithStorage<TracingSesameWindowed, infra::BoundedDeque<uint8_t>::WithMaxSize<receiveBufferSize<MaxMessageSize, SplitBuffers>>>::WithStorage(SplitBuffers, delegate, tracer, sesameInitializer)
+        {}
     };
 }
 

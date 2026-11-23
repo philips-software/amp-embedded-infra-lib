@@ -50,15 +50,24 @@ namespace services
     class AesGcmEncryption
     {
     public:
+        static constexpr std::size_t keySize = 16;
+        static constexpr std::size_t blockSize = 16;
+        static constexpr std::size_t ivSize = 12;
+
         AesGcmEncryption() = default;
         AesGcmEncryption(const AesGcmEncryption& other) = delete;
         AesGcmEncryption& operator=(const AesGcmEncryption& other) = delete;
 
         virtual void EncryptWithKey(infra::ConstByteRange key) = 0;
         virtual void DecryptWithKey(infra::ConstByteRange key) = 0;
-        virtual void Start(infra::ConstByteRange iv) = 0;
-        virtual std::size_t Update(infra::ConstByteRange from, infra::ByteRange to) = 0;
-        virtual std::size_t Finish(infra::ByteRange to, infra::ByteRange mac) = 0;
+        virtual void Encrypt(infra::ConstByteRange iv, infra::ByteRange data) = 0;
+        virtual bool Decrypt(infra::ConstByteRange iv, infra::ByteRange data) = 0;
+    };
+
+    struct AesGcmEncryptors
+    {
+        services::AesGcmEncryption& sendEncryption;
+        services::AesGcmEncryption& receiveEncryption;
     };
 }
 

@@ -1,63 +1,15 @@
 #include "services/util/SesameWindowed.hpp"
 #include "infra/stream/BoundedDequeOutputStream.hpp"
+#include "infra/util/ReallyAssert.hpp"
 #include <algorithm>
+#include <limits>
 
 namespace services
 {
-    namespace
-    {
-        // This reader is used to put the Operation::message byte ('\x4') in front of a message, in order to exactly calculate the encoded size
-        // Only ExtractContiguousRange(), Empty(), and Available() are used by SesameCobs, so only those methods are implemented here.
-        class ExtraCharacterReader
-            : public infra::LimitedStreamReader
-        {
-        public:
-            using infra::LimitedStreamReader::LimitedStreamReader;
-
-            void Extract(infra::ByteRange range, infra::StreamErrorPolicy& errorPolicy) override
-            {
-                std::abort();
-            }
-
-            uint8_t Peek(infra::StreamErrorPolicy& errorPolicy) override
-            {
-                std::abort();
-            }
-
-            infra::ConstByteRange ExtractContiguousRange(std::size_t max) override
-            {
-                if (extraCharacter != 0)
-                    return infra::Head(infra::Head(infra::MakeByteRange(character), std::exchange(extraCharacter, 0)), max);
-                else
-                    return infra::LimitedStreamReader::ExtractContiguousRange(max);
-            }
-
-            infra::ConstByteRange PeekContiguousRange(std::size_t start) override
-            {
-                std::abort();
-            }
-
-            bool Empty() const override
-            {
-                return extraCharacter == 0 && infra::LimitedStreamReader::Empty();
-            }
-
-            std::size_t Available() const override
-            {
-                return infra::LimitedStreamReader::Available() + extraCharacter;
-            }
-
-        private:
-            static const char character;
-            std::size_t extraCharacter = 1;
-        };
-
-        const char ExtraCharacterReader::character = '\x4';
-    }
-
-    SesameWindowed::SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, SesameEncoded& delegate, SesameInitializer& sesameInitializer)
+    SesameWindowed::SesameWindowed(infra::BoundedDeque<uint8_t>& receivedMessage, uint8_t splitBuffers, SesameEncoded& delegate, SesameInitializer& sesameInitializer)
         : SesameEncodedObserver(delegate)
         , receivedMessage(receivedMessage)
+        , splitBuffers(splitBuffers)
         , sesameInitializer(sesameInitializer)
         , ownBufferSize(static_cast<uint16_t>(SesameEncodedObserver::Subject().MaxSendMessageSize()))
         , releaseWindowSize(static_cast<uint16_t>(SesameEncodedObserver::Subject().WorstCaseEncodedMessageSize(sizeof(PacketReleaseWindow))))
@@ -75,7 +27,7 @@ namespace services
     std::size_t SesameWindowed::MaxSendMessageSize() const
     {
         assert(initialized);
-        return SesameEncodedObserver::Subject().WorstCaseDecodedMessageSize((maxUsableBufferSize - releaseWindowSize) / 2) - sizeof(Operation);
+        return SesameEncodedObserver::Subject().WorstCaseDecodedMessageSize((maxUsableBufferSize - releaseWindowSize) / splitBuffers) - sizeof(Operation);
     }
 
     void SesameWindowed::Reset()
@@ -84,6 +36,8 @@ namespace services
         assert(currentReceiveMessageReader == std::nullopt);
         assert(!readerAccess.Referenced());
         initialized = false;
+        requestingInitialization = false;
+        sentInitResponse = false;
         otherAvailableWindow = 0;
         maxUsableBufferSize = 0;
         releasedWindow = 0;
@@ -103,6 +57,33 @@ namespace services
                 receivedMessage.clear();
             });
     }
+
+    void SesameWindowed::ReceivedInit(uint16_t newWindow)
+    {}
+
+    void SesameWindowed::ReceivedInitResponse(uint16_t newWindow)
+    {}
+
+    void SesameWindowed::ReceivedReleaseWindow(uint16_t oldWindow, uint16_t newWindow)
+    {}
+
+    void SesameWindowed::ForwardingReceivedMessage(infra::StreamReaderWithRewinding& reader)
+    {}
+
+    void SesameWindowed::SendingInit(uint16_t newWindow)
+    {}
+
+    void SesameWindowed::SendingInitResponse(uint16_t newWindow)
+    {}
+
+    void SesameWindowed::SendingReleaseWindow(uint16_t deltaWindow)
+    {}
+
+    void SesameWindowed::SendingMessage(infra::StreamWriter& writer)
+    {}
+
+    void SesameWindowed::SettingOperational(std::optional<std::size_t> requestedSize, uint16_t releasedWindow, uint16_t otherWindow)
+    {}
 
     void SesameWindowed::Initialized()
     {
@@ -129,10 +110,12 @@ namespace services
                 auto window = stream.Extract<infra::LittleEndian<uint16_t>>();
                 sesameInitializer.InitInformationReceived(reader);
                 ReceivedInit(window);
+                requestingInitialization = true;
                 sesameInitializer.InitializationRequested([this, window]()
                     {
                         otherAvailableWindow = window;
                         sendInitResponse = true;
+                        requestingInitialization = false;
                         ReceivedInitialize();
                         SetNextState();
                     });
@@ -143,7 +126,10 @@ namespace services
                 ReceivedInitResponse(otherAvailableWindow);
                 releasedWindow = static_cast<uint16_t>(encodedSize);
                 sesameInitializer.InitInformationReceived(reader);
-                ReceivedInitialize();
+                // When peers send an init message at the same time, both will respond with an init response.
+                // In that case, the first init response received will already trigger ReceivedInitialize()
+                if (!sentInitResponse && !requestingInitialization)
+                    ReceivedInitialize();
                 break;
             case Operation::releaseWindow:
                 if (initialized)
@@ -156,7 +142,7 @@ namespace services
                 break;
             case Operation::message:
                 if (initialized)
-                    SaveReceivedMessage(reader);
+                    SaveReceivedMessage(reader, encodedSize);
                 break;
         }
 
@@ -170,11 +156,14 @@ namespace services
         GetObserver().Initialized();
     }
 
-    void SesameWindowed::SaveReceivedMessage(infra::StreamReader& reader)
+    void SesameWindowed::SaveReceivedMessage(infra::StreamReader& reader, std::size_t encodedSize)
     {
+        auto payloadSize = static_cast<uint16_t>(reader.Available());
+        really_assert(encodedSize >= payloadSize + minimumEncodingOverhead && encodedSize - payloadSize - minimumEncodingOverhead <= std::numeric_limits<uint8_t>::max());
+
         infra::BoundedDequeOutputStream stream(receivedMessage);
 
-        stream << static_cast<uint16_t>(reader.Available());
+        stream << payloadSize << static_cast<uint8_t>(encodedSize - payloadSize - minimumEncodingOverhead);
         while (!reader.Empty())
             stream << reader.ExtractContiguousRange(std::numeric_limits<uint16_t>::max());
 
@@ -187,11 +176,11 @@ namespace services
         {
             infra::BoundedDequeInputStream stream(receivedMessage);
             currentReceiveMessageSize = stream.Extract<uint16_t>();
-            auto encodedSize = SesameEncodedObserver::Subject().MessageSize(ExtraCharacterReader(stream.Reader(), currentReceiveMessageSize));
-            receivedMessage.erase(receivedMessage.begin(), receivedMessage.begin() + 2);
+            auto encodedSize = static_cast<uint16_t>(currentReceiveMessageSize + minimumEncodingOverhead + stream.Extract<uint8_t>());
+            receivedMessage.erase(receivedMessage.begin(), receivedMessage.begin() + receivedMessageHeaderSize);
 
             currentReceiveMessageReader.emplace(std::in_place, receivedMessage, currentReceiveMessageSize);
-            ForwardReceivedMessage(static_cast<uint16_t>(encodedSize));
+            ForwardReceivedMessage(encodedSize);
         }
     }
 
@@ -221,7 +210,7 @@ namespace services
             }
             else if (requestedSendMessageSize != std::nullopt && SesameEncodedObserver::Subject().WorstCaseEncodedMessageSize(*requestedSendMessageSize + 1) + releaseWindowSize <= otherAvailableWindow)
                 state.Emplace<StateSendingMessage>(*this).Request();
-            else if (releasedWindow >= (ownBufferSize - releaseWindowSize) / 2 && releaseWindowSize <= otherAvailableWindow)
+            else if (releasedWindow >= (ownBufferSize - releaseWindowSize) / splitBuffers && releaseWindowSize <= otherAvailableWindow)
                 state.Emplace<StateSendingReleaseWindow>(*this).Request();
             else
                 state.Emplace<StateOperational>(*this);
@@ -295,6 +284,7 @@ namespace services
         : State(communication)
     {
         communication.sending = true;
+        communication.sentInitResponse = true;
     }
 
     void SesameWindowed::StateSendingInitResponse::Request()

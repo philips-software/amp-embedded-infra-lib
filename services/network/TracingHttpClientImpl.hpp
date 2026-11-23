@@ -35,7 +35,7 @@ namespace services
 
         private:
             infra::SharedPtr<infra::StreamWriter> writer;
-            TracingStreamWriter tracingWriter;
+            TracingAsciiStreamWriter tracingWriter;
         };
 
     private:
@@ -78,7 +78,7 @@ namespace services
 
         private:
             infra::SharedPtr<infra::StreamWriter> writer;
-            TracingStreamWriter tracingWriter;
+            TracingAsciiStreamWriter tracingWriter;
         };
 
     private:

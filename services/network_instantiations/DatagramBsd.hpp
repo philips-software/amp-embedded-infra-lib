@@ -19,8 +19,8 @@ namespace services
         , public infra::EnableSharedFromThis<DatagramBsd>
     {
     public:
-        DatagramBsd(uint16_t port, DatagramExchangeObserver& observer);
-        explicit DatagramBsd(DatagramExchangeObserver& observer);
+        DatagramBsd(uint16_t port, DatagramExchangeObserver& observer, IPVersions versions = IPVersions::ipv4);
+        explicit DatagramBsd(DatagramExchangeObserver& observer, IPVersions versions = IPVersions::ipv4);
         DatagramBsd(const UdpSocket& remote, DatagramExchangeObserver& observer);
         DatagramBsd(uint16_t localPort, const UdpSocket& remote, DatagramExchangeObserver& observer);
         DatagramBsd(IPAddress localAddress, DatagramExchangeObserver& observer);
@@ -34,18 +34,22 @@ namespace services
         void RequestSendStream(std::size_t sendSize) override;
         void RequestSendStream(std::size_t sendSize, UdpSocket to) override;
 
-        void Receive();
+        void Receive(int socketToReceive);
         void Send();
         void TrySend();
 
         void JoinMulticastGroup(IPv4Address multicastAddress);
         void LeaveMulticastGroup(IPv4Address multicastAddress);
+        void JoinMulticastGroup(IPv6Address multicastAddress);
+        void LeaveMulticastGroup(IPv6Address multicastAddress);
 
     private:
         void InitSocket();
         void BindLocal(const UdpSocket& local);
         void BindRemote(const UdpSocket& remote);
         void TryAllocateSendStream();
+        int SocketFor(const UdpSocket& to) const;
+        int Ipv6Socket() const;
 
     private:
         class StreamWriterBsd
@@ -62,7 +66,10 @@ namespace services
     private:
         friend class EventDispatcherWithNetwork;
 
-        int socket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        int family = AF_INET;
+        bool dualStack = false;
+        int socket = -1;
+        int socketAdditional = -1;
         IPv4Address localAddress{};
         std::optional<UdpSocket> connectedTo;
 

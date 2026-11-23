@@ -78,13 +78,27 @@ namespace services
 
         void EncryptWithKey(infra::ConstByteRange key) override;
         void DecryptWithKey(infra::ConstByteRange key) override;
-        void Start(infra::ConstByteRange iv) override;
-        std::size_t Update(infra::ConstByteRange from, infra::ByteRange to) override;
-        std::size_t Finish(infra::ByteRange to, infra::ByteRange mac) override;
+        void Encrypt(infra::ConstByteRange iv, infra::ByteRange data) override;
+        bool Decrypt(infra::ConstByteRange iv, infra::ByteRange data) override;
 
     private:
-        bool encrypt = false;
         mbedtls_gcm_context context;
+    };
+
+    namespace detail
+    {
+        struct MbedTlsEncryptors
+        {
+            AesGcmEncryptionMbedTls sendEncryption;
+            AesGcmEncryptionMbedTls receiveEncryption;
+        };
+    };
+
+    struct SesameSecuredMbedTlsEncryptors
+        : private detail::MbedTlsEncryptors
+        , AesGcmEncryptors
+    {
+        SesameSecuredMbedTlsEncryptors();
     };
 
     class EcSecP256r1PrivateKey

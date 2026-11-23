@@ -84,6 +84,11 @@ namespace infra
         return *member;
     }
 
+    std::optional<bool> JsonObjectNavigator::operator/(JsonOptionalBoolNavigatorToken token) const
+    {
+        return object.GetOptionalBoolean(token.name);
+    }
+
     JsonOptionalObjectNavigator::JsonOptionalObjectNavigator(infra::JsonObject& object)
         : navigator(std::in_place, object)
     {}
@@ -152,6 +157,14 @@ namespace infra
     {
         if (navigator != std::nullopt)
             return std::make_optional(*navigator / token);
+        else
+            return {};
+    }
+
+    std::optional<bool> JsonOptionalObjectNavigator::operator/(JsonOptionalBoolNavigatorToken token) const
+    {
+        if (navigator != std::nullopt)
+            return *navigator / token;
         else
             return {};
     }

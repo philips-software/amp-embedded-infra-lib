@@ -1,0 +1,5 @@
+sequenceDiagram
+    participant App as App<br>[implements GapCentralResponse]
+    participant Node as Node<br>[implements GapCentral]
+    App->>Node: GapCentral.Standby()
+    Node-->>App: GapCentralResponse.CurrentState(standby)

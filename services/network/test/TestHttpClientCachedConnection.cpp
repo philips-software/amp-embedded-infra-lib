@@ -405,6 +405,21 @@ TEST_F(HttpClientCachedConnectionTest, StatusAvailable_after_detach_is_ignored)
     clientSubject.Detach();
 }
 
+TEST_F(HttpClientCachedConnectionTest, SendStreamAvailable_after_detach_is_ignored)
+{
+    CreateConnection(factory);
+
+    FinishRequest();
+    EXPECT_CALL(*clientObserver, Detaching());
+    clientObserver->Detach();
+
+    infra::StreamWriterMock writer;
+    infra::AccessedBySharedPtr writerAccess(infra::emptyFunction);
+    clientSubject.Observer().SendStreamAvailable(writerAccess.MakeShared(writer));
+
+    clientSubject.Detach();
+}
+
 TEST_F(HttpClientCachedConnectionTest, Close_is_forwarded_to_client)
 {
     CreateConnection(factory);
@@ -485,4 +500,54 @@ TEST_F(HttpClientCachedConnectionTest, Stop_while_connection_open)
         {
             onDone.callback();
         });
+}
+
+TEST_F(HttpClientCachedConnectionTest, declined_newly_established_connection_is_released_and_next_waiting_factory_connects)
+{
+    InitiateConnectAndForwardToDelegate(factory);
+
+    connector.Connect(factory2);
+    ExecuteAllActions();
+
+    EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](auto&& createdClientObserver)
+        {
+            createdClientObserver(nullptr);
+        }));
+    EXPECT_CALL(clientSubject, CloseConnection()).WillOnce([this]()
+        {
+            clientSubject.Detach();
+        });
+    EXPECT_CALL(factory2, Hostname()).WillOnce(testing::Return("host2"));
+    EXPECT_CALL(factory2, Port()).WillOnce(testing::Return(20));
+    EXPECT_CALL(connectorDelegate, Connect(testing::_));
+    connectingFactory->ConnectionEstablished([this](infra::SharedPtr<services::HttpClientObserver> client)
+        {
+            clientSubject.Attach(client);
+        });
+}
+
+TEST_F(HttpClientCachedConnectionTest, declined_retargeted_connection_is_unaffected_and_connection_remains_usable)
+{
+    CreateConnection(factory);
+    FinishRequest();
+    EXPECT_CALL(*clientObserver, Detaching());
+    clientObserver->Detach();
+
+    EXPECT_CALL(factory2, Hostname()).WillOnce(testing::Return("host")).RetiresOnSaturation();
+    EXPECT_CALL(factory2, Port()).WillOnce(testing::Return(10)).RetiresOnSaturation();
+    EXPECT_CALL(factory2, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](auto&& createdClientObserver)
+        {
+            createdClientObserver(nullptr);
+        }));
+    connector.Connect(factory2);
+    ExecuteAllActions();
+
+    EXPECT_CALL(factory, ConnectionEstablished(testing::_)).WillOnce(testing::Invoke([this](auto&& createdClientObserver)
+        {
+            auto observer = clientObserver.Emplace();
+            EXPECT_CALL(*observer, Attached());
+            createdClientObserver(observer);
+        }));
+    InitiateConnect(factory, "host", 10);
+    CloseConnection();
 }

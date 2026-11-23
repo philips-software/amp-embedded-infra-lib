@@ -398,6 +398,30 @@ TEST_F(HttpClientTest, large_Put_request_is_executed)
     EXPECT_EQ("PUT /api/thing HTTP/1.1\r\nHost:localhost\r\nContent-Length:200\r\n\r\n01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789", connection.SentDataAsString());
 }
 
+TEST_F(HttpClientTest, header_larger_than_send_stream_is_split_across_multiple_send_streams)
+{
+    connection.maxSendStreamSize = 20;
+
+    Connect();
+    client.Subject().Get("/api/thing");
+
+    ExecuteAllActions();
+    EXPECT_EQ("GET /api/thing HTTP/1.1\r\nHost:localhost\r\n\r\n", connection.SentDataAsString());
+}
+
+TEST_F(HttpClientTest, request_with_headers_larger_than_send_stream_is_executed)
+{
+    connection.maxSendStreamSize = 20;
+
+    Connect();
+    std::array<services::HttpHeader, 2> headers{ services::HttpHeader{ "Authorization", "Basic Y29ubmVjdGl2aXR5OmlzY29vbA==" }, { "Connection", "close" } };
+
+    client.Subject().Get("/api/thing", headers);
+
+    ExecuteAllActions();
+    EXPECT_EQ("GET /api/thing HTTP/1.1\r\nAuthorization:Basic Y29ubmVjdGl2aXR5OmlzY29vbA==\r\nConnection:close\r\nHost:localhost\r\n\r\n", connection.SentDataAsString());
+}
+
 TEST_F(HttpClientTest, Patch_request_is_executed)
 {
     Connect();

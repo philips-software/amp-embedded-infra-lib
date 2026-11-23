@@ -5,6 +5,7 @@
 #include "infra/util/test_helper/MockHelpers.hpp"
 #include "services/util/Terminal.hpp"
 #include "gmock/gmock.h"
+#include <array>
 #include <vector>
 
 class StreamWriterMock
@@ -402,3 +403,116 @@ TEST_F(TerminalWithCommandsTest, unrecognized_command_is_reported)
 
     ExecuteAllActions();
 }
+
+namespace
+{
+    class DuplicateCommandStub
+        : public services::TerminalCommands
+    {
+    public:
+        DuplicateCommandStub(services::TerminalWithCommands& terminal, infra::BoundedConstString longName, infra::BoundedConstString shortName)
+            : services::TerminalCommands(terminal)
+            , commands{ { { { longName, shortName, "description" }, [](const infra::BoundedConstString&) {} } } }
+        {}
+
+        infra::MemoryRange<const Command> Commands() override
+        {
+            return infra::MakeRange(commands);
+        }
+
+    private:
+        const std::array<Command, 1> commands;
+    };
+}
+
+class TerminalWithCommandsDuplicateDetectorTest
+    : public testing::Test
+    , public infra::EventDispatcherWithWeakPtrFixture
+{
+public:
+    void RegisterConflictingObserversAndDispatch(infra::BoundedConstString newLongName, infra::BoundedConstString newShortName, infra::BoundedConstString existingLongName, infra::BoundedConstString existingShortName)
+    {
+        DuplicateCommandStub newObserver{ detector, newLongName, newShortName };
+        DuplicateCommandStub existingObserver{ detector, existingLongName, existingShortName };
+        ExecuteAllActions();
+    }
+
+    void EvaluateThenRegisterConflictingObserver()
+    {
+        DuplicateCommandStub first{ detector, "alpha", "a" };
+        ExecuteAllActions();
+        DuplicateCommandStub second{ detector, "alpha", "b" };
+        ExecuteAllActions();
+    }
+
+protected:
+    services::TerminalWithCommands terminal;
+    services::TerminalWithCommandsDuplicateDetector detector{ terminal };
+};
+
+TEST_F(TerminalWithCommandsDuplicateDetectorTest, does_not_abort_when_commands_are_unique)
+{
+    DuplicateCommandStub first{ detector, "alpha", "a" };
+    DuplicateCommandStub second{ detector, "beta", "b" };
+
+    ExecuteAllActions();
+
+    EXPECT_THAT(first.Attached(), testing::IsTrue());
+    EXPECT_THAT(second.Attached(), testing::IsTrue());
+}
+
+TEST_F(TerminalWithCommandsDuplicateDetectorTest, forwards_registered_observer_to_delegate)
+{
+    DuplicateCommandStub commands{ detector, "alpha", "a" };
+
+    ExecuteAllActions();
+
+    bool processed = terminal.NotifyObservers([](services::TerminalCommands& observer)
+        {
+            return observer.ProcessCommand("alpha");
+        });
+
+    EXPECT_THAT(processed, testing::IsTrue());
+}
+
+TEST_F(TerminalWithCommandsDuplicateDetectorTest, forwards_unregistered_observer_to_delegate)
+{
+    {
+        DuplicateCommandStub commands{ detector, "alpha", "a" };
+        ExecuteAllActions();
+    }
+
+    bool processed = terminal.NotifyObservers([](services::TerminalCommands& observer)
+        {
+            return observer.ProcessCommand("alpha");
+        });
+
+    EXPECT_THAT(processed, testing::IsFalse());
+}
+
+#ifndef EMIL_MUTATION_TESTING
+TEST_F(TerminalWithCommandsDuplicateDetectorTest, aborts_when_new_long_name_matches_existing_long_name)
+{
+    EXPECT_DEATH(RegisterConflictingObserversAndDispatch("alpha", "a", "alpha", "b"), "");
+}
+
+TEST_F(TerminalWithCommandsDuplicateDetectorTest, aborts_when_new_short_name_matches_existing_short_name)
+{
+    EXPECT_DEATH(RegisterConflictingObserversAndDispatch("cmdone", "x", "cmdtwo", "x"), "");
+}
+
+TEST_F(TerminalWithCommandsDuplicateDetectorTest, aborts_when_new_long_name_matches_existing_short_name)
+{
+    EXPECT_DEATH(RegisterConflictingObserversAndDispatch("shared", "f", "other", "shared"), "");
+}
+
+TEST_F(TerminalWithCommandsDuplicateDetectorTest, aborts_when_new_short_name_matches_existing_long_name)
+{
+    EXPECT_DEATH(RegisterConflictingObserversAndDispatch("other", "shared", "shared", "g"), "");
+}
+
+TEST_F(TerminalWithCommandsDuplicateDetectorTest, re_evaluates_when_observer_is_registered_after_previous_evaluation)
+{
+    EXPECT_DEATH(EvaluateThenRegisterConflictingObserver(), "");
+}
+#endif

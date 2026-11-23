@@ -38,6 +38,10 @@ namespace infra
         infra::Function<Result(Args...), ExtraSize> Clone() const;
         void Swap(AutoResetFunction& other) noexcept;
 
+        // Returns an opaque pointer that uniquely identifies the type of the currently stored
+        // callable (or nullptr when empty). Intended for diagnostics only; see Function::TargetType.
+        const void* TargetType() const;
+
     private:
         Function<Result(Args...), ExtraSize> function;
     };
@@ -118,6 +122,12 @@ namespace infra
     void AutoResetFunction<Result(Args...), ExtraSize>::Swap(AutoResetFunction& other) noexcept
     {
         function.Swap(other.function);
+    }
+
+    template<std::size_t ExtraSize, class Result, class... Args>
+    const void* AutoResetFunction<Result(Args...), ExtraSize>::TargetType() const
+    {
+        return function.TargetType();
     }
 
     template<std::size_t ExtraSize, class Result, class... Args>

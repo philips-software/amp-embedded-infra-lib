@@ -3,6 +3,7 @@
 
 #include "infra/stream/InputStream.hpp"
 #include "infra/syntax/Json.hpp"
+#include <cstdint>
 
 namespace infra
 {

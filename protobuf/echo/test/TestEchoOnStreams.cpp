@@ -1,9 +1,11 @@
 #include "generated/echo/TestMessages.pb.hpp"
 #include "infra/stream/ByteInputStream.hpp"
+#include "infra/stream/ByteOutputStream.hpp"
 #include "infra/stream/StdVectorOutputStream.hpp"
 #include "infra/util/SharedPtr.hpp"
 #include "protobuf/echo/EchoOnStreams.hpp"
 #include "protobuf/echo/Serialization.hpp"
+#include "protobuf/echo/test_doubles/DeferredSendEchoPolicy.hpp"
 #include "protobuf/echo/test_doubles/EchoMock.hpp"
 #include "protobuf/echo/test_doubles/ServiceStub.hpp"
 #include "gmock/gmock.h"
@@ -33,6 +35,14 @@ namespace services
             return EchoOnStreams::GrantSend(proxy);
         }
     };
+
+    class EchoPolicyMock
+        : public EchoPolicy
+    {
+    public:
+        MOCK_METHOD(bool, PendingRequestSend, (ServiceProxy & proxy), (const, override));
+        MOCK_METHOD(void, CancelRequestSend, (ServiceProxy & proxy), (override));
+    };
 }
 
 class EchoOnStreamsTest
@@ -42,6 +52,8 @@ public:
     infra::SharedOptional<infra::ByteInputStreamReader> reader;
     testing::StrictMock<services::EchoErrorPolicyMock> errorPolicy;
     services::MethodSerializerFactory::ForServices<services::ServiceStub>::AndProxies<services::ServiceStubProxy> serializerFactory;
+    services::DeferredSendEchoPolicy policy;
+    testing::StrictMock<services::EchoPolicyMock> policyMock;
     testing::StrictMock<services::EchoOnStreamsMock> echo{ serializerFactory, errorPolicy };
     testing::StrictMock<services::ServiceStub> service{ echo };
     services::ServiceStubProxy serviceProxy{ echo };
@@ -64,6 +76,30 @@ TEST_F(EchoOnStreamsTest, send_method_without_parameter)
         }));
     echo.SendStreamAvailable(writer.Emplace(data));
     EXPECT_EQ((std::vector<uint8_t>{ 1, 26, 0 }), data);
+}
+
+TEST_F(EchoOnStreamsTest, send_repeated_messages_split_over_two_streams)
+{
+    const std::array<services::Message, 4> messages{ 5, 6, 7, 8 };
+
+    EXPECT_CALL(echo, RequestSendStream(testing::_));
+    serviceProxy.RequestSend([this, &messages]()
+        {
+            serviceProxy.MethodRepeatedMessage(infra::MakeRange(messages));
+        });
+
+    EXPECT_CALL(echo, GrantSend(testing::Ref(serviceProxy))).WillOnce(testing::Invoke([this](services::ServiceProxy& proxy)
+        {
+            return echo.InheritedGrantSend(proxy);
+        }));
+    EXPECT_CALL(echo, RequestSendStream(testing::_));
+    std::array<uint8_t, 7> firstPart{};
+    infra::SharedOptional<infra::ByteOutputStreamWriter> firstWriter;
+    echo.SendStreamAvailable(firstWriter.Emplace(infra::MakeRange(firstPart)));
+    EXPECT_EQ((std::array<uint8_t, 7>{ 1, (5 << 3) | 2, 16, (1 << 3) | 2, 2, 1 << 3, 5 }), firstPart);
+
+    echo.SendStreamAvailable(writer.Emplace(data));
+    EXPECT_EQ((std::vector<uint8_t>{ (1 << 3) | 2, 2, 1 << 3, 6, (1 << 3) | 2, 2, 1 << 3, 7, (1 << 3) | 2, 2, 1 << 3, 8 }), data);
 }
 
 TEST_F(EchoOnStreamsTest, ReleaseReader_with_data_in_buffer)
@@ -139,4 +175,110 @@ TEST_F(EchoOnStreamsTest, send_is_operational_after_reset)
         }));
     echo.SendStreamAvailable(writer.Emplace(data));
     EXPECT_EQ((std::vector<uint8_t>{ 1, 26, 0 }), data);
+}
+
+TEST_F(EchoOnStreamsTest, cancel_of_request_deferred_by_policy_is_handled_by_policy)
+{
+    echo.SetPolicy(policy);
+    policy.StartDeferring();
+
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.MethodNoParameter();
+        });
+    EXPECT_THAT(policy.DeferredRequests(), testing::SizeIs(1));
+    EXPECT_TRUE(policy.PendingRequestSend(serviceProxy));
+
+    serviceProxy.CancelRequestSend();
+    EXPECT_THAT(policy.DeferredRequests(), testing::IsEmpty());
+
+    policy.GrantDeferredRequests();
+}
+
+TEST_F(EchoOnStreamsTest, cancel_of_request_not_deferred_by_policy_is_handled_by_echo)
+{
+    echo.SetPolicy(policy);
+
+    EXPECT_CALL(echo, RequestSendStream(testing::_));
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.MethodNoParameter();
+        });
+
+    serviceProxy.CancelRequestSend();
+
+    echo.SendStreamAvailable(writer.Emplace(data));
+    EXPECT_THAT(data, testing::IsEmpty());
+}
+
+TEST_F(EchoOnStreamsTest, cancel_of_queued_request_not_deferred_by_policy_is_handled_by_echo)
+{
+    echo.SetPolicy(policy);
+    services::ServiceStubProxy otherServiceProxy{ echo };
+
+    EXPECT_CALL(echo, RequestSendStream(testing::_));
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.MethodNoParameter();
+        });
+    otherServiceProxy.RequestSend([&otherServiceProxy]()
+        {
+            otherServiceProxy.MethodNoParameter();
+        });
+
+    otherServiceProxy.CancelRequestSend();
+
+    EXPECT_CALL(echo, GrantSend(testing::Ref(serviceProxy))).WillOnce(testing::Invoke([this](services::ServiceProxy& proxy)
+        {
+            return echo.InheritedGrantSend(proxy);
+        }));
+    echo.SendStreamAvailable(writer.Emplace(data));
+    EXPECT_THAT(data, testing::ElementsAre(1, 26, 0));
+}
+
+TEST_F(EchoOnStreamsTest, cancel_of_requests_tracked_by_echo_does_not_consult_policy)
+{
+    echo.SetPolicy(policyMock);
+    services::ServiceStubProxy otherServiceProxy{ echo };
+
+    EXPECT_CALL(echo, RequestSendStream(testing::_));
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.MethodNoParameter();
+        });
+    otherServiceProxy.RequestSend([&otherServiceProxy]()
+        {
+            otherServiceProxy.MethodNoParameter();
+        });
+
+    otherServiceProxy.CancelRequestSend();
+    serviceProxy.CancelRequestSend();
+}
+
+TEST_F(EchoOnStreamsTest, cancel_of_request_deferred_by_policy_while_other_proxy_is_sending_is_handled_by_policy)
+{
+    echo.SetPolicy(policy);
+    services::ServiceStubProxy deferredServiceProxy{ echo };
+
+    EXPECT_CALL(echo, RequestSendStream(testing::_));
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.MethodNoParameter();
+        });
+
+    policy.StartDeferring();
+    deferredServiceProxy.RequestSend([&deferredServiceProxy]()
+        {
+            deferredServiceProxy.MethodNoParameter();
+        });
+
+    deferredServiceProxy.CancelRequestSend();
+    EXPECT_THAT(policy.DeferredRequests(), testing::IsEmpty());
+
+    EXPECT_CALL(echo, GrantSend(testing::Ref(serviceProxy))).WillOnce(testing::Invoke([this](services::ServiceProxy& proxy)
+        {
+            return echo.InheritedGrantSend(proxy);
+        }));
+    echo.SendStreamAvailable(writer.Emplace(data));
+    EXPECT_THAT(data, testing::ElementsAre(1, 26, 0));
 }

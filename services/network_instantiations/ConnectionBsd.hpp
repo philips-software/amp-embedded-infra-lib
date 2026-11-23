@@ -1,14 +1,12 @@
 #ifndef SERVICES_CONNECTION_BSD_HPP
 #define SERVICES_CONNECTION_BSD_HPP
 
-#include "infra/event/EventDispatcherWithWeakPtr.hpp"
 #include "infra/stream/BoundedDequeInputStream.hpp"
 #include "infra/stream/ByteOutputStream.hpp"
 #include "infra/util/IntrusiveList.hpp"
 #include "infra/util/SharedObjectAllocator.hpp"
 #include "infra/util/SharedOptional.hpp"
 #include "services/network/Connection.hpp"
-#include <list>
 
 namespace services
 {
@@ -29,7 +27,7 @@ namespace services
         void CloseAndDestroy() override;
         void AbortAndDestroy() override;
 
-        IPv4Address Ipv4Address() const;
+        IPAddress Address() const;
         void SetObserver(infra::SharedPtr<services::ConnectionObserver> connectionObserver);
         bool Connected() const;
         bool SendBufferEmpty() const;
@@ -92,7 +90,7 @@ namespace services
         : public infra::IntrusiveList<ListenerBsd>::NodeType
     {
     public:
-        ListenerBsd(EventDispatcherWithNetwork& network, uint16_t port, services::ServerConnectionObserverFactory& factory);
+        ListenerBsd(EventDispatcherWithNetwork& network, uint16_t port, services::ServerConnectionObserverFactory& factory, IPVersions versions);
         ListenerBsd(const ListenerBsd& other) = delete;
         ListenerBsd& operator=(const ListenerBsd& other) = delete;
         ~ListenerBsd();

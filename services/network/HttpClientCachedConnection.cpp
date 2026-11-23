@@ -168,7 +168,8 @@ namespace services
 
     void HttpClientCachedConnection::SendStreamAvailable(infra::SharedPtr<infra::StreamWriter>&& writer)
     {
-        Observer().SendStreamAvailable(std::move(writer));
+        if (HttpClient::IsAttached())
+            Observer().SendStreamAvailable(std::move(writer));
     }
 
     void HttpClientCachedConnection::FillContent(infra::StreamWriter& writer) const
@@ -240,14 +241,16 @@ namespace services
 
         clientObserverFactory->ConnectionEstablished([httpClientPtr = clientPtr.MakeShared(*client)](infra::SharedPtr<HttpClientObserver> observer)
             {
+                httpClientPtr->createdObserver(httpClientPtr);
+
                 if (observer != nullptr)
-                {
-                    httpClientPtr->createdObserver(httpClientPtr);
                     httpClientPtr->Attach(observer);
-                }
+                else
+                    httpClientPtr->HttpClientObserver::Subject().CloseConnection();
             });
 
         clientObserverFactory = nullptr;
+        TryConnectWaiting();
     }
 
     void HttpClientCachedConnectionConnector::ConnectionFailed(ConnectFailReason reason)

@@ -312,6 +312,84 @@ TEST(BoundedVectorTest, TestInsertRange)
     EXPECT_EQ(expectedVector, vector);
 }
 
+namespace
+{
+    struct LifetimeCounted
+    {
+        LifetimeCounted(int value)
+            : value(value)
+        {
+            ++alive;
+        }
+
+        LifetimeCounted(const LifetimeCounted& other)
+            : value(other.value)
+        {
+            ++alive;
+        }
+
+        LifetimeCounted& operator=(const LifetimeCounted& other) = default;
+
+        ~LifetimeCounted()
+        {
+            --alive;
+        }
+
+        bool operator==(const LifetimeCounted& other) const
+        {
+            return value == other.value;
+        }
+
+        int value;
+        static int alive;
+    };
+
+    int LifetimeCounted::alive = 0;
+}
+
+TEST(BoundedVectorTest, TestInsertOneAtTheEndConstructsTheNewElement)
+{
+    {
+        infra::BoundedVector<LifetimeCounted>::WithMaxSize<5> vector({ 0, 1, 2 });
+
+        vector.insert(vector.end(), LifetimeCounted(5));
+
+        EXPECT_EQ((infra::BoundedVector<LifetimeCounted>::WithMaxSize<5>({ 0, 1, 2, 5 })), vector);
+        EXPECT_EQ(4, LifetimeCounted::alive);
+    }
+
+    EXPECT_EQ(0, LifetimeCounted::alive);
+}
+
+TEST(BoundedVectorTest, TestInsertManyPastTheEndConstructsTheNewElements)
+{
+    {
+        infra::BoundedVector<LifetimeCounted>::WithMaxSize<5> vector({ 0, 1, 2 });
+
+        vector.insert(vector.begin() + 2, std::size_t(2), LifetimeCounted(5));
+
+        EXPECT_EQ((infra::BoundedVector<LifetimeCounted>::WithMaxSize<5>({ 0, 1, 5, 5, 2 })), vector);
+        EXPECT_EQ(5, LifetimeCounted::alive);
+    }
+
+    EXPECT_EQ(0, LifetimeCounted::alive);
+}
+
+TEST(BoundedVectorTest, TestInsertRangePastTheEndConstructsTheNewElements)
+{
+    {
+        infra::BoundedVector<LifetimeCounted>::WithMaxSize<5> vector({ 0, 1, 2 });
+        LifetimeCounted insertRange[2] = { 5, 6 };
+
+        vector.insert(vector.begin() + 2, insertRange, insertRange + 2);
+
+        EXPECT_EQ((infra::BoundedVector<LifetimeCounted>::WithMaxSize<5>({ 0, 1, 5, 6, 2 })), vector);
+        EXPECT_EQ(7, LifetimeCounted::alive);
+    }
+
+    EXPECT_EQ(0, LifetimeCounted::alive);
+}
+
 TEST(BoundedVectorTest, TestEraseOne)
 {
     int range[3] = { 0, 1, 2 };
@@ -404,6 +482,36 @@ TEST(BoundedVectorTest, TestSwapSmallerWithLarger)
 
     infra::BoundedVector<int>::WithMaxSize<5> expectedVector1(range2, range2 + 3);
     infra::BoundedVector<int>::WithMaxSize<5> expectedVector2(range1, range1 + 2);
+    EXPECT_EQ(expectedVector1, vector1);
+    EXPECT_EQ(expectedVector2, vector2);
+}
+
+TEST(BoundedVectorTest, TestSwapTwoFullVectors)
+{
+    int range1[3] = { 0, 1, 2 };
+    infra::BoundedVector<int>::WithMaxSize<3> vector1(range1, range1 + 3);
+    int range2[3] = { 3, 4, 5 };
+    infra::BoundedVector<int>::WithMaxSize<3> vector2(range2, range2 + 3);
+
+    infra::swap(vector1, vector2);
+
+    infra::BoundedVector<int>::WithMaxSize<3> expectedVector1(range2, range2 + 3);
+    infra::BoundedVector<int>::WithMaxSize<3> expectedVector2(range1, range1 + 3);
+    EXPECT_EQ(expectedVector1, vector1);
+    EXPECT_EQ(expectedVector2, vector2);
+}
+
+TEST(BoundedVectorTest, TestSwapWithFullVector)
+{
+    int range1[1] = { 0 };
+    infra::BoundedVector<int>::WithMaxSize<3> vector1(range1, range1 + 1);
+    int range2[3] = { 1, 2, 3 };
+    infra::BoundedVector<int>::WithMaxSize<3> vector2(range2, range2 + 3);
+
+    infra::swap(vector1, vector2);
+
+    infra::BoundedVector<int>::WithMaxSize<3> expectedVector1(range2, range2 + 3);
+    infra::BoundedVector<int>::WithMaxSize<3> expectedVector2(range1, range1 + 1);
     EXPECT_EQ(expectedVector1, vector1);
     EXPECT_EQ(expectedVector2, vector2);
 }

@@ -2,10 +2,9 @@
 
 namespace main_
 {
-    Sesame::Sesame(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage, infra::BoundedDeque<uint8_t>& windowedReceivedMessage,
-        hal::BufferedSerialCommunication& serialCommunication)
-        : cobs(cobsSendStorage, cobsReceivedMessage, serialCommunication)
-        , windowed(windowedReceivedMessage, cobs)
+    Sesame::Sesame(StorageBase& storage, hal::BufferedSerialCommunication& serialCommunication, services::SesameInitializer& initializer)
+        : cobs(storage.cobsSendMessage, storage.cobsReceivedMessage, serialCommunication)
+        , windowed(storage.windowedReceivedMessage, storage.windowedReceiveBuffers, cobs, initializer)
     {}
 
     void Sesame::Stop(const infra::Function<void()>& onDone)
@@ -17,4 +16,12 @@ namespace main_
                 this->onStopDone();
             });
     }
+
+    Sesame::StorageBase::StorageBase(infra::BoundedVector<uint8_t>& cobsSendMessage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage,
+        infra::BoundedDeque<uint8_t>& windowedReceivedMessage, uint8_t windowedReceiveBuffers)
+        : cobsSendMessage(cobsSendMessage)
+        , cobsReceivedMessage(cobsReceivedMessage)
+        , windowedReceivedMessage(windowedReceivedMessage)
+        , windowedReceiveBuffers(windowedReceiveBuffers)
+    {}
 }

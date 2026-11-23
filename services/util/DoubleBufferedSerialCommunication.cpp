@@ -1,0 +1,65 @@
+#include "services/util/DoubleBufferedSerialCommunication.hpp"
+
+namespace services
+{
+    DoubleBufferedSerialCommunication::DoubleBufferedSerialCommunication(infra::BoundedVector<uint8_t>& buffer, hal::BufferedSerialCommunication& delegate)
+        : hal::BufferedSerialCommunicationObserver(delegate)
+        , buffer(buffer)
+        , delegate(delegate)
+    {}
+
+    void DoubleBufferedSerialCommunication::SendData(infra::ConstByteRange data, infra::Function<void()> actionOnCompletion)
+    {
+        really_assert(actionOnCompletion != nullptr);
+        really_assert(nextActionOnCompletion == nullptr);
+
+        nextSend = data;
+        nextActionOnCompletion = actionOnCompletion;
+
+        TrySend();
+    }
+
+    infra::StreamReaderWithRewinding& DoubleBufferedSerialCommunication::Reader()
+    {
+        return delegate.Reader();
+    }
+
+    void DoubleBufferedSerialCommunication::AckReceived()
+    {
+        delegate.AckReceived();
+    }
+
+    void DoubleBufferedSerialCommunication::DataReceived()
+    {
+        if (HasObserver())
+            GetObserver().DataReceived();
+    }
+
+    void DoubleBufferedSerialCommunication::TrySend()
+    {
+        if (nextActionOnCompletion != nullptr && nowActionOnCompletion == nullptr)
+        {
+            nowSending = nextSend;
+            nowActionOnCompletion = std::move(nextActionOnCompletion);
+        }
+
+        if (nowActionOnCompletion != nullptr && !sending)
+        {
+            sending = true;
+            auto chunk = infra::Head(nowSending, buffer.max_size());
+            buffer.assign(chunk.begin(), chunk.end());
+            nowSending = infra::DiscardHead(nowSending, chunk.size());
+
+            if (nowSending.empty())
+                nowActionOnCompletion();
+
+            delegate.SendData(infra::MakeRange(buffer), [this]()
+                {
+                    sending = false;
+                    buffer.clear();
+
+                    TrySend();
+                });
+        }
+    }
+}

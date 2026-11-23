@@ -2,6 +2,7 @@
 #include "lwip/dhcp.h"
 #include "lwip/ethip6.h"
 #include "lwip/igmp.h"
+#include "lwip/lwip_cpp/IpAddressLwIp.hpp"
 #include "netif/etharp.h"
 #include <cstdint>
 #include <cstdlib>
@@ -180,9 +181,9 @@ namespace services
 
         if (!config.ipConfig.useDhcp)
         {
-            IP4_ADDR(ip_2_ip4(&ipaddr), config.ipConfig.addresses.address[0], config.ipConfig.addresses.address[1], config.ipConfig.addresses.address[2], config.ipConfig.addresses.address[3]);
-            IP4_ADDR(ip_2_ip4(&netmask), config.ipConfig.addresses.netmask[0], config.ipConfig.addresses.netmask[1], config.ipConfig.addresses.netmask[2], config.ipConfig.addresses.netmask[3]);
-            IP4_ADDR(ip_2_ip4(&gw), config.ipConfig.addresses.gateway[0], config.ipConfig.addresses.gateway[1], config.ipConfig.addresses.gateway[2], config.ipConfig.addresses.gateway[3]);
+            *ip_2_ip4(&ipaddr) = IpAddressLwIp::ToIp4(config.ipConfig.addresses.address);
+            *ip_2_ip4(&netmask) = IpAddressLwIp::ToIp4(config.ipConfig.addresses.netmask);
+            *ip_2_ip4(&gw) = IpAddressLwIp::ToIp4(config.ipConfig.addresses.gateway);
         }
 
         netif_add(&netInterface, ip_2_ip4(&ipaddr), ip_2_ip4(&netmask), ip_2_ip4(&gw), this, &LightweightIpOverEthernetFactory::StaticInit, &ethernet_input);

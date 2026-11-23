@@ -1,0 +1,28 @@
+sequenceDiagram
+    title BLE GATT Operation Concurrency
+
+    participant App as App<br>[implements GattClientResponse]
+    participant Node as Node<br>[implements GattClient]
+
+    rect rgb(230, 230, 240)
+        note over App, Node: Sequential acknowledged operations
+        App->>Node: GattClient.WriteCharacteristic(<br>handle=0x0045, data=0x01)
+        Note right of App: Wait for OperationComplete before the next call.
+        Node-->>App: GattClientResponse.OperationComplete(success)
+
+        App->>Node: GattClient.ReadCharacteristic(0x0025)
+        Node-->>App: GattClientResponse.ReadCharacteristicResponse(<br>data={handle=0x0025, data=0x64})
+        Node-->>App: GattClientResponse.OperationComplete(success)
+    end
+
+    rect rgb(230, 230, 240)
+        note over App, Node: WriteCharacteristicWithoutResponse alongside an acknowledged write
+        App->>Node: GattClient.WriteCharacteristicWithoutResponse(<br>handle=0x0027, data=0x11)
+        Node-->>App: GattClientResponse.WriteCharacteristicWithoutResponseComplete(success)
+
+        App->>Node: GattClient.WriteCharacteristic(<br>handle=0x0045, data=0x33)
+        App->>Node: GattClient.WriteCharacteristicWithoutResponse(<br>handle=0x0027, data=0x22)
+        Node-->>App: GattClientResponse.WriteCharacteristicWithoutResponseComplete(success)
+        Node-->>App: GattClientResponse.OperationComplete(success)
+        Note over App, Node: Callbacks for the two calls may interleave.<br>Each callback matches its own request.
+    end

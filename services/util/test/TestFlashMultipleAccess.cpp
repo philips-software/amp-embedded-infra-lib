@@ -65,6 +65,29 @@ TEST_F(FlashMultipleAccessTest, SecondReadIsExecutedWhenFirstAccessFinishes)
     ExecuteAllActions();
 }
 
+#ifndef EMIL_MUTATION_TESTING
+TEST_F(FlashMultipleAccessTest, WriteWhileReadPendingAborts)
+{
+    access1.ReadBuffer(buffer, 0, infra::emptyFunction);
+
+    EXPECT_DEATH(access1.WriteBuffer(buffer, 1, infra::emptyFunction), "");
+}
+
+TEST_F(FlashMultipleAccessTest, EraseWhileWritePendingAborts)
+{
+    access1.WriteBuffer(buffer, 0, infra::emptyFunction);
+
+    EXPECT_DEATH(access1.EraseSectors(1, 2, infra::emptyFunction), "");
+}
+
+TEST_F(FlashMultipleAccessTest, ReadWhileErasePendingAborts)
+{
+    access1.EraseSectors(0, 1, infra::emptyFunction);
+
+    EXPECT_DEATH(access1.ReadBuffer(buffer, 1, infra::emptyFunction), "");
+}
+#endif
+
 TEST_F(FlashMultipleAccessTest, FirstWriteIsExecuted)
 {
     EXPECT_CALL(flash, WriteBuffer(infra::MakeConst(infra::MakeRange(buffer)), 0, testing::_));

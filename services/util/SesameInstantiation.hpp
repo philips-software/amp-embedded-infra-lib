@@ -1,6 +1,7 @@
 #ifndef SERVICES_UTIL_SESAME_INSTANTIATION_HPP
 #define SERVICES_UTIL_SESAME_INSTANTIATION_HPP
 
+#include "infra/util/WithStorage.hpp"
 #include "services/util/SesameCobs.hpp"
 #include "services/util/SesameWindowed.hpp"
 
@@ -9,11 +10,36 @@ namespace main_
     struct Sesame
     {
     public:
-        template<std::size_t MessageSize>
-        struct WithMessageSize;
+        struct StorageBase
+        {
+            StorageBase(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage,
+                infra::BoundedDeque<uint8_t>& windowedReceivedMessage, uint8_t windowedReceiveBuffers);
 
-        Sesame(infra::BoundedVector<uint8_t>& cobsSendStorage, infra::BoundedDeque<uint8_t>& cobsReceivedMessage,
-            infra::BoundedDeque<uint8_t>& windowedReceivedMessage, hal::BufferedSerialCommunication& serialCommunication);
+            infra::BoundedVector<uint8_t>& cobsSendMessage;
+            infra::BoundedDeque<uint8_t>& cobsReceivedMessage;
+            infra::BoundedDeque<uint8_t>& windowedReceivedMessage;
+            uint8_t windowedReceiveBuffers;
+        };
+
+        template<std::size_t MessageSize, uint8_t SplitBuffers>
+        struct Storage
+            : StorageBase
+        {
+            static_assert(SplitBuffers >= 2, "Sesame requires at least 2 receive buffers");
+
+            static constexpr std::size_t encodedMessageSize = services::SesameWindowed::bufferSizeForMessage<MessageSize, services::SesameCobs::EncodedMessageSize>;
+
+            Storage();
+
+            infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameCobs::sendBufferSize<MessageSize>> cobsSendMessageStorage;
+            infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameCobs::receiveBufferSize<encodedMessageSize>> cobsReceivedMessageStorage;
+            infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameWindowed::receiveBufferSize<MessageSize, SplitBuffers>> windowedReceivedMessageStorage;
+        };
+
+        template<std::size_t MessageSize, uint8_t SplitBuffers = 2>
+        using WithMessageSize = infra::WithStorage<Sesame, Storage<MessageSize, SplitBuffers>>;
+
+        Sesame(StorageBase& storage, hal::BufferedSerialCommunication& serialCommunication, services::SesameInitializer& initializer = services::immediatelyGranted);
 
         void Stop(const infra::Function<void()>& onDone);
 
@@ -21,27 +47,14 @@ namespace main_
         services::SesameWindowed windowed;
 
         infra::AutoResetFunction<void()> onStopDone;
-
-        template<std::size_t MessageSize>
-        struct CobsStorage
-        {
-            static constexpr std::size_t encodedMessageSize = services::SesameWindowed::bufferSizeForMessage<MessageSize, services::SesameCobs::EncodedMessageSize>;
-
-            infra::BoundedVector<uint8_t>::WithMaxSize<services::SesameCobs::sendBufferSize<MessageSize>> cobsSendStorage;
-            infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameCobs::receiveBufferSize<encodedMessageSize>> cobsReceivedMessage;
-            infra::BoundedDeque<uint8_t>::WithMaxSize<services::SesameCobs::receiveBufferSize<encodedMessageSize>> windowedReceivedMessage;
-        };
     };
 
-    template<std::size_t MessageSize>
-    struct Sesame::WithMessageSize
-        : private Sesame::CobsStorage<MessageSize>
-        , Sesame
-    {
-        WithMessageSize(hal::BufferedSerialCommunication& serialCommunication)
-            : Sesame(this->cobsSendStorage, this->cobsReceivedMessage, this->windowedReceivedMessage, serialCommunication)
-        {}
-    };
+    //// Implementation ////
+
+    template<std::size_t MessageSize, uint8_t SplitBuffers>
+    Sesame::Storage<MessageSize, SplitBuffers>::Storage()
+        : StorageBase(cobsSendMessageStorage, cobsReceivedMessageStorage, windowedReceivedMessageStorage, SplitBuffers)
+    {}
 }
 
 #endif

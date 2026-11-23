@@ -3,6 +3,7 @@
 
 #include "infra/stream/OutputStream.hpp"
 #include "infra/util/BoundedVector.hpp"
+#include <cstdint>
 
 namespace infra
 {

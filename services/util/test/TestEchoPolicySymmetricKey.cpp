@@ -7,6 +7,7 @@
 #include "protobuf/echo/test_doubles/ServiceStub.hpp"
 #include "services/network/test_doubles/ConnectionMock.hpp"
 #include "services/util/EchoPolicySymmetricKey.hpp"
+#include "services/util/SesameCryptoMbedTls.hpp"
 #include "services/util/test_doubles/SesameMock.hpp"
 #include <numeric>
 
@@ -69,7 +70,8 @@ public:
             ExpectGenerationOfKeyMaterial({ 1, 2 }, { 3, 4 });
         } };
     sesame_security::SymmetricKeyFile keys{ services::GenerateSymmetricKeys(randomDataGenerator) };
-    services::SesameSecured::WithCryptoMbedTls::WithBuffers<64> secured{ lower, keys };
+    services::SesameSecuredMbedTlsEncryptors encryptors;
+    services::SesameSecured::WithMessageSize<64> secured{ encryptors, lower, keys };
     services::EchoOnSesame echo{ secured, serializerFactory, errorPolicy };
     services::EchoPolicySymmetricKey policy{ echo, echo, secured, randomDataGenerator };
 
@@ -138,4 +140,52 @@ TEST_F(EchoPolicySymmetricKeyTest, send_while_initializing)
             service.MethodDone();
         }));
     LoopBackData();
+}
+
+TEST_F(EchoPolicySymmetricKeyTest, cancel_send_while_initializing_removes_waiting_request)
+{
+    EXPECT_CALL(lower, RequestSendMessage(testing::_));
+    EXPECT_CALL(lower, ResetReading());
+    lower.GetObserver().Initialized();
+
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.Method(5);
+        });
+    serviceProxy.CancelRequestSend();
+
+    ExpectGenerationOfKeyMaterial({ 4 }, { 5 });
+    LoopBackData();
+}
+
+TEST_F(EchoPolicySymmetricKeyTest, reset_cancels_request_waiting_for_key_establishment)
+{
+    EXPECT_CALL(lower, RequestSendMessage(testing::_));
+    EXPECT_CALL(lower, ResetReading());
+    lower.GetObserver().Initialized();
+
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.Method(5);
+        });
+
+    EXPECT_CALL(lower, ResetReading());
+    EXPECT_CALL(lower, Reset());
+    echo.Reset();
+    EXPECT_THAT(serviceProxy.CurrentRequestedSize(), testing::Eq(0));
+
+    Initialized();
+
+    EXPECT_CALL(lower, RequestSendMessage(testing::_)).WillOnce(testing::Invoke([this]()
+        {
+            EXPECT_CALL(service, Method(6)).WillOnce(testing::Invoke([this]()
+                {
+                    service.MethodDone();
+                }));
+            LoopBackData();
+        }));
+    serviceProxy.RequestSend([this]()
+        {
+            serviceProxy.Method(6);
+        });
 }

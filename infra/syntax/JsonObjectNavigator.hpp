@@ -2,8 +2,10 @@
 #define JSON_OBJECT_NAVIGATOR_HPP
 
 #include "infra/syntax/Json.hpp"
+#include <cstdint>
 #include <functional>
 #include <optional>
+#include <string>
 
 namespace infra
 {
@@ -48,6 +50,11 @@ namespace infra
     };
 
     struct JsonBoolNavigatorToken
+    {
+        std::string name;
+    };
+
+    struct JsonOptionalBoolNavigatorToken
     {
         std::string name;
     };
@@ -108,6 +115,7 @@ namespace infra
         std::optional<std::string> operator/(JsonOptionalStringNavigatorToken token) const;
         int32_t operator/(JsonIntegerNavigatorToken token) const;
         bool operator/(JsonBoolNavigatorToken token) const;
+        std::optional<bool> operator/(JsonOptionalBoolNavigatorToken token) const;
 
         template<class Result>
         Result operator/(JsonTransformObjectNavigatorToken<Result> token) const;
@@ -141,6 +149,7 @@ namespace infra
         std::optional<std::string> operator/(JsonOptionalStringNavigatorToken token) const;
         std::optional<int32_t> operator/(JsonIntegerNavigatorToken token) const;
         std::optional<bool> operator/(JsonBoolNavigatorToken token) const;
+        std::optional<bool> operator/(JsonOptionalBoolNavigatorToken token) const;
 
         template<class Result>
         std::optional<Result> operator/(JsonTransformObjectNavigatorToken<Result> token) const;

@@ -115,6 +115,8 @@ if (EMIL_INCLUDE_MBEDTLS OR NOT EMIL_EXTERNAL_MBEDTLS_TARGET STREQUAL "")
         )
     endif()
 
+    target_compile_definitions(services.network PRIVATE EMIL_MBEDTLS_CUSTOM_ENTROPY=$<BOOL:${EMIL_MBEDTLS_CUSTOM_ENTROPY}>)
+
     target_sources(services.network PRIVATE
         CertificatesMbedTls.cpp
         CertificatesMbedTls.hpp

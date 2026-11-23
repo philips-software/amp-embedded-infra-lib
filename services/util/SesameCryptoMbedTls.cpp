@@ -2,6 +2,7 @@
 #include "infra/util/ReallyAssert.hpp"
 #include "mbedtls/ecdsa.h"
 #include "mbedtls/hmac_drbg.h"
+#include "mbedtls/md.h"
 #include "mbedtls/sha256.h"
 #include "services/util/MbedTlsRandomDataGeneratorWrapper.hpp"
 
@@ -25,6 +26,11 @@ namespace services
             std::array<uint8_t, Size> result;
             really_assert(mbedtls_mpi_write_binary(&x, result.data(), result.size()) == 0);
             return result;
+        }
+
+        bool IsAllowedCertificateDigest(mbedtls_md_type_t digest)
+        {
+            return digest == MBEDTLS_MD_SHA256 || digest == MBEDTLS_MD_SHA384 || digest == MBEDTLS_MD_SHA512;
         }
     }
 
@@ -167,10 +173,13 @@ namespace services
         really_assert(mbedtls_x509_crt_parse(&certificate, dsaCertificate.begin(), dsaCertificate.size()) == 0);
         really_assert(mbedtls_pk_get_type(&certificate.pk) == MBEDTLS_PK_ECKEY);
 
-        std::array<uint8_t, 32> hash;
-        const mbedtls_md_info_t* mdInfo = mbedtls_md_info_from_type(MBEDTLS_MD_SHA256);
-        mbedtls_md(mdInfo, certificate.tbs.p, certificate.tbs.len, hash.data());
-        valid = mbedtls_pk_verify(&rootCertificate.pk, MBEDTLS_MD_SHA256, hash.data(), hash.size(), certificate.MBEDTLS_PRIVATE(sig).p, certificate.MBEDTLS_PRIVATE(sig).len) == 0;
+        std::array<uint8_t, MBEDTLS_MD_MAX_SIZE> hash;
+        auto signatureMd = certificate.MBEDTLS_PRIVATE(sig_md);
+        const mbedtls_md_info_t* mdInfo = mbedtls_md_info_from_type(signatureMd);
+        valid = IsAllowedCertificateDigest(signatureMd) &&
+                mdInfo != nullptr &&
+                mbedtls_md(mdInfo, certificate.tbs.p, certificate.tbs.len, hash.data()) == 0 &&
+                mbedtls_pk_verify(&rootCertificate.pk, signatureMd, hash.data(), mbedtls_md_get_size(mdInfo), certificate.MBEDTLS_PRIVATE(sig).p, certificate.MBEDTLS_PRIVATE(sig).len) == 0;
 
         really_assert(mbedtls_ecp_export(mbedtls_pk_ec(certificate.pk), &unusedGroup, &unusedDsaPrivateKey, &publicKey) == 0);
 
@@ -236,34 +245,33 @@ namespace services
 
     void AesGcmEncryptionMbedTls::EncryptWithKey(infra::ConstByteRange key)
     {
-        encrypt = true;
         mbedtls_gcm_setkey(&context, MBEDTLS_CIPHER_ID_AES, key.begin(), key.size() * 8); //NOSONAR
     }
 
     void AesGcmEncryptionMbedTls::DecryptWithKey(infra::ConstByteRange key)
     {
-        encrypt = false;
         mbedtls_gcm_setkey(&context, MBEDTLS_CIPHER_ID_AES, key.begin(), key.size() * 8); //NOSONAR
     }
 
-    void AesGcmEncryptionMbedTls::Start(infra::ConstByteRange iv)
+    void AesGcmEncryptionMbedTls::Encrypt(infra::ConstByteRange iv, infra::ByteRange data)
     {
-        really_assert(mbedtls_gcm_starts(&context, encrypt ? MBEDTLS_GCM_ENCRYPT : MBEDTLS_GCM_DECRYPT, iv.begin(), iv.size()) == 0);
+        really_assert(data.size() >= blockSize);
+        const auto payloadSize = data.size() - blockSize;
+        really_assert(mbedtls_gcm_crypt_and_tag(&context, MBEDTLS_GCM_ENCRYPT, payloadSize, iv.begin(), iv.size(), nullptr, 0, data.begin(), data.begin(), blockSize, data.begin() + payloadSize) == 0);
     }
 
-    std::size_t AesGcmEncryptionMbedTls::Update(infra::ConstByteRange from, infra::ByteRange to)
+    bool AesGcmEncryptionMbedTls::Decrypt(infra::ConstByteRange iv, infra::ByteRange data)
     {
-        std::size_t processedSize = 0;
-        really_assert(mbedtls_gcm_update(&context, from.begin(), from.size(), to.begin(), to.size(), &processedSize) == 0);
-        return processedSize;
+        really_assert(data.size() >= blockSize);
+        const auto payloadSize = data.size() - blockSize;
+        auto result = mbedtls_gcm_auth_decrypt(&context, payloadSize, iv.begin(), iv.size(), nullptr, 0, data.begin() + payloadSize, blockSize, data.begin(), data.begin());
+        really_assert(result == 0 || result == MBEDTLS_ERR_GCM_AUTH_FAILED);
+        return result == 0;
     }
 
-    std::size_t AesGcmEncryptionMbedTls::Finish(infra::ByteRange to, infra::ByteRange mac)
-    {
-        std::size_t processedSize = 0;
-        really_assert(mbedtls_gcm_finish(&context, to.begin(), to.size(), &processedSize, mac.begin(), mac.size()) == 0);
-        return processedSize;
-    }
+    SesameSecuredMbedTlsEncryptors::SesameSecuredMbedTlsEncryptors()
+        : AesGcmEncryptors{ detail::MbedTlsEncryptors::sendEncryption, detail::MbedTlsEncryptors::receiveEncryption }
+    {}
 
     EcSecP256r1PrivateKey::EcSecP256r1PrivateKey(hal::SynchronousRandomDataGenerator& randomDataGenerator)
     {

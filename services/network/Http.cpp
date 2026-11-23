@@ -39,6 +39,44 @@ namespace services
 
             return schemeEnd;
         }
+
+        void WriteFragment(infra::TextOutputStream& stream, infra::BoundedConstString fragment, std::size_t& skip, std::size_t& written)
+        {
+            if (skip >= fragment.size())
+                skip -= fragment.size();
+            else
+            {
+                fragment = fragment.substr(skip);
+                skip = 0;
+
+                auto amount = std::min(stream.Available(), fragment.size());
+                stream << fragment.substr(0, amount);
+                written += amount;
+            }
+        }
+
+        void WriteHeaderLine(infra::TextOutputStream& stream, const HttpHeader& header, std::size_t& skip, std::size_t& written)
+        {
+            WriteFragment(stream, header.Field(), skip, written);
+            WriteFragment(stream, separator, skip, written);
+            WriteFragment(stream, header.Value(), skip, written);
+            WriteFragment(stream, crlf, skip, written);
+        }
+
+        infra::BoundedString::WithStorage<8> ContentLengthValue(std::size_t size)
+        {
+            infra::BoundedString::WithStorage<8> value;
+            infra::StringOutputStream stream(value);
+            stream << size;
+            return value;
+        }
+
+        std::optional<HttpHeader> MakeContentLengthHeader(bool present, infra::BoundedConstString value)
+        {
+            if (present)
+                return HttpHeader{ "Content-Length", value };
+            return std::nullopt;
+        }
     }
 
     HttpHeader::HttpHeader(infra::BoundedConstString field, infra::BoundedConstString value)
@@ -75,21 +113,20 @@ namespace services
         : verb(verb)
         , requestTarget(requestTarget.empty() ? "/" : requestTarget)
         , content(content)
+        , contentLength(content.empty() ? infra::BoundedString::WithStorage<8>{} : ContentLengthValue(content.size()))
+        , contentLengthHeader(MakeContentLengthHeader(!content.empty(), contentLength))
         , hostHeader("Host", hostname)
         , headers(headers)
-    {
-        if (!content.empty())
-            AddContentLength(content.size());
-    }
+    {}
 
     HttpRequestFormatter::HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, std::size_t contentSize, const HttpHeaders headers)
         : verb(verb)
         , requestTarget(requestTarget.empty() ? "/" : requestTarget)
+        , contentLength(ContentLengthValue(contentSize))
+        , contentLengthHeader(MakeContentLengthHeader(true, contentLength))
         , hostHeader("Host", hostname)
         , headers(headers)
-    {
-        AddContentLength(contentSize);
-    }
+    {}
 
     HttpRequestFormatter::HttpRequestFormatter(HttpVerb verb, infra::BoundedConstString hostname, infra::BoundedConstString requestTarget, const HttpHeaders headers, Chunked)
         : verb(verb)
@@ -101,47 +138,24 @@ namespace services
 
     std::size_t HttpRequestFormatter::Size() const
     {
-        if (!sentHeader)
-            return HttpVerbToString(verb).size() + requestTarget.size() + httpVersion.size() + HeadersSize() + (2 * crlf.size()) + (2 * sp.size()) + content.size();
-        else
-            return content.size();
+        return (headerBlockSize - headerPosition) + content.size();
     }
 
     std::size_t HttpRequestFormatter::Write(infra::TextOutputStream stream) const
     {
-        if (!sentHeader)
-        {
-            stream << verb << sp << requestTarget << sp << httpVersion << crlf;
-
-            for (const auto& header : headers)
-                stream << header << crlf;
-
-            stream << hostHeader << crlf;
-
-            if (contentLengthHeader)
-                stream << *contentLengthHeader << crlf;
-            if (chunked)
-                stream << HttpHeader{ "Transfer-Encoding", "chunked" } << crlf;
-
-            stream << crlf;
-        }
+        auto written = WriteHeader(stream, headerPosition);
 
         auto available = std::min(stream.Available(), content.size());
         stream << content.substr(0, available);
-        return available;
+
+        return written + available;
     }
 
     void HttpRequestFormatter::Consume(std::size_t amount)
     {
-        sentHeader = true;
-        content = content.substr(amount);
-    }
-
-    void HttpRequestFormatter::AddContentLength(std::size_t size)
-    {
-        infra::StringOutputStream contentLengthStream(contentLength);
-        contentLengthStream << size;
-        contentLengthHeader.emplace("Content-Length", contentLength);
+        auto headerAmount = std::min(amount, headerBlockSize - headerPosition);
+        headerPosition += headerAmount;
+        content = content.substr(amount - headerAmount);
     }
 
     std::size_t HttpRequestFormatter::HeadersSize() const
@@ -158,6 +172,37 @@ namespace services
         headerSize += hostHeader.Size() + crlf.size();
 
         return headerSize;
+    }
+
+    std::size_t HttpRequestFormatter::HeaderBlockSize() const
+    {
+        return HttpVerbToString(verb).size() + requestTarget.size() + httpVersion.size() + HeadersSize() + (2 * crlf.size()) + (2 * sp.size());
+    }
+
+    std::size_t HttpRequestFormatter::WriteHeader(infra::TextOutputStream& stream, std::size_t skip) const
+    {
+        std::size_t written = 0;
+
+        WriteFragment(stream, HttpVerbToString(verb), skip, written);
+        WriteFragment(stream, sp, skip, written);
+        WriteFragment(stream, requestTarget, skip, written);
+        WriteFragment(stream, sp, skip, written);
+        WriteFragment(stream, httpVersion, skip, written);
+        WriteFragment(stream, crlf, skip, written);
+
+        for (const auto& header : headers)
+            WriteHeaderLine(stream, header, skip, written);
+
+        WriteHeaderLine(stream, hostHeader, skip, written);
+
+        if (contentLengthHeader)
+            WriteHeaderLine(stream, *contentLengthHeader, skip, written);
+        if (chunked)
+            WriteHeaderLine(stream, HttpHeader{ "Transfer-Encoding", "chunked" }, skip, written);
+
+        WriteFragment(stream, crlf, skip, written);
+
+        return written;
     }
 
     HttpHeaderParser::HttpHeaderParser(HttpHeaderParserObserver& observer)

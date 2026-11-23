@@ -43,7 +43,7 @@ function(emil_add_test target)
         else()
             add_test(NAME ${target} COMMAND ${target})
         endif()
-        emil_exclude_from_coverage(${target})
+        emil_exclude_from_mutation(${target})
     endif()
 endfunction()
 

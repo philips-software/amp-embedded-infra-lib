@@ -1,6 +1,7 @@
 #include "infra/timer/TimerLimitedRepeating.hpp"
 #include "infra/timer/Timer.hpp"
 #include "infra/util/Function.hpp"
+#include "infra/util/ReallyAssert.hpp"
 #include <cstdint>
 
 namespace infra
@@ -35,6 +36,14 @@ namespace infra
 
         if (atLeastOnce)
             action();
+    }
+
+    void TimerLimitedRepeating::Start(Duration timeout, Duration duration, const infra::Function<void()>& action)
+    {
+        really_assert(duration.count() > 0);
+        really_assert(timeout.count() < std::numeric_limits<uint32_t>::max());
+        const auto howMany = static_cast<uint32_t>(timeout / duration);
+        Start(howMany, duration, action);
     }
 
     void TimerLimitedRepeating::ComputeNextTriggerTime()

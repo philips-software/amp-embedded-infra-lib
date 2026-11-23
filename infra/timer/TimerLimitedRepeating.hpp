@@ -17,6 +17,7 @@ namespace infra
 
         void Start(uint32_t aHowMany, Duration duration, const infra::Function<void()>& action);
         void Start(uint32_t aHowMany, Duration duration, const infra::Function<void()>& action, TriggerImmediately);
+        void Start(Duration timeout, Duration duration, const infra::Function<void()>& action);
 
     protected:
         void ComputeNextTriggerTime() override;

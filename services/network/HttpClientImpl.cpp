@@ -332,7 +332,7 @@ namespace services
     void HttpClientImpl::ExecuteRequest(HttpVerb verb, infra::BoundedConstString requestTarget, const HttpHeaders headers)
     {
         request.emplace(verb, hostname, requestTarget, headers);
-        ConnectionObserver::Subject().RequestSendStream(request->Size());
+        ConnectionObserver::Subject().RequestSendStream(std::min(request->Size(), ConnectionObserver::Subject().MaxSendStreamSize()));
     }
 
     void HttpClientImpl::ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, infra::BoundedConstString content, const HttpHeaders headers)
@@ -345,14 +345,14 @@ namespace services
     {
         request.emplace(verb, hostname, requestTarget, contentSize, headers);
         nextState.Emplace<SendingStateForwardDefinedSizeStream>(*this, contentSize);
-        ConnectionObserver::Subject().RequestSendStream(request->Size());
+        ConnectionObserver::Subject().RequestSendStream(std::min(request->Size(), ConnectionObserver::Subject().MaxSendStreamSize()));
     }
 
     void HttpClientImpl::ExecuteRequestWithContent(HttpVerb verb, infra::BoundedConstString requestTarget, const HttpHeaders headers)
     {
         request.emplace(verb, hostname, requestTarget, headers, chunked);
         nextState.Emplace<SendingStateForwardSendStream>(*this);
-        ConnectionObserver::Subject().RequestSendStream(request->Size());
+        ConnectionObserver::Subject().RequestSendStream(std::min(request->Size(), ConnectionObserver::Subject().MaxSendStreamSize()));
     }
 
     void HttpClientImpl::AbortAndDestroy()
