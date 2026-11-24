@@ -641,29 +641,29 @@ TEST(BoundedStringTest, TestTrimLeft)
     EXPECT_EQ("", infra::TrimLeft(infra::BoundedConstString(" ")));
 }
 
-TEST(BoundedStringTest, RemoveTrailingZeroRemovesOnlyOneTrailingZero)
+TEST(BoundedStringTest, TrailingZeroRemovedRemovesOnlyOneTrailingZero)
 {
     const char data[] = { 'a', '\0', 'b', '\0', '\0' };
-    auto result = infra::RemoveTrailingZero(infra::BoundedConstString(data, sizeof(data)));
+    auto result = infra::TrailingZeroRemoved(infra::BoundedConstString(data, sizeof(data)));
 
     EXPECT_THAT(result, testing::Eq(infra::BoundedConstString(data, sizeof(data) - 1)));
     EXPECT_THAT(result.data(), testing::Eq(data));
 }
 
-TEST(BoundedStringTest, RemoveTrailingZeroPreservesUnterminatedString)
+TEST(BoundedStringTest, TrailingZeroRemovedPreservesUnterminatedString)
 {
     const char data[] = { 'a', '\0', 'b' };
-    auto result = infra::RemoveTrailingZero(infra::BoundedConstString(data, sizeof(data)));
+    auto result = infra::TrailingZeroRemoved(infra::BoundedConstString(data, sizeof(data)));
 
     EXPECT_THAT(result, testing::Eq(infra::BoundedConstString(data, sizeof(data))));
     EXPECT_THAT(result.data(), testing::Eq(data));
 }
 
-TEST(BoundedStringTest, RemoveTrailingZeroHandlesEmptyAndZeroOnlyStrings)
+TEST(BoundedStringTest, TrailingZeroRemovedHandlesEmptyAndZeroOnlyStrings)
 {
     const char data[] = { '\0' };
-    auto empty = infra::RemoveTrailingZero(infra::BoundedConstString());
-    auto zeroOnly = infra::RemoveTrailingZero(infra::BoundedConstString(data, sizeof(data)));
+    auto empty = infra::TrailingZeroRemoved(infra::BoundedConstString());
+    auto zeroOnly = infra::TrailingZeroRemoved(infra::BoundedConstString(data, sizeof(data)));
 
     EXPECT_THAT(empty.size(), testing::Eq(0));
     EXPECT_THAT(zeroOnly.size(), testing::Eq(0));

@@ -347,7 +347,7 @@ namespace infra
     template<class T>
     BoundedStringBase<T> TrimLeft(BoundedStringBase<T> string);
 
-    BoundedConstString RemoveTrailingZero(BoundedConstString string);
+    BoundedConstString TrailingZeroRemoved(BoundedConstString string);
 
     template<class T, class U>
     bool CaseInsensitiveCompare(const infra::BoundedStringBase<T>& lhs, const infra::BoundedStringBase<U>& rhs);
