@@ -4,8 +4,9 @@ namespace infra
 {
     BoundedConstString RemoveTrailingZero(BoundedConstString string)
     {
-        return (!string.empty() && string.back() == '\0') ? BoundedConstString(string.data(), string.size() - 1)
-                                                          : string;
+        return (!string.empty() && string.back() == '\0')
+            ? BoundedConstString(string.data(), string.size() - 1)
+            : string;
     }
 
     namespace literals
