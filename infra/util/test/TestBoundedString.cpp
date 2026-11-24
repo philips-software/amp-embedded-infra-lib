@@ -641,6 +641,35 @@ TEST(BoundedStringTest, TestTrimLeft)
     EXPECT_EQ("", infra::TrimLeft(infra::BoundedConstString(" ")));
 }
 
+TEST(BoundedStringTest, RemoveTrailingZeroRemovesOnlyOneTrailingZero)
+{
+    const char data[] = { 'a', '\0', 'b', '\0', '\0' };
+    auto result = infra::RemoveTrailingZero(infra::BoundedConstString(data, sizeof(data)));
+
+    EXPECT_THAT(result, testing::Eq(infra::BoundedConstString(data, sizeof(data) - 1)));
+    EXPECT_THAT(result.data(), testing::Eq(data));
+}
+
+TEST(BoundedStringTest, RemoveTrailingZeroPreservesUnterminatedString)
+{
+    const char data[] = { 'a', '\0', 'b' };
+    auto result = infra::RemoveTrailingZero(infra::BoundedConstString(data, sizeof(data)));
+
+    EXPECT_THAT(result, testing::Eq(infra::BoundedConstString(data, sizeof(data))));
+    EXPECT_THAT(result.data(), testing::Eq(data));
+}
+
+TEST(BoundedStringTest, RemoveTrailingZeroHandlesEmptyAndZeroOnlyStrings)
+{
+    const char data[] = { '\0' };
+    auto empty = infra::RemoveTrailingZero(infra::BoundedConstString());
+    auto zeroOnly = infra::RemoveTrailingZero(infra::BoundedConstString(data, sizeof(data)));
+
+    EXPECT_THAT(empty.size(), testing::Eq(0));
+    EXPECT_THAT(zeroOnly.size(), testing::Eq(0));
+    EXPECT_THAT(zeroOnly.data(), testing::Eq(data));
+}
+
 TEST(BoundedStringTest, TestFind)
 {
     infra::BoundedString::WithStorage<10> searchString = "def";
