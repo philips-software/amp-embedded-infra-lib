@@ -65,6 +65,14 @@ TEST_F(SntpClientTest, connects_to_server)
     sntpClient.RequestTime(services::IPv4Address{ 127, 0, 0, 1 });
 }
 
+TEST_F(SntpClientTest, calls_TimeUnavailable_when_connect_returns_no_exchange)
+{
+    EXPECT_CALL(factory, Connect(testing::Ref(sntpClient), testing::_)).WillOnce(testing::Return(nullptr));
+    EXPECT_CALL(sntpObserver, TimeUnavailable());
+
+    sntpClient.RequestTime(services::IPv4Address{ 127, 0, 0, 1 });
+}
+
 TEST_F(SntpClientTest, sends_time_request)
 {
     infra::ByteOutputStreamWriter::WithStorage<512> response;
