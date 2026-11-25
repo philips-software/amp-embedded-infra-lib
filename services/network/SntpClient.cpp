@@ -62,6 +62,13 @@ namespace services
     void SntpClient::RequestTime(const services::IPv4Address& address)
     {
         datagramExchange = factory.Connect(*this, Udpv4Socket{ address, ntpPort });
+
+        if (datagramExchange == nullptr)
+        {
+            NotifyTimeUnavailable();
+            return;
+        }
+
         datagramExchange->RequestSendStream(sizeof(NtpMessage));
     }
 
