@@ -2,13 +2,6 @@
 
 namespace infra
 {
-    BoundedConstString TrailingZeroRemoved(BoundedConstString string)
-    {
-        return (!string.empty() && string.back() == '\0')
-            ? string.substr(0, string.size() - 1)
-            : string;
-    }
-
     namespace literals
     {
         infra::BoundedConstString operator""_s(const char* str, std::size_t count)

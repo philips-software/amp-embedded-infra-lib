@@ -5,6 +5,9 @@
 #include <string_view>
 #include <type_traits>
 
+constexpr auto stringWithTrailingZero = infra::BoundedConstString("test\0", 5);
+static_assert(infra::TrailingZeroRemoved(stringWithTrailingZero).size() == 4);
+
 TEST(BoundedStringTest, TestConstructedEmpty)
 {
     infra::BoundedString::WithStorage<5> string;
