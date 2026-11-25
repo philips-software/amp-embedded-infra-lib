@@ -37,6 +37,19 @@ protected:
     SmiPhy phy{ smi, phyAddress };
 };
 
+TEST_F(SmiPhyTest, ReadChipSpecificRegisterFromConstPhy)
+{
+    const SmiPhy& constPhy = phy;
+    EXPECT_CALL(smi, Read(phyAddress, 0x1fu)).WillOnce(testing::Return(0x1234u));
+    EXPECT_THAT(constPhy.Read(0x1fu), testing::Eq(0x1234u));
+}
+
+TEST_F(SmiPhyTest, WriteChipSpecificRegister)
+{
+    EXPECT_CALL(smi, Write(phyAddress, 0x1fu, 0xabcdu));
+    phy.Write(0x1fu, 0xabcdu);
+}
+
 // ---- BasicControlRegister static helpers -----------------------------------
 
 TEST(SmiPhyBasicControlRegisterTest, IsResettingReturnsTrueWhenResetBitSet)
