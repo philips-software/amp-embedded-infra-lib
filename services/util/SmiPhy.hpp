@@ -65,7 +65,6 @@ namespace services
 
         SmiPhy(hal::SmiBus& smiBus, uint8_t phyAddress);
 
-        // Access standard or chip-specific registers on this PHY.
         uint16_t Read(uint16_t reg) const;
         void Write(uint16_t reg, uint16_t value);
 
