@@ -49,6 +49,9 @@ namespace hal
     {
         really_assert(IsInRange(address, buffer.size()));
 
+        const auto writtenAddress = address;
+        const auto writtenSize = buffer.size();
+
         while (!buffer.empty())
         {
             auto destination = SectorRangeAt(address, buffer.size());
@@ -60,6 +63,8 @@ namespace hal
             buffer.pop_front(destination.size());
             address += destination.size();
         }
+
+        UpdateMemoryMappedSnapshot(writtenAddress, writtenSize);
     }
 
     void SynchronousFlashInMemory::ReadBuffer(infra::ByteRange buffer, uint32_t address)
@@ -82,6 +87,8 @@ namespace hal
 
         for (uint32_t sectorIndex = beginIndex; sectorIndex != endIndex; ++sectorIndex)
             std::fill(sectors[sectorIndex].begin(), sectors[sectorIndex].end(), erasedValue);
+
+        UpdateMemoryMappedSnapshot(AddressOfSector(beginIndex), AddressOfSector(endIndex) - AddressOfSector(beginIndex));
     }
 
     infra::ConstByteRange SynchronousFlashInMemory::MemoryMappedRange() const
@@ -120,6 +127,12 @@ namespace hal
     {
         auto totalSize = AddressOfSector(NumberOfSectors());
         return address <= totalSize && size <= totalSize - address;
+    }
+
+    void SynchronousFlashInMemory::UpdateMemoryMappedSnapshot(uint32_t address, std::size_t size)
+    {
+        if (memoryMappedSnapshot.size() == AddressOfSector(NumberOfSectors()))
+            ReadBuffer(infra::Head(infra::DiscardHead(infra::MakeRange(memoryMappedSnapshot), address), size), address);
     }
 
     infra::ByteRange SynchronousFlashInMemory::SectorRangeAt(uint32_t address, std::size_t maxSize)

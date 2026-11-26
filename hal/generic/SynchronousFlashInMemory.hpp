@@ -23,7 +23,9 @@ namespace hal
         void ReadBuffer(infra::ByteRange buffer, uint32_t address) override;
         void EraseSectors(uint32_t beginIndex, uint32_t endIndex) override;
 
-        // The sectors are not stored contiguously, so every call refreshes a copy; its address stays the same while the flash size does not change
+        // The sectors are not stored contiguously, so the range is a copy that WriteBuffer and EraseSectors keep up to date.
+        // Changes made through Sectors() only become visible after calling MemoryMappedRange again; the address of the
+        // range stays the same as long as the size of the flash does not change.
         infra::ConstByteRange MemoryMappedRange() const override;
 
         std::vector<std::vector<uint8_t>>& Sectors();
@@ -33,6 +35,7 @@ namespace hal
     private:
         bool IsInRange(uint32_t address, std::size_t size) const;
         infra::ByteRange SectorRangeAt(uint32_t address, std::size_t maxSize);
+        void UpdateMemoryMappedSnapshot(uint32_t address, std::size_t size);
 
         std::vector<std::vector<uint8_t>> sectors;
         uint8_t erasedValue;

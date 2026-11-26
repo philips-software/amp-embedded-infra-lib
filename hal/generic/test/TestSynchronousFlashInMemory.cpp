@@ -104,6 +104,27 @@ TEST_F(SynchronousFlashInMemoryTest, memory_mapped_range_reflects_writes_and_era
     EXPECT_EQ((std::vector<uint8_t>{ 0xff, 0xff, 0xff, 0xff, 2, 3, 4, 5, 6, 0xff, 0xff, 0xff }), infra::MakeVector(memoryMappedFlash.MemoryMappedRange()));
 }
 
+TEST_F(SynchronousFlashInMemoryTest, retained_memory_mapped_range_reflects_writes)
+{
+    hal::MemoryMappedSynchronousFlash& memoryMappedFlash = flash;
+    auto range = memoryMappedFlash.MemoryMappedRange();
+
+    memoryMappedFlash.WriteBuffer(infra::MakeRange(std::vector<uint8_t>{ 1, 2, 3, 4, 5, 6 }), 3);
+
+    EXPECT_EQ((std::vector<uint8_t>{ 0xff, 0xff, 0xff, 1, 2, 3, 4, 5, 6, 0xff, 0xff, 0xff }), infra::MakeVector(range));
+}
+
+TEST_F(SynchronousFlashInMemoryTest, retained_memory_mapped_range_reflects_erases)
+{
+    hal::MemoryMappedSynchronousFlash& memoryMappedFlash = flash;
+    memoryMappedFlash.WriteBuffer(infra::MakeRange(std::vector<uint8_t>{ 1, 2, 3, 4, 5, 6 }), 3);
+    auto range = memoryMappedFlash.MemoryMappedRange();
+
+    memoryMappedFlash.EraseSectors(0, 1);
+
+    EXPECT_EQ((std::vector<uint8_t>{ 0xff, 0xff, 0xff, 0xff, 2, 3, 4, 5, 6, 0xff, 0xff, 0xff }), infra::MakeVector(range));
+}
+
 TEST_F(SynchronousFlashInMemoryTest, access_up_to_the_end_is_allowed)
 {
     std::vector<uint8_t> data(2);
