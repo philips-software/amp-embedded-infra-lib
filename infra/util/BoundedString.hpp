@@ -347,13 +347,7 @@ namespace infra
     template<class T>
     BoundedStringBase<T> TrimLeft(BoundedStringBase<T> string);
 
-    constexpr BoundedConstString TrailingZeroRemoved(BoundedConstString string)
-    {
-        if (string.empty() || string.data()[string.size() - 1] != '\0')
-            return string;
-
-        return BoundedConstString(string.data(), string.size() - 1);
-    }
+    constexpr BoundedConstString TrailingZeroRemoved(BoundedConstString string);
 
     template<class T, class U>
     bool CaseInsensitiveCompare(const infra::BoundedStringBase<T>& lhs, const infra::BoundedStringBase<U>& rhs);
@@ -1749,6 +1743,14 @@ namespace infra
                 return string.substr(i);
 
         return BoundedStringBase<T>();
+    }
+
+    constexpr BoundedConstString TrailingZeroRemoved(BoundedConstString string)
+    {
+        if (string.empty() || string.data()[string.size() - 1] != '\0')
+            return string;
+
+        return BoundedConstString(string.data(), string.size() - 1);
     }
 
     template<class T, class U>

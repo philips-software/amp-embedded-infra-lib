@@ -7,6 +7,11 @@
 
 constexpr auto stringWithTrailingZero = infra::BoundedConstString("test\0", 5);
 static_assert(infra::TrailingZeroRemoved(stringWithTrailingZero).size() == 4);
+static_assert(infra::TrailingZeroRemoved(stringWithTrailingZero).data() == stringWithTrailingZero.data());
+static_assert(infra::TrailingZeroRemoved(infra::BoundedConstString()).empty());
+static_assert(infra::TrailingZeroRemoved(infra::BoundedConstString("\0", 1)).empty());
+static_assert(infra::TrailingZeroRemoved(infra::BoundedConstString("test", 4)).size() == 4);
+static_assert(infra::TrailingZeroRemoved(infra::BoundedConstString("test\0\0", 6)).size() == 5);
 
 TEST(BoundedStringTest, TestConstructedEmpty)
 {
