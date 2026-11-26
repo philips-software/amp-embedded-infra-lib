@@ -1,41 +1,54 @@
 #ifndef HAL_STUB_FLASH_STUB_HPP
 #define HAL_STUB_FLASH_STUB_HPP
 
-#include "hal/interfaces/Flash.hpp"
+#include "hal/generic/FlashInMemory.hpp"
+#include "infra/event/EventDispatcher.hpp"
 #include <optional>
 
 namespace hal
 {
     template<class T>
-    class FlashStubBase;
-
-    using FlashStub = FlashStubBase<uint32_t>;
-    using FlashStub64 = FlashStubBase<uint64_t>;
-
-    template<class T>
     class FlashStubBase
-        : public hal::FlashBase<T>
+        : public FlashInMemoryBase<T>
     {
     public:
-        FlashStubBase(T numberOfSectors, uint32_t sizeOfEachSector);
+        using FlashInMemoryBase<T>::FlashInMemoryBase;
 
-        T NumberOfSectors() const override;
-        uint32_t SizeOfSector(T sectorIndex) const override;
+        void WriteBuffer(infra::ConstByteRange buffer, T address, infra::Function<void()> onDone) override
+        {
+            if (stopAfterWriteSteps)
+            {
+                if (*stopAfterWriteSteps == 0)
+                {
+                    infra::EventDispatcher::Instance().Schedule(onDone);
+                    return;
+                }
 
-        T SectorOfAddress(T address) const override;
-        T AddressOfSector(T sectorIndex) const override;
+                --*stopAfterWriteSteps;
+            }
 
-        void WriteBuffer(infra::ConstByteRange buffer, T address, infra::Function<void()> onDone) override;
-        void ReadBuffer(infra::ByteRange buffer, T address, infra::Function<void()> onDone) override;
-        void EraseSectors(T beginIndex, T endIndex, infra::Function<void()> onDone) override;
+            FlashInMemoryBase<T>::WriteBuffer(buffer, address, onDone);
+        }
 
-    public:
-        std::vector<std::vector<uint8_t>> sectors;
+        void EraseSectors(T beginIndex, T endIndex, infra::Function<void()> onDone) override
+        {
+            onEraseDone = onDone;
+
+            if (delaySignalEraseDone)
+                FlashInMemoryBase<T>::EraseSectors(beginIndex, endIndex, [] {});
+            else
+                FlashInMemoryBase<T>::EraseSectors(beginIndex, endIndex, onDone);
+        }
+
+        std::vector<std::vector<uint8_t>>& sectors{ this->Sectors() };
         std::optional<uint8_t> stopAfterWriteSteps;
 
         infra::Function<void()> onEraseDone;
         bool delaySignalEraseDone = false;
     };
+
+    using FlashStub = FlashStubBase<uint32_t>;
+    using FlashStub64 = FlashStubBase<uint64_t>;
 }
 
 #endif

@@ -14,8 +14,12 @@ target_compile_definitions(hal.generic PUBLIC
 target_sources(hal.generic PRIVATE
     FileSystemGeneric.cpp
     FileSystemGeneric.hpp
+    FlashInMemory.cpp
+    FlashInMemory.hpp
     SerialCommunicationConsole.cpp
     SerialCommunicationConsole.hpp
+    SynchronousFlashInMemory.cpp
+    SynchronousFlashInMemory.hpp
     SynchronousRandomDataGeneratorGeneric.cpp
     SynchronousRandomDataGeneratorGeneric.hpp
     TimeKeeperGeneric.cpp
@@ -39,3 +43,5 @@ if (EMIL_BUILD_UNIX OR EMIL_BUILD_DARWIN)
         hal.unix
     )
 endif()
+
+add_subdirectory(test)

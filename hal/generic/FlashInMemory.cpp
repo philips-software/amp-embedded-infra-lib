@@ -1,27 +1,28 @@
-#include "hal/interfaces/test_doubles/FlashStub.hpp"
+#include "hal/generic/FlashInMemory.hpp"
 #include "infra/event/EventDispatcher.hpp"
 
 namespace hal
 {
     template<class T>
-    FlashStubBase<T>::FlashStubBase(T numberOfSectors, uint32_t sizeOfEachSector)
-        : sectors(static_cast<std::size_t>(numberOfSectors), std::vector<uint8_t>(sizeOfEachSector, 0xff))
+    FlashInMemoryBase<T>::FlashInMemoryBase(T numberOfSectors, uint32_t sizeOfEachSector, uint8_t erasedValue)
+        : sectors(static_cast<std::size_t>(numberOfSectors), std::vector<uint8_t>(sizeOfEachSector, erasedValue))
+        , erasedValue(erasedValue)
     {}
 
     template<class T>
-    T FlashStubBase<T>::NumberOfSectors() const
+    T FlashInMemoryBase<T>::NumberOfSectors() const
     {
         return sectors.size();
     }
 
     template<class T>
-    uint32_t FlashStubBase<T>::SizeOfSector(T sectorIndex) const
+    uint32_t FlashInMemoryBase<T>::SizeOfSector(T sectorIndex) const
     {
         return sectors[static_cast<std::size_t>(sectorIndex)].size();
     }
 
     template<class T>
-    T FlashStubBase<T>::SectorOfAddress(T address) const
+    T FlashInMemoryBase<T>::SectorOfAddress(T address) const
     {
         for (std::size_t index = 0; index != sectors.size(); ++index)
         {
@@ -36,7 +37,7 @@ namespace hal
     }
 
     template<class T>
-    T FlashStubBase<T>::AddressOfSector(T sectorIndex) const
+    T FlashInMemoryBase<T>::AddressOfSector(T sectorIndex) const
     {
         assert(sectorIndex <= sectors.size());
 
@@ -49,17 +50,9 @@ namespace hal
     }
 
     template<class T>
-    void FlashStubBase<T>::WriteBuffer(infra::ConstByteRange buffer, T address, infra::Function<void()> onDone)
+    void FlashInMemoryBase<T>::WriteBuffer(infra::ConstByteRange buffer, T address, infra::Function<void()> onDone)
     {
         infra::EventDispatcher::Instance().Schedule(onDone);
-
-        if (stopAfterWriteSteps)
-        {
-            if (*stopAfterWriteSteps > 0)
-                --*stopAfterWriteSteps;
-            else
-                return;
-        }
 
         while (!buffer.empty())
         {
@@ -74,7 +67,7 @@ namespace hal
     }
 
     template<class T>
-    void FlashStubBase<T>::ReadBuffer(infra::ByteRange buffer, T address, infra::Function<void()> onDone)
+    void FlashInMemoryBase<T>::ReadBuffer(infra::ByteRange buffer, T address, infra::Function<void()> onDone)
     {
         while (!buffer.empty())
         {
@@ -89,16 +82,26 @@ namespace hal
     }
 
     template<class T>
-    void FlashStubBase<T>::EraseSectors(T beginIndex, T endIndex, infra::Function<void()> onDone)
+    void FlashInMemoryBase<T>::EraseSectors(T beginIndex, T endIndex, infra::Function<void()> onDone)
     {
         for (T sectorIndex = beginIndex; sectorIndex != endIndex; ++sectorIndex)
-            std::fill(sectors[static_cast<std::size_t>(sectorIndex)].begin(), sectors[static_cast<std::size_t>(sectorIndex)].end(), 0xff);
+            std::fill(sectors[static_cast<std::size_t>(sectorIndex)].begin(), sectors[static_cast<std::size_t>(sectorIndex)].end(), erasedValue);
 
-        onEraseDone = onDone;
-        if (!delaySignalEraseDone)
-            infra::EventDispatcher::Instance().Schedule(onDone);
+        infra::EventDispatcher::Instance().Schedule(onDone);
     }
 
-    template class FlashStubBase<uint32_t>;
-    template class FlashStubBase<uint64_t>;
+    template<class T>
+    std::vector<std::vector<uint8_t>>& FlashInMemoryBase<T>::Sectors()
+    {
+        return sectors;
+    }
+
+    template<class T>
+    const std::vector<std::vector<uint8_t>>& FlashInMemoryBase<T>::Sectors() const
+    {
+        return sectors;
+    }
+
+    template class FlashInMemoryBase<uint32_t>;
+    template class FlashInMemoryBase<uint64_t>;
 }
