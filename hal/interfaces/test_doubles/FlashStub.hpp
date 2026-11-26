@@ -35,7 +35,7 @@ namespace hal
             onEraseDone = onDone;
 
             if (delaySignalEraseDone)
-                FlashInMemoryBase<T>::EraseSectors(beginIndex, endIndex, [] {});
+                FlashInMemoryBase<T>::EraseSectors(beginIndex, endIndex, infra::Function<void()>());
             else
                 FlashInMemoryBase<T>::EraseSectors(beginIndex, endIndex, onDone);
         }

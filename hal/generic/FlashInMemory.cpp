@@ -87,7 +87,8 @@ namespace hal
         for (T sectorIndex = beginIndex; sectorIndex != endIndex; ++sectorIndex)
             std::fill(sectors[static_cast<std::size_t>(sectorIndex)].begin(), sectors[static_cast<std::size_t>(sectorIndex)].end(), erasedValue);
 
-        infra::EventDispatcher::Instance().Schedule(onDone);
+        if (onDone)
+            infra::EventDispatcher::Instance().Schedule(onDone);
     }
 
     template<class T>
