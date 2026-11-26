@@ -136,6 +136,7 @@ TEST_F(SynchronousFlashInMemoryTest, access_up_to_the_end_is_allowed)
     EXPECT_EQ((std::vector<uint8_t>{ 1, 2 }), data);
 }
 
+#ifndef EMIL_MUTATION_TESTING
 TEST_F(SynchronousFlashInMemoryTest, write_beyond_end_aborts)
 {
     EXPECT_DEATH(flash.WriteBuffer(infra::MakeRange(std::vector<uint8_t>{ 1, 2 }), 11), "");
@@ -157,3 +158,4 @@ TEST_F(SynchronousFlashInMemoryTest, erase_with_reversed_range_aborts)
 {
     EXPECT_DEATH(flash.EraseSectors(2, 1), "");
 }
+#endif
