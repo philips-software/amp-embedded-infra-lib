@@ -65,6 +65,9 @@ namespace services
 
         SmiPhy(hal::SmiBus& smiBus, uint8_t phyAddress);
 
+        uint16_t Read(uint16_t reg) const;
+        void Write(uint16_t reg, uint16_t value);
+
         uint16_t ReadBcr() const;
         void WriteBcr(uint16_t value);
         uint16_t ReadBsr() const;
@@ -87,8 +90,6 @@ namespace services
     private:
         hal::LinkSpeed NegotiatedLinkSpeed() const;
         hal::LinkSpeed LocalLinkSpeed(uint16_t bcr) const;
-        uint16_t Read(uint16_t reg) const;
-        void Write(uint16_t reg, uint16_t value);
 
     private:
         hal::SmiBus& smiBus;
