@@ -3,6 +3,7 @@
 #include "infra/util/BoundedString.hpp"
 #include "infra/util/LogAndAbort.hpp"
 #include "infra/util/MemoryRange.hpp"
+#include <algorithm>
 #include <optional>
 
 namespace
@@ -16,6 +17,18 @@ namespace
     void AddData(infra::BoundedVector<uint8_t>& payload, infra::ConstByteRange data)
     {
         payload.insert(payload.end(), data.begin(), data.end());
+    }
+
+    bool ListContainsUuid(infra::ConstByteRange list, infra::ConstByteRange uuid)
+    {
+        if (list.size() % uuid.size() != 0)
+            return false;
+
+        for (; !list.empty(); list = infra::DiscardHead(list, uuid.size()))
+            if (std::equal(uuid.begin(), uuid.end(), list.begin()))
+                return true;
+
+        return false;
     }
 }
 
@@ -314,6 +327,32 @@ namespace services
         return std::make_optional(appearance);
     }
 
+    bool GapAdvertisingDataParser::ContainsServiceUuid(infra::ConstByteRange uuid) const
+    {
+        GapAdvertisementDataType incompleteListType;
+        GapAdvertisementDataType completeListType;
+
+        switch (uuid.size())
+        {
+            case sizeof(AttAttribute::Uuid16):
+                incompleteListType = GapAdvertisementDataType::incompleteListOf16BitUuids;
+                completeListType = GapAdvertisementDataType::completeListOf16BitUuids;
+                break;
+            case sizeof(uint32_t):
+                incompleteListType = GapAdvertisementDataType::incompleteListOf32BitUuids;
+                completeListType = GapAdvertisementDataType::completeListOf32BitUuids;
+                break;
+            case sizeof(AttAttribute::Uuid128):
+                incompleteListType = GapAdvertisementDataType::incompleteListOf128BitUuids;
+                completeListType = GapAdvertisementDataType::completeListOf128BitUuids;
+                break;
+            default:
+                return false;
+        }
+
+        return ListContainsUuid(ParserAdvertisingData(incompleteListType), uuid) || ListContainsUuid(ParserAdvertisingData(completeListType), uuid);
+    }
+
     infra::ConstByteRange GapAdvertisingDataParser::ParserAdvertisingData(GapAdvertisementDataType type) const
     {
         const uint8_t lengthOffset = 0;
@@ -398,6 +437,34 @@ namespace services
             AddData(payload, infra::ReinterpretCastMemoryRange<uint8_t>(infra::MakeRangeFromSingleObject(service)));
     }
 
+    void GapAdvertisementFormatter::AppendListOfServicesUuid(GapAdvertisementDataType listType, infra::ConstByteRange uuids)
+    {
+        std::size_t uuidSize = 0;
+
+        switch (listType)
+        {
+            case GapAdvertisementDataType::incompleteListOf16BitUuids:
+            case GapAdvertisementDataType::completeListOf16BitUuids:
+                uuidSize = sizeof(AttAttribute::Uuid16);
+                break;
+            case GapAdvertisementDataType::incompleteListOf32BitUuids:
+            case GapAdvertisementDataType::completeListOf32BitUuids:
+                uuidSize = sizeof(uint32_t);
+                break;
+            case GapAdvertisementDataType::incompleteListOf128BitUuids:
+            case GapAdvertisementDataType::completeListOf128BitUuids:
+                uuidSize = sizeof(AttAttribute::Uuid128);
+                break;
+            default:
+                LOG_AND_ABORT_ENUM(listType);
+        }
+
+        really_assert(!uuids.empty() && uuids.size() % uuidSize == 0 && uuids.size() + headerSize <= RemainingSpaceAvailable());
+
+        AddHeader(payload, uuids.size(), listType);
+        AddData(payload, uuids);
+    }
+
     void GapAdvertisementFormatter::AppendPublicTargetAddress(hal::MacAddress address)
     {
         really_assert(sizeof(address) + headerSize <= RemainingSpaceAvailable());
@@ -422,6 +489,49 @@ namespace services
     std::size_t GapAdvertisementFormatter::RemainingSpaceAvailable() const
     {
         return payload.max_size() - payload.size();
+    }
+
+    GapDeviceDiscoveryFilter::GapDeviceDiscoveryFilter(Type type, infra::ConstByteRange data)
+        : type(type)
+    {
+        if (type == Type::none)
+            return;
+
+        really_assert(data.size() <= this->data.max_size());
+
+        if (type == Type::manufacturerSpecificData)
+            really_assert(data.size() >= sizeof(uint16_t));
+
+        if (type == Type::serviceUuid)
+            really_assert_with_msg(data.size() == sizeof(AttAttribute::Uuid16) || data.size() == sizeof(uint32_t) || data.size() == sizeof(AttAttribute::Uuid128), "Unexpected serviceUuid size: %d", static_cast<int>(data.size()));
+
+        this->data.assign(data);
+    }
+
+    bool GapDeviceDiscoveryFilter::Passes(const GapAdvertisingReport& report) const
+    {
+        switch (type)
+        {
+            case Type::none:
+                return true;
+            case Type::address:
+                return infra::ContentsEqual(infra::MakeRange(report.gapAddress.address), infra::MakeRange(data));
+            case Type::manufacturerSpecificData:
+            {
+                auto manufacturerSpecificData = GapAdvertisingDataParser(report.data.range()).ManufacturerSpecificData();
+
+                if (!manufacturerSpecificData)
+                    return false;
+
+                const uint16_t expectedManufacturerId = static_cast<uint16_t>(data[0] | (data[1] << 8));
+
+                return expectedManufacturerId == manufacturerSpecificData->first && infra::ContentsEqual(infra::DiscardHead(infra::MakeRange(data), sizeof(uint16_t)), manufacturerSpecificData->second);
+            }
+            case Type::serviceUuid:
+                return GapAdvertisingDataParser(report.data.range()).ContainsServiceUuid(infra::MakeRange(data));
+        }
+
+        return false;
     }
 }
 

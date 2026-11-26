@@ -20,6 +20,7 @@ namespace services
             static constexpr uint16_t Address = 0u;
             static constexpr uint16_t DuplexModeBit = 8u;
             static constexpr uint16_t RestartAutoNegBit = 9u;
+            static constexpr uint16_t PowerDownBit = 11u;
             static constexpr uint16_t AutoNegEnableBit = 12u;
             static constexpr uint16_t SpeedSelectLsbBit = 13u;
             static constexpr uint16_t ResetBit = 15u;
@@ -64,9 +65,16 @@ namespace services
 
         SmiPhy(hal::SmiBus& smiBus, uint8_t phyAddress);
 
+        uint16_t Read(uint16_t reg) const;
+        void Write(uint16_t reg, uint16_t value);
+
         uint16_t ReadBcr() const;
         void WriteBcr(uint16_t value);
         uint16_t ReadBsr() const;
+
+        // Set/clear the BCR power-down bit; no-op if the PHY does not respond.
+        void PowerDown();
+        void PowerUp();
 
         // Read BSR, check whether autoneg has completed (via BCR), and return
         // the current link state.
@@ -82,8 +90,6 @@ namespace services
     private:
         hal::LinkSpeed NegotiatedLinkSpeed() const;
         hal::LinkSpeed LocalLinkSpeed(uint16_t bcr) const;
-        uint16_t Read(uint16_t reg) const;
-        void Write(uint16_t reg, uint16_t value);
 
     private:
         hal::SmiBus& smiBus;

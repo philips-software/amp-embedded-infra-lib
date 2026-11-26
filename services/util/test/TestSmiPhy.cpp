@@ -15,6 +15,7 @@ namespace
     static constexpr uint16_t bcrAutoNegEnable = static_cast<uint16_t>(1u << SmiPhy::BasicControlRegister::AutoNegEnableBit);
     static constexpr uint16_t bcrSpeedSelectLsb = static_cast<uint16_t>(1u << SmiPhy::BasicControlRegister::SpeedSelectLsbBit);
     static constexpr uint16_t bcrDuplexMode = static_cast<uint16_t>(1u << SmiPhy::BasicControlRegister::DuplexModeBit);
+    static constexpr uint16_t bcrPowerDown = static_cast<uint16_t>(1u << SmiPhy::BasicControlRegister::PowerDownBit);
     static constexpr uint16_t bcrReset = static_cast<uint16_t>(1u << SmiPhy::BasicControlRegister::ResetBit);
 
     static constexpr uint16_t bsrLinked = SmiPhy::BasicStatusRegister::LinkStatusMask;
@@ -35,6 +36,19 @@ protected:
     StrictMock<SmiBusMock> smi;
     SmiPhy phy{ smi, phyAddress };
 };
+
+TEST_F(SmiPhyTest, ReadChipSpecificRegisterFromConstPhy)
+{
+    const SmiPhy& constPhy = phy;
+    EXPECT_CALL(smi, Read(phyAddress, 0x1fu)).WillOnce(testing::Return(0x1234u));
+    EXPECT_THAT(constPhy.Read(0x1fu), testing::Eq(0x1234u));
+}
+
+TEST_F(SmiPhyTest, WriteChipSpecificRegister)
+{
+    EXPECT_CALL(smi, Write(phyAddress, 0x1fu, 0xabcdu));
+    phy.Write(0x1fu, 0xabcdu);
+}
 
 // ---- BasicControlRegister static helpers -----------------------------------
 
@@ -120,6 +134,32 @@ TEST_F(SmiPhyTest, ReadBsrReadsRegister1)
 {
     EXPECT_CALL(smi, Read(phyAddress, SmiPhy::BasicStatusRegister::Address)).WillOnce(Return(0x5678u));
     EXPECT_THAT(phy.ReadBsr(), Eq(0x5678u));
+}
+
+TEST_F(SmiPhyTest, PowerDownSetsPowerDownBitAndPreservesOtherBits)
+{
+    EXPECT_CALL(smi, Read(phyAddress, SmiPhy::BasicControlRegister::Address)).WillOnce(Return(0x3100u));
+    EXPECT_CALL(smi, Write(phyAddress, SmiPhy::BasicControlRegister::Address, 0x3100u | bcrPowerDown));
+    phy.PowerDown();
+}
+
+TEST_F(SmiPhyTest, PowerUpClearsPowerDownBitAndPreservesOtherBits)
+{
+    EXPECT_CALL(smi, Read(phyAddress, SmiPhy::BasicControlRegister::Address)).WillOnce(Return(0x3100u | bcrPowerDown));
+    EXPECT_CALL(smi, Write(phyAddress, SmiPhy::BasicControlRegister::Address, 0x3100u));
+    phy.PowerUp();
+}
+
+TEST_F(SmiPhyTest, PowerDownDoesNotWriteWhenPhyIsNotResponding)
+{
+    EXPECT_CALL(smi, Read(phyAddress, SmiPhy::BasicControlRegister::Address)).WillOnce(Return(bsrNotPresent));
+    phy.PowerDown();
+}
+
+TEST_F(SmiPhyTest, PowerUpDoesNotWriteWhenPhyIsNotResponding)
+{
+    EXPECT_CALL(smi, Read(phyAddress, SmiPhy::BasicControlRegister::Address)).WillOnce(Return(bsrNotPresent));
+    phy.PowerUp();
 }
 
 // ---- ReadLinkState ---------------------------------------------------------
