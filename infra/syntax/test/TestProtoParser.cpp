@@ -1,3 +1,4 @@
+#include "infra/stream/BoundedDequeInputStream.hpp"
 #include "infra/stream/StdVectorInputStream.hpp"
 #include "infra/syntax/ProtoParser.hpp"
 #include "gmock/gmock.h"
@@ -160,4 +161,43 @@ TEST(ProtoParserTest, ReportResult_is_propagated)
 
     parser.ReportFormatResult(false);
     EXPECT_TRUE(stream.Failed());
+}
+
+class ProtoParserNonContiguousFieldTest
+    : public testing::Test
+{
+public:
+    ProtoParserNonContiguousFieldTest()
+    {
+        deque.erase(deque.begin(), deque.begin() + 5);
+        deque.push_back(2 << 3);
+        deque.push_back(5);
+    }
+
+    infra::BoundedDeque<uint8_t>::WithMaxSize<8> deque{ std::initializer_list<uint8_t>{ 0, 0, 0, 0, 0, (1 << 3) | 2, 3, 0 } };
+    infra::BoundedDequeInputStream stream{ deque, infra::softFail };
+};
+
+TEST_F(ProtoParserNonContiguousFieldTest, GetBytesReference_reports_format_error_and_consumes_field)
+{
+    infra::ProtoParser parser(stream);
+    auto field = parser.GetField();
+
+    infra::ConstByteRange bytes;
+    std::get<infra::ProtoLengthDelimited>(field.first).GetBytesReference(bytes);
+
+    EXPECT_THAT(parser.FormatFailed(), testing::IsTrue());
+    EXPECT_THAT(parser.Empty(), testing::IsTrue());
+}
+
+TEST_F(ProtoParserNonContiguousFieldTest, GetStringReference_reports_format_error_and_consumes_field)
+{
+    infra::ProtoParser parser(stream);
+    auto field = parser.GetField();
+
+    infra::BoundedConstString string;
+    std::get<infra::ProtoLengthDelimited>(field.first).GetStringReference(string);
+
+    EXPECT_THAT(parser.FormatFailed(), testing::IsTrue());
+    EXPECT_THAT(parser.Empty(), testing::IsTrue());
 }
