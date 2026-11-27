@@ -8,7 +8,7 @@ namespace infra
 {
     namespace
     {
-        const char* charactersToEscape = "<>&'\"";
+        const char* charactersToEscape = R"(<>&'"\)";
 
         std::size_t EscapedCharacterSize(char c)
         {
