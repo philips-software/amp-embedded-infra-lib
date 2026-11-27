@@ -30,6 +30,13 @@ namespace services
         , private sesame_security::DiffieHellmanKeyEstablishmentProxy
     {
     public:
+        struct KeyMaterial
+        {
+            infra::ConstByteRange dsaCertificate;
+            infra::ConstByteRange dsaCertificatePrivateKey;
+            infra::ConstByteRange rootCaCertificate;
+        };
+
         struct Crypto
         {
             infra::CreatorBase<EcSecP256r1DiffieHellman, void()>& keyExchange;
@@ -37,13 +44,7 @@ namespace services
             infra::CreatorBase<EcSecP256r1DsaVerifier, void(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)>& verifier;
             HmacDrbgSha256& keyExpander;
             AesGcmEncryptors& encryptors;
-        };
-
-        struct KeyMaterial
-        {
-            infra::ConstByteRange dsaCertificate;
-            infra::ConstByteRange dsaCertificatePrivateKey;
-            infra::ConstByteRange rootCaCertificate;
+            KeyMaterial keyMaterial;
         };
 
 #ifdef EMIL_USE_MBEDTLS
@@ -53,7 +54,7 @@ namespace services
         struct WithCustomCrypto;
 #endif
 
-        EchoPolicyDiffieHellman(const Crypto& crypto, Echo& echo, EchoInitialization& echoInitialization, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate);
+        EchoPolicyDiffieHellman(const Crypto& crypto, Echo& echo, EchoInitialization& echoInitialization, SesameSecured& secured);
 
     private:
         // Implementation of EchoInitializationObserver
@@ -80,8 +81,7 @@ namespace services
 
     private:
         SesameSecured& secured;
-        infra::ConstByteRange dsaCertificate;
-        infra::ConstByteRange rootCaCertificate;
+        const Crypto& crypto;
 
         infra::Function<void(ServiceProxy& proxy)> onRequest;
 
@@ -90,12 +90,8 @@ namespace services
         std::optional<std::pair<SesameSecured::KeyType, SesameSecured::IvType>> nextKeyPair;
         infra::IntrusiveList<ServiceProxy> waitingProxies;
 
-        infra::CreatorBase<EcSecP256r1DiffieHellman, void()>& keyExchangeCreator;
         std::optional<infra::ProxyCreator<EcSecP256r1DiffieHellman, void()>> keyExchange;
-        EcSecP256r1DsaSigner& signer;
-        infra::CreatorBase<EcSecP256r1DsaVerifier, void(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)>& verifierCreator;
         std::optional<infra::ProxyCreator<EcSecP256r1DsaVerifier, void(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)>> verifier;
-        HmacDrbgSha256& keyExpander;
     };
 
 #ifdef EMIL_USE_MBEDTLS
@@ -117,7 +113,7 @@ namespace services
         : private detail::CryptoMbedTls
         , EchoPolicyDiffieHellman::Crypto
     {
-        CryptoMbedTls(infra::ConstByteRange privateKey, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        CryptoMbedTls(EchoPolicyDiffieHellman::KeyMaterial keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator);
     };
 
     struct EchoPolicyDiffieHellman::WithCryptoMbedTls
