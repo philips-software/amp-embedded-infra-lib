@@ -198,7 +198,7 @@ namespace services
     }
 
     EchoPolicyDiffieHellman::WithCryptoMbedTls::WithCryptoMbedTls(Echo& echo, EchoInitialization& echoInitialization, SesameSecured& secured, const EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-        : CryptoMbedTls(keyMaterial.dsaCertificate, randomDataGenerator)
+        : CryptoMbedTls(keyMaterial.dsaCertificatePrivateKey, randomDataGenerator)
         , EchoPolicyDiffieHellman(static_cast<EchoPolicyDiffieHellman::Crypto&>(*this), echo, echoInitialization, secured, keyMaterial.dsaCertificate, keyMaterial.rootCaCertificate)
     {}
 #endif
