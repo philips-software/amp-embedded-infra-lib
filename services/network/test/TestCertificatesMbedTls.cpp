@@ -1,4 +1,4 @@
-#include "hal/generic/SynchronousRandomDataGeneratorGeneric.hpp"
+#include "hal/synchronous_interfaces/test_doubles/SynchronousRandomDataGeneratorMock.hpp"
 #include "services/network/CertificatesMbedTls.hpp"
 #include "services/network/test_doubles/Certificates.hpp"
 #include "gmock/gmock.h"
@@ -76,7 +76,7 @@ public:
     }
 
     CertificatesMbedTlsWithVerify certificates;
-    hal::SynchronousRandomDataGeneratorGeneric randomDataGenerator;
+    hal::SynchronousRandomDataGeneratorStub randomDataGenerator;
 };
 
 TEST_F(CertificatesMbedTlsTest, write_private_key)
