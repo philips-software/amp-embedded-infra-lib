@@ -1,6 +1,7 @@
 #include "infra/stream/StdStringOutputStream.hpp"
 #include "infra/syntax/Json.hpp"
 #include "infra/syntax/JsonFormatter.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 TEST(BasicUsageTest, format_json_object)
@@ -310,6 +311,17 @@ TEST(JsonObjectFormatter, add_key_jsonstring_value_BiggerInt)
         formatter.Add(infra::JsonString{ "tag" }, infra::JsonValue(std::in_place_type_t<infra::JsonBiggerInt>(), 5, true));
     }
     EXPECT_EQ(R"({ "tag":-5 })", string);
+}
+
+TEST(JsonObjectFormatter, add_escaped_key_jsonstring_value_BiggerInt)
+{
+    infra::BoundedString::WithStorage<64> string;
+
+    {
+        infra::JsonObjectFormatter::WithStringStream formatter(std::in_place, string);
+        formatter.Add(infra::JsonString{ R"(a\"b)" }, infra::JsonBiggerInt(4000000000, false));
+    }
+    EXPECT_THAT(string, testing::Eq(R"({ "a\"b":4000000000 })"));
 }
 
 TEST(JsonObjectFormatter, add_key_jsonstring_value_JsonFloat)
