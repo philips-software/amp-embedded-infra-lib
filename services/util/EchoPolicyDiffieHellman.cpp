@@ -21,12 +21,11 @@ namespace services
     }
 #endif
 
-    EchoPolicyDiffieHellman::EchoPolicyDiffieHellman(const Crypto& crypto, Echo& echo, EchoInitialization& echoInitialization, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    EchoPolicyDiffieHellman::EchoPolicyDiffieHellman(const Crypto& crypto, Echo& echo, EchoInitialization& echoInitialization, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)
         : EchoInitializationObserver(echoInitialization)
         , DiffieHellmanKeyEstablishment(echo)
         , DiffieHellmanKeyEstablishmentProxy(echo)
         , secured(secured)
-        , randomDataGenerator(randomDataGenerator)
         , dsaCertificate(dsaCertificate)
         , rootCaCertificate(rootCaCertificate)
         , keyExchangeCreator(crypto.keyExchange)
@@ -57,7 +56,7 @@ namespace services
         nextKeyPair.reset();
         verifier.reset();
 
-        keyExchange.emplace(keyExchangeCreator, randomDataGenerator);
+        keyExchange.emplace(keyExchangeCreator);
 
         busy = true;
         DiffieHellmanKeyEstablishmentProxy::RequestSend([this]()
@@ -184,7 +183,11 @@ namespace services
 
 #ifdef EMIL_USE_MBEDTLS
     detail::CryptoMbedTls::CryptoMbedTls(const EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-        : signer(keyMaterial.dsaCertificatePrivateKey, randomDataGenerator)
+        : keyExchange([&randomDataGenerator](std::optional<EcSecP256r1DiffieHellmanMbedTls>& object)
+              {
+                  object.emplace(randomDataGenerator);
+              })
+        , signer(keyMaterial.dsaCertificatePrivateKey, randomDataGenerator)
     {
     }
 
@@ -196,7 +199,7 @@ namespace services
 
     EchoPolicyDiffieHellman::WithCryptoMbedTls::WithCryptoMbedTls(Echo& echo, EchoInitialization& echoInitialization, SesameSecured& secured, const EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
         : CryptoMbedTls(keyMaterial, randomDataGenerator)
-        , EchoPolicyDiffieHellman(static_cast<EchoPolicyDiffieHellman::Crypto&>(*this), echo, echoInitialization, secured, keyMaterial.dsaCertificate, keyMaterial.rootCaCertificate, randomDataGenerator)
+        , EchoPolicyDiffieHellman(static_cast<EchoPolicyDiffieHellman::Crypto&>(*this), echo, echoInitialization, secured, keyMaterial.dsaCertificate, keyMaterial.rootCaCertificate)
     {}
 #endif
 }

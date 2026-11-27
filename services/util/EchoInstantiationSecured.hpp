@@ -84,9 +84,9 @@ namespace main_
         : EchoOnSesameSecured
     {
         template<class... Args>
-        EchoOnSesameSecuredDiffieHellman(const services::EchoPolicyDiffieHellman::Crypto& crypto, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator, services::MethodSerializerFactory& serializerFactory, const services::EchoErrorPolicy& echoErrorPolicy, Args&&... sesameSecuredArgs)
+        EchoOnSesameSecuredDiffieHellman(const services::EchoPolicyDiffieHellman::Crypto& crypto, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, services::MethodSerializerFactory& serializerFactory, const services::EchoErrorPolicy& echoErrorPolicy, Args&&... sesameSecuredArgs)
             : EchoOnSesameSecured(serializerFactory, echoErrorPolicy, std::forward<Args>(sesameSecuredArgs)...)
-            , policy(crypto, echo, echo, sesameSecured.secured, keyMaterial.dsaCertificate, keyMaterial.rootCaCertificate, randomDataGenerator)
+            , policy(crypto, echo, echo, sesameSecured.secured, keyMaterial.dsaCertificate, keyMaterial.rootCaCertificate)
         {
         }
 
@@ -102,8 +102,8 @@ namespace main_
         , private services::SesameSecured::Storage<MessageSize>
         , public EchoOnSesameSecuredDiffieHellman
     {
-        WithMessageSize(const services::EchoPolicyDiffieHellman::Crypto& crypto, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator, services::MethodSerializerFactory& serializerFactory, const services::EchoErrorPolicy& echoErrorPolicy, services::AesGcmEncryptors& encryptors, hal::BufferedSerialCommunication& serialCommunication, services::SesameInitializer& initializer = services::immediatelyGranted)
-            : EchoOnSesameSecuredDiffieHellman(crypto, keyMaterial, randomDataGenerator, serializerFactory, echoErrorPolicy, static_cast<Sesame::StorageBase&>(*this), static_cast<services::SesameSecured::StorageBase&>(*this), encryptors, serialCommunication, services::SesameSecured::KeyMaterial{}, initializer)
+        WithMessageSize(const services::EchoPolicyDiffieHellman::Crypto& crypto, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, services::MethodSerializerFactory& serializerFactory, const services::EchoErrorPolicy& echoErrorPolicy, services::AesGcmEncryptors& encryptors, hal::BufferedSerialCommunication& serialCommunication, services::SesameInitializer& initializer = services::immediatelyGranted)
+            : EchoOnSesameSecuredDiffieHellman(crypto, keyMaterial, serializerFactory, echoErrorPolicy, static_cast<Sesame::StorageBase&>(*this), static_cast<services::SesameSecured::StorageBase&>(*this), encryptors, serialCommunication, services::SesameSecured::KeyMaterial{}, initializer)
         {
         }
 
@@ -125,7 +125,7 @@ namespace main_
         WithCryptoMbedTls(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial,
             hal::SynchronousRandomDataGenerator& randomDataGenerator, const services::EchoErrorPolicy& echoErrorPolicy = services::echoErrorPolicyAbortOnMessageFormatError, services::SesameInitializer& initializer = services::immediatelyGranted)
             : services::CryptoMbedTls(keyMaterial, randomDataGenerator)
-            , EchoOnSesameSecuredDiffieHellman::WithMessageSize<MessageSize, SplitBuffers>(static_cast<const services::EchoPolicyDiffieHellman::Crypto&>(*this), keyMaterial, randomDataGenerator, serializerFactory, echoErrorPolicy, static_cast<services::AesGcmEncryptors&>(*this), serialCommunication, initializer)
+            , EchoOnSesameSecuredDiffieHellman::WithMessageSize<MessageSize, SplitBuffers>(static_cast<const services::EchoPolicyDiffieHellman::Crypto&>(*this), keyMaterial, serializerFactory, echoErrorPolicy, static_cast<services::AesGcmEncryptors&>(*this), serialCommunication, initializer)
         {}
     };
 #endif

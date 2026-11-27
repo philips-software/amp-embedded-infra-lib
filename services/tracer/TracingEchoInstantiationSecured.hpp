@@ -86,9 +86,9 @@ namespace main_
         : TracingEchoOnSesameSecured
     {
         template<class... Args>
-        TracingEchoOnSesameSecuredDiffieHellman(const services::EchoPolicyDiffieHellman::Crypto& crypto, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator, services::MethodSerializerFactory& serializerFactory, const services::EchoErrorPolicy& echoErrorPolicy, services::Tracer& tracer, Args&&... sesameSecuredArgs)
+        TracingEchoOnSesameSecuredDiffieHellman(const services::EchoPolicyDiffieHellman::Crypto& crypto, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, services::MethodSerializerFactory& serializerFactory, const services::EchoErrorPolicy& echoErrorPolicy, services::Tracer& tracer, Args&&... sesameSecuredArgs)
             : TracingEchoOnSesameSecured(serializerFactory, echoErrorPolicy, tracer, std::forward<Args>(sesameSecuredArgs)...)
-            , policy(crypto, echo, echo, sesameSecured.secured, keyMaterial.dsaCertificate, keyMaterial.rootCaCertificate, randomDataGenerator)
+            , policy(crypto, echo, echo, sesameSecured.secured, keyMaterial.dsaCertificate, keyMaterial.rootCaCertificate)
         {
         }
 
@@ -104,8 +104,8 @@ namespace main_
         , private services::SesameSecured::Storage<MessageSize>
         , public TracingEchoOnSesameSecuredDiffieHellman
     {
-        WithMessageSize(const services::EchoPolicyDiffieHellman::Crypto& crypto, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator, services::MethodSerializerFactory& serializerFactory, const services::EchoErrorPolicy& echoErrorPolicy, services::Tracer& tracer, services::AesGcmEncryptors& encryptors, hal::BufferedSerialCommunication& serialCommunication, services::SesameInitializer& initializer = services::immediatelyGranted)
-            : TracingEchoOnSesameSecuredDiffieHellman(crypto, keyMaterial, randomDataGenerator, serializerFactory, echoErrorPolicy, tracer, static_cast<Sesame::StorageBase&>(*this), static_cast<services::SesameSecured::StorageBase&>(*this), encryptors, serialCommunication, services::SesameSecured::KeyMaterial{}, initializer)
+        WithMessageSize(const services::EchoPolicyDiffieHellman::Crypto& crypto, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, services::MethodSerializerFactory& serializerFactory, const services::EchoErrorPolicy& echoErrorPolicy, services::Tracer& tracer, services::AesGcmEncryptors& encryptors, hal::BufferedSerialCommunication& serialCommunication, services::SesameInitializer& initializer = services::immediatelyGranted)
+            : TracingEchoOnSesameSecuredDiffieHellman(crypto, keyMaterial, serializerFactory, echoErrorPolicy, tracer, static_cast<Sesame::StorageBase&>(*this), static_cast<services::SesameSecured::StorageBase&>(*this), encryptors, serialCommunication, services::SesameSecured::KeyMaterial{}, initializer)
         {
         }
 
@@ -127,7 +127,7 @@ namespace main_
         WithCryptoMbedTls(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial,
             hal::SynchronousRandomDataGenerator& randomDataGenerator, services::Tracer& tracer, const services::EchoErrorPolicy& echoErrorPolicy = services::echoErrorPolicyAbortOnMessageFormatError, services::SesameInitializer& initializer = services::immediatelyGranted)
             : services::CryptoMbedTls(keyMaterial, randomDataGenerator)
-            , TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<MessageSize, SplitBuffers>(static_cast<const services::EchoPolicyDiffieHellman::Crypto&>(*this), keyMaterial, randomDataGenerator, serializerFactory, echoErrorPolicy, tracer, static_cast<services::AesGcmEncryptors&>(*this), serialCommunication, initializer)
+            , TracingEchoOnSesameSecuredDiffieHellman::WithMessageSize<MessageSize, SplitBuffers>(static_cast<const services::EchoPolicyDiffieHellman::Crypto&>(*this), keyMaterial, serializerFactory, echoErrorPolicy, tracer, static_cast<services::AesGcmEncryptors&>(*this), serialCommunication, initializer)
         {}
     };
 #endif
