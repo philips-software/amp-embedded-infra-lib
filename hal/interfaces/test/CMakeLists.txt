@@ -7,6 +7,7 @@ target_link_libraries(hal.interfaces_test PUBLIC
     hal.interfaces
     hal.interfaces_test_doubles
     infra.event_test_helper
+    infra.util_test_helper
 )
 
 target_sources(hal.interfaces_test PRIVATE
@@ -14,6 +15,7 @@ target_sources(hal.interfaces_test PRIVATE
     TestFlash.cpp
     TestFlashHeterogeneous.cpp
     TestFlashHomogeneous.cpp
+    TestFlashStub.cpp
     TestGpio.cpp
     TestI2cRegisterAccess.cpp
     TestMacAddress.cpp

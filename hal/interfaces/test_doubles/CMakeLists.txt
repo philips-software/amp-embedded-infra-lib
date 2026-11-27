@@ -8,6 +8,10 @@ target_link_libraries(hal.interfaces_test_doubles PRIVATE
     gmock
 )
 
+target_link_libraries(hal.interfaces_test_doubles PUBLIC
+    hal.generic
+)
+
 target_sources(hal.interfaces_test_doubles PRIVATE
     AdcMultiChannelMock.hpp
     AdcMultiChannelStub.cpp
@@ -19,7 +23,6 @@ target_sources(hal.interfaces_test_doubles PRIVATE
     FileSystemStub.hpp
     FlashMock.cpp
     FlashMock.hpp
-    FlashStub.cpp
     FlashStub.hpp
     GpioMock.hpp
     GpioStub.cpp

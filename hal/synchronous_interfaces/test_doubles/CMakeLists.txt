@@ -2,6 +2,7 @@ add_library(hal.synchronous_interfaces_test_doubles STATIC)
 emil_build_for(hal.synchronous_interfaces_test_doubles BOOL BUILD_TESTING)
 
 target_link_libraries(hal.synchronous_interfaces_test_doubles PUBLIC
+    hal.generic
     hal.synchronous_interfaces
     gmock
 )
@@ -11,7 +12,6 @@ target_sources(hal.synchronous_interfaces_test_doubles PRIVATE
     SynchronousFixedRandomDataGenerator.cpp
     SynchronousFixedRandomDataGenerator.hpp
     SynchronousFlashMock.hpp
-    SynchronousFlashStub.cpp
     SynchronousFlashStub.hpp
     SynchronousRandomDataGeneratorMock.hpp
     SynchronousSerialCommunicationMock.cpp

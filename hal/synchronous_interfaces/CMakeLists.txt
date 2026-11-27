@@ -10,6 +10,7 @@ target_link_libraries(hal.synchronous_interfaces PUBLIC
 )
 
 target_sources(hal.synchronous_interfaces PRIVATE
+    MemoryMappedSynchronousFlash.hpp
     SynchronousEncryptor.hpp
     SynchronousFlash.cpp
     SynchronousFlash.hpp
