@@ -59,6 +59,9 @@ namespace infra
         if (index + start < buffer.size())
             return buffer.contiguous_range(buffer.begin() + index + start);
 
+        if (index >= buffer.size())
+            return input.PeekContiguousRange(start);
+
         return input.PeekContiguousRange(index + start - buffer.size());
     }
 
