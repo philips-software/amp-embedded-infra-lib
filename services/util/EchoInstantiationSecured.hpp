@@ -96,9 +96,9 @@ namespace main_
         services::EchoPolicyDiffieHellman policy;
     };
 
-    template<class Crypto, std::size_t MessageSize, uint8_t SplitBuffers>
+    template<class CryptoType, std::size_t MessageSize, uint8_t SplitBuffers>
     struct EchoOnSesameSecuredDiffieHellman::WithCryptoAndMessageSize
-        : private Crypto
+        : private CryptoType
         , private Sesame::Storage<MessageSize, SplitBuffers>
         , private services::SesameSecured::Storage<MessageSize>
         , public EchoOnSesameSecuredDiffieHellman
@@ -106,7 +106,7 @@ namespace main_
         template<class... CryptoArgs>
         WithCryptoAndMessageSize(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory,
             const services::EchoErrorPolicy& echoErrorPolicy, services::SesameInitializer& initializer, CryptoArgs&&... cryptoArgs)
-            : Crypto(std::forward<CryptoArgs>(cryptoArgs)...)
+            : CryptoType(std::forward<CryptoArgs>(cryptoArgs)...)
             , EchoOnSesameSecuredDiffieHellman(static_cast<const services::EchoPolicyDiffieHellman::Crypto&>(*this), serializerFactory, echoErrorPolicy,
                   static_cast<Sesame::StorageBase&>(*this), static_cast<services::SesameSecured::StorageBase&>(*this), static_cast<const services::EchoPolicyDiffieHellman::Crypto&>(*this).encryptors, serialCommunication, services::SesameSecured::KeyMaterial{}, initializer)
         {
