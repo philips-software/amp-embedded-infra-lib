@@ -32,10 +32,11 @@ namespace services
     public:
         struct Crypto
         {
-            infra::CreatorBase<EcSecP256r1DiffieHellman, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)>& keyExchange;
+            infra::CreatorBase<EcSecP256r1DiffieHellman, void()>& keyExchange;
             EcSecP256r1DsaSigner& signer;
             infra::CreatorBase<EcSecP256r1DsaVerifier, void(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)>& verifier;
             HmacDrbgSha256& keyExpander;
+            AesGcmEncryptors& encryptors;
         };
 
         struct KeyMaterial
@@ -52,7 +53,7 @@ namespace services
         struct WithCustomCrypto;
 #endif
 
-        EchoPolicyDiffieHellman(const Crypto& crypto, Echo& echo, EchoInitialization& echoInitialization, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        EchoPolicyDiffieHellman(const Crypto& crypto, Echo& echo, EchoInitialization& echoInitialization, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate);
 
     private:
         // Implementation of EchoInitializationObserver
@@ -79,7 +80,6 @@ namespace services
 
     private:
         SesameSecured& secured;
-        hal::SynchronousRandomDataGenerator& randomDataGenerator;
         infra::ConstByteRange dsaCertificate;
         infra::ConstByteRange rootCaCertificate;
 
@@ -90,8 +90,8 @@ namespace services
         std::optional<std::pair<SesameSecured::KeyType, SesameSecured::IvType>> nextKeyPair;
         infra::IntrusiveList<ServiceProxy> waitingProxies;
 
-        infra::CreatorBase<EcSecP256r1DiffieHellman, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)>& keyExchangeCreator;
-        std::optional<infra::ProxyCreator<EcSecP256r1DiffieHellman, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)>> keyExchange;
+        infra::CreatorBase<EcSecP256r1DiffieHellman, void()>& keyExchangeCreator;
+        std::optional<infra::ProxyCreator<EcSecP256r1DiffieHellman, void()>> keyExchange;
         EcSecP256r1DsaSigner& signer;
         infra::CreatorBase<EcSecP256r1DsaVerifier, void(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)>& verifierCreator;
         std::optional<infra::ProxyCreator<EcSecP256r1DsaVerifier, void(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)>> verifier;
@@ -103,12 +103,13 @@ namespace services
     {
         struct CryptoMbedTls
         {
-            CryptoMbedTls(const EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+            CryptoMbedTls(infra::ConstByteRange privateKey, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
-            infra::Creator<EcSecP256r1DiffieHellman, EcSecP256r1DiffieHellmanMbedTls, void(hal::SynchronousRandomDataGenerator& randomDataGenerator)> keyExchange;
+            infra::Creator<EcSecP256r1DiffieHellman, EcSecP256r1DiffieHellmanMbedTls, void()> keyExchange;
             EcSecP256r1DsaSignerMbedTls signer;
             infra::Creator<EcSecP256r1DsaVerifier, EcSecP256r1DsaVerifierMbedTls, void(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)> verifier;
             HmacDrbgSha256MbedTls keyExpander;
+            SesameSecuredMbedTlsEncryptors encryptors;
         };
     }
 
@@ -116,7 +117,7 @@ namespace services
         : private detail::CryptoMbedTls
         , EchoPolicyDiffieHellman::Crypto
     {
-        CryptoMbedTls(const EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        CryptoMbedTls(infra::ConstByteRange privateKey, hal::SynchronousRandomDataGenerator& randomDataGenerator);
     };
 
     struct EchoPolicyDiffieHellman::WithCryptoMbedTls
