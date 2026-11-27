@@ -519,9 +519,7 @@ namespace services
         : factory(factory)
         , networkFactory(networkFactory)
         , clientFactory(clientFactory)
-    {
-        networkFactory.Connect(*this);
-    }
+    {}
 
     IPAddress ConnectionMbedTlsConnector::Address() const
     {
@@ -568,9 +566,7 @@ namespace services
         : factory(factory)
         , networkFactory(networkFactory)
         , clientFactory(clientFactory)
-    {
-        networkFactory.Connect(*this);
-    }
+    {}
 
     infra::BoundedConstString ConnectionMbedTlsConnectorWithNameResolver::Hostname() const
     {
@@ -707,6 +703,7 @@ namespace services
             waitingConnects.pop_front();
 
             connectors.emplace_back(*this, factory, connectionObserverFactory);
+            factory.Connect(connectors.back());
         }
     }
 
@@ -785,6 +782,7 @@ namespace services
             waitingConnects.pop_front();
 
             connectors.emplace_back(*this, factory, connectionObserverFactory);
+            factory.Connect(connectors.back());
         }
     }
 

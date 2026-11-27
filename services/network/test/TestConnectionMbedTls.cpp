@@ -91,6 +91,45 @@ TEST_F(ConnectionMbedTlsTest, create_connection)
     observer1->Subject().AbortAndDestroy();
 }
 
+TEST_F(ConnectionMbedTlsTest, synchronous_failure_inside_connect_frees_the_connector)
+{
+    services::ConnectionFactoryMbedTls::WithMaxConnectionsListenersAndConnectors<2, 0, 1> tlsNetworkClient(network, clientCertificates, randomDataGenerator);
+
+    EXPECT_CALL(network, Connect(testing::_)).WillOnce(testing::Invoke([](services::ClientConnectionObserverFactory& factory)
+        {
+            factory.ConnectionFailed(services::ClientConnectionObserverFactory::refused);
+        }));
+    EXPECT_CALL(clientObserverFactory, ConnectionFailed(services::ClientConnectionObserverFactory::refused));
+    tlsNetworkClient.Connect(clientObserverFactory);
+
+    EXPECT_CALL(network, Connect(testing::_));
+    tlsNetworkClient.Connect(clientObserverFactory);
+
+    EXPECT_CALL(network, CancelConnect(testing::_));
+    tlsNetworkClient.CancelConnect(clientObserverFactory);
+}
+
+TEST_F(ConnectionMbedTlsTest, client_reconnecting_from_a_synchronous_failure_is_forwarded_once_the_connector_is_freed)
+{
+    services::ConnectionFactoryMbedTls::WithMaxConnectionsListenersAndConnectors<2, 0, 1> tlsNetworkClient(network, clientCertificates, randomDataGenerator);
+    testing::StrictMock<services::ClientConnectionObserverFactoryMock> secondObserverFactory;
+    testing::InSequence sequence;
+
+    EXPECT_CALL(network, Connect(testing::_)).WillOnce(testing::Invoke([](services::ClientConnectionObserverFactory& factory)
+        {
+            factory.ConnectionFailed(services::ClientConnectionObserverFactory::refused);
+        }));
+    EXPECT_CALL(clientObserverFactory, ConnectionFailed(services::ClientConnectionObserverFactory::refused)).WillOnce(testing::InvokeWithoutArgs([&]()
+        {
+            tlsNetworkClient.Connect(secondObserverFactory);
+        }));
+    EXPECT_CALL(network, Connect(testing::_));
+    tlsNetworkClient.Connect(clientObserverFactory);
+
+    EXPECT_CALL(network, CancelConnect(testing::_));
+    tlsNetworkClient.CancelConnect(secondObserverFactory);
+}
+
 TEST_F(ConnectionMbedTlsTest, send_and_receive_data)
 {
     services::ConnectionFactoryMbedTls::WithMaxConnectionsListenersAndConnectors<2, 1, 0> tlsNetworkServer(loopBackNetwork, serverCertificates, randomDataGenerator);
@@ -379,6 +418,45 @@ TEST_F(ConnectionWithNameResolverMbedTlsTest, cancel_connection)
 
     EXPECT_CALL(network, CancelConnect(testing::_));
     tlsNetworkClient.CancelConnect(clientObserverFactory);
+}
+
+TEST_F(ConnectionWithNameResolverMbedTlsTest, synchronous_failure_inside_connect_frees_the_connector)
+{
+    services::ConnectionFactoryWithNameResolverMbedTls::WithMaxConnectionsListenersAndConnectors<2, 1> tlsNetworkClient(network, clientCertificates, randomDataGenerator);
+
+    EXPECT_CALL(network, Connect(testing::_)).WillOnce(testing::Invoke([](services::ClientConnectionObserverFactoryWithNameResolver& factory)
+        {
+            factory.ConnectionFailed(services::ClientConnectionObserverFactoryWithNameResolver::nameLookupFailed);
+        }));
+    EXPECT_CALL(clientObserverFactory, ConnectionFailed(services::ClientConnectionObserverFactoryWithNameResolver::nameLookupFailed));
+    tlsNetworkClient.Connect(clientObserverFactory);
+
+    EXPECT_CALL(network, Connect(testing::_));
+    tlsNetworkClient.Connect(clientObserverFactory);
+
+    EXPECT_CALL(network, CancelConnect(testing::_));
+    tlsNetworkClient.CancelConnect(clientObserverFactory);
+}
+
+TEST_F(ConnectionWithNameResolverMbedTlsTest, client_reconnecting_from_a_synchronous_failure_is_forwarded_once_the_connector_is_freed)
+{
+    services::ConnectionFactoryWithNameResolverMbedTls::WithMaxConnectionsListenersAndConnectors<2, 1> tlsNetworkClient(network, clientCertificates, randomDataGenerator);
+    testing::StrictMock<services::ClientConnectionObserverFactoryWithNameResolverMock> secondObserverFactory;
+    testing::InSequence sequence;
+
+    EXPECT_CALL(network, Connect(testing::_)).WillOnce(testing::Invoke([](services::ClientConnectionObserverFactoryWithNameResolver& factory)
+        {
+            factory.ConnectionFailed(services::ClientConnectionObserverFactoryWithNameResolver::refused);
+        }));
+    EXPECT_CALL(clientObserverFactory, ConnectionFailed(services::ClientConnectionObserverFactoryWithNameResolver::refused)).WillOnce(testing::InvokeWithoutArgs([&]()
+        {
+            tlsNetworkClient.Connect(secondObserverFactory);
+        }));
+    EXPECT_CALL(network, Connect(testing::_));
+    tlsNetworkClient.Connect(clientObserverFactory);
+
+    EXPECT_CALL(network, CancelConnect(testing::_));
+    tlsNetworkClient.CancelConnect(secondObserverFactory);
 }
 
 TEST_F(ConnectionWithNameResolverMbedTlsTest, create_connection)
