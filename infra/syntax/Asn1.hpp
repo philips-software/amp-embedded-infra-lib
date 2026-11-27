@@ -3,6 +3,7 @@
 
 #include "infra/util/ByteRange.hpp"
 #include <cstdint>
+#include <optional>
 #include <utility>
 
 namespace infra
@@ -48,7 +49,8 @@ namespace infra
         Asn1SequenceIterator operator++(int);
 
     private:
-        Asn1Value MakeValue() const;
+        void ReadCurrentValue();
+        std::optional<Asn1Value> MakeValue() const;
 
     private:
         infra::ConstByteRange range;
