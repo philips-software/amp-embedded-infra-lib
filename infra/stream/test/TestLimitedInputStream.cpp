@@ -1,3 +1,5 @@
+#include "infra/stream/BoundedDequeInputStream.hpp"
+#include "infra/stream/ByteInputStream.hpp"
 #include "infra/stream/LimitedInputStream.hpp"
 #include "infra/stream/test/StreamMock.hpp"
 #include "gmock/gmock.h"
@@ -93,4 +95,51 @@ TEST(LimitedInputStreamTest, ResetLength)
 
     EXPECT_CALL(reader, Available()).WillOnce(testing::Return(4));
     EXPECT_EQ(3, limitedReader.Available());
+}
+
+TEST(LimitedInputStreamWithRewindingTest, Rewind_after_partial_Extract_restores_length)
+{
+    infra::BoundedDeque<uint8_t>::WithMaxSize<8> data{ std::initializer_list<uint8_t>{ 1, 2, 3, 4 } };
+    infra::BoundedDequeInputStreamReader reader(data);
+    infra::LimitedStreamReaderWithRewinding limitedReader(reader, 6);
+    infra::StreamErrorPolicy errorPolicy(infra::softFail);
+
+    auto marker = limitedReader.ConstructSaveMarker();
+    std::array<uint8_t, 6> buffer{};
+    limitedReader.Extract(buffer, errorPolicy);
+    limitedReader.Rewind(marker);
+
+    data.push_back(5);
+    data.push_back(6);
+
+    EXPECT_TRUE(errorPolicy.Failed());
+    EXPECT_THAT(limitedReader.Available(), testing::Eq(6));
+}
+
+template<class LimitedReader>
+class LimitedStreamReaderPeekTest
+    : public testing::Test
+{
+public:
+    std::array<uint8_t, 6> data{ { 1, 2, 3, 4, 5, 6 } };
+    infra::ByteInputStreamReader reader{ data };
+    LimitedReader limitedReader{ reader, 2 };
+};
+
+using LimitedReaderTypes = testing::Types<infra::LimitedStreamReader, infra::LimitedStreamReaderWithRewinding>;
+TYPED_TEST_SUITE(LimitedStreamReaderPeekTest, LimitedReaderTypes);
+
+TYPED_TEST(LimitedStreamReaderPeekTest, PeekContiguousRange_does_not_exceed_length)
+{
+    EXPECT_THAT(this->limitedReader.PeekContiguousRange(0), testing::ElementsAre(1, 2));
+    EXPECT_THAT(this->limitedReader.PeekContiguousRange(1), testing::ElementsAre(2));
+    EXPECT_THAT(this->limitedReader.PeekContiguousRange(2), testing::IsEmpty());
+}
+
+TYPED_TEST(LimitedStreamReaderPeekTest, PeekContiguousRange_does_not_exceed_remaining_length_after_extract)
+{
+    this->limitedReader.ExtractContiguousRange(1);
+
+    EXPECT_THAT(this->limitedReader.PeekContiguousRange(0), testing::ElementsAre(2));
+    EXPECT_THAT(this->limitedReader.PeekContiguousRange(1), testing::IsEmpty());
 }
