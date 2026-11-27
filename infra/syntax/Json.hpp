@@ -256,6 +256,8 @@ namespace infra
         bool operator!=(const JsonTokenizer& other) const;
 
     private:
+        friend void CleanJsonContents(infra::BoundedString& contents);
+
         void SkipWhitespace();
         JsonToken::Token TryCreateStringToken();
         JsonToken::Token TryCreateIntegerOrFloatToken();
