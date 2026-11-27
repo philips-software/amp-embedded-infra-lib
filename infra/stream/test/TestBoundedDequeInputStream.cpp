@@ -1,4 +1,5 @@
 #include "infra/stream/BoundedDequeInputStream.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 class BoundedDequeInputStreamReaderTest
@@ -55,6 +56,14 @@ TEST_F(BoundedDequeInputStreamReaderTest, PeekContiguousRange)
 
     reader.ExtractContiguousRange(2);
     EXPECT_EQ((std::array<uint8_t, 4>{ { 3, 4, 5, 6 } }), reader.PeekContiguousRange(0));
+}
+
+TEST_F(BoundedDequeInputStreamReaderTest, PeekContiguousRange_beyond_end_is_empty)
+{
+    reader.ExtractContiguousRange(6);
+
+    EXPECT_THAT(reader.PeekContiguousRange(2), testing::IsEmpty());
+    EXPECT_THAT(reader.PeekContiguousRange(3), testing::IsEmpty());
 }
 
 TEST_F(BoundedDequeInputStreamReaderTest, ExtractContiguousRange_limited_by_max)

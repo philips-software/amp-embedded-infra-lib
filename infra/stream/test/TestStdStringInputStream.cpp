@@ -1,4 +1,5 @@
 #include "infra/stream/StdStringInputStream.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include <cstdint>
 
@@ -59,4 +60,12 @@ TEST(StdStringInputStreamTest, PeekContiguousRange_returns_expected_range_size)
 
     stream.Consume(2);
     EXPECT_EQ(4, stream.PeekContiguousRange().size());
+}
+
+TEST(StdStringInputStreamTest, PeekContiguousRange_beyond_end_is_empty)
+{
+    infra::StdStringInputStream::WithStorage stream(std::in_place, "ab");
+
+    EXPECT_THAT(stream.PeekContiguousRange(2), testing::IsEmpty());
+    EXPECT_THAT(stream.PeekContiguousRange(3), testing::IsEmpty());
 }

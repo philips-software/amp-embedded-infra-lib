@@ -33,11 +33,11 @@ namespace infra
 
     uint8_t ByteInputStreamReader::Peek(StreamErrorPolicy& errorPolicy)
     {
-        uint8_t element;
-        ByteRange dataRange(MakeByteRange(element));
-        errorPolicy.ReportResult(dataRange.size() <= range.size() - offset);
-        std::copy(range.begin() + offset, range.begin() + offset + dataRange.size(), dataRange.begin());
-        return element;
+        errorPolicy.ReportResult(!Empty());
+        if (!Empty())
+            return range[offset];
+        else
+            return 0;
     }
 
     ConstByteRange ByteInputStreamReader::ExtractContiguousRange(std::size_t max)
@@ -51,7 +51,7 @@ namespace infra
 
     ConstByteRange infra::ByteInputStreamReader::PeekContiguousRange(std::size_t start)
     {
-        ConstByteRange result(range.begin() + offset + start, range.end());
+        ConstByteRange result(range.begin() + std::min(offset + start, range.size()), range.end());
         return result;
     }
 

@@ -1,4 +1,5 @@
 #include "infra/stream/ByteInputStream.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include <array>
 
@@ -33,6 +34,16 @@ TEST_F(ByteInputStreamReaderTest, Peek)
     EXPECT_EQ(1, reader.Peek(errorPolicy));
 }
 
+TEST_F(ByteInputStreamReaderTest, Peek_at_end_reports_failure)
+{
+    infra::ByteInputStreamReader partialReader(infra::Head(infra::MakeRange(data), 4));
+    infra::StreamErrorPolicy softFailErrorPolicy(infra::softFail);
+    partialReader.ExtractContiguousRange(4);
+
+    EXPECT_THAT(partialReader.Peek(softFailErrorPolicy), testing::Eq(0));
+    EXPECT_TRUE(softFailErrorPolicy.Failed());
+}
+
 TEST_F(ByteInputStreamReaderTest, ExtractContiguousRange)
 {
     EXPECT_EQ((std::array<uint8_t, 8>{ { 1, 2, 3, 4, 5, 6, 7, 8 } }), reader.ExtractContiguousRange(16));
@@ -43,6 +54,14 @@ TEST_F(ByteInputStreamReaderTest, PeekContiguousRange_from_start_position)
     EXPECT_EQ((std::array<uint8_t, 8>{ { 1, 2, 3, 4, 5, 6, 7, 8 } }), reader.PeekContiguousRange(0));
 
     EXPECT_EQ((std::array<uint8_t, 2>{ { 7, 8 } }), reader.PeekContiguousRange(6));
+}
+
+TEST_F(ByteInputStreamReaderTest, PeekContiguousRange_beyond_end_is_empty)
+{
+    reader.ExtractContiguousRange(6);
+
+    EXPECT_THAT(reader.PeekContiguousRange(2), testing::IsEmpty());
+    EXPECT_THAT(reader.PeekContiguousRange(3), testing::IsEmpty());
 }
 
 TEST_F(ByteInputStreamReaderTest, ExtractContiguousRange_limited_by_max)

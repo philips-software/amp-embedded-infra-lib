@@ -67,6 +67,11 @@ namespace infra
         auto end = e.load();
         auto begin = b.load();
 
+        if (begin <= end)
+            start = std::min<std::size_t>(start, end - begin);
+        else
+            start = std::min<std::size_t>(start, storage.size() + (end - begin));
+
         auto takenFromEnd = std::min<std::size_t>(start, storage.end() - begin);
         begin += takenFromEnd;
 
