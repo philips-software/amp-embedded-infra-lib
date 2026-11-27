@@ -1,5 +1,4 @@
 #include "infra/syntax/XmlFormatter.hpp"
-#include "infra/syntax/EscapeCharacterHelper.hpp"
 #include <optional>
 #include <utility>
 
@@ -26,12 +25,16 @@ namespace infra
                 case '"':
                     stream << "&quot;";
                     break;
+                default:
+                    stream << c;
+                    break;
             }
         }
 
         void InsertEscapedContent(infra::TextOutputStream& stream, infra::BoundedConstString content)
         {
-            infra::InsertEscapedContent(stream, content, "<>&'\"", ReplaceEscapeCharacter);
+            for (std::size_t i = 0; i != content.size(); ++i)
+                ReplaceEscapeCharacter(stream, content[i]);
         }
     }
 
@@ -81,7 +84,9 @@ namespace infra
 
     void XmlTagFormatter::Attribute(const char* name, infra::BoundedConstString value)
     {
-        *stream << " " << name << R"(=")" << value << R"(")";
+        *stream << " " << name << R"(=")";
+        InsertEscapedContent(*stream, value);
+        *stream << R"(")";
     }
 
     void XmlTagFormatter::Content(infra::BoundedConstString string)
