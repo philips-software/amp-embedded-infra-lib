@@ -102,8 +102,8 @@ namespace main_
         , private services::SesameSecured::Storage<MessageSize>
         , public EchoOnSesameSecuredDiffieHellman
     {
-        WithMessageSize(const services::EchoPolicyDiffieHellman::Crypto& crypto, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, services::MethodSerializerFactory& serializerFactory, const services::EchoErrorPolicy& echoErrorPolicy, services::AesGcmEncryptors& encryptors, hal::BufferedSerialCommunication& serialCommunication, services::SesameInitializer& initializer = services::immediatelyGranted)
-            : EchoOnSesameSecuredDiffieHellman(crypto, keyMaterial, serializerFactory, echoErrorPolicy, static_cast<Sesame::StorageBase&>(*this), static_cast<services::SesameSecured::StorageBase&>(*this), encryptors, serialCommunication, services::SesameSecured::KeyMaterial{}, initializer)
+        WithMessageSize(const services::EchoPolicyDiffieHellman::Crypto& crypto, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, services::MethodSerializerFactory& serializerFactory, const services::EchoErrorPolicy& echoErrorPolicy, hal::BufferedSerialCommunication& serialCommunication, services::SesameInitializer& initializer = services::immediatelyGranted)
+            : EchoOnSesameSecuredDiffieHellman(crypto, keyMaterial, serializerFactory, echoErrorPolicy, static_cast<Sesame::StorageBase&>(*this), static_cast<services::SesameSecured::StorageBase&>(*this), crypto.encryptors, serialCommunication, services::SesameSecured::KeyMaterial{}, initializer)
         {
         }
 
@@ -118,14 +118,13 @@ namespace main_
 #ifdef EMIL_USE_MBEDTLS
     template<std::size_t MessageSize, uint8_t SplitBuffers>
     struct EchoOnSesameSecuredDiffieHellman::WithMessageSize<MessageSize, SplitBuffers>::WithCryptoMbedTls
-        : private services::SesameSecuredMbedTlsEncryptors
-        , private services::CryptoMbedTls
+        : private services::CryptoMbedTls
         , public EchoOnSesameSecuredDiffieHellman::WithMessageSize<MessageSize, SplitBuffers>
     {
         WithCryptoMbedTls(hal::BufferedSerialCommunication& serialCommunication, services::MethodSerializerFactory& serializerFactory, const services::EchoPolicyDiffieHellman::KeyMaterial& keyMaterial,
             hal::SynchronousRandomDataGenerator& randomDataGenerator, const services::EchoErrorPolicy& echoErrorPolicy = services::echoErrorPolicyAbortOnMessageFormatError, services::SesameInitializer& initializer = services::immediatelyGranted)
-            : services::CryptoMbedTls(keyMaterial, randomDataGenerator)
-            , EchoOnSesameSecuredDiffieHellman::WithMessageSize<MessageSize, SplitBuffers>(static_cast<const services::EchoPolicyDiffieHellman::Crypto&>(*this), keyMaterial, serializerFactory, echoErrorPolicy, static_cast<services::AesGcmEncryptors&>(*this), serialCommunication, initializer)
+            : services::CryptoMbedTls(keyMaterial.dsaCertificatePrivateKey, randomDataGenerator)
+            , EchoOnSesameSecuredDiffieHellman::WithMessageSize<MessageSize, SplitBuffers>(static_cast<const services::EchoPolicyDiffieHellman::Crypto&>(*this), keyMaterial, serializerFactory, echoErrorPolicy, serialCommunication, initializer)
         {}
     };
 #endif

@@ -36,6 +36,7 @@ namespace services
             EcSecP256r1DsaSigner& signer;
             infra::CreatorBase<EcSecP256r1DsaVerifier, void(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)>& verifier;
             HmacDrbgSha256& keyExpander;
+            AesGcmEncryptors& encryptors;
         };
 
         struct KeyMaterial
@@ -102,12 +103,13 @@ namespace services
     {
         struct CryptoMbedTls
         {
-            CryptoMbedTls(const EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+            CryptoMbedTls(infra::ConstByteRange privateKey, hal::SynchronousRandomDataGenerator& randomDataGenerator);
 
             infra::Creator<EcSecP256r1DiffieHellman, EcSecP256r1DiffieHellmanMbedTls, void()> keyExchange;
             EcSecP256r1DsaSignerMbedTls signer;
             infra::Creator<EcSecP256r1DsaVerifier, EcSecP256r1DsaVerifierMbedTls, void(infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)> verifier;
             HmacDrbgSha256MbedTls keyExpander;
+            SesameSecuredMbedTlsEncryptors encryptors;
         };
     }
 
@@ -115,7 +117,7 @@ namespace services
         : private detail::CryptoMbedTls
         , EchoPolicyDiffieHellman::Crypto
     {
-        CryptoMbedTls(const EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator);
+        CryptoMbedTls(infra::ConstByteRange privateKey, hal::SynchronousRandomDataGenerator& randomDataGenerator);
     };
 
     struct EchoPolicyDiffieHellman::WithCryptoMbedTls

@@ -182,23 +182,23 @@ namespace services
     }
 
 #ifdef EMIL_USE_MBEDTLS
-    detail::CryptoMbedTls::CryptoMbedTls(const EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+    detail::CryptoMbedTls::CryptoMbedTls(infra::ConstByteRange privateKey, hal::SynchronousRandomDataGenerator& randomDataGenerator)
         : keyExchange([&randomDataGenerator](std::optional<EcSecP256r1DiffieHellmanMbedTls>& object)
               {
                   object.emplace(randomDataGenerator);
               })
-        , signer(keyMaterial.dsaCertificatePrivateKey, randomDataGenerator)
+        , signer(privateKey, randomDataGenerator)
     {
     }
 
-    CryptoMbedTls::CryptoMbedTls(const EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-        : detail::CryptoMbedTls(keyMaterial, randomDataGenerator)
-        , EchoPolicyDiffieHellman::Crypto{ detail::CryptoMbedTls::keyExchange, detail::CryptoMbedTls::signer, detail::CryptoMbedTls::verifier, detail::CryptoMbedTls::keyExpander }
+    CryptoMbedTls::CryptoMbedTls(infra::ConstByteRange privateKey, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+        : detail::CryptoMbedTls(privateKey, randomDataGenerator)
+        , EchoPolicyDiffieHellman::Crypto{ detail::CryptoMbedTls::keyExchange, detail::CryptoMbedTls::signer, detail::CryptoMbedTls::verifier, detail::CryptoMbedTls::keyExpander, detail::CryptoMbedTls::encryptors }
     {
     }
 
     EchoPolicyDiffieHellman::WithCryptoMbedTls::WithCryptoMbedTls(Echo& echo, EchoInitialization& echoInitialization, SesameSecured& secured, const EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-        : CryptoMbedTls(keyMaterial, randomDataGenerator)
+        : CryptoMbedTls(keyMaterial.dsaCertificate, randomDataGenerator)
         , EchoPolicyDiffieHellman(static_cast<EchoPolicyDiffieHellman::Crypto&>(*this), echo, echoInitialization, secured, keyMaterial.dsaCertificate, keyMaterial.rootCaCertificate)
     {}
 #endif
