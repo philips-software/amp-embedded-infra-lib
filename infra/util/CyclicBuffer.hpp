@@ -7,6 +7,7 @@
 //  In practise, the typedef CyclicByteBuffer will most often be used.
 
 #include "infra/util/MemoryRange.hpp"
+#include "infra/util/ReallyAssert.hpp"
 #include "infra/util/WithStorage.hpp"
 #include <algorithm>
 #include <cstddef>
@@ -86,7 +87,7 @@ namespace infra
     template<class T>
     void CyclicBuffer<T>::Push(T data)
     {
-        assert(!Full());
+        really_assert(!Full());
 
         *back = data;
         ++back;
@@ -101,7 +102,7 @@ namespace infra
     template<class T>
     void CyclicBuffer<T>::Push(MemoryRange<const T> data)
     {
-        assert(data.size() <= storage.size() - Size());
+        really_assert(data.size() <= storage.size() - Size());
         std::size_t size = std::min(data.size(), static_cast<std::size_t>(storage.end() - back));
         back = std::copy(data.begin(), data.begin() + size, back);
 
@@ -118,6 +119,8 @@ namespace infra
     template<class T>
     void CyclicBuffer<T>::Pop(std::size_t numToPop)
     {
+        really_assert(numToPop <= Size());
+
         if (numToPop != 0)
             isFull = false;
 
@@ -157,7 +160,7 @@ namespace infra
     template<class T>
     void CyclicBuffer<T>::PopInto(MemoryRange<T> destination)
     {
-        assert(Size() >= destination.size());
+        really_assert(Size() >= destination.size());
 
         while (!destination.empty())
         {

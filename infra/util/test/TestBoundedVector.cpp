@@ -516,6 +516,18 @@ TEST(BoundedVectorTest, TestSwapWithFullVector)
     EXPECT_EQ(expectedVector2, vector2);
 }
 
+#ifndef EMIL_MUTATION_TESTING
+TEST(BoundedVectorTest, TestSwapExceedingCapacityAborts)
+{
+    int range1[5] = { 0, 1, 2, 3, 4 };
+    infra::BoundedVector<int>::WithMaxSize<5> big(range1, range1 + 5);
+    int range2[1] = { 5 };
+    infra::BoundedVector<int>::WithMaxSize<3> small(range2, range2 + 1);
+
+    EXPECT_DEATH(small.swap(big), "");
+}
+#endif
+
 TEST(BoundedVectorTest, TestClear)
 {
     infra::BoundedVector<int>::WithMaxSize<5> vector(std::size_t(2), 4);
