@@ -22,8 +22,8 @@ namespace infra
             newPushIndex = (pushIndex + 1) % scheduledActions.size();
         } while (!scheduledActionsPushIndex.compare_exchange_weak(pushIndex, newPushIndex));
 
-        scheduledActions[pushIndex].first = action;
         really_assert(!scheduledActions[pushIndex].second);
+        scheduledActions[pushIndex].first = action;
         scheduledActions[pushIndex].second = true;
 
         minCapacity = std::min<std::size_t>(minCapacity, (scheduledActions.size() + scheduledActionsPopIndex - pushIndex - 1) % scheduledActions.size() + 1);
