@@ -16,9 +16,15 @@ namespace hal
         MOCK_METHOD(bool, GetOutputLatch, (), (const override));
         MOCK_METHOD(void, SetAsInput, (), (override));
         MOCK_METHOD(bool, IsInput, (), (const override));
+
         MOCK_METHOD(void, Config, (PinConfigType config), (override));
         MOCK_METHOD(void, Config, (PinConfigType config, bool startOutputState), (override));
+
+        MOCK_METHOD(void, ReConfig, (PinConfigType config), (override));
+        MOCK_METHOD(void, ReConfig, (PinConfigType config, bool startOutputState), (override));
+
         MOCK_METHOD(void, ResetConfig, (), (override));
+
         MOCK_METHOD(void, EnableInterrupt, (const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type), (override));
         MOCK_METHOD(void, DisableInterrupt, (), (override));
     };

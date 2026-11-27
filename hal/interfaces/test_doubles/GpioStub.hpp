@@ -21,9 +21,15 @@ namespace hal
         bool GetOutputLatch() const override;
         void SetAsInput() override;
         bool IsInput() const override;
+
         void Config(PinConfigType config) override;
         void Config(PinConfigType config, bool startOutputState) override;
+
+        void ReConfig(PinConfigType config) override;
+        void ReConfig(PinConfigType config, bool startOutputState) override;
+
         void ResetConfig() override;
+
         void EnableInterrupt(const infra::Function<void()>& action, InterruptTrigger trigger, InterruptType type) override;
         void DisableInterrupt() override;
 
