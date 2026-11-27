@@ -5,6 +5,14 @@
 #include <string_view>
 #include <type_traits>
 
+constexpr auto stringWithTrailingZero = infra::BoundedConstString("test\0", 5);
+static_assert(infra::TrailingZeroRemoved(stringWithTrailingZero).size() == 4);
+static_assert(infra::TrailingZeroRemoved(stringWithTrailingZero).data() == stringWithTrailingZero.data());
+static_assert(infra::TrailingZeroRemoved(infra::BoundedConstString()).empty());
+static_assert(infra::TrailingZeroRemoved(infra::BoundedConstString("\0", 1)).empty());
+static_assert(infra::TrailingZeroRemoved(infra::BoundedConstString("test", 4)).size() == 4);
+static_assert(infra::TrailingZeroRemoved(infra::BoundedConstString("test\0\0", 6)).size() == 5);
+
 TEST(BoundedStringTest, TestConstructedEmpty)
 {
     infra::BoundedString::WithStorage<5> string;
@@ -639,6 +647,35 @@ TEST(BoundedStringTest, TestTrimLeft)
     EXPECT_EQ("abc ", infra::TrimLeft(infra::BoundedConstString("  abc ")));
     EXPECT_EQ("", infra::TrimLeft(infra::BoundedConstString("")));
     EXPECT_EQ("", infra::TrimLeft(infra::BoundedConstString(" ")));
+}
+
+TEST(BoundedStringTest, TrailingZeroRemovedRemovesOnlyOneTrailingZero)
+{
+    const char data[] = { 'a', '\0', 'b', '\0', '\0' };
+    auto result = infra::TrailingZeroRemoved(infra::BoundedConstString(data, sizeof(data)));
+
+    EXPECT_THAT(result, testing::Eq(infra::BoundedConstString(data, sizeof(data) - 1)));
+    EXPECT_THAT(result.data(), testing::Eq(data));
+}
+
+TEST(BoundedStringTest, TrailingZeroRemovedPreservesUnterminatedString)
+{
+    const char data[] = { 'a', '\0', 'b' };
+    auto result = infra::TrailingZeroRemoved(infra::BoundedConstString(data, sizeof(data)));
+
+    EXPECT_THAT(result, testing::Eq(infra::BoundedConstString(data, sizeof(data))));
+    EXPECT_THAT(result.data(), testing::Eq(data));
+}
+
+TEST(BoundedStringTest, TrailingZeroRemovedHandlesEmptyAndZeroOnlyStrings)
+{
+    const char data[] = { '\0' };
+    auto empty = infra::TrailingZeroRemoved(infra::BoundedConstString());
+    auto zeroOnly = infra::TrailingZeroRemoved(infra::BoundedConstString(data, sizeof(data)));
+
+    EXPECT_THAT(empty.size(), testing::Eq(0));
+    EXPECT_THAT(zeroOnly.size(), testing::Eq(0));
+    EXPECT_THAT(zeroOnly.data(), testing::Eq(data));
 }
 
 TEST(BoundedStringTest, TestFind)

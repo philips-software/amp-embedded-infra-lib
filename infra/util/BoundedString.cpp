@@ -2,7 +2,6 @@
 
 namespace infra
 {
-
     namespace literals
     {
         infra::BoundedConstString operator""_s(const char* str, std::size_t count)
