@@ -21,17 +21,12 @@ namespace services
     }
 #endif
 
-    EchoPolicyDiffieHellman::EchoPolicyDiffieHellman(const Crypto& crypto, Echo& echo, EchoInitialization& echoInitialization, SesameSecured& secured, infra::ConstByteRange dsaCertificate, infra::ConstByteRange rootCaCertificate)
+    EchoPolicyDiffieHellman::EchoPolicyDiffieHellman(const Crypto& crypto, Echo& echo, EchoInitialization& echoInitialization, SesameSecured& secured)
         : EchoInitializationObserver(echoInitialization)
         , DiffieHellmanKeyEstablishment(echo)
         , DiffieHellmanKeyEstablishmentProxy(echo)
         , secured(secured)
-        , dsaCertificate(dsaCertificate)
-        , rootCaCertificate(rootCaCertificate)
-        , keyExchangeCreator(crypto.keyExchange)
-        , signer(crypto.signer)
-        , verifierCreator(crypto.verifier)
-        , keyExpander(crypto.keyExpander)
+        , crypto(crypto)
     {
         echo.SetPolicy(*this);
     }
@@ -56,17 +51,17 @@ namespace services
         nextKeyPair.reset();
         verifier.reset();
 
-        keyExchange.emplace(keyExchangeCreator);
+        keyExchange.emplace(crypto.keyExchange);
 
         busy = true;
         DiffieHellmanKeyEstablishmentProxy::RequestSend([this]()
             {
-                DiffieHellmanKeyEstablishmentProxy::PresentCertificate(dsaCertificate);
+                DiffieHellmanKeyEstablishmentProxy::PresentCertificate(crypto.keyMaterial.dsaCertificate);
 
                 DiffieHellmanKeyEstablishmentProxy::RequestSend([this]()
                     {
                         auto encodedDhPublicKey = (*keyExchange)->PublicKey();
-                        auto [r, s] = signer.Sign(encodedDhPublicKey);
+                        auto [r, s] = crypto.signer.Sign(encodedDhPublicKey);
 
                         DiffieHellmanKeyEstablishmentProxy::Exchange(encodedDhPublicKey, r, s);
                         busy = false;
@@ -135,7 +130,7 @@ namespace services
         int swap = std::lexicographical_compare(publicKey.begin(), publicKey.end(), otherPublicKey.begin(), otherPublicKey.end()) ? 28 : 0;
 
         std::array<uint8_t, 64> expandedMaterial{};
-        keyExpander.Expand(sharedSecret, expandedMaterial);
+        crypto.keyExpander.Expand(sharedSecret, expandedMaterial);
         Clean(infra::MakeRange(sharedSecret));
 
         auto key = Middle<16>(expandedMaterial, 0 + swap);
@@ -160,7 +155,7 @@ namespace services
 
     void EchoPolicyDiffieHellman::PresentCertificate(infra::ConstByteRange otherDsaCertificate)
     {
-        verifier.emplace(verifierCreator, otherDsaCertificate, rootCaCertificate);
+        verifier.emplace(crypto.verifier, otherDsaCertificate, crypto.keyMaterial.rootCaCertificate);
 
         MethodDone();
     }
@@ -191,15 +186,15 @@ namespace services
     {
     }
 
-    CryptoMbedTls::CryptoMbedTls(infra::ConstByteRange privateKey, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-        : detail::CryptoMbedTls(privateKey, randomDataGenerator)
-        , EchoPolicyDiffieHellman::Crypto{ detail::CryptoMbedTls::keyExchange, detail::CryptoMbedTls::signer, detail::CryptoMbedTls::verifier, detail::CryptoMbedTls::keyExpander, detail::CryptoMbedTls::encryptors }
+    CryptoMbedTls::CryptoMbedTls(EchoPolicyDiffieHellman::KeyMaterial keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
+        : detail::CryptoMbedTls(keyMaterial.dsaCertificatePrivateKey, randomDataGenerator)
+        , EchoPolicyDiffieHellman::Crypto{ detail::CryptoMbedTls::keyExchange, detail::CryptoMbedTls::signer, detail::CryptoMbedTls::verifier, detail::CryptoMbedTls::keyExpander, detail::CryptoMbedTls::encryptors, keyMaterial }
     {
     }
 
     EchoPolicyDiffieHellman::WithCryptoMbedTls::WithCryptoMbedTls(Echo& echo, EchoInitialization& echoInitialization, SesameSecured& secured, const EchoPolicyDiffieHellman::KeyMaterial& keyMaterial, hal::SynchronousRandomDataGenerator& randomDataGenerator)
-        : CryptoMbedTls(keyMaterial.dsaCertificatePrivateKey, randomDataGenerator)
-        , EchoPolicyDiffieHellman(static_cast<EchoPolicyDiffieHellman::Crypto&>(*this), echo, echoInitialization, secured, keyMaterial.dsaCertificate, keyMaterial.rootCaCertificate)
+        : CryptoMbedTls(keyMaterial, randomDataGenerator)
+        , EchoPolicyDiffieHellman(static_cast<EchoPolicyDiffieHellman::Crypto&>(*this), echo, echoInitialization, secured)
     {}
 #endif
 }
