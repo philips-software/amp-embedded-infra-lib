@@ -81,7 +81,7 @@ namespace services
 
     private:
         SesameSecured& secured;
-        const Crypto& crypto;
+        const Crypto crypto;
 
         infra::Function<void(ServiceProxy& proxy)> onRequest;
 
